@@ -136,7 +136,14 @@
     "frequency": "Периодичность",
     "tax": "Налог",
     "startDate": "Дата начала",
-    "renewalDate": "Дата продления"
+    "renewalDate": "Дата продления",
+    "connectionScenario": "Сценарий подключения",
+    "connectionScenarioEmpty": "Неизвестно"
+  },
+  "scenario": {
+    "PURCHASE": "Купили мы",
+    "EXISTING_ACCESS": "Клиент предоставил доступ",
+    "CLIENT_DNS": "Клиент подключает через DNS"
   },
   "sheet": {
     "loading": "Загрузка…",
@@ -232,15 +239,16 @@
     "expenseCreated": "Создана связанная карточка расхода."
   },
   "domainPurchase": {
-    "buy": "Купить / подключить домен",
+    "buy": "Домен",
     "buyMore": "Купить / подключить ещё",
-    "title": "Купить / подключить домен",
+    "title": "Домен",
     "modePurchase": "Купить новый",
     "modeAccess": "Есть доступ",
     "modeDns": "Через DNS",
     "domains": "Домены",
     "addDomain": "Добавить домен",
     "domainName": "Доменное имя",
+    "domainIndexed": "Домен {n}",
     "provider": "Провайдер",
     "ourCost": "Стоимость покупки",
     "clientCharge": "Цена для клиента",
@@ -252,8 +260,9 @@
     "saving": "Сохранение…",
     "tech": "Tech",
     "sales": "Sales",
+    "techRequired": "Сначала укажите Tech-специалиста в карточке продукта.",
     "openService": "Открыть сервис",
-    "headerEmpty": "Купить / подключить домен",
+    "headerEmpty": "Домен",
     "headerPreparing": "Домен · Подготовка",
     "headerAwaiting": "Домен · Ожидает оплаты",
     "headerPurchased": "{domain} · Куплен",
@@ -265,6 +274,21 @@
     "saved": "Запрос по домену сохранён.",
     "invoicesCreated": "Счета по доменам созданы.",
     "confirmConnection": "Подключение проверено",
-    "confirmRegistration": "Домен зарегистрирован"
+    "confirmRegistration": "Домен зарегистрирован",
+    "dnsCredentialWarning": "Учётная запись регистратора ({name}) всё ещё связана. Отвяжите её, только если домен больше не использует этот аккаунт. Сама карточка доступа сохраняется.",
+    "unlinkCredential": "Отвязать доступ",
+    "removeDomain": "Убрать",
+    "costAmd": "Сумма",
+    "continueTitle": "Продолжить подготовку домена",
+    "previewNew": "Новая покупка: будут созданы сервис, счёт и расход.",
+    "previewContinue": "Первоначальная покупка ещё не завершена. Это её продолжение.",
+    "previewRenewal": "Будет создан счёт на продление существующего домена.",
+    "previewExistingInvoice": "Для этого цикла уже есть счёт.",
+    "previewOpenInvoice": "Открыть существующий счёт",
+    "previewOtherProduct": "Этот домен уже связан с другим продуктом.",
+    "previewOpenService": "Открыть существующую карточку",
+    "taskPurchase": "Подготовить аккаунт регистратора для {domains}",
+    "taskAccess": "Проверить вход и подключить указанные домены к нашему Cloudflare: {domains}",
+    "taskDns": "Подготовить подключение указанных доменов в Cloudflare и передать клиенту назначенные nameservers: {domains}"
   }
 }

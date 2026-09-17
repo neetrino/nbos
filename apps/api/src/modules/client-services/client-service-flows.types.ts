@@ -24,4 +24,7 @@ export interface CreateClientServiceTaskBody {
   description?: string;
   dueDate?: string | null;
   priority?: string;
+  extraLinks?: Array<{ entityType: string; entityId: string }>;
+  productId?: string | null;
+  assigneeId?: string | null;
 }

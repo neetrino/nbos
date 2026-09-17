@@ -45,7 +45,14 @@ export interface Company {
   additionalContacts?: Array<{
     contact: { id: string; firstName: string; lastName: string };
   }>;
-  _count: { projects: number; invoices: number };
+  projects?: Array<{ id: string; code: string; name: string }>;
+  products?: Array<{
+    id: string;
+    name: string;
+    projectId: string;
+    project: { id: string; code: string; name: string };
+  }>;
+  _count: { projects: number; products?: number; invoices: number };
   updatedAt: string;
 }
 

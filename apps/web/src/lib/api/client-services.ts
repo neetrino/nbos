@@ -119,6 +119,7 @@ export interface ClientServiceRecordPayload {
   notes?: string | null;
   connectionMode?: string | null;
   dnsInstructions?: string | null;
+  unlinkCredential?: boolean;
 }
 
 export interface ClientServiceRecordListParams {
@@ -213,6 +214,8 @@ export interface DomainOperationItemResult {
   status: 'created' | 'reused' | 'failed';
   serviceId?: string;
   invoiceId?: string | null;
+  expenseId?: string | null;
+  kind?: string;
   message?: string;
 }
 
@@ -320,6 +323,16 @@ export const clientServicesApi = {
   ): Promise<DomainOperationStartResult> {
     const resp = await api.post<DomainOperationStartResult>(
       '/api/client-services/domain-operations',
+      data,
+    );
+    return resp.data;
+  },
+
+  async previewDomainOperation(
+    data: DomainOperationStartPayload,
+  ): Promise<DomainOperationStartResult> {
+    const resp = await api.post<DomainOperationStartResult>(
+      '/api/client-services/domain-operations/preview',
       data,
     );
     return resp.data;

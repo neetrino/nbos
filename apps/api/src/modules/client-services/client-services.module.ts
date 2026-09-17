@@ -6,6 +6,7 @@ import { ClientServicesService } from './client-services.service';
 import { ClientPaidInvoiceAutomationService } from './client-paid-invoice-automation.service';
 import { ClientServiceFlowsService } from './client-service-flows.service';
 import { ClientServicesRenewalInvoiceService } from './client-services-renewal-invoice.service';
+import { ClientServicesRenewalExpenseService } from './client-services-renewal-expense.service';
 import { DomainRegistryService } from './registry/domain-registry.service';
 import { PlatformAccessModule } from '../platform-access/platform-access.module';
 import { InvoicesModule } from '../finance/invoices/invoices.module';
@@ -22,6 +23,7 @@ import { AuditModule } from '../audit/audit.module';
     ClientServiceFlowsService,
     ClientPaidInvoiceAutomationService,
     ClientServicesRenewalInvoiceService,
+    ClientServicesRenewalExpenseService,
     DomainRegistryService,
   ],
   exports: [
@@ -29,6 +31,7 @@ import { AuditModule } from '../audit/audit.module';
     ClientServiceFlowsService,
     ClientPaidInvoiceAutomationService,
     ClientServicesRenewalInvoiceService,
+    ClientServicesRenewalExpenseService,
     DomainRegistryService,
   ],
 })

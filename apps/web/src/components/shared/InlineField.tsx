@@ -79,6 +79,8 @@ type InlineFieldControlledProps = {
   datePickerMode?: 'date' | 'datetime';
   datePickerAlwaysShowYear?: boolean;
   fitContent?: boolean;
+  onAdd?: () => void;
+  addAriaLabel?: string;
   selectMenuTone?: 'default' | 'highlight';
   selectContentClassName?: string;
   displayValue?: ReactNode;

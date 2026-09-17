@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { CredentialProviderPicker } from '@/features/credentials/components/credential-provider-picker';
 import { credentialsApi } from '@/lib/api/credentials';
+import { useClientServicesT } from './client-service-message-keys';
 
 interface ClientServiceProviderFieldProps {
   providerName: string;
@@ -20,6 +21,7 @@ export function ClientServiceProviderField({
   disabled = false,
   onProviderChange,
 }: ClientServiceProviderFieldProps) {
+  const t = useClientServicesT();
   const name = providerName.trim();
   const [resolved, setResolved] = useState<ResolvedProvider | null>(null);
 
@@ -50,6 +52,8 @@ export function ClientServiceProviderField({
     <CredentialProviderPicker
       providerId={providerId}
       providerName={providerName}
+      label={t('domainPurchase.provider')}
+      labelStyle="outlined"
       disabled={disabled}
       className="w-full min-w-0"
       onChange={(id, nextName) => {

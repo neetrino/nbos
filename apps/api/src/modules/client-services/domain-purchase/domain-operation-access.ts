@@ -10,8 +10,13 @@ export async function requireAccessibleDomainProduct(
   prisma: InstanceType<typeof PrismaClient>,
   productId: string,
   access: FinanceScopedAccessContext,
-): Promise<{ id: string; projectId: string }> {
-  return assertProductAccessibleForClientService(prisma, productId, access);
+): Promise<{ id: string; projectId: string; technicalSpecialistId: string | null }> {
+  const product = await assertProductAccessibleForClientService(prisma, productId, access);
+  const team = await prisma.product.findUnique({
+    where: { id: product.id },
+    select: { technicalSpecialistId: true },
+  });
+  return { ...product, technicalSpecialistId: team?.technicalSpecialistId ?? null };
 }
 
 export async function assertAccessibleDomainCredentials(

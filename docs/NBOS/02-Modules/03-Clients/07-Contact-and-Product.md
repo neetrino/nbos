@@ -17,12 +17,12 @@ Contact (person)
 
 ## 2. Data model
 
-| Piece           | Rule                                                                             |
-| --------------- | -------------------------------------------------------------------------------- |
-| Primary         | `Product.contactId` — **required** (same pattern as `Project.contactId`)         |
-| Additional      | `ProductAdditionalContact` junction (`productId` + `contactId`)                  |
-| Wire format     | Ordered `contactIds[]`: first id → primary FK, rest → junction                   |
-| Roles / purpose | **None** in this slice (no Decision Maker / Technical). Billing stays on Company |
+| Piece           | Rule                                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary         | `Product.contactId` — **required** (same pattern as `Project.contactId`)                                                                                      |
+| Additional      | `ProductAdditionalContact` junction (`productId` + `contactId`)                                                                                               |
+| Wire format     | Ordered `contactIds[]`: first id → primary FK, rest → junction                                                                                                |
+| Roles / purpose | **None** in this slice (no Decision Maker / Technical). Billing company is `Product.companyId` (fallback `Project.companyId`); Contact membership is separate |
 
 One Contact may be primary or additional on **many Products** in the same Project (e.g. director on Website, IT on App).
 
@@ -70,13 +70,13 @@ If survivor is already primary on a Product, absorbed is not made a second prima
 
 ## 7. UI
 
-| Surface                                          | Behavior                                                                                                               |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Product Overview                                 | Product-scoped contacts picker (`product-contacts`). Must **not** edit Project contacts.                               |
-| Project contacts                                 | Unchanged Project-scoped editor.                                                                                       |
-| Contact card / portfolio Product Context         | Chips for Products where the contact is primary or additional — **membership only**, not every product on the project. |
-| Drive hub / project list / Order contact display | Stay Project-scoped.                                                                                                   |
-| Billing reminders                                | Stay Product WhatsApp **group** (not 1:1 Contact).                                                                     |
+| Surface                                          | Behavior                                                                                                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product Overview                                 | Company picker (`Product.companyId`) above Product-scoped contacts picker (`product-contacts`). Must **not** edit Project company/contacts. |
+| Project contacts                                 | Unchanged Project-scoped editor.                                                                                                            |
+| Contact card / portfolio Product Context         | Chips for Products where the contact is primary or additional — **membership only**, not every product on the project.                      |
+| Drive hub / project list / Order contact display | Stay Project-scoped.                                                                                                                        |
+| Billing reminders                                | Stay Product WhatsApp **group** (not 1:1 Contact).                                                                                          |
 
 ## 8. Permissions
 

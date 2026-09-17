@@ -14,7 +14,6 @@ import {
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { productsApi, type FullProduct, type Product } from '@/lib/api/products';
-import { ProductDomainEntry } from '@/features/finance/components/domain-purchase/ProductDomainEntry';
 import { cn } from '@/lib/utils';
 
 export interface ProductDetailHeaderProps {
@@ -94,7 +93,6 @@ export function ProductDetailHeader({
           </div>
           {stageBadge}
         </div>
-        <ProductDomainEntry productId={product.id} />
       </div>
     );
   }
@@ -113,7 +111,6 @@ export function ProductDetailHeader({
             titleClassName={PRODUCT_TITLE_CLASS}
           />
           {stageBadge}
-          <ProductDomainEntry productId={product.id} className="shrink-0" />
           {switcher}
         </div>
         <Link

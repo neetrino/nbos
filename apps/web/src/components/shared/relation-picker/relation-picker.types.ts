@@ -42,6 +42,8 @@ type RelationPickerBaseProps = {
   /** Display-only: full opacity, no search/replace/clear; `onOpenSelected` still works. */
   readOnly?: boolean;
   className?: string;
+  /** Overrides the multi-select chip stack layout (default: vertical flex). */
+  chipStackClassName?: string;
   onSearch: RelationPickerSearchFn;
   maxResults?: number;
   /** Opens the linked entity sheet (avatar + label on the chip). */

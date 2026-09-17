@@ -21,6 +21,7 @@ describe('resolveInvoiceProductOwnership', () => {
     prisma.clientServiceRecord.findUnique.mockReset();
     prisma.product.findUnique.mockResolvedValue({
       projectId: 'proj-1',
+      companyId: null,
       project: { companyId: null },
     });
   });
@@ -69,9 +70,22 @@ describe('resolveInvoiceProductOwnership', () => {
     ).resolves.toEqual({ productId: 'prod-manual', projectId: 'proj-1', companyId: null });
   });
 
-  it('inherits billing company from the product project', async () => {
+  it('inherits billing company from the product', async () => {
     prisma.product.findUnique.mockResolvedValue({
       projectId: 'proj-1',
+      companyId: 'co-product',
+      project: { companyId: 'co-project' },
+    });
+
+    await expect(
+      resolveInvoiceProductOwnership(prisma as never, { productId: 'prod-1' }),
+    ).resolves.toEqual({ productId: 'prod-1', projectId: 'proj-1', companyId: 'co-product' });
+  });
+
+  it('falls back to the project company when the product has none', async () => {
+    prisma.product.findUnique.mockResolvedValue({
+      projectId: 'proj-1',
+      companyId: null,
       project: { companyId: 'co-1' },
     });
 

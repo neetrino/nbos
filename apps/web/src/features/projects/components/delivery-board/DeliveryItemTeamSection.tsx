@@ -41,11 +41,7 @@ export function DeliveryItemTeamSection({
   const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const searchEmployees = useEmployeeSearchLoader();
-  const seller =
-    kind === 'PRODUCT'
-      ? product?.order?.deal?.seller
-      : (extension?.order?.deal?.seller ?? undefined);
-
+  const extensionSeller = extension?.order?.deal?.seller;
   const patchProduct = (partial: Partial<ProductPlanSnapshot>) => {
     if (!productPlan) return;
     onProductPlanChange({ ...productPlan, ...partial });
@@ -79,7 +75,22 @@ export function DeliveryItemTeamSection({
               onSearchEmployees={searchEmployees}
               disabled={disabled}
             />
-            <SellerReadOnlyRow seller={seller} />
+            <ProductRolePicker
+              label={t('team.seller')}
+              employeeId={productPlan.sellerId}
+              employeeLabel={productPlan.sellerLabel}
+              employeeAvatar={productPlan.sellerAvatar}
+              onSelect={(id, name, avatar) =>
+                patchProduct({
+                  sellerId: id,
+                  sellerLabel: name,
+                  sellerAvatar: employeeAvatarUrl({ avatar }),
+                })
+              }
+              onClear={() => patchProduct({ sellerId: null, sellerLabel: '', sellerAvatar: null })}
+              onSearchEmployees={searchEmployees}
+              disabled={disabled}
+            />
             <ProductRolePicker
               label={t('team.developerBackend')}
               employeeId={productPlan.developerId}
@@ -203,7 +214,7 @@ export function DeliveryItemTeamSection({
               disabled={disabled}
               className={deliveryStageGateFieldClass(gateRequiredFields, 'assignedTo')}
             />
-            <SellerReadOnlyRow seller={seller} />
+            <SellerReadOnlyRow seller={extensionSeller} />
           </>
         ) : null}
       </div>

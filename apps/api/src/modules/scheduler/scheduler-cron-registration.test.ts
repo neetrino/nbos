@@ -14,6 +14,7 @@ import { MessengerOutboundReconcileCron } from './messenger-outbound-reconcile.c
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { ClientServicesDomainRegistryCron } from './client-services-domain-registry.cron';
 import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
+import { ClientServicesRenewalExpenseCron } from './client-services-renewal-expense.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
 import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
@@ -32,6 +33,7 @@ const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
   ClientServicesDomainRegistryCron,
   ClientServicesRenewalInvoiceCron,
+  ClientServicesRenewalExpenseCron,
   ReportSchedulesDueCron,
   RecurringTasksDueCron,
   PlatformTrashPurgeCron,
@@ -68,6 +70,7 @@ function createSchedulerServiceMock(): SchedulerService {
     runAuthSessionExpiryCleanup: vi.fn().mockResolvedValue({}),
     runClientServicesDomainRegistry: vi.fn().mockResolvedValue({}),
     runClientServicesRenewalInvoice: vi.fn().mockResolvedValue({}),
+    runClientServicesRenewalExpense: vi.fn().mockResolvedValue({}),
     runMailOutboundReconcile: vi.fn().mockResolvedValue({}),
     runMailGmailWatchRenew: vi.fn().mockResolvedValue({}),
     runMailSyncReconcile: vi.fn().mockResolvedValue({}),

@@ -11,7 +11,14 @@ export const ORDER_LIST_INCLUDE = {
     },
   },
   deal: { select: { id: true, name: true, code: true } },
-  product: { select: { id: true, name: true, productType: true } },
+  product: {
+    select: {
+      id: true,
+      name: true,
+      productType: true,
+      company: { select: { id: true, name: true } },
+    },
+  },
   extension: { select: { id: true, name: true } },
   invoices: {
     select: {

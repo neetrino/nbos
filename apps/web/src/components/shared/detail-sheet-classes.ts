@@ -230,6 +230,15 @@ export const DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS =
 export const DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS =
   'relative z-10 inline-flex h-8 min-w-0 flex-1 items-center justify-center rounded-full px-3 text-sm font-medium tracking-tight whitespace-nowrap transition-colors';
 
+/** Compact header switcher — hugs content instead of stretching full width. */
+export const DETAIL_SHEET_COMPACT_SEGMENTED_SHELL_CLASS =
+  'flex h-8 w-auto shrink-0 items-center rounded-full bg-muted/70 p-0.5';
+
+export const DETAIL_SHEET_COMPACT_SEGMENTED_GROUP_CLASS =
+  'relative flex h-full w-auto items-center gap-0.5 bg-transparent px-0.5 py-0';
+
+export const DETAIL_SHEET_COMPACT_SEGMENTED_BUTTON_CLASS = 'h-6 flex-none px-2.5 text-xs';
+
 /** Avatar + label open the linked entity sheet; shared hover tint (see relation picker chip). */
 export const RELATION_PICKER_SHEET_TARGET_GROUP_CLASS =
   'group/open flex min-w-0 shrink items-center gap-2';

@@ -29,6 +29,7 @@ export function ClosedRelationPicker({
   entityKind,
   selectionDisplay,
   chipAvatars,
+  chipStackClassName,
   onRemoveChip,
 }: {
   props: RelationPickerFieldProps;
@@ -41,6 +42,7 @@ export function ClosedRelationPicker({
   entityKind: RelationEntityKind;
   selectionDisplay: 'chips' | 'none';
   chipAvatars?: Record<string, string | null>;
+  chipStackClassName?: string;
   onRemoveChip?: (id: string) => void;
 }) {
   const interactionLocked = disabled || readOnly;
@@ -70,6 +72,7 @@ export function ClosedRelationPicker({
         onOpenSelected={onOpenSelected}
         entityKind={entityKind}
         chipAvatars={chipAvatars}
+        chipStackClassName={chipStackClassName}
         onRemoveChip={onRemoveChip}
       />
     );
@@ -101,6 +104,7 @@ function ClosedMultiChips({
   onOpenSelected,
   entityKind,
   chipAvatars,
+  chipStackClassName,
   onRemoveChip,
 }: {
   props: RelationPickerMultiProps;
@@ -111,6 +115,7 @@ function ClosedMultiChips({
   onOpenSelected?: (id: string) => void;
   entityKind: RelationEntityKind;
   chipAvatars?: Record<string, string | null>;
+  chipStackClassName?: string;
   onRemoveChip?: (id: string) => void;
 }) {
   const chips = props.value.map((id) => ({
@@ -119,7 +124,13 @@ function ClosedMultiChips({
   }));
 
   return (
-    <div className={RELATION_PICKER_CHIP_STACK_CLASS}>
+    <div
+      className={cn(
+        chipStackClassName
+          ? cn('w-full gap-2', chipStackClassName)
+          : RELATION_PICKER_CHIP_STACK_CLASS,
+      )}
+    >
       {chips.map((chip) => (
         <RelationPickerChip
           key={chip.id}
@@ -136,7 +147,7 @@ function ClosedMultiChips({
           type="button"
           disabled={interactionLocked}
           onClick={onOpen}
-          className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'border-dashed')}
+          className={cn(RELATION_PICKER_EMPTY_TRIGGER_CLASS, 'col-span-full border-dashed')}
         >
           <Search size={14} className="shrink-0 opacity-70" />
           <span>{placeholder}</span>

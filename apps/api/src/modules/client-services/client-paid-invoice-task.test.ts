@@ -28,4 +28,14 @@ describe('shouldCreateDomainPrepTask', () => {
       }),
     ).toBe(true);
   });
+
+  it('does not treat an unknown connection mode as a purchase', () => {
+    expect(
+      shouldCreateDomainPrepTask({
+        type: 'DOMAIN',
+        connectionMode: null,
+        providerAccountId: null,
+      }),
+    ).toBe(false);
+  });
 });

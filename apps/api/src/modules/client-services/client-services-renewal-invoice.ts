@@ -12,7 +12,6 @@ import type { DomainRegistryCheckOutcome } from './registry/domain-registry.type
 const logger = new Logger('ClientServicesRenewalInvoice');
 
 const INACTIVE_INVOICE_STATUSES = ['PAID', 'CANCELLED'] as const;
-const INACTIVE_EXPENSE_STATUSES = ['PAID', 'CANCELLED'] as const;
 
 export interface ClientServicesRenewalInvoiceParams {
   asOf?: string;
@@ -73,7 +72,6 @@ export function buildRenewalInvoiceEligibleWhere(
     billingModel: 'WE_PAY',
     status: { not: 'CANCELLED' },
     renewalDate: { not: null, lte: invoiceWindowEnd },
-    expenses: { none: { status: { notIn: [...INACTIVE_EXPENSE_STATUSES] } } },
   };
 }
 

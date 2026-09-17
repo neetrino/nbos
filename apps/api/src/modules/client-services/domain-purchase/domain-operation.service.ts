@@ -1,4 +1,11 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@nbos/database';
 import { actorContextFromUserId, DOMAIN_REGISTRANT_DATA_MAX_LENGTH } from '@nbos/shared';
@@ -10,6 +17,9 @@ import { fillCredentialContextIfEmpty } from '../../expenses/expense-credential-
 import { PlatformAccessResolverService } from '../../platform-access/platform-access-resolver.service';
 import { ClientServiceFlowsService } from '../client-service-flows.service';
 import { applyOneDomainOperation } from './domain-operation-apply';
+import { ensureDomainProcessTask } from './domain-operation-tasks';
+import { resolveExistingDomainService } from './domain-operation-resolve';
+import { DOMAIN_EXISTS_CONFLICT } from './domain-operation.errors';
 import {
   assertAccessibleDomainCredentials,
   credentialVisibilityWhereForReport,
@@ -64,6 +74,58 @@ export class DomainOperationService {
     const items = await this.applyDomains(product, input, encryptedRegistrantData);
     if (encryptedRegistrantData) {
       await this.auditRegistrantWrite(product.projectId, actor.actorEmployeeId, items);
+    }
+    const serviceIds = items
+      .map((item) => item.serviceId)
+      .filter((id): id is string => Boolean(id));
+    await ensureDomainProcessTask(this.prisma, this.flows, {
+      productId: product.id,
+      connectionMode: input.connectionMode,
+      serviceIds,
+      actorEmployeeId: actor.actorEmployeeId,
+      techEmployeeId: product.technicalSpecialistId,
+    });
+    return { productId: product.id, connectionMode: input.connectionMode, items };
+  }
+
+  async preview(
+    body: StartDomainOperationBody,
+    actor: DomainOperationActorContext,
+  ): Promise<StartDomainOperationResult> {
+    const input = normalizeStartDomainOperationBody(body);
+    const product = await requireAccessibleDomainProduct(
+      this.prisma,
+      input.productId,
+      actor.clientServiceAccess,
+    );
+    const items: DomainOperationItemResult[] = [];
+    for (const domain of input.domains) {
+      try {
+        const resolved = await resolveExistingDomainService(
+          this.prisma,
+          product.id,
+          domain.domainName,
+        );
+        items.push({
+          domainName: domain.domainName,
+          status: resolved.kind === 'new_purchase' ? 'created' : 'reused',
+          serviceId: resolved.serviceId,
+          invoiceId: resolved.invoiceId ?? null,
+          kind: resolved.kind,
+        });
+      } catch (caught) {
+        items.push({
+          domainName: domain.domainName,
+          status: 'failed',
+          kind: caught instanceof ConflictException ? 'other_product' : 'ambiguous',
+          message:
+            caught instanceof ConflictException
+              ? DOMAIN_EXISTS_CONFLICT
+              : caught instanceof Error
+                ? caught.message
+                : 'Domain could not be classified.',
+        });
+      }
     }
     return { productId: product.id, connectionMode: input.connectionMode, items };
   }
@@ -155,7 +217,7 @@ export class DomainOperationService {
   }
 
   private async applyDomains(
-    product: { id: string; projectId: string },
+    product: { id: string; projectId: string; technicalSpecialistId?: string | null },
     input: ReturnType<typeof normalizeStartDomainOperationBody>,
     encryptedRegistrantData: string | null,
   ): Promise<DomainOperationItemResult[]> {

@@ -11,4 +11,5 @@ export {
   FORM_FIELD_CELL_CLASS,
   FORM_FIELD_ROW_2_CLASS,
   FORM_FIELD_ROW_3_CLASS,
+  FORM_FIELD_ROW_WIDE_START_CLASS,
 } from './create-form-layout';

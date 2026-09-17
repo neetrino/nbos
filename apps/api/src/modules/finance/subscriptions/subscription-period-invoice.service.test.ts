@@ -9,6 +9,8 @@ const INACTIVE_STATUSES = ['PENDING', 'ON_HOLD', 'CANCELLED', 'COMPLETED'] as co
 const LATE_DEV_TYPES = ['DEV_ONLY', 'DEV_AND_MAINTENANCE'] as const;
 
 const idleProduct = {
+  companyId: null,
+  company: null,
   deadline: null,
   status: 'DONE',
   deliveryResolution: 'DONE',

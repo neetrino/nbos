@@ -44,6 +44,7 @@ export const profileAContactPurgeRelationGuards = {
 
 export const profileACompanyPurgeRelationGuards = {
   projects: { none: {} },
+  products: { none: {} },
   invoices: { none: {} },
   deals: { none: {} },
   operationalJournalEntries: { none: {} },

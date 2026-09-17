@@ -193,6 +193,7 @@ export class ExpensesService {
       include: {
         ...EXPENSE_OWNER_INCLUDE,
         expensePlan: { select: { id: true, name: true } },
+        sourceInvoice: { select: { id: true, code: true, moneyStatus: true } },
         expensePayments: { orderBy: { paymentDate: 'desc' } },
         salaryLine: {
           select: {
@@ -204,13 +205,20 @@ export class ExpensesService {
       },
     });
     if (!row) throw new NotFoundException(`Expense ${id} not found`);
-    const { salaryLine, expensePlan, ...expense } = row;
+    const { salaryLine, expensePlan, sourceInvoice, ...expense } = row;
     const presentedStatus = refreshExpenseWorkflowStatus(expense.status, expense.dueDate);
     const ledger = toExpenseLedgerJson({ ...expense, status: presentedStatus });
     return {
       ...ledger,
       linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
       linkedExpensePlan: mapExpensePlanToLinkedPlan(expensePlan),
+      sourceInvoice: sourceInvoice
+        ? {
+            id: sourceInvoice.id,
+            code: sourceInvoice.code,
+            moneyStatus: sourceInvoice.moneyStatus,
+          }
+        : null,
     };
   }
 

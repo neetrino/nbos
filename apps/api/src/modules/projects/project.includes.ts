@@ -15,6 +15,7 @@ export const projectDetailInclude = {
   ...projectAdditionalContactsInclude,
   products: {
     include: {
+      company: { select: { id: true, name: true } },
       pm: { select: employeePersonSelect },
       developer: { select: employeePersonSelect },
       frontendDeveloper: { select: employeePersonSelect },

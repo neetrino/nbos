@@ -58,6 +58,8 @@ export interface ProjectProductSummary {
   status: string;
   productCategory: string;
   productType: string;
+  companyId?: string | null;
+  company?: { id: string; name: string } | null;
   deadline: string | null;
   description?: string | null;
   order?: {

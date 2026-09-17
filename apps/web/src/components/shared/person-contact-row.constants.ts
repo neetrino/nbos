@@ -15,3 +15,9 @@ export const PERSON_CONTACT_OPEN_BTN_CLASS =
 
 export const PERSON_CONTACT_META_STACK_CLASS =
   'flex shrink-0 flex-col items-center justify-center gap-0.5 self-center';
+
+/**
+ * Contact / team person rows: one column until the container can fit two
+ * untruncated chips or cards (~42rem).
+ */
+export const PERSON_OVERVIEW_GRID_CLASS = 'grid w-full grid-cols-1 gap-2 @2xl:grid-cols-2';

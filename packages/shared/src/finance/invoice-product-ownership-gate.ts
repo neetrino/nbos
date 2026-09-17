@@ -2,6 +2,15 @@ export const INVOICE_PRODUCT_GATE_FIELD = 'product' as const;
 
 const MANUAL_PRODUCT_REQUIRED_STATUSES = new Set(['AWAITING_PAYMENT', 'OVERDUE', 'PAID']);
 
+/** Issued cards freeze payer/product: collection, paid, or official request already sent. */
+export function isInvoicePayerContextLocked(input: {
+  moneyStatus: string;
+  officialInvoiceRequestSent?: boolean;
+}): boolean {
+  if (input.officialInvoiceRequestSent) return true;
+  return MANUAL_PRODUCT_REQUIRED_STATUSES.has(input.moneyStatus);
+}
+
 export function getInvoiceManualProductGateErrors(input: {
   type: string;
   productId?: string | null;

@@ -28,6 +28,8 @@ export interface CredentialProviderPickerProps {
   onChange: (providerId: string | null, providerName: string) => void;
   disabled?: boolean;
   className?: string;
+  label?: string;
+  labelStyle?: 'stacked' | 'outlined';
 }
 
 export function CredentialProviderPicker({
@@ -37,6 +39,8 @@ export function CredentialProviderPicker({
   onChange,
   disabled = false,
   className,
+  label,
+  labelStyle = 'stacked',
 }: CredentialProviderPickerProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [createName, setCreateName] = useState('');
@@ -73,7 +77,8 @@ export function CredentialProviderPicker({
   return (
     <>
       <SearchField
-        label={required ? 'Provider *' : 'Provider'}
+        label={label ?? (required ? 'Provider *' : 'Provider')}
+        labelStyle={labelStyle}
         value={providerId}
         placeholder="Search providers…"
         icon={<Server size={14} />}

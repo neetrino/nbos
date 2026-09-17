@@ -25,6 +25,8 @@ export interface DomainOperationItemResult {
   status: DomainOperationItemStatus;
   serviceId?: string;
   invoiceId?: string | null;
+  expenseId?: string | null;
+  kind?: string;
   message?: string;
 }
 

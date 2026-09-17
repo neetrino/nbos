@@ -77,6 +77,7 @@ describe('buildRenewalInvoiceEligibleWhere', () => {
       }),
     );
     expect(CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS).toBe(60);
+    expect(where).not.toHaveProperty('expenses');
   });
 });
 

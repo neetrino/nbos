@@ -22,6 +22,7 @@ import {
 } from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
 import { mergeActiveParentProjectScope } from '../active-project-list-scope';
+import { extensionBillingCompanyWhere } from '../products/product-billing-company.where';
 import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
 import { buildExtensionCurrentStageReadiness } from './extension-current-stage-readiness';
 import {
@@ -88,7 +89,7 @@ interface ExtensionQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
-  /** Filter by project's billing company (CRM). */
+  /** Filter by parent product billing company, falling back to the project default. */
   companyId?: string;
   productId?: string;
   status?: string;
@@ -135,7 +136,7 @@ export class ExtensionsService {
 
     if (projectId) where.projectId = projectId;
     if (companyId) {
-      where.project = { is: { companyId } };
+      Object.assign(where, extensionBillingCompanyWhere(companyId));
     }
     if (productId) where.productId = productId;
     if (status) where.status = status as ExtensionStatusEnum;
@@ -167,7 +168,15 @@ export class ExtensionsService {
               company: { select: { id: true, name: true } },
             },
           },
-          product: { select: { id: true, name: true, productType: true } },
+          product: {
+            select: {
+              id: true,
+              name: true,
+              productType: true,
+              companyId: true,
+              company: { select: { id: true, name: true } },
+            },
+          },
           assignee: { select: employeePersonSelect },
           order: {
             select: {
@@ -256,6 +265,8 @@ export class ExtensionsService {
             productType: true,
             status: true,
             languages: true,
+            companyId: true,
+            company: { select: { id: true, name: true } },
             technicalProfiles: {
               select: {
                 productionUrl: true,

@@ -147,7 +147,12 @@ export class ClientServiceFlowsService {
       description: body.description?.trim() || this.defaultTaskDescription(service),
       priority: body.priority?.trim() || 'NORMAL',
       dueDate: body.dueDate?.trim() || service.renewalDate?.toISOString() || undefined,
-      links: [{ entityType: CLIENT_SERVICE_TASK_ENTITY_TYPE, entityId: service.id }],
+      productId: body.productId?.trim() || service.productId || undefined,
+      assigneeId: body.assigneeId?.trim() || undefined,
+      links: [
+        { entityType: CLIENT_SERVICE_TASK_ENTITY_TYPE, entityId: service.id },
+        ...(body.extraLinks ?? []),
+      ],
     });
   }
 

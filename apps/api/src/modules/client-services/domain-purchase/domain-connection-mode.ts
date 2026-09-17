@@ -30,7 +30,10 @@ export function assertClientDnsHasNoCredential(
 }
 
 /** Fields that must move together when connection mode changes. */
-export function clientServicePatchForConnectionMode(nextMode: DomainConnectionMode): {
+export function clientServicePatchForConnectionMode(
+  nextMode: DomainConnectionMode,
+  options: { unlinkCredential?: boolean } = {},
+): {
   connectionMode: DomainConnectionMode;
   billingModel?: 'REMINDER_ONLY';
   providerAccountId?: null;
@@ -40,8 +43,8 @@ export function clientServicePatchForConnectionMode(nextMode: DomainConnectionMo
     return {
       connectionMode: nextMode,
       billingModel: 'REMINDER_ONLY',
-      providerAccountId: null,
       connectionVerifiedAt: null,
+      ...(options.unlinkCredential ? { providerAccountId: null } : {}),
     };
   }
   return { connectionMode: nextMode };

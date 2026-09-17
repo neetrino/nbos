@@ -173,6 +173,7 @@
     "backlogReason": "Հետանկման պատճառ",
     "taxStatus": "Հարկային կարգավիճակ",
     "passThrough": "Տարանցիկ",
+    "sourceInvoice": "Հաճախորդի հաշիվ",
     "notes": "Նկարագրություն",
     "notesPlaceholder": "Ավելացրեք նշում այս ծախսի մասին…"
   },

@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   NbosDatePicker,
@@ -25,6 +25,8 @@ import {
   DETAIL_SHEET_FIELD_EXTERNAL_ICON_ROW_CLASS,
   DETAIL_SHEET_FIELD_SHELL_CLASS,
   DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS,
+  DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS,
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
   DETAIL_SHEET_OUTLINED_LABEL_CLASS,
   DETAIL_SHEET_SELECT_TRIGGER_IN_SHELL_CLASS,
@@ -66,6 +68,8 @@ export interface ControlledInlineFieldProps {
   datePickerVariant?: NbosDatePickerVariant;
   datePickerMode?: NbosDatePickerMode;
   datePickerAlwaysShowYear?: boolean;
+  onAdd?: () => void;
+  addAriaLabel?: string;
   /** Select dropdown item styling (`highlight` = blue selected, gray hover, no checkmark). */
   selectMenuTone?: 'default' | 'highlight';
   /** Extra classes for the select popup (menu width, etc.). */
@@ -93,6 +97,8 @@ export function ControlledInlineField({
   datePickerMode = 'date',
   datePickerAlwaysShowYear = false,
   fitContent = false,
+  onAdd,
+  addAriaLabel,
   selectMenuTone = 'default',
   selectContentClassName,
   displayValue,
@@ -160,7 +166,27 @@ export function ControlledInlineField({
       )}
     >
       {showOutlinedLabel ? (
-        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+        onAdd ? (
+          <button
+            type="button"
+            onClick={onAdd}
+            className={DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS}
+            aria-label={addAriaLabel ?? label}
+          >
+            <Plus size={12} aria-hidden className={DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS} />
+            {label}
+          </button>
+        ) : (
+          <span
+            className={cn(
+              DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+              icon && 'inline-flex items-center gap-0.5',
+            )}
+          >
+            {label}
+            {icon}
+          </span>
+        )
       ) : null}
 
       {type === 'select' && options ? (

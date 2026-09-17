@@ -84,6 +84,7 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
 
       <div className="border-border mt-5 flex gap-2 border-t pt-4">
         <CompanyCardMetric value={company._count.projects} label="projects" />
+        <CompanyCardMetric value={company._count.products ?? 0} label="products" />
         <CompanyCardMetric value={company._count.invoices} label="invoices" />
       </div>
     </button>

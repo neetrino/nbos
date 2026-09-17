@@ -110,7 +110,9 @@ Payment confirmed
 
 - из `Subscription` приходит `tax_status`, `notifications_enabled`, `billing day`;
 - из CRM / Order чаще всего `notifications_enabled = Off` по умолчанию;
-- из `Domain / Service` подтягиваются правила сервиса и проекта, включая `Project.company` как плательщика, если `companyId` не передан явно.
+- из `Domain / Service` подтягиваются правила сервиса и продукта, включая `Product.company` как плательщика (fallback `Project.company`), если `companyId` не передан явно.
+
+Ручное создание со вкладки **Standard** (доска Invoices, client portfolio): поле Product опционально. Разовый платёж без Order / Domain / работы можно сразу повесить на Product (`Invoice.productId`). Вкладка Domain по-прежнему требует Product. Product → Finance подставляет и блокирует поле. Order / Subscription / Client Service поле не показывают — владелец берётся из источника.
 
 ---
 

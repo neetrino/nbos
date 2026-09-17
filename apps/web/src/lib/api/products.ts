@@ -48,6 +48,7 @@ export interface Product {
   frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
+  sellerId?: string | null;
   qaLeadId?: string | null;
   deadline: string | null;
   description: string | null;
@@ -62,6 +63,8 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
   contactId?: string;
+  companyId?: string | null;
+  company?: { id: string; name: string } | null;
   contact?: {
     id: string;
     firstName: string;
@@ -85,6 +88,7 @@ export interface Product {
   frontendDeveloper?: ProductEmployee | null;
   designer?: ProductEmployee | null;
   technicalSpecialist?: ProductEmployee | null;
+  seller?: ProductEmployee | null;
   qaLead?: ProductEmployee | null;
   /** Computed Product Hub directory view. Present on company-wide list items. */
   hubView?: ProductHubView;
@@ -120,6 +124,7 @@ export interface FullProduct extends Product {
   frontendDeveloper?: ProductEmployee | null;
   designer?: ProductEmployee | null;
   technicalSpecialist?: ProductEmployee | null;
+  seller?: ProductEmployee | null;
   qaLead?: ProductEmployee | null;
 }
 
@@ -226,6 +231,7 @@ export interface CreateProductData {
   checklistTemplateId?: string;
   languages?: string[];
   contactIds?: string[];
+  companyId?: string | null;
 }
 
 export interface UpdateProductData {
@@ -237,12 +243,14 @@ export interface UpdateProductData {
   frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
+  sellerId?: string | null;
   qaLeadId?: string | null;
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
   languages?: string[];
   contactIds?: string[];
+  companyId?: string | null;
 }
 
 export interface PauseDeliveryData {

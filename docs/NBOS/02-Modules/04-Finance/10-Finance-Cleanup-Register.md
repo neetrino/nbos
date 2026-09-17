@@ -421,7 +421,7 @@ Remaining refactor:
 
 ### C10. Invoice product ownership (2026-09-08)
 
-`Invoice.productId` is the card owner; `projectId` stays denormalized from `Product.projectId` (not dropped). Company remains the Tax legal party. Product Finance tab lists invoices by `productId`.
+`Invoice.productId` is the card owner; `projectId` stays denormalized from `Product.projectId` (not dropped). Default payer is `Product.companyId`, fallback `Project.companyId`; issued `Invoice.companyId` is a frozen copy. Company remains the Tax legal party. Product Finance tab lists invoices by `productId`.
 
 ---
 

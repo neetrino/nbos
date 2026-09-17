@@ -1,6 +1,8 @@
 'use client';
 
-import type { DomainHeaderStatusKind } from '@nbos/shared';
+import type { DomainHeaderStatusKind, DomainHeaderTone } from '@nbos/shared';
+import { Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useClientServicesT } from '@/features/finance/components/client-services/client-service-message-keys';
 import { cn } from '@/lib/utils';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
@@ -8,21 +10,14 @@ import {
   primaryDomainName,
   productDomainHeaderKind,
   productDomainHeaderNeedsAction,
+  productDomainHeaderTone,
 } from './map-domain-header-status';
 
-const CHIP_TONE: Record<DomainHeaderStatusKind, string> = {
-  empty: 'border-border bg-background text-foreground',
-  preparing:
-    'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200',
-  awaiting_payment:
-    'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200',
-  purchased:
-    'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/70 dark:bg-sky-950/30 dark:text-sky-200',
-  connected:
-    'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-200',
-  client_dns:
-    'border-teal-200 bg-teal-50 text-teal-800 dark:border-teal-900/70 dark:bg-teal-950/30 dark:text-teal-200',
-  multiple: 'border-border bg-muted/50 text-foreground',
+const TONE_CLASS: Record<DomainHeaderTone, string> = {
+  idle: 'border-sky-300 bg-sky-100 text-sky-800 hover:bg-sky-200/80 dark:border-sky-700 dark:bg-sky-950/50 dark:text-sky-200 dark:hover:bg-sky-950/70',
+  progress:
+    'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200 dark:hover:bg-amber-950/55',
+  done: 'border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-950/55',
 };
 
 interface ProductDomainStatusChipProps {
@@ -39,17 +34,19 @@ export function ProductDomainStatusChip({ rows, onClick }: ProductDomainStatusCh
   const suffix = needsAction ? ` · ${t('domainPurchase.headerNeedsAction')}` : '';
 
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="sm"
       onClick={onClick}
-      className={cn(
-        'inline-flex max-w-[240px] shrink-0 truncate rounded-full border px-2.5 py-0.5 text-left text-[11px] font-medium tracking-tight',
-        CHIP_TONE[kind],
-      )}
+      className={cn('max-w-[240px] px-2.5 font-medium', TONE_CLASS[productDomainHeaderTone(rows)])}
     >
-      {label}
-      {suffix}
-    </button>
+      <Globe aria-hidden />
+      <span className="truncate">
+        {label}
+        {suffix}
+      </span>
+    </Button>
   );
 }
 

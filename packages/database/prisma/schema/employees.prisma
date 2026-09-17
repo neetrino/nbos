@@ -60,6 +60,7 @@ model Employee {
   productsAsFrontendDeveloper   Product[]               @relation("ProductFrontendDeveloper")
   productsAsDesigner            Product[]               @relation("ProductDesigner")
   productsAsTechnicalSpecialist Product[]               @relation("ProductTechnicalSpecialist")
+  productsAsSeller              Product[]               @relation("ProductSeller")
   productsAsQaLead              Product[]               @relation("ProductQaLead")
   productsClosed                Product[]               @relation("ProductClosedBy")
   extensionsAssigned       Extension[]             @relation("ExtensionAssignee")

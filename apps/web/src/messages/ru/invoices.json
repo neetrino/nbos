@@ -201,11 +201,12 @@
     "submit": "Создать счёт",
     "createError": "Не удалось создать счёт.",
     "loadSubscriptionError": "Не удалось загрузить подписку.",
-    "modeFree": "Свободный счёт",
-    "modeDomain": "Покупка домена",
+    "modeFree": "Стандарт",
+    "modeDomain": "Домен",
+    "product": "Продукт",
     "domainProduct": "Продукт",
     "domainNames": "Доменные имена",
-    "domainAmount": "Сумма для клиента (AMD)"
+    "domainAmount": "Сумма"
   },
   "createSubscription": {
     "title": "Создать счёт по подписке",

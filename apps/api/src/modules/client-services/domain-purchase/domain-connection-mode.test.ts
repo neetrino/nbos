@@ -19,12 +19,20 @@ describe('assertClientDnsHasNoCredential', () => {
 });
 
 describe('clientServicePatchForConnectionMode', () => {
-  it('clears registrar facts when switching to client DNS', () => {
+  it('does not drop a linked credential when switching to client DNS', () => {
     expect(clientServicePatchForConnectionMode('CLIENT_DNS')).toEqual({
       connectionMode: 'CLIENT_DNS',
       billingModel: 'REMINDER_ONLY',
-      providerAccountId: null,
       connectionVerifiedAt: null,
+    });
+  });
+
+  it('unlinks the credential only when asked', () => {
+    expect(clientServicePatchForConnectionMode('CLIENT_DNS', { unlinkCredential: true })).toEqual({
+      connectionMode: 'CLIENT_DNS',
+      billingModel: 'REMINDER_ONLY',
+      connectionVerifiedAt: null,
+      providerAccountId: null,
     });
   });
 

@@ -17,7 +17,7 @@ export function shouldCreateDomainPrepTask(service: {
   if (service.type !== 'DOMAIN') return true;
   if (service.connectionMode === 'CLIENT_DNS') return false;
   if (service.providerAccountId) return false;
-  return service.connectionMode === 'PURCHASE' || service.connectionMode === null;
+  return service.connectionMode === 'PURCHASE';
 }
 
 export async function ensurePrepTaskForPaidInvoice(

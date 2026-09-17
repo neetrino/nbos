@@ -39,6 +39,17 @@ export class DomainOperationController {
     });
   }
 
+  @Post('domain-operations/preview')
+  @RequirePermission(FINANCE_CLIENT_SERVICES_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Classify domain purchase or renewal before saving' })
+  async preview(@CurrentUser() user: CurrentUserPayload, @Body() body: StartDomainOperationBody) {
+    return this.domainOperations.preview(body, {
+      actorEmployeeId: user.id,
+      clientServiceAccess: financeClientServiceAccessFromUser(user),
+      credentialsAccess: credentialsAccessFromUser(user),
+    });
+  }
+
   @Get('domain-operations/legacy-dns-report')
   @RequirePermission(FINANCE_CLIENT_SERVICES_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Dry-run list of Vault cards named DNS (no migration)' })

@@ -18,7 +18,11 @@ export class ExtensionsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
-  @ApiQuery({ name: 'companyId', required: false, description: "Project's billing company (CRM)" })
+  @ApiQuery({
+    name: 'companyId',
+    required: false,
+    description: 'Parent product billing company (fallback: project default)',
+  })
   @ApiQuery({ name: 'productId', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'deliveryStage', required: false })

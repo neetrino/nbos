@@ -2,32 +2,42 @@
 
 import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import { ClientServiceCredentialField } from '@/features/finance/components/client-services/ClientServiceCredentialField';
+import { ClientServiceRegistrantField } from '@/features/finance/components/client-services/ClientServiceRegistrantField';
 import { useClientServicesT } from '@/features/finance/components/client-services/client-service-message-keys';
-import type { DomainConnectionMode } from '@/lib/api/client-services';
+import type { ClientServiceRecord, DomainConnectionMode } from '@/lib/api/client-services';
+import { DomainConnectionFactButtons } from './DomainConnectionFactButtons';
 import { DomainPurchaseDomainRows } from './DomainPurchaseDomainRows';
 import type { DomainPurchaseDraft } from './domain-purchase-form';
 
 interface DomainPurchaseFormFieldsProps {
   draft: DomainPurchaseDraft;
   projectId: string | null;
-  requireClientAmount?: boolean;
+  services: readonly ClientServiceRecord[];
+  allowAdd?: boolean;
+  canEditFacts?: boolean;
   onChange: (draft: DomainPurchaseDraft) => void;
+  onServiceUpdated?: (service: ClientServiceRecord) => void;
 }
 
 export function DomainPurchaseFormFields({
   draft,
   projectId,
-  requireClientAmount = false,
+  services,
+  allowAdd = true,
+  canEditFacts = false,
   onChange,
+  onServiceUpdated,
 }: DomainPurchaseFormFieldsProps) {
   const t = useClientServicesT();
   const mode = draft.connectionMode;
+  const continueService = services.find((row) => row.id === draft.domains[0]?.serviceId) ?? null;
 
   return (
     <div className="flex flex-col gap-3">
       <DetailSheetFieldSegmented
         label=""
         hideLabel
+        density="plain"
         ariaLabel={t('domainPurchase.title')}
         value={mode}
         options={[
@@ -39,11 +49,7 @@ export function DomainPurchaseFormFields({
           onChange({ ...draft, connectionMode })
         }
       />
-      <DomainPurchaseDomainRows
-        draft={draft}
-        requireClientAmount={requireClientAmount}
-        onChange={onChange}
-      />
+      <DomainPurchaseDomainRows draft={draft} allowAdd={allowAdd} onChange={onChange} />
       {mode !== 'CLIENT_DNS' ? (
         <ClientServiceCredentialField
           credentialId={draft.providerAccountId}
@@ -54,16 +60,15 @@ export function DomainPurchaseFormFields({
           }
           onClear={() => onChange({ ...draft, providerAccountId: '', credentialLabel: null })}
         />
-      ) : (
-        <InlineField
-          variant="controlled"
-          label={t('domainPurchase.dnsInstructions')}
-          type="textarea"
-          value={draft.dnsInstructions}
-          onValueChange={(dnsInstructions) => onChange({ ...draft, dnsInstructions })}
+      ) : null}
+      {mode === 'PURCHASE' && continueService ? (
+        <ClientServiceRegistrantField
+          key={continueService.id}
+          serviceId={continueService.id}
+          hasRegistrantData={Boolean(continueService.hasRegistrantData)}
         />
-      )}
-      {mode === 'PURCHASE' ? (
+      ) : null}
+      {mode === 'PURCHASE' && !continueService ? (
         <InlineField
           variant="controlled"
           label={t('domainPurchase.registrant')}
@@ -72,7 +77,14 @@ export function DomainPurchaseFormFields({
           onValueChange={(registrantData) => onChange({ ...draft, registrantData })}
         />
       ) : null}
-      <p className="text-muted-foreground text-xs">{t('domainPurchase.currencyHint')}</p>
+      {continueService && onServiceUpdated ? (
+        <DomainConnectionFactButtons
+          service={continueService}
+          mode={mode}
+          canEdit={canEditFacts}
+          onServiceUpdated={onServiceUpdated}
+        />
+      ) : null}
     </div>
   );
 }

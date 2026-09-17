@@ -16,6 +16,7 @@ import { FinanceProductCredentialFields } from '@/features/finance/components/Fi
 import { Label } from '@/components/ui/label';
 import { ExpensePayrollLinkBanner } from '@/features/finance/components/expenses/ExpensePayrollLinkBanner';
 import { ExpensePlanLinkBanner } from '@/features/finance/components/expenses/ExpensePlanLinkBanner';
+import { ExpenseSourceInvoiceStatus } from '@/features/finance/components/expenses/ExpenseSourceInvoiceStatus';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import { EXPENSE_CATEGORIES, formatAmount } from '@/features/finance/constants/finance';
 import { expenseLedgerPaymentStatusPresentation } from '@/features/finance/constants/expense-ledger-payment-status';
@@ -129,6 +130,7 @@ export function ExpenseGeneralTab({
 
       <DetailSheetSection title={t('sheet.sections.general')} icon={<LayoutGrid size={12} />}>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
+          <ExpenseSourceInvoiceStatus expense={expense} />
           {ledgerSummary}
           <InlineField
             variant="controlled"

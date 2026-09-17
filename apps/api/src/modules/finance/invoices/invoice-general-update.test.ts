@@ -54,11 +54,19 @@ describe('applyInvoiceGeneralUpdate', () => {
           orderId: null,
           amount: 1000,
           taxStatus: 'TAX_FREE',
+          moneyStatus: 'NEW',
+          officialInvoiceRequestSent: false,
           payments: [],
         }),
         update: vi.fn().mockResolvedValue({}),
       },
-      product: { findUnique: vi.fn().mockResolvedValue({ projectId: 'proj-2' }) },
+      product: {
+        findUnique: vi.fn().mockResolvedValue({
+          projectId: 'proj-2',
+          companyId: 'co-2',
+          project: { companyId: 'co-project' },
+        }),
+      },
       order: { findUnique: vi.fn() },
       subscription: { findUnique: vi.fn() },
       clientServiceRecord: { findUnique: vi.fn() },
@@ -71,6 +79,7 @@ describe('applyInvoiceGeneralUpdate', () => {
       data: {
         product: { connect: { id: 'prod-2' } },
         project: { connect: { id: 'proj-2' } },
+        company: { connect: { id: 'co-2' } },
       },
     });
   });
@@ -84,6 +93,8 @@ describe('applyInvoiceGeneralUpdate', () => {
           orderId: null,
           amount: 1000,
           taxStatus: 'TAX',
+          moneyStatus: 'NEW',
+          officialInvoiceRequestSent: false,
           payments: [],
         }),
         update: vi.fn().mockResolvedValue({}),
@@ -107,6 +118,8 @@ describe('applyInvoiceGeneralUpdate', () => {
           orderId: null,
           amount: 1000,
           taxStatus: 'TAX',
+          moneyStatus: 'NEW',
+          officialInvoiceRequestSent: false,
           payments: [],
         }),
         update: vi.fn(),
@@ -117,5 +130,76 @@ describe('applyInvoiceGeneralUpdate', () => {
       applyInvoiceGeneralUpdate(prisma as never, 'inv-domain', { productId: 'prod-2' }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.invoice.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects product relink after Awaiting Payment', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'inv-1',
+          type: 'MANUAL',
+          orderId: null,
+          amount: 1000,
+          taxStatus: 'TAX_FREE',
+          moneyStatus: 'AWAITING_PAYMENT',
+          officialInvoiceRequestSent: false,
+          payments: [],
+        }),
+        update: vi.fn(),
+      },
+    };
+
+    await expect(
+      applyInvoiceGeneralUpdate(prisma as never, 'inv-1', { productId: 'prod-2' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.invoice.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects company change after Paid', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'inv-1',
+          type: 'MANUAL',
+          orderId: null,
+          amount: 1000,
+          taxStatus: 'TAX',
+          moneyStatus: 'PAID',
+          officialInvoiceRequestSent: true,
+          payments: [{ amount: 1000 }],
+        }),
+        update: vi.fn(),
+      },
+    };
+
+    await expect(
+      applyInvoiceGeneralUpdate(prisma as never, 'inv-1', { companyId: 'co-2' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.invoice.update).not.toHaveBeenCalled();
+  });
+
+  it('still allows amount on an issued invoice', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'inv-1',
+          type: 'MANUAL',
+          orderId: null,
+          amount: 1000,
+          taxStatus: 'TAX',
+          moneyStatus: 'AWAITING_PAYMENT',
+          officialInvoiceRequestSent: true,
+          payments: [],
+        }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    await applyInvoiceGeneralUpdate(prisma as never, 'inv-1', { amount: 1200 });
+
+    expect(prisma.invoice.update).toHaveBeenCalledWith({
+      where: { id: 'inv-1' },
+      data: { amount: 1200 },
+    });
   });
 });

@@ -33,14 +33,10 @@ export function ProductOverviewTab({ product, onProductUpdated }: ProductOvervie
           className="w-full min-w-0"
         />
         <div className="flex w-full min-w-0 flex-col gap-4">
-          <div className="bg-card border-border rounded-xl border p-4">
-            <ProductContactsSection
-              product={product}
-              onProductUpdated={onProductUpdated}
-              headerTitle="Contacts"
-            />
+          <div className="bg-card border-border @container min-w-0 rounded-xl border p-4">
+            <ProductContactsSection product={product} onProductUpdated={onProductUpdated} />
           </div>
-          <div className="bg-card border-border rounded-xl border p-4">
+          <div className="bg-card border-border @container min-w-0 rounded-xl border p-4">
             <p className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3 text-xs')}>Product team</p>
             <ProductParticipantsSection productId={product.id} embedded />
           </div>

@@ -89,12 +89,16 @@ describe('ProductsService', () => {
       );
     });
 
-    it('applies companyId filter on related project', async () => {
+    it('applies companyId filter on product then project default', async () => {
       await service.findAll({ companyId: 'comp-1' });
       expect(prisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            project: { is: { companyId: 'comp-1', trashedAt: null } },
+            OR: [
+              { companyId: 'comp-1' },
+              { companyId: null, project: { is: { companyId: 'comp-1' } } },
+            ],
+            project: { trashedAt: null },
           }),
         }),
       );
@@ -455,6 +459,7 @@ describe('ProductsService', () => {
       prisma.project.findUnique.mockResolvedValue({
         id: 'proj-1',
         contactId: 'contact-1',
+        companyId: 'co-1',
         trashedAt: null,
       });
       prisma.product.create.mockResolvedValue({
@@ -503,7 +508,7 @@ describe('ProductsService', () => {
       expect(result.productType).toBe('COMPANY_WEBSITE');
       expect(prisma.product.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ contactId: 'contact-1' }),
+          data: expect.objectContaining({ contactId: 'contact-1', companyId: 'co-1' }),
         }),
       );
       expect(productWhatsApp.ensureGroupForProduct).not.toHaveBeenCalled();
@@ -513,6 +518,7 @@ describe('ProductsService', () => {
       prisma.project.findUnique.mockResolvedValue({
         id: 'proj-1',
         contactId: 'contact-1',
+        companyId: 'co-1',
         trashedAt: null,
       });
       prisma.product.create.mockResolvedValue({

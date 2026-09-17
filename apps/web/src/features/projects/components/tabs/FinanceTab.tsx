@@ -19,13 +19,15 @@ import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-
 import { useOrdersBoardViewMode } from '@/features/finance/constants/orders-board-view';
 import { useInvoicesBoardViewMode } from '@/features/finance/constants/invoices-board-view';
 import { INVOICE_VIEW_OPTIONS } from '@/features/finance/components/invoices/invoice-view-options';
-import { projectOrderToFinanceOrder } from '@/features/projects/utils/project-order-finance-adapter';
+import { getOrderTotalAmount } from '@/features/finance/components/orders/order-display-utils';
 import { ProductFinanceSectionContent } from '@/features/projects/components/tabs/product-finance-section-content';
 import { ProductFinanceHeroTrailing } from '@/features/projects/components/tabs/product-finance-hero-trailing';
 import { useProductFinanceExpenseTotal } from '@/features/projects/hooks/use-product-finance-expense-total';
+import { useProductFinanceOrders } from '@/features/projects/hooks/use-product-finance-orders';
 import { PRODUCT_FINANCE_SECTION_OPTIONS } from '@/features/projects/constants/product-finance-section';
 import { useProductFinanceSection } from '@/features/projects/hooks/use-product-finance-section';
-import type { ProjectOrder, ProjectSubscription } from '@/lib/api/projects';
+import type { ProjectSubscription } from '@/lib/api/projects';
+import type { Order } from '@/lib/api/finance';
 import { usePermission } from '@/lib/permissions';
 import {
   formatProjectFinanceAmount,
@@ -34,26 +36,20 @@ import {
 import { scopeProductFinanceSubscriptions } from '@/features/projects/utils/filter-product-finance-data';
 
 interface FinanceTabProps {
-  orders: ProjectOrder[];
   subscriptions: ProjectSubscription[];
   projectId: string;
-  project: { id: string; name: string; code: string };
   productId: string;
   productName: string;
   companyId?: string | null;
-  productOrderId?: string | null;
   onSubscriptionsRefresh: () => void;
 }
 
 export function FinanceTab({
-  orders,
   subscriptions,
   projectId,
-  project,
   productId,
   productName,
   companyId,
-  productOrderId,
   onSubscriptionsRefresh,
 }: FinanceTabProps) {
   const { can } = usePermission();
@@ -69,21 +65,16 @@ export function FinanceTab({
   const displayExpensesView = useMobilePreferredView(expensesView, 'kanban');
   const displayClientServicesView = useMobilePreferredView(clientServicesView, 'status');
 
-  const scopedOrders = useMemo(() => {
-    if (!productOrderId) return orders;
-    return orders.filter((order) => order.id === productOrderId);
-  }, [orders, productOrderId]);
+  const {
+    orders: financeOrders,
+    loading: ordersLoading,
+    error: ordersError,
+    truncated: ordersTruncated,
+    refetch: refetchOrders,
+  } = useProductFinanceOrders(projectId);
 
-  const financeOrders = useMemo(
-    () => scopedOrders.map((order) => projectOrderToFinanceOrder(order, project)),
-    [scopedOrders, project],
-  );
-
-  const totalRevenue = scopedOrders.reduce((s, o) => s + Number(o.totalAmount), 0);
-  const paidInvoices = scopedOrders
-    .flatMap((o) => o.invoices)
-    .filter((i) => i.moneyStatus === 'PAID');
-  const totalPaid = paidInvoices.reduce((s, i) => s + Number(i.amount), 0);
+  const totalRevenue = financeOrders.reduce((sum, order) => sum + getOrderTotalAmount(order), 0);
+  const totalPaid = financeOrders.reduce((sum, order) => sum + getOrderReceivedAmount(order), 0);
   const totalExpenses = useProductFinanceExpenseTotal(productId);
   const productSubscriptions = useMemo(
     () => scopeProductFinanceSubscriptions(subscriptions, productId),
@@ -226,6 +217,10 @@ export function FinanceTab({
           expensesView={displayExpensesView}
           clientServicesView={displayClientServicesView}
           financeOrders={financeOrders}
+          ordersLoading={ordersLoading}
+          ordersError={ordersError}
+          ordersTruncated={ordersTruncated}
+          onOrdersRetry={() => void refetchOrders()}
           subscriptions={productSubscriptions}
           projectId={projectId}
           productId={productId}
@@ -261,4 +256,8 @@ function FinanceStatCard({
       <p className="mt-1 text-xl font-bold">{value}</p>
     </div>
   );
+}
+
+function getOrderReceivedAmount(order: Order): number {
+  return order.reconciliation?.paidAmount ?? order.paidAmount ?? 0;
 }

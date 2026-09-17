@@ -9,6 +9,7 @@ export function buildSubscriptionSearchOr(q: string): Prisma.SubscriptionWhereIn
     { project: { name: ic } },
     { project: { code: ic } },
     { project: { company: { name: ic } } },
+    { product: { company: { name: ic } } },
     { partner: { name: ic } },
   ];
 }

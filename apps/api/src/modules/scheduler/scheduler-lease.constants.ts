@@ -36,6 +36,7 @@ export const SCHEDULER_JOB_NAMES = {
   authSessionExpiryCleanup: 'auth-session-expiry-cleanup',
   clientServicesDomainRegistry: 'client-services-domain-registry-check',
   clientServicesRenewalInvoice: 'client-services-renewal-invoice',
+  clientServicesRenewalExpense: 'client-services-renewal-expense',
   mailOutboundReconcile: 'mail-outbound-reconcile',
   messengerOutboundReconcile: 'messenger-outbound-reconcile',
   mailGmailWatchRenew: 'mail-gmail-watch-renew',

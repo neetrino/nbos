@@ -140,6 +140,7 @@ export class SubscriptionsService {
           { project: { name: ic } },
           { project: { code: ic } },
           { project: { company: { name: ic } } },
+          { product: { company: { name: ic } } },
           { partner: { name: ic } },
         ],
       });

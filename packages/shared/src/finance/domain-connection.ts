@@ -6,12 +6,12 @@ export function isDomainConnectionMode(value: string): value is DomainConnection
   return (DOMAIN_CONNECTION_MODES as readonly string[]).includes(value);
 }
 
-/** Treat unset/legacy empty mode as purchase so UI and facts stay consistent. */
+/** Empty/legacy values stay unknown. Do not infer purchase from a missing password. */
 export function resolveDomainConnectionMode(
   value: string | null | undefined,
-): DomainConnectionMode {
+): DomainConnectionMode | null {
   if (value && isDomainConnectionMode(value)) return value;
-  return 'PURCHASE';
+  return null;
 }
 
 export const DOMAIN_OPERATION_MAX_DOMAINS = 20;
@@ -27,6 +27,9 @@ export type DomainHeaderStatusKind =
   | 'client_dns'
   | 'multiple';
 
+/** Header button color: idle start, in-progress, or completed variant. */
+export type DomainHeaderTone = 'idle' | 'progress' | 'done';
+
 export interface DomainHeaderStatusInput {
   domainName: string;
   connectionMode: DomainConnectionMode | null;
@@ -36,11 +39,12 @@ export interface DomainHeaderStatusInput {
   registrationConfirmed: boolean;
   connectionVerified: boolean;
   hasDnsInstructions: boolean;
+  dnsPrepTaskDone?: boolean;
 }
 
 export function isDomainConnectionSatisfied(row: DomainHeaderStatusInput): boolean {
   if (row.connectionMode === 'CLIENT_DNS') {
-    return Boolean(row.hasDnsInstructions);
+    return Boolean(row.dnsPrepTaskDone);
   }
   if (row.connectionMode === 'EXISTING_ACCESS') {
     return row.hasCredential && row.connectionVerified;
@@ -58,6 +62,15 @@ export function summarizeDomainHeaderStatus(
   if (active.length === 0) return 'empty';
   if (active.length > 1) return 'multiple';
   return domainHeaderStatusForRow(active[0]!);
+}
+
+/** Calm blue at start; orange while a domain is open; green when every variant is done. */
+export function summarizeDomainHeaderTone(
+  rows: readonly DomainHeaderStatusInput[],
+): DomainHeaderTone {
+  const active = rows.filter((row) => row.status !== 'CANCELLED');
+  if (active.length === 0) return 'idle';
+  return active.every(isDomainConnectionSatisfied) ? 'done' : 'progress';
 }
 
 /** True when any active domain still needs payment or purchase prep. */

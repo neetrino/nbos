@@ -28,6 +28,7 @@ import { PlatformTrashPurgeCron } from './platform-trash-purge.cron';
 import { ExpensePlanAutoDueCron } from './expense-plan-auto-due.cron';
 import { ClientServicesDomainRegistryCron } from './client-services-domain-registry.cron';
 import { ClientServicesRenewalInvoiceCron } from './client-services-renewal-invoice.cron';
+import { ClientServicesRenewalExpenseCron } from './client-services-renewal-expense.cron';
 import { ReportSchedulesDueCron } from './report-schedules-due.cron';
 import { NotificationInboxReconcileCron } from './notification-inbox-reconcile.cron';
 import { NotificationEnqueueReconcileCron } from './notification-enqueue-reconcile.cron';
@@ -73,6 +74,7 @@ const CRON_PROVIDERS = [
   ExpensePlanAutoDueCron,
   ClientServicesDomainRegistryCron,
   ClientServicesRenewalInvoiceCron,
+  ClientServicesRenewalExpenseCron,
   ReportSchedulesDueCron,
   RecurringTasksDueCron,
   PlatformTrashPurgeCron,

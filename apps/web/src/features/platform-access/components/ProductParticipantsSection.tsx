@@ -12,6 +12,7 @@ import {
   PersonContactRow,
   PersonSoftAvatar,
 } from '@/components/shared';
+import { PERSON_OVERVIEW_GRID_CLASS } from '@/components/shared/person-contact-row.constants';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import {
   Table,
@@ -22,8 +23,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { platformAccessApi, type ProductTeamMemberRow } from '@/lib/api/platform-access';
-import { formatProductSlot, formatTeamSource } from '../team-member-labels';
 import { cn } from '@/lib/utils';
+import { formatProductSlot, formatTeamSource } from '../team-member-labels';
 
 interface ProductParticipantsSectionProps {
   productId: string;
@@ -154,7 +155,7 @@ function TeamBody({
 
   if (embedded) {
     return (
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className={PERSON_OVERVIEW_GRID_CLASS}>
         {members.map((row) => (
           <PersonContactRow
             key={row.id}

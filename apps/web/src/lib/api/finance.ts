@@ -209,6 +209,7 @@ export interface OrderListParams extends FinanceDateRangeParams {
   pageSize?: number;
   status?: string;
   projectId?: string;
+  productId?: string;
   partnerId?: string;
   search?: string;
   gap?: OrderReconciliationListGap;
@@ -250,6 +251,8 @@ export interface Expense {
   } | null;
   /** Present when this expense was created from an Expense Plan (Plan→Card). */
   linkedExpensePlan?: { id: string; name: string } | null;
+  /** Client invoice that spawned this pass-through expense, when linked. */
+  sourceInvoice?: { id: string; code: string; moneyStatus: string } | null;
   project?: { id: string; code: string; name: string } | null;
   product?: { id: string; name: string } | null;
   credential?: { id: string; name: string; login: string | null; url: string | null } | null;

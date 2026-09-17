@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canSubmitDomainPurchase,
   emptyDomainPurchaseDraft,
+  removeDomainDraftRow,
   toDomainOperationPayload,
 } from './domain-purchase-form';
 
@@ -13,12 +14,15 @@ describe('domain purchase form', () => {
     expect(canSubmitDomainPurchase(draft, true)).toBe(false);
   });
 
-  it('requires a client amount on the invoice path', () => {
+  it('uses one AMD cost for invoice and provider amounts', () => {
     const draft = emptyDomainPurchaseDraft();
     draft.domains[0]!.domainName = 'example.am';
-    draft.domains[0]!.clientCharge = '12000';
+    draft.domains[0]!.costAmd = '12000';
     expect(canSubmitDomainPurchase(draft, true)).toBe(true);
-    expect(toDomainOperationPayload('prod-1', draft, true).issueInvoices).toBe(true);
+    const payload = toDomainOperationPayload('prod-1', draft, true);
+    expect(payload.issueInvoices).toBe(true);
+    expect(payload.domains[0]?.ourCost).toBe(12000);
+    expect(payload.domains[0]?.clientCharge).toBe(12000);
   });
 
   it('does not send a credential in the DNS scenario', () => {
@@ -26,9 +30,23 @@ describe('domain purchase form', () => {
     draft.connectionMode = 'CLIENT_DNS';
     draft.providerAccountId = 'cred-1';
     draft.domains[0]!.domainName = 'example.am';
-    draft.dnsInstructions = 'A @ 1.2.3.4';
     expect(
       toDomainOperationPayload('prod-1', draft, false).domains[0]?.providerAccountId,
     ).toBeNull();
+  });
+
+  it('removes only the selected draft row', () => {
+    const draft = emptyDomainPurchaseDraft();
+    draft.domains[0]!.domainName = 'one.am';
+    draft.domains.push({
+      key: 'domain-keep',
+      domainName: 'two.am',
+      provider: '',
+      costAmd: '10',
+    });
+    const next = removeDomainDraftRow(draft, draft.domains[0]!.key);
+    expect(next.domains).toHaveLength(1);
+    expect(next.domains[0]?.domainName).toBe('two.am');
+    expect(next.domains[0]?.costAmd).toBe('10');
   });
 });

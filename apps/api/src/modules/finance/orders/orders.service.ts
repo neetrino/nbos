@@ -12,6 +12,7 @@ import type { OrderReconciliationListGap } from './order-reconciliation-list-fil
 import { ORDER_LIST_INCLUDE, type OrderListRow } from './orders-list-include';
 import { queryOrderIdsPageForReconciliationGap } from './orders-reconciliation-gap-query';
 import { queryOrderStatsForReconciliationGap } from './orders-reconciliation-gap-stats-query';
+import { buildOrderProductScopeWhere } from './order-product-scope.where';
 import { buildOrderSearchOr } from './order-search.where';
 import { allocateOrderCode } from '../../../common/utils/entity-code-series';
 import {
@@ -41,6 +42,7 @@ interface OrderQueryParams {
   pageSize?: number;
   status?: string;
   projectId?: string;
+  productId?: string;
   /** Filter orders by linked partner (Parity with subscriptions partner drill-down). */
   partnerId?: string;
   search?: string;
@@ -77,6 +79,7 @@ export class OrdersService {
       pageSize = 20,
       status,
       projectId,
+      productId,
       partnerId,
       search,
       dateFrom,
@@ -86,6 +89,7 @@ export class OrdersService {
 
     if (status) parts.push({ status: status as OrderStatusEnum });
     if (projectId) parts.push({ projectId });
+    if (productId) parts.push(buildOrderProductScopeWhere(productId));
     if (partnerId) parts.push({ partnerId: partnerId });
     const searchTrimmed = search?.trim();
     if (searchTrimmed) {
@@ -174,7 +178,7 @@ export class OrdersService {
         ...orderWithReconciliation,
         amount: order.totalAmount,
         paidAmount: orderWithReconciliation.reconciliation.paidAmount,
-        company: order.project.company,
+        company: order.product?.company ?? order.project.company,
         contact: order.project.contact,
       };
     });
@@ -191,7 +195,7 @@ export class OrdersService {
           },
         },
         deal: true,
-        product: true,
+        product: { include: { company: { select: { id: true, name: true } } } },
         extension: true,
         partner: true,
         invoices: { include: { payments: true } },
@@ -205,7 +209,7 @@ export class OrdersService {
       ...orderWithReconciliation,
       amount: order.totalAmount,
       paidAmount: orderWithReconciliation.reconciliation.paidAmount,
-      company: order.project.company,
+      company: order.product?.company ?? order.project.company,
       contact: order.project.contact,
     };
   }

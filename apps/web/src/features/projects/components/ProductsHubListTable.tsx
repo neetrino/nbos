@@ -23,6 +23,7 @@ import {
 } from '@/components/shared/entity-list-table';
 import { getProductDirectoryBadge } from '@/features/projects/utils/products-hub-directory-badge';
 import type { Product } from '@/lib/api/products';
+import { resolveProductBillingCompany } from '@/features/projects/utils/product-billing-company';
 
 interface ProductsHubListTableProps {
   products: Product[];
@@ -49,6 +50,7 @@ export function ProductsHubListTable({ products, onProductClick }: ProductsHubLi
             const pmName = product.pm
               ? `${product.pm.firstName} ${product.pm.lastName}`.trim()
               : null;
+            const company = resolveProductBillingCompany(product);
             return (
               <TableRow
                 key={product.id}
@@ -72,11 +74,11 @@ export function ProductsHubListTable({ products, onProductClick }: ProductsHubLi
                   />
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
-                  {product.project.company?.name ? (
+                  {company?.name ? (
                     <EntityListIconLabel
                       icon={Building2}
                       iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400"
-                      label={product.project.company.name}
+                      label={company.name}
                     />
                   ) : (
                     <EntityListMutedDash />

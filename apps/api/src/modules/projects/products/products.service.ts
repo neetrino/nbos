@@ -37,6 +37,7 @@ import {
   requireDeliveryStage,
 } from '../delivery-lifecycle';
 import { mergeActiveParentProjectScope } from '../active-project-list-scope';
+import { productBillingCompanyWhere } from './product-billing-company.where';
 import {
   applyProductHubAndSearch,
   classifyProductHubViewFromRow,
@@ -99,6 +100,7 @@ interface CreateProductDto {
   checklistTemplateId?: string;
   languages?: string[];
   contactIds?: string[];
+  companyId?: string | null;
 }
 
 interface UpdateProductDto {
@@ -110,12 +112,14 @@ interface UpdateProductDto {
   frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
+  sellerId?: string | null;
   qaLeadId?: string | null;
   deadline?: string | null;
   description?: string | null;
   checklistTemplateId?: string | null;
   languages?: string[];
   contactIds?: string[];
+  companyId?: string | null;
 }
 
 interface PauseDeliveryDto {
@@ -140,7 +144,7 @@ interface ProductQueryParams {
   page?: number;
   pageSize?: number;
   projectId?: string;
-  /** Filter by project's billing company (CRM). */
+  /** Filter by product billing company, falling back to the project default. */
   companyId?: string;
   status?: string;
   deliveryStage?: string;
@@ -178,6 +182,7 @@ type ProductSlotSyncRow = {
   frontendDeveloperId: string | null;
   designerId: string | null;
   technicalSpecialistId: string | null;
+  sellerId?: string | null;
   qaLeadId: string | null;
 };
 
@@ -199,6 +204,7 @@ function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUpdateInp
     ...(data.technicalSpecialistId !== undefined && {
       technicalSpecialistId: data.technicalSpecialistId,
     }),
+    ...(data.sellerId !== undefined && { sellerId: data.sellerId }),
     ...(data.qaLeadId !== undefined && { qaLeadId: data.qaLeadId }),
     ...(data.deadline !== undefined && {
       deadline: data.deadline ? new Date(data.deadline) : null,
@@ -209,6 +215,9 @@ function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUpdateInp
     }),
     ...(data.languages !== undefined && {
       languages: normalizeProductLanguages(data.languages),
+    }),
+    ...(data.companyId !== undefined && {
+      company: data.companyId ? { connect: { id: data.companyId } } : { disconnect: true },
     }),
   };
 }
@@ -253,7 +262,7 @@ export class ProductsService {
 
     if (projectId) where.projectId = projectId;
     if (companyId) {
-      where.project = { is: { companyId } };
+      Object.assign(where, productBillingCompanyWhere(companyId));
     }
     if (status) where.status = status as ProductStatusEnum;
     if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
@@ -350,6 +359,7 @@ export class ProductsService {
       where: { id },
       include: {
         contact: { select: productContactSummarySelect },
+        company: { select: { id: true, name: true } },
         ...productAdditionalContactsInclude,
         project: {
           select: {
@@ -378,6 +388,7 @@ export class ProductsService {
         frontendDeveloper: { select: employeePersonWithEmailSelect },
         designer: { select: employeePersonWithEmailSelect },
         technicalSpecialist: { select: employeePersonWithEmailSelect },
+        seller: { select: employeePersonWithEmailSelect },
         qaLead: { select: employeePersonWithEmailSelect },
         closedBy: { select: employeePersonSelect },
         technicalProfiles: {
@@ -459,10 +470,20 @@ export class ProductsService {
     const contactId =
       data.contactIds?.[0] ??
       (await resolveProjectContactIdForNewProduct(this.prisma, data.projectId));
+    const project =
+      data.companyId === undefined
+        ? await this.prisma.project.findUnique({
+            where: { id: data.projectId },
+            select: { companyId: true },
+          })
+        : null;
+    const companyId =
+      data.companyId !== undefined ? data.companyId : (project?.companyId ?? undefined);
     const product = await this.prisma.product.create({
       data: {
         projectId: data.projectId,
         contactId,
+        companyId,
         name: data.name,
         productCategory: data.productCategory as ProductCategoryEnum,
         productType: data.productType as ProductTypeEnum,

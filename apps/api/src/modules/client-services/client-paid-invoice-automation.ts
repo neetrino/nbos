@@ -65,6 +65,10 @@ export async function runClientPaidInvoicePaidAutomation(
     service,
   });
 
+  if (service.type === 'DOMAIN') {
+    return { taskId: null, expenseId };
+  }
+
   const actorId = params.actorEmployeeId?.trim();
   if (!actorId) {
     logger.warn(`Skipped prep task for invoice ${invoice.id}: payment has no confirmedBy employee`);
