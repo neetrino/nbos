@@ -87,9 +87,7 @@ export function DeliveryItemTeamSection({
                   sellerAvatar: employeeAvatarUrl({ avatar }),
                 })
               }
-              onClear={() =>
-                patchProduct({ sellerId: null, sellerLabel: '', sellerAvatar: null })
-              }
+              onClear={() => patchProduct({ sellerId: null, sellerLabel: '', sellerAvatar: null })}
               onSearchEmployees={searchEmployees}
               disabled={disabled}
             />

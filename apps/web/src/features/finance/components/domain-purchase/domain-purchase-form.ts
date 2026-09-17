@@ -68,10 +68,7 @@ export function draftFromExistingServices(
   };
 }
 
-export function removeDomainDraftRow(
-  draft: DomainPurchaseDraft,
-  key: string,
-): DomainPurchaseDraft {
+export function removeDomainDraftRow(draft: DomainPurchaseDraft, key: string): DomainPurchaseDraft {
   if (draft.domains.length <= 1) return draft;
   return { ...draft, domains: draft.domains.filter((row) => row.key !== key) };
 }

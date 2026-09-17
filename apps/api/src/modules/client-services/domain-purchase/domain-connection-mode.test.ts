@@ -28,9 +28,7 @@ describe('clientServicePatchForConnectionMode', () => {
   });
 
   it('unlinks the credential only when asked', () => {
-    expect(
-      clientServicePatchForConnectionMode('CLIENT_DNS', { unlinkCredential: true }),
-    ).toEqual({
+    expect(clientServicePatchForConnectionMode('CLIENT_DNS', { unlinkCredential: true })).toEqual({
       connectionMode: 'CLIENT_DNS',
       billingModel: 'REMINDER_ONLY',
       connectionVerifiedAt: null,

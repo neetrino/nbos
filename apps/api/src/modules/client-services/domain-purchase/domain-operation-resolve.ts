@@ -1,9 +1,6 @@
 import { ConflictException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
-import {
-  classifyDomainOperation,
-  type DomainClassifyResult,
-} from './domain-operation-classify';
+import { classifyDomainOperation, type DomainClassifyResult } from './domain-operation-classify';
 import { DOMAIN_EXISTS_CONFLICT } from './domain-operation.errors';
 
 type PrismaDb = Pick<PrismaClient, 'domain' | 'clientServiceRecord'>;
