@@ -63,6 +63,8 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
   contactId?: string;
+  companyId?: string | null;
+  company?: { id: string; name: string } | null;
   contact?: {
     id: string;
     firstName: string;
@@ -229,6 +231,7 @@ export interface CreateProductData {
   checklistTemplateId?: string;
   languages?: string[];
   contactIds?: string[];
+  companyId?: string | null;
 }
 
 export interface UpdateProductData {
@@ -247,6 +250,7 @@ export interface UpdateProductData {
   checklistTemplateId?: string | null;
   languages?: string[];
   contactIds?: string[];
+  companyId?: string | null;
 }
 
 export interface PauseDeliveryData {

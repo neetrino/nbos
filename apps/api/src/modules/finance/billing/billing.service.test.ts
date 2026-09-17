@@ -4,6 +4,8 @@ import { BillingService } from './billing.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 
 const idleProduct = {
+  companyId: null,
+  company: null,
   deadline: null,
   status: 'DONE',
   deliveryResolution: 'DONE',

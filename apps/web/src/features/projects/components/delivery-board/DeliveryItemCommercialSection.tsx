@@ -158,7 +158,10 @@ export function DeliveryItemCommercialSection({
   const deal = order?.deal;
 
   const contact = project?.contact;
-  const company = project?.company;
+  const company =
+    kind === 'PRODUCT'
+      ? (product?.company ?? project?.company)
+      : (extension?.product.company ?? project?.company);
   const orderStatusMeta = order ? ORDER_STATUSES[order.status] : undefined;
   // Delivery roles see the order, not the deal: the deal card is a CRM record.
   const dealId = canViewDeal ? (deal?.id ?? null) : null;

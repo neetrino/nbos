@@ -30,7 +30,7 @@
 | Project Name   | Название бизнеса / бренда                                                                                                                       |
 | Computed Views | В каких views проект сейчас виден: `Incoming`, `Development`, `Maintenance`, `Closed`. Hub list показывает `Active` = Development ∪ Maintenance |
 | Contact        | Основной контакт                                                                                                                                |
-| Company        | Юрлицо для биллинга                                                                                                                             |
+| Company        | Дефолт бренда (`Project.companyId`) + список уникальных Company со всех Product. Смена дефолта не каскадится на продукты                        |
 | Description    | Общий контекст проекта                                                                                                                          |
 | Created At     | Дата создания                                                                                                                                   |
 

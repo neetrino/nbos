@@ -6,6 +6,7 @@ import type { FullProject } from '@/lib/api/projects';
 import { cn } from '@/lib/utils';
 import { DetailInfoSubsection } from './detail-info-subsection';
 import { ProjectContactsSection } from './ProjectContactsSection';
+import { ProjectProductCompaniesList } from './ProjectProductCompaniesList';
 import { ProjectCommunicationSection } from './ProjectCommunicationSection';
 import { ProjectDetailsFields } from './ProjectInfoCard';
 import { ProjectParticipantsSection } from '@/features/platform-access/components/ProjectParticipantsSection';
@@ -50,6 +51,9 @@ export function ProjectInfoPanel({
 
         <DetailInfoSubsection title="Contacts" first={!hasDescription} className="shrink-0 pb-3">
           <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
+          <div className="mt-3">
+            <ProjectProductCompaniesList project={project} />
+          </div>
         </DetailInfoSubsection>
 
         <ProjectCommunicationSection project={project} />

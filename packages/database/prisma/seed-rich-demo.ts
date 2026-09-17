@@ -617,6 +617,7 @@ async function createRichProjectBundle(
     data: {
       projectId: project.id,
       contactId,
+      companyId: companyId ?? undefined,
       name: engagement.product,
       productCategory: engagement.category,
       productType: engagement.type,

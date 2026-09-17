@@ -16,7 +16,7 @@ interface ProjectCompanyCardProps {
   companyId: string;
   name: string;
   disabled?: boolean;
-  onRemove: () => Promise<void>;
+  onRemove?: () => Promise<void>;
 }
 
 export function ProjectCompanyCard({
@@ -30,7 +30,7 @@ export function ProjectCompanyCard({
 
   const openCompany = () => {
     relations.openEntity('company', companyId, {
-      onRemoveParticipant: () => onRemove(),
+      ...(onRemove ? { onRemoveParticipant: () => onRemove() } : {}),
     });
   };
 

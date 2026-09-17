@@ -325,7 +325,7 @@ export class DealWonHandler {
 
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
-      select: { contactId: true },
+      select: { contactId: true, companyId: true },
     });
     const contactId = deal.contactId ?? project?.contactId;
     if (!contactId) {
@@ -338,6 +338,7 @@ export class DealWonHandler {
       data: {
         projectId,
         contactId,
+        companyId: deal.companyId ?? project?.companyId ?? undefined,
         name: deal.name ?? `Product from ${deal.code}`,
         productCategory: deal.productCategory as Prisma.ProductCreateInput['productCategory'],
         productType: deal.productType as Prisma.ProductCreateInput['productType'],

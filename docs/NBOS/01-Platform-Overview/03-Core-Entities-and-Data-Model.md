@@ -101,7 +101,8 @@ Contact (человек)
 
 **Связи:**
 
-- Company → many Projects
+- Company → many Projects (дефолт бренда / seed)
+- Company → many Products (владелец биллинг-юрлица линии)
 - Company → many Invoices (счета выставляются на компанию)
 
 ---
@@ -110,16 +111,16 @@ Contact (человек)
 
 **Центральная сущность платформы.** Один проект = один бизнес / бренд клиента.
 
-| Поле        | Тип          | Описание                                    |
-| ----------- | ------------ | ------------------------------------------- |
-| id          | UUID         | Уникальный идентификатор                    |
-| name        | String       | Название проекта (обычно = название бренда) |
-| contact_id  | FK → Contact | Основной контакт                            |
-| company_id  | FK → Company | Юрлицо для биллинга                         |
-| status      | Computed     | Вычисляется из статусов Products (см. ниже) |
-| description | Text         | Описание проекта                            |
-| created_at  | DateTime     | Дата создания                               |
-| archived_at | DateTime     | Дата архивации (если закрыт)                |
+| Поле        | Тип          | Описание                                                            |
+| ----------- | ------------ | ------------------------------------------------------------------- |
+| id          | UUID         | Уникальный идентификатор                                            |
+| name        | String       | Название проекта (обычно = название бренда)                         |
+| contact_id  | FK → Contact | Основной контакт                                                    |
+| company_id  | FK → Company | Дефолт бренда / seed для новых Product (не единственный плательщик) |
+| status      | Computed     | Вычисляется из статусов Products (см. ниже)                         |
+| description | Text         | Описание проекта                                                    |
+| created_at  | DateTime     | Дата создания                                                       |
+| archived_at | DateTime     | Дата архивации (если закрыт)                                        |
 
 `Project` больше не хранит `type`, `seller_id`, `pm_id` и общий `deadline` как core-поля.
 
@@ -156,7 +157,7 @@ Contact (человек)
 - Project → many Chats
 - Project → many Audit Logs
 - Project → one Contact
-- Project → one Company
+- Project → one Company (brand default; products may use other companies)
 
 ---
 
@@ -170,6 +171,7 @@ Contact (человек)
 | ------------------ | --------------------------------- | -------------------------------------------------------------------------------------- |
 | id                 | UUID                              | Уникальный идентификатор                                                               |
 | project_id         | FK → Project                      | Проект                                                                                 |
+| company_id         | FK → Company                      | Юрлицо для биллинга этой линии; nullable; inherit Invoice = Product → Project          |
 | name               | String                            | Название продукта ("Website", "Mobile App")                                            |
 | product_type       | FK → System List **Product Type** | Вид услуги (Website, Mobile App, CRM, …); значения из справочника в админке, см. § 1.1 |
 | stage              | Enum                              | `STARTING`, `DEVELOPMENT`, `QA`, `TRANSFER`                                            |
@@ -199,6 +201,7 @@ Contact (человек)
 - Product → many Tasks
 - Product → many Support Tickets
 - Product → one Project
+- Product → optional Company (billing owner)
 
 ---
 
@@ -319,7 +322,7 @@ Contact (человек)
 4. Для Tax: `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; отмена карточки с отправленным запросом сразу отменяет запрос бухгалтеру.
 5. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
 6. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе при `clientServiceRecord` — `ClientServiceRecord.name` (или `product.name`); иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
-7. **Product — владелец карточки.** Источник (Order / Subscription / Client Service / Manual) не заменяет `product_id`. `project_id` пишется только с `Product.projectId`. Для Manual вход в Awaiting / Overdue / Paid требует Product.
+7. **Product — владелец карточки.** Источник (Order / Subscription / Client Service / Manual) не заменяет `product_id`. `project_id` пишется только с `Product.projectId`. `company_id` при создании копируется с `Product.companyId`, иначе `Project.companyId`. Для Manual вход в Awaiting / Overdue / Paid требует Product.
 
 **Связи:**
 

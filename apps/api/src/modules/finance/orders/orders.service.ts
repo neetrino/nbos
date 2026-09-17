@@ -174,7 +174,7 @@ export class OrdersService {
         ...orderWithReconciliation,
         amount: order.totalAmount,
         paidAmount: orderWithReconciliation.reconciliation.paidAmount,
-        company: order.project.company,
+        company: order.product?.company ?? order.project.company,
         contact: order.project.contact,
       };
     });
@@ -191,7 +191,7 @@ export class OrdersService {
           },
         },
         deal: true,
-        product: true,
+        product: { include: { company: { select: { id: true, name: true } } } },
         extension: true,
         partner: true,
         invoices: { include: { payments: true } },
@@ -205,7 +205,7 @@ export class OrdersService {
       ...orderWithReconciliation,
       amount: order.totalAmount,
       paidAmount: orderWithReconciliation.reconciliation.paidAmount,
-      company: order.project.company,
+      company: order.product?.company ?? order.project.company,
       contact: order.project.contact,
     };
   }

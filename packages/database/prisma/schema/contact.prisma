@@ -99,6 +99,7 @@ model Company {
   billingContact            Contact?                  @relation("CompanyBillingContact", fields: [billingContactId], references: [id])
   additionalContacts        CompanyAdditionalContact[]
   projects                  Project[]
+  products                  Product[]
   invoices                  Invoice[]
   deals                     Deal[]
   operationalJournalEntries OperationalJournalEntry[]

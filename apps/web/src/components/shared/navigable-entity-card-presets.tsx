@@ -82,8 +82,9 @@ function buildProductCardMeta(
   const lines: NavigableEntityCardMetaLine[] = [];
   if (showProjectContext && product.project) {
     lines.push({ id: 'project', icon: FolderKanban, text: product.project.name });
-    if (product.project.company?.name) {
-      lines.push({ id: 'company', icon: Building2, text: product.project.company.name });
+    const companyName = product.company?.name ?? product.project.company?.name;
+    if (companyName) {
+      lines.push({ id: 'company', icon: Building2, text: companyName });
     }
   }
   if (product.pm) {

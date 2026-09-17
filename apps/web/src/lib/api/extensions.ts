@@ -42,6 +42,8 @@ export interface Extension {
     id: string;
     name: string;
     productType?: string;
+    companyId?: string | null;
+    company?: { id: string; name: string } | null;
     languages?: string[];
     technicalProfiles?: Array<{
       productionUrl: string | null;

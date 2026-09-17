@@ -58,7 +58,13 @@ describe('applyInvoiceGeneralUpdate', () => {
         }),
         update: vi.fn().mockResolvedValue({}),
       },
-      product: { findUnique: vi.fn().mockResolvedValue({ projectId: 'proj-2' }) },
+      product: {
+        findUnique: vi.fn().mockResolvedValue({
+          projectId: 'proj-2',
+          companyId: 'co-2',
+          project: { companyId: 'co-project' },
+        }),
+      },
       order: { findUnique: vi.fn() },
       subscription: { findUnique: vi.fn() },
       clientServiceRecord: { findUnique: vi.fn() },
@@ -71,6 +77,7 @@ describe('applyInvoiceGeneralUpdate', () => {
       data: {
         product: { connect: { id: 'prod-2' } },
         project: { connect: { id: 'proj-2' } },
+        company: { connect: { id: 'co-2' } },
       },
     });
   });

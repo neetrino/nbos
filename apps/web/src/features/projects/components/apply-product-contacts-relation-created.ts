@@ -13,5 +13,8 @@ export function applyProductContactsRelationCreated(
       contactLabels: { ...draft.contactLabels, [event.id]: event.label },
     };
   }
+  if (event.kind === 'company' && event.intent === 'product-company') {
+    return { ...draft, companyId: event.id, companyLabel: event.label };
+  }
   return draft;
 }

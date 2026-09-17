@@ -26,7 +26,7 @@ const companyListInclude = {
   additionalContacts: {
     include: { contact: { select: companyPersonSelect } },
   },
-  _count: { select: { projects: true, invoices: true } },
+  _count: { select: { projects: true, products: true, invoices: true } },
 } as const;
 
 interface CreateCompanyDto {
@@ -112,8 +112,16 @@ export class CompaniesService {
           include: { contact: { select: companyPersonSelect } },
         },
         projects: { select: { id: true, code: true, name: true } },
+        products: {
+          select: {
+            id: true,
+            name: true,
+            projectId: true,
+            project: { select: { id: true, code: true, name: true } },
+          },
+        },
         invoices: { select: { id: true, code: true, moneyStatus: true, amount: true } },
-        _count: { select: { projects: true, invoices: true } },
+        _count: { select: { projects: true, products: true, invoices: true } },
       },
     });
     if (!company) throw new NotFoundException(`Company ${id} not found`);

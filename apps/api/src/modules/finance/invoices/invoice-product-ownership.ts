@@ -17,9 +17,14 @@ type InvoiceOwnershipDb = {
   product: {
     findUnique: (args: {
       where: { id: string };
-      select: { projectId: true; project: { select: { companyId: true } } };
+      select: {
+        projectId: true;
+        companyId: true;
+        project: { select: { companyId: true } };
+      };
     }) => Promise<{
       projectId: string;
+      companyId: string | null;
       project: { companyId: string | null };
     } | null>;
   };
@@ -108,7 +113,7 @@ export async function resolveInvoiceProductOwnership(
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    select: { projectId: true, project: { select: { companyId: true } } },
+    select: { projectId: true, companyId: true, project: { select: { companyId: true } } },
   });
   if (!product) {
     throw new BadRequestException('Product not found');
@@ -117,11 +122,11 @@ export async function resolveInvoiceProductOwnership(
   return {
     productId,
     projectId: product.projectId,
-    companyId: product.project?.companyId ?? null,
+    companyId: product.companyId ?? product.project?.companyId ?? null,
   };
 }
 
-/** Explicit payer wins; otherwise inherit Project.company from the product. */
+/** Explicit payer wins; otherwise inherit Product.company, then Project.company. */
 export function resolveInvoiceCreateCompanyId(
   explicitCompanyId: string | undefined,
   ownershipCompanyId: string | null,

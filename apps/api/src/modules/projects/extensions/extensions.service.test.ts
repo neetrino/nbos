@@ -110,12 +110,16 @@ describe('ExtensionsService', () => {
       );
     });
 
-    it('applies companyId filter on related project', async () => {
+    it('applies companyId filter on parent product then project default', async () => {
       await service.findAll({ companyId: 'comp-1' });
       expect(prisma.extension.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            project: { is: { companyId: 'comp-1', trashedAt: null } },
+            OR: [
+              { product: { is: { companyId: 'comp-1' } } },
+              { product: { is: { companyId: null } }, project: { is: { companyId: 'comp-1' } } },
+            ],
+            project: { trashedAt: null },
           }),
         }),
       );

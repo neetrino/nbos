@@ -8,6 +8,7 @@ export function buildOrderSearchOr(searchTrimmed: string): Prisma.OrderWhereInpu
     { project: { name: ic } },
     { project: { code: ic } },
     { project: { company: { name: ic } } },
+    { product: { company: { name: ic } } },
     { deal: { code: ic } },
     { deal: { name: ic } },
     { product: { name: ic } },

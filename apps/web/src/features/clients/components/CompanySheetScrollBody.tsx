@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Calendar, FileText, Receipt, Tag, User } from 'lucide-react';
+import { Building2, Calendar, FileText, Package, Receipt, Tag, User } from 'lucide-react';
 import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
 import { DetailSheetOptionalDescription } from '@/components/shared/DetailSheetOptionalDescription';
 import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS } from '@/components/shared/detail-sheet-classes';
@@ -204,6 +204,27 @@ export function CompanySheetScrollBody({
           </div>
         </DetailSheetSection>
       </div>
+
+      {(company.products?.length ?? 0) > 0 ? (
+        <DetailSheetSection title="Products" icon={<Package size={12} />}>
+          <ul className="flex flex-col gap-2">
+            {company.products?.map((product) => (
+              <li key={product.id}>
+                <a
+                  href={`/projects/${product.projectId}/products/${product.id}`}
+                  className="text-foreground hover:text-primary text-sm font-medium"
+                >
+                  {product.name}
+                  <span className="text-muted-foreground font-normal">
+                    {' '}
+                    · {product.project.name}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </DetailSheetSection>
+      ) : null}
 
       <ClientPortfolioAnalytics
         data={portfolioData}

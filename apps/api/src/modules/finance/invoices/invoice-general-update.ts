@@ -123,6 +123,11 @@ export async function applyInvoiceGeneralUpdate(
     data.project = ownership.projectId
       ? { connect: { id: ownership.projectId } }
       : { disconnect: true };
+    if (input.companyId === undefined) {
+      data.company = ownership.companyId
+        ? { connect: { id: ownership.companyId } }
+        : { disconnect: true };
+    }
   }
 
   if (input.orderComment !== undefined) {

@@ -25,6 +25,10 @@ export interface SubscriptionBillingInvoiceSource {
     companyId: string | null;
     company: { name: string; legalName: string | null; taxId: string | null } | null;
   };
+  product: {
+    companyId: string | null;
+    company: { name: string; legalName: string | null; taxId: string | null } | null;
+  };
 }
 
 export interface PersistedSubscriptionBillingInvoice {
@@ -56,10 +60,12 @@ export async function persistSubscriptionBillingInvoice(
   });
   const charge =
     chargeOverride ?? subscriptionChargeAmount(Number(sub.amount), sub.coverageMonthCount);
+  const billingCompany = sub.product.company ?? sub.project.company;
+  const billingCompanyId = sub.product.companyId ?? sub.project.companyId;
   const moneyStatus = resolveBillingInvoiceMoneyStatus({
     billingDay: sub.billingDay,
     taxStatus: sub.taxStatus,
-    company: sub.project.company,
+    company: billingCompany,
   });
 
   const invoice = await persistInvoiceCreate(
@@ -69,7 +75,7 @@ export async function persistSubscriptionBillingInvoice(
       subscriptionId: sub.id,
       productId: sub.productId,
       projectId: sub.projectId,
-      companyId: sub.project.companyId,
+      companyId: billingCompanyId,
       amount: charge.amount,
       taxStatus: sub.taxStatus,
       type: 'SUBSCRIPTION',

@@ -90,7 +90,8 @@ describe('InvoicesService create', () => {
     };
     prisma.product.findUnique.mockResolvedValue({
       projectId: 'proj-owned',
-      project: { companyId: 'co-owned' },
+      companyId: 'co-owned',
+      project: { companyId: null },
     });
     prisma.invoice.create.mockResolvedValue(createdInvoice);
     prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
@@ -126,6 +127,7 @@ describe('InvoicesService create', () => {
     };
     prisma.product.findUnique.mockResolvedValue({
       projectId: 'proj-owned',
+      companyId: 'co-product',
       project: { companyId: 'co-project' },
     });
     prisma.invoice.create.mockResolvedValue(createdInvoice);

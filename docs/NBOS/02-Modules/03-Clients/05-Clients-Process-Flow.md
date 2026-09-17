@@ -152,7 +152,7 @@ Deal связывает продажу с человеком и биллинго
 - создаётся Product или Extension;
 - создаётся Order;
 - создаётся Invoice или Subscription flow по правилам CRM / Finance;
-- связи Contact и Company передаются в Project / Order / Invoice; при создании Product — `Product.contactId` из Deal или Project (канон `07-Contact-and-Product.md`);
+- связи Contact и Company передаются в Project / Product / Invoice; при создании Product — `Product.contactId` из Deal или Project (канон `07-Contact-and-Product.md`) и `Product.companyId` из Deal или Project;
 - Subscription всегда на Product (`productId`); client reminders — Product WhatsApp Group.
 
 Для Outsource:
@@ -166,7 +166,7 @@ Deal связывает продажу с человеком и биллинго
 - Maintenance Deal связан с уже существующим Product (`existingProductId` required);
 - после Won создаётся Pending Subscription на этом Product;
 - без Product Subscription не создаётся;
-- Company и Contact берутся из основного Product / Project, если не требуется override.
+- Company и Contact берутся из основного Product (`Product.companyId`, fallback Project), если не требуется override.
 
 ---
 

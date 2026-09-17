@@ -226,7 +226,13 @@ function ProductDetailPageContent() {
                 code: product.project.code,
                 name: product.project.name,
               }}
-              companyId={product.project.companyId ?? product.project.company?.id ?? null}
+              companyId={
+                product.companyId ??
+                product.company?.id ??
+                product.project.companyId ??
+                product.project.company?.id ??
+                null
+              }
               productOrderId={product.order?.id ?? null}
               orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}

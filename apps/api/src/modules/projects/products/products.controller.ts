@@ -38,7 +38,11 @@ export class ProductsController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'projectId', required: false })
-  @ApiQuery({ name: 'companyId', required: false, description: "Project's billing company (CRM)" })
+  @ApiQuery({
+    name: 'companyId',
+    required: false,
+    description: 'Product billing company (fallback: project default)',
+  })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'deliveryStage', required: false })
   @ApiQuery({ name: 'deliveryWorkStatus', required: false })
@@ -182,6 +186,7 @@ export class ProductsController {
       checklistTemplateId?: string;
       languages?: string[];
       contactIds?: string[];
+      companyId?: string | null;
     },
   ) {
     return this.productsService.create(body);
@@ -207,6 +212,7 @@ export class ProductsController {
       checklistTemplateId?: string | null;
       languages?: string[];
       contactIds?: string[];
+      companyId?: string | null;
     },
   ) {
     return this.productsService.update(id, body);

@@ -3,6 +3,7 @@ import { liveMaintenanceWhere } from '../project-hub-status';
 
 /** Shared list include for Delivery Board, pickers, and generic `GET /products`. */
 export const PRODUCT_LIST_INCLUDE = {
+  company: { select: { id: true, name: true } },
   project: {
     select: {
       id: true,
