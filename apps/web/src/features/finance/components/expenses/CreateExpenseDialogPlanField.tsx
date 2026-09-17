@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -10,15 +10,17 @@ import {
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
   DETAIL_SHEET_OUTLINED_LABEL_CLASS,
 } from '@/components/shared/detail-sheet-classes';
+import { useRelationPickerDropdownBox } from '@/components/shared/relation-picker/relation-picker-dropdown-position';
 import { cn } from '@/lib/utils';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
+import {
+  CREATE_EXPENSE_PLAN_NONE,
+  PlanOptionsList,
+  buildPlanOptions,
+  filterPlanOptions,
+} from './create-expense-dialog-plan-options';
 
-export const CREATE_EXPENSE_PLAN_NONE = 'none';
-
-interface PlanOption {
-  value: string;
-  label: string;
-}
+export { CREATE_EXPENSE_PLAN_NONE };
 
 interface CreateExpenseDialogPlanFieldProps {
   plans: ExpensePlan[];
@@ -27,95 +29,23 @@ interface CreateExpenseDialogPlanFieldProps {
   onChange: (planId: string) => void;
 }
 
-function buildPlanOptions(plans: ExpensePlan[], noneLabel: string): PlanOption[] {
-  return [
-    { value: CREATE_EXPENSE_PLAN_NONE, label: noneLabel },
-    ...plans.map((plan) => ({ value: plan.id, label: plan.name })),
-  ];
-}
-
-function filterPlanOptions(options: PlanOption[], query: string): PlanOption[] {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return options;
-  return options.filter((option) => option.label.toLowerCase().includes(needle));
-}
-
-function PlanOptionsList({
-  options,
-  selectedValue,
-  emptyLabel,
-  onSelect,
-}: {
-  options: PlanOption[];
-  selectedValue: string;
-  emptyLabel: string;
-  onSelect: (option: PlanOption) => void;
-}) {
-  if (options.length === 0) {
-    return (
-      <ul
-        role="listbox"
-        className="border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border p-1.5 shadow-lg"
-      >
-        <li className="text-muted-foreground px-3 py-2 text-sm">{emptyLabel}</li>
-      </ul>
-    );
-  }
-
-  return (
-    <ul
-      role="listbox"
-      className="border-border bg-popover absolute inset-x-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border p-1.5 shadow-lg"
-    >
-      {options.map((option) => {
-        const selected = option.value === selectedValue;
-        return (
-          <li key={option.value} role="option" aria-selected={selected}>
-            <button
-              type="button"
-              className={cn(
-                'flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
-                selected
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-foreground/90 hover:bg-muted',
-              )}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => onSelect(option)}
-            >
-              {option.label}
-            </button>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-export function CreateExpenseDialogPlanField({
-  plans,
-  value,
-  disabled = false,
-  onChange,
-}: CreateExpenseDialogPlanFieldProps) {
-  const t = useTranslations('forms');
+function usePlanFieldDropdown(disabled: boolean) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const noneLabel = t('expense.fields.planNone');
-  const options = useMemo(() => buildPlanOptions(plans, noneLabel), [noneLabel, plans]);
-  const selectedValue = value.trim() ? value : CREATE_EXPENSE_PLAN_NONE;
-  const selectedLabel =
-    options.find((option) => option.value === selectedValue)?.label ?? noneLabel;
-  const filtered = useMemo(() => filterPlanOptions(options, query), [options, query]);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const box = useRelationPickerDropdownBox(anchorRef, open && !disabled);
 
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (event: MouseEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-        setQuery('');
-      }
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (containerRef.current?.contains(target) || panelRef.current?.contains(target)) return;
+      setOpen(false);
+      setQuery('');
     };
     document.addEventListener('mousedown', onPointerDown);
     return () => document.removeEventListener('mousedown', onPointerDown);
@@ -126,10 +56,96 @@ export function CreateExpenseDialogPlanField({
     setQuery('');
   };
 
-  const selectOption = (option: PlanOption) => {
-    onChange(option.value === CREATE_EXPENSE_PLAN_NONE ? '' : option.value);
-    closeAndClear();
+  return {
+    open,
+    setOpen,
+    query,
+    setQuery,
+    containerRef,
+    panelRef,
+    inputRef,
+    anchorRef,
+    box,
+    closeAndClear,
   };
+}
+
+function PlanFieldSearchInput({
+  inputRef,
+  open,
+  query,
+  selectedLabel,
+  noneLabel,
+  searchPlaceholder,
+  ariaLabel,
+  disabled,
+  onOpen,
+  onQueryChange,
+  onEscape,
+}: {
+  inputRef: RefObject<HTMLInputElement | null>;
+  open: boolean;
+  query: string;
+  selectedLabel: string;
+  noneLabel: string;
+  searchPlaceholder: string;
+  ariaLabel: string;
+  disabled: boolean;
+  onOpen: () => void;
+  onQueryChange: (query: string) => void;
+  onEscape: () => void;
+}) {
+  return (
+    <Input
+      ref={inputRef}
+      value={open ? query : selectedLabel}
+      disabled={disabled}
+      aria-expanded={open}
+      aria-label={ariaLabel}
+      aria-autocomplete="list"
+      role="combobox"
+      placeholder={open ? searchPlaceholder : noneLabel}
+      autoComplete="off"
+      onMouseDown={() => {
+        if (!disabled) onOpen();
+      }}
+      onFocus={() => {
+        if (!disabled) onOpen();
+      }}
+      onChange={(event) => onQueryChange(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') onEscape();
+      }}
+      className={cn(DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS, 'text-sm')}
+    />
+  );
+}
+
+export function CreateExpenseDialogPlanField({
+  plans,
+  value,
+  disabled = false,
+  onChange,
+}: CreateExpenseDialogPlanFieldProps) {
+  const t = useTranslations('forms');
+  const {
+    open,
+    setOpen,
+    query,
+    setQuery,
+    containerRef,
+    panelRef,
+    inputRef,
+    anchorRef,
+    box,
+    closeAndClear,
+  } = usePlanFieldDropdown(disabled);
+  const noneLabel = t('expense.fields.planNone');
+  const options = useMemo(() => buildPlanOptions(plans, noneLabel), [noneLabel, plans]);
+  const selectedValue = value.trim() ? value : CREATE_EXPENSE_PLAN_NONE;
+  const selectedLabel =
+    options.find((option) => option.value === selectedValue)?.label ?? noneLabel;
+  const filtered = useMemo(() => filterPlanOptions(options, query), [options, query]);
 
   return (
     <div
@@ -140,41 +156,46 @@ export function CreateExpenseDialogPlanField({
       )}
     >
       <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t('expense.fields.plan')}</span>
-      <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, 'relative gap-2 pr-2')}>
-        <Input
-          ref={inputRef}
-          value={open ? query : selectedLabel}
+      <div
+        ref={anchorRef}
+        className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, 'relative gap-2 pr-2')}
+      >
+        <PlanFieldSearchInput
+          inputRef={inputRef}
+          open={open}
+          query={query}
+          selectedLabel={selectedLabel}
+          noneLabel={noneLabel}
+          searchPlaceholder={t('expense.fields.planSearch')}
+          ariaLabel={t('expense.fields.planAria')}
           disabled={disabled}
-          aria-expanded={open}
-          aria-label={t('expense.fields.planAria')}
-          aria-autocomplete="list"
-          role="combobox"
-          placeholder={open ? t('expense.fields.planSearch') : noneLabel}
-          autoComplete="off"
-          onFocus={() => {
-            if (disabled) return;
+          onOpen={() => {
+            if (open) return;
             setOpen(true);
             setQuery('');
           }}
-          onChange={(event) => {
-            setQuery(event.target.value);
+          onQueryChange={(nextQuery) => {
+            setQuery(nextQuery);
             setOpen(true);
           }}
-          onKeyDown={(event) => {
-            if (event.key !== 'Escape') return;
+          onEscape={() => {
             closeAndClear();
             inputRef.current?.blur();
           }}
-          className={cn(DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS, 'text-sm')}
         />
         <ChevronDown className="text-muted-foreground size-4 shrink-0 opacity-80" aria-hidden />
       </div>
-      {open && !disabled ? (
+      {open && !disabled && box ? (
         <PlanOptionsList
+          box={box}
           options={filtered}
           selectedValue={selectedValue}
           emptyLabel={t('expense.fields.planNoResults')}
-          onSelect={selectOption}
+          panelRef={panelRef}
+          onSelect={(option) => {
+            onChange(option.value === CREATE_EXPENSE_PLAN_NONE ? '' : option.value);
+            closeAndClear();
+          }}
         />
       ) : null}
     </div>
