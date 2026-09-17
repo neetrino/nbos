@@ -178,10 +178,17 @@ export function DeliveryItemDetailHeader({
     </div>
   );
 
+  const headerActions = (
+    <div className="flex h-7 shrink-0 items-center gap-1.5 self-start">
+      {domainChip}
+      {settingsMenu}
+    </div>
+  );
+
   if (isMobileViewport) {
     return (
       <div className={DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS}>
-        <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>{settingsMenu}</div>
+        <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>{headerActions}</div>
         <div
           className={cn(
             DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
@@ -191,7 +198,6 @@ export function DeliveryItemDetailHeader({
           <div className="min-w-0 flex-1">{titleRow}</div>
           <span className="mt-1">{entityBadge}</span>
         </div>
-        {domainChip ? <div className="px-5 pb-2">{domainChip}</div> : null}
       </div>
     );
   }
@@ -244,9 +250,8 @@ export function DeliveryItemDetailHeader({
           </h2>
         )}
         {entityBadge}
-        {domainChip}
       </div>
-      <div className="flex shrink-0 items-center gap-0.5 self-start">{settingsMenu}</div>
+      {headerActions}
     </div>
   );
 }

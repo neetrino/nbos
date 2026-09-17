@@ -1,8 +1,10 @@
 import {
   domainHeaderNeedsAction,
   summarizeDomainHeaderStatus,
+  summarizeDomainHeaderTone,
   type DomainHeaderStatusInput,
   type DomainHeaderStatusKind,
+  type DomainHeaderTone,
 } from '@nbos/shared';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 
@@ -35,6 +37,10 @@ export function productDomainHeaderKind(
 
 export function productDomainHeaderNeedsAction(rows: readonly ClientServiceRecord[]): boolean {
   return domainHeaderNeedsAction(rows.map(clientServiceToDomainHeaderInput));
+}
+
+export function productDomainHeaderTone(rows: readonly ClientServiceRecord[]): DomainHeaderTone {
+  return summarizeDomainHeaderTone(rows.map(clientServiceToDomainHeaderInput));
 }
 
 export function primaryDomainName(rows: readonly ClientServiceRecord[]): string {

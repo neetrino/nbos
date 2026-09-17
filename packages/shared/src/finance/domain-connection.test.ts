@@ -5,6 +5,7 @@ import {
   isDomainConnectionSatisfied,
   resolveDomainConnectionMode,
   summarizeDomainHeaderStatus,
+  summarizeDomainHeaderTone,
   type DomainHeaderStatusInput,
 } from './domain-connection';
 
@@ -48,6 +49,31 @@ describe('domain connection status', () => {
   it('summarizes empty and multiple products', () => {
     expect(summarizeDomainHeaderStatus([])).toBe('empty');
     expect(summarizeDomainHeaderStatus([row(), row({ domainName: 'other.am' })])).toBe('multiple');
+  });
+
+  it('tones idle at start, orange in process, green when done', () => {
+    expect(summarizeDomainHeaderTone([])).toBe('idle');
+    expect(summarizeDomainHeaderTone([row()])).toBe('progress');
+    expect(
+      summarizeDomainHeaderTone([
+        row({
+          hasCredential: true,
+          registrationConfirmed: true,
+          connectionVerified: true,
+        }),
+      ]),
+    ).toBe('done');
+    expect(
+      summarizeDomainHeaderTone([
+        row({ connectionMode: 'CLIENT_DNS', dnsPrepTaskDone: true }),
+        row({
+          domainName: 'other.am',
+          hasCredential: true,
+          registrationConfirmed: true,
+          connectionVerified: false,
+        }),
+      ]),
+    ).toBe('progress');
   });
 
   it('leaves empty connection mode unknown', () => {

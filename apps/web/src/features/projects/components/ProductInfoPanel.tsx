@@ -15,6 +15,7 @@ import {
   OverviewMetaGrid,
   OverviewMetaTile,
 } from '@/features/projects/components/product-tabs/product-overview-ui';
+import { ProductDomainEntry } from '@/features/finance/components/domain-purchase/ProductDomainEntry';
 import { ProductSettingsSheet } from '@/features/projects/components/ProductSettingsSheet';
 import { productStageGateFieldClass } from '@/features/projects/product-stage-gate-highlight';
 import type { FullProduct } from '@/lib/api/products';
@@ -72,6 +73,7 @@ export function ProductInfoPanel({
               : 'flex w-auto shrink-0 items-center gap-1',
           )}
         >
+          <ProductDomainEntry productId={product.id} className="shrink-0" />
           {isMobileViewport ? (
             <ActionTileButton
               label="Drive"

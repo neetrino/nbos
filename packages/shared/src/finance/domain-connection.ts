@@ -27,6 +27,9 @@ export type DomainHeaderStatusKind =
   | 'client_dns'
   | 'multiple';
 
+/** Header button color: idle start, in-progress, or completed variant. */
+export type DomainHeaderTone = 'idle' | 'progress' | 'done';
+
 export interface DomainHeaderStatusInput {
   domainName: string;
   connectionMode: DomainConnectionMode | null;
@@ -59,6 +62,15 @@ export function summarizeDomainHeaderStatus(
   if (active.length === 0) return 'empty';
   if (active.length > 1) return 'multiple';
   return domainHeaderStatusForRow(active[0]!);
+}
+
+/** Calm blue at start; orange while a domain is open; green when every variant is done. */
+export function summarizeDomainHeaderTone(
+  rows: readonly DomainHeaderStatusInput[],
+): DomainHeaderTone {
+  const active = rows.filter((row) => row.status !== 'CANCELLED');
+  if (active.length === 0) return 'idle';
+  return active.every(isDomainConnectionSatisfied) ? 'done' : 'progress';
 }
 
 /** True when any active domain still needs payment or purchase prep. */
