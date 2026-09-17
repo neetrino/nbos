@@ -239,9 +239,9 @@
     "expenseCreated": "Linked expense card created."
   },
   "domainPurchase": {
-    "buy": "Buy / connect domain",
+    "buy": "Domain",
     "buyMore": "Buy / connect another",
-    "title": "Buy / connect domain",
+    "title": "Domain",
     "modePurchase": "Buy new",
     "modeAccess": "Have access",
     "modeDns": "Via DNS",
@@ -262,7 +262,7 @@
     "sales": "Sales",
     "techRequired": "Assign the Tech specialist on the Product first.",
     "openService": "Open service",
-    "headerEmpty": "Buy / connect domain",
+    "headerEmpty": "Domain",
     "headerPreparing": "Domain · Preparing",
     "headerAwaiting": "Domain · Awaiting payment",
     "headerPurchased": "{domain} · Purchased",

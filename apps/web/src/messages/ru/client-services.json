@@ -239,9 +239,9 @@
     "expenseCreated": "Создана связанная карточка расхода."
   },
   "domainPurchase": {
-    "buy": "Купить / подключить домен",
+    "buy": "Домен",
     "buyMore": "Купить / подключить ещё",
-    "title": "Купить / подключить домен",
+    "title": "Домен",
     "modePurchase": "Купить новый",
     "modeAccess": "Есть доступ",
     "modeDns": "Через DNS",
@@ -262,7 +262,7 @@
     "sales": "Sales",
     "techRequired": "Сначала укажите Tech-специалиста в карточке продукта.",
     "openService": "Открыть сервис",
-    "headerEmpty": "Купить / подключить домен",
+    "headerEmpty": "Домен",
     "headerPreparing": "Домен · Подготовка",
     "headerAwaiting": "Домен · Ожидает оплаты",
     "headerPurchased": "{domain} · Куплен",

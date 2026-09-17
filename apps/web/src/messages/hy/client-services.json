@@ -239,9 +239,9 @@
     "expenseCreated": "Կապված ծախսի քարտը ստեղծվեց։"
   },
   "domainPurchase": {
-    "buy": "Գնել / միացնել դոմեն",
+    "buy": "Դոմեն",
     "buyMore": "Գնել / միացնել ևս մեկը",
-    "title": "Գնել / միացնել դոմեն",
+    "title": "Դոմեն",
     "modePurchase": "Գնել նորը",
     "modeAccess": "Մուտք կա",
     "modeDns": "DNS-ով",
@@ -262,7 +262,7 @@
     "sales": "Sales",
     "techRequired": "Նախ նշեք Tech մասնագետին արտադրանքի քարտում։",
     "openService": "Բացել ծառայությունը",
-    "headerEmpty": "Գնել / միացնել դոմեն",
+    "headerEmpty": "Դոմեն",
     "headerPreparing": "Դոմեն · Պատրաստում",
     "headerAwaiting": "Դոմեն · Սպասում է վճարման",
     "headerPurchased": "{domain} · Գնված է",
