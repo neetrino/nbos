@@ -2,7 +2,25 @@ import { describe, expect, it } from 'vitest';
 import {
   getInvoiceManualProductGateErrors,
   INVOICE_PRODUCT_GATE_FIELD,
+  isInvoicePayerContextLocked,
 } from './invoice-product-ownership-gate';
+
+describe('isInvoicePayerContextLocked', () => {
+  it('allows New and On Hold without an official request', () => {
+    expect(isInvoicePayerContextLocked({ moneyStatus: 'NEW' })).toBe(false);
+    expect(isInvoicePayerContextLocked({ moneyStatus: 'ON_HOLD' })).toBe(false);
+    expect(isInvoicePayerContextLocked({ moneyStatus: 'CANCELLED' })).toBe(false);
+  });
+
+  it('locks collection, paid, and official-issued cards', () => {
+    expect(isInvoicePayerContextLocked({ moneyStatus: 'AWAITING_PAYMENT' })).toBe(true);
+    expect(isInvoicePayerContextLocked({ moneyStatus: 'OVERDUE' })).toBe(true);
+    expect(isInvoicePayerContextLocked({ moneyStatus: 'PAID' })).toBe(true);
+    expect(
+      isInvoicePayerContextLocked({ moneyStatus: 'NEW', officialInvoiceRequestSent: true }),
+    ).toBe(true);
+  });
+});
 
 describe('getInvoiceManualProductGateErrors', () => {
   it('requires product on Manual collection statuses', () => {

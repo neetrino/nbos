@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { isInvoicePayerContextLocked } from '@nbos/shared';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 import {
   InvoiceDescriptionSection,
@@ -66,7 +67,13 @@ export function InvoiceGeneralTab({
             draft={draft}
             patchDraft={patchDraft}
             gateRequiredFields={gateRequiredFields}
-            disabled={formDisabled}
+            disabled={
+              formDisabled ||
+              isInvoicePayerContextLocked({
+                moneyStatus: invoice.moneyStatus,
+                officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
+              })
+            }
           />
         </DetailSheetSection>
       ) : null}

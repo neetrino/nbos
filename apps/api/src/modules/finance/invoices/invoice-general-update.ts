@@ -1,8 +1,11 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { InvoiceOrderCommentEnum, Prisma, PrismaClient } from '@nbos/database';
-import { isInvoiceOrderComment } from '@nbos/shared';
+import { isInvoiceOrderComment, isInvoicePayerContextLocked } from '@nbos/shared';
 import { sumAmounts } from '../finance-status.utils';
 import { resolveInvoiceProductOwnership } from './invoice-product-ownership';
+
+const INVOICE_PAYER_ISSUED_ERROR =
+  'Company and product cannot be changed after the invoice is issued';
 
 const TAX_STATUSES = new Set(['TAX', 'TAX_FREE']);
 
@@ -64,6 +67,23 @@ export function parseUpdateInvoiceGeneralInput(
   return out;
 }
 
+function assertInvoicePayerContextEditable(
+  invoice: { moneyStatus: string; officialInvoiceRequestSent: boolean },
+  input: UpdateInvoiceGeneralInput,
+): void {
+  if (input.companyId === undefined && input.productId === undefined) return;
+  const officialInvoiceRequestSent =
+    input.taxStatus === 'TAX_FREE' ? false : invoice.officialInvoiceRequestSent;
+  if (
+    isInvoicePayerContextLocked({
+      moneyStatus: invoice.moneyStatus,
+      officialInvoiceRequestSent,
+    })
+  ) {
+    throw new BadRequestException(INVOICE_PAYER_ISSUED_ERROR);
+  }
+}
+
 export async function applyInvoiceGeneralUpdate(
   prisma: PrismaClient,
   id: string,
@@ -77,6 +97,8 @@ export async function applyInvoiceGeneralUpdate(
       orderId: true,
       amount: true,
       taxStatus: true,
+      moneyStatus: true,
+      officialInvoiceRequestSent: true,
       payments: { select: { amount: true } },
     },
   });
@@ -88,56 +110,68 @@ export async function applyInvoiceGeneralUpdate(
     throw new BadRequestException('Product can only be linked on manual invoices');
   }
 
+  assertInvoicePayerContextEditable(invoice, input);
+
   const paid = sumAmounts(invoice.payments);
   if (input.amount !== undefined && input.amount < paid) {
     throw new BadRequestException(`Invoice amount cannot be less than recorded payments (${paid})`);
   }
 
   const data: Prisma.InvoiceUpdateInput = {};
+  if (input.amount !== undefined) data.amount = input.amount;
+  applyTaxStatusPatch(invoice, input, data);
+  await applyOwnershipPatch(prisma, input, data);
+  applyOrderCommentPatch(invoice, input, data);
+  if (Object.keys(data).length === 0) return;
+  await prisma.invoice.update({ where: { id }, data });
+}
 
-  if (input.amount !== undefined) {
-    data.amount = input.amount;
-  }
+function applyTaxStatusPatch(
+  invoice: { taxStatus: string },
+  input: UpdateInvoiceGeneralInput,
+  data: Prisma.InvoiceUpdateInput,
+): void {
+  if (input.taxStatus === undefined || input.taxStatus === invoice.taxStatus) return;
+  data.taxStatus = input.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set'];
+  if (input.taxStatus !== 'TAX_FREE') return;
+  data.officialInvoiceRequestSent = false;
+  data.officialInvoiceSentAt = null;
+  data.officialInvoiceCancelledAt = null;
+  data.govInvoiceId = null;
+}
 
-  if (input.taxStatus !== undefined && input.taxStatus !== invoice.taxStatus) {
-    data.taxStatus = input.taxStatus as Prisma.EnumTaxStatusFieldUpdateOperationsInput['set'];
-    if (input.taxStatus === 'TAX_FREE') {
-      data.officialInvoiceRequestSent = false;
-      data.officialInvoiceSentAt = null;
-      data.officialInvoiceCancelledAt = null;
-      data.govInvoiceId = null;
-    }
-  }
-
+async function applyOwnershipPatch(
+  prisma: PrismaClient,
+  input: UpdateInvoiceGeneralInput,
+  data: Prisma.InvoiceUpdateInput,
+): Promise<void> {
   if (input.companyId !== undefined) {
     data.company = input.companyId ? { connect: { id: input.companyId } } : { disconnect: true };
   }
+  if (input.productId === undefined) return;
+  const ownership = await resolveInvoiceProductOwnership(prisma, {
+    productId: input.productId,
+  });
+  data.product = ownership.productId
+    ? { connect: { id: ownership.productId } }
+    : { disconnect: true };
+  data.project = ownership.projectId
+    ? { connect: { id: ownership.projectId } }
+    : { disconnect: true };
+  if (input.companyId !== undefined) return;
+  data.company = ownership.companyId
+    ? { connect: { id: ownership.companyId } }
+    : { disconnect: true };
+}
 
-  if (input.productId !== undefined) {
-    const ownership = await resolveInvoiceProductOwnership(prisma, {
-      productId: input.productId,
-    });
-    data.product = ownership.productId
-      ? { connect: { id: ownership.productId } }
-      : { disconnect: true };
-    data.project = ownership.projectId
-      ? { connect: { id: ownership.projectId } }
-      : { disconnect: true };
-    if (input.companyId === undefined) {
-      data.company = ownership.companyId
-        ? { connect: { id: ownership.companyId } }
-        : { disconnect: true };
-    }
+function applyOrderCommentPatch(
+  invoice: { orderId: string | null },
+  input: UpdateInvoiceGeneralInput,
+  data: Prisma.InvoiceUpdateInput,
+): void {
+  if (input.orderComment === undefined) return;
+  if (!invoice.orderId) {
+    throw new BadRequestException('Accountant note applies only to deal/order invoices');
   }
-
-  if (input.orderComment !== undefined) {
-    if (!invoice.orderId) {
-      throw new BadRequestException('Accountant note applies only to deal/order invoices');
-    }
-    data.orderComment = input.orderComment as InvoiceOrderCommentEnum | null;
-  }
-
-  if (Object.keys(data).length === 0) return;
-
-  await prisma.invoice.update({ where: { id }, data });
+  data.orderComment = input.orderComment as InvoiceOrderCommentEnum | null;
 }
