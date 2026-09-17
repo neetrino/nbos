@@ -109,6 +109,21 @@ describe('filterProductFinanceOrders', () => {
       filterProductFinanceOrders(rows, '', { boardScope: 'ACTIVE' }).map((row) => row.status),
     ).toEqual(['ACTIVE']);
   });
+
+  it('matches the deal title used on global Finance cards', () => {
+    const rows = [
+      {
+        ...order('PENDING_PAYMENT'),
+        id: 'feedback',
+        code: 'ORD-2026-0180',
+        deal: { id: 'deal-1', name: 'FEEDBACK FORM', code: 'D-1' },
+      },
+      order('ACTIVE'),
+    ];
+    expect(filterProductFinanceOrders(rows, 'feedback', {}).map((row) => row.id)).toEqual([
+      'feedback',
+    ]);
+  });
 });
 
 describe('filterProductFinanceInvoices', () => {

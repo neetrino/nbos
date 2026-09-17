@@ -92,6 +92,17 @@ describe('OrdersService', () => {
       );
     });
 
+    it('scopes to the product order and its extension orders', async () => {
+      await service.findAll({ productId: 'prod-1' });
+      expect(prisma.order.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [{ productId: 'prod-1' }, { extension: { productId: 'prod-1' } }],
+          },
+        }),
+      );
+    });
+
     it('applies createdAt date range filter', async () => {
       await service.findAll({
         dateFrom: '2026-04-01T00:00:00.000Z',

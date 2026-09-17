@@ -209,6 +209,7 @@ export interface OrderListParams extends FinanceDateRangeParams {
   pageSize?: number;
   status?: string;
   projectId?: string;
+  productId?: string;
   partnerId?: string;
   search?: string;
   gap?: OrderReconciliationListGap;

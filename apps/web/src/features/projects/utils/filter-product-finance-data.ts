@@ -1,4 +1,5 @@
 import { ORDER_BOARD_STAGES } from '@/features/finance/constants/order-board-lifecycle';
+import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
 import {
   CLIENT_SERVICE_FILTER_BILLING_KEY,
@@ -20,6 +21,19 @@ function rowMatchesOptionalFilter(filterValue: string | undefined, rowValue: str
   return !filterValue || filterValue === 'all' || rowValue === filterValue;
 }
 
+function orderMatchesSearch(order: Order, needle: string): boolean {
+  const haystack = [
+    getOrderDisplayTitle(order),
+    order.code,
+    order.project.name,
+    order.type,
+    order.company?.name ?? '',
+  ]
+    .join(' ')
+    .toLowerCase();
+  return haystack.includes(needle);
+}
+
 export function filterProductFinanceOrders(
   orders: Order[],
   search: string,
@@ -31,12 +45,7 @@ export function filterProductFinanceOrders(
 
   let rows = orders;
   if (needle) {
-    rows = rows.filter(
-      (order) =>
-        order.code.toLowerCase().includes(needle) ||
-        order.project.name.toLowerCase().includes(needle) ||
-        order.type.toLowerCase().includes(needle),
-    );
+    rows = rows.filter((order) => orderMatchesSearch(order, needle));
   }
   if (hasStatusFilter) {
     return rows.filter((order) => order.status === filters.status);

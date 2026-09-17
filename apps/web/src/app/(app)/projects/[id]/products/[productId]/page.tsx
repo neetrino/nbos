@@ -65,7 +65,6 @@ function ProductDetailPageContent() {
   const [loading, setLoading] = useState(true);
   const activeTab = parseProductDetailTab(searchParams.get(PRODUCT_DETAIL_TAB_QUERY));
   const [projectData, setProjectData] = useState<{
-    orders: unknown[];
     subscriptions: unknown[];
   } | null>(null);
 
@@ -120,7 +119,6 @@ function ProductDetailPageContent() {
     try {
       const data = await projectsApi.getById(params.id);
       setProjectData({
-        orders: data.orders,
         subscriptions: data.subscriptions,
       });
     } catch {
@@ -221,11 +219,6 @@ function ProductDetailPageContent() {
               projectId={params.id}
               productId={product.id}
               productName={product.name}
-              project={{
-                id: product.project.id,
-                code: product.project.code,
-                name: product.project.name,
-              }}
               companyId={
                 product.companyId ??
                 product.company?.id ??
@@ -233,8 +226,6 @@ function ProductDetailPageContent() {
                 product.project.company?.id ??
                 null
               }
-              productOrderId={product.order?.id ?? null}
-              orders={projectData.orders as never[]}
               subscriptions={projectData.subscriptions as never[]}
               onSubscriptionsRefresh={() => {
                 void fetchProjectData();
