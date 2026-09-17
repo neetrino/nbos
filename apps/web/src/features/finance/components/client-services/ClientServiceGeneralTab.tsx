@@ -12,11 +12,9 @@ import type {
   ClientServiceRegistryCheckResult,
 } from '@/lib/api/client-services';
 import { ClientServiceGeneralBasicsSection } from './ClientServiceGeneralBasicsSection';
-import { ClientServiceConnectionSection } from './ClientServiceConnectionSection';
 import { ClientServiceGeneralBillingSection } from './ClientServiceGeneralBillingSection';
 import { ClientServiceGeneralDatesSection } from './ClientServiceGeneralDatesSection';
 import { useClientServicesT } from './client-service-message-keys';
-import { useClientServicePermissions } from './use-client-service-permissions';
 
 interface ClientServiceGeneralTabProps {
   serviceId: string;
@@ -26,7 +24,6 @@ interface ClientServiceGeneralTabProps {
   formDisabled?: boolean;
   canRunRegistryCheck?: boolean;
   onRegistryChecked?: (result: ClientServiceRegistryCheckResult) => void;
-  onServiceUpdated?: (service: ClientServiceRecord) => void;
 }
 
 export function ClientServiceGeneralTab({
@@ -37,10 +34,8 @@ export function ClientServiceGeneralTab({
   formDisabled = false,
   canRunRegistryCheck = false,
   onRegistryChecked,
-  onServiceUpdated,
 }: ClientServiceGeneralTabProps) {
   const t = useClientServicesT();
-  const { canEdit } = useClientServicePermissions();
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-4`}>
       <ClientServiceGeneralBasicsSection
@@ -50,14 +45,6 @@ export function ClientServiceGeneralTab({
         projectName={service.project?.name ?? null}
         credentialName={service.providerAccount?.name ?? null}
         formDisabled={formDisabled}
-      />
-      <ClientServiceConnectionSection
-        service={service}
-        draft={draft}
-        patchDraft={patchDraft}
-        formDisabled={formDisabled}
-        canEdit={canEdit && !formDisabled}
-        onServiceUpdated={onServiceUpdated ?? (() => undefined)}
       />
       <ClientServiceGeneralBillingSection
         draft={draft}

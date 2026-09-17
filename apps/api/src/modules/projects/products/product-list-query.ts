@@ -18,6 +18,7 @@ export const PRODUCT_LIST_INCLUDE = {
   frontendDeveloper: { select: employeePersonSelect },
   designer: { select: employeePersonSelect },
   technicalSpecialist: { select: employeePersonSelect },
+  seller: { select: employeePersonSelect },
   qaLead: { select: employeePersonSelect },
   order: {
     select: {

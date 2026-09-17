@@ -23,6 +23,7 @@ const RUNNABLE_JOB_NAMES = [
   SCHEDULER_JOB_NAMES.recurringTasksDue,
   SCHEDULER_JOB_NAMES.clientServicesDomainRegistry,
   SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice,
+  SCHEDULER_JOB_NAMES.clientServicesRenewalExpense,
   SCHEDULER_JOB_NAMES.platformTrashPurge,
   SCHEDULER_JOB_NAMES.supportSlaEscalation,
   SCHEDULER_JOB_NAMES.notificationInboxReconcile,
@@ -85,6 +86,8 @@ async function dispatchRunnableJob(
       return service.runClientServicesDomainRegistry(trigger);
     case SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice:
       return service.runClientServicesRenewalInvoice(trigger);
+    case SCHEDULER_JOB_NAMES.clientServicesRenewalExpense:
+      return service.runClientServicesRenewalExpense(trigger);
     case SCHEDULER_JOB_NAMES.platformTrashPurge:
       return service.runPlatformTrashPurge(trigger);
     case SCHEDULER_JOB_NAMES.supportSlaEscalation:

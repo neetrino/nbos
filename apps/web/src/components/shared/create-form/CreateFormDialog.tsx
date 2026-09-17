@@ -10,7 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { CREATE_FORM_BODY_CLASS, CREATE_FORM_DIALOG_CONTENT_CLASS } from './create-form-layout';
+import {
+  CREATE_FORM_BODY_CLASS,
+  CREATE_FORM_DIALOG_CONTENT_CLASS,
+  CREATE_FORM_TITLE_ROW_CLASS,
+} from './create-form-layout';
 
 export interface CreateFormDialogSecondaryAction {
   label: string;
@@ -31,6 +35,7 @@ export interface CreateFormDialogProps {
   cancelLabel: string;
   secondaryAction?: CreateFormDialogSecondaryAction;
   forceNestedBackdrop?: boolean;
+  titleAccessory?: ReactNode;
   onSubmit: (event: FormEvent) => void;
   children: ReactNode;
 }
@@ -48,6 +53,7 @@ export function CreateFormDialog({
   cancelLabel,
   secondaryAction,
   forceNestedBackdrop = false,
+  titleAccessory,
   onSubmit,
   children,
 }: CreateFormDialogProps) {
@@ -58,7 +64,14 @@ export function CreateFormDialog({
         forceNestedBackdrop={forceNestedBackdrop}
       >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          {titleAccessory ? (
+            <div className={CREATE_FORM_TITLE_ROW_CLASS}>
+              <DialogTitle>{title}</DialogTitle>
+              {titleAccessory}
+            </div>
+          ) : (
+            <DialogTitle>{title}</DialogTitle>
+          )}
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
         <form onSubmit={onSubmit} className={CREATE_FORM_BODY_CLASS}>

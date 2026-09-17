@@ -110,6 +110,7 @@ interface UpdateProductDto {
   frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
+  sellerId?: string | null;
   qaLeadId?: string | null;
   deadline?: string | null;
   description?: string | null;
@@ -178,6 +179,7 @@ type ProductSlotSyncRow = {
   frontendDeveloperId: string | null;
   designerId: string | null;
   technicalSpecialistId: string | null;
+  sellerId?: string | null;
   qaLeadId: string | null;
 };
 
@@ -199,6 +201,7 @@ function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUpdateInp
     ...(data.technicalSpecialistId !== undefined && {
       technicalSpecialistId: data.technicalSpecialistId,
     }),
+    ...(data.sellerId !== undefined && { sellerId: data.sellerId }),
     ...(data.qaLeadId !== undefined && { qaLeadId: data.qaLeadId }),
     ...(data.deadline !== undefined && {
       deadline: data.deadline ? new Date(data.deadline) : null,
@@ -378,6 +381,7 @@ export class ProductsService {
         frontendDeveloper: { select: employeePersonWithEmailSelect },
         designer: { select: employeePersonWithEmailSelect },
         technicalSpecialist: { select: employeePersonWithEmailSelect },
+        seller: { select: employeePersonWithEmailSelect },
         qaLead: { select: employeePersonWithEmailSelect },
         closedBy: { select: employeePersonSelect },
         technicalProfiles: {

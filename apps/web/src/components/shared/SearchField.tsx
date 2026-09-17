@@ -5,6 +5,10 @@ import { cn } from '@/lib/utils';
 import { SEARCH_FIELD_FOCUS_DELAY_MS } from '@/components/shared/search-field-query';
 import { SearchFieldOpenPanel } from '@/components/shared/search-field-open-panel';
 import { useSearchFieldQuery } from '@/components/shared/use-search-field-query';
+import {
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+} from './detail-sheet-classes';
 import { SearchFieldClosedValue, type SearchOption } from './search-field-option';
 
 const DEFAULT_MAX_RESULTS = 5;
@@ -24,6 +28,7 @@ interface SearchFieldBaseProps {
   disabled?: boolean;
   /** Max rows shown in the dropdown (default 5). */
   maxResults?: number;
+  labelStyle?: 'stacked' | 'outlined';
 }
 
 type SearchFieldPersistProps = SearchFieldBaseProps & {
@@ -68,6 +73,7 @@ export function SearchField(props: SearchFieldProps) {
     className,
     disabled = false,
     maxResults = DEFAULT_MAX_RESULTS,
+    labelStyle = 'stacked',
   } = props;
   const onSave = isStageProps(props) ? undefined : props.onSave;
   const onStageSelect = isStageProps(props) ? props.onStageSelect : undefined;
@@ -159,16 +165,25 @@ export function SearchField(props: SearchFieldProps) {
   };
 
   const hasValue = value != null && value !== '';
+  const outlined = labelStyle === 'outlined';
 
   return (
     <div
-      className={cn('group relative', disabled && 'pointer-events-none opacity-60', className)}
+      className={cn(
+        outlined ? DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS : 'group relative',
+        disabled && 'pointer-events-none opacity-60',
+        className,
+      )}
       ref={containerRef}
     >
-      <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
-        {icon && <span className="text-muted-foreground/70">{icon}</span>}
-        {label}
-      </div>
+      {outlined ? (
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
+      ) : (
+        <div className="text-foreground/85 mb-1.5 flex items-center gap-1.5 text-sm font-medium">
+          {icon && <span className="text-muted-foreground/70">{icon}</span>}
+          {label}
+        </div>
+      )}
 
       {open ? (
         <SearchFieldOpenPanel

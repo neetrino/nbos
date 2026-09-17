@@ -23,14 +23,15 @@ function row(overrides: Partial<DomainHeaderStatusInput> = {}): DomainHeaderStat
 }
 
 describe('domain connection status', () => {
-  it('does not treat DNS as requiring credential or connection verification', () => {
+  it('treats DNS as satisfied only after the completed prep task', () => {
     const dns = row({
       connectionMode: 'CLIENT_DNS',
       hasDnsInstructions: true,
       hasCredential: false,
       connectionVerified: false,
     });
-    expect(isDomainConnectionSatisfied(dns)).toBe(true);
+    expect(isDomainConnectionSatisfied(dns)).toBe(false);
+    expect(isDomainConnectionSatisfied({ ...dns, dnsPrepTaskDone: true })).toBe(true);
     expect(domainHeaderStatusForRow(dns)).toBe('client_dns');
   });
 
@@ -49,9 +50,9 @@ describe('domain connection status', () => {
     expect(summarizeDomainHeaderStatus([row(), row({ domainName: 'other.am' })])).toBe('multiple');
   });
 
-  it('defaults empty connection mode to purchase', () => {
-    expect(resolveDomainConnectionMode(null)).toBe('PURCHASE');
-    expect(resolveDomainConnectionMode('')).toBe('PURCHASE');
+  it('leaves empty connection mode unknown', () => {
+    expect(resolveDomainConnectionMode(null)).toBeNull();
+    expect(resolveDomainConnectionMode('')).toBeNull();
     expect(resolveDomainConnectionMode('CLIENT_DNS')).toBe('CLIENT_DNS');
   });
 
@@ -61,7 +62,7 @@ describe('domain connection status', () => {
       domainHeaderNeedsAction([
         row({
           connectionMode: 'CLIENT_DNS',
-          hasDnsInstructions: true,
+          dnsPrepTaskDone: true,
         }),
       ]),
     ).toBe(false);

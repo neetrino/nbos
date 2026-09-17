@@ -3,6 +3,9 @@
 import { useCallback, useRef, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import {
+  DETAIL_SHEET_COMPACT_SEGMENTED_BUTTON_CLASS,
+  DETAIL_SHEET_COMPACT_SEGMENTED_GROUP_CLASS,
+  DETAIL_SHEET_COMPACT_SEGMENTED_SHELL_CLASS,
   DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
   DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
@@ -26,6 +29,7 @@ export interface DetailSheetFieldSegmentedProps<T extends string> {
   hideLabel?: boolean;
   className?: string;
   ariaLabel?: string;
+  density?: 'default' | 'compact' | 'plain';
 }
 
 export function DetailSheetFieldSegmented<T extends string>({
@@ -37,6 +41,7 @@ export function DetailSheetFieldSegmented<T extends string>({
   hideLabel = false,
   className,
   ariaLabel,
+  density = 'default',
 }: DetailSheetFieldSegmentedProps<T>) {
   const groupRef = useRef<HTMLDivElement>(null);
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -53,6 +58,8 @@ export function DetailSheetFieldSegmented<T extends string>({
     false,
   );
   const showOutlinedLabel = !hideLabel && Boolean(label.trim());
+  const compact = density === 'compact';
+  const plain = density === 'plain';
 
   return (
     <div
@@ -66,13 +73,24 @@ export function DetailSheetFieldSegmented<T extends string>({
         <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{label}</span>
       ) : null}
 
-      <div className={DETAIL_SHEET_OUTLINED_SEGMENTED_SHELL_CLASS}>
+      <div
+        className={
+          compact
+            ? DETAIL_SHEET_COMPACT_SEGMENTED_SHELL_CLASS
+            : plain
+              ? undefined
+              : DETAIL_SHEET_OUTLINED_SEGMENTED_SHELL_CLASS
+        }
+      >
         <div
           ref={groupRef}
-          className={cn(
-            DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS,
-            'h-full bg-transparent px-0.5 py-0',
-          )}
+          className={
+            compact
+              ? DETAIL_SHEET_COMPACT_SEGMENTED_GROUP_CLASS
+              : plain
+                ? DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS
+                : cn(DETAIL_SHEET_FIELD_SEGMENTED_GROUP_CLASS, 'h-full bg-transparent px-0.5 py-0')
+          }
           role="tablist"
           aria-label={ariaLabel ?? label}
         >
@@ -97,6 +115,7 @@ export function DetailSheetFieldSegmented<T extends string>({
                 onClick={() => onValueChange(option.value)}
                 className={cn(
                   DETAIL_SHEET_FIELD_SEGMENTED_BUTTON_CLASS,
+                  compact && DETAIL_SHEET_COMPACT_SEGMENTED_BUTTON_CLASS,
                   active
                     ? 'text-primary-foreground'
                     : 'text-foreground/85 hover:bg-muted/80 hover:text-foreground',

@@ -100,7 +100,21 @@ describe('clientServiceFormToPayload', () => {
         connectionMode: 'CLIENT_DNS',
         providerAccountId: 'cred-1',
       }).providerAccountId,
-    ).toBeNull();
+    ).toBe('cred-1');
+    expect(
+      clientServiceFormToPayload({
+        ...withProduct,
+        connectionMode: 'CLIENT_DNS',
+        providerAccountId: 'cred-1',
+      }).unlinkCredential,
+    ).toBe(false);
+    expect(
+      clientServiceFormToPayload({
+        ...withProduct,
+        connectionMode: 'CLIENT_DNS',
+        providerAccountId: '',
+      }).unlinkCredential,
+    ).toBe(true);
     expect(
       clientServiceFormToPayload({
         ...withProduct,

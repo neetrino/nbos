@@ -1,10 +1,18 @@
+import { BadRequestException } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
 import type { DomainConnectionMode } from '@nbos/shared';
 import { fillCredentialContextIfEmpty } from '../../expenses/expense-credential-link';
 import type { ClientServiceFlowsService } from '../client-service-flows.service';
+import { ensureExpenseForPaidInvoice } from '../client-paid-invoice-expense';
 import { clientServicePatchForConnectionMode } from './domain-connection-mode';
 import { issueDomainInvoiceForService } from './domain-operation-invoice';
 import { resolveExistingDomainService } from './domain-operation-resolve';
+import {
+  DOMAIN_ARCHIVED_CLARIFY,
+  DOMAIN_AMBIGUOUS_CLARIFY,
+  DOMAIN_OPEN_EXISTING_INVOICE,
+} from './domain-operation.errors';
+import { syncOpenExpenseCredentialFromService } from './late-credential-sync';
 import type {
   DomainOperationDomainInput,
   DomainOperationItemResult,
@@ -33,7 +41,26 @@ export async function applyOneDomainOperation(
     params.productId,
     params.domain.domainName,
   );
-  const serviceId = existing.reuse
+
+  if (existing.kind === 'archived') {
+    return failed(params.domain.domainName, DOMAIN_ARCHIVED_CLARIFY);
+  }
+  if (existing.kind === 'ambiguous') {
+    return failed(params.domain.domainName, DOMAIN_AMBIGUOUS_CLARIFY);
+  }
+  if (existing.kind === 'existing_invoice') {
+    return {
+      domainName: params.domain.domainName,
+      status: 'reused',
+      serviceId: existing.serviceId,
+      invoiceId: existing.invoiceId,
+      kind: existing.kind,
+      message: DOMAIN_OPEN_EXISTING_INVOICE,
+    };
+  }
+
+  const reuse = Boolean(existing.serviceId) && existing.kind !== 'new_purchase';
+  const serviceId = reuse
     ? existing.serviceId!
     : await persistDomainService(prisma, {
         projectId: params.projectId,
@@ -43,28 +70,64 @@ export async function applyOneDomainOperation(
         domain: params.domain,
         encryptedRegistrantData: params.encryptedRegistrantData,
         dnsInstructions: params.dnsInstructions,
-        existingDomainId: existing.domainId,
+        existingDomainId: existing.domainId ?? null,
       });
 
-  if (existing.reuse) {
+  if (reuse) {
     await patchReusedDomainService(prisma, serviceId, params);
   }
 
-  await fillCredentialContextIfEmpty(prisma, params.domain.providerAccountId?.trim() || null, {
+  const credentialId = params.domain.providerAccountId?.trim() || null;
+  await fillCredentialContextIfEmpty(prisma, credentialId, {
     productId: params.productId,
     clientServiceRecordId: serviceId,
   });
+  await syncOpenExpenseCredentialFromService(prisma, serviceId, credentialId);
 
-  const invoiceId = params.issueInvoices
-    ? await issueDomainInvoiceForService(prisma, flows, serviceId, params.domain.clientCharge)
-    : null;
+  const finance = await issueFinanceIfNeeded(prisma, flows, params, serviceId, existing.kind);
 
   return {
     domainName: params.domain.domainName,
-    status: existing.reuse ? 'reused' : 'created',
+    status: reuse ? 'reused' : 'created',
     serviceId,
-    invoiceId,
+    invoiceId: finance.invoiceId,
+    expenseId: finance.expenseId,
+    kind: existing.kind,
   };
+}
+
+async function issueFinanceIfNeeded(
+  prisma: PrismaDb,
+  flows: ClientServiceFlowsService,
+  params: ApplyDomainParams,
+  serviceId: string,
+  kind: string,
+): Promise<{ invoiceId: string | null; expenseId: string | null }> {
+  if (!params.issueInvoices) return { invoiceId: null, expenseId: null };
+  const invoiceId = await issueDomainInvoiceForService(
+    prisma,
+    flows,
+    serviceId,
+    params.domain.clientCharge ?? params.domain.ourCost,
+  );
+  if (kind === 'renewal') return { invoiceId, expenseId: null };
+
+  const service = await prisma.clientServiceRecord.findUnique({
+    where: { id: serviceId },
+    select: { id: true, name: true, ourCost: true, renewalDate: true },
+  });
+  if (!service) throw new BadRequestException('Client service record not found');
+  const invoice = await prisma.invoice.findUnique({
+    where: { id: invoiceId },
+    select: { amount: true },
+  });
+  const expenseId = await ensureExpenseForPaidInvoice(prisma, flows, {
+    invoiceId,
+    invoiceAmount: invoice?.amount,
+    paidDate: new Date(),
+    service,
+  });
+  return { invoiceId, expenseId };
 }
 
 async function patchReusedDomainService(
@@ -93,4 +156,8 @@ async function patchReusedDomainService(
         : {}),
     },
   });
+}
+
+function failed(domainName: string, message: string): DomainOperationItemResult {
+  return { domainName, status: 'failed', message };
 }

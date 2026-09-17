@@ -122,7 +122,9 @@ function applyClientServiceUpdateScalars(
       data.connectionMode = null;
     } else {
       const mode = requireDomainConnectionMode(body.connectionMode);
-      const modePatch = clientServicePatchForConnectionMode(mode);
+      const modePatch = clientServicePatchForConnectionMode(mode, {
+        unlinkCredential: Boolean(body.unlinkCredential),
+      });
       data.connectionMode = modePatch.connectionMode;
       if (modePatch.billingModel) data.billingModel = modePatch.billingModel;
       if (modePatch.providerAccountId === null) {
@@ -214,11 +216,13 @@ export async function assertClientServiceDnsCredentialRules(
     body.connectionMode !== undefined
       ? body.connectionMode?.trim() || null
       : current.connectionMode;
-  const credentialId =
+  const nextCredentialId =
     body.providerAccountId !== undefined
       ? body.providerAccountId?.trim() || null
-      : mode === 'CLIENT_DNS' && body.connectionMode !== undefined
-        ? null
-        : current.providerAccountId;
-  assertClientDnsHasNoCredential(mode, credentialId);
+      : current.providerAccountId;
+  const attachingNewCredential =
+    Boolean(nextCredentialId) && nextCredentialId !== current.providerAccountId;
+  if (attachingNewCredential) {
+    assertClientDnsHasNoCredential(mode, nextCredentialId);
+  }
 }

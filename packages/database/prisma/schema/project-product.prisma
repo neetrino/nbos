@@ -155,6 +155,7 @@ model Product {
   frontendDeveloperId     String?                 @map("frontend_developer_id")
   designerId              String?                 @map("designer_id")
   technicalSpecialistId   String?                 @map("technical_specialist_id")
+  sellerId                String?                 @map("seller_id")
   qaLeadId                String?                 @map("qa_lead_id")
   deadline             DateTime?
   description          String?
@@ -174,6 +175,7 @@ model Product {
   frontendDeveloper         Employee?                  @relation("ProductFrontendDeveloper", fields: [frontendDeveloperId], references: [id])
   designer                  Employee?                  @relation("ProductDesigner", fields: [designerId], references: [id])
   technicalSpecialist       Employee?                  @relation("ProductTechnicalSpecialist", fields: [technicalSpecialistId], references: [id])
+  seller                    Employee?                  @relation("ProductSeller", fields: [sellerId], references: [id], onDelete: SetNull)
   qaLead                    Employee?                  @relation("ProductQaLead", fields: [qaLeadId], references: [id])
   closedBy                  Employee?                  @relation("ProductClosedBy", fields: [closedById], references: [id])
   order                     Order?
@@ -216,6 +218,7 @@ model Product {
   @@index([frontendDeveloperId])
   @@index([designerId])
   @@index([technicalSpecialistId])
+  @@index([sellerId])
   @@index([qaLeadId])
   @@map("products")
 }

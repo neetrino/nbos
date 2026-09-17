@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { FINANCE_CLIENT_SERVICES_MODULE } from '@nbos/shared';
 import {
+  AmdCurrencyIcon,
   CreateFormDialog,
   DetailSheetFieldSegmented,
   FormFieldRow,
@@ -17,7 +18,9 @@ import {
   emptyDomainPurchaseDraft,
   type DomainPurchaseDraft,
 } from '@/features/finance/components/domain-purchase/domain-purchase-form';
+import { clientServicesApi } from '@/lib/api/client-services';
 import { usePermission } from '@/lib/permissions';
+import { toDomainOperationPayload } from '@/features/finance/components/domain-purchase/domain-purchase-form';
 import type { Invoice, Order } from '@/lib/api/finance';
 import type { Subscription } from '@/lib/api/subscriptions';
 import { canSubmitCreateInvoice, type CreateInvoiceFormState } from './create-invoice-dialog-utils';
@@ -46,17 +49,38 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
   const { can } = usePermission();
   const state = useCreateInvoiceDialogState(props);
   const [mode, setMode] = useState<InvoiceCreateMode>('free');
-  const [domainProductId, setDomainProductId] = useState('');
-  const [domainProductLabel, setDomainProductLabel] = useState<string | null>(null);
-  const [domainDraft, setDomainDraft] = useState<DomainPurchaseDraft>(emptyDomainPurchaseDraft);
+  const [domainProductId, setDomainProductId] = useState(props.presetDomainProduct?.id ?? '');
+  const [domainProductLabel, setDomainProductLabel] = useState<string | null>(
+    props.presetDomainProduct?.label ?? null,
+  );
+  const [domainDraft, setDomainDraft] = useState<DomainPurchaseDraft>(emptyDomainPurchaseDraft());
+  const [previewKind, setPreviewKind] = useState<string | null>(null);
   const showDomainPath =
     can('ADD', FINANCE_CLIENT_SERVICES_MODULE) &&
-    !props.order &&
     !props.subscriptionId &&
     !props.clientServiceContext &&
-    !props.submitOverride;
+    (props.allowDomainPath || (!props.order && !props.submitOverride));
 
   const domainMode = showDomainPath && mode === 'domain';
+
+  useEffect(() => {
+    if (!domainMode || !domainProductId || !domainDraft.domains[0]?.domainName.trim()) {
+      setPreviewKind(null);
+      return;
+    }
+    let cancelled = false;
+    void clientServicesApi
+      .previewDomainOperation(toDomainOperationPayload(domainProductId, domainDraft, true))
+      .then((result) => {
+        if (!cancelled) setPreviewKind(result.items[0]?.kind ?? 'new_purchase');
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewKind(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [domainMode, domainProductId, domainDraft]);
   const subscriptionBlocked = computeSubscriptionBlocked(props.subscriptionId, state);
   const canSubmit = domainMode
     ? Boolean(domainProductId) && canSubmitDomainPurchase(domainDraft, true) && !state.loading
@@ -81,6 +105,22 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
       submittingLabel={tCommon('creating')}
       cancelLabel={tCommon('cancel')}
       forceNestedBackdrop={props.forceNestedBackdrop}
+      titleAccessory={
+        showDomainPath ? (
+          <DetailSheetFieldSegmented
+            label=""
+            hideLabel
+            density="compact"
+            ariaLabel={t('create.titleNew')}
+            value={mode}
+            options={[
+              { value: 'free', label: t('create.modeFree') },
+              { value: 'domain', label: t('create.modeDomain') },
+            ]}
+            onValueChange={setMode}
+          />
+        ) : null
+      }
       onSubmit={(event) => {
         if (!domainMode) {
           void state.handleSubmit(event);
@@ -98,19 +138,6 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
         });
       }}
     >
-      {showDomainPath ? (
-        <DetailSheetFieldSegmented
-          label=""
-          hideLabel
-          ariaLabel={t('create.titleNew')}
-          value={mode}
-          options={[
-            { value: 'free', label: t('create.modeFree') },
-            { value: 'domain', label: t('create.modeDomain') },
-          ]}
-          onValueChange={setMode}
-        />
-      ) : null}
       {domainMode ? (
         <CreateInvoiceDomainFields
           productId={domainProductId}
@@ -118,6 +145,9 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
           draft={domainDraft}
           productLabelText={t('create.domainProduct')}
           productSearchText={t('create.domainProduct')}
+          amountLabel={t('create.amount')}
+          productLocked={Boolean(props.presetDomainProduct?.id)}
+          previewKind={previewKind}
           onProductSelect={(id, label) => {
             setDomainProductId(id);
             setDomainProductLabel(label);
@@ -238,6 +268,7 @@ function InvoiceAmountFields({
           type="money"
           value={form.amount}
           className={FORM_FIELD_CELL_CLASS}
+          icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
           onValueChange={(amount) => setForm({ ...form, amount })}
         />
         <InlineField

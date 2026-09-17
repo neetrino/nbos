@@ -80,13 +80,15 @@ export function clientServiceFormToPayload(
   form: ClientServiceFormState,
 ): ClientServiceRecordPayload {
   const isDns = form.connectionMode === 'CLIENT_DNS';
+  const credentialId = form.providerAccountId.trim() || null;
   return {
     projectId: form.projectId,
     productId: form.productId.trim() || null,
     type: form.type,
     name: form.name.trim(),
     provider: form.provider.trim() || null,
-    providerAccountId: isDns ? null : form.providerAccountId.trim() || null,
+    providerAccountId: credentialId,
+    unlinkCredential: isDns && !credentialId,
     status: form.status,
     billingModel: isDns ? 'REMINDER_ONLY' : form.billingModel,
     pricingModel: form.pricingModel,

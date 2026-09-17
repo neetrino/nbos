@@ -18,6 +18,10 @@ import {
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import { productsApi } from '@/lib/api/products';
 import { productDisplayName, projectDisplayName } from '@/lib/format/project-product-display';
+import {
+  ClientServiceConnectionScenarioField,
+  showClientServiceCredentialField,
+} from './ClientServiceConnectionScenarioField';
 import { ClientServiceCredentialField } from './ClientServiceCredentialField';
 import { ClientServiceProductField } from './ClientServiceProductField';
 import { ClientServiceProviderField } from './ClientServiceProviderField';
@@ -101,7 +105,16 @@ export function ClientServiceGeneralBasicsSection({
           disabled={formDisabled}
           onProviderChange={(provider) => patchDraft({ provider })}
         />
-        {draft.connectionMode === 'CLIENT_DNS' ? null : (
+        {draft.type === 'DOMAIN' ? (
+          <ClientServiceConnectionScenarioField
+            draft={draft}
+            formDisabled={formDisabled}
+            patchDraft={patchDraft}
+            credentialLabel={credentialLabel}
+            onCredentialCleared={() => setCredentialLabel(null)}
+          />
+        ) : null}
+        {showClientServiceCredentialField(draft) ? (
           <ClientServiceCredentialField
             credentialId={draft.providerAccountId}
             credentialLabel={credentialLabel}
@@ -116,7 +129,7 @@ export function ClientServiceGeneralBasicsSection({
               setCredentialLabel(null);
             }}
           />
-        )}
+        ) : null}
       </div>
     </DetailSheetCollapsibleSection>
   );

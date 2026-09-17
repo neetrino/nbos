@@ -12,9 +12,16 @@ describe('resolveExistingDomainService', () => {
 
   it('reuses an open service on the same product', async () => {
     prisma.domain.findUnique.mockResolvedValue(null);
-    prisma.clientServiceRecord.findFirst.mockResolvedValue({ id: 'svc-1' });
+    prisma.clientServiceRecord.findFirst.mockResolvedValue({
+      id: 'svc-1',
+      productId: 'prod-1',
+      status: 'PENDING',
+      registrationConfirmedAt: null,
+      renewalDate: null,
+      invoices: [],
+    });
     const result = await resolveExistingDomainService(prisma as never, 'prod-1', 'example.am');
-    expect(result).toEqual({ serviceId: 'svc-1', domainId: null, reuse: true });
+    expect(result).toMatchObject({ serviceId: 'svc-1', kind: 'continue_initial' });
   });
 
   it('does not leak another product’s domain', async () => {

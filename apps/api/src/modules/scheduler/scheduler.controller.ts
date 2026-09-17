@@ -170,4 +170,15 @@ export class SchedulerController {
   async runClientServicesRenewalInvoice() {
     return this.schedulerService.runClientServicesRenewalInvoice();
   }
+
+  @Post('client-services-renewal-expense')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create renewal Expense cards at Invoice Paid or D−30 (external cron)',
+    description:
+      'Scans WE_PAY Client Service Records with renewal_date within 30 days and a cycle invoice; creates or reuses Expense by sourceInvoiceId. Optional in-process cron when SCHEDULER_CLIENT_SERVICES_RENEWAL_EXPENSE_ENABLED=true.',
+  })
+  async runClientServicesRenewalExpense() {
+    return this.schedulerService.runClientServicesRenewalExpense();
+  }
 }

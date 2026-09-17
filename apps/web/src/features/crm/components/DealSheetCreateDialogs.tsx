@@ -6,6 +6,7 @@ import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { CreateInvoiceDialog } from '@/features/finance/components/invoices/CreateInvoiceDialog';
 import { dealOrderToCreateInvoiceOrder } from '@/features/finance/components/invoices/deal-order-to-create-invoice-order';
 import { canOpenDealCreateInvoiceDialog } from '@/features/crm/utils/deal-invoice-eligibility';
+import { resolveDealPresetProduct } from '@/features/crm/utils/deal-domain-invoice-product';
 import { submitDealInvoiceCreation } from '@/features/crm/utils/submit-deal-invoice-creation';
 import { buildDealTaskDefaultLinks } from '../utils/crm-entity-task-links';
 import type { Deal } from '@/lib/api/deals';
@@ -57,6 +58,8 @@ export function DealSheetCreateDialogs({
           onOpenChange={onInvoiceCreateOpenChange}
           order={createInvoiceOrder}
           submitOverride={submitOverride}
+          allowDomainPath
+          presetDomainProduct={resolveDealPresetProduct(deal)}
           forceNestedBackdrop
           onCreated={() => {
             onRefresh?.();

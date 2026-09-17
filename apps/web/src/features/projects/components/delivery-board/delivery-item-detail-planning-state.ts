@@ -26,6 +26,9 @@ export type ProductPlanSnapshot = {
   technicalSpecialistId: string | null;
   technicalSpecialistLabel: string;
   technicalSpecialistAvatar: string | null;
+  sellerId: string | null;
+  sellerLabel: string;
+  sellerAvatar: string | null;
   qaLeadId: string | null;
   qaLeadLabel: string;
   qaLeadAvatar: string | null;
@@ -63,6 +66,9 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     technicalSpecialistId: p.technicalSpecialist?.id ?? null,
     technicalSpecialistLabel: employeeLabel(p.technicalSpecialist),
     technicalSpecialistAvatar: employeeAvatarUrl(p.technicalSpecialist),
+    sellerId: p.seller?.id ?? p.sellerId ?? p.order?.deal?.seller?.id ?? null,
+    sellerLabel: employeeLabel(p.seller ?? p.order?.deal?.seller),
+    sellerAvatar: employeeAvatarUrl(p.seller ?? p.order?.deal?.seller),
     qaLeadId: p.qaLead?.id ?? null,
     qaLeadLabel: employeeLabel(p.qaLead),
     qaLeadAvatar: employeeAvatarUrl(p.qaLead),
@@ -116,6 +122,9 @@ export function buildProductPlanPatch(
   }
   if (draft.technicalSpecialistId !== snap.technicalSpecialistId) {
     patch.technicalSpecialistId = draft.technicalSpecialistId;
+  }
+  if (draft.sellerId !== snap.sellerId) {
+    patch.sellerId = draft.sellerId;
   }
   if (draft.qaLeadId !== snap.qaLeadId) {
     patch.qaLeadId = draft.qaLeadId;

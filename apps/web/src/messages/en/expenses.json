@@ -173,6 +173,7 @@
     "backlogReason": "Backlog reason",
     "taxStatus": "Tax status",
     "passThrough": "Pass-through",
+    "sourceInvoice": "Client invoice",
     "notes": "Description",
     "notesPlaceholder": "Add notes about this expense…"
   },

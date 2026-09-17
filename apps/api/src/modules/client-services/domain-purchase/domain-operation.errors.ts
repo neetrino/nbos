@@ -7,3 +7,8 @@ export const DOMAIN_CREDENTIAL_FORBIDDEN_FOR_DNS =
   'Client-DNS domains do not use a registrar credential.';
 export const DOMAIN_INVOICE_FORBIDDEN_FOR_NON_PURCHASE =
   'Invoices are not created for existing-access or client-DNS domains.';
+export const DOMAIN_ARCHIVED_CLARIFY =
+  'This domain is archived. Open the existing record instead of creating a duplicate.';
+export const DOMAIN_AMBIGUOUS_CLARIFY =
+  'This domain needs a manual match. Do not create a second service.';
+export const DOMAIN_OPEN_EXISTING_INVOICE = 'An invoice for this cycle already exists.';

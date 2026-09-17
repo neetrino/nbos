@@ -1,6 +1,6 @@
 # Client Services: план реализации согласованного доменного процесса
 
-**Дата:** 2026-09-17. **План:** этапы 0–5. **Код:** частичная реализация в рабочей ветке; канон не считать готовым продуктом. Факт по коду — [§ 9](#9-фактический-статус-кода-2026-09-17).
+**Дата:** 2026-09-17, корректировки. **План:** этапы 0–5 плюс единый start/preview. Факт по коду — [§ 9](#9-фактический-статус-кода-2026-09-17).
 **Источник:** [утверждённый канон](../NBOS/02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md).
 
 ## 1. Исходное состояние и ограничения
@@ -60,21 +60,21 @@
 
 ## 5. Этап 3 — второй вход и Invoice
 
-В Invoice Board добавить путь «Покупка домена» рядом с текущим свободным созданием. Один dropdown Products, без Deal/Client tabs. Для известной цены создаётся сервис и счёт; существующая открытая потребность переиспользуется.
+В Invoice Board добавить путь **«Домен»**. Форма: Product + одно имя + стоимость AMD. Preview до submit. Deal «Домен» вызывает тот же `domain-operations`, не Won.
 
-Несколько доменов → отдельные Invoice, каждый со своим Client Service. Сохранить official invoice subprocess, бухгалтерские сообщения, tax/company/contact и разрешения.
+Несколько доменов — только в Product sheet, каждый со своим Client Service и Invoice. Сохранить official invoice subprocess, бухгалтерские сообщения, tax/company/contact и разрешения.
 
 Приёмка:
 
-- Product-путь и Invoice-путь приводят к тем же сущностям;
-- на каждый домен отдельная сумма и Invoice;
+- Product-путь, Invoice Board и Deal Domain приводят к тем же сущностям;
+- Invoice Board: один домен на submit;
 - свободный Invoice с текстом домена не запускает автоматику;
 - ошибка создания одного Invoice видна и допускает безопасный повтор;
 - нет изменений many-to-many / invoice line items ради группового счёта.
 
 ## 6. Этап 4 — оплаченный Invoice, подготовка, Expense
 
-Подтверждённая полная оплата запускает создание/поиск Expense и недостающую человеческую подготовку. Известные аккаунт/данные/подготовка переиспользуются. Обычные Tasks связываются с Client Service, новых доменных полей в Task нет.
+Новая покупка с суммой создаёт Invoice и Expense сразу. Paid-automation только находит расход и не создаёт вторую Task. Prep Task — при старте. Известные аккаунт/данные/подготовка переиспользуются. Обычные Tasks связываются с Client Service, новых доменных полей в Task нет.
 
 Сумма расхода: отдельная стоимость, иначе снимок суммы сервиса для соответствующего Invoice. Finance может изменить её перед оплатой. Отсутствие Credential не препятствует созданию расхода.
 
@@ -82,7 +82,7 @@
 
 Приёмка:
 
-- Payment до подготовки создаёт Expense без аккаунта;
+- старт новой покупки с суммой создаёт Expense без аккаунта; поздний Payment не создаёт второй;
 - сохранение аккаунта позднее делает его доступным из Expense по правам;
 - два повторных Payment events не создают два расхода или две задачи;
 - частичная оплата не считается полной;
@@ -95,7 +95,7 @@
 
 Finance фиксирует ExpensePayment и отдельно подтверждение регистрации. Использовать действующую RDAP-проверку. Gate на завершении переноса различает реальный доступ и DNS клиента. Дополнительная покупка не блокирует основной сайт автоматически.
 
-Обычное продление сохраняет существующее окно Invoice и reminders, создаёт Expense после оплаты и не требует Tech/PM без технической причины. Сервисный генератор и Expense Plan не создают два обязательства одного цикла.
+Обычное продление сохраняет окно Invoice D−60 без раннего Expense. Expense — Paid или D−30 catch-up. Не требует Tech/PM без технической причины. Сервисный генератор и Expense Plan не создают два обязательства одного цикла. DNS-gate = выполненная prep Task, не `dnsInstructions`.
 
 Сверить Cancel service с архивным смыслом: сохранение истории, поиск архива, исключение из активного реестра, прекращение новых автоматических действий. Существующие долги не списываются. Название «Архивировать» не заменяет проверки поведения. Специальный refund flow не реализуется.
 
@@ -113,7 +113,7 @@ Finance фиксирует ExpensePayment и отдельно подтвержд
 
 На каждом этапе — релевантные unit/integration tests, permissions checks, typecheck/lint по затронутым пакетам, Prettier на затронутых файлах. Для UI выполнить browser-проверку полного пути на desktop/mobile и негативных прав; для schema — безопасная миграция на тестовой БД. Не заявлять успешность непроведённых проверок.
 
-Ключевая end-to-end цепочка: Product → несколько доменов → уточнение → отдельные Invoice → Payment → подготовка → Credential → Expense → ExpensePayment → подтверждение регистрации → gate. Повторить старт через Invoice Board и оба existing-domain сценария. Проверить восстановление после частичного сбоя и manual-first payment.
+Ключевая end-to-end цепочка: Product sheet → классификация → для новой покупки Invoice+Expense+Task сразу → Credential/факты в continue sheet → gate. Повторить Invoice Board (один домен) и Deal Domain. Проверить D−30 catch-up и отсутствие второго Expense после Payment.
 
 Полноценную security-review провести перед завершением: поля регистрации, Vault, nested finance responses, scoped ownership, cross-module actions, фоновые пользователи. Новое удобное действие не должно обходить текущую RBAC.
 
@@ -125,13 +125,13 @@ Finance фиксирует ExpensePayment и отдельно подтвержд
 
 Это статус **кода в рабочей ветке**, не замена канона. Production migrate/deploy этой схемы не выполнялись.
 
-| Этап                                     | Код                                                                                                                                                                                             | Проверено                       |
-| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| 0 сверка                                 | цикл = `Expense.sourceInvoiceId`; DNS = `CLIENT_DNS`; PII = encrypted text; без Case/RegistrantProfile                                                                                          | по чтению кода                  |
-| 1 данные/DNS/PII                         | миграция `20260917010000_domain_purchase_connection_process`; API domain-operations; decrypt только EDIT; in-place Credential                                                                   | unit tests                      |
-| 2 Product/Delivery UI                    | chip в шапке Product и Delivery (не kanban); один диалог без Next; три сценария                                                                                                                 | typecheck/lint; **не** browser  |
-| 3 Invoice Board                          | режим «Покупка домена»: Product + имена + сумма; отдельные Invoice                                                                                                                              | typecheck/lint; **не** browser  |
-| 4 оплата/Expense/Task/поздний Credential | `sourceInvoiceId` + reuse окна; prep Task без DNS и без уже сохранённого Credential; late credential на открытые Expense; Task открывает Client Service sheet; Mark paid передаёт `confirmedBy` | unit tests                      |
-| 5 gates/renewal/архив                    | DOMAIN slot: DNS по инструкциям, доступ по Credential+verify; cancel стопит autoGenerate; overdue WhatsApp skip `CANCELLED`; renewal invoices без Tech Task                                     | unit tests + чтение генераторов |
+| Этап                                     | Код                                                                                                                           | Проверено                      |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| 0 сверка                                 | цикл = `Expense.sourceInvoiceId`; DNS = `CLIENT_DNS`; PII = encrypted text; без Case/RegistrantProfile                        | по чтению кода                 |
+| 1 данные/DNS/PII                         | миграция `20260917010000_domain_purchase_connection_process`; API domain-operations; decrypt только EDIT; in-place Credential | unit tests                     |
+| 2 Product/Delivery UI                    | chip в шапке Product и Delivery (не kanban); один диалог без Next; три сценария                                               | typecheck/lint; **не** browser |
+| 3 Invoice Board / Deal                   | режим «Домен»: Product + одно имя + AMD; preview; Deal без Won                                                                | unit tests                     |
+| 4 оплата/Expense/Task/поздний Credential | новая покупка: Invoice+Expense сразу; Paid только reuse; prep Task при старте; late credential; Task links CS+Product         | unit tests                     |
+| 5 gates/renewal/архив                    | DNS-gate = DONE prep Task; D−60 Invoice без фильтра открытого Expense; D−30 Expense catch-up; статус Invoice на Expense       | unit tests                     |
 
 Не проверено в браузере: desktop/mobile шапки, три сценария глазами, Invoice path, Task→Client Service sheet, негативные permissions UI. Локальная миграция не применялась в этой сессии. Legacy DNS — только dry-run отчёт, без автоматической миграции. Production migrate/deploy этого среза не выполнялись.

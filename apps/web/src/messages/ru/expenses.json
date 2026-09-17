@@ -173,6 +173,7 @@
     "backlogReason": "Причина отложения",
     "taxStatus": "Налог",
     "passThrough": "Транзитный",
+    "sourceInvoice": "Счёт клиента",
     "notes": "Описание",
     "notesPlaceholder": "Добавьте заметку о расходе…"
   },

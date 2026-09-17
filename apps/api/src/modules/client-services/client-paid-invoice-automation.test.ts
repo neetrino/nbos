@@ -50,7 +50,7 @@ describe('runClientPaidInvoicePaidAutomation', () => {
       { invoiceId: 'inv-1', actorEmployeeId: 'emp-1' },
     );
 
-    expect(result).toEqual({ taskId: 'task-new', expenseId: 'exp-new' });
+    expect(result).toEqual({ taskId: null, expenseId: 'exp-new' });
     expect(flows.createExpense).toHaveBeenCalledWith(
       'svc-1',
       expect.objectContaining({
@@ -59,7 +59,7 @@ describe('runClientPaidInvoicePaidAutomation', () => {
         amount: 12,
       }),
     );
-    expect(flows.createTask).toHaveBeenCalled();
+    expect(flows.createTask).not.toHaveBeenCalled();
   });
 
   it('reuses the expense linked by sourceInvoiceId and skips a second task', async () => {

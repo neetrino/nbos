@@ -8,12 +8,11 @@ import { useClientServicesT } from '@/features/finance/components/client-service
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { productsApi, type FullProduct } from '@/lib/api/products';
-import { DomainPurchaseAssignments } from './DomainPurchaseAssignments';
 import { DomainPurchaseFormFields } from './DomainPurchaseFormFields';
 import { DomainPurchaseServiceList } from './DomainPurchaseServiceList';
 import {
   canSubmitDomainPurchase,
-  emptyDomainPurchaseDraft,
+  draftFromExistingServices,
   toDomainOperationPayload,
   type DomainPurchaseDraft,
 } from './domain-purchase-form';
@@ -62,10 +61,17 @@ function DomainPurchaseSheetSession({
 }: DomainPurchaseSheetProps) {
   const t = useClientServicesT();
   const tCommon = useTranslations('common');
-  const [draft, setDraft] = useState<DomainPurchaseDraft>(emptyDomainPurchaseDraft);
+  const [draft, setDraft] = useState<DomainPurchaseDraft>(() =>
+    draftFromExistingServices(services),
+  );
   const [product, setProduct] = useState<FullProduct | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [localServices, setLocalServices] = useState(services);
+
+  useEffect(() => {
+    setLocalServices(services);
+  }, [services]);
 
   useEffect(() => {
     if (!open) return;
@@ -75,13 +81,17 @@ function DomainPurchaseSheetSession({
       .catch(() => setProduct(null));
   }, [open, productId]);
 
-  const canSubmit = canAdd && canSubmitDomainPurchase(draft, false) && !submitting;
+  const issueInvoices = draft.connectionMode === 'PURCHASE' && canSubmitDomainPurchase(draft, true);
+  const techReady = Boolean(product?.technicalSpecialistId);
+  const canSubmit = canAdd && techReady && canSubmitDomainPurchase(draft, false) && !submitting;
 
   return (
     <CreateFormDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={t('domainPurchase.title')}
+      title={
+        localServices.length > 0 ? t('domainPurchase.continueTitle') : t('domainPurchase.title')
+      }
       error={error}
       submitting={submitting}
       canSubmit={canSubmit}
@@ -95,6 +105,7 @@ function DomainPurchaseSheetSession({
           canSubmit,
           productId,
           draft,
+          issueInvoices,
           t,
           setSubmitting,
           setError,
@@ -103,16 +114,25 @@ function DomainPurchaseSheetSession({
         })
       }
     >
-      <DomainPurchaseServiceList services={services} onOpenService={onOpenService} />
+      <DomainPurchaseServiceList services={localServices} onOpenService={onOpenService} />
+      {canAdd && product && !techReady ? (
+        <p className="text-destructive text-sm" role="alert">
+          {t('domainPurchase.techRequired')}
+        </p>
+      ) : null}
       {canAdd ? (
-        <>
-          <DomainPurchaseAssignments product={product} onProductUpdated={setProduct} />
-          <DomainPurchaseFormFields
-            draft={draft}
-            projectId={product?.projectId ?? null}
-            onChange={setDraft}
-          />
-        </>
+        <DomainPurchaseFormFields
+          draft={draft}
+          projectId={product?.projectId ?? null}
+          services={localServices}
+          canEditFacts
+          onChange={setDraft}
+          onServiceUpdated={(updated) =>
+            setLocalServices((current) =>
+              current.map((row) => (row.id === updated.id ? updated : row)),
+            )
+          }
+        />
       ) : null}
     </CreateFormDialog>
   );
@@ -123,6 +143,7 @@ async function submitDomainPurchase(params: {
   canSubmit: boolean;
   productId: string;
   draft: DomainPurchaseDraft;
+  issueInvoices: boolean;
   t: ReturnType<typeof useClientServicesT>;
   setSubmitting: (value: boolean) => void;
   setError: (value: string | null) => void;
@@ -135,7 +156,7 @@ async function submitDomainPurchase(params: {
   params.setError(null);
   try {
     const result = await clientServicesApi.startDomainOperation(
-      toDomainOperationPayload(params.productId, params.draft, false),
+      toDomainOperationPayload(params.productId, params.draft, params.issueInvoices),
     );
     const failed = result.items.filter((item) => item.status === 'failed');
     if (failed.length > 0) {

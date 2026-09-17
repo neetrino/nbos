@@ -1,124 +1,161 @@
 'use client';
 
-import { Plus } from 'lucide-react';
-import { FormFieldRow, InlineField } from '@/components/shared';
+import { Trash2 } from 'lucide-react';
+import { AmdCurrencyIcon, FormFieldRow, InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { Button } from '@/components/ui/button';
+import { ClientServiceProviderField } from '@/features/finance/components/client-services/ClientServiceProviderField';
 import { useClientServicesT } from '@/features/finance/components/client-services/client-service-message-keys';
 import {
   createDomainDraftRow,
+  removeDomainDraftRow,
   type DomainDraftRow,
   type DomainPurchaseDraft,
 } from './domain-purchase-form';
 
+const DOMAIN_ROW_STACK_CLASS = 'flex flex-col gap-3';
+const DOMAIN_ROW_DIVIDER_CLASS = `${DOMAIN_ROW_STACK_CLASS} border-border border-t pt-3`;
+
 interface DomainPurchaseDomainRowsProps {
   draft: DomainPurchaseDraft;
-  requireClientAmount?: boolean;
+  allowAdd?: boolean;
   onChange: (draft: DomainPurchaseDraft) => void;
 }
 
 export function DomainPurchaseDomainRows({
   draft,
-  requireClientAmount = false,
+  allowAdd = true,
   onChange,
 }: DomainPurchaseDomainRowsProps) {
-  const t = useClientServicesT();
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-muted-foreground text-xs font-medium">{t('domainPurchase.domains')}</p>
-      {draft.domains.map((row) => (
+    <div className="flex flex-col gap-3">
+      {draft.domains.map((row, index) => (
         <DomainPurchaseDomainRow
           key={row.key}
           row={row}
+          index={index}
+          showIndex={draft.domains.length > 1}
           mode={draft.connectionMode}
-          requireClientAmount={requireClientAmount}
+          canRemove={draft.domains.length > 1}
+          canAdd={allowAdd && index === draft.domains.length - 1}
+          onAdd={() => onChange({ ...draft, domains: [...draft.domains, createDomainDraftRow()] })}
+          onRemove={() => onChange(removeDomainDraftRow(draft, row.key))}
           onPatch={(partial) => onChange(patchDomain(draft, row.key, partial))}
         />
       ))}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="self-start"
-        onClick={() => onChange({ ...draft, domains: [...draft.domains, createDomainDraftRow()] })}
-      >
-        <Plus size={14} />
-        {t('domainPurchase.addDomain')}
-      </Button>
     </div>
   );
 }
 
 function DomainPurchaseDomainRow({
   row,
+  index,
+  showIndex,
   mode,
-  requireClientAmount,
+  canRemove,
+  canAdd,
+  onAdd,
+  onRemove,
   onPatch,
 }: {
   row: DomainDraftRow;
+  index: number;
+  showIndex: boolean;
   mode: DomainPurchaseDraft['connectionMode'];
-  requireClientAmount: boolean;
+  canRemove: boolean;
+  canAdd: boolean;
+  onAdd: () => void;
+  onRemove: () => void;
   onPatch: (partial: Partial<DomainDraftRow>) => void;
 }) {
   const t = useClientServicesT();
+  const nameLabel = showIndex
+    ? t('domainPurchase.domainIndexed', { n: index + 1 })
+    : t('domainPurchase.domainName');
   return (
-    <div className="flex flex-col gap-2 rounded-lg border p-2.5">
-      <InlineField
-        variant="controlled"
-        label={t('domainPurchase.domainName')}
-        value={row.domainName}
-        onValueChange={(domainName) => onPatch({ domainName })}
-      />
+    <div className={index > 0 ? DOMAIN_ROW_DIVIDER_CLASS : DOMAIN_ROW_STACK_CLASS}>
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <DomainPurchaseNameAmountFields
+            row={row}
+            mode={mode}
+            nameLabel={nameLabel}
+            canAdd={canAdd}
+            onAdd={onAdd}
+            onPatch={onPatch}
+          />
+        </div>
+        {canRemove ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="mt-1 shrink-0"
+            aria-label={t('domainPurchase.removeDomain')}
+            onClick={onRemove}
+          >
+            <Trash2 size={14} />
+          </Button>
+        ) : null}
+      </div>
       {mode === 'PURCHASE' ? (
-        <PurchaseCostFields row={row} requireClientAmount={requireClientAmount} onPatch={onPatch} />
+        <ClientServiceProviderField
+          providerName={row.provider}
+          onProviderChange={(provider) => onPatch({ provider })}
+        />
       ) : null}
     </div>
   );
 }
 
-function PurchaseCostFields({
+function DomainPurchaseNameAmountFields({
   row,
-  requireClientAmount,
+  mode,
+  nameLabel,
+  canAdd,
+  onAdd,
   onPatch,
 }: {
   row: DomainDraftRow;
-  requireClientAmount: boolean;
+  mode: DomainPurchaseDraft['connectionMode'];
+  nameLabel: string;
+  canAdd: boolean;
+  onAdd: () => void;
   onPatch: (partial: Partial<DomainDraftRow>) => void;
 }) {
   const t = useClientServicesT();
+  const addProps = canAdd ? { onAdd, addAriaLabel: t('domainPurchase.addDomain') } : {};
+  if (mode !== 'PURCHASE') {
+    return (
+      <InlineField
+        variant="controlled"
+        label={nameLabel}
+        value={row.domainName}
+        onValueChange={(domainName) => onPatch({ domainName })}
+        {...addProps}
+      />
+    );
+  }
   return (
-    <>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('domainPurchase.provider')}
-          value={row.provider}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(provider) => onPatch({ provider })}
-        />
-        <InlineField
-          variant="controlled"
-          label={
-            requireClientAmount ? t('domainPurchase.clientCharge') : t('domainPurchase.ourCost')
-          }
-          type="money"
-          value={requireClientAmount ? row.clientCharge : row.ourCost}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(value) =>
-            onPatch(requireClientAmount ? { clientCharge: value } : { ourCost: value })
-          }
-        />
-      </FormFieldRow>
-      {requireClientAmount ? null : (
-        <InlineField
-          variant="controlled"
-          label={t('domainPurchase.clientCharge')}
-          type="money"
-          value={row.clientCharge}
-          onValueChange={(clientCharge) => onPatch({ clientCharge })}
-        />
-      )}
-    </>
+    <FormFieldRow layout="wideStart">
+      <InlineField
+        variant="controlled"
+        label={nameLabel}
+        className={FORM_FIELD_CELL_CLASS}
+        value={row.domainName}
+        onValueChange={(domainName) => onPatch({ domainName })}
+        {...addProps}
+      />
+      <InlineField
+        variant="controlled"
+        label={t('domainPurchase.costAmd')}
+        type="money"
+        className={FORM_FIELD_CELL_CLASS}
+        value={row.costAmd}
+        icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
+        onValueChange={(costAmd) => onPatch({ costAmd })}
+      />
+    </FormFieldRow>
   );
 }
 

@@ -26,6 +26,9 @@ export interface CreateInvoiceDialogOuterProps {
   clientServiceContext?: { name: string; projectLabel: string };
   /** Dimmed backdrop when opened inside a parent sheet/dialog (e.g. Deal card). */
   forceNestedBackdrop?: boolean;
+  /** Show Domain path even when an order/submitOverride exists (Deal). */
+  allowDomainPath?: boolean;
+  presetDomainProduct?: { id: string; label: string } | null;
 }
 
 export interface CreateInvoiceDialogState {

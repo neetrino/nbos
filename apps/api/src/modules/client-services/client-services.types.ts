@@ -46,6 +46,7 @@ export interface ClientServiceRecordBody {
   connectionMode?: string | null;
   dnsInstructions?: string | null;
   connectionVerifiedAt?: string | null;
+  unlinkCredential?: boolean;
 }
 
 export type UpdateClientServiceRecordBody = Partial<ClientServiceRecordBody>;

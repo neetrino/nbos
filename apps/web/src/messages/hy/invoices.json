@@ -201,11 +201,11 @@
     "submit": "Ստեղծել հաշիվ",
     "createError": "Հաշիվը չհաջողվեց ստեղծել։",
     "loadSubscriptionError": "Բաժանորդագրությունը չհաջողվեց բեռնել։",
-    "modeFree": "Ազատ հաշիվ",
-    "modeDomain": "Դոմենի գնում",
+    "modeFree": "Ստանդարտ",
+    "modeDomain": "Դոմեն",
     "domainProduct": "Ապրանք",
     "domainNames": "Դոմենների անուններ",
-    "domainAmount": "Հաճախորդի գումար (AMD)"
+    "domainAmount": "Գումար"
   },
   "createSubscription": {
     "title": "Ստեղծել բաժանորդագրության հաշիվ",

@@ -15,6 +15,7 @@ import { NotificationEnqueueReconcileService } from '../notifications/notificati
 import { AuthSessionService } from '../auth/auth-session.service';
 import { RecurringTasksService } from '../tasks/recurring-tasks.service';
 import { ClientServicesRenewalInvoiceService } from '../client-services/client-services-renewal-invoice.service';
+import { ClientServicesRenewalExpenseService } from '../client-services/client-services-renewal-expense.service';
 import { DomainRegistryService } from '../client-services/registry/domain-registry.service';
 import { MailGmailWatchRenewService } from '../mail/mail-gmail-watch-renew.service';
 import { MailOutboundReconcileService } from '../mail/mail-outbound-reconcile.service';
@@ -52,6 +53,7 @@ export class SchedulerService {
     private readonly authSessions: AuthSessionService,
     private readonly recurringTasks: RecurringTasksService,
     private readonly clientServicesRenewalInvoice: ClientServicesRenewalInvoiceService,
+    private readonly clientServicesRenewalExpense: ClientServicesRenewalExpenseService,
     private readonly domainRegistry: DomainRegistryService,
     private readonly mailOutboundReconcile: MailOutboundReconcileService,
     private readonly mailGmailWatchRenew: MailGmailWatchRenewService,
@@ -332,6 +334,24 @@ export class SchedulerService {
       async ({ signal }) => {
         if (signal.aborted) return;
         const result = await this.clientServicesRenewalInvoice.runDueRenewalInvoices();
+        return {
+          processedCount: result.created.length,
+          metadata: {
+            eligibleCount: result.eligibleCount,
+            skippedExisting: result.skippedExisting,
+            failures: result.failures.length,
+          },
+        };
+      },
+    );
+  }
+
+  async runClientServicesRenewalExpense(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+    return this.lease.runWithLease(
+      { jobName: SCHEDULER_JOB_NAMES.clientServicesRenewalExpense, trigger },
+      async ({ signal }) => {
+        if (signal.aborted) return;
+        const result = await this.clientServicesRenewalExpense.runDueRenewalExpenses();
         return {
           processedCount: result.created.length,
           metadata: {

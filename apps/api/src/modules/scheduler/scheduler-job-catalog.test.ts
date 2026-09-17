@@ -15,6 +15,7 @@ import { EXPENSE_PLAN_AUTO_DUE_ENABLED_ENV } from './expense-plan-auto-due-cron.
 import { RECURRING_TASKS_DUE_ENABLED_ENV } from './recurring-tasks-due-cron.constants';
 import { CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED_ENV } from './client-services-domain-registry-cron.constants';
 import { CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV } from './client-services-renewal-invoice-cron.constants';
+import { CLIENT_SERVICES_RENEWAL_EXPENSE_ENABLED_ENV } from './client-services-renewal-expense-cron.constants';
 import { REPORT_SCHEDULES_DUE_ENABLED_ENV } from './report-schedules-due-cron.constants';
 import { NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV } from './notification-inbox-reconcile-cron.constants';
 import { NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENABLED_ENV } from './notification-enqueue-reconcile-cron.constants';
@@ -47,6 +48,7 @@ const START_CRON_ENABLED_ENV_KEYS = [
   RECURRING_TASKS_DUE_ENABLED_ENV,
   CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED_ENV,
   CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV,
+  CLIENT_SERVICES_RENEWAL_EXPENSE_ENABLED_ENV,
   REPORT_SCHEDULES_DUE_ENABLED_ENV,
   NOTIFICATION_INBOX_RECONCILE_CRON_ENABLED_ENV,
   NOTIFICATION_ENQUEUE_RECONCILE_CRON_ENABLED_ENV,
@@ -94,6 +96,7 @@ describe('scheduler-job-catalog', () => {
     expect(listRosterOnPlatformCronJobNames()).toEqual([
       'billing',
       'client-services-domain-registry-check',
+      'client-services-renewal-expense',
       'client-services-renewal-invoice',
       'expense-plan-auto-due',
       'notification-enqueue-reconcile',

@@ -24,6 +24,7 @@ describe('SchedulerService', () => {
   let reportsService: { runDueSchedules: ReturnType<typeof vi.fn> };
   let supportSlaOrchestrationService: { runSlaEscalationScan: ReturnType<typeof vi.fn> };
   let clientServicesRenewalInvoice: { runDueRenewalInvoices: ReturnType<typeof vi.fn> };
+  let clientServicesRenewalExpense: { runDueRenewalExpenses: ReturnType<typeof vi.fn> };
   let messengerOutboundReconcile: { reconcile: ReturnType<typeof vi.fn> };
   let lease: { runWithLease: ReturnType<typeof vi.fn> };
 
@@ -67,6 +68,15 @@ describe('SchedulerService', () => {
     };
     clientServicesRenewalInvoice = {
       runDueRenewalInvoices: vi.fn().mockResolvedValue({
+        asOf: '2026-06-01T12:00:00.000Z',
+        eligibleCount: 0,
+        skippedExisting: 0,
+        created: [],
+        failures: [],
+      }),
+    };
+    clientServicesRenewalExpense = {
+      runDueRenewalExpenses: vi.fn().mockResolvedValue({
         asOf: '2026-06-01T12:00:00.000Z',
         eligibleCount: 0,
         skippedExisting: 0,
@@ -121,6 +131,7 @@ describe('SchedulerService', () => {
         processDueTemplates: vi.fn().mockResolvedValue({ created: 0, failed: 0, taskIds: [] }),
       } as never,
       clientServicesRenewalInvoice as never,
+      clientServicesRenewalExpense as never,
       { runDueLookups: vi.fn() } as never,
       { reconcileOrphans: vi.fn() } as never,
       { renewExpiringWatches: vi.fn() } as never,
@@ -175,6 +186,14 @@ describe('SchedulerService', () => {
     it('delegates to ClientServicesRenewalInvoiceService.runDueRenewalInvoices', async () => {
       const result = await service.runClientServicesRenewalInvoice();
       expect(clientServicesRenewalInvoice.runDueRenewalInvoices).toHaveBeenCalledWith();
+      expect(result.status).toBe('SUCCEEDED');
+    });
+  });
+
+  describe('runClientServicesRenewalExpense', () => {
+    it('delegates to ClientServicesRenewalExpenseService.runDueRenewalExpenses', async () => {
+      const result = await service.runClientServicesRenewalExpense();
+      expect(clientServicesRenewalExpense.runDueRenewalExpenses).toHaveBeenCalledWith();
       expect(result.status).toBe('SUCCEEDED');
     });
   });

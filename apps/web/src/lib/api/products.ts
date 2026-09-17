@@ -48,6 +48,7 @@ export interface Product {
   frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
+  sellerId?: string | null;
   qaLeadId?: string | null;
   deadline: string | null;
   description: string | null;
@@ -85,6 +86,7 @@ export interface Product {
   frontendDeveloper?: ProductEmployee | null;
   designer?: ProductEmployee | null;
   technicalSpecialist?: ProductEmployee | null;
+  seller?: ProductEmployee | null;
   qaLead?: ProductEmployee | null;
   /** Computed Product Hub directory view. Present on company-wide list items. */
   hubView?: ProductHubView;
@@ -120,6 +122,7 @@ export interface FullProduct extends Product {
   frontendDeveloper?: ProductEmployee | null;
   designer?: ProductEmployee | null;
   technicalSpecialist?: ProductEmployee | null;
+  seller?: ProductEmployee | null;
   qaLead?: ProductEmployee | null;
 }
 
@@ -237,6 +240,7 @@ export interface UpdateProductData {
   frontendDeveloperId?: string | null;
   designerId?: string | null;
   technicalSpecialistId?: string | null;
+  sellerId?: string | null;
   qaLeadId?: string | null;
   deadline?: string | null;
   description?: string | null;

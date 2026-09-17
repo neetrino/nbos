@@ -39,6 +39,11 @@ import {
   CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV,
 } from './client-services-renewal-invoice-cron.constants';
 import {
+  CLIENT_SERVICES_RENEWAL_EXPENSE_CRON_ENV,
+  CLIENT_SERVICES_RENEWAL_EXPENSE_DEFAULT_CRON,
+  CLIENT_SERVICES_RENEWAL_EXPENSE_ENABLED_ENV,
+} from './client-services-renewal-expense-cron.constants';
+import {
   REPORT_SCHEDULES_DUE_CRON_ENV,
   REPORT_SCHEDULES_DUE_DEFAULT_CRON,
   REPORT_SCHEDULES_DUE_ENABLED_ENV,
@@ -200,6 +205,19 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
     defaultExpression: CLIENT_SERVICES_RENEWAL_INVOICE_DEFAULT_CRON,
     enabledEnvKey: CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED_ENV,
     cronEnvKey: CLIENT_SERVICES_RENEWAL_INVOICE_CRON_ENV,
+    risk: SCHEDULER_JOB_RISK.medium,
+    rosterIntent: SCHEDULER_ROSTER_INTENT.on,
+  }),
+  platformCronEntry({
+    jobName: SCHEDULER_JOB_NAMES.clientServicesRenewalExpense,
+    title: 'Client Services renewal expenses',
+    description:
+      'Creates WE_PAY renewal Expense cards at Invoice Paid or D−30 daily at 06:15. Does not create Expense at D−60 invoice issue.',
+    ownerModule: 'Client Services',
+    group: SCHEDULER_JOB_GROUP.money,
+    defaultExpression: CLIENT_SERVICES_RENEWAL_EXPENSE_DEFAULT_CRON,
+    enabledEnvKey: CLIENT_SERVICES_RENEWAL_EXPENSE_ENABLED_ENV,
+    cronEnvKey: CLIENT_SERVICES_RENEWAL_EXPENSE_CRON_ENV,
     risk: SCHEDULER_JOB_RISK.medium,
     rosterIntent: SCHEDULER_ROSTER_INTENT.on,
   }),

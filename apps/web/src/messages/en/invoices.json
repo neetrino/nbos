@@ -201,11 +201,11 @@
     "submit": "Create Invoice",
     "createError": "Invoice could not be created.",
     "loadSubscriptionError": "Subscription could not be loaded.",
-    "modeFree": "Free invoice",
-    "modeDomain": "Domain purchase",
+    "modeFree": "Standard",
+    "modeDomain": "Domain",
     "domainProduct": "Product",
     "domainNames": "Domain names",
-    "domainAmount": "Client amount (AMD)"
+    "domainAmount": "Amount"
   },
   "createSubscription": {
     "title": "Create Subscription Invoice",

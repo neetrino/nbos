@@ -136,7 +136,14 @@
     "frequency": "Frequency",
     "tax": "Tax",
     "startDate": "Start date",
-    "renewalDate": "Renewal date"
+    "renewalDate": "Renewal date",
+    "connectionScenario": "Connection scenario",
+    "connectionScenarioEmpty": "Unknown"
+  },
+  "scenario": {
+    "PURCHASE": "We bought it",
+    "EXISTING_ACCESS": "Client provided access",
+    "CLIENT_DNS": "Client connects via DNS"
   },
   "sheet": {
     "loading": "Loading…",
@@ -241,6 +248,7 @@
     "domains": "Domains",
     "addDomain": "Add domain",
     "domainName": "Domain name",
+    "domainIndexed": "Domain {n}",
     "provider": "Provider",
     "ourCost": "Purchase cost",
     "clientCharge": "Client price",
@@ -252,6 +260,7 @@
     "saving": "Saving…",
     "tech": "Tech",
     "sales": "Sales",
+    "techRequired": "Assign the Tech specialist on the Product first.",
     "openService": "Open service",
     "headerEmpty": "Buy / connect domain",
     "headerPreparing": "Domain · Preparing",
@@ -265,6 +274,21 @@
     "saved": "Domain request saved.",
     "invoicesCreated": "Domain invoices created.",
     "confirmConnection": "Connection verified",
-    "confirmRegistration": "Domain registered"
+    "confirmRegistration": "Domain registered",
+    "dnsCredentialWarning": "A registrar credential ({name}) is still linked. Unlink it only if this domain no longer uses that account. The credential itself is kept.",
+    "unlinkCredential": "Unlink credential",
+    "removeDomain": "Remove",
+    "costAmd": "Amount",
+    "continueTitle": "Continue domain preparation",
+    "previewNew": "New purchase: service, invoice, and expense will be created.",
+    "previewContinue": "Initial purchase is still open. This continues it.",
+    "previewRenewal": "This creates a renewal invoice for the existing domain.",
+    "previewExistingInvoice": "An invoice for this cycle already exists.",
+    "previewOpenInvoice": "Open existing invoice",
+    "previewOtherProduct": "This domain is already on another product.",
+    "previewOpenService": "Open existing service",
+    "taskPurchase": "Prepare the registrar account for {domains}",
+    "taskAccess": "Verify login and connect the listed domains to our Cloudflare: {domains}",
+    "taskDns": "Prepare Cloudflare connection for the listed domains and give the client the assigned nameservers: {domains}"
   }
 }

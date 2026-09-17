@@ -1,6 +1,6 @@
 # NBOS Technical Decisions By Module
 
-**Client Services / Domains, 2026-09-17:** [обязательное целевое решение](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md). Один Product-контекст, один Invoice на домен, существующие Vault/Tasks/RDAP, идемпотентный Expense после Payment с разрешённым manual-first flow. Новые workflow engine, RegistrantProfile и many-to-many Invoice–Service не входят в объём. [Техническая сверка перед реализацией](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md#2-этап-0--техническая-сверка).
+**Client Services / Domains, 2026-09-17:** [обязательное целевое решение](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md). Старт из Product/Delivery или Invoice Board / Deal «Домен»; карточка Client Service не форма запуска. Новая покупка с суммой сразу создаёт Invoice и Expense; продление — Invoice на D−60 и Expense на первое из Paid или D−30. DNS-gate = выполненная prep Task. `Product.sellerId` пишется явно, Deal.seller не меняется. Без workflow engine, RegistrantProfile и many-to-many Invoice–Service. [План](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md).
 
 **Cross-module i18n, 2026-09-12:** утверждён next-intl без изменения URL, персональная Employee.interfaceLocale и поэтапный EN/RU → HY. Реализация ещё не начата. Обязательный [канон локализации](01-Platform-Overview/07-Interface-Localization.md).
 

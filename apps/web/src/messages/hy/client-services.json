@@ -136,7 +136,14 @@
     "frequency": "Պարբերություն",
     "tax": "Հարկ",
     "startDate": "Սկզբի ամսաթիվ",
-    "renewalDate": "Երկարացման ամսաթիվ"
+    "renewalDate": "Երկարացման ամսաթիվ",
+    "connectionScenario": "Միացման սցենար",
+    "connectionScenarioEmpty": "Անհայտ"
+  },
+  "scenario": {
+    "PURCHASE": "Մենք ենք գնել",
+    "EXISTING_ACCESS": "Հաճախորդը տվել է մուտք",
+    "CLIENT_DNS": "Հաճախորդը միանում է DNS-ով"
   },
   "sheet": {
     "loading": "Բեռնվում է…",
@@ -241,6 +248,7 @@
     "domains": "Դոմեններ",
     "addDomain": "Ավելացնել դոմեն",
     "domainName": "Դոմենի անուն",
+    "domainIndexed": "Դոմեն {n}",
     "provider": "Մատակարար",
     "ourCost": "Գնման արժեք",
     "clientCharge": "Հաճախորդի գին",
@@ -252,6 +260,7 @@
     "saving": "Պահվում է…",
     "tech": "Tech",
     "sales": "Sales",
+    "techRequired": "Նախ նշեք Tech մասնագետին արտադրանքի քարտում։",
     "openService": "Բացել ծառայությունը",
     "headerEmpty": "Գնել / միացնել դոմեն",
     "headerPreparing": "Դոմեն · Պատրաստում",
@@ -265,6 +274,21 @@
     "saved": "Դոմենի հարցումը պահվեց։",
     "invoicesCreated": "Դոմենների հաշիվները ստեղծվեցին։",
     "confirmConnection": "Միացումը ստուգված է",
-    "confirmRegistration": "Դոմենը գրանցված է"
+    "confirmRegistration": "Դոմենը գրանցված է",
+    "dnsCredentialWarning": "Գրանցողի հաշիվը ({name}) դեռ կապված է։ Անջատեք միայն եթե դոմենն այլևս չի օգտագործում այդ հաշիվը։ Ինքը credential-ը չի ջնջվում։",
+    "unlinkCredential": "Անջատել հաշիվը",
+    "removeDomain": "Հանել",
+    "costAmd": "Գումար",
+    "continueTitle": "Շարունակել դոմենի պատրաստումը",
+    "previewNew": "Նոր գնում․ կստեղծվեն ծառայություն, հաշիվ և ծախս։",
+    "previewContinue": "Սկզբնական գնումն ավարտված չէ։ Սա շարունակություն է։",
+    "previewRenewal": "Կստեղծվի գործող դոմենի երկարացման հաշիվ։",
+    "previewExistingInvoice": "Այս ցիկլի համար արդեն կա հաշիվ։",
+    "previewOpenInvoice": "Բացել առկա հաշիվը",
+    "previewOtherProduct": "Այս դոմենն արդեն կապված է այլ արտադրանքի հետ։",
+    "previewOpenService": "Բացել առկա քարտը",
+    "taskPurchase": "Պատրաստել գրանցողի հաշիվը {domains} համար",
+    "taskAccess": "Ստուգել մուտքը և նշված դոմենները միացնել մեր Cloudflare-ին՝ {domains}",
+    "taskDns": "Cloudflare-ում պատրաստել նշված դոմենների միացումը և հաճախորդին տալ նշանակված nameserver-ները՝ {domains}"
   }
 }
