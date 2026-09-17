@@ -3,8 +3,6 @@
     "newTask": "Առաջադրանք",
     "newTaskDescription": "Ստեղծել աշխատանք ինքան կամ գորցունկերի համար։",
     "newTaskError": "Նոր արաջադրանք բացել չի հաջոխվել։ Նորից փորձեք։",
-    "newMeeting": "Հանդիպում",
-    "newMeetingDescription": "Պլանավորել հաճախորդի հանդիպումը ակնարկից չդեգել։",
     "newExpense": "ծախս",
     "newExpenseDescription": "Գրանցել ծախս ակնարկից։",
     "newInvoice": "Հաշիվ",
@@ -27,7 +25,6 @@
     "installAppsDescription": "Ավելացնել NBOS-ը և փոքր հավելվածները գլխավոր էկրանին։"
   },
   "create": {
-    "meetingCreated": "Հանդիպումը ստեղծվել է",
     "expenseCreated": "ծախսը ստեղծվել է",
     "invoiceCreated": "Հաշիվը ստեղծվել է"
   },

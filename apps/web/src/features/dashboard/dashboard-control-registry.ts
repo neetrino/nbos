@@ -1,5 +1,4 @@
 import {
-  CalendarPlus,
   CheckSquare,
   FileText,
   FolderKanban,
@@ -41,7 +40,6 @@ export type DashboardData = DashboardMetricProjection;
 export type DashboardPreference = DashboardPreferenceProjection;
 export type DashboardPinnedActionKey =
   | 'new-task'
-  | 'new-meeting'
   | 'new-expense'
   | 'new-invoice'
   | 'open-deals'
@@ -73,15 +71,6 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     module: 'TASKS',
     action: 'ADD',
     description: 'Create work for yourself or a teammate.',
-  },
-  {
-    key: 'new-meeting',
-    kind: 'create',
-    label: 'New meeting',
-    icon: CalendarPlus,
-    module: 'CALENDAR',
-    action: 'ADD',
-    description: 'Schedule a client meeting without leaving the desk.',
   },
   {
     key: 'new-expense',

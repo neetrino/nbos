@@ -3,8 +3,6 @@
     "newTask": "Задача",
     "newTaskDescription": "Создать работу для себя или коллеги.",
     "newTaskError": "Не удалось открыть новую задачу. Попробуйте ещё раз.",
-    "newMeeting": "Встреча",
-    "newMeetingDescription": "Назначить встречу с клиентом, не уходя со стола.",
     "newExpense": "Расход",
     "newExpenseDescription": "Записать расход со стола.",
     "newInvoice": "Счёт",
@@ -27,7 +25,6 @@
     "installAppsDescription": "Поставить NBOS и мини-приложения на домашний экран."
   },
   "create": {
-    "meetingCreated": "Встреча создана",
     "expenseCreated": "Расход создан",
     "invoiceCreated": "Счёт создан"
   },

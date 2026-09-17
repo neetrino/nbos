@@ -3,7 +3,6 @@ import type { DashboardPinnedActionKey } from './dashboard-control-registry';
 
 const PINNED_ACTION_TONE_BY_KEY: Record<DashboardPinnedActionKey, ActionTileTone> = {
   'new-task': 'sky',
-  'new-meeting': 'primary',
   'new-expense': 'amber',
   'new-invoice': 'emerald',
   'open-install': 'primary',

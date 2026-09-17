@@ -4,7 +4,6 @@ export const DASHBOARD_WIDGET_MAX_COUNT = 12;
 export const DASHBOARD_PINNED_ACTION_KEYS = [
   'new-invoice',
   'new-task',
-  'new-meeting',
   'new-expense',
   'open-deals',
   'open-products',

@@ -67,7 +67,7 @@ Work stays in Pinned Actions and Priority Feed.
 
 Два типа кнопок:
 
-- **Create** — открывает существующий dialog/sheet на Dashboard (`New Task`, `New Meeting`, `New Lead`, `New Expense`). Знак плюса.
+- **Create** — открывает существующий dialog/sheet на Dashboard (`New Invoice`, `New Task`, `New Expense`). Знак плюса.
 - **Open** — переход на страницу или personal link. Стрелка `ArrowUpRight`.
 
 Примеры Open:

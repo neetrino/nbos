@@ -11,12 +11,7 @@ describe('pinned action kinds', () => {
     const { create, open } = partitionPinnedActionsByKind(PINNED_ACTIONS);
     expect(create.every(isPinnedCreateAction)).toBe(true);
     expect(open.every(isPinnedOpenAction)).toBe(true);
-    expect(create.map((action) => action.key)).toEqual([
-      'new-invoice',
-      'new-task',
-      'new-meeting',
-      'new-expense',
-    ]);
+    expect(create.map((action) => action.key)).toEqual(['new-invoice', 'new-task', 'new-expense']);
     expect([...create, ...open].map((action) => action.key)).toEqual(
       PINNED_ACTIONS.map((action) => action.key),
     );
@@ -27,7 +22,6 @@ describe('pinned action kinds', () => {
     expect(partitionPinnedActionsByKind(reversed).create.map((action) => action.key)).toEqual([
       'new-invoice',
       'new-expense',
-      'new-meeting',
       'new-task',
     ]);
   });

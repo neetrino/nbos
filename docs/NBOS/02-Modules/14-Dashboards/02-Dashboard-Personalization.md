@@ -31,7 +31,6 @@ Pinned actions split into two visible groups:
 Create
   New Invoice
   New Task
-  New Meeting
   New Expense
 Open
   Open Deals
@@ -76,8 +75,8 @@ IT-бренд (GitHub, Slack, Figma и т.д.) подбирается по URL �
 | Role / Seat | Default pinned actions                                         |
 | ----------- | -------------------------------------------------------------- |
 | Seller      | `New Lead`, `Open Deals`, `CRM Client Chats`, `Offers Pending` |
-| PM          | `Delivery Board`, `New Task`, `New Meeting`, `Credentials`     |
-| Developer   | `New Task`, `New Meeting`, `Credentials`, `Open Deals`         |
+| PM          | `Delivery Board`, `New Task`, `Credentials`                    |
+| Developer   | `New Task`, `Credentials`, `Open Deals`                        |
 | Finance     | `Invoices`, `Subscriptions`, `Expense Board`, `Salary Board`   |
 | Owner       | `Company Focus`, `Finance`, `Delivery Risks`, `Approvals`      |
 
