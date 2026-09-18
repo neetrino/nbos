@@ -3,7 +3,13 @@
 import { useState } from 'react';
 import { Plus, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { EmptyState, ErrorState, LoadingState } from '@/components/shared';
+import {
+  DataView,
+  EmptyState,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+} from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import type { ExpensePlan } from '@/lib/api/expense-plans';
 import type { MarketingAccount, MarketingCrmWhereOption } from '@/lib/api/marketing';
@@ -23,6 +29,7 @@ interface MarketingAccountsSectionProps {
   plansLoading: boolean;
   loading: boolean;
   error: string | null;
+  onDismissError: () => void;
   canAdd: boolean;
   canEdit: boolean;
   onRetry: () => Promise<void>;
@@ -52,37 +59,45 @@ export function MarketingAccountsSection(props: MarketingAccountsSectionProps) {
 
 function MarketingAccountsMapBody(props: MarketingAccountsSectionProps) {
   const t = useTranslations('marketing');
-  if (props.loading) return <LoadingState variant="list" count={3} />;
-  if (props.error) {
-    return <ErrorState description={props.error} onRetry={() => void props.onRetry()} />;
-  }
-  if (props.accounts.length === 0) {
-    return (
-      <EmptyState
-        icon={SlidersHorizontal}
-        title={t('settings.emptyTitle')}
-        description={t('settings.emptyDescription')}
-        action={
-          props.canAdd ? (
-            <Button type="button" onClick={() => props.onAdd()}>
-              <Plus size={16} />
-              {t('settings.add')}
-            </Button>
-          ) : undefined
-        }
-      />
-    );
-  }
-  if (props.filteredAccounts.length === 0) {
-    return (
-      <EmptyState
-        icon={SlidersHorizontal}
-        title={t('settings.noMatchTitle')}
-        description={t('settings.noMatchDescription')}
-      />
-    );
-  }
-  return <MarketingAccountsChannelMap {...props} />;
+  return (
+    <DataView
+      loading={props.loading}
+      error={props.error}
+      hasData={props.accounts.length > 0}
+      loadingFallback={<LoadingState variant="list" count={3} />}
+      errorFallback={
+        <ErrorState description={props.error ?? ''} onRetry={() => void props.onRetry()} />
+      }
+      emptyFallback={
+        <EmptyState
+          icon={SlidersHorizontal}
+          title={t('settings.emptyTitle')}
+          description={t('settings.emptyDescription')}
+          action={
+            props.canAdd ? (
+              <Button type="button" onClick={() => props.onAdd()}>
+                <Plus size={16} />
+                {t('settings.add')}
+              </Button>
+            ) : undefined
+          }
+        />
+      }
+    >
+      {props.error ? (
+        <ListMutationErrorBanner message={props.error} onDismiss={props.onDismissError} />
+      ) : null}
+      {props.filteredAccounts.length === 0 ? (
+        <EmptyState
+          icon={SlidersHorizontal}
+          title={t('settings.noMatchTitle')}
+          description={t('settings.noMatchDescription')}
+        />
+      ) : (
+        <MarketingAccountsChannelMap {...props} />
+      )}
+    </DataView>
+  );
 }
 
 function MarketingAccountsChannelMap(props: MarketingAccountsSectionProps) {

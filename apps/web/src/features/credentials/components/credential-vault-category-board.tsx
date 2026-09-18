@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { KanbanBoard } from '@/components/shared';
+import { DataView, KanbanBoard } from '@/components/shared';
 import type { KanbanColumnQuickCreateConfig } from '@/components/shared/kanban/kanban.types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -70,50 +70,53 @@ export function CredentialVaultCategoryBoard({
     };
   }, [showCreate, onCreateInCategory]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2">
-        {columnDefs.map((column) => (
-          <div
-            key={column.value}
-            className="border-border w-[280px] shrink-0 space-y-2 rounded-xl border p-2"
-          >
-            <Skeleton className="h-8 w-full rounded-md" />
-            {Array.from({ length: CARD_SKELETON_COUNT }).map((_, cardIndex) => (
-              <Skeleton
-                key={cardIndex}
-                className={cn(KANBAN_CARD_SKELETON_HEIGHT_CLASS, 'w-full rounded-xl')}
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <KanbanBoard
-        columns={columns}
-        columnWidth={CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH}
-        emptyMessage="No credentials"
-        getItemId={(item) => item.id}
-        columnQuickCreate={quickCreate}
-        onColumnLoadMore={onColumnLoadMore}
-        renderCard={(credential) => (
-          <CredentialVaultCard
-            credential={credential}
-            variant="kanban"
-            onOpen={onOpenCredential}
-            onSetFavorite={onSetFavorite}
-            onRequestMoveToTrash={onRequestMoveToTrash}
-            canMoveToTrash={canMoveToTrash}
-            onCopyText={onCopyText}
-            onCopySecret={onCopySecret}
-            secretFlashCredentialId={secretFlashCredentialId}
-          />
-        )}
-      />
-    </div>
+    <DataView
+      loading={loading}
+      hasData={credentials.length > 0 || !loading}
+      loadingFallback={
+        <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2">
+          {columnDefs.map((column) => (
+            <div
+              key={column.value}
+              className="border-border w-[280px] shrink-0 space-y-2 rounded-xl border p-2"
+            >
+              <Skeleton className="h-8 w-full rounded-md" />
+              {Array.from({ length: CARD_SKELETON_COUNT }).map((_, cardIndex) => (
+                <Skeleton
+                  key={cardIndex}
+                  className={cn(KANBAN_CARD_SKELETON_HEIGHT_CLASS, 'w-full rounded-xl')}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      }
+      errorFallback={null}
+    >
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <KanbanBoard
+          columns={columns}
+          columnWidth={CREDENTIAL_VAULT_KANBAN_COLUMN_WIDTH}
+          emptyMessage="No credentials"
+          getItemId={(item) => item.id}
+          columnQuickCreate={quickCreate}
+          onColumnLoadMore={onColumnLoadMore}
+          renderCard={(credential) => (
+            <CredentialVaultCard
+              credential={credential}
+              variant="kanban"
+              onOpen={onOpenCredential}
+              onSetFavorite={onSetFavorite}
+              onRequestMoveToTrash={onRequestMoveToTrash}
+              canMoveToTrash={canMoveToTrash}
+              onCopyText={onCopyText}
+              onCopySecret={onCopySecret}
+              secretFlashCredentialId={secretFlashCredentialId}
+            />
+          )}
+        />
+      </div>
+    </DataView>
   );
 }

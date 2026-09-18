@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { departmentsApi, rolesApi, type DepartmentItem, type RoleItem } from '@/lib/api/employees';
@@ -10,6 +10,9 @@ import {
   type OrgSeat,
   type UpdateOrgSeatPayload,
 } from '@/lib/api/org-seats';
+import { ListMutationErrorBanner } from '@/components/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import { EmployeeEffectiveAccessDialog } from './EmployeeEffectiveAccessDialog';
 import { OrgSeatAssignmentDialog } from './OrgSeatAssignmentDialog';
@@ -24,7 +27,10 @@ export function RolesSeatsWorkspace() {
   const t = useTranslations('hr.rolesSeats');
   const { can } = usePermission();
   const [data, setData] = useState<WorkspaceData>(EMPTY_DATA);
-  const [loading, setLoading] = useState(true);
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
+  const [error, setError] = useState<string | null>(null);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState('');
   const [editor, setEditor] = useState<{ open: boolean; seat: OrgSeat | null }>({
     open: false,
@@ -38,7 +44,7 @@ export function RolesSeatsWorkspace() {
   const canViewAccess = can('VIEW', 'SETTINGS_RBAC');
 
   const load = useCallback(async () => {
-    setLoading(true);
+    beginLoad(dataRef.current.departments.length > 0 || dataRef.current.seats.length > 0);
     try {
       const [departments, seats, roles] = await Promise.all([
         departmentsApi.getAll(),
@@ -47,12 +53,16 @@ export function RolesSeatsWorkspace() {
       ]);
       setData({ departments, seats, roles });
       setSelectedDepartmentId((current) => current || canonicalRootId(departments));
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('loadFailed'));
+      setError(null);
+    } catch (caught) {
+      const message = getApiErrorMessage(caught, t('loadFailed'));
+      setError(message);
+      if (isAccessRevokedApiError(caught)) setData(EMPTY_DATA);
+      toast.error(message);
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [t, canMapRole]);
+  }, [beginLoad, canMapRole, endLoad, t]);
 
   useEffect(() => {
     void load();
@@ -112,6 +122,9 @@ export function RolesSeatsWorkspace() {
   return (
     <div className="space-y-5 pb-8">
       <RolesSeatsHeader canEdit={canEdit} onCreate={() => setEditor({ open: true, seat: null })} />
+      {error && (data.departments.length > 0 || data.seats.length > 0) ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
       <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
         <RolesSeatsDepartmentRail
           departments={data.departments}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Cable, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
+import {
+  DataView,
+  EmptyState,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  PageHero,
+} from '@/components/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { MetaIntegrationsSection } from '@/features/integrations/components/MetaIntegrationsSection';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
 
@@ -52,7 +61,8 @@ export default function IntegrationsPage() {
   const [providers, setProviders] = useState<SystemListOption[]>([]);
   const [setupItems, setSetupItems] = useState<SystemListOption[]>([]);
   const [statusItems, setStatusItems] = useState<SystemListOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
+  const providersRef = useRef<SystemListOption[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [savingProvider, setSavingProvider] = useState<string | null>(null);
 
@@ -80,8 +90,8 @@ export default function IntegrationsPage() {
     return map;
   }, [statusItems]);
 
-  async function loadAll() {
-    setLoading(true);
+  const loadAll = useCallback(async () => {
+    beginLoad(providersRef.current.length > 0);
     try {
       const [providerRows, setupRows, statusRows] = await Promise.all([
         systemListsApi.getOptionsByKey(PROVIDERS_KEY, { includeInactive: true }),
@@ -89,19 +99,31 @@ export default function IntegrationsPage() {
         systemListsApi.getOptionsByKey(STATUS_KEY, { includeInactive: true }),
       ]);
       setProviders(providerRows);
+      providersRef.current = providerRows;
       setSetupItems(setupRows);
       setStatusItems(statusRows);
       setError(null);
-    } catch {
-      setError('Integration registry could not be loaded. Check your access and try again.');
+    } catch (caught) {
+      if (isAccessRevokedApiError(caught)) {
+        setProviders([]);
+        providersRef.current = [];
+        setSetupItems([]);
+        setStatusItems([]);
+      }
+      setError(
+        getApiErrorMessage(
+          caught,
+          'Integration registry could not be loaded. Check your access and try again.',
+        ),
+      );
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }
+  }, [beginLoad, endLoad]);
 
   useEffect(() => {
     void loadAll();
-  }, []);
+  }, [loadAll]);
 
   async function setProviderStatus(providerCode: string, nextStatus: RegistryStatus) {
     setSavingProvider(providerCode);
@@ -165,50 +187,6 @@ export default function IntegrationsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <PageHero title="Integrations" />
-        <p className="text-muted-foreground text-sm">
-          External channel connections and provider registry readiness.
-        </p>
-        <LoadingState />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <PageHero title="Integrations" />
-        <MetaIntegrationsSection />
-        <ErrorState description={error} onRetry={() => void loadAll()} />
-      </div>
-    );
-  }
-
-  if (providers.length === 0) {
-    return (
-      <div className="space-y-6">
-        <PageHero title="Integrations" />
-        <MetaIntegrationsSection />
-        <EmptyState
-          icon={Cable}
-          title="Integration registry is empty"
-          description="Bootstrap default providers and setup fields, then extend them via Settings → Lists."
-          action={
-            <Button
-              onClick={() => void bootstrapDefaults()}
-              disabled={savingProvider === '__bootstrap__'}
-            >
-              Bootstrap defaults
-            </Button>
-          }
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <PageHero
@@ -236,67 +214,95 @@ export default function IntegrationsPage() {
 
       <MetaIntegrationsSection />
 
-      <div className="border-border bg-card rounded-xl border p-4">
-        <h2 className="text-base font-semibold">Provider registry</h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Status and setup taxonomy is backed by system lists:
-          <span className="font-mono"> {PROVIDERS_KEY}</span>,
-          <span className="font-mono"> {SETUP_KEY}</span>,
-          <span className="font-mono"> {STATUS_KEY}</span>.
-        </p>
-      </div>
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={providers.length > 0}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void loadAll()} />}
+        emptyFallback={
+          <EmptyState
+            icon={Cable}
+            title="Integration registry is empty"
+            description="Bootstrap default providers and setup fields, then extend them via Settings → Lists."
+            action={
+              <Button
+                onClick={() => void bootstrapDefaults()}
+                disabled={savingProvider === '__bootstrap__'}
+              >
+                Bootstrap defaults
+              </Button>
+            }
+          />
+        }
+      >
+        {error ? (
+          <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+        ) : null}
+        <div className="border-border bg-card rounded-xl border p-4">
+          <h2 className="text-base font-semibold">Provider registry</h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Status and setup taxonomy is backed by system lists:
+            <span className="font-mono"> {PROVIDERS_KEY}</span>,
+            <span className="font-mono"> {SETUP_KEY}</span>,
+            <span className="font-mono"> {STATUS_KEY}</span>.
+          </p>
+        </div>
 
-      <div className="grid gap-4">
-        {providers
-          .filter((provider) => provider.isActive)
-          .map((provider) => {
-            const status = activeStatusByProvider.get(provider.code) ?? 'NOT_CONFIGURED';
-            const setup = groupedSetup.get(provider.code) ?? [];
-            return (
-              <section key={provider.id} className="border-border bg-card rounded-xl border p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold">{provider.label}</h3>
-                    <p className="text-muted-foreground font-mono text-xs">{provider.code}</p>
-                  </div>
-                  <Select
-                    value={status}
-                    disabled={savingProvider === provider.code}
-                    onValueChange={(v) => {
-                      if (v) void setProviderStatus(provider.code, v as RegistryStatus);
-                    }}
-                  >
-                    <SelectTrigger size="sm" className="w-auto min-w-[10rem]">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUS_OPTIONS.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="mt-3">
-                  <p className="text-muted-foreground text-xs">Required setup</p>
-                  {setup.length === 0 ? (
-                    <p className="text-muted-foreground mt-1 text-sm">No setup items configured.</p>
-                  ) : (
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {setup.map((item) => (
-                        <span key={item} className="bg-muted rounded-full px-2 py-1 text-xs">
-                          {item}
-                        </span>
-                      ))}
+        <div className="grid gap-4">
+          {providers
+            .filter((provider) => provider.isActive)
+            .map((provider) => {
+              const status = activeStatusByProvider.get(provider.code) ?? 'NOT_CONFIGURED';
+              const setup = groupedSetup.get(provider.code) ?? [];
+              return (
+                <section key={provider.id} className="border-border bg-card rounded-xl border p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold">{provider.label}</h3>
+                      <p className="text-muted-foreground font-mono text-xs">{provider.code}</p>
                     </div>
-                  )}
-                </div>
-              </section>
-            );
-          })}
-      </div>
+                    <Select
+                      value={status}
+                      disabled={savingProvider === provider.code}
+                      onValueChange={(v) => {
+                        if (v) void setProviderStatus(provider.code, v as RegistryStatus);
+                      }}
+                    >
+                      <SelectTrigger size="sm" className="w-auto min-w-[10rem]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STATUS_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="mt-3">
+                    <p className="text-muted-foreground text-xs">Required setup</p>
+                    {setup.length === 0 ? (
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        No setup items configured.
+                      </p>
+                    ) : (
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {setup.map((item) => (
+                          <span key={item} className="bg-muted rounded-full px-2 py-1 text-xs">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </section>
+              );
+            })}
+        </div>
+      </DataView>
     </div>
   );
 }

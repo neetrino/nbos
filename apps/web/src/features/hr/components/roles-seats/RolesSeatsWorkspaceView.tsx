@@ -2,6 +2,7 @@
 
 import { BriefcaseBusiness, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { DataView } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -94,24 +95,30 @@ export function RolesSeatsGrid({
   onViewAccess: (employeeId: string) => void;
 }) {
   const t = useTranslations('hr.rolesSeats');
-  if (loading) return <p className="text-muted-foreground py-10 text-center">{t('loading')}</p>;
-  if (seats.length === 0) return <EmptySeats />;
   return (
-    <div className={ORG_SEAT_GRID_CLASS}>
-      {seats.map((seat) => (
-        <OrgSeatCard
-          key={seat.id}
-          seat={seat}
-          canEdit={canEdit}
-          canViewAccess={canViewAccess}
-          onEdit={() => onEdit(seat)}
-          onAssign={() => onAssign(seat)}
-          onArchive={() => onArchive(seat)}
-          onEndAssignment={onEnd}
-          onViewAccess={onViewAccess}
-        />
-      ))}
-    </div>
+    <DataView
+      loading={loading}
+      hasData={seats.length > 0}
+      loadingFallback={<p className="text-muted-foreground py-10 text-center">{t('loading')}</p>}
+      errorFallback={null}
+      emptyFallback={<EmptySeats />}
+    >
+      <div className={ORG_SEAT_GRID_CLASS}>
+        {seats.map((seat) => (
+          <OrgSeatCard
+            key={seat.id}
+            seat={seat}
+            canEdit={canEdit}
+            canViewAccess={canViewAccess}
+            onEdit={() => onEdit(seat)}
+            onAssign={() => onAssign(seat)}
+            onArchive={() => onArchive(seat)}
+            onEndAssignment={onEnd}
+            onViewAccess={onViewAccess}
+          />
+        ))}
+      </div>
+    </DataView>
   );
 }
 

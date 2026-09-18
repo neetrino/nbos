@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DEAL_TYPES } from '@/features/crm/constants/dealPipeline';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
+import { PartnerDetailCardFrame } from './PartnerDetailCardFrame';
 import {
   partnersApi,
   type PartnerCommissionDealType,
@@ -23,30 +25,40 @@ function parseRowPercent(raw: string): number | null | 'invalid' {
 export function PartnerCommissionPolicyCard(props: { partnerId: string }) {
   const { partnerId } = props;
   const [policy, setPolicy] = useState<PartnerCommissionPolicy | null>(null);
+  const policyRef = useRef(policy);
+  policyRef.current = policy;
+  const loadedPartnerIdRef = useRef<string | null>(null);
+  const [loadedPartnerId, setLoadedPartnerId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<Record<PartnerCommissionDealType, string>>>({});
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    beginLoad(loadedPartnerIdRef.current === partnerId && policyRef.current != null);
     setError(null);
     try {
       const data = await partnersApi.getCommissionPolicy(partnerId);
       setPolicy(data);
+      loadedPartnerIdRef.current = partnerId;
+      setLoadedPartnerId(partnerId);
       const nextDraft: Partial<Record<PartnerCommissionDealType, string>> = {};
       for (const row of data.rows) {
         nextDraft[row.dealType] = row.percent ?? '';
       }
       setDraft(nextDraft);
     } catch (caught) {
-      setPolicy(null);
+      if (isAccessRevokedApiError(caught) || loadedPartnerIdRef.current !== partnerId) {
+        setPolicy(null);
+        loadedPartnerIdRef.current = null;
+        setLoadedPartnerId(null);
+      }
       setError(getApiErrorMessage(caught, 'Commission policy could not be loaded.'));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [partnerId]);
+  }, [beginLoad, endLoad, partnerId]);
 
   useEffect(() => {
     void load();
@@ -80,76 +92,60 @@ export function PartnerCommissionPolicyCard(props: { partnerId: string }) {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="border-border bg-card rounded-xl border p-4">
-        <p className="text-muted-foreground text-sm">Loading commission policy…</p>
-      </div>
-    );
-  }
-
-  if (error || !policy) {
-    return (
-      <div className="border-border bg-card rounded-xl border p-4">
-        <p className="text-destructive text-sm" role="alert">
-          {error ?? 'No policy data.'}
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="mt-3"
-          onClick={() => void load()}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="border-border bg-card rounded-xl border p-4">
-      <h2 className="text-foreground text-sm font-semibold">Commission policy</h2>
-      <p className="text-muted-foreground mt-1 text-xs">
-        Percent by deal type (NBOS). Empty field uses partner default{' '}
-        <span className="tabular-nums">{policy.fallbackPercent}%</span>. Payment type does not
-        change these rates.
-      </p>
-
-      <form onSubmit={handleSave} className="mt-4 space-y-3">
-        {formError ? (
-          <p className="text-destructive text-sm" role="alert">
-            {formError}
+    <PartnerDetailCardFrame
+      loading={loading}
+      error={error}
+      hasData={loadedPartnerId === partnerId && policy != null}
+      loadingLabel="Loading commission policy…"
+      onRetry={() => void load()}
+      onDismissError={() => setError(null)}
+    >
+      {policy ? (
+        <div className="border-border bg-card rounded-xl border p-4">
+          <h2 className="text-foreground text-sm font-semibold">Commission policy</h2>
+          <p className="text-muted-foreground mt-1 text-xs">
+            Percent by deal type (NBOS). Empty field uses partner default{' '}
+            <span className="tabular-nums">{policy.fallbackPercent}%</span>. Payment type does not
+            change these rates.
           </p>
-        ) : null}
-        <div className="grid gap-3 sm:grid-cols-2">
-          {DEAL_TYPES.map((dt) => {
-            const raw = draft[dt.value as PartnerCommissionDealType] ?? '';
-            const parsed = parseRowPercent(raw);
-            return (
-              <div key={dt.value} className="space-y-1.5">
-                <Label htmlFor={`policy-${dt.value}`}>{dt.label}</Label>
-                <Input
-                  id={`policy-${dt.value}`}
-                  inputMode="decimal"
-                  placeholder={`Default (${policy.fallbackPercent}%)`}
-                  value={raw}
-                  onChange={(e) =>
-                    setDraft((prev) => ({
-                      ...prev,
-                      [dt.value]: e.target.value,
-                    }))
-                  }
-                  aria-invalid={raw.trim() !== '' && parsed === 'invalid'}
-                />
-              </div>
-            );
-          })}
+
+          <form onSubmit={handleSave} className="mt-4 space-y-3">
+            {formError ? (
+              <p className="text-destructive text-sm" role="alert">
+                {formError}
+              </p>
+            ) : null}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {DEAL_TYPES.map((dt) => {
+                const raw = draft[dt.value as PartnerCommissionDealType] ?? '';
+                const parsed = parseRowPercent(raw);
+                return (
+                  <div key={dt.value} className="space-y-1.5">
+                    <Label htmlFor={`policy-${dt.value}`}>{dt.label}</Label>
+                    <Input
+                      id={`policy-${dt.value}`}
+                      inputMode="decimal"
+                      placeholder={`Default (${policy.fallbackPercent}%)`}
+                      value={raw}
+                      onChange={(e) =>
+                        setDraft((prev) => ({
+                          ...prev,
+                          [dt.value]: e.target.value,
+                        }))
+                      }
+                      aria-invalid={raw.trim() !== '' && parsed === 'invalid'}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Saving…' : 'Save policy'}
+            </Button>
+          </form>
         </div>
-        <Button type="submit" disabled={saving}>
-          {saving ? 'Saving…' : 'Save policy'}
-        </Button>
-      </form>
-    </div>
+      ) : null}
+    </PartnerDetailCardFrame>
   );
 }

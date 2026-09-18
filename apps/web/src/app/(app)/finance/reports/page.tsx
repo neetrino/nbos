@@ -1,8 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BarChart3 } from 'lucide-react';
-import { ErrorState, LoadingState, useModuleHeroSlots } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  useModuleHeroSlots,
+} from '@/components/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { getFinancePeriodParams, type FinancePeriod } from '@/features/finance/constants/finance';
 import {
   FINANCE_DEFAULT_LIST_PERIOD,
@@ -33,7 +41,6 @@ import {
   type PayrollReport,
   type ProjectPnlReport,
 } from '@/lib/api/finance-reports';
-import { getApiErrorMessage } from '@/lib/api-errors';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 export default function FinanceReportsPage() {
@@ -49,7 +56,9 @@ export default function FinanceReportsPage() {
     useState<MrrSubscriptionRevenueReport | null>(null);
   const [payrollReport, setPayrollReport] = useState<PayrollReport | null>(null);
   const [projectPnl, setProjectPnl] = useState<ProjectPnlReport | null>(null);
-  const [loading, setLoading] = useState(true);
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
@@ -69,7 +78,7 @@ export default function FinanceReportsPage() {
   }, [period]);
 
   const fetchDefinitions = useCallback(async () => {
-    setLoading(true);
+    beginLoad(dataRef.current != null);
     try {
       const [
         definitions,
@@ -97,12 +106,20 @@ export default function FinanceReportsPage() {
       setProjectPnl(projectPnlReport);
       setError(null);
     } catch (caught) {
-      setData(null);
+      if (isAccessRevokedApiError(caught)) {
+        setData(null);
+        setCompanyPnl(null);
+        setCashFlow(null);
+        setExpensePlanVsActual(null);
+        setMrrSubscriptionRevenue(null);
+        setPayrollReport(null);
+        setProjectPnl(null);
+      }
       setError(getApiErrorMessage(caught, 'Finance report definitions could not be loaded.'));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [reportQueryParams]);
+  }, [beginLoad, endLoad, reportQueryParams]);
 
   useEffect(() => {
     void fetchDefinitions();
@@ -150,66 +167,71 @@ export default function FinanceReportsPage() {
     );
   }, [data, query]);
 
-  if (loading) {
-    return (
-      <div className="pb-5">
-        <LoadingState variant="cards" count={6} />
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <ErrorState
-        title="Finance reports unavailable"
-        description={error ?? 'Could not load Finance report definitions.'}
-        onRetry={fetchDefinitions}
-      />
-    );
-  }
-
   return (
-    <div className="space-y-6 pb-5">
-      <section className="border-border bg-card rounded-2xl border p-5">
-        <div className="flex items-start gap-3">
-          <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
-            <BarChart3 size={20} aria-hidden />
-          </div>
-          <div>
-            <p className="text-foreground font-medium">{data.meta.scope}</p>
-            <p className="text-muted-foreground mt-1 text-sm">{data.meta.phase6Boundary}</p>
-          </div>
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={data != null}
+      loadingFallback={
+        <div className="pb-5">
+          <LoadingState variant="cards" count={6} />
         </div>
-      </section>
+      }
+      errorFallback={
+        <ErrorState
+          title="Finance reports unavailable"
+          description={error ?? 'Could not load Finance report definitions.'}
+          onRetry={fetchDefinitions}
+        />
+      }
+    >
+      {data ? (
+        <div className="space-y-6 pb-5">
+          {error ? (
+            <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+          ) : null}
+          <section className="border-border bg-card rounded-2xl border p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-sky-100 p-2.5 text-sky-700">
+                <BarChart3 size={20} aria-hidden />
+              </div>
+              <div>
+                <p className="text-foreground font-medium">{data.meta.scope}</p>
+                <p className="text-muted-foreground mt-1 text-sm">{data.meta.phase6Boundary}</p>
+              </div>
+            </div>
+          </section>
 
-      <section className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
-        {companyPnl && reportMatchesSearch(companyPnl.title, query) ? (
-          <CompanyPnlSnapshot report={companyPnl} />
-        ) : null}
-        {cashFlow && reportMatchesSearch(cashFlow.title, query) ? (
-          <CashFlowSnapshot report={cashFlow} />
-        ) : null}
-        {expensePlanVsActual && reportMatchesSearch(expensePlanVsActual.title, query) ? (
-          <ExpensePlanVsActualSnapshot report={expensePlanVsActual} />
-        ) : null}
-        {mrrSubscriptionRevenue && reportMatchesSearch(mrrSubscriptionRevenue.title, query) ? (
-          <MrrSubscriptionRevenueSnapshot report={mrrSubscriptionRevenue} />
-        ) : null}
-        {payrollReport && reportMatchesSearch(payrollReport.title, query) ? (
-          <PayrollReportSnapshot report={payrollReport} />
-        ) : null}
-        {projectPnl && reportMatchesSearch(projectPnl.title, query) ? (
-          <ProjectPnlSnapshot report={projectPnl} />
-        ) : null}
-        {filteredDefinitions.map((definition) => (
-          <FinanceReportDefinitionCard key={definition.id} definition={definition} />
-        ))}
-      </section>
+          <section className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
+            {companyPnl && reportMatchesSearch(companyPnl.title, query) ? (
+              <CompanyPnlSnapshot report={companyPnl} />
+            ) : null}
+            {cashFlow && reportMatchesSearch(cashFlow.title, query) ? (
+              <CashFlowSnapshot report={cashFlow} />
+            ) : null}
+            {expensePlanVsActual && reportMatchesSearch(expensePlanVsActual.title, query) ? (
+              <ExpensePlanVsActualSnapshot report={expensePlanVsActual} />
+            ) : null}
+            {mrrSubscriptionRevenue && reportMatchesSearch(mrrSubscriptionRevenue.title, query) ? (
+              <MrrSubscriptionRevenueSnapshot report={mrrSubscriptionRevenue} />
+            ) : null}
+            {payrollReport && reportMatchesSearch(payrollReport.title, query) ? (
+              <PayrollReportSnapshot report={payrollReport} />
+            ) : null}
+            {projectPnl && reportMatchesSearch(projectPnl.title, query) ? (
+              <ProjectPnlSnapshot report={projectPnl} />
+            ) : null}
+            {filteredDefinitions.map((definition) => (
+              <FinanceReportDefinitionCard key={definition.id} definition={definition} />
+            ))}
+          </section>
 
-      {query && filteredDefinitions.length === 0 && !hasSnapshotMatch(query) ? (
-        <p className="text-muted-foreground text-sm">No reports match your search.</p>
+          {query && filteredDefinitions.length === 0 && !hasSnapshotMatch(query) ? (
+            <p className="text-muted-foreground text-sm">No reports match your search.</p>
+          ) : null}
+        </div>
       ) : null}
-    </div>
+    </DataView>
   );
 }
 

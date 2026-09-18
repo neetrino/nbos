@@ -72,6 +72,9 @@ import {
   getInitialViewMode,
   mergeFileAssetsById,
 } from './drive-utils';
+import { ListMutationErrorBanner } from '@/components/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { isAccessRevokedApiError } from '@/lib/api-errors';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
   DriveCreateFolderDialog,
@@ -162,7 +165,10 @@ export function DriveWorkspace() {
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<DriveViewMode>(getInitialViewMode);
   const displayViewMode = useMobilePreferredView(viewMode, 'cards');
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
+  const rawFilesRef = useRef<FileAsset[]>([]);
+  rawFilesRef.current = rawFiles;
+  const loadedDriveBrowseIdentityRef = useRef<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -210,7 +216,14 @@ export function DriveWorkspace() {
   const [libraryEntityFolderRows, setLibraryEntityFolderRows] = useState<DriveLibraryEntityRow[]>(
     [],
   );
-  const [libraryEntityFoldersLoading, setLibraryEntityFoldersLoading] = useState(false);
+  const {
+    loading: libraryEntityFoldersLoading,
+    begin: beginLibraryEntityFoldersLoad,
+    end: endLibraryEntityFoldersLoad,
+  } = useRevalidationState(false);
+  const libraryEntityFolderRowsRef = useRef<DriveLibraryEntityRow[]>([]);
+  libraryEntityFolderRowsRef.current = libraryEntityFolderRows;
+  const loadedLibraryEntityKeyRef = useRef<string | null>(null);
   const [projectHubView, setProjectHubView] = useState<DriveProjectHubView>(
     DRIVE_PROJECT_HUB_DEFAULT_VIEW,
   );
@@ -779,11 +792,24 @@ export function DriveWorkspace() {
   }, [loadLifecycleCounts]);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    const browseIdentity = [
+      selectedSpace.key,
+      selectedLibrary.key,
+      activeFolderId ?? '',
+      lifecycleView,
+      systemLibraryLink ? `${systemLibraryLink.entityType}:${systemLibraryLink.entityId}` : '',
+      projectHubView.section,
+      projectHubView.focusEntityId ?? '',
+      projectHubView.focusExtensionId ?? '',
+    ].join('|');
+    beginLoad(
+      loadedDriveBrowseIdentityRef.current === browseIdentity && rawFilesRef.current.length > 0,
+    );
     setError(null);
     try {
       if (projectHubAwaitingFocus) {
         setRawFiles([]);
+        loadedDriveBrowseIdentityRef.current = browseIdentity;
         setSelectedIds([]);
         setSelected(null);
         return;
@@ -795,6 +821,7 @@ export function DriveWorkspace() {
           search: search || undefined,
         });
         setRawFiles(list);
+        loadedDriveBrowseIdentityRef.current = browseIdentity;
         setSelectedIds((current) => current.filter((id) => list.some((file) => file.id === id)));
         setSelected((current) => {
           const preferredId = driveOpenFileId || current?.id;
@@ -812,6 +839,7 @@ export function DriveWorkspace() {
       };
       if (browseFolderPlacements) {
         setRawFiles([]);
+        loadedDriveBrowseIdentityRef.current = browseIdentity;
         setSelectedIds([]);
         setSelected(null);
         return;
@@ -834,6 +862,7 @@ export function DriveWorkspace() {
         ...projectHubParams,
       });
       setRawFiles(list);
+      loadedDriveBrowseIdentityRef.current = browseIdentity;
       setSelectedIds((current) => current.filter((id) => list.some((file) => file.id === id)));
       setSelected((current) => {
         const preferredId = driveOpenFileId || current?.id;
@@ -843,25 +872,36 @@ export function DriveWorkspace() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load Drive files';
       setError(message);
+      if (isAccessRevokedApiError(err)) {
+        setRawFiles([]);
+        loadedDriveBrowseIdentityRef.current = null;
+        setSelectedIds([]);
+        setSelected(null);
+      }
       if (!isDriveBrowseSilentError(err)) {
         toast.error(message);
       }
     } finally {
-      setLoading(false);
+      endLoad();
     }
   }, [
+    activeFolderId,
+    beginLoad,
     browseFolderPlacements,
     browseSystemLibraryUploads,
     driveOpenFileId,
     effectiveStatus,
+    endLoad,
     inLifecycleView,
     libraryEntityFolderScope,
+    lifecycleView,
     projectHubAwaitingFocus,
     projectHubFileBrowse,
     projectHubSummary,
     projectHubView,
     purpose,
     search,
+    selectedLibrary.key,
     selectedSpace.key,
     systemLibraryLink,
   ]);
@@ -931,25 +971,40 @@ export function DriveWorkspace() {
   useEffect(() => {
     if (!browseSystemLibraryUploads) {
       setLibraryEntityFolderRows([]);
-      setLibraryEntityFoldersLoading(false);
+      loadedLibraryEntityKeyRef.current = null;
+      endLibraryEntityFoldersLoad();
       return;
     }
     let cancelled = false;
-    setLibraryEntityFoldersLoading(true);
+    beginLibraryEntityFoldersLoad(
+      loadedLibraryEntityKeyRef.current === selectedLibrary.key &&
+        libraryEntityFolderRowsRef.current.length > 0,
+    );
     void loadDriveLibraryEntityRows(selectedLibrary.key)
       .then((rows) => {
-        if (!cancelled) setLibraryEntityFolderRows(rows);
+        if (cancelled) return;
+        setLibraryEntityFolderRows(rows);
+        loadedLibraryEntityKeyRef.current = selectedLibrary.key;
       })
-      .catch(() => {
-        if (!cancelled) setLibraryEntityFolderRows([]);
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        if (isAccessRevokedApiError(err)) {
+          setLibraryEntityFolderRows([]);
+          loadedLibraryEntityKeyRef.current = null;
+        }
       })
       .finally(() => {
-        if (!cancelled) setLibraryEntityFoldersLoading(false);
+        if (!cancelled) endLibraryEntityFoldersLoad();
       });
     return () => {
       cancelled = true;
     };
-  }, [browseSystemLibraryUploads, selectedLibrary.key]);
+  }, [
+    beginLibraryEntityFoldersLoad,
+    browseSystemLibraryUploads,
+    endLibraryEntityFoldersLoad,
+    selectedLibrary.key,
+  ]);
 
   const loadFolders = useCallback(async () => {
     const requestId = ++folderListingRequestId.current;
@@ -1714,7 +1769,8 @@ export function DriveWorkspace() {
     setSelected(null);
     setActiveFolderId(null);
     setFolderTrail([]);
-    setLoading(view !== 'browse');
+    if (view !== 'browse') beginLoad(false);
+    else endLoad();
     if (view === 'browse') return;
     goToDriveRoot();
   }
@@ -2313,6 +2369,10 @@ export function DriveWorkspace() {
             <p className="text-muted-foreground text-sm">
               Select a record below to view files in this section.
             </p>
+          ) : null}
+
+          {error && rawFiles.length > 0 ? (
+            <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
           ) : null}
 
           {browseSystemLibraryEntityRoot ? (

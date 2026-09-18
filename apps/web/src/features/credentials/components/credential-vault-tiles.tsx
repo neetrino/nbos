@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { KeyRound, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/shared';
+import { DataView, EmptyState } from '@/components/shared';
 import { CredentialVaultCard } from '@/features/credentials/components/CredentialVaultCard';
 import type { CredentialListItem } from '@/features/credentials/types/credential-list-item';
 import { PermissionGate } from '@/lib/permissions';
@@ -55,55 +55,55 @@ export function CredentialVaultTiles({
 }: CredentialVaultTilesProps) {
   const t = useTranslations('credentials');
 
-  if (loading) {
-    return (
+  return (
+    <DataView
+      loading={loading}
+      hasData={credentials.length > 0}
+      loadingFallback={
+        <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
+          {Array.from({ length: TILE_SKELETON_COUNT }).map((_, index) => (
+            <Skeleton key={index} className="h-[92px] w-full rounded-lg" />
+          ))}
+        </div>
+      }
+      errorFallback={null}
+      emptyFallback={
+        <EmptyState
+          icon={KeyRound}
+          title={t('emptyTitle')}
+          description={t('emptyDescription')}
+          action={
+            showCreate ? (
+              <PermissionGate module="CREDENTIALS" action="ADD">
+                <Button onClick={onCreateOpen}>
+                  <Plus size={16} /> {t('addCredential')}
+                </Button>
+              </PermissionGate>
+            ) : undefined
+          }
+        />
+      }
+    >
       <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
-        {Array.from({ length: TILE_SKELETON_COUNT }).map((_, index) => (
-          <Skeleton key={index} className="h-[92px] w-full rounded-lg" />
+        {credentials.map((credential) => (
+          <CredentialVaultCard
+            key={credential.id}
+            credential={credential}
+            variant="grid"
+            onOpen={onOpenCredential}
+            onSetFavorite={onSetFavorite}
+            onRequestMoveToTrash={onRequestMoveToTrash}
+            canMoveToTrash={canMoveToTrash}
+            onCopyText={onCopyText}
+            onCopySecret={onCopySecret}
+            secretFlashCredentialId={secretFlashCredentialId}
+            selectionEnabled={selection?.enabled}
+            selectionActive={selection?.selectionActive ?? false}
+            selected={selection?.isSelected(credential.id)}
+            onToggleSelected={() => selection?.onToggle(credential.id)}
+          />
         ))}
       </div>
-    );
-  }
-
-  if (credentials.length === 0) {
-    return (
-      <EmptyState
-        icon={KeyRound}
-        title={t('emptyTitle')}
-        description={t('emptyDescription')}
-        action={
-          showCreate ? (
-            <PermissionGate module="CREDENTIALS" action="ADD">
-              <Button onClick={onCreateOpen}>
-                <Plus size={16} /> {t('addCredential')}
-              </Button>
-            </PermissionGate>
-          ) : undefined
-        }
-      />
-    );
-  }
-
-  return (
-    <div className={CREDENTIAL_VAULT_TILE_GRID_CLASS}>
-      {credentials.map((credential) => (
-        <CredentialVaultCard
-          key={credential.id}
-          credential={credential}
-          variant="grid"
-          onOpen={onOpenCredential}
-          onSetFavorite={onSetFavorite}
-          onRequestMoveToTrash={onRequestMoveToTrash}
-          canMoveToTrash={canMoveToTrash}
-          onCopyText={onCopyText}
-          onCopySecret={onCopySecret}
-          secretFlashCredentialId={secretFlashCredentialId}
-          selectionEnabled={selection?.enabled}
-          selectionActive={selection?.selectionActive ?? false}
-          selected={selection?.isSelected(credential.id)}
-          onToggleSelected={() => selection?.onToggle(credential.id)}
-        />
-      ))}
-    </div>
+    </DataView>
   );
 }

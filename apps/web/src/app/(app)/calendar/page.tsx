@@ -1,8 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { PageHero, PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
+import {
+  DataView,
+  ListMutationErrorBanner,
+  PageHero,
+  PageHeroTabs,
+  type PageHeroTabOption,
+} from '@/components/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { calendarApi, type CalendarEventProjection, type CalendarLayer } from '@/lib/api/calendar';
 import { CreateMeetingCalendarDialog } from '@/features/calendar/CreateMeetingCalendarDialog';
 import { CreatePersonalCalendarDialog } from './calendar-create-personal-dialog';
@@ -67,7 +75,11 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [layer, setLayer] = useState<CalendarLayer>('ALL');
   const [events, setEvents] = useState<CalendarEventProjection[]>([]);
-  const [loading, setLoading] = useState(true);
+  const eventsRef = useRef(events);
+  eventsRef.current = events;
+  const loadedMonthKeyRef = useRef<string | null>(null);
+  const [loadedMonthKey, setLoadedMonthKey] = useState<string | null>(null);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [meetingOpen, setMeetingOpen] = useState(false);
   const [personalOpen, setPersonalOpen] = useState(false);
@@ -110,7 +122,8 @@ export default function CalendarPage() {
   }, []);
 
   const loadEvents = useCallback(async () => {
-    setLoading(true);
+    const monthKey = `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`;
+    beginLoad(loadedMonthKeyRef.current === monthKey && eventsRef.current.length > 0);
     setError(null);
     try {
       const range = monthRange(currentMonth);
@@ -120,12 +133,19 @@ export default function CalendarPage() {
         layer,
       });
       setEvents(items);
+      loadedMonthKeyRef.current = monthKey;
+      setLoadedMonthKey(monthKey);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load calendar events');
+      setError(getApiErrorMessage(err, 'Failed to load calendar events'));
+      if (isAccessRevokedApiError(err)) {
+        setEvents([]);
+        loadedMonthKeyRef.current = null;
+        setLoadedMonthKey(null);
+      }
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [currentMonth, layer]);
+  }, [beginLoad, currentMonth, endLoad, layer]);
 
   useEffect(() => {
     void loadEvents();
@@ -193,11 +213,14 @@ export default function CalendarPage() {
         </button>
       </div>
 
-      {error && (
+      {error && events.length > 0 ? (
+        <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+      ) : null}
+      {error && events.length === 0 ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
-      )}
+      ) : null}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="border-border bg-card rounded-2xl border p-4">
@@ -243,32 +266,49 @@ export default function CalendarPage() {
                 })}
               </h2>
             </div>
-            {!loading && selectedEvents.length > 0 ? (
+            {selectedEvents.length > 0 ? (
               <span className="text-foreground text-2xl leading-none font-semibold tabular-nums">
                 {selectedEvents.length}
               </span>
             ) : null}
           </div>
           <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-2.5">
-            {loading ? (
-              <p className="text-muted-foreground py-6 text-center text-sm">
-                Loading calendar events...
-              </p>
-            ) : selectedEvents.length > 0 ? (
-              <div className="space-y-2 pr-1.5 pb-3">
-                {selectedEvents.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onMeetingOrPersonalClick={openEventSheet}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="pb-3">
-                <CalendarEmptyState />
-              </div>
-            )}
+            <DataView
+              loading={loading}
+              error={error}
+              hasData={
+                loadedMonthKey === `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`
+              }
+              loadingFallback={
+                <p className="text-muted-foreground py-6 text-center text-sm">
+                  Loading calendar events...
+                </p>
+              }
+              errorFallback={
+                <p className="text-muted-foreground py-6 text-center text-sm">{error}</p>
+              }
+              emptyFallback={
+                <div className="pb-3">
+                  <CalendarEmptyState />
+                </div>
+              }
+            >
+              {selectedEvents.length > 0 ? (
+                <div className="space-y-2 pr-1.5 pb-3">
+                  {selectedEvents.map((event) => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onMeetingOrPersonalClick={openEventSheet}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="pb-3">
+                  <CalendarEmptyState />
+                </div>
+              )}
+            </DataView>
           </div>
           <div className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2">
             <CalendarDayCreateMenu

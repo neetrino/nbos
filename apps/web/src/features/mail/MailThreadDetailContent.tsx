@@ -9,7 +9,9 @@ import {
   DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import {
+  DataView,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   ProfileAPermanentDeleteDialog,
   useDeleteConfirm,
@@ -56,6 +58,8 @@ export function MailThreadDetailContent({
     setDetail,
     loading,
     error,
+    clearError,
+    loadedThreadId,
     load,
     markingRead,
     markingUnread,
@@ -96,16 +100,18 @@ export function MailThreadDetailContent({
     clearPermanentDeleteConfirm();
   }, [threadId, clearDeleteConfirm, clearPermanentDeleteConfirm]);
 
-  if (loading) {
-    return <LoadingState />;
-  }
-
-  if (error) {
-    return <ErrorState description={error} onRetry={() => void load()} />;
-  }
-
-  if (!detail) {
-    return null;
+  if (!detail || loadedThreadId !== threadId) {
+    return (
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={false}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+      >
+        {null}
+      </DataView>
+    );
   }
 
   const title = detail.messages[0]?.subject ?? detail.thread.subjectNormalized;
@@ -185,114 +191,125 @@ export function MailThreadDetailContent({
   };
 
   return (
-    <div className={`flex flex-col ${headerGap}`}>
-      <div
-        className={cn(
-          useMobileSheetHeader
-            ? cn(DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS, '-mx-5')
-            : 'flex flex-wrap items-start justify-between gap-3',
-        )}
-      >
-        {useMobileSheetHeader ? (
-          <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
-            {canEdit ? <MailThreadDetailActions layout="settings" {...threadActionsProps} /> : null}
-          </div>
-        ) : null}
-
+    <DataView
+      loading={loading}
+      error={error}
+      hasData
+      loadingFallback={<LoadingState />}
+      errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+    >
+      {error ? <ListMutationErrorBanner message={error} onDismiss={clearError} /> : null}
+      <div className={`flex flex-col ${headerGap}`}>
         <div
           className={cn(
             useMobileSheetHeader
-              ? cn(DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS, 'flex min-w-0 flex-col gap-2')
-              : 'flex min-w-0 flex-1 flex-col gap-2',
+              ? cn(DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS, '-mx-5')
+              : 'flex flex-wrap items-start justify-between gap-3',
           )}
         >
-          <h2
-            className={
-              compact
-                ? 'text-foreground text-lg leading-snug font-semibold tracking-tight'
-                : 'text-2xl font-semibold tracking-tight'
-            }
-          >
-            {title}
-          </h2>
-          <p className="text-muted-foreground text-sm">
-            {detail.mailAccount.emailAddress} · {detail.mailAccount.status}
-            {detail.thread.needsBusinessLink ? ' · Needs business link' : ''}
-          </p>
-          {!useMobileSheetHeader && canEdit && detail.thread.hasUnread ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                disabled={actionsBusy}
-                onClick={() => void markRead()}
-              >
-                <Check size={14} aria-hidden />
-                Mark read
-              </Button>
+          {useMobileSheetHeader ? (
+            <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>
+              {canEdit ? (
+                <MailThreadDetailActions layout="settings" {...threadActionsProps} />
+              ) : null}
             </div>
+          ) : null}
+
+          <div
+            className={cn(
+              useMobileSheetHeader
+                ? cn(DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS, 'flex min-w-0 flex-col gap-2')
+                : 'flex min-w-0 flex-1 flex-col gap-2',
+            )}
+          >
+            <h2
+              className={
+                compact
+                  ? 'text-foreground text-lg leading-snug font-semibold tracking-tight'
+                  : 'text-2xl font-semibold tracking-tight'
+              }
+            >
+              {title}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              {detail.mailAccount.emailAddress} · {detail.mailAccount.status}
+              {detail.thread.needsBusinessLink ? ' · Needs business link' : ''}
+            </p>
+            {!useMobileSheetHeader && canEdit && detail.thread.hasUnread ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  disabled={actionsBusy}
+                  onClick={() => void markRead()}
+                >
+                  <Check size={14} aria-hidden />
+                  Mark read
+                </Button>
+              </div>
+            ) : null}
+          </div>
+
+          {canEdit && !useMobileSheetHeader ? (
+            <MailThreadDetailActions layout="buttons" {...threadActionsProps} />
+          ) : null}
+          {restoreError ? (
+            <p className={cn('text-destructive text-sm', useMobileSheetHeader && 'px-4')}>
+              {restoreError}
+            </p>
+          ) : null}
+          {purgeError ? (
+            <p className={cn('text-destructive text-sm', useMobileSheetHeader && 'px-4')}>
+              {purgeError}
+            </p>
           ) : null}
         </div>
 
-        {canEdit && !useMobileSheetHeader ? (
-          <MailThreadDetailActions layout="buttons" {...threadActionsProps} />
-        ) : null}
-        {restoreError ? (
-          <p className={cn('text-destructive text-sm', useMobileSheetHeader && 'px-4')}>
-            {restoreError}
-          </p>
-        ) : null}
-        {purgeError ? (
-          <p className={cn('text-destructive text-sm', useMobileSheetHeader && 'px-4')}>
-            {purgeError}
-          </p>
-        ) : null}
-      </div>
-
-      <MailThreadMessages
-        threadId={threadId}
-        messages={detail.messages}
-        canEdit={canEdit}
-        queueingMessageId={queueingMessageId}
-        retryingSendMessageId={retryingSendMessageId}
-        cancellingMessageId={cancellingMessageId}
-        retryingFailedMessageId={retryingFailedMessageId}
-        retryingAttachmentId={retryingAttachmentId}
-        onQueueDraft={queueDraftForSend}
-        onRetryFailedSend={retryFailedSend}
-        onCancelOutbound={cancelOutbound}
-        onResetFailedToDraft={resetFailedToDraft}
-        onRetryAttachmentDownload={retryAttachmentDownload}
-      />
-      {canEdit && replyComposerOpen ? (
-        <MailThreadReplyComposer
+        <MailThreadMessages
           threadId={threadId}
           messages={detail.messages}
-          onThreadUpdated={setDetail}
-          onDismiss={() => setReplyComposerOpen(false)}
-          onSent={() => setReplyComposerOpen(false)}
+          canEdit={canEdit}
+          queueingMessageId={queueingMessageId}
+          retryingSendMessageId={retryingSendMessageId}
+          cancellingMessageId={cancellingMessageId}
+          retryingFailedMessageId={retryingFailedMessageId}
+          retryingAttachmentId={retryingAttachmentId}
+          onQueueDraft={queueDraftForSend}
+          onRetryFailedSend={retryFailedSend}
+          onCancelOutbound={cancelOutbound}
+          onResetFailedToDraft={resetFailedToDraft}
+          onRetryAttachmentDownload={retryAttachmentDownload}
         />
-      ) : null}
+        {canEdit && replyComposerOpen ? (
+          <MailThreadReplyComposer
+            threadId={threadId}
+            messages={detail.messages}
+            onThreadUpdated={setDetail}
+            onDismiss={() => setReplyComposerOpen(false)}
+            onSent={() => setReplyComposerOpen(false)}
+          />
+        ) : null}
 
-      <MailThreadDeleteDialog
-        threadSubject={deleteConfirm.target?.name ?? title}
-        open={deleteConfirm.open}
-        isSubmitting={deleting}
-        errorMessage={deleteError}
-        onOpenChange={deleteConfirm.onOpenChange}
-        onConfirm={() => void confirmDelete()}
-      />
+        <MailThreadDeleteDialog
+          threadSubject={deleteConfirm.target?.name ?? title}
+          open={deleteConfirm.open}
+          isSubmitting={deleting}
+          errorMessage={deleteError}
+          onOpenChange={deleteConfirm.onOpenChange}
+          onConfirm={() => void confirmDelete()}
+        />
 
-      <ProfileAPermanentDeleteDialog
-        open={permanentDeleteConfirm.open}
-        onOpenChange={permanentDeleteConfirm.onOpenChange}
-        itemName={permanentDeleteConfirm.target?.name ?? title}
-        entityLabel="email thread"
-        isSubmitting={purging}
-        onConfirm={() => void confirmPermanentDelete()}
-      />
-    </div>
+        <ProfileAPermanentDeleteDialog
+          open={permanentDeleteConfirm.open}
+          onOpenChange={permanentDeleteConfirm.onOpenChange}
+          itemName={permanentDeleteConfirm.target?.name ?? title}
+          entityLabel="email thread"
+          isSubmitting={purging}
+          onConfirm={() => void confirmPermanentDelete()}
+        />
+      </div>
+    </DataView>
   );
 }
