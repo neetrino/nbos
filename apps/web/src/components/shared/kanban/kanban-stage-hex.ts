@@ -3,7 +3,6 @@ export const KANBAN_TAILWIND_BG_HEX: Record<string, string> = {
   'bg-blue-400': '#60A5FA',
   'bg-blue-500': '#3B82F6',
   'bg-amber-500': '#F59E0B',
-  'bg-black': '#000000',
   'bg-gray-400': '#9CA3AF',
   'bg-indigo-500': '#6366F1',
   'bg-purple-500': '#A855F7',

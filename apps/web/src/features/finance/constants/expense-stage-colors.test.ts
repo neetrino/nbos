@@ -7,6 +7,7 @@ describe('expense-stage-colors', () => {
     for (const [key, colorClass] of Object.entries(EXPENSE_STAGE_COLOR_CLASS)) {
       expect(EXPENSE_STAGE_HEX[key]).toBe(resolveKanbanStageHex(colorClass));
     }
-    expect(EXPENSE_STAGE_HEX.ON_HOLD).toBe('#000000');
+    expect(EXPENSE_STAGE_HEX.PLANNED).toBe('#3B82F6');
+    expect(EXPENSE_STAGE_HEX.ON_HOLD).toBe('#9CA3AF');
   });
 });

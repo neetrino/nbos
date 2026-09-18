@@ -11,11 +11,11 @@ export const EXPENSE_STAGE_COLOR_CLASS: Record<
   ExpenseBoardColumnKey | ExpenseClosedBoardColumnKey,
   string
 > = {
-  PLANNED: 'bg-slate-500',
+  PLANNED: 'bg-blue-500',
   DUE_SOON: 'bg-amber-500',
   DUE_NOW: 'bg-orange-500',
   OVERDUE: 'bg-red-600',
-  ON_HOLD: 'bg-black',
+  ON_HOLD: 'bg-gray-400',
   PAID: 'bg-green-600',
   CANCELLED: 'bg-red-500',
 };
