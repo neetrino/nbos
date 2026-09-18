@@ -46,11 +46,7 @@ import {
 } from './expense-list-ledger';
 import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
-import {
-  refreshExpenseWorkflowStatus,
-  EXPENSE_BOARD_SCOPE_EXCLUDE,
-  EXPENSE_CLOSED_SCOPE_STATUSES,
-} from './expense-workflow';
+import { refreshExpenseWorkflowStatus, resolveExpenseListStatusWhere } from './expense-workflow';
 import { OperationalJournalService } from '../finance/journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import { mergeFinanceWhere } from '../finance/finance-scoped-access';
@@ -102,6 +98,7 @@ export class ExpensesService {
       sortOrder,
       activeBoard,
       closedBoard,
+      lifecycleBoard,
       payrollLinked,
       payrollMonth,
       payrollEmployeeId,
@@ -135,6 +132,7 @@ export class ExpensesService {
       dateTo,
       activeBoard: activeBoard === true,
       closedBoard: closedBoard === true,
+      lifecycleBoard: lifecycleBoard === true,
       payrollLinked: payrollLinked === true,
       payrollMonth,
       payrollEmployeeId,
@@ -436,17 +434,13 @@ export class ExpensesService {
     const productWhere = params.productId ? { productId: params.productId } : {};
     const planIdTrimmed = params.expensePlanId?.trim();
     const planWhere = planIdTrimmed ? { expensePlanId: planIdTrimmed } : {};
-    const statusWhere = safeStatus
-      ? { status: safeStatus as ExpenseStatusEnum }
-      : params.closedBoard === true
-        ? { status: { in: EXPENSE_CLOSED_SCOPE_STATUSES } }
-        : params.activeBoard === true
-          ? {
-              status: {
-                notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
-              },
-            }
-          : {};
+    const resolvedStatus = resolveExpenseListStatusWhere({
+      status: safeStatus,
+      closedBoard: params.closedBoard === true,
+      activeBoard: params.activeBoard === true,
+      lifecycleBoard: params.lifecycleBoard === true,
+    });
+    const statusWhere = resolvedStatus ? { status: resolvedStatus } : {};
 
     const scopeWhere: Prisma.ExpenseWhereInput = {
       ...projectWhere,
@@ -537,14 +531,14 @@ export class ExpensesService {
     const where: Prisma.ExpenseWhereInput = {};
     if (filters.type) where.type = filters.type as ExpenseTypeEnum;
     if (filters.category) where.category = filters.category as ExpenseCategoryEnum;
-    if (filters.status) {
-      where.status = filters.status as ExpenseStatusEnum;
-    } else if (filters.closedBoard) {
-      where.status = { in: EXPENSE_CLOSED_SCOPE_STATUSES };
-    } else if (filters.activeBoard) {
-      where.status = {
-        notIn: EXPENSE_BOARD_SCOPE_EXCLUDE,
-      };
+    const statusWhere = resolveExpenseListStatusWhere({
+      status: filters.status,
+      closedBoard: filters.closedBoard,
+      activeBoard: filters.activeBoard,
+      lifecycleBoard: filters.lifecycleBoard,
+    });
+    if (statusWhere) {
+      where.status = statusWhere;
     }
     if (filters.backlogReason) {
       where.backlogReason = filters.backlogReason as ExpenseBacklogReasonEnum;

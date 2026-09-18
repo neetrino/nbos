@@ -204,7 +204,7 @@ Web: переключатель **Grid | Board | List**; выбор сохран
 
 ### 4.2. Expense Board / Доска расходов
 
-**Путь:** `/finance/expenses` (Finance top tab **Expense board**; sub-nav: Active / Backlog / Closed)
+**Путь:** `/finance/expenses` (Finance top tab **Pay Now**; screen filter: Pay now / Backlog; на Pay now lifecycle: Active / Closed / All statuses)
 
 Default view: `Board / Доска` (kanban; переключатель Board/List, выбор в `localStorage`).
 
@@ -218,7 +218,7 @@ Default view: `Board / Доска` (kanban; переключатель Board/Lis
 | Overdue  | Просрочено                     |
 | On Hold  | На паузе внутри текущего цикла |
 
-`Paid` и `Cancelled` должны уходить в `Closed / Закрытые`, чтобы не перегружать текущую доску.
+`Paid` и `Cancelled` должны уходить в lifecycle `Closed / Закрытые` на той же странице Pay now, чтобы не перегружать текущую доску. `/finance/expenses/closed` редиректит сюда с Closed.
 
 ### 4.3. Expense Backlog / Долги и отложенные
 

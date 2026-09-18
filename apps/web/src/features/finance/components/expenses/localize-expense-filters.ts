@@ -12,6 +12,7 @@ import {
   EXPENSE_SORT_BY_FILTER_KEY,
   EXPENSE_SORT_ORDER_FILTER_KEY,
 } from './expense-board-scope';
+import { EXPENSE_LIFECYCLE_SCOPE_FILTER_KEY } from './expense-lifecycle-scope';
 import {
   translateExpenseCategory,
   translateExpenseStage,
@@ -22,7 +23,12 @@ import {
 const SCOPE_LABEL_KEYS = {
   active: 'scope.active',
   backlog: 'scope.backlog',
-  closed: 'scope.closed',
+} as const satisfies Record<string, ExpensesMessageKey>;
+
+const LIFECYCLE_SCOPE_LABEL_KEYS = {
+  ALL: 'boardScope.ALL',
+  ACTIVE: 'boardScope.ACTIVE',
+  CLOSED: 'boardScope.CLOSED',
 } as const satisfies Record<string, ExpensesMessageKey>;
 
 const PERIOD_LABEL_KEYS = {
@@ -58,6 +64,17 @@ function localizeScopeFilter(config: FilterConfig, t: ExpensesTranslator): Filte
     label: t('filters.scope'),
     options: mapOptionLabels(config.options, (value) => {
       const key = SCOPE_LABEL_KEYS[value as keyof typeof SCOPE_LABEL_KEYS];
+      return key ? t(key) : value;
+    }),
+  };
+}
+
+function localizeLifecycleScopeFilter(config: FilterConfig, t: ExpensesTranslator): FilterConfig {
+  return {
+    ...config,
+    label: t('filters.status'),
+    options: mapOptionLabels(config.options, (value) => {
+      const key = LIFECYCLE_SCOPE_LABEL_KEYS[value as keyof typeof LIFECYCLE_SCOPE_LABEL_KEYS];
       return key ? t(key) : value;
     }),
   };
@@ -117,6 +134,8 @@ export function localizeExpenseFilterConfigs(
     switch (config.key) {
       case EXPENSE_BOARD_SCOPE_FILTER_KEY:
         return localizeScopeFilter(config, t);
+      case EXPENSE_LIFECYCLE_SCOPE_FILTER_KEY:
+        return localizeLifecycleScopeFilter(config, t);
       case FINANCE_PERIOD_FILTER_KEY:
         return localizePeriodFilter(config, t);
       case EXPENSE_PAYROLL_SOURCE_FILTER_KEY:

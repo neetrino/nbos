@@ -6,7 +6,7 @@ const CSV_UTF8_BOM = '\uFEFF';
 const HEADER = ['section', 'col1', 'col2', 'col3', 'col4', 'col5'] as const;
 
 const STATS_SCOPE_NOTE =
-  'GET /finance/expenses/stats only: period (dateFrom/dateTo), optional projectId, optional expensePlanId, optional status, optional activeBoard (aligned with list scope: board vs backlog vs closed vs plan drill-down). Toolbar search, category, type, frequency, backlogReason, and sort are not applied to these aggregates.';
+  'GET /finance/expenses/stats only: period (dateFrom/dateTo), optional projectId, optional expensePlanId, optional status, optional activeBoard / closedBoard / lifecycleBoard (aligned with Pay now Active / Closed / All). Toolbar search, category, type, frequency, backlogReason, and sort are not applied to these aggregates.';
 
 export interface ExpensesScopeStatsCsvMeta {
   period: FinancePeriod;
@@ -44,6 +44,12 @@ function appendMetaRows(rows: string[], meta: ExpensesScopeStatsCsvMeta): void {
   if (q.status) rows.push(csvLine(['meta', 'stats_status', q.status, '', '', '']));
   if (q.activeBoard === true) {
     rows.push(csvLine(['meta', 'stats_activeBoard', 'true', '', '', '']));
+  }
+  if (q.closedBoard === true) {
+    rows.push(csvLine(['meta', 'stats_closedBoard', 'true', '', '', '']));
+  }
+  if (q.lifecycleBoard === true) {
+    rows.push(csvLine(['meta', 'stats_lifecycleBoard', 'true', '', '', '']));
   }
 }
 
@@ -116,7 +122,7 @@ export function triggerExpensesScopeStatsCsvDownload(
   URL.revokeObjectURL(url);
 }
 
-function buildExpensesScopeStatsFilename(
+export function buildExpensesScopeStatsFilename(
   period: FinancePeriod,
   meta: ExpensesScopeStatsCsvMeta,
 ): string {
@@ -127,6 +133,8 @@ function buildExpensesScopeStatsFilename(
   if (q.expensePlanId?.trim()) hints.push(`plan-${q.expensePlanId.trim().slice(0, 8)}`);
   if (q.status?.trim()) hints.push(`st-${q.status.trim().slice(0, 10)}`);
   if (q.activeBoard === true) hints.push('active-board');
+  if (q.closedBoard === true) hints.push('closed-board');
+  if (q.lifecycleBoard === true) hints.push('lifecycle-board');
   const hintPart = hints.length ? `-${hints.join('-')}` : '';
   return `nbos-expenses-scope-stats-${period}${hintPart}-${dateStamp}.csv`;
 }

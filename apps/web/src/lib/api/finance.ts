@@ -295,6 +295,8 @@ export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   activeBoard?: boolean;
   /** When true and `status` is omitted: same scope as `GET /expenses?closedBoard=true`. */
   closedBoard?: boolean;
+  /** When true and `status` is omitted: same scope as `GET /expenses?lifecycleBoard=true`. */
+  lifecycleBoard?: boolean;
   payrollLinked?: boolean;
   payrollMonth?: string;
   payrollEmployeeId?: string;
@@ -320,11 +322,13 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   sortBy?: ExpenseListSortField;
   sortOrder?: 'asc' | 'desc';
   /**
-   * When true and `status` is omitted: exclude `PAID` and `BACKLOG` (board vs closed/backlog), per NBOS.
+   * When true and `status` is omitted: exclude `PAID`, `BACKLOG`, and `CANCELLED` (Pay now Active).
    */
   activeBoard?: boolean;
-  /** When true and `status` is omitted: only `PAID` and `CANCELLED` (closed expense route). */
+  /** When true and `status` is omitted: only `PAID` and `CANCELLED` (Pay now Closed). */
   closedBoard?: boolean;
+  /** When true and `status` is omitted: exclude `BACKLOG` only (Pay now All). */
+  lifecycleBoard?: boolean;
   /** When true: only payroll-materialized salary expenses. */
   payrollLinked?: boolean;
   payrollMonth?: string;

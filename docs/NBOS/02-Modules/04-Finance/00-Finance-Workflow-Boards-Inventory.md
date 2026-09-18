@@ -6,14 +6,13 @@ References: [`11-Finance-Stage-Gate-and-Board-UX-Standard.md`](11-Finance-Stage-
 
 ## Surfaces (web)
 
-| Surface                | Path                        | Active scope                                             | Closed / terminal                                       | Board + List             |
-| ---------------------- | --------------------------- | -------------------------------------------------------- | ------------------------------------------------------- | ------------------------ |
-| **Expenses (active)**  | `/finance/expenses`         | `activeBoard=true` → board columns `PLANNED` … `ON_HOLD` | —                                                       | Yes                      |
-| **Expenses (closed)**  | `/finance/expenses/closed`  | —                                                        | `closedBoard=true` → `PAID`, `CANCELLED` kanban columns | Yes (2026-05)            |
-| **Expenses (backlog)** | `/finance/expenses/backlog` | `BACKLOG` only                                           | —                                                       | List only                |
-| **Invoices**           | Finance → Invoices          | `moneyStatus` kanban                                     | `PAID`, `CANCELLED` on same board                       | Kanban (list TBD parity) |
-| **Bonus board**        | `/finance/bonuses`          | Incoming / In Progress / Active (simplified kanban)      | `PAID`, `CLAWBACK` via **Closed** scope filter          | Board + List (2026-05)   |
-| **Subscriptions**      | Finance module              | Grid/list-first                                          | Canon TBD                                               | List-first               |
+| Surface                | Path                        | Active scope                                                   | Closed / terminal                                                                                         | Board + List             |
+| ---------------------- | --------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------ |
+| **Expenses (Pay now)** | `/finance/expenses`         | Lifecycle `Active`: `activeBoard=true` → `PLANNED` … `ON_HOLD` | Lifecycle `Closed` / `All` on the same page (`closedBoard` / `lifecycleBoard`). `/closed` redirects here. | Yes                      |
+| **Expenses (backlog)** | `/finance/expenses/backlog` | `BACKLOG` only                                                 | —                                                                                                         | List only                |
+| **Invoices**           | Finance → Invoices          | `moneyStatus` kanban                                           | `PAID`, `CANCELLED` on same board                                                                         | Kanban (list TBD parity) |
+| **Bonus board**        | `/finance/bonuses`          | Incoming / In Progress / Active (simplified kanban)            | `PAID`, `CLAWBACK` via **Closed** scope filter                                                            | Board + List (2026-05)   |
+| **Subscriptions**      | Finance module              | Grid/list-first                                                | Canon TBD                                                                                                 | List-first               |
 
 ## Stage-gate UX
 
@@ -22,7 +21,11 @@ References: [`11-Finance-Stage-Gate-and-Board-UX-Standard.md`](11-Finance-Stage-
 
 ## API query flags
 
-| Flag               | When                              | Scope                      |
-| ------------------ | --------------------------------- | -------------------------- |
-| `activeBoard=true` | Active expense route, no `status` | Excludes `PAID`, `BACKLOG` |
-| `closedBoard=true` | Closed expense route, no `status` | `PAID`, `CANCELLED` only   |
+| Flag                  | When                        | Scope                                   |
+| --------------------- | --------------------------- | --------------------------------------- |
+| `activeBoard=true`    | Pay now Active, no `status` | Excludes `PAID`, `BACKLOG`, `CANCELLED` |
+| `closedBoard=true`    | Pay now Closed, no `status` | `PAID`, `CANCELLED` only                |
+| `lifecycleBoard=true` | Pay now All, no `status`    | Excludes `BACKLOG` only                 |
+| (no board flag)       | Full journal / Product All  | All statuses including `BACKLOG`        |
+
+Precedence when `status` is omitted: `closedBoard` > `activeBoard` > `lifecycleBoard`. Product Finance Active reuses `activeBoard` (`CANCELLED` is Closed, not Active). Product Finance All sends no board flag.

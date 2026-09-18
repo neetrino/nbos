@@ -8,22 +8,13 @@ import {
   EXPENSE_BOARD_COLUMN_KEYS,
   type ExpenseBoardColumnKey,
 } from '@/features/finance/constants/expense-board';
+import { EXPENSE_STAGE_HEX } from '@/features/finance/constants/expense-stage-colors';
 import { translateExpenseStageShort } from './expense-i18n-labels';
 
 const EXPENSE_PIPELINE_PAID_KEY = 'PAID';
 const EXPENSE_PIPELINE_CANCEL_KEY = 'CANCELLED';
 /** Extra space beyond default interlocking overlap. */
 const EXPENSE_PIPELINE_SEGMENT_GAP_PX = 4;
-
-const STAGE_HEX: Record<string, string> = {
-  PLANNED: '#22c55e',
-  DUE_SOON: '#2563eb',
-  DUE_NOW: '#7c3aed',
-  OVERDUE: '#a855f7',
-  ON_HOLD: '#a3a3a3',
-  [EXPENSE_PIPELINE_PAID_KEY]: '#22c55e',
-  [EXPENSE_PIPELINE_CANCEL_KEY]: '#ef4444',
-};
 
 function canClickExpenseStage(stageKey: string, currentStatus: string): boolean {
   if (
@@ -81,7 +72,7 @@ export function ExpensePipelineStages({
   return (
     <PipelineStagesBar
       stages={stages}
-      stageColors={STAGE_HEX}
+      stageColors={EXPENSE_STAGE_HEX}
       currentStatus={currentStatus}
       fillToEndStatuses={[EXPENSE_PIPELINE_PAID_KEY]}
       disabled={disabled}

@@ -11,17 +11,48 @@ export const EXPENSE_BOARD_COLUMN_STATUSES = [
 
 export type ExpenseBoardColumnStatus = (typeof EXPENSE_BOARD_COLUMN_STATUSES)[number];
 
-/** Off the active board (Closed / Backlog routes). */
+/** Off the active board (Closed / Backlog). */
 export const EXPENSE_OFF_BOARD_STATUSES = [
   'PAID',
   'BACKLOG',
   'CANCELLED',
 ] as const satisfies readonly ExpenseStatusEnum[];
 
-export const EXPENSE_BOARD_SCOPE_EXCLUDE: ExpenseStatusEnum[] = ['PAID', 'BACKLOG'];
+/** Active Pay now: working lanes only (list matches kanban). */
+export const EXPENSE_BOARD_SCOPE_EXCLUDE: ExpenseStatusEnum[] = ['PAID', 'BACKLOG', 'CANCELLED'];
 
-/** Closed expense route: terminal outcomes on the expense card (not backlog). */
+/** Pay now All: payment-cycle stages, not the backlog queue. */
+export const EXPENSE_LIFECYCLE_BOARD_EXCLUDE: ExpenseStatusEnum[] = ['BACKLOG'];
+
+/** Closed Pay now: terminal outcomes on the expense card (not backlog). */
 export const EXPENSE_CLOSED_SCOPE_STATUSES: ExpenseStatusEnum[] = ['PAID', 'CANCELLED'];
+
+export type ExpenseListStatusWhere =
+  | ExpenseStatusEnum
+  | { in: ExpenseStatusEnum[] }
+  | { notIn: ExpenseStatusEnum[] };
+
+/** `status` wins; then closed → active → lifecycle; no flag keeps the full journal. */
+export function resolveExpenseListStatusWhere(filters: {
+  status?: string;
+  closedBoard?: boolean;
+  activeBoard?: boolean;
+  lifecycleBoard?: boolean;
+}): ExpenseListStatusWhere | undefined {
+  if (filters.status) {
+    return filters.status as ExpenseStatusEnum;
+  }
+  if (filters.closedBoard) {
+    return { in: [...EXPENSE_CLOSED_SCOPE_STATUSES] };
+  }
+  if (filters.activeBoard) {
+    return { notIn: [...EXPENSE_BOARD_SCOPE_EXCLUDE] };
+  }
+  if (filters.lifecycleBoard) {
+    return { notIn: [...EXPENSE_LIFECYCLE_BOARD_EXCLUDE] };
+  }
+  return undefined;
+}
 
 export const EXPENSE_DUE_SOON_DAYS = 7;
 

@@ -24,7 +24,7 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 ## Shipped — Mail runtime Slice B (receive)
 
 - Unique inbound `(mailAccountId, providerMessageId)`; history 410 → last-30 recovery; UIDVALIDITY reset.
-- `enqueueSync` jobId `mail-sync-{accountId}` (BullMQ forbids `:` in custom jobId); production never inline-syncs (manual → 503).
+- `enqueueSync` jobId `mail-sync-{accountId}` (BullMQ forbids `:` in custom jobId); production never inline-syncs (manual → 503). Completed/failed jobs with that id are dropped before enqueue (same as send/attachments), so IDLE/poll/reconnect actually run again. In-flight jobs still debounce.
 - IMAP IDLE on worker only (Redis lock, cap 20, backoff, watchdog); Gmail `users.watch` after successful sync.
 - Scheduler (default **off**): `mail-gmail-watch-renew` hourly, `mail-sync-reconcile` every 5 min.
 - `POST …/sync-stub` removed. Health: watch `not_configured|active|expired`, idle heartbeat.

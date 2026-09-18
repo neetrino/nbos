@@ -13,22 +13,21 @@ References:
 
 ## Lifecycle model (by surface)
 
-| Surface                                 | Active scope                                                                     | Terminal / off-board                                                                           | Stage-gate today                                                                                                                                                              |
-| --------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Expense Board** (`/finance/expenses`) | `PLANNED` … `ON_HOLD` columns; API `activeBoard=true` excludes `PAID`, `BACKLOG` | **Closed** route: `PAID`, `CANCELLED` (`closedBoard=true`). **Backlog** route: `BACKLOG` only. | Kanban move: local pre-check + redirect to detail with payment/status field highlights (same pattern as invoices). API payment ledger remains final authority.                |
-| **Invoices**                            | `moneyStatus` columns on one board (`NEW` … `ON_HOLD`); default **Active** scope | `PAID`, `CANCELLED` via **Closed** filter on the same page (not a separate URL).               | Kanban money-status move: local pre-check + invoice detail sheet field highlights (`payments` / `moneyStatus`); API `assertManualMoneyStatusAllowed` remains final authority. |
-| **Subscriptions**                       | Grid/list-first                                                                  | Renewal/cancel outcomes in canon                                                               | TBD                                                                                                                                                                           |
+| Surface                                 | Active scope                                                                                  | Terminal / off-board                                                                                                                                                     | Stage-gate today                                                                                                                                                              |
+| --------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Expense Board** (`/finance/expenses`) | `PLANNED` … `ON_HOLD` columns; API `activeBoard=true` excludes `PAID`, `BACKLOG`, `CANCELLED` | **Closed** filter on the same page: `PAID`, `CANCELLED` (`closedBoard=true`). **All:** `lifecycleBoard=true` excludes `BACKLOG` only. **Backlog** route: `BACKLOG` only. | Kanban move: local pre-check + redirect to detail with payment/status field highlights (same pattern as invoices). API payment ledger remains final authority.                |
+| **Invoices**                            | `moneyStatus` columns on one board (`NEW` … `ON_HOLD`); default **Active** scope              | `PAID`, `CANCELLED` via **Closed** filter on the same page (not a separate URL).                                                                                         | Kanban money-status move: local pre-check + invoice detail sheet field highlights (`payments` / `moneyStatus`); API `assertManualMoneyStatusAllowed` remains final authority. |
+| **Subscriptions**                       | Grid/list-first                                                                               | Renewal/cancel outcomes in canon                                                                                                                                         | TBD                                                                                                                                                                           |
 
 ---
 
 ## Board / list UX
 
-- **Expenses — active:** `Board` / `List` toggle on `/finance/expenses` (default board).
-- **Expenses — closed:** `/finance/expenses/closed` uses the **same** `ExpenseKanbanCard` and `ExpensesTableSection` as active; **Board / List** toggle enabled; closed kanban columns: **Paid**, **Cancelled** (288px column width per kanban standard).
-- **Expenses — backlog:** list-only (deferred queue; not a lifecycle board).
+- **Expenses — Pay now:** `/finance/expenses` — `Board` / `List` plus lifecycle `Active | Closed | All statuses` (same card/table renderers). Closed columns: **Paid**, **Cancelled** (288px). All columns: active lanes + Paid + Cancelled.
+- **Expenses — backlog:** `/finance/expenses/backlog` list-only (deferred queue; not a lifecycle board). Screen filter: `Pay now | Backlog`.
 - **Invoices:** kanban + list on one page; **Active / All statuses / Closed** scope (terminal columns only in Closed).
 
-Closed/backlog/active scope is communicated by the **Scope** filter and route (`/finance/expenses`, `/backlog`, `/closed`); no persistent hint row under the hero.
+Pay now vs Backlog is the screen filter; Active/Closed/All is the Pay now lifecycle filter. `/finance/expenses/closed` redirects to Pay now Closed. Plan drill-down on Pay now keeps Active/Closed/All flags (does not include `BACKLOG`). No persistent hint row under the hero.
 
 ---
 

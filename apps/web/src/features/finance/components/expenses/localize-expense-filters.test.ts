@@ -4,6 +4,7 @@ import ruExpenses from '@/messages/ru/expenses.json';
 import { buildExpenseIntegratedFilterConfigs } from './build-expense-integrated-filter-configs';
 import { localizeExpenseFilterConfigs } from './localize-expense-filters';
 import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from './expense-board-scope';
+import { EXPENSE_LIFECYCLE_SCOPE_FILTER_KEY } from './expense-lifecycle-scope';
 import type { ExpensesTranslator } from './expense-i18n-labels';
 
 describe('localizeExpenseFilterConfigs', () => {
@@ -13,7 +14,7 @@ describe('localizeExpenseFilterConfigs', () => {
       buildExpenseIntegratedFilterConfigs(
         [{ value: 'proj-1', label: 'Acme Site' }],
         [{ value: 'emp-1', label: 'Aram' }],
-        { includePayrollFilters: true },
+        { includePayrollFilters: true, includeLifecycleScope: true, omitStatus: true },
       ),
       t,
     );
@@ -21,6 +22,12 @@ describe('localizeExpenseFilterConfigs', () => {
     const scope = configs.find((item) => item.key === EXPENSE_BOARD_SCOPE_FILTER_KEY);
     expect(scope?.label).toBe('Область');
     expect(scope?.options.find((item) => item.value === 'active')?.label).toBe('К оплате');
+    expect(scope?.options.find((item) => item.value === 'closed')).toBeUndefined();
+
+    const lifecycle = configs.find((item) => item.key === EXPENSE_LIFECYCLE_SCOPE_FILTER_KEY);
+    expect(lifecycle?.label).toBe('Статус');
+    expect(lifecycle?.options.find((item) => item.value === 'ALL')?.label).toBe('Все статусы');
+    expect(configs.find((item) => item.key === 'status')).toBeUndefined();
 
     const category = configs.find((item) => item.key === 'category');
     expect(category?.options.find((item) => item.value === 'SALARY')?.label).toBe('Зарплата');

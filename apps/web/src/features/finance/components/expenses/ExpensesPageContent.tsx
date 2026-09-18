@@ -28,6 +28,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { OPEN_EXPENSE_QUERY } from '@/features/finance/constants/expense-deep-link';
 import {
   EXPENSE_BACKLOG_FIXED_STATUS,
+  EXPENSE_LIFECYCLE_SCOPE_QUERY,
   EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   type ExpenseListHrefOptions,
@@ -63,6 +64,18 @@ import {
   expenseBoardPathForScope,
   expenseBoardScopeFromVariant,
 } from './expense-board-scope';
+import {
+  EXPENSE_LIFECYCLE_SCOPE_FILTER_KEY,
+  expenseKanbanScopeFromBoardScope,
+} from './expense-lifecycle-scope';
+import {
+  applyExpenseLifecycleScopeFilter,
+  isExpenseLifecycleScopeQuery,
+  mergePayNowFiltersForList,
+  peekExpenseLifecycleScopeQuery,
+  stripLegacyExpenseStatusFilter,
+} from './ingest-expense-lifecycle-scope';
+import { resolveBoardLifecycleScope } from '@/features/shared/board-lifecycle';
 import { ExpensesPageSettingsSheet } from './ExpensesPageSettingsSheet';
 import { useExpensesBoardViewMode } from '@/features/finance/constants/expenses-board-view';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
@@ -122,9 +135,7 @@ export function ExpensesPageContent({
   const expenseFilterPageId =
     pageVariant === 'backlog'
       ? SEARCH_FILTER_PAGE_ID.financeExpensesBacklog
-      : pageVariant === 'closed'
-        ? SEARCH_FILTER_PAGE_ID.financeExpensesClosed
-        : SEARCH_FILTER_PAGE_ID.financeExpenses;
+      : SEARCH_FILTER_PAGE_ID.financeExpenses;
   const [filters, setFilters] = usePersistedSearchFilters(
     expenseFilterPageId,
     initialExpenseFilterRecord(pageVariant),
@@ -143,14 +154,31 @@ export function ExpensesPageContent({
   const [sheetOpen, setSheetOpen] = useState(false);
   const projectFilterOptions = useExpenseProjectFilterOptions();
   const payrollEmployeeFilterOptions = useExpensePayrollEmployeeFilterOptions();
+  const urlLifecycleScope =
+    pageVariant === 'default'
+      ? peekExpenseLifecycleScopeQuery(searchParams.get(EXPENSE_LIFECYCLE_SCOPE_QUERY))
+      : null;
+  const filtersForList = useMemo(
+    () =>
+      mergePayNowFiltersForList({
+        filters,
+        urlLifecycleScope,
+        stripStatus: pageVariant === 'default',
+      }),
+    [filters, pageVariant, urlLifecycleScope],
+  );
+  const boardScope = resolveBoardLifecycleScope(filtersForList.boardScope);
+  const isClosedLifecycle =
+    pageVariant === 'closed' || (pageVariant === 'default' && boardScope === 'CLOSED');
 
   const listHrefOptions = useMemo((): ExpenseListHrefOptions => {
     return {
       fromBacklog: pageVariant === 'backlog',
-      closed: pageVariant === 'closed',
+      closed: isClosedLifecycle,
+      lifecycleScope: pageVariant === 'default' ? boardScope : undefined,
       expensePlanId: expensePlanIdFromUrl?.trim() || undefined,
     };
-  }, [expensePlanIdFromUrl, pageVariant]);
+  }, [boardScope, expensePlanIdFromUrl, isClosedLifecycle, pageVariant]);
 
   const stripOpenExpenseFromUrl = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -210,17 +238,18 @@ export function ExpensesPageContent({
     () =>
       buildExpenseListApiParams({
         search: debouncedSearch,
-        filters,
+        filters: filtersForList,
         period,
         effectiveProjectId,
         sortBy,
         sortOrder,
         pageVariant,
         expensePlanIdFromUrl,
+        ignoreStatusFilter: pageVariant === 'default',
       }),
     [
       debouncedSearch,
-      filters,
+      filtersForList,
       period,
       effectiveProjectId,
       sortBy,
@@ -258,7 +287,11 @@ export function ExpensesPageContent({
 
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
-      if ((pageVariant === 'backlog' || pageVariant === 'closed') && key === 'status') {
+      if (pageVariant === 'backlog' && key === 'status') {
+        return;
+      }
+      if (key === EXPENSE_LIFECYCLE_SCOPE_FILTER_KEY) {
+        setFilters((prev) => applyExpenseLifecycleScopeFilter(prev, value));
         return;
       }
       if (projectIdFromUrl && key === 'project') {
@@ -295,7 +328,8 @@ export function ExpensesPageContent({
     listProjectId: effectiveProjectId ?? null,
     listSort: { sortBy, sortOrder },
     fromBacklog: pageVariant === 'backlog',
-    closed: pageVariant === 'closed',
+    closed: isClosedLifecycle,
+    lifecycleScope: pageVariant === 'default' ? boardScope : undefined,
     expensePlanId: expensePlanIdFromUrl?.trim() ?? null,
   });
 
@@ -359,7 +393,8 @@ export function ExpensesPageContent({
     () =>
       localizeExpenseFilterConfigs(
         buildExpenseIntegratedFilterConfigs(projectFilterOptions, payrollEmployeeFilterOptions, {
-          omitStatus: pageVariant === 'backlog' || pageVariant === 'closed',
+          omitStatus: true,
+          includeLifecycleScope: pageVariant === 'default',
           includePayrollFilters: pageVariant === 'default',
         }),
         t,
@@ -379,27 +414,47 @@ export function ExpensesPageContent({
 
   useEffect(() => {
     if (pageVariant !== 'default') return;
+    if (!Object.prototype.hasOwnProperty.call(filters, 'status')) return;
+    setFilters((prev) => stripLegacyExpenseStatusFilter(prev));
+  }, [filters, pageVariant, setFilters]);
+
+  useEffect(() => {
+    if (pageVariant !== 'default') return;
+    const rawScope = searchParams.get(EXPENSE_LIFECYCLE_SCOPE_QUERY);
+    const hasScope = isExpenseLifecycleScopeQuery(rawScope);
     const preset = searchParams.get(EXPENSE_PAYROLL_PRESET_QUERY) === '1';
     const monthFromUrl = searchParams.get(EXPENSE_PAYROLL_MONTH_URL_QUERY)?.trim();
     const employeeFromUrl = searchParams.get(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY)?.trim();
-    if (!preset && !monthFromUrl && !employeeFromUrl) return;
+    if (!hasScope && !preset && !monthFromUrl && !employeeFromUrl) return;
     setFilters((prev) => {
-      const next = { ...prev };
+      let next = prev;
+      if (hasScope && rawScope) {
+        next = applyExpenseLifecycleScopeFilter(next, rawScope);
+      }
+      if (!preset && !monthFromUrl && !employeeFromUrl) {
+        return next;
+      }
+      const withPayroll = { ...next };
       if (preset) {
-        next[EXPENSE_PAYROLL_SOURCE_FILTER_KEY] = EXPENSE_PAYROLL_SOURCE_PAYROLL;
+        withPayroll[EXPENSE_PAYROLL_SOURCE_FILTER_KEY] = EXPENSE_PAYROLL_SOURCE_PAYROLL;
       }
       if (monthFromUrl) {
-        next[EXPENSE_PAYROLL_MONTH_FILTER_KEY] = monthFromUrl;
+        withPayroll[EXPENSE_PAYROLL_MONTH_FILTER_KEY] = monthFromUrl;
       }
       if (employeeFromUrl) {
-        next[EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY] = employeeFromUrl;
+        withPayroll[EXPENSE_PAYROLL_EMPLOYEE_FILTER_KEY] = employeeFromUrl;
       }
-      return next;
+      return withPayroll;
     });
     replaceExpensesUrl((params) => {
-      params.delete(EXPENSE_PAYROLL_PRESET_QUERY);
-      params.delete(EXPENSE_PAYROLL_MONTH_URL_QUERY);
-      params.delete(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY);
+      if (hasScope) {
+        params.delete(EXPENSE_LIFECYCLE_SCOPE_QUERY);
+      }
+      if (preset || monthFromUrl || employeeFromUrl) {
+        params.delete(EXPENSE_PAYROLL_PRESET_QUERY);
+        params.delete(EXPENSE_PAYROLL_MONTH_URL_QUERY);
+        params.delete(EXPENSE_PAYROLL_EMPLOYEE_URL_QUERY);
+      }
     });
   }, [pageVariant, replaceExpensesUrl, searchParams, setFilters]);
 
@@ -410,12 +465,13 @@ export function ExpensesPageContent({
   const integratedFilterValues = useMemo(
     () => ({
       [EXPENSE_BOARD_SCOPE_FILTER_KEY]: expenseBoardScopeFromVariant(pageVariant),
+      [EXPENSE_LIFECYCLE_SCOPE_FILTER_KEY]: boardScope,
       [EXPENSE_PERIOD_FILTER_KEY]: period,
       [EXPENSE_SORT_BY_FILTER_KEY]: sortBy,
       [EXPENSE_SORT_ORDER_FILTER_KEY]: sortOrder,
       ...filters,
     }),
-    [filters, pageVariant, period, sortBy, sortOrder],
+    [boardScope, filters, pageVariant, period, sortBy, sortOrder],
   );
 
   const handleIntegratedFilterChange = useCallback(
@@ -476,7 +532,7 @@ export function ExpensesPageContent({
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
             onExportCsv={handleExportCsv}
           />
-          {pageVariant === 'closed' ? null : (
+          {isClosedLifecycle ? null : (
             <Button type="button" onClick={() => setCreateOpen(true)}>
               <Plus size={16} aria-hidden />
               {t('actions.newExpense')}
@@ -495,6 +551,7 @@ export function ExpensesPageContent({
       handleViewChange,
       integratedFilterValues,
       loading,
+      isClosedLifecycle,
       pageVariant,
       search,
       stats,
@@ -530,10 +587,12 @@ export function ExpensesPageContent({
         onRetry={fetchExpenses}
         expenses={expenses}
         view={pageVariant === 'backlog' ? 'list' : displayView}
-        kanbanScope={pageVariant === 'closed' ? 'closed' : 'active'}
+        kanbanScope={
+          pageVariant === 'default' ? expenseKanbanScopeFromBoardScope(boardScope) : 'active'
+        }
         fromBacklog={pageVariant === 'backlog'}
         onOpenExpense={handleExpenseClick}
-        onAddFirstExpense={() => setCreateOpen(true)}
+        onAddFirstExpense={isClosedLifecycle ? undefined : () => setCreateOpen(true)}
         onKanbanMove={
           pageVariant === 'default' && displayView === 'kanban' ? onKanbanStatusMove : undefined
         }

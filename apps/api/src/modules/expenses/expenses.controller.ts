@@ -26,7 +26,7 @@ export class ExpensesController {
   @ApiOperation({
     summary: 'Get all expenses with filters',
     description:
-      'Each item may include linkedPayrollRun (payroll salary line) and linkedExpensePlan (Plan→Card).',
+      'Each item may include linkedPayrollRun (payroll salary line) and linkedExpensePlan (Plan→Card). No board flag: full journal including BACKLOG. When status is omitted, flag precedence is closedBoard > activeBoard > lifecycleBoard.',
   })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false, description: 'Capped server-side (max 500).' })
@@ -53,13 +53,17 @@ export class ExpensesController {
     name: 'activeBoard',
     required: false,
     description:
-      'When true and status is omitted: exclude PAID and BACKLOG (NBOS Expense Board list scope).',
+      'When true and status is omitted: exclude PAID, BACKLOG, and CANCELLED (Pay now Active).',
   })
   @ApiQuery({
     name: 'closedBoard',
     required: false,
-    description:
-      'When true and status is omitted: only PAID and CANCELLED (NBOS Closed expenses scope).',
+    description: 'When true and status is omitted: only PAID and CANCELLED (Pay now Closed).',
+  })
+  @ApiQuery({
+    name: 'lifecycleBoard',
+    required: false,
+    description: 'When true and status is omitted: exclude BACKLOG only (Pay now All statuses).',
   })
   @ApiQuery({
     name: 'payrollLinked',
@@ -87,6 +91,7 @@ export class ExpensesController {
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
     @Query('activeBoard') activeBoard?: string,
     @Query('closedBoard') closedBoard?: string,
+    @Query('lifecycleBoard') lifecycleBoard?: string,
     @Query('payrollLinked') payrollLinked?: string,
     @Query('payrollMonth') payrollMonth?: string,
     @Query('payrollEmployeeId') payrollEmployeeId?: string,
@@ -109,6 +114,7 @@ export class ExpensesController {
       sortOrder,
       activeBoard: activeBoard === 'true',
       closedBoard: closedBoard === 'true',
+      lifecycleBoard: lifecycleBoard === 'true',
       payrollLinked: payrollLinked === 'true',
       payrollMonth,
       payrollEmployeeId,
@@ -141,6 +147,11 @@ export class ExpensesController {
     required: false,
     description: 'When true and status is omitted: align stats with closed-board list scope.',
   })
+  @ApiQuery({
+    name: 'lifecycleBoard',
+    required: false,
+    description: 'When true and status is omitted: align stats with Pay now All list scope.',
+  })
   @ApiQuery({ name: 'payrollLinked', required: false })
   @ApiQuery({ name: 'payrollMonth', required: false })
   @ApiQuery({ name: 'payrollEmployeeId', required: false })
@@ -154,6 +165,7 @@ export class ExpensesController {
     @Query('status') status?: string,
     @Query('activeBoard') activeBoard?: string,
     @Query('closedBoard') closedBoard?: string,
+    @Query('lifecycleBoard') lifecycleBoard?: string,
     @Query('payrollLinked') payrollLinked?: string,
     @Query('payrollMonth') payrollMonth?: string,
     @Query('payrollEmployeeId') payrollEmployeeId?: string,
@@ -167,6 +179,7 @@ export class ExpensesController {
       status,
       activeBoard: activeBoard === 'true',
       closedBoard: closedBoard === 'true',
+      lifecycleBoard: lifecycleBoard === 'true',
       payrollLinked: payrollLinked === 'true',
       payrollMonth,
       payrollEmployeeId,

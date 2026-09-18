@@ -52,6 +52,7 @@ describe('buildExpenseListApiParams', () => {
     });
     expect(params.activeBoard).toBeUndefined();
     expect(params.closedBoard).toBeUndefined();
+    expect(params.lifecycleBoard).toBeUndefined();
     expect(params.status).toBeUndefined();
   });
 
@@ -81,7 +82,35 @@ describe('buildExpenseListApiParams', () => {
     expect(params.activeBoard).toBeUndefined();
   });
 
-  it('sets expensePlanId and omits default activeBoard when plan URL drill-down is set', () => {
+  it('sets lifecycleBoard on Pay now All when status filter is unset', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'all', boardScope: 'ALL' },
+      period: 'month',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'default',
+    });
+    expect(params.lifecycleBoard).toBe(true);
+    expect(params.activeBoard).toBeUndefined();
+    expect(params.closedBoard).toBeUndefined();
+  });
+
+  it('sets closedBoard on Pay now Closed when status filter is unset', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'all', boardScope: 'CLOSED' },
+      period: 'month',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'default',
+    });
+    expect(params.closedBoard).toBe(true);
+    expect(params.activeBoard).toBeUndefined();
+    expect(params.lifecycleBoard).toBeUndefined();
+  });
+
+  it('keeps Pay now lifecycle flags when plan URL drill-down is set', () => {
     const params = buildExpenseListApiParams({
       search: '',
       filters: { category: 'all', status: 'all' },
@@ -92,7 +121,36 @@ describe('buildExpenseListApiParams', () => {
       expensePlanIdFromUrl: 'plan-99',
     });
     expect(params.expensePlanId).toBe('plan-99');
+    expect(params.activeBoard).toBe(true);
+  });
+
+  it('keeps lifecycleBoard on Pay now All when plan URL drill-down is set', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'all', boardScope: 'ALL' },
+      period: 'month',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'default',
+      expensePlanIdFromUrl: 'plan-99',
+    });
+    expect(params.expensePlanId).toBe('plan-99');
+    expect(params.lifecycleBoard).toBe(true);
     expect(params.activeBoard).toBeUndefined();
+  });
+
+  it('ignores leftover status on Pay now so lifecycle flags still apply', () => {
+    const params = buildExpenseListApiParams({
+      search: '',
+      filters: { category: 'all', status: 'BACKLOG', boardScope: 'ALL' },
+      period: 'month',
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+      pageVariant: 'default',
+      ignoreStatusFilter: true,
+    });
+    expect(params.status).toBeUndefined();
+    expect(params.lifecycleBoard).toBe(true);
   });
 });
 
@@ -116,6 +174,8 @@ describe('pickExpenseStatsQueryParams', () => {
       expensePlanId: list.expensePlanId,
       status: 'PAID',
       activeBoard: undefined,
+      closedBoard: undefined,
+      lifecycleBoard: undefined,
     });
     expect('search' in stats).toBe(false);
     expect('category' in stats).toBe(false);

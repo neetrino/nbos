@@ -191,9 +191,9 @@ Proof-файлы расходов не должны храниться как л
 | `Overdue / Просрочено`      | Срок оплаты прошёл                      |
 | `On Hold / На паузе`        | Временная пауза внутри текущего цикла   |
 
-`Paid / Оплачено` и `Cancelled / Отменено` не должны мешать рабочей доске. Они уходят в `Closed / Закрытые`.
+`Paid / Оплачено` и `Cancelled / Отменено` не должны мешать рабочей доске. Они уходят в scope `Closed / Закрытые` на той же странице Pay now.
 
-**Web (NBOS standard):** маршрут `/finance/expenses/closed` использует `GET /expenses?closedBoard=true` (оба terminal status), переключатель **Board / List**, колонки kanban **Paid** и **Cancelled** (288px). См. [`11-Finance-Stage-Gate-and-Board-UX-Standard.md`](11-Finance-Stage-Gate-and-Board-UX-Standard.md).
+**Web (NBOS standard):** `/finance/expenses` — одна доска Pay now, фильтр lifecycle `Active | Closed | All statuses` (как invoices). Active: `GET /expenses?activeBoard=true` (исключает `PAID`, `BACKLOG`, `CANCELLED`). Closed: `closedBoard=true` (колонки **Paid** и **Cancelled**, 288px). All: `lifecycleBoard=true` (исключает только `BACKLOG`). `/finance/expenses/closed` — alias-редирект на Pay now с Closed. Backlog остаётся отдельным маршрутом. Plan drill-down (`expensePlanId`) на Pay now сохраняет те же lifecycle-флаги; backlog-карточки плана смотрят на `/finance/expenses/backlog`. См. [`11-Finance-Stage-Gate-and-Board-UX-Standard.md`](11-Finance-Stage-Gate-and-Board-UX-Standard.md).
 
 Оплата делается действием:
 

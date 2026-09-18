@@ -1,21 +1,12 @@
 import { resolveKanbanStageHex } from '@/components/shared/kanban/kanban-stage-hex';
 import type { Expense } from '../../../../lib/api/finance';
+import { EXPENSE_STAGE_COLOR_CLASS } from '../../constants/expense-stage-colors';
 import {
   EXPENSE_BOARD_COLUMNS,
   EXPENSE_CLOSED_BOARD_COLUMNS,
-  type ExpenseBoardColumnKey,
-  type ExpenseClosedBoardColumnKey,
   resolveExpenseBoardColumn,
   resolveExpenseClosedBoardColumn,
 } from '../../constants/expense-board';
-
-const COLUMN_COLORS: Record<ExpenseBoardColumnKey, string> = {
-  PLANNED: 'bg-slate-500',
-  DUE_SOON: 'bg-amber-500',
-  DUE_NOW: 'bg-orange-500',
-  OVERDUE: 'bg-red-600',
-  ON_HOLD: 'bg-gray-400',
-};
 
 /**
  * NBOS Expense Board columns (`Planned`, `Due Soon`, `Due Now`, `Overdue`, `On Hold`).
@@ -23,7 +14,7 @@ const COLUMN_COLORS: Record<ExpenseBoardColumnKey, string> = {
  */
 export function buildExpenseKanbanColumns(expenses: Expense[]) {
   return EXPENSE_BOARD_COLUMNS.map((col) => {
-    const color = COLUMN_COLORS[col.key];
+    const color = EXPENSE_STAGE_COLOR_CLASS[col.key];
     return {
       key: col.key,
       label: col.label,
@@ -34,15 +25,10 @@ export function buildExpenseKanbanColumns(expenses: Expense[]) {
   });
 }
 
-const CLOSED_COLUMN_COLORS: Record<ExpenseClosedBoardColumnKey, string> = {
-  PAID: 'bg-green-600',
-  CANCELLED: 'bg-red-500',
-};
-
-/** Closed expense route: terminal outcomes only (Paid / Cancelled). */
+/** Closed Pay now: terminal outcomes only (Paid / Cancelled). */
 export function buildExpenseClosedKanbanColumns(expenses: Expense[]) {
   return EXPENSE_CLOSED_BOARD_COLUMNS.map((col) => {
-    const color = CLOSED_COLUMN_COLORS[col.key];
+    const color = EXPENSE_STAGE_COLOR_CLASS[col.key];
     return {
       key: col.key,
       label: col.label,
@@ -51,4 +37,9 @@ export function buildExpenseClosedKanbanColumns(expenses: Expense[]) {
       items: expenses.filter((e) => resolveExpenseClosedBoardColumn(e) === col.key),
     };
   });
+}
+
+/** Pay now All: working lanes plus terminal outcomes (no Backlog). */
+export function buildExpenseLifecycleKanbanColumns(expenses: Expense[]) {
+  return [...buildExpenseKanbanColumns(expenses), ...buildExpenseClosedKanbanColumns(expenses)];
 }

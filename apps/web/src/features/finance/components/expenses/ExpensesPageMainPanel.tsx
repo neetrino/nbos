@@ -19,13 +19,15 @@ import { createExpenseKanbanQuickCreateConfig } from '@/features/finance/kanban/
 import {
   buildExpenseClosedKanbanColumns,
   buildExpenseKanbanColumns,
+  buildExpenseLifecycleKanbanColumns,
 } from './expense-kanban-columns';
+import type { ExpensesKanbanScope } from './expense-lifecycle-scope';
 import { ExpensesTableSection } from './ExpensesTableSection';
 import { translateExpenseStage } from './expense-i18n-labels';
 
 export type ExpensesViewMode = 'kanban' | 'list';
 
-export type ExpensesKanbanScope = 'active' | 'closed';
+export type { ExpensesKanbanScope } from './expense-lifecycle-scope';
 
 interface ExpensesPageMainPanelProps {
   loading: boolean;
@@ -37,7 +39,7 @@ interface ExpensesPageMainPanelProps {
   /** Backlog route: list-only deferred queue. */
   fromBacklog?: boolean;
   onOpenExpense: (expense: Expense) => void;
-  onAddFirstExpense: () => void;
+  onAddFirstExpense?: () => void;
   onKanbanMove?: (expenseId: string, from: string, toStatus: string) => void;
   onOpenQuickCreate?: () => void;
 }
@@ -69,7 +71,9 @@ export function ExpensesPageMainPanel({
     const columns =
       kanbanScope === 'closed'
         ? buildExpenseClosedKanbanColumns(expenses)
-        : buildExpenseKanbanColumns(expenses);
+        : kanbanScope === 'all'
+          ? buildExpenseLifecycleKanbanColumns(expenses)
+          : buildExpenseKanbanColumns(expenses);
     return columns.map((column) => ({
       ...column,
       label: translateExpenseStage(column.key, t),
@@ -78,7 +82,7 @@ export function ExpensesPageMainPanel({
 
   const expenseQuickCreate = useMemo(
     () =>
-      kanbanScope === 'active' && onOpenQuickCreate
+      (kanbanScope === 'active' || kanbanScope === 'all') && onOpenQuickCreate
         ? createExpenseKanbanQuickCreateConfig(() => onOpenQuickCreate(), t('actions.quickExpense'))
         : undefined,
     [kanbanScope, onOpenQuickCreate, t],
@@ -97,10 +101,12 @@ export function ExpensesPageMainPanel({
         title={fromBacklog ? t('empty.backlogTitle') : t('empty.title')}
         description={fromBacklog ? t('empty.backlogDescription') : t('empty.description')}
         action={
-          <Button type="button" onClick={onAddFirstExpense}>
-            <Plus size={16} />
-            {t('actions.addFirst')}
-          </Button>
+          onAddFirstExpense ? (
+            <Button type="button" onClick={onAddFirstExpense}>
+              <Plus size={16} />
+              {t('actions.addFirst')}
+            </Button>
+          ) : undefined
         }
       />
     );
@@ -115,7 +121,9 @@ export function ExpensesPageMainPanel({
           onMove={onKanbanMove}
           columnQuickCreate={expenseQuickCreate}
           terminalDropZones={
-            kanbanScope === 'active' && onKanbanMove ? expenseTerminalDropZones : undefined
+            (kanbanScope === 'active' || kanbanScope === 'all') && onKanbanMove
+              ? expenseTerminalDropZones
+              : undefined
           }
           renderColumnHeader={(column) => (
             <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />

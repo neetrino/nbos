@@ -227,7 +227,7 @@ Long-lived соединение живёт **только в worker**, не в A
 
 Внутри IDLE:
 
-- `exists` → `enqueueSync` (тот же jobId).
+- `exists` → `enqueueSync` (тот же jobId; in-flight debounce, completed/failed job снимается и ставится заново).
 - Обрыв: backoff **5 с → 15 с → 30 с → cap 120 с** + jitter ±20 %.
 - Watchdog: соединение «usable», но нет `exists` и нет успешного sync дольше **2 × poll interval** (10 мин) → принудительный reconnect + sync.
 - Смена `UIDVALIDITY` → сброс `imapLastUid`, recovery-окно, не дочитывать старый UID.
@@ -244,7 +244,7 @@ Safety-net, не основной канал.
 - Флаг: `SCHEDULER_MAIL_SYNC_RECONCILE_ENABLED`.
 - В реестр `docs/architecture/scheduler-cron-roster.md` отдельной строкой. **Не включать пакетом** с чужими cron; после выкладки — отдельное решение вкл на проде.
 - Выборка: `ACTIVE` и `DEGRADED`, не `PAUSED` / `DISABLED` / `NEEDS_RECONNECT`.
-- На каждый ящик — только `enqueueSync` с тем же `jobId`.
+- На каждый ящик — только `enqueueSync` с тем же `jobId` (in-flight = skip; completed/failed = replace).
 - Полный scan ящика запрещён.
 
 **Orphan outbound (срез A, не inbox poll):** отдельный job `mail-outbound-reconcile`.

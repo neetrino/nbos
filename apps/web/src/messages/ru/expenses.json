@@ -85,6 +85,11 @@
     "backlog": "Отложенные",
     "closed": "Закрытые"
   },
+  "boardScope": {
+    "ALL": "Все статусы",
+    "ACTIVE": "Активные",
+    "CLOSED": "Закрытые"
+  },
   "filters": {
     "scope": "Область",
     "period": "Период",

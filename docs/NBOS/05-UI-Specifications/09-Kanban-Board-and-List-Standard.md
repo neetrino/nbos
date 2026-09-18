@@ -183,15 +183,15 @@ Reference plan: `../01-Platform-Overview/04-Stage-Gate-UX-Standard-Plan.md`.
 
 ## Module Alignment
 
-| Module           | Current State                                     | Target                                                         |
-| ---------------- | ------------------------------------------------- | -------------------------------------------------------------- |
-| CRM Deals        | Active/Closed board and list ✓                    | Reference visual implementation                                |
-| CRM Leads        | Same visual family as Deals ✓                     | Keep aligned with Deals                                        |
-| Delivery Board   | Active/Closed Board/List via shared renderers ✓   | Keep aligned; no custom closed-only archive UI                 |
-| Product Overview | Stage-gate sheet highlights ✓                     | Keep terminal actions aligned with standard                    |
-| Finance          | Expenses + invoices Active/Closed; closed route ✓ | Subscription grid-first scope deferred                         |
-| Support          | Active/Closed on `/support` ✓                     | Stage-gate sheet highlights when rules exist                   |
-| Tasks            | Active/Closed on `/tasks` + Work Spaces ✓         | Keep `TaskMiniCard` + `TaskListTableView` as reference density |
+| Module           | Current State                                       | Target                                                         |
+| ---------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| CRM Deals        | Active/Closed board and list ✓                      | Reference visual implementation                                |
+| CRM Leads        | Same visual family as Deals ✓                       | Keep aligned with Deals                                        |
+| Delivery Board   | Active/Closed Board/List via shared renderers ✓     | Keep aligned; no custom closed-only archive UI                 |
+| Product Overview | Stage-gate sheet highlights ✓                       | Keep terminal actions aligned with standard                    |
+| Finance          | Expenses + invoices Active/Closed/All on one page ✓ | Subscription grid-first scope deferred                         |
+| Support          | Active/Closed on `/support` ✓                       | Stage-gate sheet highlights when rules exist                   |
+| Tasks            | Active/Closed on `/tasks` + Work Spaces ✓           | Keep `TaskMiniCard` + `TaskListTableView` as reference density |
 
 ---
 

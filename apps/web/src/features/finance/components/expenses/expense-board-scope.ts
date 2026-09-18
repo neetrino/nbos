@@ -1,7 +1,6 @@
 import type { FilterConfig } from '@/components/shared/FilterBar';
 import {
   EXPENSE_BACKLOG_LIST_PATH,
-  EXPENSE_CLOSED_LIST_PATH,
   EXPENSE_LIST_PATH,
 } from '@/features/finance/constants/project-expenses-drilldown';
 import type { ExpensesPageVariant } from './expenses-page-filter-helpers';
@@ -14,19 +13,14 @@ export const EXPENSE_SORT_ORDER_FILTER_KEY = 'sortOrder';
 const EXPENSE_BOARD_SCOPE_OPTIONS = [
   { value: 'active', label: 'Pay now' },
   { value: 'backlog', label: 'Backlog' },
-  { value: 'closed', label: 'Closed' },
 ] as const;
 
 export function expenseBoardScopeFromVariant(variant: ExpensesPageVariant): string {
-  if (variant === 'backlog') return 'backlog';
-  if (variant === 'closed') return 'closed';
-  return 'active';
+  return variant === 'backlog' ? 'backlog' : 'active';
 }
 
 export function expenseBoardPathForScope(scope: string): string {
-  if (scope === 'backlog') return EXPENSE_BACKLOG_LIST_PATH;
-  if (scope === 'closed') return EXPENSE_CLOSED_LIST_PATH;
-  return EXPENSE_LIST_PATH;
+  return scope === 'backlog' ? EXPENSE_BACKLOG_LIST_PATH : EXPENSE_LIST_PATH;
 }
 
 export function buildExpenseBoardScopeFilterConfig(): FilterConfig {

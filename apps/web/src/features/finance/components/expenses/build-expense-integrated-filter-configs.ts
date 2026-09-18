@@ -5,6 +5,7 @@ import {
   EXPENSE_SORT_BY_FILTER_KEY,
   EXPENSE_SORT_ORDER_FILTER_KEY,
 } from './expense-board-scope';
+import { buildExpenseLifecycleScopeFilterConfig } from './expense-lifecycle-scope';
 import { buildPayrollExpenseFilterConfigs } from './build-payroll-expense-filter-configs';
 import { buildExpenseFilterConfigs, type ExpenseFilterBarConfig } from './expenses-filter-config';
 import {
@@ -16,12 +17,20 @@ import { EXPENSE_LIST_SORT_OPTIONS } from './expense-list-sort-options';
 export function buildExpenseIntegratedFilterConfigs(
   projectFilterOptions: Array<{ value: string; label: string }>,
   payrollEmployeeOptions: Array<{ value: string; label: string }>,
-  options: { omitStatus?: boolean; includeBoardScope?: boolean; includePayrollFilters?: boolean },
+  options: {
+    omitStatus?: boolean;
+    includeBoardScope?: boolean;
+    includeLifecycleScope?: boolean;
+    includePayrollFilters?: boolean;
+  },
 ): FilterConfig[] {
   const configs: FilterConfig[] = [];
 
   if (options.includeBoardScope !== false) {
     configs.push(buildExpenseBoardScopeFilterConfig());
+  }
+  if (options.includeLifecycleScope === true) {
+    configs.push(buildExpenseLifecycleScopeFilterConfig());
   }
 
   configs.push(buildFinancePeriodFilterConfig());
