@@ -11,6 +11,8 @@ export const APP_ENV_KEYS = {
   web: 'COOLIFY_APP_WEB_UUID',
 };
 
+export const SERVER_UUID_ENV_KEY = 'COOLIFY_SERVER_UUID';
+
 export const GROUP_APPS = {
   all: ['api', 'worker', 'scheduler', 'web'],
   backend: ['api', 'worker', 'scheduler'],
@@ -118,20 +120,36 @@ export function resolveCoolifyToken(env) {
 
 /**
  * @param {Record<string, string | undefined>} env
+ * @returns {string}
+ */
+export function resolveCoolifyServerUuid(env) {
+  const value = env[SERVER_UUID_ENV_KEY]?.trim() ?? '';
+  if (!value) throw new Error(`Set ${SERVER_UUID_ENV_KEY} in .env.local`);
+  return value;
+}
+
+/**
+ * @param {Record<string, string | undefined>} env
  * @param {string[]} apps
- * @returns {{ baseUrl: string, token: string, uuids: Record<string, string> }}
+ * @returns {{
+ *   baseUrl: string,
+ *   token: string,
+ *   serverUuid: string,
+ *   uuids: Record<string, string>,
+ * }}
  */
 export function resolveCoolifyConfig(env, apps) {
   const baseUrl = normalizeCoolifyUrl(env.COOLIFY_API_URL ?? '');
   if (!baseUrl) throw new Error('Set COOLIFY_API_URL in .env.local');
   const token = resolveCoolifyToken(env);
+  const serverUuid = resolveCoolifyServerUuid(env);
   const uuids = {};
   for (const app of apps) {
     const value = env[APP_ENV_KEYS[app]]?.trim() ?? '';
     if (!value) throw new Error(`Set ${APP_ENV_KEYS[app]} in .env.local`);
     uuids[app] = value;
   }
-  return { baseUrl, token, uuids };
+  return { baseUrl, token, serverUuid, uuids };
 }
 
 /**
@@ -222,12 +240,13 @@ export function formatDeployReadyReport(report) {
 
 /**
  * @param {string} appName
- * @param {'start' | 'queued' | 'running' | 'retry' | 'success' | 'failed'} phase
+ * @param {'start' | 'cleanup' | 'queued' | 'running' | 'retry' | 'success' | 'failed'} phase
  * @param {string} [detail]
  * @param {boolean} [color]
  * @returns {string}
  */
 export function formatDeployAppLine(appName, phase, detail, color = true) {
+  if (phase === 'cleanup') return paint(color, ANSI.cyan, '▶ Docker cleanup');
   if (phase === 'start') return paint(color, ANSI.cyan, `▶ Deploy ${appName}`);
   if (phase === 'queued') return `  ${paint(color, ANSI.yellow, '•')} queued ${detail ?? ''}`;
   if (phase === 'running') return `  ${appName}: ${paint(color, ANSI.yellow, detail ?? 'pending')}`;

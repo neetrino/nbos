@@ -320,9 +320,10 @@ COOLIFY_APP_API_UUID=       # Coolify → nbos-api → Configuration → Webhook
 COOLIFY_APP_WORKER_UUID=
 COOLIFY_APP_SCHEDULER_UUID=
 COOLIFY_APP_WEB_UUID=
+COOLIFY_SERVER_UUID=        # Coolify → Servers → NBOS → UUID (только для локального скрипта)
 ```
 
-UUID — кусок `uuid=` из **Deploy Webhook**. Токен: Coolify → Keys & Tokens → API Tokens, право `deploy`.
+UUID приложений — кусок `uuid=` из **Deploy Webhook**. `COOLIFY_SERVER_UUID` — только локально, не в env приложений. Токен: Coolify → Keys & Tokens → API Tokens, права `deploy`, `read`, `write`.
 
 ```bash
 pnpm deploy:prod:status                # проверить env, ничего не деплоить
@@ -332,7 +333,7 @@ pnpm deploy:prod -- web
 pnpm deploy:prod -- --force api        # rebuild без cache, только api
 ```
 
-Скрипт не запускает Prisma migration сам. Если schema менялась — сначала `pnpm db:migrate:prod` (§5.2), потом `pnpm deploy:prod`. Или одна цепочка §5.4. Если сервис упал на диске/export (`#25`, exporting layers), скрипт один раз повторяет только его. Отмену, healthcheck и ошибку кода не повторяет. После второго падения следующие app не трогает. Rollback по-прежнему §9.
+Скрипт не запускает Prisma migration сам. Если schema менялась — сначала `pnpm db:migrate:prod` (§5.2), потом `pnpm deploy:prod`. Или одна цепочка §5.4. Перед каждым сервисом скрипт вызывает Coolify docker cleanup (тома и Redis не удаляет) и ждёт окончания. Если сервис упал на диске/export (`#25`, exporting layers), скрипт чистит ещё раз и один раз повторяет только его. Отмену, healthcheck и ошибку кода не повторяет. После второго падения следующие app не трогает. Rollback по-прежнему §9.
 
 ### 5.4 Локальный release
 

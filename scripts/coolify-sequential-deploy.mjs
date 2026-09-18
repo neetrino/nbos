@@ -19,12 +19,22 @@ import {
   parseQueuedDeploymentUuid,
   pickDeployment,
   resolveCoolifyConfig,
+  SERVER_UUID_ENV_KEY,
 } from './coolify-sequential-deploy.lib.mjs';
 import {
   DeployFailedError,
   MAX_APP_FAILURE_RETRIES,
   shouldRetryFailedDeploy,
 } from './coolify-sequential-deploy.retry.mjs';
+import {
+  CLEANUP_TIMEOUT_MS,
+  buildDockerCleanupRunRequest,
+  classifyCleanupExecution,
+  cleanupExecutionsPath,
+  extractCleanupExecutions,
+  formatCleanupHttpError,
+  isSameCleanupExecution,
+} from './coolify-sequential-deploy.cleanup.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const envPath = resolve(repoRoot, '.env.local');
@@ -46,9 +56,11 @@ Put values in repo-root .env.local (gitignored):
   ${APP_ENV_KEYS.worker}
   ${APP_ENV_KEYS.scheduler}
   ${APP_ENV_KEYS.web}
+  ${SERVER_UUID_ENV_KEY}
 
 UUIDs come from Coolify → app → Configuration → Webhooks → Deploy Webhook.
 Migrate production first when the schema changed. This script does not migrate.
+Before each app the script runs Coolify docker cleanup (volumes stay).
 A failed app is retried once when the status/log looks like disk or export
 (#25, exporting layers). Cancel, healthcheck, and app/DI errors are not retried.
 `);
@@ -140,8 +152,51 @@ async function waitForDeployment(api, appName, appUuid, deploymentUuid) {
   throw new Error(`${appName} deploy timed out after ${DEPLOY_TIMEOUT_MS / 60000} minutes`);
 }
 
+async function requestCleanupOrThrow(api, method, path, body) {
+  try {
+    return await coolifyRequest(api, method, path, body);
+  } catch (error) {
+    throw new Error(formatCleanupHttpError(error.status, error.message));
+  }
+}
+
+async function readLatestCleanupUuid(api) {
+  const payload = await requestCleanupOrThrow(api, 'GET', cleanupExecutionsPath(api.serverUuid));
+  const latest = extractCleanupExecutions(payload)[0];
+  return typeof latest?.uuid === 'string' ? latest.uuid : undefined;
+}
+
+async function waitForCleanup(api, previousUuid) {
+  const startedAt = Date.now();
+  const path = cleanupExecutionsPath(api.serverUuid);
+  while (Date.now() - startedAt < CLEANUP_TIMEOUT_MS) {
+    const payload = await requestCleanupOrThrow(api, 'GET', path);
+    const latest = extractCleanupExecutions(payload)[0];
+    if (!isSameCleanupExecution(previousUuid, latest)) {
+      const outcome = classifyCleanupExecution(latest);
+      if (outcome === 'success') return;
+      if (outcome === 'failed') {
+        const detail = typeof latest?.message === 'string' ? `: ${latest.message}` : '';
+        throw new Error(`Coolify docker cleanup failed${detail}`);
+      }
+    }
+    await sleep(POLL_INTERVAL_MS);
+  }
+  throw new Error(`Coolify docker cleanup timed out after ${CLEANUP_TIMEOUT_MS / 60000} minutes`);
+}
+
+async function runDockerCleanup(api) {
+  const color = colorEnabled();
+  process.stdout.write(`${formatDeployAppLine('server', 'cleanup', undefined, color)}\n`);
+  const previousUuid = await readLatestCleanupUuid(api);
+  const request = buildDockerCleanupRunRequest(api.serverUuid);
+  await requestCleanupOrThrow(api, request.method, request.path, request.body);
+  await waitForCleanup(api, previousUuid);
+}
+
 async function deployAppOnce(api, appName, appUuid, force) {
   const color = colorEnabled();
+  await runDockerCleanup(api);
   process.stdout.write(`${formatDeployAppLine(appName, 'start', undefined, color)}\n`);
   const deploymentUuid = await queueDeploy(api, appUuid, force);
   process.stdout.write(`${formatDeployAppLine(appName, 'queued', deploymentUuid, color)}\n`);
