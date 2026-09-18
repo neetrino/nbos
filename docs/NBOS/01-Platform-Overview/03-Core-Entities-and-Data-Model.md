@@ -321,8 +321,8 @@ Contact (человек)
 3. Пока `official_request_sent = false`, клиентские напоминания не должны отправляться для `Tax`.
 4. Для Tax: `Awaiting Payment` требует Company name + tax_id; `Paid` требует актуальный official request; отмена карточки с отправленным запросом сразу отменяет запрос бухгалтеру.
 5. Статус карточки отражает именно состояние денег, а не состояние уведомлений.
-6. **Display title в UI** не хранится на `Invoice`: при наличии `order` — `Deal.name` через `order.deal`, иначе `Order.code`; иначе при `subscription` — `Subscription.name`; иначе при `clientServiceRecord` — `ClientServiceRecord.name` (или `product.name`); иначе — `code`. Переименование источника обновляет заголовок всех связанных счетов.
-7. **Product — владелец карточки.** Источник (Order / Subscription / Client Service / Manual) не заменяет `product_id`. `project_id` пишется только с `Product.projectId`. `company_id` при создании копируется с `Product.companyId`, иначе `Project.companyId`. Для Manual вход в Awaiting / Overdue / Paid требует Product.
+6. **Display title в UI** не хранится на `Invoice`: `Deal.name` → `Subscription.name` → `ClientServiceRecord.name` → `product.name` (ручной инвойс; заказ без сделки — продукт/extension заказа) → иначе `code`. Переименование источника обновляет заголовок всех связанных счетов.
+7. **Product — владелец карточки.** Источник (Order / Subscription / Client Service / Manual) не заменяет `product_id`. `project_id` пишется только с `Product.projectId`. `company_id` при создании копируется с `Product.companyId`, иначе `Project.companyId`. Ручное создание без источника требует Product. Для Manual вход в Awaiting / Overdue / Paid требует Product.
 
 **Связи:**
 

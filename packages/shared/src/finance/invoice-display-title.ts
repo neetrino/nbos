@@ -3,9 +3,15 @@ export type InvoiceDisplayDealSource = {
   code: string;
 };
 
+export type InvoiceDisplayNamedSource = {
+  name?: string | null;
+};
+
 export type InvoiceDisplayOrderSource = {
   code: string;
   deal?: InvoiceDisplayDealSource | null;
+  product?: InvoiceDisplayNamedSource | null;
+  extension?: InvoiceDisplayNamedSource | null;
 };
 
 export type InvoiceDisplaySubscriptionSource = {
@@ -15,7 +21,7 @@ export type InvoiceDisplaySubscriptionSource = {
 
 export type InvoiceDisplayClientServiceSource = {
   name?: string | null;
-  product?: { name?: string | null } | null;
+  product?: InvoiceDisplayNamedSource | null;
 };
 
 export type InvoiceDisplayTitleSource = {
@@ -23,38 +29,42 @@ export type InvoiceDisplayTitleSource = {
   order?: InvoiceDisplayOrderSource | null;
   subscription?: InvoiceDisplaySubscriptionSource | null;
   clientServiceRecord?: InvoiceDisplayClientServiceSource | null;
+  product?: InvoiceDisplayNamedSource | null;
 };
 
-/** Order label — deal name when present, otherwise order code. */
-export function resolveOrderDisplayTitle(order: InvoiceDisplayOrderSource): string {
-  if (order.deal) {
-    return order.deal.name?.trim() || order.deal.code;
+function firstTrimmedName(...values: Array<string | null | undefined>): string | undefined {
+  for (const value of values) {
+    const trimmed = value?.trim();
+    if (trimmed) return trimmed;
   }
-  return order.code;
+  return undefined;
+}
+
+/** Order label — deal name, then product/extension name, else order code. */
+export function resolveOrderDisplayTitle(order: InvoiceDisplayOrderSource): string {
+  return (
+    firstTrimmedName(order.deal?.name, order.product?.name, order.extension?.name) ?? order.code
+  );
 }
 
 /**
- * Live invoice title: deal/order → subscription → client service → invoice code.
- * Not stored on Invoice.
+ * Live invoice title: deal → subscription → client service → product → code.
+ * Not stored on Invoice. Codes are last-resort titles only.
  */
 export function resolveInvoiceDisplayTitle(invoice: InvoiceDisplayTitleSource): string {
-  if (invoice.order) {
-    return resolveOrderDisplayTitle(invoice.order);
-  }
-  if (invoice.subscription) {
-    return invoice.subscription.name?.trim() || invoice.subscription.code;
-  }
-  if (invoice.clientServiceRecord) {
-    return resolveClientServiceDisplayTitle(invoice.clientServiceRecord, invoice.code);
-  }
-  return invoice.code;
-}
-
-function resolveClientServiceDisplayTitle(
-  service: InvoiceDisplayClientServiceSource,
-  invoiceCode: string,
-): string {
-  return service.name?.trim() || service.product?.name?.trim() || invoiceCode;
+  return (
+    firstTrimmedName(invoice.order?.deal?.name) ??
+    firstTrimmedName(invoice.subscription?.name) ??
+    firstTrimmedName(invoice.clientServiceRecord?.name) ??
+    firstTrimmedName(
+      invoice.product?.name,
+      invoice.clientServiceRecord?.product?.name,
+      invoice.order?.product?.name,
+      invoice.order?.extension?.name,
+    ) ??
+    firstTrimmedName(invoice.subscription?.code) ??
+    (invoice.order ? resolveOrderDisplayTitle(invoice.order) : invoice.code)
+  );
 }
 
 /** Invoice code when it is not already the primary title. */

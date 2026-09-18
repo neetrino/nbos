@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { InvoiceOrderCommentEnum, Prisma, PrismaClient } from '@nbos/database';
 import { isInvoiceOrderComment, isInvoicePayerContextLocked } from '@nbos/shared';
+import { parseOptionalEntityNotes } from '../parse-entity-notes';
 import { sumAmounts } from '../finance-status.utils';
 import { resolveInvoiceProductOwnership } from './invoice-product-ownership';
 
@@ -15,6 +16,7 @@ export type UpdateInvoiceGeneralInput = {
   companyId?: string | null;
   productId?: string | null;
   orderComment?: string | null;
+  notes?: string | null;
 };
 
 export function parseUpdateInvoiceGeneralInput(
@@ -54,17 +56,25 @@ export function parseUpdateInvoiceGeneralInput(
     }
   }
 
+  if (body.notes !== undefined) {
+    out.notes = parseOptionalEntityNotes(body.notes) ?? null;
+  }
+
+  assertHasInvoiceGeneralFields(out);
+  return out;
+}
+
+function assertHasInvoiceGeneralFields(out: UpdateInvoiceGeneralInput): void {
   if (
     out.amount === undefined &&
     out.taxStatus === undefined &&
     out.companyId === undefined &&
     out.productId === undefined &&
-    out.orderComment === undefined
+    out.orderComment === undefined &&
+    out.notes === undefined
   ) {
     throw new BadRequestException('No fields to update');
   }
-
-  return out;
 }
 
 function assertInvoicePayerContextEditable(
@@ -119,6 +129,7 @@ export async function applyInvoiceGeneralUpdate(
 
   const data: Prisma.InvoiceUpdateInput = {};
   if (input.amount !== undefined) data.amount = input.amount;
+  if (input.notes !== undefined) data.notes = input.notes;
   applyTaxStatusPatch(invoice, input, data);
   await applyOwnershipPatch(prisma, input, data);
   applyOrderCommentPatch(invoice, input, data);

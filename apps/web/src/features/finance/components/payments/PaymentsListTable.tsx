@@ -22,6 +22,7 @@ import {
   EntityListMutedDash,
 } from '@/components/shared/entity-list-table';
 import type { Payment } from '@/lib/api/finance';
+import { cn } from '@/lib/utils';
 
 const INVOICE_ICON_CLASS = 'bg-slate-100 text-slate-600 dark:bg-slate-950/50 dark:text-slate-400';
 const PROJECT_ICON_CLASS =
@@ -30,9 +31,10 @@ const COMPANY_ICON_CLASS = 'bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text
 
 interface PaymentsListTableProps {
   payments: Payment[];
+  onOpenPayment: (payment: Payment) => void;
 }
 
-export function PaymentsListTable({ payments }: PaymentsListTableProps) {
+export function PaymentsListTable({ payments, onOpenPayment }: PaymentsListTableProps) {
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
@@ -49,7 +51,11 @@ export function PaymentsListTable({ payments }: PaymentsListTableProps) {
         </TableHeader>
         <TableBody>
           {payments.map((payment) => (
-            <TableRow key={payment.id} className={ENTITY_LIST_ROW_HOVER_CLASS}>
+            <TableRow
+              key={payment.id}
+              className={cn(ENTITY_LIST_ROW_HOVER_CLASS, 'cursor-pointer')}
+              onClick={() => onOpenPayment(payment)}
+            >
               <TableCell className={ENTITY_LIST_CELL_CLASS}>
                 <EntityListDate value={payment.paymentDate} />
               </TableCell>

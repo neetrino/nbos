@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildExpensesScopeStatsCsvContent,
+  buildExpensesScopeStatsFilename,
   type ExpensesScopeStatsCsvMeta,
 } from '@/features/finance/utils/export-expenses-scope-stats-csv';
 import type { ExpenseStats } from '@/lib/api/finance';
@@ -47,5 +48,24 @@ describe('buildExpensesScopeStatsCsvContent', () => {
     expect(lines).toContain('by_category,TRAVEL,1,,,');
     expect(lines).toContain('by_status,PENDING,3,800,,');
     expect(lines).toContain('by_status,PAID,1,400,,');
+  });
+
+  it('emits closedBoard and lifecycleBoard meta and filename hints', () => {
+    const closedMeta: ExpensesScopeStatsCsvMeta = {
+      ...META,
+      statsQuery: { closedBoard: true },
+    };
+    const allMeta: ExpensesScopeStatsCsvMeta = {
+      ...META,
+      statsQuery: { lifecycleBoard: true },
+    };
+    expect(buildExpensesScopeStatsCsvContent(SAMPLE_STATS, closedMeta)).toContain(
+      'meta,stats_closedBoard,true,,,',
+    );
+    expect(buildExpensesScopeStatsCsvContent(SAMPLE_STATS, allMeta)).toContain(
+      'meta,stats_lifecycleBoard,true,,,',
+    );
+    expect(buildExpensesScopeStatsFilename('month', closedMeta)).toContain('closed-board');
+    expect(buildExpensesScopeStatsFilename('month', allMeta)).toContain('lifecycle-board');
   });
 });

@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Calendar, DollarSign, Handshake, Layers, Repeat } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetCollapsibleSection,
+  DetailSheetOptionalDescription,
   InlineField,
 } from '@/components/shared';
 import {
@@ -81,6 +83,7 @@ export function SubscriptionGeneralTab({
           monthlyEquivalent,
         ),
         partnerPickLabel: draft.partnerPickLabel,
+        notes: draft.notes,
       });
     },
     [draft, monthlyEquivalent, replaceDraft],
@@ -91,6 +94,7 @@ export function SubscriptionGeneralTab({
       replaceDraft({
         ...applyBillingPeriodChangeToDraft(draft, { coverageMonthCount: value }, monthlyEquivalent),
         partnerPickLabel: draft.partnerPickLabel,
+        notes: draft.notes,
       });
     },
     [draft, monthlyEquivalent, replaceDraft],
@@ -108,7 +112,7 @@ export function SubscriptionGeneralTab({
   );
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-4`}>
       <DetailSheetCollapsibleSection
         title="Billing"
         icon={<DollarSign size={12} />}
@@ -231,6 +235,14 @@ export function SubscriptionGeneralTab({
       </DetailSheetCollapsibleSection>
 
       <SubscriptionDetailLinkedPanel subscription={subscription} />
+
+      <DetailSheetOptionalDescription
+        entityType="generic"
+        entityId={subscription.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        disabled={formDisabled}
+      />
     </div>
   );
 }

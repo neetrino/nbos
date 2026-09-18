@@ -7,6 +7,7 @@ import {
   type SubscriptionStatusEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import { parseOptionalEntityNotes } from '../parse-entity-notes';
 import { assertSubscriptionStatus, attachSubscriptionCoverage } from './subscription-coverage';
 import { allocateSubscriptionCode } from '../../../common/utils/entity-code-series';
 import { buildSubscriptionGridPayload } from './subscription-grid';
@@ -78,6 +79,7 @@ interface UpdateSubscriptionDto {
   /** Covered months until term ends; null = open-ended. */
   termMonths?: number | null;
   partnerId?: string | null;
+  notes?: string | null;
 }
 
 interface SubscriptionQueryParams {
@@ -333,6 +335,9 @@ export class SubscriptionsService {
       updateData.partner = data.partnerId
         ? { connect: { id: data.partnerId } }
         : { disconnect: true };
+    if (data.notes !== undefined) {
+      updateData.notes = parseOptionalEntityNotes(data.notes) ?? null;
+    }
 
     // Amount is the future billing rate only; never rewrite issued invoices.
     await this.prisma.subscription.update({

@@ -116,6 +116,11 @@ export function buildCreateInvoicePayload(
   };
 }
 
-export function canSubmitCreateInvoice(form: CreateInvoiceFormState): boolean {
-  return Number(form.amount) > 0;
+export function canSubmitCreateInvoice(
+  form: CreateInvoiceFormState,
+  options?: { requireProduct?: boolean; hiddenProductId?: string | null },
+): boolean {
+  if (!(Number(form.amount) > 0)) return false;
+  if (!options?.requireProduct) return true;
+  return Boolean(form.productId?.trim() || options.hiddenProductId?.trim());
 }

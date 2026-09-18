@@ -57,12 +57,13 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 #### 2.2.1. Каскад display title (Invoice)
 
-Коммерческое название **не копируется** на `Invoice` — UI читает его live из источника; переименование заказа/сделки, подписки или client service обновляет заголовок всех связанных счетов.
+Коммерческое название **не копируется** на `Invoice` — UI читает его live из источника; переименование сделки, подписки, client service или продукта обновляет заголовок связанных счетов.
 
-1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
+1. есть `order` с именем сделки → `Deal.name`;
 2. иначе есть `subscription` → `Subscription.name`;
-3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`, иначе `product.name`;
-4. иначе → `Invoice.code`.
+3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`;
+4. иначе есть продукт → `product.name` (ручной инвойс; заказ без сделки);
+5. иначе → код (`Invoice.code` / `Order.code`) как last resort.
 
 `Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком — в том числе в заголовке Invoice detail sheet (как у Subscription sheet).
 
@@ -203,7 +204,7 @@ Web: переключатель **Grid | Board | List**; выбор сохран
 
 ### 4.2. Expense Board / Доска расходов
 
-**Путь:** `/finance/expenses` (Finance top tab **Expense board**; sub-nav: Active / Backlog / Closed)
+**Путь:** `/finance/expenses` (Finance top tab **Pay Now**; screen filter: Pay now / Backlog; на Pay now lifecycle: Active / Closed / All statuses)
 
 Default view: `Board / Доска` (kanban; переключатель Board/List, выбор в `localStorage`).
 
@@ -217,7 +218,7 @@ Default view: `Board / Доска` (kanban; переключатель Board/Lis
 | Overdue  | Просрочено                     |
 | On Hold  | На паузе внутри текущего цикла |
 
-`Paid` и `Cancelled` должны уходить в `Closed / Закрытые`, чтобы не перегружать текущую доску.
+`Paid` и `Cancelled` должны уходить в lifecycle `Closed / Закрытые` на той же странице Pay now, чтобы не перегружать текущую доску. `/finance/expenses/closed` редиректит сюда с Closed.
 
 ### 4.3. Expense Backlog / Долги и отложенные
 
@@ -625,6 +626,8 @@ Company P&L | Project P&L | Product P&L | Order P&L | Cash Flow | MRR | Journal
 | Счёт          | Связанный Invoice                    |
 | Способ оплаты | Bank Transfer / Card / Cash / Crypto |
 | Подтверждение | Статус подтверждения                 |
+
+Клик по строке открывает **Payment detail sheet** (`?openPayment=`) по стандарту entity detail sheet: General (сумма, дата, метод, confirmer, notes) + Linked (invoice / project / company). С invoice — stacked `InvoiceSheet`. Remove payment — тот же destructive flow, что на вкладке Payments карточки invoice.
 
 ### 8.2. Фильтры
 

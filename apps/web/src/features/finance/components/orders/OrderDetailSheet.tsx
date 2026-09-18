@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Archive, ShoppingCart, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
@@ -12,6 +12,7 @@ import {
   DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
+  DetailSheetFormFooter,
   EntityDetailSheetContent,
   EntityItemHost,
   ErrorState,
@@ -27,13 +28,12 @@ import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { useSheetHostMounted, useSheetPersistedValue } from '@/hooks/use-sheet-persisted-value';
 import { ordersApi, type Order } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
-import { OrderGeneralTab } from './OrderGeneralTab';
-import { OrderInvoicesTab } from './OrderInvoicesTab';
 import { OrderLifecycleConfirmDialog } from './OrderLifecycleConfirmDialog';
-import { OrderReconciliationTab } from './OrderReconciliationTab';
 import { type OrderDetailSheetTab } from './order-detail-sheet-tabs';
 import { buildOrderDetailSheetTabs } from './build-order-detail-sheet-tabs';
+import { OrderDetailSheetBody } from './order-detail-sheet-body';
 import { ORDER_STATUSES } from './order-statuses';
+import { useOrderNotesSave } from './use-order-notes-save';
 
 /** Order detail: single-column general — narrower than shared auxiliary (36rem). */
 const ORDER_DETAIL_SHEET_WIDTH_CLASS =
@@ -69,6 +69,7 @@ export function OrderDetailSheet({
 
   const [activeTab, setActiveTab] = useState<OrderDetailSheetTab>('general');
   const [lifecycleOpen, setLifecycleOpen] = useState(false);
+  const notesDirtyRef = useRef(false);
   const tabScope = `${sheetId ?? ''}:${open}`;
   const [trackedTabScope, setTrackedTabScope] = useState(tabScope);
 
@@ -88,6 +89,7 @@ export function OrderDetailSheet({
     initialEntity: initialOrder,
     fetchById: ordersApi.getById,
     loadErrorMessage: 'Order could not be loaded.',
+    isDirty: () => notesDirtyRef.current,
   });
 
   useEffect(() => {
@@ -128,6 +130,24 @@ export function OrderDetailSheet({
   const handleOrderDeleted = useCallback(() => {
     handleOpenChange(false);
   }, [handleOpenChange]);
+
+  const handleNotesSaved = useCallback(() => {
+    void refresh();
+  }, [refresh]);
+
+  const {
+    draft: notesDraft,
+    patchDraft: patchNotesDraft,
+    dirty: notesDirty,
+    saving,
+    error: notesError,
+    handleSave: handleNotesSave,
+    handleCancel: handleNotesCancel,
+  } = useOrderNotesSave(order, handleNotesSaved);
+
+  useEffect(() => {
+    notesDirtyRef.current = notesDirty;
+  }, [notesDirty]);
 
   if (!hostMounted) return null;
 
@@ -239,17 +259,29 @@ export function OrderDetailSheet({
                 <LoadingState count={3} />
               ) : error && !order ? (
                 <ErrorState description={error} onRetry={() => void fetchOrder()} />
-              ) : order ? (
+              ) : order && notesDraft ? (
                 <DetailSheetTabPanel tabKey={activeTab}>
                   <OrderDetailSheetBody
                     activeTab={activeTab}
                     order={order}
+                    notesDraft={notesDraft}
+                    patchNotesDraft={patchNotesDraft}
+                    notesDisabled={saving}
                     onCreateInvoice={handleCreateInvoice}
                   />
                 </DetailSheetTabPanel>
               ) : null}
             </div>
           </ScrollArea>
+
+          <DetailSheetFormFooter
+            visible={activeTab === 'general' && Boolean(order && notesDraft)}
+            dirty={notesDirty}
+            saving={saving}
+            errorMessage={notesError}
+            onSave={handleNotesSave}
+            onCancel={handleNotesCancel}
+          />
         </EntityDetailSheetContent>
       </Sheet>
 
@@ -264,20 +296,4 @@ export function OrderDetailSheet({
       ) : null}
     </EntityItemHost>
   );
-}
-
-function OrderDetailSheetBody({
-  activeTab,
-  order,
-  onCreateInvoice,
-}: {
-  activeTab: OrderDetailSheetTab;
-  order: Order;
-  onCreateInvoice: () => void;
-}) {
-  if (activeTab === 'general') return <OrderGeneralTab order={order} />;
-  if (activeTab === 'invoices') {
-    return <OrderInvoicesTab order={order} onCreateInvoice={onCreateInvoice} />;
-  }
-  return <OrderReconciliationTab order={order} />;
 }

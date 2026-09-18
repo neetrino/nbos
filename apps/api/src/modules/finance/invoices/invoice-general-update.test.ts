@@ -42,6 +42,13 @@ describe('parseUpdateInvoiceGeneralInput', () => {
       BadRequestException,
     );
   });
+
+  it('accepts notes and trims empty to null', () => {
+    expect(parseUpdateInvoiceGeneralInput({ notes: '  Phase notes  ' })).toEqual({
+      notes: 'Phase notes',
+    });
+    expect(parseUpdateInvoiceGeneralInput({ notes: '   ' })).toEqual({ notes: null });
+  });
 });
 
 describe('applyInvoiceGeneralUpdate', () => {
@@ -200,6 +207,31 @@ describe('applyInvoiceGeneralUpdate', () => {
     expect(prisma.invoice.update).toHaveBeenCalledWith({
       where: { id: 'inv-1' },
       data: { amount: 1200 },
+    });
+  });
+
+  it('writes notes on an issued invoice', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'inv-1',
+          type: 'MANUAL',
+          orderId: null,
+          amount: 1000,
+          taxStatus: 'TAX',
+          moneyStatus: 'AWAITING_PAYMENT',
+          officialInvoiceRequestSent: true,
+          payments: [],
+        }),
+        update: vi.fn().mockResolvedValue({}),
+      },
+    };
+
+    await applyInvoiceGeneralUpdate(prisma as never, 'inv-1', { notes: 'Follow up' });
+
+    expect(prisma.invoice.update).toHaveBeenCalledWith({
+      where: { id: 'inv-1' },
+      data: { notes: 'Follow up' },
     });
   });
 });

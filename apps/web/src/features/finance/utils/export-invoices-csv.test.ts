@@ -24,7 +24,7 @@ function minimalInvoice(overrides: Partial<Invoice>): Invoice {
     officialInvoiceCancelledAt: null,
     notificationsEnabled: true,
     orderComment: null,
-    description: null,
+    notes: null,
     createdAt: '2026-04-28T12:00:00.000Z',
     order: null,
     company: null,
@@ -52,11 +52,10 @@ describe('buildInvoicesCsvContent', () => {
     expect(csv).toContain('displayTitle');
   });
 
-  it('escapes commas in description', () => {
-    const csv = buildInvoicesCsvContent([
-      minimalInvoice({ description: 'Line, one', code: 'INV-A' }),
-    ]);
+  it('escapes commas in notes', () => {
+    const csv = buildInvoicesCsvContent([minimalInvoice({ notes: 'Line, one', code: 'INV-A' })]);
     expect(csv).toContain('"Line, one"');
+    expect(csv).toContain('notes');
   });
 
   it('appends grand total with summed amount and coverage', () => {

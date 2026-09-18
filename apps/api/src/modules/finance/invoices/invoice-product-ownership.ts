@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE } from '@nbos/shared';
 
 export type InvoiceOwnershipInput = {
   productId?: string | null;
@@ -52,7 +53,6 @@ type InvoiceOwnershipDb = {
 };
 
 const PRODUCT_CONFLICT = 'Invoice product does not match the linked source product.';
-const PRODUCT_MISSING = 'A product is required to create this invoice.';
 
 function trimId(value?: string | null): string | null {
   const trimmed = value?.trim();
@@ -138,7 +138,7 @@ export function resolveInvoiceCreateCompanyId(
 
 export function requireInvoiceProductId(productId: string | null): string {
   if (!productId) {
-    throw new BadRequestException(PRODUCT_MISSING);
+    throw new BadRequestException(INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE);
   }
   return productId;
 }

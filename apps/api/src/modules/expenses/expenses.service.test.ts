@@ -133,10 +133,44 @@ describe('ExpensesService', () => {
       expect(prisma.expense.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            status: { notIn: ['PAID', 'BACKLOG'] },
+            status: { notIn: ['PAID', 'BACKLOG', 'CANCELLED'] },
           }),
         }),
       );
+    });
+
+    it('applies closedBoard scope when no status filter', async () => {
+      await service.findAll({ closedBoard: true });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { in: ['PAID', 'CANCELLED'] },
+          }),
+        }),
+      );
+    });
+
+    it('applies lifecycleBoard scope when no status filter', async () => {
+      await service.findAll({ lifecycleBoard: true });
+
+      expect(prisma.expense.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { notIn: ['BACKLOG'] },
+          }),
+        }),
+      );
+    });
+
+    it('does not constrain status when no board flag is set', async () => {
+      await service.findAll({});
+
+      const call = prisma.expense.findMany.mock.calls.at(-1)?.[0] as {
+        where?: Record<string, unknown>;
+      };
+      expect(call?.where).toBeDefined();
+      expect(call?.where).not.toHaveProperty('status');
     });
 
     it('does not apply activeBoard when status is set', async () => {
@@ -1014,6 +1048,42 @@ describe('ExpensesService', () => {
       expect(prisma.expense.groupBy).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ expensePlanId: 'plan-x' }),
+        }),
+      );
+    });
+
+    it('applies activeBoard to stats scope', async () => {
+      await service.getStats({ activeBoard: true });
+
+      expect(prisma.expense.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { notIn: ['PAID', 'BACKLOG', 'CANCELLED'] },
+          }),
+        }),
+      );
+    });
+
+    it('applies lifecycleBoard to stats scope', async () => {
+      await service.getStats({ lifecycleBoard: true });
+
+      expect(prisma.expense.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { notIn: ['BACKLOG'] },
+          }),
+        }),
+      );
+    });
+
+    it('applies closedBoard to stats scope', async () => {
+      await service.getStats({ closedBoard: true });
+
+      expect(prisma.expense.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { in: ['PAID', 'CANCELLED'] },
+          }),
         }),
       );
     });

@@ -58,6 +58,7 @@ export class MailQueueService implements OnModuleInit, OnModuleDestroy {
       MAIL_SYNC_JOB_NAME,
       { kind: 'sync', mailAccountId },
       mailSyncJobId(mailAccountId),
+      true, // drop completed/failed so IDLE/poll/reconnect can sync again
     );
   }
 

@@ -19,6 +19,7 @@ import {
   assertOrderClosable,
   assertOrderDraftDeletable,
 } from '../../../common/lifecycle/finance-record-lifecycle-guards';
+import { applyOrderGeneralUpdate, parseUpdateOrderGeneralInput } from './order-general-update';
 
 interface CreateOrderDto {
   projectId: string;
@@ -248,6 +249,12 @@ export class OrdersService {
       },
     });
     return this.findById(created.id);
+  }
+
+  async updateGeneral(id: string, body: { notes?: string | null }) {
+    const input = parseUpdateOrderGeneralInput(body);
+    await applyOrderGeneralUpdate(this.prisma, id, input);
+    return this.findById(id);
   }
 
   async updateStatus(id: string, status: string) {

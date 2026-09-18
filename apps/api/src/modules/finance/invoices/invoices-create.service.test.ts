@@ -32,13 +32,17 @@ describe('InvoicesService create', () => {
       payments: [],
       _count: { payments: 0 },
     };
+    prisma.product.findUnique.mockResolvedValue({
+      projectId: 'proj-1',
+      companyId: null,
+      project: { companyId: null },
+    });
     prisma.invoice.create.mockResolvedValue(createdInvoice);
     prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
 
     const result = await service.create({
-      projectId: 'p1',
       amount: 50000,
-      type: 'PREPAYMENT',
+      productId: 'prod-1',
     });
     expect(result.code).toMatch(/^INV-\d{4}-\d{4}$/);
     expect(prisma.invoice.count).not.toHaveBeenCalled();
@@ -150,7 +154,12 @@ describe('InvoicesService create', () => {
     );
   });
 
-  it('creates manual invoice without project context', async () => {
+  it('rejects unsourced invoice without a product', async () => {
+    await expect(service.create({ amount: 50000 })).rejects.toThrow(BadRequestException);
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
+  });
+
+  it('creates manual invoice from product without an explicit project', async () => {
     const createdInvoice = {
       id: 'manual-1',
       code: 'INV-2026-0099',
@@ -159,16 +168,22 @@ describe('InvoicesService create', () => {
       payments: [],
       _count: { payments: 0 },
     };
+    prisma.product.findUnique.mockResolvedValue({
+      projectId: 'proj-owned',
+      companyId: null,
+      project: { companyId: null },
+    });
     prisma.invoice.create.mockResolvedValue(createdInvoice);
     prisma.invoice.findUnique.mockResolvedValue(createdInvoice);
 
-    await service.create({ amount: 50000 });
+    await service.create({ amount: 50000, productId: 'prod-1' });
 
     expect(prisma.invoice.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           type: 'MANUAL',
-          projectId: null,
+          productId: 'prod-1',
+          projectId: 'proj-owned',
           dueDate: expect.any(Date),
         }),
       }),

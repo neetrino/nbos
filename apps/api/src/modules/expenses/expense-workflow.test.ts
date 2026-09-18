@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { deriveTimeBasedWorkflowStatus, refreshExpenseWorkflowStatus } from './expense-workflow';
+import {
+  deriveTimeBasedWorkflowStatus,
+  refreshExpenseWorkflowStatus,
+  resolveExpenseListStatusWhere,
+} from './expense-workflow';
 
 describe('deriveTimeBasedWorkflowStatus', () => {
   const ref = '2026-04-10';
@@ -30,6 +34,51 @@ describe('deriveTimeBasedWorkflowStatus', () => {
 
   it('returns PLANNED when due date is missing', () => {
     expect(deriveTimeBasedWorkflowStatus(null, ref)).toBe('PLANNED');
+  });
+});
+
+describe('resolveExpenseListStatusWhere', () => {
+  it('lets an explicit status win over board flags', () => {
+    expect(
+      resolveExpenseListStatusWhere({
+        status: 'PAID',
+        activeBoard: true,
+        closedBoard: true,
+        lifecycleBoard: true,
+      }),
+    ).toBe('PAID');
+  });
+
+  it('maps closed, active, and lifecycle board flags', () => {
+    expect(resolveExpenseListStatusWhere({ closedBoard: true })).toEqual({
+      in: ['PAID', 'CANCELLED'],
+    });
+    expect(resolveExpenseListStatusWhere({ activeBoard: true })).toEqual({
+      notIn: ['PAID', 'BACKLOG', 'CANCELLED'],
+    });
+    expect(resolveExpenseListStatusWhere({ lifecycleBoard: true })).toEqual({
+      notIn: ['BACKLOG'],
+    });
+  });
+
+  it('returns undefined when no status or board flag is set', () => {
+    expect(resolveExpenseListStatusWhere({})).toBeUndefined();
+  });
+
+  it('prefers closedBoard over activeBoard and lifecycleBoard', () => {
+    expect(
+      resolveExpenseListStatusWhere({
+        closedBoard: true,
+        activeBoard: true,
+        lifecycleBoard: true,
+      }),
+    ).toEqual({ in: ['PAID', 'CANCELLED'] });
+    expect(
+      resolveExpenseListStatusWhere({
+        activeBoard: true,
+        lifecycleBoard: true,
+      }),
+    ).toEqual({ notIn: ['PAID', 'BACKLOG', 'CANCELLED'] });
   });
 });
 

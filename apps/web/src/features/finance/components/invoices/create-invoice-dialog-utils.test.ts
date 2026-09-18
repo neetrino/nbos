@@ -180,4 +180,22 @@ describe('create invoice dialog utils', () => {
     expect(canSubmitCreateInvoice({ amount: '1', dueDate: '' })).toBe(true);
     expect(canSubmitCreateInvoice({ amount: '0', dueDate: '' })).toBe(false);
   });
+
+  it('requires a product for unsourced standard create', () => {
+    expect(canSubmitCreateInvoice({ amount: '1', dueDate: '' }, { requireProduct: true })).toBe(
+      false,
+    );
+    expect(
+      canSubmitCreateInvoice(
+        { amount: '1', dueDate: '', productId: 'prod-1' },
+        { requireProduct: true },
+      ),
+    ).toBe(true);
+    expect(
+      canSubmitCreateInvoice(
+        { amount: '1', dueDate: '' },
+        { requireProduct: true, hiddenProductId: 'prod-1' },
+      ),
+    ).toBe(true);
+  });
 });

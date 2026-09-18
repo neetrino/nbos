@@ -16,8 +16,17 @@ describe('order display', () => {
     ).toBe('Demo Client 13 — Active engagement');
   });
 
-  it('falls back to order code without deal', () => {
+  it('falls back to order code without deal or product', () => {
     expect(getOrderDisplayTitle({ code: 'ORD-2026-0023' })).toBe('ORD-2026-0023');
+  });
+
+  it('uses product name when the order has no deal', () => {
+    expect(
+      getOrderDisplayTitle({
+        code: 'ORD-2026-0023',
+        product: { name: 'Website rebuild' },
+      }),
+    ).toBe('Website rebuild');
   });
 
   it('returns deal title for invoice order context', () => {
@@ -40,14 +49,23 @@ describe('order display', () => {
     ).toBe('Website redesign');
   });
 
-  it('prefers order title over subscription name', () => {
+  it('prefers subscription name over a nameless order', () => {
     expect(
       getInvoiceDisplayTitle({
         code: 'INV-2026-0042',
         order: { code: 'ORD-2026-0023' },
         subscription: { name: 'Acme maintenance', code: 'SUB-2026-0001' },
       }),
-    ).toBe('ORD-2026-0023');
+    ).toBe('Acme maintenance');
+  });
+
+  it('uses product name for a manual invoice', () => {
+    expect(
+      getInvoiceDisplayTitle({
+        code: 'INV-2026-0164',
+        product: { name: 'Qualitech SEO' },
+      }),
+    ).toBe('Qualitech SEO');
   });
 
   it('uses subscription name when invoice has no order', () => {
@@ -81,13 +99,19 @@ describe('order display', () => {
     expect(getInvoiceDisplayTitle({ code: 'INV-2026-0042' })).toBe('INV-2026-0042');
   });
 
-  it('returns invoice code as subtitle when title comes from order or subscription', () => {
+  it('returns invoice code as subtitle when title comes from a source', () => {
     expect(
       getInvoiceDisplaySubtitle({
         code: 'INV-2026-0042',
         subscription: { name: 'Acme maintenance', code: 'SUB-2026-0001' },
       }),
     ).toBe('INV-2026-0042');
+    expect(
+      getInvoiceDisplaySubtitle({
+        code: 'INV-2026-0164',
+        product: { name: 'Qualitech SEO' },
+      }),
+    ).toBe('INV-2026-0164');
     expect(getInvoiceDisplaySubtitle({ code: 'INV-2026-0042' })).toBeUndefined();
   });
 });

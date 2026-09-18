@@ -85,6 +85,11 @@
     "backlog": "Backlog",
     "closed": "Closed"
   },
+  "boardScope": {
+    "ALL": "All statuses",
+    "ACTIVE": "Active",
+    "CLOSED": "Closed"
+  },
   "filters": {
     "scope": "Scope",
     "period": "Period",

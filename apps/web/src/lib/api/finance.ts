@@ -84,6 +84,8 @@ export interface InvoiceOrderSummary {
   id: string;
   code: string;
   deal?: InvoiceDealSummary | null;
+  product?: { id: string; name: string } | null;
+  extension?: { id: string; name: string } | null;
 }
 
 export interface InvoiceSubscriptionSummary {
@@ -120,7 +122,7 @@ export interface Invoice {
   officialInvoiceCancelledAt: string | null;
   notificationsEnabled: boolean;
   orderComment: string | null;
-  description: string | null;
+  notes: string | null;
   createdAt: string;
   order: InvoiceOrderSummary | null;
   subscription?: InvoiceSubscriptionSummary | null;
@@ -174,9 +176,12 @@ export interface Order {
   paidAmount?: number;
   currency: string;
   status: string;
+  notes?: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
   deal?: InvoiceDealSummary | null;
+  product?: { id: string; name: string } | null;
+  extension?: { id: string; name: string } | null;
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; moneyStatus: string; amount: string }>;
@@ -290,6 +295,8 @@ export interface ExpenseStatsQueryParams extends FinanceDateRangeParams {
   activeBoard?: boolean;
   /** When true and `status` is omitted: same scope as `GET /expenses?closedBoard=true`. */
   closedBoard?: boolean;
+  /** When true and `status` is omitted: same scope as `GET /expenses?lifecycleBoard=true`. */
+  lifecycleBoard?: boolean;
   payrollLinked?: boolean;
   payrollMonth?: string;
   payrollEmployeeId?: string;
@@ -315,11 +322,13 @@ export interface ExpenseListParams extends FinanceDateRangeParams {
   sortBy?: ExpenseListSortField;
   sortOrder?: 'asc' | 'desc';
   /**
-   * When true and `status` is omitted: exclude `PAID` and `BACKLOG` (board vs closed/backlog), per NBOS.
+   * When true and `status` is omitted: exclude `PAID`, `BACKLOG`, and `CANCELLED` (Pay now Active).
    */
   activeBoard?: boolean;
-  /** When true and `status` is omitted: only `PAID` and `CANCELLED` (closed expense route). */
+  /** When true and `status` is omitted: only `PAID` and `CANCELLED` (Pay now Closed). */
   closedBoard?: boolean;
+  /** When true and `status` is omitted: exclude `BACKLOG` only (Pay now All). */
+  lifecycleBoard?: boolean;
   /** When true: only payroll-materialized salary expenses. */
   payrollLinked?: boolean;
   payrollMonth?: string;
@@ -514,6 +523,7 @@ export const invoicesApi = {
       companyId?: string | null;
       productId?: string | null;
       orderComment?: string | null;
+      notes?: string | null;
     },
   ): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);
@@ -572,6 +582,10 @@ export const paymentsApi = {
     const resp = await api.get<ListData<Payment>>('/api/finance/payments', { params });
     return resp.data;
   },
+  async getById(id: string): Promise<Payment> {
+    const resp = await api.get<Payment>(`/api/finance/payments/${id}`);
+    return resp.data;
+  },
   async create(data: {
     invoiceId: string;
     amount: number;
@@ -603,6 +617,10 @@ export const ordersApi = {
   },
   async create(data: Record<string, unknown>): Promise<Order> {
     const resp = await api.post<Order>('/api/finance/orders', data);
+    return resp.data;
+  },
+  async updateGeneral(id: string, data: { notes?: string | null }): Promise<Order> {
+    const resp = await api.patch<Order>(`/api/finance/orders/${id}`, data);
     return resp.data;
   },
   async updateStatus(id: string, status: string): Promise<Order> {

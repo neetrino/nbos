@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Building2, DollarSign, FolderKanban, Handshake, User } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetCollapsibleSection,
   DetailSheetEntityLinkCard,
   DetailSheetMetaDate,
+  DetailSheetOptionalDescription,
   DetailSheetSection,
   InlineField,
 } from '@/components/shared';
@@ -15,10 +17,14 @@ import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDe
 import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
+import type { OrderNotesDraft } from '@/features/finance/utils/order-notes-form-state';
 import type { Order } from '@/lib/api/finance';
 
 interface OrderGeneralTabProps {
   order: Order;
+  draft: OrderNotesDraft;
+  patchDraft: (partial: Partial<OrderNotesDraft>) => void;
+  formDisabled?: boolean;
 }
 
 function formatShortDate(value: string): string {
@@ -29,12 +35,17 @@ function formatShortDate(value: string): string {
   }).format(new Date(value));
 }
 
-export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
+export function OrderGeneralTab({
+  order,
+  draft,
+  patchDraft,
+  formDisabled = false,
+}: OrderGeneralTabProps) {
   const total = Number(order.amount ?? order.totalAmount ?? 0);
   const [orderOpen, setOrderOpen] = useState(true);
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} w-full max-w-none gap-4`}>
       <DetailSheetCollapsibleSection
         title="Order"
         icon={<DollarSign size={12} />}
@@ -59,6 +70,14 @@ export function OrderGeneralTab({ order }: OrderGeneralTabProps) {
       </DetailSheetCollapsibleSection>
 
       <OrderLinkedPanel order={order} />
+
+      <DetailSheetOptionalDescription
+        entityType="generic"
+        entityId={order.id}
+        value={draft.notes}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        disabled={formDisabled}
+      />
     </div>
   );
 }

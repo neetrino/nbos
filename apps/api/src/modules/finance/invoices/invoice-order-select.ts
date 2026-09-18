@@ -3,12 +3,16 @@ export const INVOICE_ORDER_SELECT = {
   id: true,
   code: true,
   deal: { select: { id: true, name: true, code: true, type: true } },
+  product: { select: { id: true, name: true } },
+  extension: { select: { id: true, name: true } },
   project: { select: { id: true, name: true } },
 } as const;
 
 export const INVOICE_ORDER_DETAIL_INCLUDE = {
   project: true,
   deal: { select: { id: true, name: true, code: true, type: true } },
+  product: { select: { id: true, name: true } },
+  extension: { select: { id: true, name: true } },
 } as const;
 
 /** Enough for invoice sheet source badge and live display title. */

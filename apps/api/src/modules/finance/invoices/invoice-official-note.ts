@@ -45,6 +45,7 @@ export interface OfficialInvoiceNoteInput {
   coverageMonthCount?: number | null;
   clientServiceName?: string | null;
   clientServiceType?: string | null;
+  productName?: string | null;
   dueDate?: Date | string | null;
 }
 
@@ -97,6 +98,7 @@ function resolveNoteDisplayTitle(input: OfficialInvoiceNoteInput): string {
           }
         : null,
     clientServiceRecord: input.clientServiceName ? { name: input.clientServiceName } : null,
+    product: input.productName ? { name: input.productName } : null,
   });
 }
 

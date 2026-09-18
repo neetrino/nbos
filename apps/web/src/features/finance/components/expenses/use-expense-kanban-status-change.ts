@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   expenseDetailHref,
+  type ExpenseListHrefOptions,
   type ExpenseListNavigationSort,
 } from '@/features/finance/constants/project-expenses-drilldown';
 import type { ExpenseDetailStageGateHighlight } from '@/features/finance/constants/expense-stage-gate-highlight';
@@ -21,6 +22,7 @@ export interface UseExpenseKanbanStatusChangeOptions {
   listSort: ExpenseListNavigationSort;
   fromBacklog: boolean;
   closed: boolean;
+  lifecycleScope?: ExpenseListHrefOptions['lifecycleScope'];
   expensePlanId: string | null;
 }
 
@@ -35,6 +37,7 @@ function openExpenseWithStageGate(
     expenseDetailHref(expense.id, options.listProjectId, options.listSort, {
       fromBacklog: options.fromBacklog,
       closed: options.closed,
+      lifecycleScope: options.lifecycleScope,
       expensePlanId: options.expensePlanId,
     }),
     { scroll: false },

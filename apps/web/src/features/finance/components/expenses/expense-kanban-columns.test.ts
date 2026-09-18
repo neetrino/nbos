@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Expense } from '../../../../lib/api/finance';
-import { buildExpenseKanbanColumns } from './expense-kanban-columns';
+import {
+  buildExpenseKanbanColumns,
+  buildExpenseLifecycleKanbanColumns,
+} from './expense-kanban-columns';
 
 function mockExpense(overrides: Partial<Expense>): Expense {
   return {
@@ -34,5 +37,29 @@ describe('buildExpenseKanbanColumns', () => {
     expect(dueNow?.items.map((e) => e.id)).toContain('a');
     const allIds = columns.flatMap((c) => c.items.map((e) => e.id));
     expect(allIds).not.toContain('b');
+  });
+});
+
+describe('buildExpenseLifecycleKanbanColumns', () => {
+  it('keeps active lanes and terminal Paid / Cancelled, omits Backlog', () => {
+    const columns = buildExpenseLifecycleKanbanColumns([
+      mockExpense({ id: 'a', status: 'DUE_NOW' }),
+      mockExpense({ id: 'b', status: 'PAID' }),
+      mockExpense({ id: 'c', status: 'CANCELLED' }),
+      mockExpense({ id: 'd', status: 'BACKLOG' }),
+    ]);
+    expect(columns.map((column) => column.key)).toEqual([
+      'PLANNED',
+      'DUE_SOON',
+      'DUE_NOW',
+      'OVERDUE',
+      'ON_HOLD',
+      'PAID',
+      'CANCELLED',
+    ]);
+    expect(columns.find((column) => column.key === 'PAID')?.items.map((row) => row.id)).toEqual([
+      'b',
+    ]);
+    expect(columns.flatMap((column) => column.items.map((row) => row.id))).not.toContain('d');
   });
 });

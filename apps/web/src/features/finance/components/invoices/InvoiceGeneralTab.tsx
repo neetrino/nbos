@@ -3,13 +3,13 @@
 import { useTranslations } from 'next-intl';
 import { isInvoicePayerContextLocked } from '@nbos/shared';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
-import {
-  InvoiceDescriptionSection,
-  InvoiceLinkedEntitiesSection,
-  InvoiceOfficialSection,
-} from './InvoiceSheetSections';
+import { InvoiceLinkedEntitiesSection, InvoiceOfficialSection } from './InvoiceSheetSections';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
-import { DetailSheetSection } from '@/components/shared';
+import {
+  DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
+  DetailSheetOptionalDescription,
+  DetailSheetSection,
+} from '@/components/shared';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
 import { InvoiceManualContextFields } from './InvoiceManualContextFields';
 import { InvoiceOrderCommentField } from './InvoiceOrderCommentField';
@@ -53,7 +53,7 @@ export function InvoiceGeneralTab({
     ) : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-none flex-col gap-4">
+    <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-4`}>
       <InvoiceMoneyCard
         invoice={invoice}
         gateRequiredFields={gateRequiredFields}
@@ -86,8 +86,6 @@ export function InvoiceGeneralTab({
 
       <InvoiceLinkedEntitiesSection invoice={invoice} gateRequiredFields={gateRequiredFields} />
 
-      <InvoiceDescriptionSection description={invoice.description} />
-
       <DetailSheetSection title={t('sheet.proofs')}>
         <FinanceProofAttachments
           entityType="INVOICE"
@@ -96,6 +94,16 @@ export function InvoiceGeneralTab({
           title=""
         />
       </DetailSheetSection>
+
+      {draft ? (
+        <DetailSheetOptionalDescription
+          entityType="generic"
+          entityId={invoice.id}
+          value={draft.notes}
+          onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+          disabled={formDisabled}
+        />
+      ) : null}
     </div>
   );
 }

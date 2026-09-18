@@ -111,7 +111,14 @@ export function InvoiceSheet({
     setGeneralDraft(next);
     setGeneralSnap(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- draft sync keyed on invoice.id
-  }, [invoice?.id, invoice?.amount, invoice?.taxStatus, invoice?.companyId, invoice?.productId]);
+  }, [
+    invoice?.id,
+    invoice?.amount,
+    invoice?.taxStatus,
+    invoice?.companyId,
+    invoice?.productId,
+    invoice?.notes,
+  ]);
 
   const patchGeneralDraft = useCallback((partial: Partial<InvoiceGeneralDraft>) => {
     setGeneralDraft((prev) => (prev ? { ...prev, ...partial } : null));

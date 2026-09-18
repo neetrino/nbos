@@ -84,6 +84,18 @@ describe('buildSubscriptionGeneralPatch billing frequency', () => {
   });
 });
 
+describe('buildSubscriptionGeneralPatch notes', () => {
+  it('sends trimmed notes and clears empty to null', () => {
+    const snap = createSubscriptionGeneralDraft(baseSubscription);
+    expect(buildSubscriptionGeneralPatch(snap, { ...snap, notes: '  Keep  ' })).toEqual({
+      notes: 'Keep',
+    });
+    expect(
+      buildSubscriptionGeneralPatch({ ...snap, notes: 'Keep' }, { ...snap, notes: '   ' }),
+    ).toEqual({ notes: null });
+  });
+});
+
 describe('hasSubscriptionAmountChanged', () => {
   it('detects a period-amount edit', () => {
     const snap = createSubscriptionGeneralDraft(baseSubscription);

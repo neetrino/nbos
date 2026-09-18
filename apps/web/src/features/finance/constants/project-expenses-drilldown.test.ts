@@ -5,8 +5,9 @@ import {
   EXPENSE_PLAN_DRILLDOWN_QUERY,
   PROJECT_EXPENSES_DRILLDOWN_QUERY,
   EXPENSE_BACKLOG_LIST_PATH,
-  EXPENSE_CLOSED_LIST_PATH,
+  EXPENSE_LIFECYCLE_SCOPE_QUERY,
   expenseDetailHref,
+  expensesClosedAliasHref,
   financeExpensesListHref,
   planExpensesDrilldownHref,
   projectExpensesBacklogDrilldownHref,
@@ -74,10 +75,31 @@ describe('project-expenses-drilldown', () => {
     );
   });
 
-  it('expenseDetailHref targets closed list when option set', () => {
+  it('expenseDetailHref targets Pay now Closed scope when option set', () => {
     expect(expenseDetailHref('ex-1', null, undefined, { closed: true })).toBe(
-      `${EXPENSE_CLOSED_LIST_PATH}?${OPEN_EXPENSE_QUERY}=ex-1`,
+      `/finance/expenses?${EXPENSE_LIFECYCLE_SCOPE_QUERY}=CLOSED&${OPEN_EXPENSE_QUERY}=ex-1`,
     );
+  });
+
+  it('expenseDetailHref targets Pay now All scope when option set', () => {
+    expect(expenseDetailHref('ex-1', null, undefined, { lifecycleScope: 'ALL' })).toBe(
+      `/finance/expenses?${EXPENSE_LIFECYCLE_SCOPE_QUERY}=ALL&${OPEN_EXPENSE_QUERY}=ex-1`,
+    );
+  });
+
+  it('expensesClosedAliasHref maps the closed route onto Pay now Closed', () => {
+    expect(expensesClosedAliasHref({ [OPEN_EXPENSE_QUERY]: 'ex-9' })).toBe(
+      `/finance/expenses?${OPEN_EXPENSE_QUERY}=ex-9&${EXPENSE_LIFECYCLE_SCOPE_QUERY}=CLOSED`,
+    );
+  });
+
+  it('expensesClosedAliasHref overwrites an incoming All scope', () => {
+    expect(
+      expensesClosedAliasHref({
+        [EXPENSE_LIFECYCLE_SCOPE_QUERY]: 'ALL',
+        [OPEN_EXPENSE_QUERY]: 'ex-9',
+      }),
+    ).toBe(`/finance/expenses?${EXPENSE_LIFECYCLE_SCOPE_QUERY}=CLOSED&${OPEN_EXPENSE_QUERY}=ex-9`);
   });
 
   it('financeExpensesListHref adds expensePlanId when option set', () => {

@@ -33,7 +33,6 @@ export function CreateInvoiceStandardFields({
           placeholder={t('create.product')}
           locked={productLocked}
           onSelect={(productId, productLabel) => setForm({ ...form, productId, productLabel })}
-          onClear={() => setForm({ ...form, productId: '', productLabel: null })}
         />
       ) : null}
       <InvoiceAmountFields form={form} setForm={setForm} t={t} />

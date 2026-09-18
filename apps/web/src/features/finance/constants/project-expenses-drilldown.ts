@@ -2,6 +2,9 @@ import type { ExpenseListSortField } from '@/lib/api/finance';
 import { OPEN_EXPENSE_QUERY } from './expense-deep-link';
 import { setExpenseListSortParams } from './expenses-list-query';
 
+/** Pay now lifecycle scope on `/finance/expenses` (`ACTIVE` default omitted). */
+export const EXPENSE_LIFECYCLE_SCOPE_QUERY = 'boardScope' as const;
+
 /** Must match `GET /expenses?projectId=` (ExpensesController). */
 export const PROJECT_EXPENSES_DRILLDOWN_QUERY = 'projectId' as const;
 
@@ -14,14 +17,11 @@ export const EXPENSE_FROM_BACKLOG_VALUE = 'backlog' as const;
 
 export const EXPENSE_LIST_PATH = '/finance/expenses' as const;
 export const EXPENSE_BACKLOG_LIST_PATH = '/finance/expenses/backlog' as const;
-/** NBOS: paid cards live off the active board (`04-Finance-Pages` Closed scope). */
+/** Alias route: redirects to Pay now with Closed lifecycle scope. */
 export const EXPENSE_CLOSED_LIST_PATH = '/finance/expenses/closed' as const;
 
 /** Backlog list uses `BACKLOG` + `backlogReason` in API/UI (NBOS Expense Backlog path). */
 export const EXPENSE_BACKLOG_FIXED_STATUS = 'BACKLOG' as const;
-
-/** Closed list filters by paid status (ledger may still show partial history on older rows). */
-export const EXPENSE_CLOSED_FIXED_STATUS = 'PAID' as const;
 
 export interface ExpenseListNavigationSort {
   sortBy: ExpenseListSortField;
@@ -31,15 +31,31 @@ export interface ExpenseListNavigationSort {
 export interface ExpenseListHrefOptions {
   /** When true, list URL targets the deferred/backlog route (canon UI path). */
   fromBacklog?: boolean;
-  /** When true, list URL targets the closed board route. */
+  /** When true, list URL targets Pay now Closed (`boardScope=CLOSED`). */
   closed?: boolean;
+  /** Pay now lifecycle to restore after detail / stage-gate (`ACTIVE` omitted). */
+  lifecycleScope?: 'ACTIVE' | 'CLOSED' | 'ALL';
   /** Preserve plan drill-down when navigating list ↔ detail. */
   expensePlanId?: string | null;
 }
 
+function expenseListHrefLifecycleQuery(
+  options?: ExpenseListHrefOptions,
+): 'CLOSED' | 'ALL' | undefined {
+  if (options?.fromBacklog === true) {
+    return undefined;
+  }
+  if (options?.lifecycleScope === 'ALL' || options?.lifecycleScope === 'CLOSED') {
+    return options.lifecycleScope;
+  }
+  if (options?.closed === true) {
+    return 'CLOSED';
+  }
+  return undefined;
+}
+
 function expenseListBasePath(options?: ExpenseListHrefOptions): string {
   if (options?.fromBacklog === true) return EXPENSE_BACKLOG_LIST_PATH;
-  if (options?.closed === true) return EXPENSE_CLOSED_LIST_PATH;
   return EXPENSE_LIST_PATH;
 }
 
@@ -64,7 +80,29 @@ function buildExpenseListSearchParams(
   if (listSort) {
     setExpenseListSortParams(params, listSort.sortBy, listSort.sortOrder);
   }
+  const lifecycleQuery = expenseListHrefLifecycleQuery(options);
+  if (lifecycleQuery) {
+    params.set(EXPENSE_LIFECYCLE_SCOPE_QUERY, lifecycleQuery);
+  }
   return params;
+}
+
+/** Bookmark alias `/finance/expenses/closed` → Pay now Closed scope. */
+export function expensesClosedAliasHref(
+  searchParams: Record<string, string | string[] | undefined>,
+): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (typeof value === 'string' && value.length > 0) {
+      params.set(key, value);
+      continue;
+    }
+    if (Array.isArray(value) && value[0]) {
+      params.set(key, value[0]);
+    }
+  }
+  params.set(EXPENSE_LIFECYCLE_SCOPE_QUERY, 'CLOSED');
+  return `${EXPENSE_LIST_PATH}?${params.toString()}`;
 }
 
 export function projectExpensesDrilldownHref(projectId: string): string {
