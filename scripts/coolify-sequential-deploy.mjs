@@ -14,6 +14,8 @@ import {
   extractDeploymentRecords,
   formatDeployAppLine,
   formatDeployReadyReport,
+  formatNetworkError,
+  isTransientNetworkError,
   parseCliArgs,
   parseDotEnv,
   parseQueuedDeploymentUuid,
@@ -84,15 +86,20 @@ function parseRetryAfterMs(response) {
 }
 
 async function coolifyRequest(api, method, path, body) {
-  const response = await fetch(`${api.baseUrl}/api/v1${path}`, {
-    method,
-    headers: {
-      Authorization: `Bearer ${api.token}`,
-      Accept: 'application/json',
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(`${api.baseUrl}/api/v1${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${api.token}`,
+        Accept: 'application/json',
+        ...(body ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (error) {
+    throw new Error(`Coolify ${method} ${path} network error: ${formatNetworkError(error)}`);
+  }
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
   if (!response.ok) {
@@ -138,16 +145,23 @@ async function readDeploymentRecord(api, appUuid, deploymentUuid) {
 async function waitForDeployment(api, appName, appUuid, deploymentUuid) {
   const startedAt = Date.now();
   while (Date.now() - startedAt < DEPLOY_TIMEOUT_MS) {
-    const record = await readDeploymentRecord(api, appUuid, deploymentUuid);
-    const status = typeof record?.status === 'string' ? record.status : undefined;
-    const outcome = classifyDeploymentStatus(status);
-    if (outcome === 'success') return;
-    if (outcome === 'failed') {
-      throw new DeployFailedError(appName, status, record?.logs);
+    try {
+      const record = await readDeploymentRecord(api, appUuid, deploymentUuid);
+      const status = typeof record?.status === 'string' ? record.status : undefined;
+      const outcome = classifyDeploymentStatus(status);
+      if (outcome === 'success') return;
+      if (outcome === 'failed') {
+        throw new DeployFailedError(appName, status, record?.logs);
+      }
+      process.stdout.write(
+        `${formatDeployAppLine(appName, 'running', status ?? 'pending', colorEnabled())}\n`,
+      );
+    } catch (error) {
+      if (error instanceof DeployFailedError || !isTransientNetworkError(error)) throw error;
+      process.stderr.write(
+        `${paint(colorEnabled(), ANSI.yellow, `⚠ ${appName}: ${formatNetworkError(error)}, retrying poll`)}\n`,
+      );
     }
-    process.stdout.write(
-      `${formatDeployAppLine(appName, 'running', status ?? 'pending', colorEnabled())}\n`,
-    );
     await sleep(POLL_INTERVAL_MS);
   }
   throw new Error(`${appName} deploy timed out after ${DEPLOY_TIMEOUT_MS / 60000} minutes`);
@@ -171,15 +185,22 @@ async function waitForCleanup(api, previousUuid) {
   const startedAt = Date.now();
   const path = cleanupExecutionsPath(api.serverUuid);
   while (Date.now() - startedAt < CLEANUP_TIMEOUT_MS) {
-    const payload = await requestCleanupOrThrow(api, 'GET', path);
-    const latest = extractCleanupExecutions(payload)[0];
-    if (!isSameCleanupExecution(previousUuid, latest)) {
-      const outcome = classifyCleanupExecution(latest);
-      if (outcome === 'success') return;
-      if (outcome === 'failed') {
-        const detail = typeof latest?.message === 'string' ? `: ${latest.message}` : '';
-        throw new Error(`Coolify docker cleanup failed${detail}`);
+    try {
+      const payload = await requestCleanupOrThrow(api, 'GET', path);
+      const latest = extractCleanupExecutions(payload)[0];
+      if (!isSameCleanupExecution(previousUuid, latest)) {
+        const outcome = classifyCleanupExecution(latest);
+        if (outcome === 'success') return;
+        if (outcome === 'failed') {
+          const detail = typeof latest?.message === 'string' ? `: ${latest.message}` : '';
+          throw new Error(`Coolify docker cleanup failed${detail}`);
+        }
       }
+    } catch (error) {
+      if (!isTransientNetworkError(error)) throw error;
+      process.stderr.write(
+        `${paint(colorEnabled(), ANSI.yellow, `⚠ cleanup: ${formatNetworkError(error)}, retrying poll`)}\n`,
+      );
     }
     await sleep(POLL_INTERVAL_MS);
   }

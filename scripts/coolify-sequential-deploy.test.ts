@@ -4,6 +4,8 @@ import {
   extractDeploymentRecords,
   formatDeployAppLine,
   formatDeployReadyReport,
+  formatNetworkError,
+  isTransientNetworkError,
   normalizeCoolifyUrl,
   parseCliArgs,
   parseDotEnv,
@@ -113,6 +115,15 @@ EMPTY=
     expect(normalizeCoolifyUrl('https://coolify.neetrino.com/')).toBe(
       'https://coolify.neetrino.com',
     );
+  });
+
+  it('treats poll fetch failures as transient network errors', () => {
+    expect(isTransientNetworkError(new Error('fetch failed'))).toBe(true);
+    expect(
+      isTransientNetworkError(new Error('Coolify GET /deployments/x network error: fetch failed')),
+    ).toBe(true);
+    expect(isTransientNetworkError(Object.assign(new Error('nope'), { status: 500 }))).toBe(false);
+    expect(formatNetworkError(new Error('fetch failed'))).toBe('fetch failed');
   });
 
   it('retries once on export or disk failure, including hidden logs', () => {
