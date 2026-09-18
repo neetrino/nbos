@@ -1,6 +1,19 @@
 /** Coolify docker cleanup helpers. Never delete volumes or networks. */
 
 export const CLEANUP_TIMEOUT_MS = 10 * 60 * 1000;
+const WEB_APP_NAME = 'web';
+
+/**
+ * Extra cleanup before Next.js, after backend apps in the same run.
+ * A web-only run already cleaned at start — do not prune twice.
+ *
+ * @param {string[]} apps
+ * @param {string} app
+ * @returns {boolean}
+ */
+export function shouldCleanupBeforeApp(apps, app) {
+  return app === WEB_APP_NAME && apps[0] !== WEB_APP_NAME;
+}
 
 export const DOCKER_CLEANUP_SAFE_BODY = {
   delete_unused_volumes: false,

@@ -34,6 +34,7 @@ import {
   extractCleanupExecutions,
   formatCleanupHttpError,
   isSameCleanupExecution,
+  shouldCleanupBeforeApp,
 } from './coolify-sequential-deploy.cleanup.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -60,7 +61,7 @@ Put values in repo-root .env.local (gitignored):
 
 UUIDs come from Coolify → app → Configuration → Webhooks → Deploy Webhook.
 Migrate production first when the schema changed. This script does not migrate.
-Before each app the script runs Coolify docker cleanup (volumes stay).
+The script runs Coolify docker cleanup at start and again before web (volumes stay).
 A failed app is retried once when the status/log looks like disk or export
 (#25, exporting layers). Cancel, healthcheck, and app/DI errors are not retried.
 `);
@@ -196,7 +197,6 @@ async function runDockerCleanup(api) {
 
 async function deployAppOnce(api, appName, appUuid, force) {
   const color = colorEnabled();
-  await runDockerCleanup(api);
   process.stdout.write(`${formatDeployAppLine(appName, 'start', undefined, color)}\n`);
   const deploymentUuid = await queueDeploy(api, appUuid, force);
   process.stdout.write(`${formatDeployAppLine(appName, 'queued', deploymentUuid, color)}\n`);
@@ -219,6 +219,7 @@ async function deployApp(api, appName, appUuid, force) {
     } catch (error) {
       if (!canRetryDeployFailure(error, attempt, maxAttempts)) throw error;
       process.stderr.write(`${formatDeployAppLine(appName, 'retry', undefined, color)}\n`);
+      await runDockerCleanup(api);
     }
   }
 }
@@ -240,7 +241,9 @@ async function main() {
     }),
   );
   if (options.dryRun) return;
+  await runDockerCleanup(config);
   for (const app of options.apps) {
+    if (shouldCleanupBeforeApp(options.apps, app)) await runDockerCleanup(config);
     await deployApp(config, app, config.uuids[app], options.force);
   }
   process.stdout.write(`${paint(color, ANSI.green, '✓ All selected apps finished.')}\n`);

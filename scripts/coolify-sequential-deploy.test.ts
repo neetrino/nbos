@@ -19,6 +19,7 @@ import {
   extractCleanupExecutions,
   formatCleanupHttpError,
   isSameCleanupExecution,
+  shouldCleanupBeforeApp,
 } from './coolify-sequential-deploy.cleanup.mjs';
 
 describe('coolify sequential deploy helpers', () => {
@@ -144,6 +145,9 @@ EMPTY=
     );
     expect(formatCleanupHttpError(404)).toMatch(/404/);
     expect(formatDeployAppLine('web', 'cleanup', undefined, false)).toBe('▶ Docker cleanup');
+    expect(shouldCleanupBeforeApp(['api', 'worker', 'scheduler', 'web'], 'api')).toBe(false);
+    expect(shouldCleanupBeforeApp(['api', 'worker', 'scheduler', 'web'], 'web')).toBe(true);
+    expect(shouldCleanupBeforeApp(['web'], 'web')).toBe(false);
   });
 
   it('does not retry cancel, healthcheck, or application errors', () => {
