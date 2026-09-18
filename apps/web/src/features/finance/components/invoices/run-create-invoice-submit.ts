@@ -25,7 +25,14 @@ export async function runCreateInvoiceSubmit(
   },
 ): Promise<void> {
   event.preventDefault();
-  if (!canSubmitCreateInvoice(params.form)) return;
+  if (
+    !canSubmitCreateInvoice(params.form, {
+      requireProduct: !params.order && !params.subscriptionDetail && !params.submitOverride,
+      hiddenProductId: params.hiddenContext?.productId,
+    })
+  ) {
+    return;
+  }
   params.setLoading(true);
   try {
     if (params.submitOverride) {

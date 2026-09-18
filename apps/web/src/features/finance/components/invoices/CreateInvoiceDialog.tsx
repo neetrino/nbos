@@ -83,7 +83,12 @@ function CreateInvoiceDialogSession(props: CreateInvoiceDialogProps) {
   const subscriptionBlocked = computeSubscriptionBlocked(props.subscriptionId, state);
   const canSubmit = domainMode
     ? Boolean(domainProductId) && canSubmitDomainPurchase(domainDraft, true) && !state.loading
-    : canSubmitCreateInvoice(state.form) && !state.loading && !subscriptionBlocked;
+    : canSubmitCreateInvoice(state.form, {
+        requireProduct: showStandardProduct,
+        hiddenProductId: props.hiddenContext?.productId,
+      }) &&
+      !state.loading &&
+      !subscriptionBlocked;
 
   return (
     <CreateFormDialog

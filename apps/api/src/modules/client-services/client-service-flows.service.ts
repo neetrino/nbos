@@ -6,6 +6,7 @@ import {
   type ExpenseFrequency,
   type TaxStatus,
 } from '@nbos/database';
+import { INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import type { FinanceScopedAccessContext } from '../finance/finance-scoped-access';
 import { InvoicesService } from '../finance/invoices/invoices.service';
@@ -68,7 +69,7 @@ export class ClientServiceFlowsService {
       'Invoice amount',
     );
     if (!service.productId) {
-      throw new BadRequestException('A product is required to create this invoice');
+      throw new BadRequestException(INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE);
     }
     return this.invoicesService.create({
       productId: service.productId,

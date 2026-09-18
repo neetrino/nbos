@@ -15,17 +15,19 @@ export type OrderDealSummary = {
 export type OrderWithOptionalDeal = {
   code: string;
   deal?: OrderDealSummary | null;
+  product?: { name?: string | null } | null;
+  extension?: { name?: string | null } | null;
 };
 
 export type InvoiceDisplaySource = InvoiceDisplayTitleSource;
 
-/** Human-readable order label — deal name when the order originated from a deal. */
+/** Human-readable order label — deal name, then product/extension, else code. */
 export function getOrderDisplayTitle(order: OrderWithOptionalDeal): string {
   return resolveOrderDisplayTitle(order);
 }
 
 /**
- * Primary invoice title — order/deal, subscription, client service, else invoice code.
+ * Primary invoice title — deal, subscription, client service, then product.
  * Invoice code stays secondary in the UI when it is not the title.
  */
 export function getInvoiceDisplayTitle(invoice: InvoiceDisplaySource): string {

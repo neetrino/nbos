@@ -84,6 +84,8 @@ export interface InvoiceOrderSummary {
   id: string;
   code: string;
   deal?: InvoiceDealSummary | null;
+  product?: { id: string; name: string } | null;
+  extension?: { id: string; name: string } | null;
 }
 
 export interface InvoiceSubscriptionSummary {
@@ -177,6 +179,8 @@ export interface Order {
   createdAt: string;
   project: { id: string; code: string; name: string };
   deal?: InvoiceDealSummary | null;
+  product?: { id: string; name: string } | null;
+  extension?: { id: string; name: string } | null;
   company?: { id: string; name: string } | null;
   contact?: { id: string; firstName: string; lastName: string } | null;
   invoices: Array<{ id: string; code: string; moneyStatus: string; amount: string }>;

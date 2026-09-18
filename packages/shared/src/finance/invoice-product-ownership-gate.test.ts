@@ -3,6 +3,7 @@ import {
   getInvoiceManualProductGateErrors,
   INVOICE_PRODUCT_GATE_FIELD,
   isInvoicePayerContextLocked,
+  isUnsourcedInvoiceCreateMissingProduct,
 } from './invoice-product-ownership-gate';
 
 describe('isInvoicePayerContextLocked', () => {
@@ -55,5 +56,19 @@ describe('getInvoiceManualProductGateErrors', () => {
         targetMoneyStatus: 'AWAITING_PAYMENT',
       }),
     ).toEqual([]);
+  });
+});
+
+describe('isUnsourcedInvoiceCreateMissingProduct', () => {
+  it('requires product when there is no order, subscription, or client service', () => {
+    expect(isUnsourcedInvoiceCreateMissingProduct({})).toBe(true);
+    expect(isUnsourcedInvoiceCreateMissingProduct({ productId: '   ' })).toBe(true);
+    expect(isUnsourcedInvoiceCreateMissingProduct({ productId: 'prod-1' })).toBe(false);
+  });
+
+  it('does not require explicit product when a source id is present', () => {
+    expect(isUnsourcedInvoiceCreateMissingProduct({ orderId: 'ord-1' })).toBe(false);
+    expect(isUnsourcedInvoiceCreateMissingProduct({ subscriptionId: 'sub-1' })).toBe(false);
+    expect(isUnsourcedInvoiceCreateMissingProduct({ clientServiceRecordId: 'csr-1' })).toBe(false);
   });
 });

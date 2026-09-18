@@ -87,10 +87,11 @@ Payment confirmed
 
 Каскад заголовка (kanban, list, detail sheet):
 
-1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
+1. есть `order` с именем сделки → `Deal.name`;
 2. иначе есть `subscription` → `Subscription.name`;
-3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`, иначе `product.name`;
-4. иначе → `Invoice.code`.
+3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`;
+4. иначе есть продукт → `product.name` (ручной инвойс; заказ без сделки — `Order.product` / `Order.extension`);
+5. иначе → код (`Invoice.code` / `Order.code`) как last resort.
 
 `Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком (kanban, list, **detail sheet**, CSV `displayTitle`, исходящие письма). На kanban-карточке **сумма остаётся доминирующим элементом**; display title — меньшая строка над суммой (см. `05-UI-Specifications/04-Finance-Pages.md` §2.2).
 
@@ -112,7 +113,7 @@ Payment confirmed
 - из CRM / Order чаще всего `notifications_enabled = Off` по умолчанию;
 - из `Domain / Service` подтягиваются правила сервиса и продукта, включая `Product.company` как плательщика (fallback `Project.company`), если `companyId` не передан явно.
 
-Ручное создание со вкладки **Standard** (доска Invoices, client portfolio): поле Product опционально. Разовый платёж без Order / Domain / работы можно сразу повесить на Product (`Invoice.productId`). Вкладка Domain по-прежнему требует Product. Product → Finance подставляет и блокирует поле. Order / Subscription / Client Service поле не показывают — владелец берётся из источника.
+Ручное создание со вкладки **Standard** (доска Invoices, client portfolio): поле Product **обязательно**. Разовый платёж без Order / Domain / работы вешается на Product (`Invoice.productId`) — без продукта карточку не создаём (читаемый заголовок = имя продукта). Вкладка Domain по-прежнему требует Product. Product → Finance подставляет и блокирует поле. Order / Subscription / Client Service поле не показывают — владелец берётся из источника. Уже существующие Manual без продукта не мигрируем; у них заголовок может остаться `INV-…` до привязки.
 
 ---
 

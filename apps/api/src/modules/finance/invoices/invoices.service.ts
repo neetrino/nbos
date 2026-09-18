@@ -6,7 +6,11 @@ import {
   Optional,
 } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { shouldCancelOfficialRequestOnCardCancel } from '@nbos/shared';
+import {
+  INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE,
+  isUnsourcedInvoiceCreateMissingProduct,
+  shouldCancelOfficialRequestOnCardCancel,
+} from '@nbos/shared';
 import {
   PrismaClient,
   type Prisma,
@@ -500,6 +504,9 @@ export class InvoicesService {
   private assertCreateInvoiceInput(data: CreateInvoiceDto) {
     if (!Number.isFinite(data.amount) || data.amount <= 0) {
       throw new BadRequestException('Invoice amount must be greater than zero');
+    }
+    if (isUnsourcedInvoiceCreateMissingProduct(data)) {
+      throw new BadRequestException(INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE);
     }
   }
 

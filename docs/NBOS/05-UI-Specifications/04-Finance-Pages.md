@@ -57,12 +57,13 @@ Finance-модуль NBOS обеспечивает полное управлен
 
 #### 2.2.1. Каскад display title (Invoice)
 
-Коммерческое название **не копируется** на `Invoice` — UI читает его live из источника; переименование заказа/сделки, подписки или client service обновляет заголовок всех связанных счетов.
+Коммерческое название **не копируется** на `Invoice` — UI читает его live из источника; переименование сделки, подписки, client service или продукта обновляет заголовок связанных счетов.
 
-1. есть `order` → display title заказа: `Deal.name` через `order.deal`, иначе `Order.code`;
+1. есть `order` с именем сделки → `Deal.name`;
 2. иначе есть `subscription` → `Subscription.name`;
-3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`, иначе `product.name`;
-4. иначе → `Invoice.code`.
+3. иначе есть `clientServiceRecord` → `ClientServiceRecord.name`;
+4. иначе есть продукт → `product.name` (ручной инвойс; заказ без сделки);
+5. иначе → код (`Invoice.code` / `Order.code`) как last resort.
 
 `Invoice.code` всегда показывается **вторичной** строкой, когда не является заголовком — в том числе в заголовке Invoice detail sheet (как у Subscription sheet).
 

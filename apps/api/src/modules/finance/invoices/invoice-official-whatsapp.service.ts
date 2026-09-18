@@ -39,6 +39,7 @@ const OFFICIAL_CONTEXT_SELECT = {
   company: { select: { name: true, legalName: true, taxId: true } },
   subscription: { select: { name: true, code: true, type: true } },
   clientServiceRecord: { select: { name: true, type: true } },
+  product: { select: { name: true } },
   order: { select: { code: true, deal: { select: { name: true, code: true } } } },
 } as const;
 
@@ -181,6 +182,7 @@ export class InvoiceOfficialWhatsAppService {
         coverageMonthCount: invoice.coverageMonthCount,
         clientServiceName: invoice.clientServiceRecord?.name,
         clientServiceType: invoice.clientServiceRecord?.type,
+        productName: invoice.product?.name,
         dueDate: invoice.dueDate,
       }),
     };
@@ -206,5 +208,6 @@ type OfficialWhatsAppInvoice = {
   company: { name: string; legalName: string | null; taxId: string | null } | null;
   subscription: { name: string; code: string; type: string } | null;
   clientServiceRecord: { name: string; type: string } | null;
+  product: { name: string } | null;
   order: { code: string; deal: { name: string | null; code: string } | null } | null;
 };

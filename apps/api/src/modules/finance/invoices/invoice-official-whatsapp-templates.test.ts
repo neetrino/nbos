@@ -63,6 +63,14 @@ describe('official invoice WhatsApp templates', () => {
     expect(purpose).toContain('INV-2');
   });
 
+  it('builds fallback note from product name when the card has no source entity', () => {
+    const purpose = buildOfficialInvoicePurpose({
+      code: 'INV-2026-0164',
+      productName: 'Qualitech SEO',
+    });
+    expect(purpose).toBe(['Qualitech SEO', 'INV-2026-0164'].join('\n'));
+  });
+
   it('renders issue and cancel Armenian copy without IDINV', () => {
     const fields = {
       code: 'INV-9',
