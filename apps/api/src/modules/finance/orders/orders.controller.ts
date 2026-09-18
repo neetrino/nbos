@@ -108,6 +108,12 @@ export class OrdersController {
     return this.ordersService.create(body);
   }
 
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update order notes' })
+  async updateGeneral(@Param('id') id: string, @Body() body: { notes?: string | null }) {
+    return this.ordersService.updateGeneral(id, body);
+  }
+
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update order status' })
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }) {

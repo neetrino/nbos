@@ -122,7 +122,7 @@ export interface Invoice {
   officialInvoiceCancelledAt: string | null;
   notificationsEnabled: boolean;
   orderComment: string | null;
-  description: string | null;
+  notes: string | null;
   createdAt: string;
   order: InvoiceOrderSummary | null;
   subscription?: InvoiceSubscriptionSummary | null;
@@ -176,6 +176,7 @@ export interface Order {
   paidAmount?: number;
   currency: string;
   status: string;
+  notes?: string | null;
   createdAt: string;
   project: { id: string; code: string; name: string };
   deal?: InvoiceDealSummary | null;
@@ -518,6 +519,7 @@ export const invoicesApi = {
       companyId?: string | null;
       productId?: string | null;
       orderComment?: string | null;
+      notes?: string | null;
     },
   ): Promise<Invoice> {
     const resp = await api.patch<Invoice>(`/api/finance/invoices/${id}`, data);
@@ -607,6 +609,10 @@ export const ordersApi = {
   },
   async create(data: Record<string, unknown>): Promise<Order> {
     const resp = await api.post<Order>('/api/finance/orders', data);
+    return resp.data;
+  },
+  async updateGeneral(id: string, data: { notes?: string | null }): Promise<Order> {
+    const resp = await api.patch<Order>(`/api/finance/orders/${id}`, data);
     return resp.data;
   },
   async updateStatus(id: string, status: string): Promise<Order> {

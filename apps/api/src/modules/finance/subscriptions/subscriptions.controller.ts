@@ -143,6 +143,7 @@ export class SubscriptionsController {
       endDate?: string;
       termMonths?: number | null;
       partnerId?: string | null;
+      notes?: string | null;
     },
   ) {
     return this.subscriptionsService.update(id, body);

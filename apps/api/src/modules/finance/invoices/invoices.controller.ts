@@ -119,7 +119,7 @@ export class InvoicesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update invoice amount, tax status, and manual context links' })
+  @ApiOperation({ summary: 'Update invoice amount, tax status, notes, and manual context links' })
   async updateGeneral(
     @Param('id') id: string,
     @Body()
@@ -129,6 +129,7 @@ export class InvoicesController {
       companyId?: string | null;
       productId?: string | null;
       orderComment?: string | null;
+      notes?: string | null;
     },
   ) {
     return this.invoicesService.updateGeneral(id, body);

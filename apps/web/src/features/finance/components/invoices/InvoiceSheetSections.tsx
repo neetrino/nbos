@@ -199,16 +199,6 @@ export function InvoiceLinkedEntitiesSection({
   );
 }
 
-export function InvoiceDescriptionSection({ description }: { description: string | null }) {
-  const t = useTranslations('invoices');
-  if (!description) return null;
-  return (
-    <DetailSheetSection title={t('sheet.description')}>
-      <p className="text-foreground text-sm leading-relaxed">{description}</p>
-    </DetailSheetSection>
-  );
-}
-
 export function InvoicePaymentsSection({
   invoice,
   onPaymentRecorded,

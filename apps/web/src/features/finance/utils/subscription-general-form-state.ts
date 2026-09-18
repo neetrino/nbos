@@ -9,6 +9,7 @@ import {
 /** Editable subscription sheet state (General tab). */
 export type SubscriptionGeneralDraft = SubscriptionFormState & {
   partnerPickLabel: string | null;
+  notes: string;
 };
 
 export function createSubscriptionGeneralDraft(
@@ -17,6 +18,7 @@ export function createSubscriptionGeneralDraft(
   return {
     ...subscriptionToFormState(subscription),
     partnerPickLabel: subscription.partner?.name ?? null,
+    notes: subscription.notes ?? '',
   };
 }
 
@@ -101,6 +103,10 @@ export function buildSubscriptionGeneralPatch(
   const partnerId = draft.partnerId.trim() || null;
   const snapPartnerId = snap.partnerId.trim() || null;
   if (partnerId !== snapPartnerId) out.partnerId = partnerId;
+
+  const notes = draft.notes.trim();
+  const snapNotes = snap.notes.trim();
+  if (notes !== snapNotes) out.notes = notes || null;
 
   return out;
 }

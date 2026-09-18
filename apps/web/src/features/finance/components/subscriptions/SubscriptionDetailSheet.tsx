@@ -107,6 +107,7 @@ export function SubscriptionDetailSheet({
     subscription?.billingFrequency,
     subscription?.coverageMonthCount,
     subscription?.partner?.id,
+    subscription?.notes,
   ]);
 
   const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {

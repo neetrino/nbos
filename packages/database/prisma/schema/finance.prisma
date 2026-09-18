@@ -54,6 +54,7 @@ model Order {
   sellerBonusPercent   Decimal?        @map("seller_bonus_percent") @db.Decimal(5, 2)
   deliveryBonusPercent Decimal?        @map("delivery_bonus_percent") @db.Decimal(5, 2)
   sellerBonusSource    LeadSourceEnum? @map("seller_bonus_source")
+  notes                String?
   createdAt            DateTime        @default(now()) @map("created_at")
   updatedAt            DateTime        @updatedAt @map("updated_at")
 
@@ -129,6 +130,7 @@ model Invoice {
   notificationsEnabled       Boolean            @default(true) @map("notifications_enabled")
   /// Bumped when moneyStatus becomes CANCELLED so D-10/D-2 can fire again after reopen. On Hold does not bump.
   paymentReminderCycle       Int                @default(0) @map("payment_reminder_cycle")
+  notes                 String?
   createdAt             DateTime               @default(now()) @map("created_at")
   updatedAt             DateTime               @updatedAt @map("updated_at")
 
@@ -305,6 +307,7 @@ model Subscription {
   termMonths Int?                   @map("term_months")
   status     SubscriptionStatusEnum @default(ACTIVE)
   partnerId  String?                @map("partner_id")
+  notes      String?
   createdAt  DateTime               @default(now()) @map("created_at")
   updatedAt  DateTime               @updatedAt @map("updated_at")
 
