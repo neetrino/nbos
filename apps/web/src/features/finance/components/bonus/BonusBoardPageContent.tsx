@@ -1,12 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Gift } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
+  DataView,
   EmptyState,
   ErrorState,
   IntegratedSearchFilters,
+  ListMutationErrorBanner,
   LoadingState,
   PageHeroPrimaryAction,
   useModuleHeroSlots,
@@ -45,7 +47,8 @@ import { useBonusBoardCsvExport } from '@/features/finance/components/bonus/use-
 import { useBonusScopeStatsCsvExport } from '@/features/finance/components/bonus/use-bonus-scope-stats-csv-export';
 import { bonusBoardPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { matchesBonusBoardLifecycleScope } from '@/features/finance/constants/bonus-board-lifecycle';
 import {
   DEFAULT_BOARD_LIFECYCLE_SCOPE,
@@ -77,8 +80,10 @@ export function BonusBoardPageContent() {
   const searchParams = useSearchParams();
 
   const [rows, setRows] = useState<BonusEntryListRow[]>([]);
+  const rowsRef = useRef(rows);
+  rowsRef.current = rows;
   const [stats, setStats] = useState<BonusStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
@@ -161,8 +166,7 @@ export function BonusBoardPageContent() {
   }, [loading, openBonusEntryId, replaceBonusUrl, rows]);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    beginLoad(rowsRef.current.length > 0);
     const scopedProjectId = projectFilter !== 'ALL' ? projectFilter : undefined;
     try {
       const itemsResult = await fetchAllBonusListRows(
@@ -180,14 +184,19 @@ export function BonusBoardPageContent() {
           setStats(null);
         }
       }
+      setError(null);
     } catch (caught) {
+      // A failed refresh keeps the bonuses already on screen, unless the server withdrew read
+      // access: those rows must not survive a denial.
+      if (isAccessRevokedApiError(caught)) {
+        setRows([]);
+        setStats(null);
+      }
       setError(getApiErrorMessage(caught, 'Bonuses could not be loaded. Try again shortly.'));
-      setRows([]);
-      setStats(null);
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [projectFilter]);
+  }, [beginLoad, endLoad, projectFilter]);
 
   useEffect(() => {
     void load();
@@ -381,14 +390,6 @@ export function BonusBoardPageContent() {
 
   useModuleHeroSlots(moduleHeroSlots);
 
-  if (loading) {
-    return <LoadingState />;
-  }
-
-  if (error) {
-    return <ErrorState description={error} onRetry={() => void load()} />;
-  }
-
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
       <CreateManualBonusDialog
@@ -396,16 +397,37 @@ export function BonusBoardPageContent() {
         onOpenChange={setCreateOpen}
         onCreated={() => void load()}
       />
-      {filtered.length === 0 ? (
-        <EmptyState
-          icon={Gift}
-          title="No matching bonuses"
-          description="Adjust search or filters, or create a manual bonus."
-          action={null}
-        />
-      ) : (
-        <div className="flex min-h-0 flex-1 flex-col">{boardBody}</div>
-      )}
+      <DataView
+        loading={loading}
+        error={error}
+        hasData={rows.length > 0}
+        loadingFallback={<LoadingState />}
+        errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
+        emptyFallback={
+          <EmptyState
+            icon={Gift}
+            title="No matching bonuses"
+            description="Adjust search or filters, or create a manual bonus."
+            action={null}
+          />
+        }
+      >
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          {error ? (
+            <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+          ) : null}
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={Gift}
+              title="No matching bonuses"
+              description="Adjust search or filters, or create a manual bonus."
+              action={null}
+            />
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col">{boardBody}</div>
+          )}
+        </div>
+      </DataView>
 
       <BonusEntryReleasesSheet
         entry={ledgerEntry}

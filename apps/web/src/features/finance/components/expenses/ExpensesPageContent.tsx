@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -24,7 +24,8 @@ import {
   type ExpenseListSortField,
   type ExpenseStats,
 } from '@/lib/api/finance';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { OPEN_EXPENSE_QUERY } from '@/features/finance/constants/expense-deep-link';
 import {
   EXPENSE_BACKLOG_FIXED_STATUS,
@@ -127,8 +128,10 @@ export function ExpensesPageContent({
   const searchParams = useSearchParams();
   const openExpenseIdFromUrl = searchParams.get(OPEN_EXPENSE_QUERY)?.trim() || null;
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const expensesRef = useRef(expenses);
+  expensesRef.current = expenses;
   const [stats, setStats] = useState<ExpenseStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
@@ -305,7 +308,7 @@ export function ExpensesPageContent({
   );
 
   const fetchExpenses = useCallback(async () => {
-    setLoading(true);
+    beginLoad(expensesRef.current.length > 0);
     try {
       const [data, expenseStats] = await Promise.all([
         expensesApi.getAll({
@@ -318,11 +321,17 @@ export function ExpensesPageContent({
       setStats(expenseStats);
       setError(null);
     } catch (caught) {
+      // A failed refresh keeps the cards already on screen, unless the server withdrew read
+      // access: those cards must not survive a denial.
+      if (isAccessRevokedApiError(caught)) {
+        setExpenses([]);
+        setStats(null);
+      }
       setError(getApiErrorMessage(caught, t('errors.loadList')));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [listApiParams, t]);
+  }, [beginLoad, endLoad, listApiParams, t]);
 
   const handleExpenseKanbanMove = useExpenseKanbanStatusChange({
     listProjectId: effectiveProjectId ?? null,
@@ -370,7 +379,10 @@ export function ExpensesPageContent({
   const onKanbanStatusMove = useCallback(
     async (expenseId: string, _from: string, toStatus: string) => {
       setError(null);
-      await handleExpenseKanbanMove(expenseId, toStatus, expenses, fetchExpenses);
+      await handleExpenseKanbanMove(expenseId, toStatus, expenses, async (updated) => {
+        setExpenses((current) => current.map((row) => (row.id === updated.id ? updated : row)));
+        await fetchExpenses();
+      });
     },
     [expenses, fetchExpenses, handleExpenseKanbanMove],
   );
@@ -585,6 +597,7 @@ export function ExpensesPageContent({
         loading={loading}
         error={error}
         onRetry={fetchExpenses}
+        onDismissError={() => setError(null)}
         expenses={expenses}
         view={pageVariant === 'backlog' ? 'list' : displayView}
         kanbanScope={

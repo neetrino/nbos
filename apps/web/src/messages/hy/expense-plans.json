@@ -16,6 +16,8 @@
   },
   "filters": {
     "status": "Կարգավիճակ",
+    "period": "Ժամանակահատված",
+    "allPeriods": "Բոլորը",
     "category": "Կատեգորիա",
     "project": "Նախագիծ",
     "search": "Որոնում",

@@ -1,8 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, Clock, DollarSign, RefreshCw } from 'lucide-react';
-import { ErrorState, useModuleHeroSlots } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  ListMutationErrorBanner,
+  useModuleHeroSlots,
+} from '@/components/shared';
 import {
   getFinancePeriodParams,
   type FinancePeriod,
@@ -37,13 +42,16 @@ import { financeDashboardPageTitle } from '@/features/finance/constants/finance-
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
 import { downloadFinanceDashboardCsv } from '@/features/finance/utils/export-finance-dashboard-csv';
 import { financeSummaryApi } from '@/lib/api/finance';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 export default function FinanceDashboardPage() {
   const [data, setData] = useState<FinanceDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
     SEARCH_FILTER_PAGE_ID.financeDashboard,
     FINANCE_PERIOD_FILTER_KEY,
@@ -57,13 +65,13 @@ export default function FinanceDashboardPage() {
   useFinanceDocumentTitle(financeDashboardPageTitle());
 
   const fetchDashboard = useCallback(async () => {
-    setLoading(true);
-    setLoadError(null);
+    beginLoad(dataRef.current != null);
     try {
       const summary = await financeSummaryApi.getDashboard(getFinancePeriodParams(period));
       setData(buildFinanceDashboardData(summary));
+      setLoadError(null);
     } catch (caught) {
-      setData(null);
+      if (isAccessRevokedApiError(caught)) setData(null);
       setLoadError(
         getApiErrorMessage(
           caught,
@@ -71,9 +79,9 @@ export default function FinanceDashboardPage() {
         ),
       );
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [period]);
+  }, [beginLoad, endLoad, period]);
 
   useEffect(() => {
     void fetchDashboard();
@@ -116,82 +124,89 @@ export default function FinanceDashboardPage() {
 
   useModuleHeroSlots(moduleHeroSlots);
 
-  if (loading) {
-    return (
-      <div className="pb-5">
-        <DashboardLoadingSkeleton />
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <ErrorState
-        title="Finance dashboard unavailable"
-        description={
-          loadError ?? 'Could not load finance dashboard data. Check your connection and try again.'
-        }
-        actionLabel="Retry"
-        onRetry={fetchDashboard}
-      />
-    );
-  }
-
   const query = search.trim().toLowerCase();
-  const zoneHubMetrics = buildFinanceZoneHubMetrics(data);
+  const zoneHubMetrics = data ? buildFinanceZoneHubMetrics(data) : null;
 
   return (
-    <div className="space-y-6 pb-5">
-      {showDashboardKpis(query) ? <KpiCards kpis={buildKpis(data)} /> : null}
-
-      {matchesOverviewSearch('Finance zones', query) ? (
-        <FinanceZoneHubCards metrics={zoneHubMetrics} />
-      ) : null}
-
-      {matchesOverviewSearch('Payroll runs', query) ||
-      matchesOverviewSearch('Expense cards', query) ? (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {matchesOverviewSearch('Payroll runs', query) ? (
-            <PayrollRunsSnapshot payroll={data.payrollRuns} />
-          ) : null}
-          {matchesOverviewSearch('Expense cards', query) ? (
-            <ExpenseCardsSnapshot buckets={data.expenseBuckets} />
-          ) : null}
+    <DataView
+      loading={loading}
+      error={loadError}
+      hasData={data != null}
+      loadingFallback={
+        <div className="pb-5">
+          <DashboardLoadingSkeleton />
         </div>
-      ) : null}
+      }
+      errorFallback={
+        <ErrorState
+          title="Finance dashboard unavailable"
+          description={
+            loadError ??
+            'Could not load finance dashboard data. Check your connection and try again.'
+          }
+          actionLabel="Retry"
+          onRetry={fetchDashboard}
+        />
+      }
+    >
+      <div className="space-y-6 pb-5">
+        {loadError ? (
+          <ListMutationErrorBanner message={loadError} onDismiss={() => setLoadError(null)} />
+        ) : null}
+        {data && showDashboardKpis(query) ? <KpiCards kpis={buildKpis(data)} /> : null}
 
-      {matchesOverviewSearch('Invoice distribution', query) ||
-      matchesOverviewSearch('Recent payments', query) ? (
-        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
-          {matchesOverviewSearch('Invoice distribution', query) ? (
-            <InvoiceDistribution items={data.invoiceStatusItems} />
-          ) : null}
-          {matchesOverviewSearch('Recent payments', query) ? (
-            <RecentPayments items={data.recentPayments} />
-          ) : null}
-        </div>
-      ) : null}
+        {data && zoneHubMetrics && matchesOverviewSearch('Finance zones', query) ? (
+          <FinanceZoneHubCards metrics={zoneHubMetrics} />
+        ) : null}
 
-      {matchesOverviewSearch('Reconciliation', query) ||
-      matchesOverviewSearch('Upcoming invoices', query) ? (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {matchesOverviewSearch('Reconciliation', query) ? (
-            <ReconciliationSnapshot data={data} />
-          ) : null}
-          {matchesOverviewSearch('Upcoming invoices', query) ? (
-            <UpcomingInvoices items={data.upcomingInvoices} />
-          ) : null}
-        </div>
-      ) : null}
+        {data &&
+        (matchesOverviewSearch('Payroll runs', query) ||
+          matchesOverviewSearch('Expense cards', query)) ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {matchesOverviewSearch('Payroll runs', query) ? (
+              <PayrollRunsSnapshot payroll={data.payrollRuns} />
+            ) : null}
+            {matchesOverviewSearch('Expense cards', query) ? (
+              <ExpenseCardsSnapshot buckets={data.expenseBuckets} />
+            ) : null}
+          </div>
+        ) : null}
 
-      {matchesOverviewSearch('Notes', query) ? <FinanceNotes /> : null}
+        {data &&
+        (matchesOverviewSearch('Invoice distribution', query) ||
+          matchesOverviewSearch('Recent payments', query)) ? (
+          <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+            {matchesOverviewSearch('Invoice distribution', query) ? (
+              <InvoiceDistribution items={data.invoiceStatusItems} />
+            ) : null}
+            {matchesOverviewSearch('Recent payments', query) ? (
+              <RecentPayments items={data.recentPayments} />
+            ) : null}
+          </div>
+        ) : null}
 
-      {query && !hasAnyOverviewSectionMatch(query) ? (
-        <p className="text-muted-foreground text-sm">
-          No dashboard sections match your search. Clear search or filters to see all blocks.
-        </p>
-      ) : null}
-    </div>
+        {data &&
+        (matchesOverviewSearch('Reconciliation', query) ||
+          matchesOverviewSearch('Upcoming invoices', query)) ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {matchesOverviewSearch('Reconciliation', query) ? (
+              <ReconciliationSnapshot data={data} />
+            ) : null}
+            {matchesOverviewSearch('Upcoming invoices', query) ? (
+              <UpcomingInvoices items={data.upcomingInvoices} />
+            ) : null}
+          </div>
+        ) : null}
+
+        {matchesOverviewSearch('Notes', query) ? <FinanceNotes /> : null}
+
+        {query && !hasAnyOverviewSectionMatch(query) ? (
+          <p className="text-muted-foreground text-sm">
+            No dashboard sections match your search. Clear search or filters to see all blocks.
+          </p>
+        ) : null}
+      </div>
+    </DataView>
   );
 }
 

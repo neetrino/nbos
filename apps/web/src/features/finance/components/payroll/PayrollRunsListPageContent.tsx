@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Banknote, Plus } from 'lucide-react';
@@ -25,6 +25,7 @@ import {
 } from '@/features/finance/constants/payroll-runs-list-url';
 import { PAYROLL_RUN_STATUS_MESSAGE_KEY } from '@/features/finance/constants/payroll-run-ui';
 import { useFinanceDocumentTitle } from '@/features/finance/hooks/use-finance-document-title';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
 import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import {
@@ -69,8 +70,10 @@ export function PayrollRunsListPageContent() {
   const searchParams = useSearchParams();
 
   const [items, setItems] = useState<PayrollRunListRow[]>([]);
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
   const [stats, setStats] = useState<PayrollRunStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [payrollFilters, setPayrollFilters] = usePersistedSearchFilters(
@@ -109,8 +112,7 @@ export function PayrollRunsListPageContent() {
   );
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    beginLoad(itemsRef.current.length > 0);
     try {
       const [data, statsData] = await Promise.all([
         payrollRunsApi.getAll({
@@ -123,6 +125,7 @@ export function PayrollRunsListPageContent() {
       ]);
       setItems(data.items);
       setStats(statsData);
+      setError(null);
     } catch (caught) {
       // A failed refresh keeps the runs already on screen, unless the server withdrew read
       // access: those runs must not survive a denial.
@@ -132,9 +135,9 @@ export function PayrollRunsListPageContent() {
       }
       setError(getApiErrorMessage(caught, t('list.loadError')));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [listScope, t]);
+  }, [beginLoad, endLoad, listScope, t]);
 
   useEffect(() => {
     void load();

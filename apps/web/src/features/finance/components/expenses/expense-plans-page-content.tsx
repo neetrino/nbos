@@ -5,8 +5,10 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { CalendarDays, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  DataView,
   EmptyState,
   IntegratedSearchFilters,
+  ListMutationErrorBanner,
   LoadingState,
   QueryLoadError,
   useDebouncedValue,
@@ -15,11 +17,17 @@ import {
 } from '@/components/shared';
 import {
   EXPENSE_PLANS_LIST_CATEGORY_QUERY,
+  EXPENSE_PLANS_LIST_PERIOD_QUERY,
   EXPENSE_PLANS_LIST_PROJECT_QUERY,
   EXPENSE_PLANS_LIST_SEARCH_QUERY,
   EXPENSE_PLANS_LIST_STATUS_QUERY,
   EXPENSE_PLANS_LIST_YEAR_QUERY,
 } from '@/features/finance/constants/expense-plans-list-url';
+import {
+  EXPENSE_PLAN_PERIOD_FILTER_ALL,
+  EXPENSE_PLAN_PERIOD_FILTER_KEY,
+  parseExpensePlanPeriodFilterValue,
+} from '@/features/finance/constants/expense-plan-period-filter';
 import { EXPENSE_PLAN_STATUS_FILTER_ACTIVE } from '@/features/finance/constants/expense-plan-status';
 import {
   useExpensePlansViewMode,
@@ -34,6 +42,7 @@ import { ExpensePlansPageSettingsSheet } from '@/features/finance/components/exp
 import { buildExpensePlansViewOptions } from '@/features/finance/components/expenses/expense-plans-view-options';
 import {
   translateExpensePlanCategory,
+  translateExpensePlanFrequency,
   useExpensePlansT,
 } from '@/features/finance/components/expenses/expense-plan-message-keys';
 import { ExpensePlanDetailSheet } from '@/features/finance/components/expenses/ExpensePlanDetailSheet';
@@ -63,7 +72,8 @@ import {
   type ExpensePlanGridPayload,
 } from '@/lib/api/expense-plans';
 import { projectsApi, type Project } from '@/lib/api/projects';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 import { useExpensePlanPermissions } from './use-expense-plan-permissions';
@@ -100,6 +110,9 @@ export function ExpensePlansPageContent() {
   const status = parseExpensePlansListStatusParam(
     searchParams.get(EXPENSE_PLANS_LIST_STATUS_QUERY) ?? planFilters.status ?? null,
   );
+  const period = parseExpensePlanPeriodFilterValue(
+    searchParams.get(EXPENSE_PLANS_LIST_PERIOD_QUERY) ?? planFilters.period ?? null,
+  );
   const gridYear = parseGridYearParam(searchParams.get(EXPENSE_PLANS_LIST_YEAR_QUERY));
 
   const [view, setView] = useExpensePlansViewMode();
@@ -109,8 +122,8 @@ export function ExpensePlansPageContent() {
   const [plans, setPlans] = useState<ExpensePlan[]>([]);
   const [gridPayload, setGridPayload] = useState<ExpensePlanGridPayload | null>(null);
   const [totalInScope, setTotalInScope] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [gridLoading, setGridLoading] = useState(true);
+  const { loading, begin: beginPlansLoad, end: endPlansLoad } = useRevalidationState();
+  const { loading: gridLoading, begin: beginGridLoad, end: endGridLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [gridError, setGridError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -171,10 +184,11 @@ export function ExpensePlansPageContent() {
         category,
         projectId,
         status,
+        period,
         page: 1,
         pageSize: 100,
       }),
-    [urlSearch, category, projectId, status],
+    [urlSearch, category, projectId, status, period],
   );
 
   const gridParams = useMemo(
@@ -184,8 +198,9 @@ export function ExpensePlansPageContent() {
       category: category || undefined,
       projectId: projectId || undefined,
       status: listParams.status,
+      frequency: listParams.frequency,
     }),
-    [gridYear, urlSearch, category, projectId, status],
+    [gridYear, urlSearch, category, projectId, listParams.frequency, listParams.status],
   );
 
   const exportParams = useMemo(
@@ -195,8 +210,9 @@ export function ExpensePlansPageContent() {
         category,
         projectId,
         status,
+        period,
       }),
-    [urlSearch, category, projectId, status],
+    [urlSearch, category, projectId, status, period],
   );
 
   const hasActiveFilters = expensePlanListHasActiveFilters({
@@ -204,6 +220,7 @@ export function ExpensePlansPageContent() {
     category,
     projectId,
     status,
+    period,
   });
 
   const { exportCsvSubmitting, handleExportCsv } = useExpensePlansCsvExport(exportParams);
@@ -217,31 +234,38 @@ export function ExpensePlansPageContent() {
   }, [gridPayload]);
 
   const fetchPlans = useCallback(async () => {
-    if (plansRef.current.length === 0) setLoading(true);
+    beginPlansLoad(plansRef.current.length > 0);
     try {
       const res = await expensePlansApi.getAll(listParams);
       setPlans(res.items);
       setTotalInScope(res.meta.total);
       setError(null);
     } catch (caught) {
+      // A failed refresh keeps the plans already on screen, unless the server withdrew read
+      // access: those rows must not survive a denial.
+      if (isAccessRevokedApiError(caught)) {
+        setPlans([]);
+        setTotalInScope(0);
+      }
       setError(getApiErrorMessage(caught, t('errors.loadList')));
     } finally {
-      setLoading(false);
+      endPlansLoad();
     }
-  }, [listParams, t]);
+  }, [beginPlansLoad, endPlansLoad, listParams, t]);
 
   const fetchGrid = useCallback(async () => {
-    if (!gridPayloadRef.current) setGridLoading(true);
+    beginGridLoad(gridPayloadRef.current != null);
     try {
       const payload = await expensePlansApi.getGrid(gridParams);
       setGridPayload(payload);
       setGridError(null);
     } catch (caught) {
+      if (isAccessRevokedApiError(caught)) setGridPayload(null);
       setGridError(getApiErrorMessage(caught, t('errors.loadGrid')));
     } finally {
-      setGridLoading(false);
+      endGridLoad();
     }
-  }, [gridParams, t]);
+  }, [beginGridLoad, endGridLoad, gridParams, t]);
 
   useEffect(() => {
     void fetchPlans();
@@ -339,9 +363,27 @@ export function ExpensePlansPageContent() {
     [replaceListUrl, setPlanFilters],
   );
 
+  const handlePeriodChange = useCallback(
+    (value: string) => {
+      const nextPeriod = parseExpensePlanPeriodFilterValue(value);
+      setPlanFilters((prev) => ({ ...prev, period: nextPeriod }));
+      replaceListUrl((next) => {
+        if (nextPeriod === EXPENSE_PLAN_PERIOD_FILTER_ALL) {
+          next.delete(EXPENSE_PLANS_LIST_PERIOD_QUERY);
+        } else {
+          next.set(EXPENSE_PLANS_LIST_PERIOD_QUERY, nextPeriod);
+        }
+      });
+    },
+    [replaceListUrl, setPlanFilters],
+  );
+
   const planFilterConfigs = useMemo(
     () =>
       buildExpensePlanIntegratedFilterConfigs(projects, {
+        period: t('filters.period'),
+        allPeriods: t('filters.allPeriods'),
+        frequencyLabel: (value) => translateExpensePlanFrequency(t, value),
         status: t('filters.status'),
         active: t('status.ACTIVE'),
         cancelled: t('status.CANCELLED'),
@@ -355,15 +397,20 @@ export function ExpensePlansPageContent() {
 
   const planFilterValues = useMemo(
     () => ({
+      [EXPENSE_PLAN_PERIOD_FILTER_KEY]: period,
       status,
       category: category ?? 'all',
       project: projectId ?? 'all',
     }),
-    [category, projectId, status],
+    [category, period, projectId, status],
   );
 
   const handlePlanFilterChange = useCallback(
     (key: string, value: string) => {
+      if (key === EXPENSE_PLAN_PERIOD_FILTER_KEY) {
+        handlePeriodChange(value);
+        return;
+      }
       if (key === 'status') {
         handleStatusChange(value);
         return;
@@ -376,7 +423,7 @@ export function ExpensePlansPageContent() {
         handleProjectIdChange(value === 'all' ? '' : value);
       }
     },
-    [handleCategoryChange, handleProjectIdChange, handleStatusChange],
+    [handleCategoryChange, handlePeriodChange, handleProjectIdChange, handleStatusChange],
   );
 
   const handleClearFilters = useCallback(() => {
@@ -387,6 +434,7 @@ export function ExpensePlansPageContent() {
       next.delete(EXPENSE_PLANS_LIST_CATEGORY_QUERY);
       next.delete(EXPENSE_PLANS_LIST_PROJECT_QUERY);
       next.delete(EXPENSE_PLANS_LIST_STATUS_QUERY);
+      next.delete(EXPENSE_PLANS_LIST_PERIOD_QUERY);
     });
   }, [replaceListUrl, setPlanFilters]);
 
@@ -525,6 +573,7 @@ export function ExpensePlansPageContent() {
             loading={gridLoading}
             error={gridError}
             onRetry={() => void fetchGrid()}
+            onDismissError={() => setGridError(null)}
             onOpenPlan={openExpensePlanDetailById}
             onOpenExpense={openExpenseDetail}
           />
@@ -532,34 +581,48 @@ export function ExpensePlansPageContent() {
       ) : null}
 
       {showBoardPanel || showListPanel ? (
-        loading ? (
-          <LoadingState count={3} />
-        ) : error ? (
-          <QueryLoadError description={error} onRetry={() => void fetchPlans()} />
-        ) : plans.length === 0 ? (
-          <EmptyState
-            icon={CalendarDays}
-            title={
-              totalInScope === 0 && !hasActiveFilters ? t('empty.title') : t('empty.filteredTitle')
-            }
-            description={
-              totalInScope === 0 && !hasActiveFilters
-                ? t('empty.description')
-                : t('empty.filteredDescription')
-            }
-            action={
-              hasActiveFilters ? (
-                <Button type="button" variant="outline" onClick={handleClearFilters}>
-                  {t('page.clearFilters')}
-                </Button>
-              ) : undefined
-            }
-          />
-        ) : showBoardPanel ? (
-          <ExpensePlansBoard plans={plans} onOpen={openExpensePlanDetail} />
-        ) : (
-          <ExpensePlansListTable plans={plans} onOpen={openExpensePlanDetail} />
-        )
+        <DataView
+          loading={loading}
+          error={error}
+          hasData={plans.length > 0}
+          loadingFallback={<LoadingState count={3} />}
+          errorFallback={
+            <QueryLoadError description={error ?? ''} onRetry={() => void fetchPlans()} />
+          }
+          emptyFallback={
+            <EmptyState
+              icon={CalendarDays}
+              title={
+                totalInScope === 0 && !hasActiveFilters
+                  ? t('empty.title')
+                  : t('empty.filteredTitle')
+              }
+              description={
+                totalInScope === 0 && !hasActiveFilters
+                  ? t('empty.description')
+                  : t('empty.filteredDescription')
+              }
+              action={
+                hasActiveFilters ? (
+                  <Button type="button" variant="outline" onClick={handleClearFilters}>
+                    {t('page.clearFilters')}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
+        >
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+            {error ? (
+              <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
+            ) : null}
+            {showBoardPanel ? (
+              <ExpensePlansBoard plans={plans} onOpen={openExpensePlanDetail} />
+            ) : (
+              <ExpensePlansListTable plans={plans} onOpen={openExpensePlanDetail} />
+            )}
+          </div>
+        </DataView>
       ) : null}
 
       <CreateExpensePlanDialog

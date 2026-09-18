@@ -38,6 +38,14 @@ describe('buildExpenseKanbanColumns', () => {
     const allIds = columns.flatMap((c) => c.items.map((e) => e.id));
     expect(allIds).not.toContain('b');
   });
+
+  it('keeps sibling active cards after one row is merged to Paid', () => {
+    const columns = buildExpenseKanbanColumns([
+      mockExpense({ id: 'stay', status: 'OVERDUE' }),
+      mockExpense({ id: 'moved', status: 'PAID' }),
+    ]);
+    expect(columns.flatMap((column) => column.items.map((row) => row.id))).toEqual(['stay']);
+  });
 });
 
 describe('buildExpenseLifecycleKanbanColumns', () => {

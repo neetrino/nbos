@@ -23,6 +23,8 @@ export function useExpensePlansCsvExport(
         search: listParams.search ?? '',
         category: listParams.category,
         projectId: listParams.projectId,
+        status: listParams.status,
+        period: listParams.frequency,
       });
       downloadExpensePlansCsv(rows, {
         hasActiveFilters,

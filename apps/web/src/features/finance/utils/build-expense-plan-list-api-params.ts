@@ -1,5 +1,9 @@
 import { coerceExpenseCategoryToCanonical } from '@/features/finance/constants/expense-category-canonical';
 import {
+  EXPENSE_PLAN_PERIOD_FILTER_ALL,
+  resolveExpensePlanPeriodApiParam,
+} from '@/features/finance/constants/expense-plan-period-filter';
+import {
   EXPENSE_PLAN_STATUS_FILTER_ACTIVE,
   EXPENSE_PLAN_STATUS_FILTER_ALL,
   resolveExpensePlanStatusApiParam,
@@ -46,18 +50,23 @@ export type ExpensePlanListFilterInput = {
   category?: string;
   projectId?: string;
   status?: string;
+  period?: string;
   page?: number;
   pageSize?: number;
 };
 
 function expensePlanListFilterParams(
-  input: Pick<ExpensePlanListFilterInput, 'search' | 'category' | 'projectId' | 'status'>,
+  input: Pick<
+    ExpensePlanListFilterInput,
+    'search' | 'category' | 'projectId' | 'status' | 'period'
+  >,
 ): Pick<
   ExpensePlanListParams,
-  'search' | 'category' | 'projectId' | 'status' | 'sortBy' | 'sortOrder'
+  'search' | 'category' | 'projectId' | 'status' | 'frequency' | 'sortBy' | 'sortOrder'
 > {
   const search = input.search.trim();
   const status = resolveExpensePlanStatusApiParam(input.status);
+  const frequency = resolveExpensePlanPeriodApiParam(input.period);
   return {
     sortBy: 'name',
     sortOrder: 'asc',
@@ -65,6 +74,7 @@ function expensePlanListFilterParams(
     ...(input.category ? { category: input.category } : {}),
     ...(input.projectId?.trim() ? { projectId: input.projectId.trim() } : {}),
     ...(status ? { status } : {}),
+    ...(frequency ? { frequency } : {}),
   };
 }
 
@@ -79,7 +89,10 @@ export function buildExpensePlanListApiParams(
 }
 
 export function buildExpensePlanListExportParams(
-  input: Pick<ExpensePlanListFilterInput, 'search' | 'category' | 'projectId' | 'status'>,
+  input: Pick<
+    ExpensePlanListFilterInput,
+    'search' | 'category' | 'projectId' | 'status' | 'period'
+  >,
 ): Omit<ExpensePlanListParams, 'page' | 'pageSize'> {
   return expensePlanListFilterParams(input);
 }
@@ -89,10 +102,17 @@ export function expensePlanListHasActiveFilters(input: {
   category?: string;
   projectId?: string;
   status?: string;
+  period?: string;
 }): boolean {
   const status = input.status?.trim();
   const statusIsDefault = !status || status === EXPENSE_PLAN_STATUS_FILTER_ACTIVE;
+  const period = input.period?.trim();
+  const periodIsDefault = !period || period === EXPENSE_PLAN_PERIOD_FILTER_ALL;
   return Boolean(
-    input.search.trim() || input.category || input.projectId?.trim() || !statusIsDefault,
+    input.search.trim() ||
+    input.category ||
+    input.projectId?.trim() ||
+    !statusIsDefault ||
+    !periodIsDefault,
   );
 }

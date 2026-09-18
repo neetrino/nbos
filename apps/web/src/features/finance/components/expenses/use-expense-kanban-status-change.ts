@@ -49,7 +49,12 @@ export function useExpenseKanbanStatusChange(options: UseExpenseKanbanStatusChan
   const t = useTranslations('expenses');
 
   return useCallback(
-    async (expenseId: string, toStatus: string, expenses: Expense[], onSuccess: () => void) => {
+    async (
+      expenseId: string,
+      toStatus: string,
+      expenses: Expense[],
+      onSuccess: (updated: Expense) => void | Promise<void>,
+    ) => {
       const expense = expenses.find((row) => row.id === expenseId);
       if (!expense || expense.status === toStatus) return;
 
@@ -60,8 +65,8 @@ export function useExpenseKanbanStatusChange(options: UseExpenseKanbanStatusChan
       }
 
       try {
-        await expensesApi.update(expenseId, { status: toStatus });
-        await onSuccess();
+        const updated = await expensesApi.update(expenseId, { status: toStatus });
+        await onSuccess(updated);
       } catch (caught) {
         if (isStageGateApiError(caught)) {
           openExpenseWithStageGate(expense, caught.errors, options, router);

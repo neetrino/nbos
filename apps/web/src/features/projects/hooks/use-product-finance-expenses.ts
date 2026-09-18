@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EXPENSE_BOARD_SCOPE_FILTER_KEY } from '@/features/finance/components/expenses/expense-board-scope';
 import type { ExpensesPageVariant } from '@/features/finance/components/expenses/expenses-page-filter-helpers';
 import type { ExpensesKanbanScope } from '@/features/finance/components/expenses/ExpensesPageMainPanel';
@@ -13,7 +13,9 @@ import {
   buildExpenseListApiParams,
   EXPENSE_LIST_UI_PAGE_SIZE,
 } from '@/features/finance/utils/build-expense-list-api-params';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
 import { expensesApi, type Expense } from '@/lib/api/finance';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import {
   productFinanceExpenseListPageVariant,
   resolveProductFinanceExpenseScope,
@@ -25,7 +27,9 @@ export function useProductFinanceExpenses(
   filters: Record<string, string>,
 ) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(false);
+  const expensesRef = useRef(expenses);
+  expensesRef.current = expenses;
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState(false);
   const [error, setError] = useState<string | null>(null);
 
   const expenseScope = useMemo(
@@ -55,7 +59,7 @@ export function useProductFinanceExpenses(
 
   const fetchExpenses = useCallback(async () => {
     if (!productId) return;
-    setLoading(true);
+    beginLoad(expensesRef.current.length > 0);
     try {
       const { items } = await expensesApi.getAll({
         ...listApiParams,
@@ -63,13 +67,15 @@ export function useProductFinanceExpenses(
       });
       setExpenses(items);
       setError(null);
-    } catch {
-      setError('Expenses could not be loaded.');
-      setExpenses([]);
+    } catch (caught) {
+      // A failed refresh keeps the cards already on screen, unless the server withdrew read
+      // access: those cards must not survive a denial.
+      if (isAccessRevokedApiError(caught)) setExpenses([]);
+      setError(getApiErrorMessage(caught, 'Expenses could not be loaded.'));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [productId, listApiParams]);
+  }, [beginLoad, endLoad, productId, listApiParams]);
 
   useEffect(() => {
     void fetchExpenses();
@@ -77,8 +83,10 @@ export function useProductFinanceExpenses(
 
   return {
     expenses,
+    setExpenses,
     loading,
     error,
+    clearError: () => setError(null),
     refetch: fetchExpenses,
     pageVariant,
     kanbanScope,
