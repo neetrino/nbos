@@ -627,6 +627,8 @@ Company P&L | Project P&L | Product P&L | Order P&L | Cash Flow | MRR | Journal
 | Способ оплаты | Bank Transfer / Card / Cash / Crypto |
 | Подтверждение | Статус подтверждения                 |
 
+Клик по строке открывает **Payment detail sheet** (`?openPayment=`) по стандарту entity detail sheet: General (сумма, дата, метод, confirmer, notes) + Linked (invoice / project / company). С invoice — stacked `InvoiceSheet`. Remove payment — тот же destructive flow, что на вкладке Payments карточки invoice.
+
 ### 8.2. Фильтры
 
 - По клиенту, по проекту, по дате, по способу оплаты, по сумме (диапазон)

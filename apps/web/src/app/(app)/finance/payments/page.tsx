@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { CreditCard } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DataView,
   EmptyState,
@@ -19,6 +21,8 @@ import {
   FINANCE_PERIOD_FILTER_KEY,
   parseFinancePeriodFilterValue,
 } from '@/features/finance/constants/finance-period-filter';
+import { OPEN_PAYMENT_QUERY } from '@/features/finance/constants/payment-deep-link';
+import { PaymentDetailSheet } from '@/features/finance/components/payments/PaymentDetailSheet';
 import { PaymentsListTable } from '@/features/finance/components/payments/PaymentsListTable';
 import { usePaymentsCsvExport } from '@/features/finance/components/payments/use-payments-csv-export';
 import { usePaymentsScopeStatsCsvExport } from '@/features/finance/components/payments/use-payments-scope-stats-csv-export';
@@ -35,11 +39,18 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilterField } from '@/lib/persisted-client-state';
 
 export default function PaymentsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const openPaymentIdFromUrl = searchParams.get(OPEN_PAYMENT_QUERY)?.trim() || null;
+
   const [payments, setPayments] = useState<Payment[]>([]);
   const [stats, setStats] = useState<PaymentStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [periodRaw, setPeriodRaw] = usePersistedSearchFilterField(
     SEARCH_FILTER_PAGE_ID.financePayments,
     FINANCE_PERIOD_FILTER_KEY,
@@ -64,6 +75,23 @@ export default function PaymentsPage() {
   });
 
   useFinanceDocumentTitle(paymentsListPageTitle());
+
+  const stripOpenPaymentFromUrl = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!params.has(OPEN_PAYMENT_QUERY)) return;
+    params.delete(OPEN_PAYMENT_QUERY);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const pushOpenPaymentToUrl = useCallback(
+    (paymentId: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(OPEN_PAYMENT_QUERY, paymentId);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
 
   const fetchPayments = useCallback(async () => {
     setLoading(true);
@@ -95,6 +123,60 @@ export default function PaymentsPage() {
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
+
+  const handlePaymentClick = useCallback(
+    (payment: Payment) => {
+      setSelectedPayment(payment);
+      setSheetOpen(true);
+      pushOpenPaymentToUrl(payment.id);
+    },
+    [pushOpenPaymentToUrl],
+  );
+
+  const handlePaymentSheetOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      setSheetOpen(nextOpen);
+      if (!nextOpen) {
+        setSelectedPayment(null);
+        stripOpenPaymentFromUrl();
+      }
+    },
+    [stripOpenPaymentFromUrl],
+  );
+
+  const handlePaymentDeleted = useCallback(
+    (paymentId: string) => {
+      setPayments((current) => current.filter((row) => row.id !== paymentId));
+      void fetchPayments();
+    },
+    [fetchPayments],
+  );
+
+  useEffect(() => {
+    if (!openPaymentIdFromUrl) return;
+    const fromList = payments.find((row) => row.id === openPaymentIdFromUrl);
+    if (fromList) {
+      setSelectedPayment(fromList);
+      setSheetOpen(true);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await paymentsApi.getById(openPaymentIdFromUrl);
+        if (!cancelled) {
+          setSelectedPayment(data);
+          setSheetOpen(true);
+        }
+      } catch (caught) {
+        toast.error(getApiErrorMessage(caught, 'Payment could not be opened.'));
+        stripOpenPaymentFromUrl();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openPaymentIdFromUrl, payments, stripOpenPaymentFromUrl]);
 
   const paymentFilterConfigs = useMemo(() => [buildFinancePeriodFilterConfig()], []);
 
@@ -176,8 +258,16 @@ export default function PaymentsPage() {
           />
         }
       >
-        <PaymentsListTable payments={payments} />
+        <PaymentsListTable payments={payments} onOpenPayment={handlePaymentClick} />
       </DataView>
+
+      <PaymentDetailSheet
+        paymentId={sheetOpen ? (openPaymentIdFromUrl ?? selectedPayment?.id ?? null) : null}
+        initialPayment={selectedPayment}
+        open={sheetOpen || Boolean(openPaymentIdFromUrl)}
+        onOpenChange={handlePaymentSheetOpenChange}
+        onPaymentDeleted={handlePaymentDeleted}
+      />
     </div>
   );
 }

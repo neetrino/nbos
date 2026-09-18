@@ -578,6 +578,10 @@ export const paymentsApi = {
     const resp = await api.get<ListData<Payment>>('/api/finance/payments', { params });
     return resp.data;
   },
+  async getById(id: string): Promise<Payment> {
+    const resp = await api.get<Payment>(`/api/finance/payments/${id}`);
+    return resp.data;
+  },
   async create(data: {
     invoiceId: string;
     amount: number;

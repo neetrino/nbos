@@ -16,7 +16,7 @@ This standard applies to:
 
 - CRM leads and deals;
 - Delivery items and product surfaces;
-- Finance invoices, expenses, subscriptions, and client services;
+- Finance invoices, expenses, subscriptions, payments, and client services;
 - Support tickets;
 - Tasks and Work Spaces.
 
@@ -52,7 +52,7 @@ Use a sheet when the user opens an existing entity or needs to inspect/edit one 
 Examples:
 
 - lead, deal, delivery item;
-- invoice, expense, subscription, client service;
+- invoice, expense, subscription, payment, client service;
 - support ticket;
 - task.
 
