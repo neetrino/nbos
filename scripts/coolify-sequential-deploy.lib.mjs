@@ -222,7 +222,7 @@ export function formatDeployReadyReport(report) {
 
 /**
  * @param {string} appName
- * @param {'start' | 'queued' | 'running' | 'success' | 'failed'} phase
+ * @param {'start' | 'queued' | 'running' | 'retry' | 'success' | 'failed'} phase
  * @param {string} [detail]
  * @param {boolean} [color]
  * @returns {string}
@@ -231,6 +231,9 @@ export function formatDeployAppLine(appName, phase, detail, color = true) {
   if (phase === 'start') return paint(color, ANSI.cyan, `▶ Deploy ${appName}`);
   if (phase === 'queued') return `  ${paint(color, ANSI.yellow, '•')} queued ${detail ?? ''}`;
   if (phase === 'running') return `  ${appName}: ${paint(color, ANSI.yellow, detail ?? 'pending')}`;
+  if (phase === 'retry') {
+    return paint(color, ANSI.yellow, `⚠ ${appName} failed, retrying once`);
+  }
   if (phase === 'success') return paint(color, ANSI.green, `✓ ${appName} finished`);
   return paint(color, ANSI.red, `✕ ${appName} failed${detail ? ` — ${detail}` : ''}`);
 }

@@ -12,6 +12,7 @@ import {
   resolveApps,
   resolveCoolifyConfig,
 } from './coolify-sequential-deploy.lib.mjs';
+import { shouldRetryFailedDeploy } from './coolify-sequential-deploy.retry.mjs';
 
 describe('coolify sequential deploy helpers', () => {
   it('parses quoted env values and ignores comments', () => {
@@ -92,5 +93,35 @@ EMPTY=
     expect(normalizeCoolifyUrl('https://coolify.neetrino.com/')).toBe(
       'https://coolify.neetrino.com',
     );
+  });
+
+  it('retries once on export or disk failure, including hidden logs', () => {
+    expect(
+      shouldRetryFailedDeploy({
+        status: 'failed',
+        logs: [{ output: '#25 exporting layers' }],
+      }),
+    ).toBe(true);
+    expect(shouldRetryFailedDeploy({ status: 'failed' })).toBe(true);
+    expect(formatDeployAppLine('web', 'retry', undefined, false)).toBe(
+      '⚠ web failed, retrying once',
+    );
+  });
+
+  it('does not retry cancel, healthcheck, or application errors', () => {
+    expect(shouldRetryFailedDeploy({ status: 'cancelled-by-user' })).toBe(false);
+    expect(shouldRetryFailedDeploy({ status: 'cancelled', logs: 'exporting layers' })).toBe(false);
+    expect(
+      shouldRetryFailedDeploy({
+        status: 'failed',
+        logs: 'Waiting for healthcheck to pass on the new container.',
+      }),
+    ).toBe(false);
+    expect(
+      shouldRetryFailedDeploy({
+        status: 'failed',
+        logs: JSON.stringify([{ output: "Nest can't resolve dependencies of AuthService" }]),
+      }),
+    ).toBe(false);
   });
 });

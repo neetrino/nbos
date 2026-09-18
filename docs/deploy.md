@@ -332,7 +332,7 @@ pnpm deploy:prod -- web
 pnpm deploy:prod -- --force api        # rebuild без cache, только api
 ```
 
-Скрипт не запускает Prisma migration сам. Если schema менялась — сначала `pnpm db:migrate:prod` (§5.2), потом `pnpm deploy:prod`. Или одна цепочка §5.4. При падении следующего app не трогает. Rollback по-прежнему §9.
+Скрипт не запускает Prisma migration сам. Если schema менялась — сначала `pnpm db:migrate:prod` (§5.2), потом `pnpm deploy:prod`. Или одна цепочка §5.4. Если сервис упал на диске/export (`#25`, exporting layers), скрипт один раз повторяет только его. Отмену, healthcheck и ошибку кода не повторяет. После второго падения следующие app не трогает. Rollback по-прежнему §9.
 
 ### 5.4 Локальный release
 

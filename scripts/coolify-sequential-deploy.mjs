@@ -20,6 +20,11 @@ import {
   pickDeployment,
   resolveCoolifyConfig,
 } from './coolify-sequential-deploy.lib.mjs';
+import {
+  DeployFailedError,
+  MAX_APP_FAILURE_RETRIES,
+  shouldRetryFailedDeploy,
+} from './coolify-sequential-deploy.retry.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const envPath = resolve(repoRoot, '.env.local');
@@ -44,6 +49,8 @@ Put values in repo-root .env.local (gitignored):
 
 UUIDs come from Coolify → app → Configuration → Webhooks → Deploy Webhook.
 Migrate production first when the schema changed. This script does not migrate.
+A failed app is retried once when the status/log looks like disk or export
+(#25, exporting layers). Cancel, healthcheck, and app/DI errors are not retried.
 `);
 }
 
@@ -103,27 +110,27 @@ async function queueDeploy(api, appUuid, force) {
   throw new Error('Coolify deploy queue stayed full');
 }
 
-async function readDeploymentStatus(api, appUuid, deploymentUuid) {
+async function readDeploymentRecord(api, appUuid, deploymentUuid) {
   try {
     const byId = await coolifyRequest(api, 'GET', `/deployments/${deploymentUuid}`);
-    const status = extractDeploymentRecords(byId)[0]?.status;
-    if (typeof status === 'string') return status;
+    const record = extractDeploymentRecords(byId)[0];
+    if (record) return record;
   } catch (error) {
     if (error.status !== 404) throw error;
   }
   const list = await coolifyRequest(api, 'GET', `/deployments/applications/${appUuid}?take=10`);
-  const match = pickDeployment(extractDeploymentRecords(list), deploymentUuid);
-  return typeof match?.status === 'string' ? match.status : undefined;
+  return pickDeployment(extractDeploymentRecords(list), deploymentUuid);
 }
 
 async function waitForDeployment(api, appName, appUuid, deploymentUuid) {
   const startedAt = Date.now();
   while (Date.now() - startedAt < DEPLOY_TIMEOUT_MS) {
-    const status = await readDeploymentStatus(api, appUuid, deploymentUuid);
+    const record = await readDeploymentRecord(api, appUuid, deploymentUuid);
+    const status = typeof record?.status === 'string' ? record.status : undefined;
     const outcome = classifyDeploymentStatus(status);
     if (outcome === 'success') return;
     if (outcome === 'failed') {
-      throw new Error(`${appName} deploy ended with status ${status ?? 'unknown'}`);
+      throw new DeployFailedError(appName, status, record?.logs);
     }
     process.stdout.write(
       `${formatDeployAppLine(appName, 'running', status ?? 'pending', colorEnabled())}\n`,
@@ -133,13 +140,32 @@ async function waitForDeployment(api, appName, appUuid, deploymentUuid) {
   throw new Error(`${appName} deploy timed out after ${DEPLOY_TIMEOUT_MS / 60000} minutes`);
 }
 
-async function deployApp(api, appName, appUuid, force) {
+async function deployAppOnce(api, appName, appUuid, force) {
   const color = colorEnabled();
   process.stdout.write(`${formatDeployAppLine(appName, 'start', undefined, color)}\n`);
   const deploymentUuid = await queueDeploy(api, appUuid, force);
   process.stdout.write(`${formatDeployAppLine(appName, 'queued', deploymentUuid, color)}\n`);
   await waitForDeployment(api, appName, appUuid, deploymentUuid);
   process.stdout.write(`${formatDeployAppLine(appName, 'success', undefined, color)}\n`);
+}
+
+function canRetryDeployFailure(error, attempt, maxAttempts) {
+  if (attempt >= maxAttempts || !(error instanceof DeployFailedError)) return false;
+  return shouldRetryFailedDeploy({ status: error.status, logs: error.logs });
+}
+
+async function deployApp(api, appName, appUuid, force) {
+  const maxAttempts = 1 + MAX_APP_FAILURE_RETRIES;
+  const color = colorEnabled();
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await deployAppOnce(api, appName, appUuid, force);
+      return;
+    } catch (error) {
+      if (!canRetryDeployFailure(error, attempt, maxAttempts)) throw error;
+      process.stderr.write(`${formatDeployAppLine(appName, 'retry', undefined, color)}\n`);
+    }
+  }
 }
 
 async function main() {
