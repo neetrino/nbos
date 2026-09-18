@@ -44,4 +44,20 @@ describe('MailQueueService.enqueueSync', () => {
     expect(remove).not.toHaveBeenCalled();
     expect(add).not.toHaveBeenCalled();
   });
+
+  it('replaces a failed sync job so reconnect can enqueue again', async () => {
+    const remove = vi.fn().mockResolvedValue(undefined);
+    const add = vi.fn().mockResolvedValue(undefined);
+    const getJob = vi.fn().mockResolvedValue({
+      getState: vi.fn().mockResolvedValue('failed'),
+      remove,
+    });
+    const service = serviceWithQueue({ add, getJob });
+
+    await expect(service.enqueueSync('acc-1')).resolves.toBe(true);
+
+    expect(getJob).toHaveBeenCalledWith(mailSyncJobId('acc-1'));
+    expect(remove).toHaveBeenCalledOnce();
+    expect(add).toHaveBeenCalledOnce();
+  });
 });

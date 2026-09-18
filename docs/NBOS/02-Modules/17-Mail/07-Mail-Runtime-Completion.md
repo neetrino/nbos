@@ -145,7 +145,7 @@ SENT терминален
 
 BullMQ 5 custom `jobId` cannot contain `:`. Runtime ids are `toBullMqSafeJobId` of the logical `mail-*:{id}` keys (`mail-send-…`, `mail-att-…`, `mail-sync-…`).
 
-Повторный `queue.add` с тем же `jobId`, пока job жив — no-op (уже есть / in-flight). Это основной debounce для Pub/Sub + IDLE + poll.
+Повторный `enqueue` с тем же `jobId`: in-flight — no-op (debounce для Pub/Sub + IDLE + poll); completed/failed — job снимается и ставится заново.
 
 Опции (как critical-очередь уже настроена):
 
