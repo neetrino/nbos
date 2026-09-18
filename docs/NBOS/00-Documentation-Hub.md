@@ -1,5 +1,7 @@
 # Центральный указатель документации NBOS
 
+**Delivery Compensation v2 (2026-09-18, реализация ожидается):** [новый бизнес-канон](03-Business-Logic/11-Delivery-Compensation-Configurator.md), [экраны](05-UI-Specifications/15-Delivery-Function-Catalog-and-Configurator.md), [полный пакет реализации и промпт Cursor](../implementation/delivery-compensation/README.md). В пределах нового delivery-расчёта, каталога функций и финансовой приватности это решение имеет приоритет над прежними процентами, developer split 70/30 и Bonus tabs. Остальные Finance/Sales правила сохраняются; отдельное дополнение — источник Network.
+
 **Домены / Client Services (2026-09-17):** канон процесса утверждён; **код в рабочей ветке частичный**, не считать канон готовым продуктом. [Канон](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md), [план и факт по коду](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md).
 
 **Локализация интерфейса (решение 2026-09-12, реализация ожидается):** [канон EN/RU → HY](01-Platform-Overview/07-Interface-Localization.md), [план реализации](../implementation/I18N-IMPLEMENTATION-PLAN.md).

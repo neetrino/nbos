@@ -1,5 +1,7 @@
 # Бонусы, зарплата и payroll (Bonus, Salary & Payroll)
 
+**Дополнение 2026-09-18:** [Delivery Compensation v2](../../03-Business-Logic/11-Delivery-Compensation-Configurator.md) заменяет способ расчёта плановых delivery-бонусов для новой модели. Проценты, employee overrides и split 70/30 не определяют v2-суммы. Funding, release, payroll и выплата сохраняются; совместимость earned period, late funding и корректировок обязательна по [техническому контракту](../../../implementation/delivery-compensation/01-TECHNICAL-CONTRACT.md). Product/Delivery больше не являются финансовыми экранами; суммы доступны в Wallet/авторизованном Finance.
+
 ## Общая концепция
 
 Этот контур отвечает за мотивацию сотрудников и выплаты:
@@ -130,7 +132,7 @@ Developer Backend:
 Developer Frontend:
 
 - фиксированная зарплата;
-- бонусы по закрытым работам (delivery developer pool: **30%** при совместном назначении с Backend, иначе Backend **100%**);
+- для v2 — собственные нормативные units роли Frontend; старый split **30% / 70%** относится только к legacy;
 - та же Bonus Policy engine, отдельная роль в расчёте.
 
 Compensation Profile не должен хранить только одну текущую зарплату. Он должен иметь историю версий, потому что условия сотрудника могут меняться: фикс, проценты, KPI, уровень, договорённости.

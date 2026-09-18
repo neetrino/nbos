@@ -219,7 +219,9 @@ New client payment
 
 ---
 
-## Бонус разработки (Delivery Bonus)
+## Бонус разработки (Delivery Bonus) — legacy
+
+**С 2026-09-18:** для продуктов новой модели действует [Delivery Compensation v2](11-Delivery-Compensation-Configurator.md): units по каждой роли, план при первом Development, закрытые тарифы, версионность. Проценты и split 70/30 в этом legacy-разделе не применяются к v2; старые записи автоматически не пересчитываются. Общие правила funding/release/payroll сохраняются с интеграционными уточнениями нового контракта. Источник `Network` добавляется к Sales по правилам нового канона, без переделки Sales engine.
 
 ### Кто получает
 

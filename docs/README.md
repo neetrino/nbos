@@ -1,5 +1,7 @@
 # Документация NBOS
 
+**Delivery Compensation v2:** [пакет для разработки по фазам](implementation/delivery-compensation/README.md) — документация готова, реализация ожидается.
+
 **Главная точка входа для AI/разработчика:** [AI-START-HERE.md](./AI-START-HERE.md).
 
 **Единая точка бизнес-канона:** [NBOS/00-Documentation-Hub.md](./NBOS/00-Documentation-Hub.md) — структура всех актуальных документов, связь с архивом и планами.
