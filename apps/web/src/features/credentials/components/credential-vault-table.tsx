@@ -6,7 +6,7 @@ import { CredentialVaultTableRow } from '@/features/credentials/components/crede
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableHeader, TableBody, TableHead, TableRow } from '@/components/ui/table';
-import { EmptyState } from '@/components/shared';
+import { DataView, EmptyState } from '@/components/shared';
 import {
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_SHELL_CLASS,
@@ -64,91 +64,92 @@ export function CredentialVaultTable({
   );
   const somePageSelected =
     selection?.enabled && pageIds.some((id) => selection.isSelected(id)) && !allPageSelected;
-  if (loading) {
-    return (
-      <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-14 w-full rounded-lg" />
-        ))}
-      </div>
-    );
-  }
-
-  if (credentials.length === 0) {
-    return (
-      <EmptyState
-        icon={KeyRound}
-        title={t('emptyTitle')}
-        description={t('emptyDescription')}
-        action={
-          showCreate ? (
-            <PermissionGate module="CREDENTIALS" action="ADD">
-              <Button onClick={onCreateOpen}>
-                <Plus size={16} /> {t('addCredential')}
-              </Button>
-            </PermissionGate>
-          ) : undefined
-        }
-      />
-    );
-  }
-
   const bulkSelectionStarted = selection?.selectionActive ?? false;
+  const tableSkeleton = (
+    <div className="space-y-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Skeleton key={i} className="h-14 w-full rounded-lg" />
+      ))}
+    </div>
+  );
 
   return (
-    <div className={`group/vault-table ${ENTITY_LIST_SHELL_CLASS}`}>
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            {selection?.enabled ? (
-              <TableHead className={`${ENTITY_LIST_HEAD_CLASS} w-10`}>
-                <div
-                  className={credentialVaultCheckboxRevealClass(
-                    bulkSelectionStarted,
-                    allPageSelected,
-                    'group-hover/vault-table:opacity-100',
-                  )}
-                >
-                  <CredentialVaultSelectCheckbox
-                    checked={Boolean(allPageSelected)}
-                    indeterminate={somePageSelected}
-                    ariaLabel={t('table.selectAllOnPage')}
-                    onToggle={() => selection.onTogglePage()}
-                  />
-                </div>
-              </TableHead>
-            ) : null}
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.name')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.login')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.password')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.category')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.type')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.risk')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.access')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.project')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.rotation')}</TableHead>
-            <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.url')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {credentials.map((cred) => (
-            <CredentialVaultTableRow
-              key={cred.id}
-              cred={cred}
-              isTrashList={isTrashList}
-              secretFlashCredentialId={secretFlashCredentialId}
-              selectionEnabled={selection?.enabled ?? false}
-              selectionActive={bulkSelectionStarted}
-              selected={selection?.isSelected(cred.id) ?? false}
-              onToggleSelected={() => selection?.onToggle(cred.id)}
-              onCopyText={onCopyText}
-              onCopySecret={onCopySecret}
-              onOpenCredential={onOpenCredential}
-              onSetFavorite={onSetFavorite}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <DataView
+      loading={loading}
+      hasData={credentials.length > 0}
+      loadingFallback={tableSkeleton}
+      errorFallback={null}
+      emptyFallback={
+        <EmptyState
+          icon={KeyRound}
+          title={t('emptyTitle')}
+          description={t('emptyDescription')}
+          action={
+            showCreate ? (
+              <PermissionGate module="CREDENTIALS" action="ADD">
+                <Button onClick={onCreateOpen}>
+                  <Plus size={16} /> {t('addCredential')}
+                </Button>
+              </PermissionGate>
+            ) : undefined
+          }
+        />
+      }
+    >
+      <div className={`group/vault-table ${ENTITY_LIST_SHELL_CLASS}`}>
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              {selection?.enabled ? (
+                <TableHead className={`${ENTITY_LIST_HEAD_CLASS} w-10`}>
+                  <div
+                    className={credentialVaultCheckboxRevealClass(
+                      bulkSelectionStarted,
+                      allPageSelected,
+                      'group-hover/vault-table:opacity-100',
+                    )}
+                  >
+                    <CredentialVaultSelectCheckbox
+                      checked={Boolean(allPageSelected)}
+                      indeterminate={somePageSelected}
+                      ariaLabel={t('table.selectAllOnPage')}
+                      onToggle={() => selection.onTogglePage()}
+                    />
+                  </div>
+                </TableHead>
+              ) : null}
+              <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('table.name')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.login')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.password')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.category')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.type')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.risk')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.access')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.project')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.rotation')}</TableHead>
+              <TableHead className={VAULT_LIST_CENTER_HEAD_CLASS}>{t('table.url')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {credentials.map((cred) => (
+              <CredentialVaultTableRow
+                key={cred.id}
+                cred={cred}
+                isTrashList={isTrashList}
+                secretFlashCredentialId={secretFlashCredentialId}
+                selectionEnabled={selection?.enabled ?? false}
+                selectionActive={bulkSelectionStarted}
+                selected={selection?.isSelected(cred.id) ?? false}
+                onToggleSelected={() => selection?.onToggle(cred.id)}
+                onCopyText={onCopyText}
+                onCopySecret={onCopySecret}
+                onOpenCredential={onOpenCredential}
+                onSetFavorite={onSetFavorite}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </DataView>
   );
 }

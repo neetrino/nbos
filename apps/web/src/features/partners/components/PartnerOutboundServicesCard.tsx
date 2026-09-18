@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Handshake } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
+import { PartnerDetailCardFrame } from './PartnerDetailCardFrame';
 import { partnersApi, type PartnerServiceTerm } from '@/lib/api/partners';
 import { projectsApi, type Project } from '@/lib/api/projects';
 import { PARTNER_OUTBOUND_PROJECT_PICKER_PAGE_SIZE } from '@/features/partners/constants/partner-outbound-projects';
@@ -17,8 +18,10 @@ import { PartnerOutboundServiceTermsTable } from '@/features/partners/components
 export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKey?: number }) {
   const { partnerId, reloadKey = 0 } = props;
   const [rows, setRows] = useState<PartnerServiceTerm[]>([]);
+  const loadedPartnerIdRef = useRef<string | null>(null);
+  const [loadedPartnerId, setLoadedPartnerId] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -41,18 +44,24 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
   const projectById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    beginLoad(loadedPartnerIdRef.current === partnerId);
     setError(null);
     try {
       const data = await partnersApi.listServiceTerms(partnerId);
       setRows(data);
+      loadedPartnerIdRef.current = partnerId;
+      setLoadedPartnerId(partnerId);
     } catch (caught) {
-      setRows([]);
+      if (isAccessRevokedApiError(caught) || loadedPartnerIdRef.current !== partnerId) {
+        setRows([]);
+        loadedPartnerIdRef.current = null;
+        setLoadedPartnerId(null);
+      }
       setError(getApiErrorMessage(caught, 'Outbound service terms could not be loaded.'));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [partnerId]);
+  }, [beginLoad, endLoad, partnerId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,70 +127,52 @@ export function PartnerOutboundServicesCard(props: { partnerId: string; reloadKe
     }
   };
 
-  if (loading) {
-    return (
-      <div className="border-border bg-card rounded-xl border p-4">
-        <p className="text-muted-foreground text-sm">Loading outbound services…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="border-border bg-card rounded-xl border p-4">
-        <p className="text-destructive text-sm" role="alert">
-          {error}
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="mt-3"
-          onClick={() => void load()}
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="border-border bg-card rounded-xl border p-4">
-      <div className="flex items-center gap-2">
-        <Handshake size={16} className="text-muted-foreground" />
-        <h2 className="text-foreground text-sm font-semibold">Outbound services</h2>
-      </div>
-      <p className="text-muted-foreground mt-1 text-xs">
-        Terms where partner pays Neetrino. Create a service case, then generate Finance invoice or
-        partner-service subscription from it.
-      </p>
-
-      {actionError ? (
-        <p className="text-destructive mt-3 text-xs" role="alert">
-          {actionError}
+    <PartnerDetailCardFrame
+      loading={loading}
+      error={error}
+      hasData={loadedPartnerId === partnerId}
+      loadingLabel="Loading outbound services…"
+      onRetry={() => void load()}
+      onDismissError={() => setError(null)}
+    >
+      <div className="border-border bg-card rounded-xl border p-4">
+        <div className="flex items-center gap-2">
+          <Handshake size={16} className="text-muted-foreground" />
+          <h2 className="text-foreground text-sm font-semibold">Outbound services</h2>
+        </div>
+        <p className="text-muted-foreground mt-1 text-xs">
+          Terms where partner pays Neetrino. Create a service case, then generate Finance invoice or
+          partner-service subscription from it.
         </p>
-      ) : null}
 
-      <PartnerOutboundServiceTermCreateForm
-        form={form}
-        onFormChange={setForm}
-        projectLabel={projectLabel}
-        onProjectLabelChange={setProjectLabel}
-        canSubmit={canSubmit}
-        saving={saving}
-        onSubmit={submit}
-      />
+        {actionError ? (
+          <p className="text-destructive mt-3 text-xs" role="alert">
+            {actionError}
+          </p>
+        ) : null}
 
-      {rows.length === 0 ? (
-        <p className="text-muted-foreground mt-4 text-sm">No outbound service terms yet.</p>
-      ) : (
-        <PartnerOutboundServiceTermsTable
-          rows={rows}
-          projectById={projectById}
-          creatingFinanceId={creatingFinanceId}
-          onCreateFinance={createFinance}
+        <PartnerOutboundServiceTermCreateForm
+          form={form}
+          onFormChange={setForm}
+          projectLabel={projectLabel}
+          onProjectLabelChange={setProjectLabel}
+          canSubmit={canSubmit}
+          saving={saving}
+          onSubmit={submit}
         />
-      )}
-    </div>
+
+        {rows.length === 0 ? (
+          <p className="text-muted-foreground mt-4 text-sm">No outbound service terms yet.</p>
+        ) : (
+          <PartnerOutboundServiceTermsTable
+            rows={rows}
+            projectById={projectById}
+            creatingFinanceId={creatingFinanceId}
+            onCreateFinance={createFinance}
+          />
+        )}
+      </div>
+    </PartnerDetailCardFrame>
   );
 }

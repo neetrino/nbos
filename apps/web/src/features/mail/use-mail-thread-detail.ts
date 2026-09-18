@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { mailApi, type MailThreadDetailDto } from '@/lib/api/mail';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import {
   MAIL_ATTACHMENT_RETRY_TOAST,
   MAIL_QUEUED_TOAST,
@@ -29,7 +30,11 @@ export function useMailThreadDetail({
   onThreadMarkedSpam,
 }: UseMailThreadDetailOptions) {
   const [detail, setDetail] = useState<MailThreadDetailDto | null>(null);
-  const [loading, setLoading] = useState(true);
+  const detailRef = useRef(detail);
+  detailRef.current = detail;
+  const loadedThreadIdRef = useRef<string | null>(null);
+  const [loadedThreadId, setLoadedThreadId] = useState<string | null>(null);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [markingRead, setMarkingRead] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [queueingMessageId, setQueueingMessageId] = useState<string | null>(null);
@@ -44,18 +49,24 @@ export function useMailThreadDetail({
 
   const load = useCallback(async () => {
     if (!threadId) return;
-    setLoading(true);
+    beginLoad(loadedThreadIdRef.current === threadId && detailRef.current != null);
     setError(null);
     try {
       const d = await mailApi.getThread(threadId);
       setDetail(d);
+      loadedThreadIdRef.current = threadId;
+      setLoadedThreadId(threadId);
     } catch (e) {
-      setDetail(null);
+      if (isAccessRevokedApiError(e) || loadedThreadIdRef.current !== threadId) {
+        setDetail(null);
+        loadedThreadIdRef.current = null;
+        setLoadedThreadId(null);
+      }
       setError(getApiErrorMessage(e, 'Thread could not be loaded.'));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [threadId]);
+  }, [beginLoad, endLoad, threadId]);
 
   const markRead = useCallback(async () => {
     if (!threadId || !detail?.thread.hasUnread) return;
@@ -215,13 +226,15 @@ export function useMailThreadDetail({
 
   useEffect(() => {
     if (!enabled || !threadId) {
-      setLoading(false);
+      endLoad();
       setDetail(null);
+      loadedThreadIdRef.current = null;
+      setLoadedThreadId(null);
       setError(null);
       return;
     }
     void load();
-  }, [enabled, threadId, load]);
+  }, [enabled, endLoad, threadId, load]);
 
   useEffect(() => {
     if (!autoMarkRead || !enabled || !threadId || loading || !detail?.thread.hasUnread) {
@@ -248,6 +261,8 @@ export function useMailThreadDetail({
     setDetail,
     loading,
     error,
+    clearError: () => setError(null),
+    loadedThreadId,
     load,
     markingRead,
     markingUnread,

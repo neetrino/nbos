@@ -6,8 +6,10 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_LIST_CLASS,
+  DataView,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   RELATION_PICKER_CHIP_STACK_CLASS,
   RelationPickerField,
@@ -54,7 +56,10 @@ export function ProjectParticipantsSection({
   className,
 }: ProjectParticipantsSectionProps) {
   const isDense = embedded || compact;
-  const { members, loading, error, refetch } = useProjectTeam(projectId, refreshKey);
+  const { members, loading, error, clearError, loadedProjectId, refetch } = useProjectTeam(
+    projectId,
+    refreshKey,
+  );
   const relations = useEntityRelations();
   const [addingMember, setAddingMember] = useState(false);
   const [busyEmployeeId, setBusyEmployeeId] = useState<string | null>(null);
@@ -159,97 +164,105 @@ export function ProjectParticipantsSection({
         )}
       >
         {addMemberPicker}
-        {error ? (
-          <ErrorState description={error} onRetry={() => void reloadTeam()} />
-        ) : loading ? (
-          <LoadingState count={isDense ? 2 : 3} />
-        ) : members.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title="No participants yet"
-            description={
-              isDense
-                ? 'Add a participant or assign on products.'
-                : 'Add a project participant or assign people on products.'
-            }
-          />
-        ) : isDense ? (
-          <div
-            className={cn(
-              RELATION_PICKER_CHIP_STACK_CLASS,
-              embedded && cn(DETAIL_SHEET_TAB_LIST_CLASS, 'overscroll-contain pr-0.5'),
-            )}
-          >
-            {members.map((row) => (
-              <ProjectTeamMemberChipRow
-                key={row.id}
-                row={row}
-                disabled={busyEmployeeId === row.employeeId || addingMember}
-                canManageTeam={canManageTeam}
-                canAssignAdmin={canAssignAdmin}
-                onRoleChange={handleRoleChange}
-                onRemove={handleRemove}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="w-36">Role</TableHead>
-                  <TableHead className="w-24">Access</TableHead>
-                  <TableHead className="w-32">Source</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.map((row) => {
-                  const fullName = `${row.employee.firstName} ${row.employee.lastName}`.trim();
-                  return (
-                    <TableRow key={row.id}>
-                      <TableCell>
-                        <button
-                          type="button"
-                          className="text-left transition-colors hover:text-sky-600 dark:hover:text-sky-400"
-                          disabled={busyEmployeeId === row.employeeId || addingMember}
-                          onClick={() =>
-                            relations.openEntity('employee', row.employeeId, {
-                              onRemoveParticipant: canManageTeam
-                                ? () => handleRemove(row.employeeId)
-                                : undefined,
-                            })
-                          }
-                        >
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="font-medium">{fullName}</span>
-                            <TeamMemberEmployeeStatusBadge status={row.employee.status} />
-                          </div>
-                          <span className="text-muted-foreground block text-xs">
-                            {row.employee.email}
-                          </span>
-                        </button>
-                      </TableCell>
-                      <TableCell>
-                        <ProjectTeamRoleControl
-                          role={row.role as 'ADMIN' | 'MEMBER'}
-                          disabled={busyEmployeeId === row.employeeId}
-                          canManageTeam={canManageTeam}
-                          canAssignAdmin={canAssignAdmin}
-                          onRoleChange={(role) => void handleRoleChange(row.employeeId, role)}
-                        />
-                      </TableCell>
-                      <TableCell className="text-sm">{row.accessLevel}</TableCell>
-                      <TableCell className="text-muted-foreground text-sm capitalize">
-                        {formatTeamSource(row.source)}
-                      </TableCell>
+        <DataView
+          loading={loading}
+          error={error}
+          hasData={loadedProjectId === projectId && members.length > 0}
+          loadingFallback={<LoadingState count={isDense ? 2 : 3} />}
+          errorFallback={<ErrorState description={error ?? ''} onRetry={() => void reloadTeam()} />}
+          emptyFallback={
+            <EmptyState
+              icon={Users}
+              title="No participants yet"
+              description={
+                isDense
+                  ? 'Add a participant or assign on products.'
+                  : 'Add a project participant or assign people on products.'
+              }
+            />
+          }
+        >
+          <div className="flex min-h-0 flex-1 flex-col gap-3">
+            {error ? <ListMutationErrorBanner message={error} onDismiss={clearError} /> : null}
+            {isDense ? (
+              <div
+                className={cn(
+                  RELATION_PICKER_CHIP_STACK_CLASS,
+                  embedded && cn(DETAIL_SHEET_TAB_LIST_CLASS, 'overscroll-contain pr-0.5'),
+                )}
+              >
+                {members.map((row) => (
+                  <ProjectTeamMemberChipRow
+                    key={row.id}
+                    row={row}
+                    disabled={busyEmployeeId === row.employeeId || addingMember}
+                    canManageTeam={canManageTeam}
+                    canAssignAdmin={canAssignAdmin}
+                    onRoleChange={handleRoleChange}
+                    onRemove={handleRemove}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead className="w-36">Role</TableHead>
+                      <TableHead className="w-24">Access</TableHead>
+                      <TableHead className="w-32">Source</TableHead>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {members.map((row) => {
+                      const fullName = `${row.employee.firstName} ${row.employee.lastName}`.trim();
+                      return (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <button
+                              type="button"
+                              className="text-left transition-colors hover:text-sky-600 dark:hover:text-sky-400"
+                              disabled={busyEmployeeId === row.employeeId || addingMember}
+                              onClick={() =>
+                                relations.openEntity('employee', row.employeeId, {
+                                  onRemoveParticipant: canManageTeam
+                                    ? () => handleRemove(row.employeeId)
+                                    : undefined,
+                                })
+                              }
+                            >
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="font-medium">{fullName}</span>
+                                <TeamMemberEmployeeStatusBadge status={row.employee.status} />
+                              </div>
+                              <span className="text-muted-foreground block text-xs">
+                                {row.employee.email}
+                              </span>
+                            </button>
+                          </TableCell>
+                          <TableCell>
+                            <ProjectTeamRoleControl
+                              role={row.role as 'ADMIN' | 'MEMBER'}
+                              disabled={busyEmployeeId === row.employeeId}
+                              canManageTeam={canManageTeam}
+                              canAssignAdmin={canAssignAdmin}
+                              onRoleChange={(role) => void handleRoleChange(row.employeeId, role)}
+                            />
+                          </TableCell>
+                          <TableCell className="text-sm">{row.accessLevel}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm capitalize">
+                            {formatTeamSource(row.source)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </div>
-        )}
+        </DataView>
       </div>
     </section>
   );

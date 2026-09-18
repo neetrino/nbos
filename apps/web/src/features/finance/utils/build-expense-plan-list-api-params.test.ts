@@ -69,6 +69,7 @@ describe('buildExpensePlanListApiParams', () => {
         category: 'TOOLS',
         projectId: 'p1',
         status: 'CANCELLED',
+        period: 'MONTHLY',
         page: 1,
         pageSize: 50,
       }),
@@ -79,6 +80,7 @@ describe('buildExpensePlanListApiParams', () => {
       category: 'TOOLS',
       projectId: 'p1',
       status: 'CANCELLED',
+      frequency: 'MONTHLY',
       page: 1,
       pageSize: 50,
     });
@@ -116,5 +118,7 @@ describe('expensePlanListHasActiveFilters', () => {
     expect(expensePlanListHasActiveFilters({ search: '', status: 'ACTIVE' })).toBe(false);
     expect(expensePlanListHasActiveFilters({ search: '', status: 'CANCELLED' })).toBe(true);
     expect(expensePlanListHasActiveFilters({ search: '', status: 'all' })).toBe(true);
+    expect(expensePlanListHasActiveFilters({ search: '', period: 'all' })).toBe(false);
+    expect(expensePlanListHasActiveFilters({ search: '', period: 'YEARLY' })).toBe(true);
   });
 });

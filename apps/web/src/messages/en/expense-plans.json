@@ -16,6 +16,8 @@
   },
   "filters": {
     "status": "Status",
+    "period": "Period",
+    "allPeriods": "All",
     "category": "Category",
     "project": "Project",
     "search": "Search",

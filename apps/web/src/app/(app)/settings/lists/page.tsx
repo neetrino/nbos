@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { List, Pencil, RefreshCcw, Tag, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PageHero, EmptyState, ErrorState, LoadingState, StatusBadge } from '@/components/shared';
+import {
+  DataView,
+  PageHero,
+  EmptyState,
+  ErrorState,
+  ListMutationErrorBanner,
+  LoadingState,
+  StatusBadge,
+} from '@/components/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { SETTINGS_MODULE } from '@nbos/shared/constants';
 import { PermissionGate } from '@/lib/permissions';
 import { systemListsApi, type SystemListOption } from '@/lib/api/systemLists';
@@ -42,8 +52,15 @@ export function SystemListsPage() {
   const [listKeys, setListKeys] = useState<string[]>([]);
   const [options, setOptions] = useState<SystemListOption[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [loadingKeys, setLoadingKeys] = useState(true);
-  const [loadingOptions, setLoadingOptions] = useState(false);
+  const listKeysRef = useRef<string[]>([]);
+  const optionsRef = useRef<SystemListOption[]>([]);
+  const loadedOptionsKeyRef = useRef<string | null>(null);
+  const { loading: loadingKeys, begin: beginKeysLoad, end: endKeysLoad } = useRevalidationState();
+  const {
+    loading: loadingOptions,
+    begin: beginOptionsLoad,
+    end: endOptionsLoad,
+  } = useRevalidationState(false);
   const [includeInactive, setIncludeInactive] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOption, setEditingOption] = useState<SystemListOption | null>(null);
@@ -55,42 +72,64 @@ export function SystemListsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchKeys = useCallback(async () => {
-    setLoadingKeys(true);
+    beginKeysLoad(listKeysRef.current.length > 0);
     try {
       const data = await systemListsApi.getListKeys();
       const managed = data.map((r) => r.listKey).filter((k) => k in LIST_KEY_LABELS);
       setListKeys(managed);
+      listKeysRef.current = managed;
       if (managed.length > 0 && !selectedKey) {
         setSelectedKey(managed[0]!);
       }
       setLoadError(null);
-    } catch {
-      setListKeys([]);
-      setLoadError('System lists could not be loaded. Check your access and try again.');
+    } catch (caught) {
+      if (isAccessRevokedApiError(caught)) {
+        setListKeys([]);
+        listKeysRef.current = [];
+      }
+      setLoadError(
+        getApiErrorMessage(
+          caught,
+          'System lists could not be loaded. Check your access and try again.',
+        ),
+      );
     } finally {
-      setLoadingKeys(false);
+      endKeysLoad();
     }
-  }, [selectedKey]);
+  }, [beginKeysLoad, endKeysLoad, selectedKey]);
 
   const fetchOptions = useCallback(async () => {
     if (!selectedKey) {
       setOptions([]);
+      optionsRef.current = [];
+      loadedOptionsKeyRef.current = null;
       return;
     }
-    setLoadingOptions(true);
+    beginOptionsLoad(loadedOptionsKeyRef.current === selectedKey && optionsRef.current.length > 0);
     try {
       const data = await systemListsApi.getOptionsByKey(selectedKey, {
         includeInactive,
       });
       setOptions(data);
+      optionsRef.current = data;
+      loadedOptionsKeyRef.current = selectedKey;
       setLoadError(null);
-    } catch {
-      setOptions([]);
-      setLoadError('System list options could not be loaded. Check your access and try again.');
+    } catch (caught) {
+      if (isAccessRevokedApiError(caught) || loadedOptionsKeyRef.current !== selectedKey) {
+        setOptions([]);
+        optionsRef.current = [];
+        loadedOptionsKeyRef.current = null;
+      }
+      setLoadError(
+        getApiErrorMessage(
+          caught,
+          'System list options could not be loaded. Check your access and try again.',
+        ),
+      );
     } finally {
-      setLoadingOptions(false);
+      endOptionsLoad();
     }
-  }, [selectedKey, includeInactive]);
+  }, [beginOptionsLoad, endOptionsLoad, selectedKey, includeInactive]);
 
   useEffect(() => {
     fetchKeys();
@@ -164,13 +203,19 @@ export function SystemListsPage() {
       <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-muted-foreground text-sm font-medium">List:</span>
-          {loadingKeys ? (
-            <div className="w-full max-w-sm">
-              <LoadingState count={1} />
-            </div>
-          ) : listKeys.length === 0 ? (
-            <span className="text-muted-foreground text-sm">No configurable lists</span>
-          ) : (
+          <DataView
+            loading={loadingKeys}
+            hasData={listKeys.length > 0}
+            loadingFallback={
+              <div className="w-full max-w-sm">
+                <LoadingState count={1} />
+              </div>
+            }
+            errorFallback={null}
+            emptyFallback={
+              <span className="text-muted-foreground text-sm">No configurable lists</span>
+            }
+          >
             <div className="flex flex-wrap gap-1.5">
               {listKeys.map((key) => (
                 <Button
@@ -184,7 +229,7 @@ export function SystemListsPage() {
                 </Button>
               ))}
             </div>
-          )}
+          </DataView>
           <label className="text-muted-foreground ml-2 flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -204,12 +249,15 @@ export function SystemListsPage() {
           </p>
         </div>
 
-        {loadError ? (
+        {loadError && (listKeys.length > 0 || options.length > 0) ? (
+          <ListMutationErrorBanner message={loadError} onDismiss={() => setLoadError(null)} />
+        ) : null}
+        {loadError && listKeys.length === 0 && options.length === 0 ? (
           <ErrorState
             description={loadError}
             onRetry={() => {
-              fetchKeys();
-              fetchOptions();
+              void fetchKeys();
+              void fetchOptions();
             }}
           />
         ) : selectedKey ? (
@@ -223,15 +271,19 @@ export function SystemListsPage() {
                 )}
               </h3>
             </div>
-            {loadingOptions ? (
-              <LoadingState />
-            ) : options.length === 0 ? (
-              <EmptyState
-                icon={List}
-                title="No options"
-                description={`No options found for ${getListKeyLabel(selectedKey)}.`}
-              />
-            ) : (
+            <DataView
+              loading={loadingOptions}
+              hasData={options.length > 0}
+              loadingFallback={<LoadingState />}
+              errorFallback={null}
+              emptyFallback={
+                <EmptyState
+                  icon={List}
+                  title="No options"
+                  description={`No options found for ${getListKeyLabel(selectedKey)}.`}
+                />
+              }
+            >
               <div className="border-border overflow-hidden rounded-lg border">
                 <Table>
                   <TableHeader>
@@ -275,7 +327,7 @@ export function SystemListsPage() {
                   </TableBody>
                 </Table>
               </div>
-            )}
+            </DataView>
           </>
         ) : null}
       </div>

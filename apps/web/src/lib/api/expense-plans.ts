@@ -78,6 +78,7 @@ export interface ExpensePlanListParams {
   productId?: string;
   category?: string;
   status?: string;
+  frequency?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -89,6 +90,7 @@ export interface ExpensePlanGridParams {
   productId?: string;
   category?: string;
   status?: string;
+  frequency?: string;
   search?: string;
 }
 

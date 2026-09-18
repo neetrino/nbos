@@ -1,33 +1,37 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { recurringTasksApi, type RecurringTaskTemplate } from '@/lib/api/recurring-tasks';
 import type { RecurringStatusFilter } from './recurring-task-constants';
 
 export function useRecurringTasks() {
   const t = useTranslations('tasks');
   const [templates, setTemplates] = useState<RecurringTaskTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
+  const templatesRef = useRef(templates);
+  templatesRef.current = templates;
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<RecurringStatusFilter>('all');
   const [processingDue, setProcessingDue] = useState(false);
 
   const fetchTemplates = useCallback(async () => {
-    setLoading(true);
+    beginLoad(templatesRef.current.length > 0);
     try {
       const rows = await recurringTasksApi.list();
       setTemplates(rows);
       setError(null);
     } catch (caught) {
+      if (isAccessRevokedApiError(caught)) setTemplates([]);
       setError(getApiErrorMessage(caught, t('recurring.loadFailed')));
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [t]);
+  }, [beginLoad, endLoad, t]);
 
   useEffect(() => {
     void fetchTemplates();
@@ -78,6 +82,7 @@ export function useRecurringTasks() {
     visible,
     loading,
     error,
+    clearError: () => setError(null),
     search,
     setSearch,
     status,

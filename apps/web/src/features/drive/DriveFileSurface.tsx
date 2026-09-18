@@ -2,6 +2,7 @@
 
 import { useCallback, useState, type DragEvent } from 'react';
 import { File, FileArchive, FileImage, FileText, Loader2 } from 'lucide-react';
+import { DataView } from '@/components/shared';
 import type { DriveFolder, FileAsset } from '@/lib/api/drive';
 import { cn } from '@/lib/utils';
 import { formatDriveDate, formatDriveLabel, formatFileSize } from './drive-format';
@@ -106,71 +107,76 @@ export function DriveFileSurface({
     [folderFileDrop],
   );
 
-  if (loading) {
-    return (
-      <div className="border-border/70 bg-card/60 flex justify-center rounded-3xl border py-16">
-        <Loader2 className="text-muted-foreground animate-spin" size={28} />
-      </div>
-    );
-  }
-  if (files.length === 0 && folders.length === 0) return <DriveEmptyState />;
-  if (viewMode === 'table') {
-    return (
-      <FileTable
-        files={files}
-        folders={folders}
-        selectedId={selectedId}
-        checkedIds={checkedIds}
-        checkedFolderIds={checkedFolderIds}
-        onSelect={onSelect}
-        onToggleChecked={onToggleChecked}
-        onToggleFolderChecked={onToggleFolderChecked}
-        onOpenFolder={onOpenFolder}
-        onRenameFolder={onRenameFolder}
-        onDeleteFolder={onDeleteFolder}
-        onShareFolder={onShareFolder}
-        fileDrag={fileDrag}
-        dropTargetFolderId={dropTargetFolderId}
-        buildFolderDropHandlers={buildFolderDropHandlers}
-      />
-    );
-  }
   const folderLayout = driveFolderRowLayout(viewMode);
   const fileLayout = driveFileCardLayout(viewMode);
 
   return (
-    <div className="space-y-3">
-      <div className={driveItemsContainerClass(viewMode)}>
-        {folders.map((folder) => (
-          <DriveFolderCardRow
-            key={folder.id}
-            folder={folder}
-            layout={folderLayout}
-            onOpenFolder={onOpenFolder}
-            onShareFolder={onShareFolder}
-            onRenameFolder={onRenameFolder}
-            onDeleteFolder={onDeleteFolder}
-            fileDropHighlight={dropTargetFolderId === folder.id}
-            fileDropHandlers={buildFolderDropHandlers(folder.id)}
-            folderChecked={onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined}
-            onToggleFolderChecked={onToggleFolderChecked}
-          />
-        ))}
-        {files.map((file) => (
-          <DriveFileCard
-            key={file.id}
-            file={file}
-            layout={fileLayout}
-            selected={file.id === selectedId}
-            checked={checkedIds.includes(file.id)}
-            onSelect={onSelect}
-            onToggleChecked={onToggleChecked}
-            menu={fileMenu}
-            fileDrag={fileDrag}
-          />
-        ))}
-      </div>
-    </div>
+    <DataView
+      loading={loading}
+      hasData={files.length > 0 || folders.length > 0}
+      loadingFallback={
+        <div className="border-border/70 bg-card/60 flex justify-center rounded-3xl border py-16">
+          <Loader2 className="text-muted-foreground animate-spin" size={28} />
+        </div>
+      }
+      errorFallback={null}
+      emptyFallback={<DriveEmptyState />}
+    >
+      {viewMode === 'table' ? (
+        <FileTable
+          files={files}
+          folders={folders}
+          selectedId={selectedId}
+          checkedIds={checkedIds}
+          checkedFolderIds={checkedFolderIds}
+          onSelect={onSelect}
+          onToggleChecked={onToggleChecked}
+          onToggleFolderChecked={onToggleFolderChecked}
+          onOpenFolder={onOpenFolder}
+          onRenameFolder={onRenameFolder}
+          onDeleteFolder={onDeleteFolder}
+          onShareFolder={onShareFolder}
+          fileDrag={fileDrag}
+          dropTargetFolderId={dropTargetFolderId}
+          buildFolderDropHandlers={buildFolderDropHandlers}
+        />
+      ) : (
+        <div className="space-y-3">
+          <div className={driveItemsContainerClass(viewMode)}>
+            {folders.map((folder) => (
+              <DriveFolderCardRow
+                key={folder.id}
+                folder={folder}
+                layout={folderLayout}
+                onOpenFolder={onOpenFolder}
+                onShareFolder={onShareFolder}
+                onRenameFolder={onRenameFolder}
+                onDeleteFolder={onDeleteFolder}
+                fileDropHighlight={dropTargetFolderId === folder.id}
+                fileDropHandlers={buildFolderDropHandlers(folder.id)}
+                folderChecked={
+                  onToggleFolderChecked ? checkedFolderIds.includes(folder.id) : undefined
+                }
+                onToggleFolderChecked={onToggleFolderChecked}
+              />
+            ))}
+            {files.map((file) => (
+              <DriveFileCard
+                key={file.id}
+                file={file}
+                layout={fileLayout}
+                selected={file.id === selectedId}
+                checked={checkedIds.includes(file.id)}
+                onSelect={onSelect}
+                onToggleChecked={onToggleChecked}
+                menu={fileMenu}
+                fileDrag={fileDrag}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </DataView>
   );
 }
 

@@ -5,9 +5,11 @@ import { Plus, Receipt } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
+  DataView,
   EmptyState,
   KanbanBoard,
   KanbanColumnMoneyTotal,
+  ListMutationErrorBanner,
   LoadingState,
   QueryLoadError,
 } from '@/components/shared';
@@ -33,6 +35,7 @@ interface ExpensesPageMainPanelProps {
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  onDismissError: () => void;
   expenses: Expense[];
   view: ExpensesViewMode;
   kanbanScope?: ExpensesKanbanScope;
@@ -48,6 +51,7 @@ export function ExpensesPageMainPanel({
   loading,
   error,
   onRetry,
+  onDismissError,
   expenses,
   view,
   kanbanScope = 'active',
@@ -88,52 +92,56 @@ export function ExpensesPageMainPanel({
     [kanbanScope, onOpenQuickCreate, t],
   );
 
-  if (loading) {
-    return <LoadingState />;
-  }
-  if (error) {
-    return <QueryLoadError description={error} onRetry={onRetry} />;
-  }
-  if (expenses.length === 0) {
-    return (
-      <EmptyState
-        icon={Receipt}
-        title={fromBacklog ? t('empty.backlogTitle') : t('empty.title')}
-        description={fromBacklog ? t('empty.backlogDescription') : t('empty.description')}
-        action={
-          onAddFirstExpense ? (
-            <Button type="button" onClick={onAddFirstExpense}>
-              <Plus size={16} />
-              {t('actions.addFirst')}
-            </Button>
-          ) : undefined
-        }
-      />
-    );
-  }
-  if (view === 'kanban') {
-    return (
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <KanbanBoard
-          columns={kanbanColumns}
-          columnWidth={kanbanScope === 'closed' ? 288 : undefined}
-          getItemId={(e: Expense) => e.id}
-          onMove={onKanbanMove}
-          columnQuickCreate={expenseQuickCreate}
-          terminalDropZones={
-            (kanbanScope === 'active' || kanbanScope === 'all') && onKanbanMove
-              ? expenseTerminalDropZones
-              : undefined
+  return (
+    <DataView
+      loading={loading}
+      error={error}
+      hasData={expenses.length > 0}
+      loadingFallback={<LoadingState />}
+      errorFallback={<QueryLoadError description={error ?? ''} onRetry={onRetry} />}
+      emptyFallback={
+        <EmptyState
+          icon={Receipt}
+          title={fromBacklog ? t('empty.backlogTitle') : t('empty.title')}
+          description={fromBacklog ? t('empty.backlogDescription') : t('empty.description')}
+          action={
+            onAddFirstExpense ? (
+              <Button type="button" onClick={onAddFirstExpense}>
+                <Plus size={16} />
+                {t('actions.addFirst')}
+              </Button>
+            ) : undefined
           }
-          renderColumnHeader={(column) => (
-            <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
-          )}
-          renderCard={(expense: Expense) => (
-            <ExpenseKanbanCard expense={expense} onOpen={onOpenExpense} />
-          )}
         />
+      }
+    >
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+        {error ? <ListMutationErrorBanner message={error} onDismiss={onDismissError} /> : null}
+        {view === 'kanban' ? (
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <KanbanBoard
+              columns={kanbanColumns}
+              columnWidth={kanbanScope === 'closed' ? 288 : undefined}
+              getItemId={(e: Expense) => e.id}
+              onMove={onKanbanMove}
+              columnQuickCreate={expenseQuickCreate}
+              terminalDropZones={
+                (kanbanScope === 'active' || kanbanScope === 'all') && onKanbanMove
+                  ? expenseTerminalDropZones
+                  : undefined
+              }
+              renderColumnHeader={(column) => (
+                <KanbanColumnMoneyTotal column={column} getAmount={(expense) => expense.amount} />
+              )}
+              renderCard={(expense: Expense) => (
+                <ExpenseKanbanCard expense={expense} onOpen={onOpenExpense} />
+              )}
+            />
+          </div>
+        ) : (
+          <ExpensesTableSection expenses={expenses} onOpen={onOpenExpense} />
+        )}
       </div>
-    );
-  }
-  return <ExpensesTableSection expenses={expenses} onOpen={onOpenExpense} />;
+    </DataView>
+  );
 }

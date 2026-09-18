@@ -35,8 +35,10 @@ export function ProductFinanceExpensesPanel({
   const [createOpen, setCreateOpen] = useState(false);
   const {
     expenses,
+    setExpenses,
     loading,
     error,
+    clearError,
     refetch,
     pageVariant,
     kanbanScope,
@@ -74,10 +76,13 @@ export function ProductFinanceExpensesPanel({
   }, []);
 
   const onKanbanMove = useCallback(
-    async (expenseId: string, from: string, toStatus: string) => {
-      await handleKanbanMove(expenseId, toStatus, expenses, refetch);
+    async (expenseId: string, _from: string, toStatus: string) => {
+      await handleKanbanMove(expenseId, toStatus, expenses, async (updated) => {
+        setExpenses((current) => current.map((row) => (row.id === updated.id ? updated : row)));
+        await refetch();
+      });
     },
-    [handleKanbanMove, expenses, refetch],
+    [handleKanbanMove, expenses, refetch, setExpenses],
   );
 
   return (
@@ -86,6 +91,7 @@ export function ProductFinanceExpensesPanel({
         loading={loading}
         error={error}
         onRetry={() => void refetch()}
+        onDismissError={clearError}
         expenses={expenses}
         view={fromBacklog || fromAllHistory ? 'list' : view}
         kanbanScope={kanbanScope}

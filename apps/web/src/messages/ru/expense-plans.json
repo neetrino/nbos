@@ -16,6 +16,8 @@
   },
   "filters": {
     "status": "Статус",
+    "period": "Период",
+    "allPeriods": "Все",
     "category": "Категория",
     "project": "Проект",
     "search": "Поиск",

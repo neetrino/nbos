@@ -13,6 +13,8 @@ import {
   resolveCredentialsVaultListCategory,
   type CredentialsVaultListQueryParams,
 } from '@/features/credentials/utils/build-credentials-vault-list-request';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { isAccessRevokedApiError } from '@/lib/api-errors';
 import { credentialsApi } from '@/lib/api/credentials';
 
 export type { CredentialsVaultListQueryParams };
@@ -30,7 +32,10 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
   paramsRef.current = params;
 
   const [credentials, setCredentials] = useState<CredentialListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const credentialsRef = useRef(credentials);
+  credentialsRef.current = credentials;
+  const loadedListIdentityRef = useRef<string | null>(null);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const fetchGenerationRef = useRef(0);
@@ -129,42 +134,63 @@ export function useCredentialsVaultListQuery(params: CredentialsVaultListQueryPa
     fetchPage: fetchBoardPage,
   });
 
-  const fetchPage = useCallback(async (targetPage: number, options?: { silent?: boolean }) => {
-    const p = paramsRef.current;
-    const generation = ++fetchGenerationRef.current;
-    if (!options?.silent) setLoading(true);
-
-    try {
-      const skipProjectRoot = p.viewMode === 'folders' && p.activeTab === 'project' && !p.projectId;
-      if (skipProjectRoot) {
-        if (generation !== fetchGenerationRef.current) return;
-        setCredentials([]);
-        setTotal(0);
-        setTotalPages(1);
-        return;
+  const fetchPage = useCallback(
+    async (targetPage: number, options?: { silent?: boolean }) => {
+      const p = paramsRef.current;
+      const generation = ++fetchGenerationRef.current;
+      const listIdentity = [
+        p.activeTab,
+        p.vaultListScope,
+        p.folderId ?? '',
+        p.withoutFolder ? 'without-folder' : '',
+        p.projectId ?? '',
+        p.viewMode,
+      ].join('|');
+      if (!options?.silent) {
+        beginLoad(
+          loadedListIdentityRef.current === listIdentity && credentialsRef.current.length > 0,
+        );
       }
 
-      const data = await credentialsApi.getAll(
-        buildCredentialsVaultListRequest(p, {
-          page: targetPage,
-          pageSize: p.pageSize,
-          category: resolveCredentialsVaultListCategory(p),
-        }),
-      );
-      if (generation !== fetchGenerationRef.current) return;
+      try {
+        const skipProjectRoot =
+          p.viewMode === 'folders' && p.activeTab === 'project' && !p.projectId;
+        if (skipProjectRoot) {
+          if (generation !== fetchGenerationRef.current) return;
+          setCredentials([]);
+          loadedListIdentityRef.current = listIdentity;
+          setTotal(0);
+          setTotalPages(1);
+          return;
+        }
 
-      setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
-      setTotal(data.meta.total);
-      setTotalPages(data.meta.totalPages);
-    } catch {
-      if (generation !== fetchGenerationRef.current) return;
-      setCredentials([]);
-      setTotal(0);
-      setTotalPages(1);
-    } finally {
-      if (generation === fetchGenerationRef.current) setLoading(false);
-    }
-  }, []);
+        const data = await credentialsApi.getAll(
+          buildCredentialsVaultListRequest(p, {
+            page: targetPage,
+            pageSize: p.pageSize,
+            category: resolveCredentialsVaultListCategory(p),
+          }),
+        );
+        if (generation !== fetchGenerationRef.current) return;
+
+        setCredentials((data.items as unknown as CredentialListItem[]) ?? []);
+        loadedListIdentityRef.current = listIdentity;
+        setTotal(data.meta.total);
+        setTotalPages(data.meta.totalPages);
+      } catch (caught) {
+        if (generation !== fetchGenerationRef.current) return;
+        if (isAccessRevokedApiError(caught)) {
+          setCredentials([]);
+          loadedListIdentityRef.current = null;
+          setTotal(0);
+          setTotalPages(1);
+        }
+      } finally {
+        if (generation === fetchGenerationRef.current) endLoad();
+      }
+    },
+    [beginLoad, endLoad],
+  );
 
   useEffect(() => {
     if (isBoard) return;

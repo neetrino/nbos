@@ -1,8 +1,8 @@
-import type { ExpenseCategoryEnum, Prisma } from '@nbos/database';
+import type { ExpenseCategoryEnum, ExpenseFrequency, Prisma } from '@nbos/database';
 import type { FinanceScopedAccessContext } from '../finance/finance-scoped-access';
 import { coerceExpenseCategoryToCanonical } from './expense-category-canonical';
 import { parseExpensePlanStatusQuery } from './expense-plan-status';
-import { pickExpenseCategoryFilter } from './expense-query-enum-guards';
+import { pickExpenseCategoryFilter, pickExpenseFrequencyFilter } from './expense-query-enum-guards';
 
 const EXPENSE_PLAN_SORT_FIELDS = new Set(['createdAt', 'nextDueDate', 'amount', 'name']);
 
@@ -13,6 +13,7 @@ export interface ExpensePlanQueryParams {
   productId?: string;
   category?: string;
   status?: string;
+  frequency?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
@@ -39,8 +40,10 @@ export function buildExpensePlanListWhere(
     : undefined;
 
   const statusWhere = parseExpensePlanStatusQuery(params.status);
+  const safeFrequency = pickExpenseFrequencyFilter(params.frequency);
   return {
     ...(safeCategory ? { category: safeCategory as ExpenseCategoryEnum } : {}),
+    ...(safeFrequency ? { frequency: safeFrequency as ExpenseFrequency } : {}),
     ...(params.projectId?.trim() ? { projectId: params.projectId.trim() } : {}),
     ...(params.productId?.trim() ? { productId: params.productId.trim() } : {}),
     ...(statusWhere ? { status: statusWhere } : {}),

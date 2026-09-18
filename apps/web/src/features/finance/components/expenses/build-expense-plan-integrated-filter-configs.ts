@@ -1,5 +1,9 @@
 import type { FilterConfig } from '@/components/shared/FilterBar';
 import {
+  buildExpensePlanPeriodFilterConfig,
+  type ExpensePlanPeriodFilterLabels,
+} from '@/features/finance/constants/expense-plan-period-filter';
+import {
   buildExpensePlanStatusFilterConfig,
   type ExpensePlanStatusFilterLabels,
 } from '@/features/finance/constants/expense-plan-status';
@@ -7,7 +11,8 @@ import { EXPENSE_CATEGORIES } from '@/features/finance/constants/finance';
 
 const PLAN_CATEGORY_OPTIONS = EXPENSE_CATEGORIES;
 
-export interface ExpensePlanIntegratedFilterLabels extends ExpensePlanStatusFilterLabels {
+export interface ExpensePlanIntegratedFilterLabels
+  extends ExpensePlanStatusFilterLabels, ExpensePlanPeriodFilterLabels {
   category: string;
   project: string;
   categoryLabel: (value: string, fallback: string) => string;
@@ -18,6 +23,7 @@ export function buildExpensePlanIntegratedFilterConfigs(
   labels?: ExpensePlanIntegratedFilterLabels,
 ): FilterConfig[] {
   const configs: FilterConfig[] = [
+    buildExpensePlanPeriodFilterConfig(labels),
     buildExpensePlanStatusFilterConfig(labels),
     {
       key: 'category',

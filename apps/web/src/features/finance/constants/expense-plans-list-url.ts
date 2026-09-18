@@ -7,4 +7,6 @@ export const EXPENSE_PLANS_LIST_PROJECT_QUERY = 'projectId';
 
 export const EXPENSE_PLANS_LIST_STATUS_QUERY = 'status';
 
+export const EXPENSE_PLANS_LIST_PERIOD_QUERY = 'period';
+
 export const EXPENSE_PLANS_LIST_YEAR_QUERY = 'year';

@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import {
+  DataView,
   EmptyState,
   ErrorState,
+  ListMutationErrorBanner,
   LoadingState,
   NAVIGABLE_ENTITY_CARD_GRID_CLASS,
   PageHero,
@@ -95,42 +97,56 @@ export function RecurringTasksPageView() {
         }
       />
 
-      {list.loading ? (
-        <LoadingState />
-      ) : list.error ? (
-        <ErrorState
-          description={list.error}
-          title={tCommon('errorTitle')}
-          actionLabel={tCommon('tryAgain')}
-          onRetry={list.fetchTemplates}
-        />
-      ) : list.visible.length === 0 ? (
-        <EmptyState
-          icon={Plus}
-          title={list.templates.length === 0 ? t('recurring.emptyTitle') : t('recurring.noMatches')}
-          description={
-            list.templates.length === 0
-              ? t('recurring.emptyDescription')
-              : t('recurring.noMatchesDescription')
-          }
-          action={
-            canAdd && list.templates.length === 0 ? (
-              <Button disabled={!creatorId} onClick={openCreate}>
-                <Plus size={16} aria-hidden />
-                {t('recurring.newTemplate')}
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : (
-        <ul className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
-          {list.visible.map((row) => (
-            <li key={row.id}>
-              <RecurringTaskCard template={row} onOpen={openEdit} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <DataView
+        loading={list.loading}
+        error={list.error}
+        hasData={list.templates.length > 0}
+        loadingFallback={<LoadingState />}
+        errorFallback={
+          <ErrorState
+            description={list.error ?? ''}
+            title={tCommon('errorTitle')}
+            actionLabel={tCommon('tryAgain')}
+            onRetry={list.fetchTemplates}
+          />
+        }
+        emptyFallback={
+          <EmptyState
+            icon={Plus}
+            title={t('recurring.emptyTitle')}
+            description={t('recurring.emptyDescription')}
+            action={
+              canAdd ? (
+                <Button disabled={!creatorId} onClick={openCreate}>
+                  <Plus size={16} aria-hidden />
+                  {t('recurring.newTemplate')}
+                </Button>
+              ) : undefined
+            }
+          />
+        }
+      >
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          {list.error ? (
+            <ListMutationErrorBanner message={list.error} onDismiss={list.clearError} />
+          ) : null}
+          {list.visible.length === 0 ? (
+            <EmptyState
+              icon={Plus}
+              title={t('recurring.noMatches')}
+              description={t('recurring.noMatchesDescription')}
+            />
+          ) : (
+            <ul className={NAVIGABLE_ENTITY_CARD_GRID_CLASS}>
+              {list.visible.map((row) => (
+                <li key={row.id}>
+                  <RecurringTaskCard template={row} onOpen={openEdit} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </DataView>
 
       <RecurringTaskSheet
         open={sheetOpen}

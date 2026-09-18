@@ -88,7 +88,7 @@
 
 `Delete` разрешён только для плана без связанных карточек. Если сервис уже оплачивали и карточки есть, план **останавливают** (`Stop plan` / `CANCELLED`), а не удаляют.
 
-Default list/grid/board показывает `ACTIVE`. Фильтр Status: Active / Cancelled / All statuses.
+Default list/grid/board показывает `ACTIVE`. Фильтр Status: Active / Cancelled / All statuses. Фильтр Period: Monthly / Quarterly / Yearly / Weekly / Multi-year / One-time / All (`frequency`).
 
 ---
 

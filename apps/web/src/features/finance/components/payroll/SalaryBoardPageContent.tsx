@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Banknote, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -27,7 +27,8 @@ import {
   buildSalaryLineMonthDetailFromBoardEntry,
   findSalaryBoardEntryByLineId,
 } from '@/features/finance/utils/salary-line-month-detail-placeholder';
-import { getApiErrorMessage } from '@/lib/api-errors';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
 import { departmentsApi } from '@/lib/api/employees';
 import { payrollRunsApi, type SalaryBoardResponse } from '@/lib/api/payroll-runs';
@@ -80,10 +81,12 @@ export function SalaryBoardPageContent() {
   const searchParams = useSearchParams();
 
   const [data, setData] = useState<SalaryBoardResponse | null>(null);
+  const dataRef = useRef(data);
+  dataRef.current = data;
   const [departmentOptions, setDepartmentOptions] = useState<Array<{ id: string; label: string }>>(
     [],
   );
-  const [loading, setLoading] = useState(true);
+  const { loading, begin: beginLoad, end: endLoad } = useRevalidationState();
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [clientFilters, setClientFilters] = usePersistedSearchFilters(
@@ -106,8 +109,7 @@ export function SalaryBoardPageContent() {
   );
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    beginLoad(dataRef.current != null);
     const payrollMonthFrom = displayView === 'calendar' ? `${calendarYear}-01` : monthFrom;
     const payrollMonthTo = displayView === 'calendar' ? `${calendarYear}-12` : monthTo;
     try {
@@ -116,13 +118,14 @@ export function SalaryBoardPageContent() {
         payrollMonthTo,
       });
       setData(board);
+      setError(null);
     } catch (e) {
+      if (isAccessRevokedApiError(e)) setData(null);
       setError(getApiErrorMessage(e, t('salary.loadError')));
-      setData(null);
     } finally {
-      setLoading(false);
+      endLoad();
     }
-  }, [calendarYear, displayView, monthFrom, monthTo, t]);
+  }, [beginLoad, calendarYear, displayView, endLoad, monthFrom, monthTo, t]);
 
   useEffect(() => {
     void load();

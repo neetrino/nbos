@@ -18,7 +18,7 @@ export function MarketingSettingsPageContent() {
   const { can } = usePermission();
   const canEdit = can('EDIT', MARKETING_MODULE);
   const canAdd = can('ADD', MARKETING_MODULE);
-  const { accounts, crmWhereRows, expensePlans, loading, plansLoading, error, reload } =
+  const { accounts, crmWhereRows, expensePlans, loading, plansLoading, error, clearError, reload } =
     useMarketingSettingsData();
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
@@ -55,7 +55,7 @@ export function MarketingSettingsPageContent() {
 
   return (
     <div className="space-y-8">
-      {!loading ? (
+      {!loading || crmWhereRows.length > 0 ? (
         <MarketingCrmWhereSection rows={crmWhereRows} canEdit={canEdit} onSaved={reload} />
       ) : null}
       <MarketingAccountsSection
@@ -66,6 +66,7 @@ export function MarketingSettingsPageContent() {
         plansLoading={plansLoading}
         loading={loading}
         error={error}
+        onDismissError={clearError}
         canAdd={canAdd}
         canEdit={canEdit}
         onRetry={reload}

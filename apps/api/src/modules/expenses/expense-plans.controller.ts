@@ -48,6 +48,11 @@ export class ExpensePlansController {
     required: false,
     description: 'ACTIVE, CANCELLED, or comma list. Omit for all.',
   })
+  @ApiQuery({
+    name: 'frequency',
+    required: false,
+    description: 'MONTHLY, QUARTERLY, YEARLY, WEEKLY, MULTI_YEAR, or ONE_TIME. Omit for all.',
+  })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
@@ -59,6 +64,7 @@ export class ExpensePlansController {
     @Query('productId') productId?: string,
     @Query('category') category?: string,
     @Query('status') status?: string,
+    @Query('frequency') frequency?: string,
     @Query('search') search?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
@@ -70,6 +76,7 @@ export class ExpensePlansController {
       productId,
       category,
       status,
+      frequency,
       search,
       sortBy,
       sortOrder,
@@ -95,6 +102,11 @@ export class ExpensePlansController {
     required: false,
     description: 'ACTIVE, CANCELLED, or comma list. Omit for all.',
   })
+  @ApiQuery({
+    name: 'frequency',
+    required: false,
+    description: 'MONTHLY, QUARTERLY, YEARLY, WEEKLY, MULTI_YEAR, or ONE_TIME. Omit for all.',
+  })
   @ApiQuery({ name: 'search', required: false })
   async getGrid(
     @CurrentUser() user: CurrentUserPayload,
@@ -103,6 +115,7 @@ export class ExpensePlansController {
     @Query('productId') productId?: string,
     @Query('category') category?: string,
     @Query('status') status?: string,
+    @Query('frequency') frequency?: string,
     @Query('search') search?: string,
   ) {
     const parsedYear = year ? parseInt(year, 10) : undefined;
@@ -112,6 +125,7 @@ export class ExpensePlansController {
       productId,
       category,
       status,
+      frequency,
       search,
       access: financeExpensePlanAccessFromUser(user),
     });
