@@ -161,7 +161,7 @@ Lead (SQL) → Deal → [Pipeline стадии] → Deal Won + 1st Payment → O
 
 Для Lead и Deal обязателен marketing block:
 
-- `From` — верхний источник
+- `From` — верхний источник (Sales / Marketing / Partner / Client / Network)
 - `Where` — канал внутри источника
 - required linkage — partner/contact, когда это требуется источником
 

@@ -1,5 +1,7 @@
 # Бонусная и зарплатная система
 
+**Дополнение 2026-09-18/19:** delivery новой модели — [Delivery Compensation v2](11-Delivery-Compensation-Configurator.md). Этот файл остаётся каноном оклада, Sales (включая новый `From = Network`), KPI, funding/release и payroll. Раздел Delivery Bonus ниже — legacy, пока продукт не на v2.
+
 ## Общее описание
 
 Каждый сотрудник Neetrino имеет **фиксированную зарплату (Fix)** и **переменную часть (бонусы)**. Бонусы — это основной мотивационный инструмент: они составляют значительную часть дохода и напрямую привязаны к результатам работы. Система построена так, чтобы сотрудник видел связь «сделал работу → получил деньги».
@@ -57,7 +59,7 @@
 
 **Привязка к полю `From` (маркетинговый блок сделки)**
 
-Какую строку политики применить, определяет **верхний уровень источника** — поле **`From`** (в каноне CRM: `Marketing From` на Deal; те же значения, что и у лида при конвертации): **Sales / Marketing / Partner / Client**. См. `02-Modules/01-CRM/02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`.
+Какую строку политики применить, определяет **верхний уровень источника** — поле **`From`** (в каноне CRM: `Marketing From` на Deal; те же значения, что и у лида при конвертации): **Sales / Marketing / Partner / Client / Network**. `Network` — отдельное верхнее значение, не канал `NETWORKING` внутри Sales. См. `02-Modules/01-CRM/02-Lead-Pipeline.md`, `03-Deal-Pipeline.md`, [v2 §13](11-Delivery-Compensation-Configurator.md).
 
 - При расчёте сохранять **snapshot** выбранной категории `From` и применённых ставок на момент первого квалифицирующего платежа, чтобы последующая смена справочника не переписывала историю.
 
@@ -69,6 +71,7 @@
 | **Marketing** | Seller **6%**, Assistant **1%**         | Seller **60%**, Assistant **10%**           |
 | **Partner**   | Seller **6%**, Assistant **1%**         | Seller **60%**, Assistant **10%**           |
 | **Client**    | Seller **4%**, Assistant **1%**         | Seller **40%**, Assistant **10%**           |
+| **Network**   | Seller **4%**, Assistant **1%**         | Seller **40%**, Assistant **10%**           |
 
 Столбец Subscription — **стартовые** значения; их можно изменить так же, как Classic. Начисления за **2-й и далее месяцы** подписки — **отдельное** правило в `Bonus Policy` (по умолчанию без автоповтора этой строки).
 
@@ -83,7 +86,7 @@
 
 **Данные и UI (требования к продукту)**
 
-- **БД:** модель ставок с ключами минимум `from_category` (Sales | Marketing | Partner | Client), `payment_model` (CLASSIC | SUBSCRIPTION_FIRST_MONTH | SUBSCRIPTION_RECURRING для 2+ месяца подписки), `seller_percent`, `assistant_percent`, `effective_from`, `is_active`; опционально audit и комментарий.
+- **БД:** модель ставок с ключами минимум `from_category` (Sales | Marketing | Partner | Client | Network), `payment_model` (CLASSIC | SUBSCRIPTION_FIRST_MONTH | SUBSCRIPTION_RECURRING для 2+ месяца подписки), `seller_percent`, `assistant_percent`, `effective_from`, `is_active`; опционально audit и комментарий. Network получает **отдельные** policy rows со стартовыми ставками Client; live-связи с Client нет. Recurring по умолчанию 0%/0% — как в v2 §13.
 - **UI:** экран настройки (например Settings → Bonus Policy / Compensation) — таблица как выше, **редактирование каждого процента отдельно**, предпросмотр по тестовой сумме.
 - Без заполненного **`From`** на сделке выбор строки политики невозможен → **блокировать** начисление sales bonus до заполнения (как и прочие marketing gates в CRM), если нет явно утверждённого fallback.
 
@@ -113,15 +116,15 @@
 
 `Bonus Policy` применяется не только к продавцам. Это универсальный слой правил мотивации для всех отделов.
 
-| Роль               | От чего может зависеть бонус                                                                                                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Seller             | категория **`From`** (Sales/Marketing/Partner/Client), тип оплаты (Classic / Subscription first month), две ставки `seller_rate` / `assistant_rate` из `Bonus Policy`, KPI gate |
-| Developer Backend  | product category, product type, сложность, роль в проекте, уровень                                                                                                              |
-| Developer Frontend | product category, product type, сложность, роль в проекте, уровень                                                                                                              |
-| PM                 | project delivery, deadline, scope variance, acceptance                                                                                                                          |
-| Designer           | product type, дизайн-объём, правки, acceptance                                                                                                                                  |
-| Marketing          | MQL, SQL, CPL, revenue from marketing leads                                                                                                                                     |
-| Support            | SLA, tickets closed, reopen rate, maintenance quality                                                                                                                           |
+| Роль               | От чего может зависеть бонус                                                                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Seller             | категория **`From`** (Sales/Marketing/Partner/Client/Network), тип оплаты (Classic / Subscription first month), две ставки `seller_rate` / `assistant_rate` из `Bonus Policy`, KPI gate |
+| Developer Backend  | product category, product type, сложность, роль в проекте, уровень                                                                                                                      |
+| Developer Frontend | product category, product type, сложность, роль в проекте, уровень                                                                                                                      |
+| PM                 | project delivery, deadline, scope variance, acceptance                                                                                                                                  |
+| Designer           | product type, дизайн-объём, правки, acceptance                                                                                                                                          |
+| Marketing          | MQL, SQL, CPL, revenue from marketing leads                                                                                                                                             |
+| Support            | SLA, tickets closed, reopen rate, maintenance quality                                                                                                                                   |
 
 Код должен содержать безопасный `Bonus Policy Engine`, а интерфейс должен позволять настраивать параметры правил: проценты, thresholds, effective dates, employee overrides и статус active/inactive.
 
@@ -154,7 +157,7 @@ Total:     300,000
 
 ### До сдачи продукта
 
-До `Product Done / Acceptance` delivery bonus не активируется автоматически.
+До `Product Done / Acceptance` delivery bonus не активируется автоматически к выплате. Для v2 плановая запись уже может существовать с первого Development; это прогноз в Wallet, не разрешение выплатить.
 
 Возможен только ручной `Early Bonus Release`:
 

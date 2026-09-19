@@ -435,12 +435,12 @@ Opened Delivery Card имеет tabs только для отдельных ра
 
 Recommended tabs:
 
-| Tab          | Назначение                                                            |
-| ------------ | --------------------------------------------------------------------- |
-| `Work Space` | Product Work Space / tasks; MVP может показать кнопку перехода        |
-| `Calls`      | calls with client since this card was created; MVP placeholder/button |
-| `Bonus`      | product/extension bonus visibility by RBAC                            |
-| `History`    | audit, stage movement, activity, important changes                    |
+| Tab          | Назначение                                                                             |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `Work Space` | Product Work Space / tasks; MVP может показать кнопку перехода                         |
+| `Calls`      | calls with client since this card was created; MVP placeholder/button                  |
+| `Функции`    | тот же конфигуратор, что на Product; **заменяет** legacy `Bonus`. Денег на вкладке нет |
+| `History`    | audit, stage movement, activity, important changes                                     |
 
 First screen is the main working cockpit, not a tab named `Overview`.
 
@@ -473,11 +473,12 @@ Requirement items must be visually clear and colored by state, so a PM/developer
 - calls остаются привязаны к client/contact/communication source;
 - Delivery Card показывает filtered projection: calls after card creation and relevant to this client/product context.
 
-`Finance / Bonus` tab:
+`Функции` tab (v2):
 
-- employee видит свои bonuses по Product/Extension;
-- CEO / Founder / allowed finance roles видят all bonus entries;
-- finance-sensitive amounts obey Finance permissions.
+- показывает scope и инструкции, не суммы;
+- employee видит свои деньги только в Wallet;
+- CEO / Founder / allowed finance roles работают с bonus entries в Finance;
+- finance-sensitive amounts obey Finance permissions и не протекают в Delivery DOM/JSON.
 
 Для closed items дополнительно показывать:
 

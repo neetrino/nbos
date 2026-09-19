@@ -1,6 +1,6 @@
 # Документация NBOS
 
-**Delivery Compensation v2:** [пакет для разработки по фазам](implementation/delivery-compensation/README.md) — документация готова, реализация ожидается.
+**Delivery Compensation v2:** [пакет для разработки по фазам](implementation/delivery-compensation/README.md) — документация закрыта 2026-09-19, реализация ожидается.
 
 **Главная точка входа для AI/разработчика:** [AI-START-HERE.md](./AI-START-HERE.md).
 

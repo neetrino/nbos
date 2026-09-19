@@ -13,6 +13,7 @@
 5. docs/implementation/delivery-compensation/02-PHASES-AND-SLICES.md
 6. docs/implementation/delivery-compensation/03-ACCEPTANCE-AND-ROLLOUT.md
 7. docs/implementation/delivery-compensation/04-CATALOG-BOOTSTRAP.md
+8. docs/implementation/delivery-compensation/06-CANON-RECONCILIATION.md
 
 Затем изучи существующий код затрагиваемых модулей и применимые .cursor/rules. Новый бизнес-канон от 2026-09-18 заменяет старые правила delivery расчёта, developer split 70/30 и Bonus tab внутри Delivery. Остальная платформа сохраняется. Не запускай project-onboarding.
 

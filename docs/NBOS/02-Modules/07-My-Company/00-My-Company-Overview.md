@@ -14,6 +14,7 @@
 - какие функции закрыты людьми, а какие vacant;
 - какие KPI и bonus policies применяются;
 - какие compensation profiles действуют;
+- каталог функций delivery и базовые нормативы (Owner/CEO);
 - какие SOP описывают работу отделов.
 - какие reusable checklist templates помогают повторяемым delivery, maintenance and operations процессам.
 
@@ -182,18 +183,19 @@ Reusable checklist template - практическое руководство п
 
 `My Company` должен поддерживать несколько видов:
 
-| View               | Назначение                                         |
-| ------------------ | -------------------------------------------------- |
-| `Org Chart`        | Визуальная карта компании                          |
-| `Departments List` | Таблица отделов                                    |
-| `Seats List`       | Все seats с фильтрами по статусу                   |
-| `Assignments`      | Кто какие seats занимает                           |
-| `Employees`        | Список сотрудников                                 |
-| `Vacancies`        | Vacant seats и открытые функции                    |
-| `Compensation`     | Профили оплаты и policies                          |
-| `KPI`              | KPI company / department / employee                |
-| `SOP Library`      | SOP documents и process templates                  |
-| `Process Runs`     | Активные onboarding/offboarding/monthly close runs |
+| View               | Назначение                                                                                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Org Chart`        | Визуальная карта компании                                                                                                                                                     |
+| `Departments List` | Таблица отделов                                                                                                                                                               |
+| `Seats List`       | Все seats с фильтрами по статусу                                                                                                                                              |
+| `Assignments`      | Кто какие seats занимает                                                                                                                                                      |
+| `Employees`        | Список сотрудников                                                                                                                                                            |
+| `Vacancies`        | Vacant seats и открытые функции                                                                                                                                               |
+| `Compensation`     | Профили оплаты, policies, базовые профили delivery и тарифы ролей                                                                                                             |
+| `Function Catalog` | Каталог функций и инструкции; units только Owner/CEO. Route `/my-company/function-catalog`. [UI](../../05-UI-Specifications/15-Delivery-Function-Catalog-and-Configurator.md) |
+| `KPI`              | KPI company / department / employee                                                                                                                                           |
+| `SOP Library`      | SOP documents и process templates                                                                                                                                             |
+| `Process Runs`     | Активные onboarding/offboarding/monthly close runs                                                                                                                            |
 
 ---
 

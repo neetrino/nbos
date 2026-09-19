@@ -1,7 +1,7 @@
 # Professional Delivery Card — UI design specification
 
 **Статус:** спецификация для реализации **Opened Delivery Card** (код ещё не обязан совпадать полностью; этот документ — целевой layout и UX).  
-**Обновлено:** 2026-05-08
+**Обновлено:** 2026-09-19. Вкладка `Bonus` заменена на `Функции`; суммы не входят в Delivery Card.
 
 **Канон (источник поведения и состава данных):**
 
@@ -48,7 +48,7 @@
 │ B. Requirements / lifecycle zone: canonical stages + readiness    │
 │    Starting → Development → QA → Transfer (+ blockers)             │
 ├─────────────────────────────────────────────────────────────────┤
-│ C. Tab list: Work Space | Calls | Bonus | History                  │
+│ C. Tab list: Work Space | Calls | Функции | History                │
 ├─────────────────────────────────────────────────────────────────┤
 │ D. Main working cockpit / selected tab panel                      │
 └─────────────────────────────────────────────────────────────────┘
@@ -87,7 +87,7 @@
 
 1. **Work Space** — задачи / ссылка в Work Space (MVP: deep link кнопкой допустим).
 2. **Calls** — проекция той же ленты Call по Contact/Lead **после** даты карточки. Своего хранилища нет. Канон: `../02-Modules/01-CRM/08-Calls-and-Telephony.md`. Пока runtime ленты нет — placeholder допустим.
-3. **Bonus** — с учётом RBAC: employee видит своё, CEO/Founder/allowed roles видят всё.
+3. **Функции** — конфигуратор и инструкции; суммы не показывать. Legacy-вкладка Bonus заменяется. Деньги — Wallet/Finance. См. [15-Delivery-Function-Catalog-and-Configurator.md](./15-Delivery-Function-Catalog-and-Configurator.md).
 4. **History** — audit, stage movements, важные изменения.
 
 `Overview`, `Requirements`, `Accesses` и `Files` не являются default tabs в целевой модели.
@@ -207,7 +207,7 @@
 - [ ] Согласованы max-width и поведение scroll с CRM sheets.
 - [ ] Зафиксирован delivery accent (цвет/градиент) и отличие от Deal.
 - [ ] Пройдены все breakpoints с mock-контентом (длинные названия, много blockers).
-- [ ] Таб order задокументирован: `Work Space / Calls / Bonus / History`.
+- [ ] Таб order задокументирован: `Work Space / Calls / Функции / History` (legacy Bonus заменена).
 - [ ] First-screen blocks задокументированы: Requirements, Team, Accesses, Files, Key Links, Blockers, Languages, Conditional Setup.
 - [ ] Requirements UX выбран или явно оставлен как accepted design decision pending с допустимыми вариантами.
 - [ ] Closed state: read-only pattern согласован с PM.

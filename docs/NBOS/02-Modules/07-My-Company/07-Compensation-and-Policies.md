@@ -118,15 +118,15 @@ Draft -> Review -> Active -> Archived
 
 ### Типы Bonus Policy
 
-| Тип                    | Для кого / чего                                   |
-| ---------------------- | ------------------------------------------------- |
-| `Sales Bonus`          | Seller / Head of Sales                            |
-| `Delivery Bonus`       | Developer / PM / Designer / QA                    |
-| `Marketing Bonus`      | Marketing roles                                   |
-| `Support Bonus`        | Support / Maintenance roles                       |
-| `Manual Bonus`         | Разовое решение CEO/Finance                       |
-| `Product Bonus Pool`   | Плановый фонд бонусов по Product / Extension      |
-| `Subscription Release` | Выпуск бонусов по подписочным Product / Extension |
+| Тип                    | Для кого / чего                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `Sales Bonus`          | Seller / Head of Sales                                                                             |
+| `Delivery Bonus`       | Backend, Frontend, PM, Designer, QA, Technical Specialist. Для v2 сумма из конфигуратора, не 70/30 |
+| `Marketing Bonus`      | Marketing roles                                                                                    |
+| `Support Bonus`        | Support / Maintenance roles                                                                        |
+| `Manual Bonus`         | Разовое решение CEO/Finance                                                                        |
+| `Product Bonus Pool`   | Плановый фонд бонусов по Product / Extension                                                       |
+| `Subscription Release` | Выпуск бонусов по подписочным Product / Extension                                                  |
 
 ### Что можно настраивать
 

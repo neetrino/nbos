@@ -230,6 +230,8 @@ Exit criteria:
 
 **Compensation slice (2026-05):** salary board, payroll workspace (allocation matrix v2 on run detail), bonus board, pools, unit economics board (`/finance/unit-economics`), Pay Now payroll linkage, employee wallet MVP — audit [`02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md`](02-Modules/04-Finance/12-Compensation-Roadmap-Implementation-Audit.md). Payroll/UE slice progress: repo root [`todo.md`](../../todo.md). **Still open for Phase 3 exit:** My Company policy engine (cap/carry-over/burned), expense/subscription canon, UE per-unit invoice/payment drill-down.
 
+**Delivery Compensation v2 (2026-09-18/19):** канон и пакет реализации закрыты для передачи в разработку — [`11-Delivery-Compensation-Configurator.md`](03-Business-Logic/11-Delivery-Compensation-Configurator.md), [`docs/implementation/delivery-compensation/`](../implementation/delivery-compensation/README.md). Код, миграции и production rollout не начаты и не входят в закрытие Phase 3 2026-05.
+
 Key docs:
 
 - `02-Modules/04-Finance/*`

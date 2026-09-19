@@ -1,8 +1,8 @@
 # NBOS Implementation Progress
 
-## Delivery Compensation v2 — документация, 2026-09-18
+## Delivery Compensation v2 — документация закрыта, 2026-09-19
 
-Подготовлен [полный пакет реализации](implementation/delivery-compensation/README.md): канон, UI, технический контракт, seed, приёмка и промпт Cursor. **Разработка не начата:** фазы 0–8, slices S00–S18 имеют статус TODO в [плане](implementation/delivery-compensation/02-PHASES-AND-SLICES.md). Не считать подготовку документов реализацией или разрешением production rollout.
+Канон, UI, технический контракт, seed, приёмка, промпт Cursor и [сверка со старым каноном](implementation/delivery-compensation/06-CANON-RECONCILIATION.md) готовы. **Разработка не начата:** фазы 0–8, slices S00–S18 остаются TODO в [плане](implementation/delivery-compensation/02-PHASES-AND-SLICES.md). Не считать закрытие документов реализацией или разрешением production rollout.
 
 ## Мультиязычность — первый EN/RU срез, 2026-09-12
 

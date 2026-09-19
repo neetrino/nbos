@@ -273,12 +273,12 @@ Tabs нужны только для отдельных рабочих миров
 
 Recommended tabs:
 
-| Tab          | Назначение                                                                             |
-| ------------ | -------------------------------------------------------------------------------------- |
-| `Work Space` | product tasks/workspace; MVP может иметь только кнопку перехода                        |
-| `Calls`      | all client calls since this Product/Extension card was created; MVP placeholder/button |
-| `Bonus`      | product bonuses with RBAC                                                              |
-| `History`    | audit, activity, stage movement, important changes                                     |
+| Tab          | Назначение                                                                                                                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Work Space` | product tasks/workspace; MVP может иметь только кнопку перехода                                                                                                                                               |
+| `Calls`      | all client calls since this Product/Extension card was created; MVP placeholder/button                                                                                                                        |
+| `Функции`    | конфигуратор и инструкции продукта; **заменяет** legacy-вкладку `Bonus`. Суммы — в Wallet/Finance, не здесь. См. [Delivery Compensation v2](../../03-Business-Logic/11-Delivery-Compensation-Configurator.md) |
+| `History`    | audit, activity, stage movement, important changes                                                                                                                                                            |
 
 Главный экран opened card не должен быть отдельным tab `Overview`; он открывается сразу как working cockpit.
 
@@ -297,11 +297,13 @@ Blocks on the first screen:
 
 `Requirements / Stage Timeline` пока не имеет финального UX-решения. Он должен быть красивым, цветным и видимым на первом экране, но финальная форма может быть slim side rail, horizontal timeline, expanded panel или отдельный tab, если первый экран станет слишком тяжёлым.
 
-`Bonus` visibility:
+`Функции` visibility:
 
-- employee видит только свой bonus по продукту;
-- CEO / Founder / allowed finance roles видят все bonuses по продукту;
-- bonus tab не должен раскрывать чужие выплаты без permission.
+- команда видит выбранные функции, инструкции и статусы работы;
+- units, тарифы и суммы на этой вкладке не показываются никому, включая Owner;
+- сотрудник видит свой плановый бонус в Wallet после первого Development;
+- CEO / Finance смотрят начисления в Finance, не в Delivery.
+- Legacy-карточки вне v2 могут временно сохранить старую `Bonus`-вкладку до adoption.
 
 ### 4.1. Starting
 

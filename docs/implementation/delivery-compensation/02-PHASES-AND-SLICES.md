@@ -174,26 +174,26 @@ pnpm run build:web
 ## 12. Журнал исполнения
 
 | Slice | Статус | Evidence / проверки / blockers |
-| --- | --- | --- |
-| S00 | TODO | — |
-| S01 | TODO | — |
-| S02 | TODO | — |
-| S03 | TODO | — |
-| S04 | TODO | — |
-| S05 | TODO | — |
-| S06 | TODO | — |
-| S07 | TODO | — |
-| S08 | TODO | — |
-| S09 | TODO | — |
-| S10 | TODO | — |
-| S11 | TODO | — |
-| S12 | TODO | — |
-| S13 | TODO | — |
-| S14 | TODO | — |
-| S15 | TODO | — |
-| S16 | TODO | — |
-| S17 | TODO | — |
-| S18 | TODO | — |
+| ----- | ------ | ------------------------------ |
+| S00   | TODO   | —                              |
+| S01   | TODO   | —                              |
+| S02   | TODO   | —                              |
+| S03   | TODO   | —                              |
+| S04   | TODO   | —                              |
+| S05   | TODO   | —                              |
+| S06   | TODO   | —                              |
+| S07   | TODO   | —                              |
+| S08   | TODO   | —                              |
+| S09   | TODO   | —                              |
+| S10   | TODO   | —                              |
+| S11   | TODO   | —                              |
+| S12   | TODO   | —                              |
+| S13   | TODO   | —                              |
+| S14   | TODO   | —                              |
+| S15   | TODO   | —                              |
+| S16   | TODO   | —                              |
+| S17   | TODO   | —                              |
+| S18   | TODO   | —                              |
 
 Допустимые статусы: TODO, IN_PROGRESS, IMPLEMENTED_NOT_VERIFIED, BLOCKED, DONE. DONE требует evidence; нельзя закрывать по одному наличию файлов. После каждого slice дописывать краткий checkpoint с changed files, commands/results и next action. Review notes по фазе хранить здесь или в ссылке на локальный review artifact.
 
@@ -207,6 +207,9 @@ pnpm run build:web
 
 ### Проверка документации (не implementation gate)
 
-- Статический анализ schema/services/UI/canon выполнен при подготовке.
-- Prettier, internal links и `git diff --check`: результаты будут записаны после завершения подготовки.
-- Runtime tests/builds/migrations: не запускались, поскольку этот этап изменяет только Markdown.
+- 2026-09-18: статический анализ schema/services/UI/canon при подготовке пакета.
+- 2026-09-19: закрыта сверка со старым каноном (`06-CANON-RECONCILIATION.md`). Продуктовые правила не менялись.
+- 2026-09-19 `pnpm exec prettier --write` на затронутых Markdown-файлах пакета и сверенных канон-файлах: успешно.
+- 2026-09-19 `git diff --check` по тем же путям: чисто.
+- 2026-09-19 проверка относительных ссылок в пакете и сверенных файлах: новые ссылки v2 резолвятся. Предсуществующие битые ссылки на `IMPLEMENTATION_DONE.md` / Progress Archive не из этого пакета и не чинились.
+- Runtime tests/builds/migrations: не запускались — этот этап меняет только Markdown. Slices S00–S18 остаются TODO.
