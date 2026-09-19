@@ -381,7 +381,7 @@ export function DeliveryItemDetailSheet({
           general: t('tabs.general'),
           workspace: t('tabs.workspace'),
           calls: t('tabs.calls'),
-          bonus: t('tabs.bonus'),
+          functions: t('tabs.functions'),
           history: t('tabs.history'),
           createTask: t('tabs.createTask'),
         },

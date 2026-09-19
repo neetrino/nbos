@@ -20,6 +20,7 @@ import { BonusModule } from './modules/bonus/bonus.module';
 import { PayrollRunsModule } from './modules/payroll-runs/payroll-runs.module';
 import { UnitEconomicsModule } from './modules/unit-economics/unit-economics.module';
 import { CompensationProfilesModule } from './modules/compensation-profiles/compensation-profiles.module';
+import { DeliveryCompensationModule } from './modules/delivery-compensation/delivery-compensation.module';
 import { KpiPoliciesModule } from './modules/kpi-policies/kpi-policies.module';
 import { BonusPoliciesModule } from './modules/bonus-policies/bonus-policies.module';
 import { DomainsModule } from './modules/domains/domains.module';
@@ -89,6 +90,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     PayrollRunsModule,
     UnitEconomicsModule,
     CompensationProfilesModule,
+    DeliveryCompensationModule,
     KpiPoliciesModule,
     BonusPoliciesModule,
     DomainsModule,

@@ -195,6 +195,15 @@ model Employee {
   aiEvaluationDatasetsCreated        AiEvaluationDataset[]               @relation("AiEvaluationDatasetCreatedBy")
   aiEvaluationRunsCreated            AiEvaluationRun[]                   @relation("AiEvaluationRunCreatedBy")
   aiEvaluationRunsReviewed           AiEvaluationRun[]                   @relation("AiEvaluationRunReviewer")
+  deliveryFunctionsAuthored          DeliveryFunction[]                @relation("DeliveryFunctionAuthor")
+  deliveryFunctionContentAuthored    DeliveryFunctionContentVersion[]  @relation("DeliveryFunctionContentAuthor")
+  deliveryFunctionPricesPublished    DeliveryFunctionPriceVersion[]    @relation("DeliveryFunctionPricePublishedBy")
+  deliveryBaseProfilesPublished      DeliveryBaseProfileVersion[]      @relation("DeliveryBaseProfilePublishedBy")
+  deliveryRoleRatesPublished         DeliveryRoleRateVersion[]         @relation("DeliveryRoleRatePublishedBy")
+  deliveryConfigurationsChecked      DeliveryConfiguration[]           @relation("DeliveryConfigurationCheckedBy")
+  deliveryConfigurationRevisions     DeliveryConfigurationRevision[]   @relation("DeliveryConfigurationRevisionActor")
+  deliveryBonusAllocations           DeliveryBonusAllocation[]         @relation("DeliveryBonusAllocationEmployee")
+  extensionDeliveryRoleAssignments   ExtensionDeliveryRoleAssignment[] @relation("ExtensionDeliveryRoleAssignmentEmployee")
 
   @@map("employees")
 }

@@ -75,6 +75,8 @@ import { lockProductDeveloperSlots } from './product-developer-slot-lock';
 import { assertProductDeveloperSlotsForUpdate } from './product-developer-slots';
 import { loadMissingRequiredAccessSlotKeys } from './product-done-access-slots';
 import { DeliveryRealtimePublisher } from '../../realtime/delivery-realtime.publisher';
+import { materializeInitialDeliveryPlanIfNeeded } from '../../delivery-compensation/materialize-initial-delivery-plan';
+import { assertTeamPatchAllowedAfterPlan } from '../../delivery-compensation/assert-team-patch-after-plan';
 
 const productContactSummarySelect = {
   id: true,
@@ -543,13 +545,7 @@ export class ProductsService {
     await this.validateProductStageGateForTarget(product, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
-    const updatedProduct = await this.prisma.product.update({
-      where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-      },
-    });
+    const updatedProduct = await this.writeProductLifecycle(id, target, product, actorId);
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
     await this.applyDeliveryOutcomeSideEffects(id, target);
     if (isLegacyPatchStatusTerminalOutcome(target)) {
@@ -571,7 +567,7 @@ export class ProductsService {
     return attachProductDeliveryLifecycle(updatedProduct);
   }
 
-  async moveStage(id: string, data: MoveStageDto) {
+  async moveStage(id: string, data: MoveStageDto, actorId?: string) {
     const product = await this.findById(id);
     this.ensureActiveForStageMove(product.deliveryLifecycle);
     const stage = this.parseDeliveryStage(data.stage);
@@ -581,11 +577,7 @@ export class ProductsService {
     await this.validateProductStageGateForTarget(product, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(product);
 
-    const updatedProduct = await this.prisma.product.update({
-      where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
-      include: { project: { select: { id: true, code: true, name: true } } },
-    });
+    const updatedProduct = await this.writeProductLifecycle(id, target, product, actorId);
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(updatedProduct.id);
     await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.maybeEnqueueTechnicalSpecialist(updatedProduct, target, undefined);
@@ -753,6 +745,7 @@ export class ProductsService {
     await this.prisma.$transaction(async (tx) => {
       const current = await lockProductDeveloperSlots(tx, id);
       assertProductDeveloperSlotsForUpdate(current, data);
+      await assertTeamPatchAllowedAfterPlan(tx, id, data);
       await tx.product.update({
         where: { id },
         data: {
@@ -854,6 +847,37 @@ export class ProductsService {
     const missingRequiredAccessSlotKeys =
       target === 'DONE' ? await loadMissingRequiredAccessSlotKeys(this.prisma, product) : undefined;
     validateProductStageGate({ ...product, missingRequiredAccessSlotKeys }, target);
+  }
+
+  private async writeProductLifecycle(
+    id: string,
+    target: ProductStatusEnum,
+    product: Parameters<typeof buildDeliveryLifecycleWrite>[1],
+    actorId?: string,
+  ) {
+    let createdOrderId: string | null = null;
+    const updatedProduct = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.product.update({
+        where: { id },
+        data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
+        include: { project: { select: { id: true, code: true, name: true } } },
+      });
+      if (target === 'DEVELOPMENT') {
+        const result = await materializeInitialDeliveryPlanIfNeeded(tx, {
+          entityKind: 'PRODUCT',
+          productId: id,
+          actorEmployeeId: actorId,
+        });
+        if (result.status === 'CREATED') {
+          createdOrderId = result.orderId;
+        }
+      }
+      return updated;
+    });
+    if (createdOrderId) {
+      await syncProductBonusPoolForOrder(this.prisma, createdOrderId, this.notifications);
+    }
+    return updatedProduct;
   }
 
   private async validateDevelopmentGate(product: { id: string; deadline?: Date | string | null }) {

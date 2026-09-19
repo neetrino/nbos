@@ -54,6 +54,7 @@ import { DeliveryStageChecklistSyncService } from '../../checklist-templates/del
 import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { DeliveryRealtimePublisher } from '../../realtime/delivery-realtime.publisher';
+import { materializeInitialDeliveryPlanIfNeeded } from '../../delivery-compensation/materialize-initial-delivery-plan';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -393,16 +394,9 @@ export class ExtensionsService {
 
     validateExtensionTransition(current, target);
     validateExtensionStageGate(extension, target);
+    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
 
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-      },
-    });
+    const updated = await this.writeExtensionLifecycle(id, target, extension, actorId);
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     await this.applyDeliveryOutcomeSideEffects(id, target);
     if (isLegacyPatchStatusTerminalOutcome(target)) {
@@ -423,7 +417,7 @@ export class ExtensionsService {
     return attachExtensionReadiness(updated);
   }
 
-  async moveStage(id: string, data: MoveStageDto) {
+  async moveStage(id: string, data: MoveStageDto, actorId?: string) {
     const extension = await this.findById(id);
     this.ensureActiveForStageMove(extension.deliveryLifecycle);
     const stage = this.parseDeliveryStage(data.stage);
@@ -433,15 +427,7 @@ export class ExtensionsService {
     validateExtensionStageGate(extension, target);
     if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
 
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-      },
-    });
+    const updated = await this.writeExtensionLifecycle(id, target, extension, actorId);
     await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
     await this.applyDeliveryOutcomeSideEffects(id, target);
     await this.publishExtensionChanged(updated.id);
@@ -618,6 +604,41 @@ export class ExtensionsService {
     } catch {
       throw new BadRequestException(`Invalid delivery stage: ${stage}`);
     }
+  }
+
+  private async writeExtensionLifecycle(
+    id: string,
+    target: ExtensionStatusEnum,
+    extension: Parameters<typeof buildDeliveryLifecycleWrite>[1],
+    actorId?: string,
+  ) {
+    let createdOrderId: string | null = null;
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.extension.update({
+        where: { id },
+        data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
+        include: {
+          project: { select: { id: true, code: true, name: true } },
+          product: { select: { id: true, name: true } },
+          order: { select: { id: true, code: true, status: true } },
+        },
+      });
+      if (target === 'DEVELOPMENT') {
+        const result = await materializeInitialDeliveryPlanIfNeeded(tx, {
+          entityKind: 'EXTENSION',
+          extensionId: id,
+          actorEmployeeId: actorId,
+        });
+        if (result.status === 'CREATED') {
+          createdOrderId = result.orderId;
+        }
+      }
+      return row;
+    });
+    if (createdOrderId) {
+      await syncProductBonusPoolForOrder(this.prisma, createdOrderId, this.notifications);
+    }
+    return updated;
   }
 
   private async validateDevelopmentGate(extensionId: string) {

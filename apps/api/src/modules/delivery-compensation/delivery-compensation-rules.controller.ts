@@ -1,0 +1,78 @@
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { DELIVERY_COMPENSATION_RULES_MODULE, parseRoleRateWriteBody } from '@nbos/shared';
+import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import { DeliveryCompensationRulesPublishService } from './delivery-compensation-rules-publish.service';
+import { DeliveryCompensationRulesService } from './delivery-compensation-rules.service';
+import { mapCatalogWriteError } from './map-catalog-write-error';
+
+@ApiTags('Delivery compensation rules')
+@ApiBearerAuth()
+@Controller('delivery-compensation/rules')
+export class DeliveryCompensationRulesController {
+  constructor(
+    private readonly service: DeliveryCompensationRulesService,
+    private readonly publishService: DeliveryCompensationRulesPublishService,
+  ) {}
+
+  @Get('function-prices')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Owner/CEO function unit vectors' })
+  listFunctionPrices() {
+    return this.service.listFunctionPrices();
+  }
+
+  @Get('base-profiles')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Owner/CEO base profile versions' })
+  listBaseProfiles() {
+    return this.service.listBaseProfiles();
+  }
+
+  @Get('role-rates')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Owner/CEO same-role rates' })
+  listRoleRates() {
+    return this.service.listRoleRates();
+  }
+
+  @Post('role-rates')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'ADD')
+  @ApiOperation({ summary: 'Create a draft same-role rate. No employee-specific rates.' })
+  createRoleRate(@Body() body: unknown) {
+    try {
+      return this.service.createRoleRateDraft(parseRoleRateWriteBody(body));
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Post('role-rates/:id/publish')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Publish a role rate and archive the previous published version' })
+  publishRoleRate(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.publishService.publishRoleRate(id, user.id);
+  }
+
+  @Post('function-prices/:id/publish')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Publish a complete function unit vector' })
+  publishFunctionPrice(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body?: { confirmZeroUnits?: boolean },
+  ) {
+    return this.publishService.publishFunctionPrice(id, user.id, Boolean(body?.confirmZeroUnits));
+  }
+
+  @Post('base-profiles/:id/publish')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Publish a complete base profile' })
+  publishBaseProfile(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body?: { confirmZeroUnits?: boolean },
+  ) {
+    return this.publishService.publishBaseProfile(id, user.id, Boolean(body?.confirmZeroUnits));
+  }
+}

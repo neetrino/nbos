@@ -289,6 +289,36 @@
     "departments": "Բաժիններ",
     "rolesSeats": "Դերեր և տեղեր"
   },
+  "functionCatalog": {
+    "title": "Ֆունկցիաների կատալոգ",
+    "subtitle": "Առաքման ֆունկցիաների հրահանգներ։ Բոնուսի գումարներն այստեղ չեն երևում։",
+    "search": "Որոնել ֆունկցիաներ",
+    "empty": "Հրապարակված ֆունկցիաներ դեռ չկան։",
+    "loadFailed": "Չհաջողվեց բեռնել ֆունկցիաների կատալոգը։",
+    "createDraft": "Նոր սևագիր",
+    "statusDraft": "Սևագիր",
+    "statusActive": "Ակտիվ",
+    "statusArchived": "Արխիվ",
+    "instructions": "Հրահանգ",
+    "acceptance": "Ընդունում",
+    "scope": "Scope սահմաններ",
+    "pricing": "Հաշվարկ",
+    "pricingHidden": "Նորմատիվները հասանելի են միայն Owner-ին և CEO-ին։",
+    "normativeMissing": "Նորմատիվը կարգավորված չէ",
+    "ratesTitle": "Առաքման դերերի սակագներ",
+    "ratesSubtitle": "Նույն դերի AMD սակագիր։ Աշխատակցի աշխատավարձը չի օգտագործվում։",
+    "profilesTitle": "Առաքման բազային պրոֆիլներ",
+    "legacySkip": "Այս արտադրանքը մնում է նախորդ մոդելում, մինչև Owner-ը ակնհայտորեն չընդունի v2-ը։",
+    "includedBadge": "Ներառված է բազայում",
+    "readiness": {
+      "CONFIGURATION_INCOMPLETE": "Development-ից առաջ ավարտեք ֆունկցիաների կարգավորումը և հաստատեք scope-ը։",
+      "ROLE_ASSIGNMENT_REQUIRED": "Development-ից առաջ նշանակեք բոլոր պարտադիր դերերը։",
+      "NORMATIVE_NOT_CONFIGURED": "Owner-ը դեռ չի հրապարակել փոխհատուցման նորմերը։",
+      "UNITS_NOT_CONFIGURED": "Owner-ը դեռ չի հրապարակել ֆունկցիաների units-երը։",
+      "RATE_NOT_CONFIGURED": "Owner-ը դեռ չի հրապարակել դերերի դրույքները։",
+      "AI_DESIGNER_REVIEW_REQUIRED": "AI դիզայնը Designer-ով պահանջում է հստակ Reviewer դեր։"
+    }
+  },
   "rolesSeats": {
     "title": "Դերեր և տեղեր",
     "description": "Բիզնես տեղեր, պատասխանատվություններ, թափուր հաստիքներ, նշանակումներ և լռելյայն թույլտվության դերերի համապատասխանեցում։",

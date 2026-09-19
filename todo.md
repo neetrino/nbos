@@ -1,54 +1,52 @@
-# Blanking leftover — close one by one
+# Delivery Compensation v2 — довести до рабочей системы
 
-Контракт: `docs/architecture/data-loading-and-refresh.md`
-`DataView` + `useRevalidationState` + keep stale on transient error + clear on 401/403/404 + banner.
+Канон заморожен: не выдумывать production units/тарифы, не трогать Seller кроме Network, не migrate production (`DATABASE_URL_PROD`).
 
-## Уже закрыто
+## От владельца (не код)
 
-- [x] Expenses board (Pay Now)
-- [x] Product finance expenses
-- [x] Expense plans (list / board / coverage grid)
-- [x] Bonus board
-- [x] Recurring tasks
-- [x] Project participants
-- [x] Payroll runs list
-- [x] Salary board
-- [x] Finance dashboard
-- [x] Product finance invoices / orders
+- [ ] Войти локально как Owner/CEO (каталог, нормы, enrollment) и отдельно как PM (Product/Delivery).
+- [ ] После UI: сам заполнить реальные units/rates и published-профили — агент цифры не придумывает.
+- [ ] Включить enrollment новых продуктов только когда нормы опубликованы.
+- [ ] Прогнать в браузере Starting → Development → Wallet на тестовом продукте.
+- [ ] Production migrate / cutover — отдельное явное разрешение, не этот список.
 
-## Осталось закрыть (очередь)
+## Сейчас: база и локальный запуск
 
-1. [x] Drive file board — `DriveWorkspace` / `DriveFileSurface`
-2. [x] Drive virtual folder grid — `DriveLibraryVirtualFolderGrid`
-3. [x] Entity drive preview — `EntityDriveFilesPanel`
-4. [x] Calendar day event list — `app/(app)/calendar/page.tsx`
-5. [x] Marketing accounts — `use-marketing-settings-data` / `MarketingAccountsSection`
-6. [x] Integrations registry — `app/(app)/settings/integrations/page.tsx`
-7. [x] Roles / seats grid — `RolesSeatsWorkspace`
-8. [x] Partner detail cards — Accruals / Outbound / Analytics / Commission
-9. [x] Finance reports — `app/(app)/finance/reports/page.tsx`
-10. [x] Credentials vault table/tiles (filter refetch)
-11. [x] Settings lists — `app/(app)/settings/lists/page.tsx`
-12. [x] Mail thread detail — `MailThreadDetailContent`
-13. [x] Product participants — `ProductParticipantsSection`
+- [x] Применить additive migrate к **dev** Neon из `.env.local` (не PROD host) — 2026-09-19 `migrate deploy`, 4 SQL applied.
+- [ ] Проверить в UI, что каталог/Compensation открываются без Prisma-ошибок.
+- [ ] Поднять API + web и открыть `/my-company/function-catalog`.
 
-## После каждого экрана
+## S17 — чтобы Owner мог включить модель без кода
 
-- [x] Ревью: loading не снимает уже показанные строки
-- [x] Typecheck / lint / Prettier по тронутым файлам
-- [x] Отметить пункт выше
+- [ ] Идемпотентный draft-seed каталога (stable codes из `04-CATALOG-BOOTSTRAP.md`, без units/rates).
+- [ ] Owner UI: переключатель `newEnrollmentEnabled` + статус readiness.
+- [ ] Явный **local/demo** fixture с synthetic published нормами (только dev, не production seed).
+- [ ] Проставить `checked` scope и base profile на enroll, иначе Development всегда blocked.
 
-## Финал
+## Product / Delivery UI (сейчас только просмотр)
 
-- [x] Независимый проход по оставшимся `if (loading) return <LoadingState`
-- [x] Короткий итог в этом файле
+- [ ] Enroll V2 с Product (orderId) когда switch ON.
+- [ ] Picker «+ Добавить» ACTIVE-функций, included badge, Save/expectedRevision.
+- [ ] Удаление extra + 409 при конфликте ревизии.
+- [ ] Modal замены исполнителя: пустые обязательные доли, один API `replacements`.
+- [ ] Extension: enroll, 6 ролей (`ExtensionDeliveryRoleAssignment`), тот же workspace.
+- [ ] Copy-from: только scope/параметры, без людей/денег/notes.
 
-## Итог
+## Деньги и Finance (без нового payout engine)
 
-Очередь закрыта. Все 13 экранов переведены на `DataView` + `useRevalidationState`: refetch/filter/save не снимают уже показанные строки; 401/403/404 чистят данные; transient error держит stale + `ListMutationErrorBanner`.
+- [ ] На **первом Done** один раз проставить `earnedPeriod` (не трогать при late funding).
+- [ ] QA/Tech в payroll matrix linking + history (слоты `qaLeadId` / `technicalSpecialistId`).
+- [ ] Wallet: свои суммы с Development, без units; подписи ролей для 6 ролей.
+- [ ] Closed/archive: scope read-only, ledger не удалять.
 
-Grep `if (loading) return <LoadingState` / `loading ? (<LoadingState` по `apps/web/src` — совпадений нет.
+## Network
 
-Не трогали: диалоги первого открытия (`DriveFolderPickerDialog` и т.п.), узкие панели вроде `DriveDetailPanel` / grants, если они не входили в очередь и не матчили запрещённый паттерн.
+- [ ] После migrate: выбрать From=Network в Lead/Deal и проверить Classic / first sub / recurring.
+- [ ] Убедиться, что CLIENT/SALES/MARKETING/PARTNER и канал NETWORKING не изменились.
 
-Проверки: Prettier по тронутым файлам, `pnpm typecheck` в `apps/web` (ok), eslint по тронутым файлам (ok после фикса unused import + `loadAll` deps).
+## Приёмка S18
+
+- [ ] Browser QA desktop/mobile: catalog, Compensation rates, Product Functions, Delivery sheet, Wallet.
+- [ ] Targeted tests + typecheck + Prettier на всё затронутое.
+- [ ] Негатив: PM не видит units; mass-assignment; team PATCH после плана.
+- [ ] Обновить журнал; production launch **не** отмечать выполненным.

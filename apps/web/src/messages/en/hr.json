@@ -289,6 +289,36 @@
     "departments": "Departments",
     "rolesSeats": "Roles & Seats"
   },
+  "functionCatalog": {
+    "title": "Function catalog",
+    "subtitle": "Instructions for delivery functions. Compensation amounts are not shown here.",
+    "search": "Search functions",
+    "empty": "No published functions yet.",
+    "loadFailed": "The function catalog could not be loaded.",
+    "createDraft": "New draft",
+    "statusDraft": "Draft",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "instructions": "Instructions",
+    "acceptance": "Acceptance",
+    "scope": "In / out of scope",
+    "pricing": "Calculation",
+    "pricingHidden": "Pricing is available only to Owner and CEO.",
+    "normativeMissing": "Normative not configured",
+    "ratesTitle": "Delivery role rates",
+    "ratesSubtitle": "Same-role AMD tariffs. Employee salary is never used.",
+    "profilesTitle": "Delivery base profiles",
+    "legacySkip": "This product stays on the previous delivery model until Owner adopts v2.",
+    "includedBadge": "Included in base",
+    "readiness": {
+      "CONFIGURATION_INCOMPLETE": "Finish function setup and confirm scope before Development.",
+      "ROLE_ASSIGNMENT_REQUIRED": "Assign every required delivery role before Development.",
+      "NORMATIVE_NOT_CONFIGURED": "Owner still needs to publish compensation norms.",
+      "UNITS_NOT_CONFIGURED": "Owner still needs to publish function units.",
+      "RATE_NOT_CONFIGURED": "Owner still needs to publish role rates.",
+      "AI_DESIGNER_REVIEW_REQUIRED": "AI design with a Designer needs an explicit Reviewer."
+    }
+  },
   "rolesSeats": {
     "title": "Roles & Seats",
     "description": "Business seats, accountabilities, vacancies, assignments, and default permission role mapping.",

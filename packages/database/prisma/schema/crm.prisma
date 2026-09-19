@@ -15,6 +15,7 @@ enum LeadSourceEnum {
   SALES
   PARTNER
   CLIENT
+  NETWORK
 }
 
 enum MarketingChannelEnum {

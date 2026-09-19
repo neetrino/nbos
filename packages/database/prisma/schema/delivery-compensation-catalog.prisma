@@ -1,0 +1,220 @@
+// Delivery Compensation v2 — catalog, base profiles, role rates.
+// Commercial units/rates are Owner-published. Seed must not invent production prices.
+// Existing products have no rows here and stay implicit LEGACY.
+
+enum DeliveryFunctionStatusEnum {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum DeliveryNormativeStatusEnum {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum DeliveryCompensationRoleKeyEnum {
+  BACKEND
+  FRONTEND
+  PM
+  DESIGNER
+  QA
+  TECHNICAL_SPECIALIST
+}
+
+enum DeliveryRoleUnitKindEnum {
+  REQUIRED
+  NOT_REQUIRED
+}
+
+enum DeliveryEntityKindEnum {
+  PRODUCT
+  EXTENSION
+}
+
+enum DeliveryConfigSizeEnum {
+  SMALL
+  CLASSIC
+  LARGE
+  VERY_LARGE
+  ENTERPRISE
+}
+
+enum DeliveryImplementationBaseEnum {
+  FROM_SCRATCH
+  EXISTING_BASE
+  WHITE_LABEL
+}
+
+enum DeliveryDesignModeEnum {
+  AI_DESIGN
+  CONCEPT
+  FULL_DESIGN
+}
+
+model DeliveryFunction {
+  id        String                     @id @default(uuid())
+  code      String                     @unique
+  category  String
+  iconKey   String                     @map("icon_key")
+  status    DeliveryFunctionStatusEnum @default(DRAFT)
+  authorId  String                     @map("author_id")
+  createdAt DateTime                   @default(now()) @map("created_at")
+  updatedAt DateTime                   @updatedAt @map("updated_at")
+
+  author                 Employee                        @relation("DeliveryFunctionAuthor", fields: [authorId], references: [id])
+  contentVersions        DeliveryFunctionContentVersion[]
+  priceVersions          DeliveryFunctionPriceVersion[]
+  includedInBaseProfiles DeliveryBaseIncludedFunction[]
+  configurationFeatures  DeliveryConfigurationFeature[]
+
+  @@index([status])
+  @@index([category])
+  @@map("delivery_functions")
+}
+
+model DeliveryFunctionContentVersion {
+  id                 String    @id @default(uuid())
+  functionId         String    @map("function_id")
+  version            Int
+  title              String
+  summary            String
+  scopeBoundaries    String    @map("scope_boundaries")
+  instructions       String
+  acceptanceCriteria String    @map("acceptance_criteria")
+  authorId           String    @map("author_id")
+  publishedAt        DateTime? @map("published_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  function    DeliveryFunction               @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  author      Employee                       @relation("DeliveryFunctionContentAuthor", fields: [authorId], references: [id])
+  attachments DeliveryFunctionAttachment[]
+
+  @@unique([functionId, version])
+  @@index([functionId])
+  @@map("delivery_function_content_versions")
+}
+
+model DeliveryFunctionAttachment {
+  id               String  @id @default(uuid())
+  contentVersionId String  @map("content_version_id")
+  fileAssetId      String  @map("file_asset_id")
+  caption          String?
+  sortOrder        Int     @default(0) @map("sort_order")
+
+  contentVersion DeliveryFunctionContentVersion @relation(fields: [contentVersionId], references: [id], onDelete: Cascade)
+  fileAsset      FileAsset                      @relation(fields: [fileAssetId], references: [id], onDelete: Restrict)
+
+  @@index([contentVersionId])
+  @@index([fileAssetId])
+  @@map("delivery_function_attachments")
+}
+
+model DeliveryFunctionPriceVersion {
+  id            String                      @id @default(uuid())
+  functionId    String                      @map("function_id")
+  version       Int
+  status        DeliveryNormativeStatusEnum @default(DRAFT)
+  effectiveFrom DateTime                    @map("effective_from")
+  publishedById String?                     @map("published_by_id")
+  publishedAt   DateTime?                   @map("published_at")
+  createdAt     DateTime                    @default(now()) @map("created_at")
+
+  function    DeliveryFunction              @relation(fields: [functionId], references: [id], onDelete: Restrict)
+  publishedBy Employee?                     @relation("DeliveryFunctionPricePublishedBy", fields: [publishedById], references: [id])
+  roleUnits   DeliveryFunctionPriceRoleUnit[]
+  extraFeatures DeliveryConfigurationFeature[] @relation("ConfigurationFeaturePriceVersion")
+
+  @@unique([functionId, version])
+  @@index([functionId, status])
+  @@map("delivery_function_price_versions")
+}
+
+model DeliveryFunctionPriceRoleUnit {
+  id             String                         @id @default(uuid())
+  priceVersionId String                         @map("price_version_id")
+  roleKey        DeliveryCompensationRoleKeyEnum @map("role_key")
+  unitKind       DeliveryRoleUnitKindEnum       @map("unit_kind")
+  /// Null = not configured. 0 = explicit zero. Never treat null as 0.
+  units          Decimal?                       @db.Decimal(14, 4)
+
+  priceVersion DeliveryFunctionPriceVersion @relation(fields: [priceVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([priceVersionId, roleKey])
+  @@map("delivery_function_price_role_units")
+}
+
+model DeliveryBaseProfileVersion {
+  id                 String                         @id @default(uuid())
+  profileKey         String                         @map("profile_key")
+  version            Int
+  entityKind         DeliveryEntityKindEnum         @map("entity_kind")
+  productType        ProductTypeEnum?               @map("product_type")
+  productCategory    ProductCategoryEnum?           @map("product_category")
+  configSize         DeliveryConfigSizeEnum         @map("config_size")
+  implementationBase DeliveryImplementationBaseEnum @map("implementation_base")
+  designMode         DeliveryDesignModeEnum         @map("design_mode")
+  aiDesignerReview   Boolean                        @default(false) @map("ai_designer_review")
+  description        String?
+  status             DeliveryNormativeStatusEnum    @default(DRAFT)
+  effectiveFrom      DateTime                       @map("effective_from")
+  publishedById      String?                        @map("published_by_id")
+  publishedAt        DateTime?                      @map("published_at")
+  createdAt          DateTime                       @default(now()) @map("created_at")
+
+  publishedBy        Employee?                       @relation("DeliveryBaseProfilePublishedBy", fields: [publishedById], references: [id])
+  roleUnits          DeliveryBaseProfileRoleUnit[]
+  includedFunctions  DeliveryBaseIncludedFunction[]
+  configurations     DeliveryConfiguration[]
+
+  @@unique([profileKey, version])
+  @@index([profileKey, status])
+  @@index([entityKind, status])
+  @@map("delivery_base_profile_versions")
+}
+
+model DeliveryBaseProfileRoleUnit {
+  id                   String                          @id @default(uuid())
+  baseProfileVersionId String                          @map("base_profile_version_id")
+  roleKey              DeliveryCompensationRoleKeyEnum @map("role_key")
+  unitKind             DeliveryRoleUnitKindEnum        @map("unit_kind")
+  units                Decimal?                        @db.Decimal(14, 4)
+
+  baseProfileVersion DeliveryBaseProfileVersion @relation(fields: [baseProfileVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([baseProfileVersionId, roleKey])
+  @@map("delivery_base_profile_role_units")
+}
+
+model DeliveryBaseIncludedFunction {
+  id                   String @id @default(uuid())
+  baseProfileVersionId String @map("base_profile_version_id")
+  functionId           String @map("function_id")
+
+  baseProfileVersion DeliveryBaseProfileVersion @relation(fields: [baseProfileVersionId], references: [id], onDelete: Cascade)
+  function           DeliveryFunction           @relation(fields: [functionId], references: [id], onDelete: Restrict)
+
+  @@unique([baseProfileVersionId, functionId])
+  @@index([functionId])
+  @@map("delivery_base_included_functions")
+}
+
+model DeliveryRoleRateVersion {
+  id            String                          @id @default(uuid())
+  roleKey       DeliveryCompensationRoleKeyEnum @map("role_key")
+  currency      String                          @default("AMD")
+  rate          Decimal                         @db.Decimal(14, 4)
+  version       Int
+  status        DeliveryNormativeStatusEnum     @default(DRAFT)
+  effectiveFrom DateTime                        @map("effective_from")
+  publishedById String?                         @map("published_by_id")
+  publishedAt   DateTime?                       @map("published_at")
+  createdAt     DateTime                        @default(now()) @map("created_at")
+
+  publishedBy Employee? @relation("DeliveryRoleRatePublishedBy", fields: [publishedById], references: [id])
+
+  @@unique([roleKey, version])
+  @@index([roleKey, status])
+  @@map("delivery_role_rate_versions")
+}

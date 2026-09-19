@@ -50,7 +50,8 @@
       "MARKETING": "Marketing",
       "SALES": "Sales",
       "PARTNER": "Partner",
-      "CLIENT": "Client"
+      "CLIENT": "Client",
+      "NETWORK": "Network"
     },
     "salesChannel": {
       "COLD_CALL": "Cold Call",

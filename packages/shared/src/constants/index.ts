@@ -194,7 +194,7 @@ export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
   OTHER: [],
 } as const;
 
-export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT'] as const;
+export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT', 'NETWORK'] as const;
 
 export const MARKETING_CHANNELS = [
   'SMM',
@@ -259,10 +259,12 @@ export * from './crm-permissions';
 export * from './settings-permissions';
 export * from './marketing-permissions';
 export * from './finance-permissions';
+export * from './delivery-compensation-permissions';
 export * from './messenger-client-permissions';
 export * from './messenger-ws';
 export * from './checklist-template-item-evidence';
 export * from './checklist-evidence-file-ids';
+export * from '../delivery-compensation';
 
 export const BONUS_PERCENTAGES = {
   SALES: {

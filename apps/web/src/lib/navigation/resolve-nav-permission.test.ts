@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FINANCE_CLIENT_SERVICES_MODULE,
   FINANCE_EXPENSE_PLANS_MODULE,
+  FUNCTION_CATALOG_MODULE,
 } from '@nbos/shared/constants';
 import { FINANCE_MODULE_VIEW_REQUIREMENT } from './finance-nav-permissions';
 import { getPermissionClauses } from './permission-requirement';
@@ -149,5 +150,28 @@ describe('resolveNavPermission', () => {
 
   it('inherits the Finance anyOf gate for unlisted finance subpaths', () => {
     expect(resolveNavPermission('/finance/something-new')).toEqual(FINANCE_MODULE_VIEW_REQUIREMENT);
+  });
+
+  it('gates the function catalog on FUNCTION_CATALOG, not COMPANY or Compensation', () => {
+    expect(resolveNavPermission('/my-company/function-catalog')).toEqual({
+      module: FUNCTION_CATALOG_MODULE,
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/my-company/function-catalog/fn-1')).toEqual({
+      module: FUNCTION_CATALOG_MODULE,
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/my-company')).toEqual({
+      module: 'COMPANY',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/my-company/team')).toEqual({
+      module: 'COMPANY',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/my-company/compensation')).toEqual({
+      module: 'FINANCE_SALARY',
+      action: 'VIEW',
+    });
   });
 });

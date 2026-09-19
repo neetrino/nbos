@@ -90,7 +90,8 @@ describe('Constants', () => {
   it('LEAD_SOURCES are valid', () => {
     expect(LEAD_SOURCES).toContain('MARKETING');
     expect(LEAD_SOURCES).toContain('SALES');
-    expect(LEAD_SOURCES).toHaveLength(4);
+    expect(LEAD_SOURCES).toContain('NETWORK');
+    expect(LEAD_SOURCES).toHaveLength(5);
   });
 
   it('DEAL_TYPES has 4 canonical types', () => {

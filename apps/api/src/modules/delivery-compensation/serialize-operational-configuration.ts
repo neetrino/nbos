@@ -1,0 +1,80 @@
+import { assertNoFinancialLeak, type DeliveryCompensationErrorCode } from '@nbos/shared';
+
+export type OperationalConfigurationDto = {
+  id: string;
+  productId: string | null;
+  extensionId: string | null;
+  mode: string;
+  enrolled: boolean;
+  designMode: string | null;
+  aiDesignerReview: boolean;
+  configSize: string | null;
+  implementationBase: string | null;
+  checkedAt: string | null;
+  draftVersion: number;
+  features: Array<{
+    id: string;
+    functionId: string;
+    origin: string;
+    localNote: string | null;
+    workState: string;
+  }>;
+  readiness: {
+    planState: 'LEGACY' | 'DRAFT' | 'READY' | 'MATERIALIZED';
+    errors: DeliveryCompensationErrorCode[];
+  };
+};
+
+export function serializeOperationalConfiguration(input: {
+  id: string;
+  productId: string | null;
+  extensionId: string | null;
+  mode: string;
+  designMode: string | null;
+  aiDesignerReview: boolean;
+  configSize: string | null;
+  implementationBase: string | null;
+  checkedAt: Date | null;
+  draftVersion: number;
+  features: Array<{
+    id: string;
+    functionId: string;
+    origin: string;
+    localNote: string | null;
+    workState: string;
+    archivedAt: Date | null;
+  }>;
+  readiness?: OperationalConfigurationDto['readiness'];
+}): OperationalConfigurationDto {
+  const dto: OperationalConfigurationDto = {
+    id: input.id,
+    productId: input.productId,
+    extensionId: input.extensionId,
+    mode: input.mode,
+    enrolled: input.mode === 'V2',
+    designMode: input.designMode,
+    aiDesignerReview: input.aiDesignerReview,
+    configSize: input.configSize,
+    implementationBase: input.implementationBase,
+    checkedAt: input.checkedAt?.toISOString() ?? null,
+    draftVersion: input.draftVersion,
+    features: input.features
+      .filter((feature) => feature.archivedAt === null)
+      .map((feature) => ({
+        id: feature.id,
+        functionId: feature.functionId,
+        origin: feature.origin,
+        localNote: feature.localNote,
+        workState: feature.workState,
+      })),
+    readiness: input.readiness ?? {
+      planState: input.mode === 'V2' ? 'DRAFT' : 'LEGACY',
+      errors: [],
+    },
+  };
+  const leaks = assertNoFinancialLeak(dto);
+  if (leaks.length > 0) {
+    throw new Error(`Operational configuration leaked financial keys: ${leaks.join(', ')}`);
+  }
+  return dto;
+}

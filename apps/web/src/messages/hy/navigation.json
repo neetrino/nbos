@@ -26,6 +26,7 @@
   },
   "children": {
     "myCompany": {
+      "functionCatalog": "Ֆունկցիաների կատալոգ",
       "compensation": "Փոխհատուցում",
       "kpi": "KPI / ցուցանիշներ",
       "kpiPolicies": "KPI կանոններ",

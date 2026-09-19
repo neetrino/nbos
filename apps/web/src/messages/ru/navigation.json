@@ -26,6 +26,7 @@
   },
   "children": {
     "myCompany": {
+      "functionCatalog": "Каталог функций",
       "compensation": "Компенсация",
       "kpi": "KPI / Сводка показателей",
       "kpiPolicies": "Политики KPI",

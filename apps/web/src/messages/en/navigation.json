@@ -26,6 +26,7 @@
   },
   "children": {
     "myCompany": {
+      "functionCatalog": "Function catalog",
       "compensation": "Compensation",
       "kpi": "KPI / Scorecard",
       "kpiPolicies": "KPI gate policies",

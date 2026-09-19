@@ -1,18 +1,36 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { Library } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { FUNCTION_CATALOG_MODULE } from '@nbos/shared';
 import { ModuleHeroSlotProvider, PageHeroNavLinks } from '@/components/shared/page-hero';
 import { MY_COMPANY_MODULE_NAV } from '@/features/hr/constants/my-company-module-nav';
+import { usePermission } from '@/lib/permissions';
 
 export default function MyCompanyLayout({ children }: { children: ReactNode }) {
   const t = useTranslations('hr');
-  const items = MY_COMPANY_MODULE_NAV.map((item) => ({
-    href: item.href,
-    icon: item.icon,
-    exactMatch: item.exactMatch,
-    label: t(item.labelKey),
-  }));
+  const { can } = usePermission();
+  const canOpenHr = can('VIEW', 'COMPANY');
+  const canOpenCatalog = can('VIEW', FUNCTION_CATALOG_MODULE);
+  const items = [
+    ...(canOpenHr ? MY_COMPANY_MODULE_NAV : []).map((item) => ({
+      href: item.href,
+      icon: item.icon,
+      exactMatch: item.exactMatch,
+      label: t(item.labelKey),
+    })),
+    ...(canOpenCatalog
+      ? [
+          {
+            href: '/my-company/function-catalog',
+            icon: Library,
+            exactMatch: true,
+            label: t('functionCatalog.title'),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <ModuleHeroSlotProvider

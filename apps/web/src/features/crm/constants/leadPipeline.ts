@@ -81,6 +81,7 @@ export const LEAD_SOURCES = [
   { value: 'SALES', label: 'Sales', icon: '📞' },
   { value: 'PARTNER', label: 'Partner', icon: '🏢' },
   { value: 'CLIENT', label: 'Client', icon: '🤝' },
+  { value: 'NETWORK', label: 'Network', icon: '🔗' },
 ] as const;
 
 export const SALES_CHANNELS = [

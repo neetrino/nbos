@@ -28,7 +28,7 @@ const LEAD_STAGE_KEYS = [
   'SQL',
 ] as const;
 
-const LEAD_SOURCE_KEYS = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT'] as const;
+const LEAD_SOURCE_KEYS = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT', 'NETWORK'] as const;
 const SALES_CHANNEL_KEYS = [
   'COLD_CALL',
   'COLD_DM_IG',

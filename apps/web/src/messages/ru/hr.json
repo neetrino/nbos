@@ -289,6 +289,36 @@
     "departments": "Отделы",
     "rolesSeats": "Роли и должности"
   },
+  "functionCatalog": {
+    "title": "Каталог функций",
+    "subtitle": "Инструкции к функциям поставки. Суммы бонусов здесь не показываются.",
+    "search": "Поиск функций",
+    "empty": "Опубликованных функций пока нет.",
+    "loadFailed": "Не удалось загрузить каталог функций.",
+    "createDraft": "Новый черновик",
+    "statusDraft": "Черновик",
+    "statusActive": "Активна",
+    "statusArchived": "В архиве",
+    "instructions": "Инструкция",
+    "acceptance": "Приёмка",
+    "scope": "Границы scope",
+    "pricing": "Расчёт",
+    "pricingHidden": "Нормативы видят только Owner и CEO.",
+    "normativeMissing": "Норматив не настроен",
+    "ratesTitle": "Тарифы ролей поставки",
+    "ratesSubtitle": "Одинаковая ставка роли в AMD. Зарплата сотрудника не используется.",
+    "profilesTitle": "Базовые профили поставки",
+    "legacySkip": "Этот продукт остаётся на прежней модели, пока Owner явно не переведёт его на v2.",
+    "includedBadge": "Входит в базу",
+    "readiness": {
+      "CONFIGURATION_INCOMPLETE": "Завершите настройку функций и подтвердите scope до Development.",
+      "ROLE_ASSIGNMENT_REQUIRED": "Назначьте все обязательные роли до Development.",
+      "NORMATIVE_NOT_CONFIGURED": "Owner ещё не опубликовал нормы компенсации.",
+      "UNITS_NOT_CONFIGURED": "Owner ещё не опубликовал units функций.",
+      "RATE_NOT_CONFIGURED": "Owner ещё не опубликовал ставки ролей.",
+      "AI_DESIGNER_REVIEW_REQUIRED": "AI-дизайн с Designer требует явную роль Reviewer."
+    }
+  },
   "rolesSeats": {
     "title": "Роли и должности",
     "description": "Бизнес-должности, зоны ответственности, вакансии, назначения и связь с техническими ролями доступа.",

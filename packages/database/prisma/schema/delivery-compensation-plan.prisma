@@ -1,0 +1,187 @@
+// Delivery Compensation v2 — product/extension configuration and planned bonus anchors.
+// Absence of a configuration row means implicit LEGACY. Do not backfill existing products.
+
+enum DeliveryFeatureOriginEnum {
+  INCLUDED
+  EXTRA
+}
+
+enum DeliveryFeatureWorkStateEnum {
+  NOT_STARTED
+  IN_PROGRESS
+  ACCEPTED
+}
+
+enum DeliveryConfigurationModeEnum {
+  LEGACY
+  V2
+}
+
+enum DeliveryBonusSourceEnum {
+  DELIVERY_CONFIGURATOR_V2
+}
+
+enum DeliveryBonusComponentKindEnum {
+  BASE
+  FEATURE
+}
+
+model DeliveryCompensationRuntimeSetting {
+  id                    String   @id
+  newEnrollmentEnabled  Boolean  @default(false) @map("new_enrollment_enabled")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("delivery_compensation_runtime_settings")
+}
+
+model DeliveryConfiguration {
+  id                   String                         @id @default(uuid())
+  orderId              String                         @unique @map("order_id")
+  productId            String?                        @map("product_id")
+  extensionId          String?                        @map("extension_id")
+  entityKind           DeliveryEntityKindEnum         @map("entity_kind")
+  mode                 DeliveryConfigurationModeEnum  @default(LEGACY)
+  modelVersion         String                         @default("2") @map("model_version")
+  currentRevisionId    String?                        @unique @map("current_revision_id")
+  initialRevisionId    String?                        @unique @map("initial_revision_id")
+  baseProfileVersionId String?                        @map("base_profile_version_id")
+  productType          ProductTypeEnum?               @map("product_type")
+  productCategory      ProductCategoryEnum?           @map("product_category")
+  configSize           DeliveryConfigSizeEnum?        @map("config_size")
+  implementationBase   DeliveryImplementationBaseEnum? @map("implementation_base")
+  designMode           DeliveryDesignModeEnum?        @map("design_mode")
+  aiDesignerReview     Boolean                        @default(false) @map("ai_designer_review")
+  checkedById          String?                        @map("checked_by_id")
+  checkedAt            DateTime?                      @map("checked_at")
+  draftVersion         Int                            @default(1) @map("draft_version")
+  createdAt            DateTime                       @default(now()) @map("created_at")
+  updatedAt            DateTime                       @updatedAt @map("updated_at")
+
+  order              Order                         @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product            Product?                      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  extension          Extension?                    @relation(fields: [extensionId], references: [id], onDelete: Restrict)
+  baseProfileVersion DeliveryBaseProfileVersion?   @relation(fields: [baseProfileVersionId], references: [id], onDelete: Restrict)
+  checkedBy          Employee?                     @relation("DeliveryConfigurationCheckedBy", fields: [checkedById], references: [id])
+  currentRevision    DeliveryConfigurationRevision? @relation("ConfigurationCurrentRevision", fields: [currentRevisionId], references: [id], onDelete: SetNull)
+  initialRevision    DeliveryConfigurationRevision? @relation("ConfigurationInitialRevision", fields: [initialRevisionId], references: [id], onDelete: SetNull)
+  features           DeliveryConfigurationFeature[]
+  revisions          DeliveryConfigurationRevision[] @relation("ConfigurationRevisionList")
+  components         DeliveryBonusComponent[]
+  bonusEntries       BonusEntry[]
+
+  @@unique([productId])
+  @@unique([extensionId])
+  @@index([productId])
+  @@index([extensionId])
+  @@index([mode])
+  @@map("delivery_configurations")
+}
+
+model DeliveryConfigurationFeature {
+  id                     String                      @id @default(uuid())
+  configurationId        String                      @map("configuration_id")
+  functionId             String                      @map("function_id")
+  selectedPriceVersionId String?                     @map("selected_price_version_id")
+  origin                 DeliveryFeatureOriginEnum
+  localNote              String?                     @map("local_note")
+  workState              DeliveryFeatureWorkStateEnum @default(NOT_STARTED) @map("work_state")
+  archivedAt             DateTime?                   @map("archived_at")
+  createdAt              DateTime                    @default(now()) @map("created_at")
+  updatedAt              DateTime                    @updatedAt @map("updated_at")
+
+  configuration        DeliveryConfiguration         @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  function             DeliveryFunction              @relation(fields: [functionId], references: [id], onDelete: Restrict)
+  selectedPriceVersion DeliveryFunctionPriceVersion? @relation("ConfigurationFeaturePriceVersion", fields: [selectedPriceVersionId], references: [id], onDelete: Restrict)
+  components           DeliveryBonusComponent[]
+
+  @@index([configurationId])
+  @@index([functionId])
+  @@map("delivery_configuration_features")
+}
+
+model DeliveryConfigurationRevision {
+  id                   String   @id @default(uuid())
+  configurationId      String   @map("configuration_id")
+  sequence             Int
+  reason               String?
+  actorId              String   @map("actor_id")
+  scopeSnapshot        Json     @map("scope_snapshot")
+  teamSnapshot         Json     @map("team_snapshot")
+  financialEffectiveAt DateTime @map("financial_effective_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  configuration        DeliveryConfiguration  @relation("ConfigurationRevisionList", fields: [configurationId], references: [id], onDelete: Cascade)
+  actor                Employee               @relation("DeliveryConfigurationRevisionActor", fields: [actorId], references: [id])
+  currentFor           DeliveryConfiguration? @relation("ConfigurationCurrentRevision")
+  initialFor           DeliveryConfiguration? @relation("ConfigurationInitialRevision")
+  originatedComponents  DeliveryBonusComponent[]
+  originatedAllocations DeliveryBonusAllocation[]
+  bonusEntries          BonusEntry[]             @relation("BonusEntryDeliveryRevision")
+
+  @@unique([configurationId, sequence])
+  @@index([configurationId])
+  @@map("delivery_configuration_revisions")
+}
+
+model DeliveryBonusComponent {
+  id                    String                         @id @default(uuid())
+  configurationId       String                         @map("configuration_id")
+  featureId             String?                        @map("feature_id")
+  componentKey          String                         @map("component_key")
+  kind                  DeliveryBonusComponentKindEnum
+  roleKey               DeliveryCompensationRoleKeyEnum @map("role_key")
+  unitsSnapshot         Decimal                        @map("units_snapshot") @db.Decimal(14, 4)
+  rateSnapshot          Decimal                        @map("rate_snapshot") @db.Decimal(14, 4)
+  amount                Decimal                        @db.Decimal(12, 2)
+  currency              String                         @default("AMD")
+  originatingRevisionId String                         @map("originating_revision_id")
+  createdAt             DateTime                       @default(now()) @map("created_at")
+
+  configuration       DeliveryConfiguration         @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  feature             DeliveryConfigurationFeature? @relation(fields: [featureId], references: [id], onDelete: SetNull)
+  originatingRevision DeliveryConfigurationRevision @relation(fields: [originatingRevisionId], references: [id], onDelete: Restrict)
+  allocations         DeliveryBonusAllocation[]
+  bonusEntries        BonusEntry[]
+
+  @@unique([configurationId, componentKey, roleKey])
+  @@index([configurationId])
+  @@map("delivery_bonus_components")
+}
+
+model DeliveryBonusAllocation {
+  id                    String  @id @default(uuid())
+  componentId           String  @map("component_id")
+  employeeId            String  @map("employee_id")
+  sharePercent          Decimal @map("share_percent") @db.Decimal(5, 2)
+  retainedAcceptedAmount Decimal @default(0) @map("retained_accepted_amount") @db.Decimal(12, 2)
+  currentPlannedAmount  Decimal @map("current_planned_amount") @db.Decimal(12, 2)
+  originatingRevisionId String  @map("originating_revision_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  component           DeliveryBonusComponent        @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  employee            Employee                      @relation("DeliveryBonusAllocationEmployee", fields: [employeeId], references: [id])
+  originatingRevision DeliveryConfigurationRevision @relation(fields: [originatingRevisionId], references: [id], onDelete: Restrict)
+  bonusEntry          BonusEntry?
+
+  @@unique([componentId, employeeId])
+  @@index([componentId])
+  @@index([employeeId])
+  @@map("delivery_bonus_allocations")
+}
+
+model ExtensionDeliveryRoleAssignment {
+  id          String                          @id @default(uuid())
+  extensionId String                          @map("extension_id")
+  roleKey     DeliveryCompensationRoleKeyEnum @map("role_key")
+  employeeId  String                          @map("employee_id")
+  createdAt   DateTime                        @default(now()) @map("created_at")
+  updatedAt   DateTime                        @updatedAt @map("updated_at")
+
+  extension Extension @relation(fields: [extensionId], references: [id], onDelete: Cascade)
+  employee  Employee  @relation("ExtensionDeliveryRoleAssignmentEmployee", fields: [employeeId], references: [id])
+
+  @@unique([extensionId, roleKey])
+  @@index([employeeId])
+  @@map("extension_delivery_role_assignments")
+}
