@@ -54,7 +54,8 @@
     "deploy:prod:status": "node scripts/coolify-sequential-deploy.mjs --status",
     "release:prod": "node scripts/release-prod.mjs",
     "release:prod:status": "node scripts/release-prod.mjs --status",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cleanup:delivery-catalog": "tsx scripts/delivery-catalog/cleanup-superseded-catalog.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

@@ -7,34 +7,33 @@ import type { CatalogSeedItem } from './catalog-seed-types';
  */
 export const SERVICES_ITEMS: readonly CatalogSeedItem[] = [
   {
-    code: 'SRV_CATALOG_IMPORT_SMALL',
+    code: 'SRV_CATALOG_IMPORT',
     category: 'services',
     iconKey: 'Upload',
-    title: 'Заливка каталога до 1000 позиций',
-    summary: 'Разовая загрузка товаров из файла клиента.',
+    title: 'Заливка каталога',
+    summary: 'Разовая загрузка товаров из файла или источника клиента.',
     scopeBoundaries:
-      'До 1000 позиций из одного источника: сопоставление полей, изображения, дубли, пробная загрузка и сверка. Выбирается один вариант объёма, не несколько.',
-    units: { PM: 3, TECHNICAL_SPECIALIST: 10, QA: 2 },
-  },
-  {
-    code: 'SRV_CATALOG_IMPORT_MEDIUM',
-    category: 'services',
-    iconKey: 'Upload',
-    title: 'Заливка каталога от 1000 до 10 000 позиций',
-    summary: 'Разовая загрузка среднего каталога.',
-    scopeBoundaries:
-      'От 1000 до 10 000 позиций: то же, что в малом варианте, плюс пакетная обработка изображений и контроль качества выборкой.',
-    units: { PM: 5, TECHNICAL_SPECIALIST: 30, QA: 4 },
-  },
-  {
-    code: 'SRV_CATALOG_IMPORT_LARGE',
-    category: 'services',
-    iconKey: 'Upload',
-    title: 'Заливка каталога от 10 000 до 50 000 позиций',
-    summary: 'Разовая загрузка большого каталога.',
-    scopeBoundaries:
-      'От 10 000 до 50 000 позиций: подготовка данных, пакетная загрузка с проверками, обработка медиа, повторные прогоны. Свыше 50 000 — отдельная оценка, эта карточка не применяется.',
-    units: { PM: 8, TECHNICAL_SPECIALIST: 58, QA: 6 },
+      'Один источник: сопоставление полей, изображения, дубли, пробная загрузка и сверка. Объём выбирается вариантом по числу позиций и определяется данными клиента, а не видом продукта. Свыше 50 000 позиций — отдельная оценка.',
+    tiers: [
+      {
+        code: 'S_TO_1K',
+        label: 'До 1000 позиций',
+        productTypes: [],
+        units: { PM: 3, TECHNICAL_SPECIALIST: 10, QA: 2 },
+      },
+      {
+        code: 'M_TO_10K',
+        label: 'От 1000 до 10 000 позиций',
+        productTypes: [],
+        units: { PM: 5, TECHNICAL_SPECIALIST: 30, QA: 4 },
+      },
+      {
+        code: 'L_TO_50K',
+        label: 'От 10 000 до 50 000 позиций',
+        productTypes: [],
+        units: { PM: 8, TECHNICAL_SPECIALIST: 58, QA: 6 },
+      },
+    ],
   },
   {
     code: 'SRV_CONTENT_FILL',

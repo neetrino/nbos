@@ -9,6 +9,7 @@ import { buildSeedRoleUnits } from './build-seed-role-units';
 
 const FIRST_CONTENT_VERSION = 1;
 const FIRST_PRICE_VERSION = 1;
+const FIRST_TIER_POSITION = 1;
 const APPLY_FLAG = '--apply';
 const AUTHOR_FLAG = '--author=';
 
@@ -72,7 +73,7 @@ async function createDraftFunction(
   item: DeliveryCatalogSeedItem,
   authorId: string,
 ): Promise<void> {
-  await prisma.deliveryFunction.create({
+  const created = await prisma.deliveryFunction.create({
     data: {
       code: item.code,
       category: item.category,
@@ -90,16 +91,58 @@ async function createDraftFunction(
           authorId,
         },
       },
-      priceVersions: {
-        create: {
-          version: FIRST_PRICE_VERSION,
-          status: 'DRAFT',
-          effectiveFrom: new Date(),
-          roleUnits: { create: buildSeedRoleUnits(item.units) },
-        },
-      },
     },
   });
+  await createDraftPricing(prisma, item, created.id);
+}
+
+/**
+ * Units are attached either to the card itself or to each of its gradations, never to both. A tiered
+ * card gets one draft version per gradation, so the Owner reviews the volumes separately and the
+ * server can price a selection by the gradation it resolved.
+ */
+async function createDraftPricing(
+  prisma: PrismaClient,
+  item: DeliveryCatalogSeedItem,
+  functionId: string,
+): Promise<void> {
+  if (!item.tiers) {
+    await prisma.deliveryFunctionPriceVersion.create({
+      data: {
+        functionId,
+        version: FIRST_PRICE_VERSION,
+        status: 'DRAFT',
+        effectiveFrom: new Date(),
+        roleUnits: { create: buildSeedRoleUnits(item.units ?? {}) },
+      },
+    });
+    return;
+  }
+  let version = FIRST_PRICE_VERSION;
+  let position = FIRST_TIER_POSITION;
+  for (const tier of item.tiers) {
+    const created = await prisma.deliveryFunctionTier.create({
+      data: {
+        functionId,
+        code: tier.code,
+        label: tier.label,
+        position,
+        productTypes: { create: tier.productTypes.map((productType) => ({ productType })) },
+      },
+    });
+    await prisma.deliveryFunctionPriceVersion.create({
+      data: {
+        functionId,
+        tierId: created.id,
+        version,
+        status: 'DRAFT',
+        effectiveFrom: new Date(),
+        roleUnits: { create: buildSeedRoleUnits(tier.units) },
+      },
+    });
+    version += 1;
+    position += 1;
+  }
 }
 
 main().catch((error: unknown) => {
