@@ -67,6 +67,38 @@ export type DeliveryBonusComponentKind = (typeof DELIVERY_BONUS_COMPONENT_KINDS)
 export const DELIVERY_COMPENSATION_ENROLLMENT_DEFAULT = false;
 
 /**
+ * Catalog categories, in the order the picker rail shows them. A category is a direction, not a
+ * restriction: a function filed under `commerce` may be selected for a CRM and the other way round.
+ * Categories exist so a hundred-plus cards stay findable, nothing more.
+ */
+export const DELIVERY_FUNCTION_CATEGORIES = [
+  'payments',
+  'commerce',
+  'logistics',
+  'messaging',
+  'accounts',
+  'content',
+  'loyalty',
+  'booking',
+  'crm_ops',
+  'finance_ops',
+  'hr_ops',
+  'analytics',
+  'ai',
+  'integrations',
+  'platform',
+  'mobile',
+  'desktop',
+  'services',
+] as const;
+
+export type DeliveryFunctionCategory = (typeof DELIVERY_FUNCTION_CATEGORIES)[number];
+
+export function isDeliveryFunctionCategory(value: string): value is DeliveryFunctionCategory {
+  return (DELIVERY_FUNCTION_CATEGORIES as readonly string[]).includes(value);
+}
+
+/**
  * Lucide icon keys allowed on catalog cards. Unknown keys are rejected at the API boundary.
  */
 export const DELIVERY_FUNCTION_ICON_ALLOWLIST = [
@@ -100,6 +132,72 @@ export const DELIVERY_FUNCTION_ICON_ALLOWLIST = [
   'Layers',
   'Boxes',
   'CircuitBoard',
+  'Banknote',
+  'Wallet',
+  'Receipt',
+  'Coins',
+  'Gift',
+  'Ticket',
+  'Percent',
+  'Package',
+  'MapPin',
+  'Map',
+  'Send',
+  'MessageSquare',
+  'MessageCircle',
+  'Mail',
+  'Phone',
+  'Smartphone',
+  'Monitor',
+  'Bot',
+  'Sparkles',
+  'BrainCircuit',
+  'Mic',
+  'Image',
+  'Video',
+  'FileSpreadsheet',
+  'ClipboardList',
+  'ListChecks',
+  'KanbanSquare',
+  'Users',
+  'UserPlus',
+  'Building',
+  'Briefcase',
+  'CalendarClock',
+  'CalendarCheck',
+  'Clock',
+  'Timer',
+  'Star',
+  'Heart',
+  'Filter',
+  'SlidersHorizontal',
+  'ArrowLeftRight',
+  'Upload',
+  'Download',
+  'RefreshCw',
+  'Webhook',
+  'Plug',
+  'Cloud',
+  'HardDrive',
+  'Printer',
+  'ScanLine',
+  'QrCode',
+  'Lock',
+  'Fingerprint',
+  'Gauge',
+  'Zap',
+  'TrendingUp',
+  'PieChart',
+  'Table',
+  'Newspaper',
+  'BookOpen',
+  'GraduationCap',
+  'Headphones',
+  'LifeBuoy',
+  'Route',
+  'GitBranch',
+  'Rocket',
+  'Network',
 ] as const;
 
 export type DeliveryFunctionIconKey = (typeof DELIVERY_FUNCTION_ICON_ALLOWLIST)[number];

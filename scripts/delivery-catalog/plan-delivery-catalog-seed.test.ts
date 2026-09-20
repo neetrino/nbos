@@ -1,29 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { DELIVERY_CATALOG_SEED_ITEMS } from './delivery-catalog-seed-data';
+import {
+  DELIVERY_CATALOG_SEED_ITEMS,
+  type DeliveryCatalogSeedItem,
+} from './delivery-catalog-seed-data';
 import { formatSeedPlan, planDeliveryCatalogSeed } from './plan-delivery-catalog-seed';
 
-const items = [
+const items: DeliveryCatalogSeedItem[] = [
   {
-    code: 'BANK_PAYMENT',
+    code: 'PAY_IDBANK',
     category: 'payments',
-    iconKey: 'credit-card',
+    iconKey: 'CreditCard',
     title: 'Bank payment',
     summary: 'One gateway',
     scopeBoundaries: 'One gateway only',
+    units: { BACKEND: 10, QA: 2 },
   },
   {
-    code: 'BOOKING_FLOW',
-    category: 'platform',
-    iconKey: 'calendar-check',
+    code: 'BOOK_RESOURCE_SCHEDULE',
+    category: 'booking',
+    iconKey: 'CalendarCheck',
     title: 'Booking',
     summary: 'Resources',
     scopeBoundaries: 'No double booking',
+    units: { BACKEND: 20, FRONTEND: 12 },
   },
 ];
 
 describe('planDeliveryCatalogSeed', () => {
   it('creates missing codes and keeps existing ones untouched', () => {
-    const plan = planDeliveryCatalogSeed([{ id: 'fn-1', code: 'BANK_PAYMENT' }], items);
+    const plan = planDeliveryCatalogSeed([{ id: 'fn-1', code: 'PAY_IDBANK' }], items);
 
     expect(plan.createCount).toBe(1);
     expect(plan.keepCount).toBe(1);

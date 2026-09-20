@@ -1,23 +1,25 @@
-import { PrismaClient } from '@nbos/database';
+import { createPrismaClient, type PrismaClient } from '@nbos/database';
 import {
   SEED_ACCEPTANCE_PLACEHOLDER,
   SEED_INSTRUCTIONS_PLACEHOLDER,
   type DeliveryCatalogSeedItem,
 } from './delivery-catalog-seed-data';
 import { formatSeedPlan, planDeliveryCatalogSeed } from './plan-delivery-catalog-seed';
+import { buildSeedRoleUnits } from './build-seed-role-units';
 
 const FIRST_CONTENT_VERSION = 1;
+const FIRST_PRICE_VERSION = 1;
 const APPLY_FLAG = '--apply';
 const AUTHOR_FLAG = '--author=';
 
 /**
- * Creates the draft delivery catalog skeleton. Dry run by default; `--apply` writes.
- * Draft only: no units, no rates, no assignments, and existing codes are left untouched.
+ * Creates the draft delivery catalog. Dry run by default; `--apply` writes.
+ * Everything is DRAFT, nothing is published, and existing codes are left untouched on a re-run.
  */
 async function main(): Promise<void> {
   const apply = process.argv.includes(APPLY_FLAG);
   const authorId = readAuthorId();
-  const prisma = new PrismaClient();
+  const prisma = createPrismaClient({ role: 'all', skipBudgetAssert: true });
   try {
     const existing = await prisma.deliveryFunction.findMany({ select: { id: true, code: true } });
     const plan = planDeliveryCatalogSeed(existing);
@@ -31,7 +33,9 @@ async function main(): Promise<void> {
       if (entry.action === 'KEEP') continue;
       await createDraftFunction(prisma, entry.item, author);
     }
-    process.stdout.write(`Created ${plan.createCount} draft catalog functions.\n`);
+    process.stdout.write(
+      `Created ${plan.createCount} draft catalog functions with draft unit proposals.\n`,
+    );
   } finally {
     await prisma.$disconnect();
   }
@@ -42,10 +46,7 @@ function readAuthorId(): string | null {
   return arg ? arg.slice(AUTHOR_FLAG.length).trim() || null : null;
 }
 
-async function resolveAuthorId(
-  prisma: InstanceType<typeof PrismaClient>,
-  requested: string | null,
-): Promise<string> {
+async function resolveAuthorId(prisma: PrismaClient, requested: string | null): Promise<string> {
   if (requested) {
     const employee = await prisma.employee.findUnique({
       where: { id: requested },
@@ -61,8 +62,13 @@ async function resolveAuthorId(
   );
 }
 
+/**
+ * Creates the card together with a DRAFT unit vector. Draft means exactly that: the numbers are a
+ * proposal for the Owner to review in the norms screen, and nothing can be earned from them until
+ * he publishes the version himself.
+ */
 async function createDraftFunction(
-  prisma: InstanceType<typeof PrismaClient>,
+  prisma: PrismaClient,
   item: DeliveryCatalogSeedItem,
   authorId: string,
 ): Promise<void> {
@@ -82,6 +88,14 @@ async function createDraftFunction(
           instructions: SEED_INSTRUCTIONS_PLACEHOLDER,
           acceptanceCriteria: SEED_ACCEPTANCE_PLACEHOLDER,
           authorId,
+        },
+      },
+      priceVersions: {
+        create: {
+          version: FIRST_PRICE_VERSION,
+          status: 'DRAFT',
+          effectiveFrom: new Date(),
+          roleUnits: { create: buildSeedRoleUnits(item.units) },
         },
       },
     },
