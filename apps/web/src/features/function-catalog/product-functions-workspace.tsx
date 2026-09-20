@@ -8,15 +8,19 @@ import {
 } from '@nbos/shared';
 import { deliveryConfigurationsApi } from '@/lib/api/delivery-configurations';
 import { deliveryFunctionsApi } from '@/lib/api/delivery-functions';
+import { productsApi } from '@/lib/api/products';
 import { usePermission } from '@/lib/permissions';
+import { AddFunctionTrigger } from './add-function-trigger';
 import { FunctionCatalogCard } from './function-catalog-card';
-import { FunctionInstructionSheet } from './function-instruction-sheet';
+import { FunctionCatalogDetailSheet } from './function-catalog-detail-sheet';
+import { canAddFunctionsToConfiguration, isPlanMaterialized } from './function-catalog-select';
 import { ReplaceAssigneeTrigger } from './replace-assignee-trigger';
 
 type V2Config = {
   id: string;
   mode: 'V2';
   enrolled: boolean;
+  expectedRevision: number;
   features: { functionId: string; origin: string }[];
   readiness?: { planState: string; errors: string[] };
 };
@@ -43,14 +47,21 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
   const { can } = usePermission();
   const [config, setConfig] = useState<LegacyOrConfig | null>(null);
   const [catalog, setCatalog] = useState<DeliveryFunctionOperationalDto[]>([]);
+  const [deliveryStatus, setDeliveryStatus] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const canEdit = can('EDIT', DELIVERY_CONFIGURATION_PERMISSION_MODULE);
   const reload = useCallback(() => {
     void Promise.all([
       deliveryConfigurationsApi.getByProduct(productId),
       deliveryFunctionsApi.listAll(),
-    ]).then(([nextConfig, nextCatalog]) => {
+      productsApi
+        .getById(productId)
+        .then((product) => product.status)
+        .catch(() => null),
+    ]).then(([nextConfig, nextCatalog, status]) => {
       setConfig(normalizeConfig(nextConfig));
       setCatalog(nextCatalog);
+      setDeliveryStatus(status);
     });
   }, [productId]);
 
@@ -70,8 +81,15 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
       catalog={catalog}
       openId={openId}
       setOpenId={setOpenId}
-      onReplaced={reload}
-      canReplace={config.enrolled && can('EDIT', DELIVERY_CONFIGURATION_PERMISSION_MODULE)}
+      onReload={reload}
+      canReplace={config.enrolled && canEdit}
+      canAdd={canAddFunctionsToConfiguration({
+        enrolled: config.enrolled,
+        canEdit,
+        deliveryStatus,
+      })}
+      expectedRevision={config.expectedRevision}
+      requireReason={isPlanMaterialized(config.readiness?.planState)}
     />
   );
 }
@@ -81,15 +99,21 @@ function EnrolledFunctionsWorkspace({
   catalog,
   openId,
   setOpenId,
-  onReplaced,
+  onReload,
   canReplace,
+  canAdd,
+  expectedRevision,
+  requireReason,
 }: {
   config: V2Config;
   catalog: DeliveryFunctionOperationalDto[];
   openId: string | null;
   setOpenId: (id: string | null) => void;
-  onReplaced: () => void;
+  onReload: () => void;
   canReplace: boolean;
+  canAdd: boolean;
+  expectedRevision: number;
+  requireReason: boolean;
 }) {
   const t = useTranslations('hr.functionCatalog');
   const selectedIds = new Set(config.features.map((feature) => feature.functionId));
@@ -105,9 +129,15 @@ function EnrolledFunctionsWorkspace({
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <p className="text-muted-foreground text-sm">{t('subtitle')}</p>
-        {canReplace ? (
-          <ReplaceAssigneeTrigger configurationId={config.id} onReplaced={onReplaced} />
-        ) : null}
+        <WorkspaceActions
+          configurationId={config.id}
+          selectedIds={selectedIds}
+          onReload={onReload}
+          canAdd={canAdd}
+          canReplace={canReplace}
+          expectedRevision={expectedRevision}
+          requireReason={requireReason}
+        />
       </div>
       {blockers.map((code) => (
         <p key={code} className="text-sm text-amber-700">
@@ -115,7 +145,47 @@ function EnrolledFunctionsWorkspace({
         </p>
       ))}
       <SelectedFunctionCards selected={selected} included={included} onOpen={setOpenId} />
-      {openItem ? <FunctionInstructionSheet item={openItem} /> : null}
+      <FunctionCatalogDetailSheet
+        item={openItem}
+        onOpenChange={(open) => {
+          if (!open) setOpenId(null);
+        }}
+      />
+    </div>
+  );
+}
+
+function WorkspaceActions({
+  configurationId,
+  selectedIds,
+  onReload,
+  canAdd,
+  canReplace,
+  expectedRevision,
+  requireReason,
+}: {
+  configurationId: string;
+  selectedIds: Set<string>;
+  onReload: () => void;
+  canAdd: boolean;
+  canReplace: boolean;
+  expectedRevision: number;
+  requireReason: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {canAdd ? (
+        <AddFunctionTrigger
+          configurationId={configurationId}
+          alreadyAddedIds={selectedIds}
+          onAdded={onReload}
+          expectedRevision={expectedRevision}
+          requireReason={requireReason}
+        />
+      ) : null}
+      {canReplace ? (
+        <ReplaceAssigneeTrigger configurationId={configurationId} onReplaced={onReload} />
+      ) : null}
     </div>
   );
 }

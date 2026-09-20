@@ -29,6 +29,8 @@ const CATALOG_FETCH_MAX_PAGES = 20;
 export const deliveryFunctionsApi = {
   async list(params?: {
     search?: string;
+    category?: string;
+    status?: string;
     page?: number;
     pageSize?: number;
   }): Promise<FunctionCatalogListResponse> {
@@ -38,13 +40,19 @@ export const deliveryFunctionsApi = {
     return resp.data;
   },
 
-  async listAll(params?: { search?: string }): Promise<DeliveryFunctionOperationalDto[]> {
+  async listAll(params?: {
+    search?: string;
+    category?: string;
+    status?: string;
+  }): Promise<DeliveryFunctionOperationalDto[]> {
     const items: DeliveryFunctionOperationalDto[] = [];
     let page = 1;
     let total = Number.POSITIVE_INFINITY;
     while (items.length < total && page <= CATALOG_FETCH_MAX_PAGES) {
       const result = await deliveryFunctionsApi.list({
         search: params?.search,
+        category: params?.category,
+        status: params?.status,
         page,
         pageSize: CATALOG_FETCH_PAGE_SIZE,
       });

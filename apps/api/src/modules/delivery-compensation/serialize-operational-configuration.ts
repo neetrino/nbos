@@ -12,6 +12,11 @@ export type OperationalConfigurationDto = {
   implementationBase: string | null;
   checkedAt: string | null;
   draftVersion: number;
+  /**
+   * Revision a scope change must send back as `expectedRevision`. Once the plan is materialized the
+   * server refuses a change without it, so the client cannot compute this from `draftVersion` alone.
+   */
+  expectedRevision: number;
   features: Array<{
     id: string;
     functionId: string;
@@ -36,6 +41,7 @@ export function serializeOperationalConfiguration(input: {
   implementationBase: string | null;
   checkedAt: Date | null;
   draftVersion: number;
+  currentRevision?: { sequence: number } | null;
   features: Array<{
     id: string;
     functionId: string;
@@ -58,6 +64,7 @@ export function serializeOperationalConfiguration(input: {
     implementationBase: input.implementationBase,
     checkedAt: input.checkedAt?.toISOString() ?? null,
     draftVersion: input.draftVersion,
+    expectedRevision: input.currentRevision?.sequence ?? input.draftVersion,
     features: input.features
       .filter((feature) => feature.archivedAt === null)
       .map((feature) => ({

@@ -40,6 +40,7 @@ import {
 const CONFIG_INCLUDE = {
   features: true,
   baseProfileVersion: { include: { roleUnits: true } },
+  currentRevision: { select: { sequence: true } },
 } as const;
 
 @Injectable()

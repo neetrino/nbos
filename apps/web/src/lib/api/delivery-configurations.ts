@@ -12,6 +12,8 @@ export type OperationalConfigurationDto = {
   implementationBase: string | null;
   checkedAt: string | null;
   draftVersion: number;
+  /** Send back as `expectedRevision` on a scope change; the server refuses changes without it. */
+  expectedRevision: number;
   readiness?: { planState: string; errors: string[] };
   features: Array<{
     id: string;
@@ -33,11 +35,11 @@ export const deliveryConfigurationsApi = {
   async addFeature(
     configurationId: string,
     functionId: string,
-    reason?: string,
+    options: { reason?: string; expectedRevision?: number } = {},
   ): Promise<OperationalConfigurationDto> {
     const resp = await api.post<OperationalConfigurationDto>(
       `/api/delivery-configurations/${configurationId}/features`,
-      { functionId, reason },
+      { functionId, reason: options.reason, expectedRevision: options.expectedRevision },
     );
     return resp.data;
   },
