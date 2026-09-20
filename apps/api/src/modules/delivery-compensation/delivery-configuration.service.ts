@@ -9,9 +9,14 @@ import {
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { applyEmployeeReplacement } from './apply-employee-replacement';
+import { applyConfigurationParameters } from './apply-configuration-parameters';
 import { applyScopeAddFeature } from './apply-scope-add-feature';
 import { applyScopeRemoveFeature } from './apply-scope-remove-feature';
-import { DELIVERY_COMPENSATION_ROLE_KEYS, type DeliveryCompensationRoleKey } from '@nbos/shared';
+import {
+  DELIVERY_COMPENSATION_ROLE_KEYS,
+  parseConfigurationParametersBody,
+  type DeliveryCompensationRoleKey,
+} from '@nbos/shared';
 import type { ReplacementShareInput } from './apply-employee-replacement';
 import { attachConfigurationReadiness } from './attach-configuration-readiness';
 import { isPrismaUniqueConstraint } from './prisma-unique';
@@ -157,6 +162,19 @@ export class DeliveryConfigurationService {
     if (written.createdBonusEntryIds.length > 0) {
       await syncProductBonusPoolForOrder(this.prisma, written.orderId, this.notifications);
     }
+    return this.getRequired(configurationId);
+  }
+
+  /** Confirms the parameters of a card and freezes the published base profile that prices its core. */
+  async setParameters(
+    configurationId: string,
+    body: unknown,
+    actorEmployeeId?: string,
+  ): Promise<OperationalConfigurationDto> {
+    const parameters = parseConfigurationParametersBody(body);
+    await this.prisma.$transaction((tx) =>
+      applyConfigurationParameters(tx, { configurationId, parameters, actorEmployeeId }),
+    );
     return this.getRequired(configurationId);
   }
 

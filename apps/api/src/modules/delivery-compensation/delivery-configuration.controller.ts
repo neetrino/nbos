@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DELIVERY_CONFIGURATION_PERMISSION_MODULE } from '@nbos/shared';
 import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
@@ -65,6 +75,19 @@ export class DeliveryConfigurationController {
         employeeId: row.employeeId ?? null,
       })),
     );
+  }
+
+  @Put(':id/parameters')
+  @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
+  @ApiOperation({
+    summary: 'Confirm size, base and design mode; freezes the matching base profile.',
+  })
+  setParameters(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    return this.service.setParameters(id, body, user.id);
   }
 
   @Post(':id/features')

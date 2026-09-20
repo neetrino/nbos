@@ -2,6 +2,7 @@ export * from './allocate-shares';
 export * from './calculate-delivery-plan';
 export * from './catalog-content-patch';
 export * from './catalog-write';
+export * from './configuration-parameters-write';
 export * from './constants';
 export * from './core-items-write';
 export * from './size-presets-write';
