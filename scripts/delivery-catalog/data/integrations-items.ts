@@ -143,14 +143,14 @@ export const INTEGRATIONS_ITEMS: readonly CatalogSeedItem[] = [
     units: { BACKEND: 20, FRONTEND: 10, PM: 3, QA: 6, TECHNICAL_SPECIALIST: 3 },
   },
   {
-    code: 'INT_ARMENIAN_E_INVOICING',
+    code: 'INT_HDM_FISCAL',
     category: 'integrations',
     iconKey: 'Receipt',
-    title: 'Электронные счёта и отчётность в госсистему',
-    summary: 'Обмен счетами и отчётами с государственной системой.',
+    title: 'Подключение ՀԴՄ',
+    summary: 'Фискальные чеки через ՀԴՄ.',
     scopeBoundaries:
-      'Одна государственная система, выпуск и отмена электронного счёта, статусы и квитанции, сопоставление номенклатуры и налогов, повторная отправка без дублей. Бухгалтерская методология и подписи на стороне клиента не входят.',
-    units: { BACKEND: 22, FRONTEND: 6, PM: 3, QA: 7, TECHNICAL_SPECIALIST: 4 },
+      'Выпуск и отмена фискального чека, статусы и квитанции, сопоставление номенклатуры и ставок налога, повторная отправка без дублей. Стандартная работа с известным протоколом; бухгалтерская методология на стороне клиента не входит.',
+    units: { BACKEND: 8, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
   },
   {
     code: 'INT_LEGACY_DB_BRIDGE',

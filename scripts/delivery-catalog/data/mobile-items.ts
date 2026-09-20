@@ -89,11 +89,11 @@ export const MOBILE_ITEMS: readonly CatalogSeedItem[] = [
     code: 'MOB_CRASH_AND_PRODUCT_ANALYTICS',
     category: 'mobile',
     iconKey: 'Gauge',
-    title: 'Сбор сбоев и аналитика приложения',
-    summary: 'Крэш-репорты и продуктовые события в приложении.',
+    title: 'Сбор сбоев приложения',
+    summary: 'Отчёты о падениях приложения у пользователей и события внутри него.',
     scopeBoundaries:
-      'Один провайдер, сбор сбоев с расшифровкой символов, согласованная карта событий, здоровье релиза, панель показателей. Реакция на найденные сбои — отдельная работа.',
-    units: { BACKEND: 10, FRONTEND: 8, PM: 2, QA: 4, TECHNICAL_SPECIALIST: 4 },
+      'Один провайдер сбора сбоев внутри приложения: подключение SDK, расшифровка символов сборки, согласованная карта событий, здоровье релиза. Это не отчёты кабинетов App Store и Google Play — те бесплатны и работы не требуют. Исправление найденных падений — отдельная работа.',
+    units: { FRONTEND: 8, BACKEND: 2, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 3 },
   },
   {
     code: 'MOB_WEARABLE_COMPANION',

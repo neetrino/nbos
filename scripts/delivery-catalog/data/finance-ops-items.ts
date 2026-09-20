@@ -29,18 +29,8 @@ export const FINANCE_OPS_ITEMS: readonly CatalogSeedItem[] = [
     title: 'Касса и смены',
     summary: 'Открытие и закрытие смены с движением наличных.',
     scopeBoundaries:
-      'Смены, внесение и изъятие, отчёт по смене, расхождения, права кассира. Фискальное оборудование — отдельная карточка.',
+      'Смены, внесение и изъятие, отчёт по смене, расхождения, права кассира. Фискальные чеки — карточка подключения ՀԴՄ.',
     units: { BACKEND: 22, FRONTEND: 14, PM: 3, QA: 6 },
-  },
-  {
-    code: 'FIN_FISCAL_DEVICE',
-    category: 'finance_ops',
-    iconKey: 'Printer',
-    title: 'Фискальный регистратор',
-    summary: 'Печать фискальных чеков через оборудование.',
-    scopeBoundaries:
-      'Одна модель или протокол, печать чека и возврата, обработка ошибок устройства, проверка на реальном оборудовании.',
-    units: { BACKEND: 20, FRONTEND: 6, PM: 3, QA: 6, TECHNICAL_SPECIALIST: 6 },
   },
   {
     code: 'FIN_EXPENSES',

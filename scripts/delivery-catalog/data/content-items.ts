@@ -6,21 +6,31 @@ import type { CatalogSeedItem } from './catalog-seed-types';
  */
 export const CONTENT_ITEMS: readonly CatalogSeedItem[] = [
   {
-    code: 'CNT_MULTILINGUAL_SITE',
+    code: 'CNT_MULTILINGUAL_LANDING',
     category: 'content',
     iconKey: 'Languages',
-    title: 'Мультиязычность сайта',
-    summary: 'Ещё один язык интерфейса и контента на сайте.',
+    title: 'Мультиязычность лендинга и сайта-визитки',
+    summary: 'Языки на небольшом сайте: переключатель и статические тексты.',
     scopeBoundaries:
-      'Один добавляемый язык: ключи и статические тексты, маршруты и переключатель, fallback. Перевод текстов клиента в объём не входит и отдельной услугой не продаётся — переводит ИИ.',
-    units: { BACKEND: 4, FRONTEND: 3, PM: 1, QA: 2 },
+      'Лендинг, визитка, сайт компании: ключи и статические тексты, маршруты и переключатель, fallback. Обычно входит в базу этих профилей. Языки с другой структурой письма — отдельная оценка.',
+    units: { FRONTEND: 2, PM: 1 },
+  },
+  {
+    code: 'CNT_MULTILINGUAL_CONTENT_SITE',
+    category: 'content',
+    iconKey: 'Languages',
+    title: 'Мультиязычность магазина и контентного сайта',
+    summary: 'Языки там, где контент живёт в базе: товары, статьи, категории.',
+    scopeBoundaries:
+      'Магазин, блог, контентный сайт: языковые версии сущностей в базе, ключи интерфейса, маршруты и переключатель, письма покупателю, fallback. Перевод текстов делает ИИ, отдельной услуги перевода нет.',
+    units: { BACKEND: 4, FRONTEND: 4, PM: 1, QA: 2 },
   },
   {
     code: 'CNT_MULTILINGUAL_SYSTEM',
     category: 'content',
     iconKey: 'Languages',
     title: 'Мультиязычность системы',
-    summary: 'Языки в системе с данными, справочниками и документами.',
+    summary: 'Языки в CRM, ERP или платформе: данные, справочники, документы.',
     scopeBoundaries:
       'Один добавляемый язык: ключи по всем экранам, переводимые справочники, письма и системные тексты, fallback, влияние на отчёты. Перенос уже накопленного контента на новый язык не входит.',
     units: { BACKEND: 26, FRONTEND: 18, PM: 4, QA: 7 },

@@ -364,6 +364,18 @@ Prepared `20260919140000_lead_source_network_enum` then `20260919140100_network_
 
 **Checks:** `packages/database/prisma/network-sales-source.migration.test.ts`; `LEAD_SOURCES` length 5. `prisma generate` only (no migrate). **Migrate not applied.**
 
+### Dev database is live (2026-09-20)
+
+Owner instruction: always migrate and work against the connected **dev** host; production is a
+separate step at the end. Applied `20260920150000_delivery_core_items_and_size_presets` to dev
+(`ep-nameless-term`, not PROD `ep-sweet-dew`) with `migrate deploy`; 275 migrations, schema up to
+date. Seeded the catalog on dev: **209 draft functions in 18 categories, 209 draft price versions,
+nothing ACTIVE and nothing PUBLISHED**, author = Owner employee id.
+
+`pnpm seed:delivery-catalog` previously could not resolve `@nbos/database` from `scripts/`, because
+`scripts/` is not a workspace package. Fixed by linking the two workspace packages into the root
+dev dependencies.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).

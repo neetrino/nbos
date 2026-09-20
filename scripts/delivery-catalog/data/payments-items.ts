@@ -1,10 +1,12 @@
 import type { CatalogSeedItem } from './catalog-seed-types';
+import { ARCA_BANK_ITEMS } from './payments-arca-bank-items';
 
 /**
  * Оплаты. Каждый провайдер — отдельная карточка: работа не переиспользуется между шлюзами,
  * а клиент почти всегда выбирает конкретный банк или кошелёк.
  */
 export const PAYMENTS_ITEMS: readonly CatalogSeedItem[] = [
+  ...ARCA_BANK_ITEMS,
   {
     code: 'PAY_IDRAM',
     category: 'payments',
@@ -39,7 +41,8 @@ export const PAYMENTS_ITEMS: readonly CatalogSeedItem[] = [
     category: 'payments',
     iconKey: 'CreditCard',
     title: 'Эквайринг InecoBank',
-    summary: 'Карточная оплата через шлюз InecoBank.',
+    summary: 'Карточная оплата через собственный шлюз InecoBank.',
+
     scopeBoundaries:
       'Регистрация заказа в шлюзе, 3-D Secure, возвраты по запросу, обработка отказов, тестовая и продакшн-среда.',
     units: { BACKEND: 14, FRONTEND: 4, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
@@ -48,10 +51,10 @@ export const PAYMENTS_ITEMS: readonly CatalogSeedItem[] = [
     code: 'PAY_IDBANK',
     category: 'payments',
     iconKey: 'CreditCard',
-    title: 'Эквайринг IdBank',
-    summary: 'Карточная оплата через шлюз IdBank.',
+    title: 'Эквайринг IDBank',
+    summary: 'Карточная оплата IDBank через шлюз ArCa.',
     scopeBoundaries:
-      'Регистрация заказа, 3-D Secure, возвраты, обработка отказов, тестовая и продакшн-среда.',
+      'Один банк на протоколе ArCa: регистрация заказа, 3-D Secure, возвраты, обработка отказов, тестовая и продакшн-среда. Объём работы одинаков для всех банков ArCa, карточки разные, чтобы разработчик знал банк и его доступы.',
     units: { BACKEND: 14, FRONTEND: 4, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
   },
   {
@@ -59,19 +62,9 @@ export const PAYMENTS_ITEMS: readonly CatalogSeedItem[] = [
     category: 'payments',
     iconKey: 'CreditCard',
     title: 'Эквайринг Ameriabank',
-    summary: 'Карточная оплата через шлюз Ameriabank.',
+    summary: 'Карточная оплата через собственный шлюз Ameriabank.',
     scopeBoundaries:
       'Регистрация заказа, 3-D Secure, возвраты, обработка отказов, тестовая и продакшн-среда.',
-    units: { BACKEND: 14, FRONTEND: 4, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
-  },
-  {
-    code: 'PAY_ARCA_OTHER_BANK',
-    category: 'payments',
-    iconKey: 'CreditCard',
-    title: 'Эквайринг другого банка ARCA',
-    summary: 'Подключение ещё одного армянского банковского шлюза.',
-    scopeBoundaries:
-      'Один дополнительный банк со своим API, 3-D Secure, возвраты, сверка. Каждый следующий банк — отдельная карточка.',
     units: { BACKEND: 14, FRONTEND: 4, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
   },
   {
