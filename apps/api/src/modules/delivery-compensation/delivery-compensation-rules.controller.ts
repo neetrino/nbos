@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DELIVERY_COMPENSATION_RULES_MODULE, parseRoleRateWriteBody } from '@nbos/shared';
+import {
+  DELIVERY_COMPENSATION_RULES_MODULE,
+  parseBaseProfileWriteBody,
+  parseFunctionPriceWriteBody,
+  parseRoleRateWriteBody,
+} from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { DeliveryCompensationRulesPublishService } from './delivery-compensation-rules-publish.service';
 import { DeliveryCompensationRulesService } from './delivery-compensation-rules.service';
@@ -14,6 +19,20 @@ export class DeliveryCompensationRulesController {
     private readonly service: DeliveryCompensationRulesService,
     private readonly publishService: DeliveryCompensationRulesPublishService,
   ) {}
+
+  @Get('enrollment')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Owner readiness switch for enrolling new deliveries in V2' })
+  getEnrollment() {
+    return this.service.getEnrollmentSetting();
+  }
+
+  @Post('enrollment')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Turn V2 enrollment for new deliveries on or off' })
+  setEnrollment(@Body() body: { enabled?: boolean }) {
+    return this.service.setEnrollmentSetting(body.enabled === true);
+  }
 
   @Get('function-prices')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW')
@@ -42,6 +61,28 @@ export class DeliveryCompensationRulesController {
   createRoleRate(@Body() body: unknown) {
     try {
       return this.service.createRoleRateDraft(parseRoleRateWriteBody(body));
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Post('function-prices')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'ADD')
+  @ApiOperation({ summary: 'Create a draft unit vector for a catalog function' })
+  async createFunctionPrice(@Body() body: unknown) {
+    try {
+      return await this.service.createFunctionPriceDraft(parseFunctionPriceWriteBody(body));
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Post('base-profiles')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'ADD')
+  @ApiOperation({ summary: 'Create a draft base profile with its per-role unit vector' })
+  async createBaseProfile(@Body() body: unknown) {
+    try {
+      return await this.service.createBaseProfileDraft(parseBaseProfileWriteBody(body));
     } catch (error) {
       mapCatalogWriteError(error);
     }

@@ -1,9 +1,11 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import type { TransactionClient } from '@nbos/database';
+import type { DeliveryCompensationRoleKey, DeliveryRoleUnitKind } from '@nbos/shared';
 import { assertExpectedRevision } from './assert-expected-revision';
 import { throwDeliveryCompensationError } from './delivery-compensation-http-error';
 import { loadAddedFeaturePlan } from './load-added-feature-plan';
 import { lockDeliveryConfigurationRow } from './lock-delivery-configuration';
+import { assertDeliveryOpenForConfiguration } from './assert-delivery-open';
 import { resolveFeatureOrigin } from './resolve-feature-origin';
 import { restoreArchivedFeature } from './restore-archived-feature';
 import { writeAddedFeatureLines } from './write-added-feature-lines';
@@ -19,6 +21,7 @@ export async function applyScopeAddFeature(
   },
 ): Promise<{ createdBonusEntryIds: string[]; orderId: string }> {
   await lockDeliveryConfigurationRow(db, input.configurationId);
+  await assertDeliveryOpenForConfiguration(db, input.configurationId);
   const configuration = await db.deliveryConfiguration.findUnique({
     where: { id: input.configurationId },
     include: {
@@ -69,7 +72,11 @@ async function createNewFeature(
     checkedById: string | null;
     currentRevision: { sequence: number } | null;
     baseProfileVersion: {
-      roleUnits: Array<{ roleKey: string; unitKind: string; units: { toString(): string } | null }>;
+      roleUnits: Array<{
+        roleKey: DeliveryCompensationRoleKey;
+        unitKind: DeliveryRoleUnitKind;
+        units: { toString(): string } | null;
+      }>;
       includedFunctions: Array<{ functionId: string }>;
     } | null;
     order: { id: string; projectId: string };

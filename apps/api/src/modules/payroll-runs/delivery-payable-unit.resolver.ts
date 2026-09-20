@@ -193,22 +193,61 @@ export async function resolveDeliveryPayableUnits(
   return units;
 }
 
-/** Employee ids linked to a delivery unit via product roles or bonus entries. */
+/** Product columns that carry a delivery role holder, one per compensated role. */
+export const DELIVERY_ROLE_PRODUCT_SELECT = {
+  pmId: true,
+  developerId: true,
+  frontendDeveloperId: true,
+  designerId: true,
+  qaLeadId: true,
+  technicalSpecialistId: true,
+} as const;
+
+export type DeliveryRoleHolders = {
+  pmId: string | null;
+  developerId: string | null;
+  frontendDeveloperId: string | null;
+  designerId: string | null;
+  qaLeadId: string | null;
+  technicalSpecialistId: string | null;
+};
+
+/**
+ * Employee ids linked to a delivery unit via product roles or bonus entries.
+ * All six compensated roles count: QA and the technical specialist earn delivery
+ * units too, so leaving them out would hide their rows in the payroll matrix.
+ */
 export function linkedEmployeeIdsForUnit(order: {
-  product: {
-    pmId: string | null;
-    developerId: string | null;
-    frontendDeveloperId: string | null;
-    designerId: string | null;
-  } | null;
+  product: DeliveryRoleHolders | null;
   bonusEmployeeIds: string[];
 }): Set<string> {
   const ids = new Set(order.bonusEmployeeIds);
-  if (order.product?.pmId) ids.add(order.product.pmId);
-  if (order.product?.developerId) ids.add(order.product.developerId);
-  if (order.product?.frontendDeveloperId) ids.add(order.product.frontendDeveloperId);
-  if (order.product?.designerId) ids.add(order.product.designerId);
+  for (const employeeId of deliveryRoleHolderIds(order.product)) {
+    ids.add(employeeId);
+  }
   return ids;
+}
+
+/** Non-empty role holder ids of a product, without duplicates. */
+export function deliveryRoleHolderIds(product: DeliveryRoleHolders | null | undefined): string[] {
+  if (!product) return [];
+  const holders = [
+    product.pmId,
+    product.developerId,
+    product.frontendDeveloperId,
+    product.designerId,
+    product.qaLeadId,
+    product.technicalSpecialistId,
+  ];
+  return [...new Set(holders.filter((id): id is string => Boolean(id)))];
+}
+
+/** True when the employee holds any compensated delivery role on the product. */
+export function holdsDeliveryRole(
+  product: DeliveryRoleHolders | null | undefined,
+  employeeId: string,
+): boolean {
+  return deliveryRoleHolderIds(product).includes(employeeId);
 }
 
 export function decimalGtZero(value: string | Decimal): boolean {

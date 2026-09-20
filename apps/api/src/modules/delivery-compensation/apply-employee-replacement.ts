@@ -5,6 +5,7 @@ import { assertExpectedRevision, throwConfigurationConflict } from './assert-exp
 import { throwDeliveryCompensationError } from './delivery-compensation-http-error';
 import { isPrismaUniqueConstraint } from './prisma-unique';
 import { lockDeliveryConfigurationRow } from './lock-delivery-configuration';
+import { assertDeliveryOpenForConfiguration } from './assert-delivery-open';
 import { splitReplacementComponent } from './split-replacement-component';
 import { syncReplacementAssignee } from './sync-replacement-assignee';
 
@@ -34,6 +35,7 @@ export async function applyEmployeeReplacement(
     throw new BadRequestException('Replacement target must be a different employee');
   }
   await lockDeliveryConfigurationRow(db, input.configurationId);
+  await assertDeliveryOpenForConfiguration(db, input.configurationId);
   const configuration = await db.deliveryConfiguration.findUnique({
     where: { id: input.configurationId },
     include: {
@@ -51,12 +53,16 @@ export async function applyEmployeeReplacement(
     throwDeliveryCompensationError('LEGACY_ADOPTION_REQUIRED');
   }
   assertExpectedRevision(configuration, input.expectedRevision);
-  assertSharesCoverComponents(configuration.components, input.shares);
+  const heldComponents = componentsHeldBy(configuration.components, input.fromEmployeeId);
+  if (heldComponents.length === 0) {
+    throwDeliveryCompensationError('ROLE_ASSIGNMENT_REQUIRED');
+  }
+  assertSharesCoverComponents(heldComponents, input.shares);
   const revision = await createReplacementRevision(db, configuration, input);
   for (const share of input.shares) {
     await splitReplacementComponent(db, {
       configuration,
-      component: requireComponent(configuration.components, share.componentId),
+      component: requireComponent(heldComponents, share.componentId),
       share,
       fromEmployeeId: input.fromEmployeeId,
       toEmployeeId: input.toEmployeeId,
@@ -74,6 +80,20 @@ export async function applyEmployeeReplacement(
     toEmployeeId: input.toEmployeeId,
   });
   return { orderId: configuration.orderId };
+}
+
+/**
+ * Only components where the outgoing employee actually holds a share can be redistributed.
+ * After an earlier replacement or a later feature, the same role can be split across people,
+ * and demanding percents for a component this person never held would make replacement impossible.
+ */
+function componentsHeldBy<T extends { allocations: Array<{ employeeId: string }> }>(
+  components: readonly T[],
+  fromEmployeeId: string,
+): T[] {
+  return components.filter((component) =>
+    component.allocations.some((allocation) => allocation.employeeId === fromEmployeeId),
+  );
 }
 
 function assertSharesCoverComponents(

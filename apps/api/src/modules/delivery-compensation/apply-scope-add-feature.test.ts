@@ -74,6 +74,24 @@ describe('applyScopeAddFeature', () => {
     );
   });
 
+  it('refuses a scope change once the parent card is closed, under the row lock', async () => {
+    const findUnique = vi.fn().mockResolvedValue({
+      id: 'cfg-1',
+      mode: 'V2',
+      product: { status: 'DONE' },
+      extension: null,
+    });
+    const db = {
+      $queryRaw: vi.fn().mockResolvedValue([{ id: 'cfg-1' }]),
+      deliveryConfiguration: { findUnique },
+    };
+
+    await expect(
+      applyScopeAddFeature(db as never, { configurationId: 'cfg-1', functionId: 'fn-1' }),
+    ).rejects.toMatchObject({ response: { code: 'FINANCIAL_ALLOCATION_LOCKED' } });
+    expect(db.$queryRaw).toHaveBeenCalledBefore(findUnique);
+  });
+
   it('rejects a stale expectedRevision (L09)', async () => {
     const db = {
       $queryRaw: vi.fn().mockResolvedValue([{ id: 'cfg-1' }]),

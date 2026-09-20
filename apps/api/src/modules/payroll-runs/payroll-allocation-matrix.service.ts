@@ -11,7 +11,11 @@ import {
   validatePayrollMatrixForApproval,
   type PayrollMatrixValidationIssue,
 } from './payroll-matrix-approval-validation';
-import { resolveDeliveryPayableUnits } from './delivery-payable-unit.resolver';
+import {
+  DELIVERY_ROLE_PRODUCT_SELECT,
+  linkedEmployeeIdsForUnit,
+  resolveDeliveryPayableUnits,
+} from './delivery-payable-unit.resolver';
 import {
   queryPayrollEmployeeBonusHistoryMeta,
   queryPayrollEmployeeBonusHistorySlice,
@@ -138,9 +142,7 @@ export class PayrollAllocationMatrixService {
       where: { id: { in: orderIds } },
       select: {
         id: true,
-        product: {
-          select: { pmId: true, developerId: true, frontendDeveloperId: true, designerId: true },
-        },
+        product: { select: DELIVERY_ROLE_PRODUCT_SELECT },
         bonusEntries: {
           select: {
             id: true,
@@ -240,16 +242,14 @@ export class PayrollAllocationMatrixService {
     for (const emp of orderedEmployees) {
       for (const unit of orderedUnits) {
         const order = orderMeta.get(unit.orderId);
-        const linkedIds = new Set<string>();
-        if (order) {
-          order.bonusEntries
-            .filter((b) => isPayrollMatrixBonusEntryVisible(b, run.payrollMonth))
-            .forEach((b) => linkedIds.add(b.employeeId));
-          if (order.product?.pmId) linkedIds.add(order.product.pmId);
-          if (order.product?.developerId) linkedIds.add(order.product.developerId);
-          if (order.product?.frontendDeveloperId) linkedIds.add(order.product.frontendDeveloperId);
-          if (order.product?.designerId) linkedIds.add(order.product.designerId);
-        }
+        const linkedIds = order
+          ? linkedEmployeeIdsForUnit({
+              product: order.product,
+              bonusEmployeeIds: order.bonusEntries
+                .filter((b) => isPayrollMatrixBonusEntryVisible(b, run.payrollMonth))
+                .map((b) => b.employeeId),
+            })
+          : new Set<string>();
         const key = cellKey(emp.employeeId, unit.orderId);
         const linked = linkedIds.has(emp.employeeId) || manualDraftKeys.has(key);
         const entry = order?.bonusEntries.find(

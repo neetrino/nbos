@@ -102,6 +102,32 @@ describe('getProductStageGateErrors', () => {
     ]);
   });
 
+  it('blocks TRANSFER → DONE while delivery units are not published', () => {
+    const errors = getProductStageGateErrors(
+      {
+        status: 'TRANSFER',
+        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
+        extensions: [],
+        tasks: [],
+        tickets: [],
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
+        unpricedDeliveryNormatives: ['product base profile', 'LOYALTY'],
+      },
+      'DONE',
+    );
+    expect(errors).toEqual([
+      {
+        field: 'deliveryCompensation',
+        message: expect.stringContaining('product base profile, LOYALTY'),
+      },
+    ]);
+  });
+
   it('allows TRANSFER → DONE when CLASSIC order is FULLY_PAID', () => {
     const errors = getProductStageGateErrors(
       {

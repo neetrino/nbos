@@ -22,6 +22,20 @@ import {
   serializeOperationalConfiguration,
   type OperationalConfigurationDto,
 } from './serialize-operational-configuration';
+import type { ReplacementPlanDto } from './serialize-replacement-plan';
+import { loadReplacementPlan } from './load-replacement-plan';
+import {
+  assertEnrollmentEnabled,
+  assertOrderBelongsToExtension,
+  assertOrderBelongsToProduct,
+  assertOrderHasNoBonusEntries,
+} from './enrollment-guards';
+import { writeExtensionRoleAssignments } from './write-extension-role-assignments';
+import {
+  serializeExtensionRoleAssignments,
+  type ExtensionRoleAssignmentDto,
+  type ExtensionRoleAssignmentInput,
+} from './extension-role-assignments';
 
 const CONFIG_INCLUDE = {
   features: true,
@@ -50,19 +64,69 @@ export class DeliveryConfigurationService {
     if (!orderId.trim()) {
       throw new BadRequestException('orderId is required');
     }
-    const setting = await this.prisma.deliveryCompensationRuntimeSetting.findUnique({
-      where: { id: 'default' },
-    });
-    if (!setting?.newEnrollmentEnabled) {
-      throw new ConflictException('LEGACY_ADOPTION_REQUIRED');
-    }
+    await assertEnrollmentEnabled(this.prisma);
     const existing = await this.prisma.deliveryConfiguration.findFirst({ where: { productId } });
     if (existing) {
       return this.getRequired(existing.id);
     }
-    await this.assertOrderBelongsToProduct(productId, orderId);
-    await this.assertOrderHasNoBonusEntries(orderId);
+    await assertOrderBelongsToProduct(this.prisma, productId, orderId);
+    await assertOrderHasNoBonusEntries(this.prisma, orderId);
     return this.insertProductEnrollment(productId, orderId);
+  }
+
+  async getByExtension(
+    extensionId: string,
+  ): Promise<OperationalConfigurationDto | { mode: 'LEGACY' }> {
+    const row = await this.prisma.deliveryConfiguration.findFirst({
+      where: { extensionId },
+      include: CONFIG_INCLUDE,
+    });
+    if (!row) {
+      return { mode: 'LEGACY' };
+    }
+    return this.toOperational(row);
+  }
+
+  /** Enroll an extension under the same readiness switch and legacy guards as a product. */
+  async enrollExtension(
+    extensionId: string,
+    orderId: string,
+  ): Promise<OperationalConfigurationDto> {
+    if (!orderId.trim()) {
+      throw new BadRequestException('orderId is required');
+    }
+    await assertEnrollmentEnabled(this.prisma);
+    const existing = await this.prisma.deliveryConfiguration.findFirst({ where: { extensionId } });
+    if (existing) {
+      return this.getRequired(existing.id);
+    }
+    await assertOrderBelongsToExtension(this.prisma, extensionId, orderId);
+    await assertOrderHasNoBonusEntries(this.prisma, orderId);
+    return this.insertExtensionEnrollment(extensionId, orderId);
+  }
+
+  /**
+   * Sets who holds each compensated role on an extension. Allowed only before the plan is
+   * materialized: after that, moving money between people is a replacement, not an assignment.
+   */
+  async setExtensionRoleAssignments(
+    extensionId: string,
+    assignments: ExtensionRoleAssignmentInput[],
+  ): Promise<ExtensionRoleAssignmentDto[]> {
+    await writeExtensionRoleAssignments(this.prisma, extensionId, assignments);
+    return this.listExtensionRoleAssignments(extensionId);
+  }
+
+  async listExtensionRoleAssignments(extensionId: string): Promise<ExtensionRoleAssignmentDto[]> {
+    const rows = await this.prisma.extensionDeliveryRoleAssignment.findMany({
+      where: { extensionId },
+      select: {
+        roleKey: true,
+        employeeId: true,
+        employee: { select: { firstName: true, lastName: true } },
+      },
+    });
+    return serializeExtensionRoleAssignments(rows);
   }
 
   async addFeature(
@@ -115,6 +179,17 @@ export class DeliveryConfigurationService {
     return this.getRequired(configurationId);
   }
 
+  /** Components a replacement must redistribute for one role. Operational only, no money. */
+  async getReplacementPlan(
+    configurationId: string,
+    roleKey: DeliveryCompensationRoleKey,
+  ): Promise<ReplacementPlanDto> {
+    if (!DELIVERY_COMPENSATION_ROLE_KEYS.includes(roleKey)) {
+      throw new BadRequestException('roleKey is required');
+    }
+    return loadReplacementPlan(this.prisma, configurationId, roleKey);
+  }
+
   async replaceEmployee(
     configurationId: string,
     input: {
@@ -159,23 +234,27 @@ export class DeliveryConfigurationService {
     }
   }
 
-  private async assertOrderHasNoBonusEntries(orderId: string): Promise<void> {
-    const bonusCount = await this.prisma.bonusEntry.count({ where: { orderId } });
-    if (bonusCount > 0) {
-      throw new ConflictException('LEGACY_ADOPTION_REQUIRED');
-    }
-  }
-
-  private async assertOrderBelongsToProduct(productId: string, orderId: string): Promise<void> {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
-      select: { productId: true },
-    });
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-    if (order.productId !== productId) {
-      throw new BadRequestException('ORDER_PRODUCT_MISMATCH');
+  private async insertExtensionEnrollment(
+    extensionId: string,
+    orderId: string,
+  ): Promise<OperationalConfigurationDto> {
+    try {
+      const created = await this.prisma.deliveryConfiguration.create({
+        data: { orderId, extensionId, entityKind: 'EXTENSION', mode: 'V2' },
+        include: CONFIG_INCLUDE,
+      });
+      return this.toOperational(created);
+    } catch (error) {
+      if (!isPrismaUniqueConstraint(error)) {
+        throw error;
+      }
+      const existing = await this.prisma.deliveryConfiguration.findFirst({
+        where: { extensionId },
+      });
+      if (existing) {
+        return this.getRequired(existing.id);
+      }
+      throw new ConflictException('CONFIGURATION_CONFLICT');
     }
   }
 

@@ -30,6 +30,8 @@ export interface ProductStageGateInput {
   tasks?: Array<{ status: string }>;
   tickets?: Array<{ status: string }>;
   missingRequiredAccessSlotKeys?: string[];
+  /** V2 items on the card that still carry no published units. Empty for legacy cards. */
+  unpricedDeliveryNormatives?: string[];
 }
 
 export function getProductAllowedTransitions(current: string): string[] {
@@ -86,6 +88,7 @@ function getProductCreatingGateErrors(product: ProductStageGateInput): StageGate
 function getProductDoneGateErrors(product: ProductStageGateInput): StageGateError[] {
   return [
     ...buildMissingAccessSlotErrors(product.missingRequiredAccessSlotKeys ?? []),
+    ...buildUnpricedNormativeErrors(product.unpricedDeliveryNormatives ?? []),
     ...buildOpenItemErrors(
       'extensions',
       product.extensions ?? [],
@@ -116,6 +119,20 @@ function buildMissingAccessSlotErrors(slotKeys: readonly string[]): StageGateErr
     {
       field: 'access',
       message: `Access slots still require a link before Product Done: ${slotKeys.join(', ')}.`,
+    },
+  ];
+}
+
+/**
+ * Unknown work must not be closed silently: an OTHER product without a published profile,
+ * or a selected function without published units, keeps the card open until Owner decides.
+ */
+function buildUnpricedNormativeErrors(labels: readonly string[]): StageGateError[] {
+  if (labels.length === 0) return [];
+  return [
+    {
+      field: 'deliveryCompensation',
+      message: `Delivery units are not published yet for: ${labels.join(', ')}.`,
     },
   ];
 }

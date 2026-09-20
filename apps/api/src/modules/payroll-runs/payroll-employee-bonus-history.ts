@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient, type PayrollRunStatusEnum } from '@nbos/database';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
+import { DELIVERY_ROLE_PRODUCT_SELECT, holdsDeliveryRole } from './delivery-payable-unit.resolver';
 import type { DeliveryPayableUnitDto } from './delivery-payable-unit.types';
 import { isPayrollMatrixBonusEntryVisible } from './payroll-bonus-release-base';
 import { addPayrollMonths, enumeratePayrollMonths } from './payroll-salary-board';
@@ -194,15 +195,7 @@ async function loadOrdersForProjects(
       id: true,
       code: true,
       projectId: true,
-      product: {
-        select: {
-          name: true,
-          pmId: true,
-          developerId: true,
-          frontendDeveloperId: true,
-          designerId: true,
-        },
-      },
+      product: { select: { name: true, ...DELIVERY_ROLE_PRODUCT_SELECT } },
       extension: { select: { name: true } },
       bonusEntries: {
         select: {
@@ -285,13 +278,9 @@ async function enrichProjectLabels(
             b.employeeId === selectedEmployeeId &&
             isPayrollMatrixBonusEntryVisible(b, ctx.run.payrollMonth),
         ) ?? false;
-      const hasPmRole =
-        order?.product?.pmId === selectedEmployeeId ||
-        order?.product?.developerId === selectedEmployeeId ||
-        order?.product?.frontendDeveloperId === selectedEmployeeId ||
-        order?.product?.designerId === selectedEmployeeId;
+      const hasDeliveryRole = holdsDeliveryRole(order?.product, selectedEmployeeId);
 
-      if (!linkedOnOrder && !hasPmRole && !focusCell && !unit) {
+      if (!linkedOnOrder && !hasDeliveryRole && !focusCell && !unit) {
         const hasAnyAmount = project.monthAmounts.some((a) => a != null);
         if (!hasAnyAmount) return false;
       }

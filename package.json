@@ -31,6 +31,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "test": "vitest run",
     "test:regression": "vitest run --config vitest.regression.config.ts",
+    "seed:delivery-catalog": "tsx scripts/delivery-catalog/seed-delivery-catalog.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "knip": "knip --dependencies --files",

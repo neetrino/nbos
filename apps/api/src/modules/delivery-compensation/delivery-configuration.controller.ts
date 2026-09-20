@@ -27,6 +27,46 @@ export class DeliveryConfigurationController {
     return this.service.enrollProduct(productId, body.orderId ?? '');
   }
 
+  @Get('by-extension/:extensionId')
+  @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Operational configuration of an extension or implicit LEGACY.' })
+  getByExtension(@Param('extensionId', ParseUUIDPipe) extensionId: string) {
+    return this.service.getByExtension(extensionId);
+  }
+
+  @Post('by-extension/:extensionId')
+  @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Enroll an extension in V2 under the Owner readiness switch.' })
+  enrollExtension(
+    @Param('extensionId', ParseUUIDPipe) extensionId: string,
+    @Body() body: { orderId?: string },
+  ) {
+    return this.service.enrollExtension(extensionId, body.orderId ?? '');
+  }
+
+  @Get('by-extension/:extensionId/role-assignments')
+  @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Who holds each compensated role on an extension.' })
+  listExtensionRoleAssignments(@Param('extensionId', ParseUUIDPipe) extensionId: string) {
+    return this.service.listExtensionRoleAssignments(extensionId);
+  }
+
+  @Post('by-extension/:extensionId/role-assignments')
+  @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Set extension role holders before the plan is materialized.' })
+  setExtensionRoleAssignments(
+    @Param('extensionId', ParseUUIDPipe) extensionId: string,
+    @Body() body: { assignments?: Array<{ roleKey?: string; employeeId?: string | null }> },
+  ) {
+    return this.service.setExtensionRoleAssignments(
+      extensionId,
+      (body.assignments ?? []).map((row) => ({
+        roleKey: row.roleKey ?? '',
+        employeeId: row.employeeId ?? null,
+      })),
+    );
+  }
+
   @Post(':id/features')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Add an ACTIVE function. Included-in-base stays unpaid.' })
@@ -72,6 +112,13 @@ export class DeliveryConfigurationController {
       })),
       actorEmployeeId: user.id,
     });
+  }
+
+  @Get(':id/replacement-plan')
+  @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Components a replacement must redistribute for one role. No money.' })
+  getReplacementPlan(@Param('id', ParseUUIDPipe) id: string, @Query('roleKey') roleKey?: string) {
+    return this.service.getReplacementPlan(id, (roleKey ?? '') as never);
   }
 
   @Post(':id/replacements')

@@ -19,6 +19,7 @@ import {
   walletBonusScopeLabel,
 } from './employee-wallet-project-breakdown';
 import { employeeWalletSalesAccrualHint } from './employee-wallet-sales-hint';
+import { walletDeliveryLabel } from './wallet-delivery-normative-label';
 import type {
   EmployeeWalletBonusRow,
   EmployeeWalletNextPayroll,
@@ -221,6 +222,7 @@ export class EmployeeWalletService {
         b.calculationSnapshot,
       ),
       productLabel: walletBonusScopeLabel(pool, b.order.code),
+      ...walletDeliveryLabel(b),
       project: { code: b.project.code, name: b.project.name },
       order: { code: b.order.code },
       createdAt: b.createdAt.toISOString(),

@@ -4,6 +4,7 @@ import { assertExpectedRevision, throwConfigurationConflict } from './assert-exp
 import { throwDeliveryCompensationError } from './delivery-compensation-http-error';
 import { isPrismaUniqueConstraint } from './prisma-unique';
 import { lockDeliveryConfigurationRow } from './lock-delivery-configuration';
+import { assertDeliveryOpenForConfiguration } from './assert-delivery-open';
 import {
   reduceRemovedFeatureAllocations,
   type AcceptedAmountInput,
@@ -21,6 +22,7 @@ export async function applyScopeRemoveFeature(
   },
 ): Promise<void> {
   await lockDeliveryConfigurationRow(db, input.configurationId);
+  await assertDeliveryOpenForConfiguration(db, input.configurationId);
   const configuration = await db.deliveryConfiguration.findUnique({
     where: { id: input.configurationId },
     include: { currentRevision: true },

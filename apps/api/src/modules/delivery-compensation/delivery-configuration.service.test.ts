@@ -74,6 +74,11 @@ describe('DeliveryConfigurationService', () => {
 
   it('rejects draft catalog functions from the picker', async () => {
     const service = new DeliveryConfigurationService({
+      deliveryConfiguration: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ product: { status: 'DEVELOPMENT' }, extension: null }),
+      },
       deliveryFunction: { findUnique: vi.fn().mockResolvedValue({ id: 'fn-1', status: 'DRAFT' }) },
     } as never);
     await expect(service.addFeature('cfg-1', 'fn-1')).rejects.toBeInstanceOf(BadRequestException);

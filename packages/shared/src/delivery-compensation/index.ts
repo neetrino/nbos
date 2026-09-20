@@ -5,6 +5,7 @@ export * from './catalog-write';
 export * from './constants';
 export * from './decimal-scale';
 export * from './financial-dto';
+export * from './norms-write';
 export * from './operational-dto';
 export * from './pick-published-as-of';
 export * from './role-units';
