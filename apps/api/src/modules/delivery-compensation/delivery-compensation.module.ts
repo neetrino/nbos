@@ -5,6 +5,9 @@ import { DeliveryCompensationRulesPublishService } from './delivery-compensation
 import { DeliveryCompensationRulesService } from './delivery-compensation-rules.service';
 import { DeliveryConfigurationController } from './delivery-configuration.controller';
 import { DeliveryConfigurationService } from './delivery-configuration.service';
+import { CatalogStructureController } from './catalog-structure.controller';
+import { CatalogStructureService } from './catalog-structure.service';
+import { SalePricesService } from './sale-prices.service';
 import { FunctionCatalogAttachmentsService } from './function-catalog-attachments.service';
 import { FunctionCatalogController } from './function-catalog.controller';
 import { FunctionCatalogService } from './function-catalog.service';
@@ -15,6 +18,7 @@ import { FunctionCatalogService } from './function-catalog.service';
     FunctionCatalogController,
     DeliveryCompensationRulesController,
     DeliveryConfigurationController,
+    CatalogStructureController,
   ],
   providers: [
     FunctionCatalogService,
@@ -22,7 +26,15 @@ import { FunctionCatalogService } from './function-catalog.service';
     DeliveryCompensationRulesService,
     DeliveryCompensationRulesPublishService,
     DeliveryConfigurationService,
+    CatalogStructureService,
+    SalePricesService,
   ],
-  exports: [FunctionCatalogService, DeliveryCompensationRulesService, DeliveryConfigurationService],
+  exports: [
+    FunctionCatalogService,
+    DeliveryCompensationRulesService,
+    DeliveryConfigurationService,
+    CatalogStructureService,
+    SalePricesService,
+  ],
 })
 export class DeliveryCompensationModule {}

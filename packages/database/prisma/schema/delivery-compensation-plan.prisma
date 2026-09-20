@@ -27,9 +27,12 @@ enum DeliveryBonusComponentKindEnum {
 }
 
 model DeliveryCompensationRuntimeSetting {
-  id                    String   @id
-  newEnrollmentEnabled  Boolean  @default(false) @map("new_enrollment_enabled")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  id                   String   @id
+  newEnrollmentEnabled Boolean  @default(false) @map("new_enrollment_enabled")
+  /// Sale multiplier used when a card carries no price of its own. Ten by default, per the agreed
+  /// starting point of one unit costing a thousand AMD and selling for ten.
+  defaultSaleMultiplier Decimal @default(10) @map("default_sale_multiplier") @db.Decimal(8, 4)
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@map("delivery_compensation_runtime_settings")
 }

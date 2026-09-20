@@ -11,6 +11,7 @@ export * from './norms-write';
 export * from './operational-dto';
 export * from './pick-published-as-of';
 export * from './role-units';
+export * from './sale-price';
 export * from './rules-write';
 export * from './validate-design-mode';
 export * from './validate-redistribution';

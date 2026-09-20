@@ -70,6 +70,7 @@ model DeliveryFunction {
   configurationFeatures  DeliveryConfigurationFeature[]
   sizePresets            DeliveryConfigSizePreset[]
   tiers                  DeliveryFunctionTier[]
+  salePrices             DeliverySalePriceVersion[]
 
   @@index([status])
   @@index([category])
@@ -126,9 +127,10 @@ model DeliveryFunctionTier {
   createdAt  DateTime @default(now()) @map("created_at")
 
   function     DeliveryFunction                  @relation(fields: [functionId], references: [id], onDelete: Cascade)
-  productTypes DeliveryFunctionTierProductType[]
+  productTypes  DeliveryFunctionTierProductType[]
   priceVersions DeliveryFunctionPriceVersion[]
-  selectedBy   DeliveryConfigurationFeature[]
+  salePrices    DeliverySalePriceVersion[]
+  selectedBy    DeliveryConfigurationFeature[]
 
   @@unique([functionId, code])
   @@unique([functionId, position])
@@ -210,6 +212,7 @@ model DeliveryBaseProfileVersion {
   roleUnits         DeliveryBaseProfileRoleUnit[]
   includedFunctions DeliveryBaseIncludedFunction[]
   coreItems         DeliveryBaseProfileCoreItem[]
+  salePrices        DeliverySalePriceVersion[]
   configurations    DeliveryConfiguration[]
 
   @@unique([profileKey, version])
@@ -253,6 +256,39 @@ model DeliveryConfigSizePreset {
   @@unique([profileKey, configSize, functionId])
   @@index([profileKey, configSize])
   @@map("delivery_config_size_presets")
+}
+
+/// Sale price of one catalog item, versioned exactly like units so that changing a price never
+/// re-prices a deal that was already assembled. A multiplier follows cost: the price moves when the
+/// developer rate moves, which is right for standard and AI work. A fixed amount ignores cost and is
+/// used where the market sets a round number, such as a blog. When both are present the fixed amount
+/// wins, and the card shows which of the two produced the price.
+/// `targetKey` spells out what the version prices, because a nullable foreign key cannot carry a
+/// unique version number on its own.
+model DeliverySalePriceVersion {
+  id                   String                      @id @default(uuid())
+  targetKey            String                      @map("target_key")
+  functionId           String?                     @map("function_id")
+  tierId               String?                     @map("tier_id")
+  baseProfileVersionId String?                     @map("base_profile_version_id")
+  version              Int
+  status               DeliveryNormativeStatusEnum @default(DRAFT)
+  effectiveFrom        DateTime                    @map("effective_from")
+  multiplier           Decimal?                    @db.Decimal(8, 4)
+  fixedAmount          Decimal?                    @map("fixed_amount") @db.Decimal(12, 2)
+  currency             String                      @default("AMD")
+  publishedById        String?                     @map("published_by_id")
+  publishedAt          DateTime?                   @map("published_at")
+  createdAt            DateTime                    @default(now()) @map("created_at")
+
+  function           DeliveryFunction?           @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  tier               DeliveryFunctionTier?       @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  baseProfileVersion DeliveryBaseProfileVersion? @relation(fields: [baseProfileVersionId], references: [id], onDelete: Cascade)
+  publishedBy        Employee?                   @relation("DeliverySalePricePublishedBy", fields: [publishedById], references: [id])
+
+  @@unique([targetKey, version])
+  @@index([targetKey, status])
+  @@map("delivery_sale_price_versions")
 }
 
 model DeliveryBaseProfileRoleUnit {

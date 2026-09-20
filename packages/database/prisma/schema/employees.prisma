@@ -198,6 +198,7 @@ model Employee {
   deliveryFunctionsAuthored          DeliveryFunction[]                @relation("DeliveryFunctionAuthor")
   deliveryFunctionContentAuthored    DeliveryFunctionContentVersion[]  @relation("DeliveryFunctionContentAuthor")
   deliveryFunctionPricesPublished    DeliveryFunctionPriceVersion[]    @relation("DeliveryFunctionPricePublishedBy")
+  deliverySalePricesPublished       DeliverySalePriceVersion[]        @relation("DeliverySalePricePublishedBy")
   deliveryBaseProfilesPublished      DeliveryBaseProfileVersion[]      @relation("DeliveryBaseProfilePublishedBy")
   deliveryRoleRatesPublished         DeliveryRoleRateVersion[]         @relation("DeliveryRoleRatePublishedBy")
   deliveryConfigurationsChecked      DeliveryConfiguration[]           @relation("DeliveryConfigurationCheckedBy")
