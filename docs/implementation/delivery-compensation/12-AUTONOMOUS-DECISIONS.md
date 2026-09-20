@@ -100,14 +100,22 @@ Sale prices are versioned like units, so a price change never re-prices deals th
 assembled. This was not asked separately: unversioned prices would silently rewrite history, which
 canon already forbids for units and rates.
 
+**1.13 The executor fills the catalog, the Owner reviews the numbers — Owner decision of
+2026-09-20.** Product types and the whole function catalog, including proposed units, are written by
+the executor from what the business already does; there are no secrets here that would require asking
+per card. The Owner reads the finished list once it exists, because comparing ready numbers is faster
+than dictating them from nothing. Everything is written as DRAFT, so a proposal cannot pay anyone
+until he publishes it.
+
+Delivered on the same day: 202 cards in 18 categories with per-role unit proposals, on the scale of
+one unit for one thousand AMD of cost and a tenfold default sale price. The catalog is meant to hold
+one to two hundred cards, so categories are browsing aids, not restrictions: a `commerce` function may
+be selected for a CRM.
+
 ## 2. Open points that need the Owner
 
-**2.4 The catalog content itself.** The seed ships twenty-one draft cards with scope boundaries taken
-from the bootstrap document, with placeholder instructions and acceptance criteria. The cores,
-modules, gradations and presets sketched in `09-CATALOG-DRAFT.md` are not seeded: they need the
-Owner's numbers, and a card published with invented units would be worse than no card.
-
-**2.5 Everything that needs a live database.** No migration, seed or HTTP call was run against any
+**2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any
 Neon host, including the development one. The runbook lists the exact commands in order. Until they
 run, every slice in the journal stays `IMPLEMENTED_NOT_VERIFIED`, and browser QA of the norms screen,
-the Functions workspace and the replacement dialog has not happened.
+the Functions workspace, the catalog browser and the replacement dialog has not happened. This is not
+a question to answer: it is work only the Owner can start.
