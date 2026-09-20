@@ -3,6 +3,8 @@ export * from './calculate-delivery-plan';
 export * from './catalog-content-patch';
 export * from './catalog-write';
 export * from './constants';
+export * from './core-items-write';
+export * from './size-presets-write';
 export * from './decimal-scale';
 export * from './financial-dto';
 export * from './norms-write';

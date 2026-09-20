@@ -63,11 +63,12 @@ model DeliveryFunction {
   createdAt DateTime                   @default(now()) @map("created_at")
   updatedAt DateTime                   @updatedAt @map("updated_at")
 
-  author                 Employee                        @relation("DeliveryFunctionAuthor", fields: [authorId], references: [id])
+  author                 Employee                         @relation("DeliveryFunctionAuthor", fields: [authorId], references: [id])
   contentVersions        DeliveryFunctionContentVersion[]
   priceVersions          DeliveryFunctionPriceVersion[]
   includedInBaseProfiles DeliveryBaseIncludedFunction[]
   configurationFeatures  DeliveryConfigurationFeature[]
+  sizePresets            DeliveryConfigSizePreset[]
 
   @@index([status])
   @@index([category])
@@ -87,8 +88,8 @@ model DeliveryFunctionContentVersion {
   publishedAt        DateTime? @map("published_at")
   createdAt          DateTime  @default(now()) @map("created_at")
 
-  function    DeliveryFunction               @relation(fields: [functionId], references: [id], onDelete: Cascade)
-  author      Employee                       @relation("DeliveryFunctionContentAuthor", fields: [authorId], references: [id])
+  function    DeliveryFunction             @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  author      Employee                     @relation("DeliveryFunctionContentAuthor", fields: [authorId], references: [id])
   attachments DeliveryFunctionAttachment[]
 
   @@unique([functionId, version])
@@ -121,10 +122,10 @@ model DeliveryFunctionPriceVersion {
   publishedAt   DateTime?                   @map("published_at")
   createdAt     DateTime                    @default(now()) @map("created_at")
 
-  function    DeliveryFunction              @relation(fields: [functionId], references: [id], onDelete: Restrict)
-  publishedBy Employee?                     @relation("DeliveryFunctionPricePublishedBy", fields: [publishedById], references: [id])
-  roleUnits   DeliveryFunctionPriceRoleUnit[]
-  extraFeatures DeliveryConfigurationFeature[] @relation("ConfigurationFeaturePriceVersion")
+  function      DeliveryFunction                @relation(fields: [functionId], references: [id], onDelete: Restrict)
+  publishedBy   Employee?                       @relation("DeliveryFunctionPricePublishedBy", fields: [publishedById], references: [id])
+  roleUnits     DeliveryFunctionPriceRoleUnit[]
+  extraFeatures DeliveryConfigurationFeature[]  @relation("ConfigurationFeaturePriceVersion")
 
   @@unique([functionId, version])
   @@index([functionId, status])
@@ -132,12 +133,12 @@ model DeliveryFunctionPriceVersion {
 }
 
 model DeliveryFunctionPriceRoleUnit {
-  id             String                         @id @default(uuid())
-  priceVersionId String                         @map("price_version_id")
+  id             String                          @id @default(uuid())
+  priceVersionId String                          @map("price_version_id")
   roleKey        DeliveryCompensationRoleKeyEnum @map("role_key")
-  unitKind       DeliveryRoleUnitKindEnum       @map("unit_kind")
+  unitKind       DeliveryRoleUnitKindEnum        @map("unit_kind")
   /// Null = not configured. 0 = explicit zero. Never treat null as 0.
-  units          Decimal?                       @db.Decimal(14, 4)
+  units          Decimal?                        @db.Decimal(14, 4)
 
   priceVersion DeliveryFunctionPriceVersion @relation(fields: [priceVersionId], references: [id], onDelete: Cascade)
 
@@ -163,15 +164,53 @@ model DeliveryBaseProfileVersion {
   publishedAt        DateTime?                      @map("published_at")
   createdAt          DateTime                       @default(now()) @map("created_at")
 
-  publishedBy        Employee?                       @relation("DeliveryBaseProfilePublishedBy", fields: [publishedById], references: [id])
-  roleUnits          DeliveryBaseProfileRoleUnit[]
-  includedFunctions  DeliveryBaseIncludedFunction[]
-  configurations     DeliveryConfiguration[]
+  publishedBy       Employee?                      @relation("DeliveryBaseProfilePublishedBy", fields: [publishedById], references: [id])
+  roleUnits         DeliveryBaseProfileRoleUnit[]
+  includedFunctions DeliveryBaseIncludedFunction[]
+  coreItems         DeliveryBaseProfileCoreItem[]
+  configurations    DeliveryConfiguration[]
 
   @@unique([profileKey, version])
   @@index([profileKey, status])
   @@index([entityKind, status])
   @@map("delivery_base_profile_versions")
+}
+
+/// Structured composition of the product core. The core is indivisible and cannot be removed or
+/// discounted, so what it contains has to be an explicit list rather than prose in `description`:
+/// the same list is what a client is shown and what settles an "was this included" argument.
+/// Content only, no units and no money — the core is priced by the profile's role units.
+model DeliveryBaseProfileCoreItem {
+  id               String   @id @default(uuid())
+  profileVersionId String   @map("profile_version_id")
+  position         Int
+  label            String
+  note             String?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  profileVersion DeliveryBaseProfileVersion @relation(fields: [profileVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([profileVersionId, position])
+  @@index([profileVersionId])
+  @@map("delivery_base_profile_core_items")
+}
+
+/// Modules pre-checked in the constructor for a size level. This is NOT `includedFunctions`:
+/// included-in-base means the work is already paid by the base units, a preset only means
+/// "usually sold at this size" and is charged as a normal extra. Mixing the two would make every
+/// module of the largest level free. Presets carry no money, so they are not versioned.
+model DeliveryConfigSizePreset {
+  id         String                 @id @default(uuid())
+  profileKey String                 @map("profile_key")
+  configSize DeliveryConfigSizeEnum @map("config_size")
+  functionId String                 @map("function_id")
+  createdAt  DateTime               @default(now()) @map("created_at")
+
+  function DeliveryFunction @relation(fields: [functionId], references: [id], onDelete: Cascade)
+
+  @@unique([profileKey, configSize, functionId])
+  @@index([profileKey, configSize])
+  @@map("delivery_config_size_presets")
 }
 
 model DeliveryBaseProfileRoleUnit {
