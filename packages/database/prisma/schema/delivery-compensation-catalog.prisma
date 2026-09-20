@@ -69,6 +69,7 @@ model DeliveryFunction {
   includedInBaseProfiles DeliveryBaseIncludedFunction[]
   configurationFeatures  DeliveryConfigurationFeature[]
   sizePresets            DeliveryConfigSizePreset[]
+  tiers                  DeliveryFunctionTier[]
 
   @@index([status])
   @@index([category])
@@ -112,9 +113,48 @@ model DeliveryFunctionAttachment {
   @@map("delivery_function_attachments")
 }
 
+/// Gradation of one function: the same work at the volume a given kind of product implies, for example
+/// multilingual support on a landing page versus in an ERP. One card with gradations instead of one card
+/// per volume, so a configuration cannot hold two variants of the same work and pay for it twice.
+/// Units live on the gradation's price version, never here.
+model DeliveryFunctionTier {
+  id         String   @id @default(uuid())
+  functionId String   @map("function_id")
+  code       String
+  label      String
+  position   Int
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  function     DeliveryFunction                  @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  productTypes DeliveryFunctionTierProductType[]
+  priceVersions DeliveryFunctionPriceVersion[]
+  selectedBy   DeliveryConfigurationFeature[]
+
+  @@unique([functionId, code])
+  @@unique([functionId, position])
+  @@index([functionId])
+  @@map("delivery_function_tiers")
+}
+
+/// Product types this gradation is the default for, so the configurator resolves the gradation from the
+/// card being sold instead of asking a person which volume applies.
+model DeliveryFunctionTierProductType {
+  id          String          @id @default(uuid())
+  tierId      String          @map("tier_id")
+  productType ProductTypeEnum @map("product_type")
+
+  tier DeliveryFunctionTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+
+  @@unique([tierId, productType])
+  @@index([productType])
+  @@map("delivery_function_tier_product_types")
+}
+
 model DeliveryFunctionPriceVersion {
   id            String                      @id @default(uuid())
   functionId    String                      @map("function_id")
+  /// Null for a function without gradations. Set means these units price that gradation only.
+  tierId        String?                     @map("tier_id")
   version       Int
   status        DeliveryNormativeStatusEnum @default(DRAFT)
   effectiveFrom DateTime                    @map("effective_from")
@@ -123,12 +163,14 @@ model DeliveryFunctionPriceVersion {
   createdAt     DateTime                    @default(now()) @map("created_at")
 
   function      DeliveryFunction                @relation(fields: [functionId], references: [id], onDelete: Restrict)
+  tier          DeliveryFunctionTier?           @relation(fields: [tierId], references: [id], onDelete: Cascade)
   publishedBy   Employee?                       @relation("DeliveryFunctionPricePublishedBy", fields: [publishedById], references: [id])
   roleUnits     DeliveryFunctionPriceRoleUnit[]
   extraFeatures DeliveryConfigurationFeature[]  @relation("ConfigurationFeaturePriceVersion")
 
   @@unique([functionId, version])
   @@index([functionId, status])
+  @@index([tierId, status])
   @@map("delivery_function_price_versions")
 }
 

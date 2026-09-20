@@ -139,6 +139,40 @@ product and charge the same work twice. The agreed model puts gradations inside 
 tier-scoped price versions and a feature-to-tier link. That is the next slice; until it lands, the
 runbook tells the Owner to publish only the variants he sells, because a draft cannot be selected.
 
+**1.15 How a function that costs differently in different products is priced — recommended and adopted
+2026-09-20.** Multilingual support is the sharpest case, but the same shape applies to search, roles and
+a few others: one and the same function is small in a landing page and large in an ERP. Three ways were
+possible.
+
+Separate cards per product group is what the catalog has today and it is the worst of the three: the
+product group is already known from the base profile, so asking a human to pick the matching card adds
+nothing but the chance of picking two at once and charging the same work twice. Per-profile unit
+overrides on every function are the most precise, but they multiply data entry across two hundred cards
+and many profiles, and the Owner would be filling numbers he does not care about.
+
+Adopted: **one card, gradations inside it, and the gradation chosen automatically from the product**.
+The card stays single, so it cannot be double-selected; units live on the gradation and are published
+per gradation, so history and audit stay honest; the configurator picks the gradation from the base
+profile, so nobody chooses by hand in the normal case, with a manual override plus reason for the rare
+one. For the smallest gradation the card can simply be marked included in the base of those profiles,
+which is exactly the Owner's "on a landing page it is nearly free".
+
+Second half of the same decision: **we charge for the fact of multilingual support, not per language.**
+The second language is the architecture — keys, switching, system texts, emails; the third and fourth
+are almost free because the AI translates. A language that changes the writing direction or the alphabet
+is not covered and is registered as unknown work.
+
+Gradations of multilingual support therefore are: landing, visit card and company site (normally
+included in the base of those profiles); shop, blog and content site, where content lives in the
+database; CRM, ERP and platform, where every screen, dictionary and document is affected. A mobile app
+follows its own kind rather than the fact of being an app, because identical functionality costs the
+same on web and on mobile.
+
+**1.16 In-app crash reporting is kept as a draft the company does not sell.** The Owner does not
+recognise it as something they do. The card stays in the catalog as a draft, which means it cannot be
+selected by anyone, and it must not be published unless such work is actually sold. Kept rather than
+deleted so the norm is ready if a client asks; it costs nothing while it stays draft.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any

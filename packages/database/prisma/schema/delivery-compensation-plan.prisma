@@ -81,6 +81,9 @@ model DeliveryConfigurationFeature {
   id                     String                      @id @default(uuid())
   configurationId        String                      @map("configuration_id")
   functionId             String                      @map("function_id")
+  /// Gradation chosen for this selection. Required when the function has gradations, so the plan records
+  /// which volume was sold, not only which function.
+  tierId                 String?                     @map("tier_id")
   selectedPriceVersionId String?                     @map("selected_price_version_id")
   origin                 DeliveryFeatureOriginEnum
   localNote              String?                     @map("local_note")
@@ -91,6 +94,7 @@ model DeliveryConfigurationFeature {
 
   configuration        DeliveryConfiguration         @relation(fields: [configurationId], references: [id], onDelete: Cascade)
   function             DeliveryFunction              @relation(fields: [functionId], references: [id], onDelete: Restrict)
+  tier                 DeliveryFunctionTier?         @relation(fields: [tierId], references: [id], onDelete: Restrict)
   selectedPriceVersion DeliveryFunctionPriceVersion? @relation("ConfigurationFeaturePriceVersion", fields: [selectedPriceVersionId], references: [id], onDelete: Restrict)
   components           DeliveryBonusComponent[]
 
