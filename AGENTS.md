@@ -4,6 +4,8 @@ This repository is **NBOS** — a Size C production monorepo. Keep product canon
 
 ## Before substantial work
 
+0. Read [`TODO.md`](TODO.md) — the current remaining work and the agreed working process (implement →
+   checks → subagent review → commit per stage). It is the first file to read after a context reset.
 1. Read the explicit user task and preserve its scope.
 2. Read `docs/TECH_CARD.md` when it is relevant.
 3. Read `docs/01-ARCHITECTURE.md` when it is relevant.
