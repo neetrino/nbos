@@ -58,8 +58,11 @@ describe('applyScopeAddFeature', () => {
             includedFunctions: [{ functionId: 'fn-included' }],
           },
           order: { id: 'order-1', projectId: 'proj-1' },
+          product: { productType: 'ECOMMERCE' },
+          extension: null,
         }),
       },
+      deliveryFunctionTier: { findMany: vi.fn().mockResolvedValue([]) },
       deliveryConfigurationFeature: { create, findUnique: vi.fn(), update: vi.fn() },
     };
 
@@ -69,7 +72,7 @@ describe('applyScopeAddFeature', () => {
     });
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ origin: 'INCLUDED' }),
+        data: expect.objectContaining({ origin: 'INCLUDED', tierId: null }),
       }),
     );
   });
@@ -114,5 +117,57 @@ describe('applyScopeAddFeature', () => {
         expectedRevision: 1,
       }),
     ).rejects.toBeInstanceOf(ConflictException);
+  });
+});
+
+describe('applyScopeAddFeature gradations', () => {
+  function buildDb(
+    tiers: Array<{ id: string; position: number; productTypes: Array<{ productType: string }> }>,
+  ) {
+    const create = vi.fn().mockResolvedValue({ id: 'feat-3', functionId: 'fn-lang' });
+    return {
+      create,
+      db: {
+        $queryRaw: vi.fn().mockResolvedValue([{ id: 'cfg-1' }]),
+        deliveryConfiguration: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: 'cfg-1',
+            mode: 'V2',
+            orderId: 'order-1',
+            initialRevisionId: null,
+            draftVersion: 1,
+            currentRevision: null,
+            features: [],
+            baseProfileVersion: { roleUnits: [], includedFunctions: [] },
+            order: { id: 'order-1', projectId: 'proj-1' },
+            product: { productType: 'CRM' },
+            extension: null,
+          }),
+        },
+        deliveryFunctionTier: { findMany: vi.fn().mockResolvedValue(tiers) },
+        deliveryConfigurationFeature: { create, findUnique: vi.fn(), update: vi.fn() },
+      },
+    };
+  }
+
+  it('records the gradation resolved from the product type', async () => {
+    const { db, create } = buildDb([
+      { id: 'tier-site', position: 1, productTypes: [{ productType: 'LANDING' }] },
+      { id: 'tier-system', position: 2, productTypes: [{ productType: 'CRM' }] },
+    ]);
+
+    await applyScopeAddFeature(db as never, { configurationId: 'cfg-1', functionId: 'fn-lang' });
+
+    expect(create.mock.calls[0]?.[0].data).toMatchObject({ tierId: 'tier-system' });
+  });
+
+  it('refuses the selection when no gradation fits the product', async () => {
+    const { db } = buildDb([
+      { id: 'tier-site', position: 1, productTypes: [{ productType: 'LANDING' }] },
+    ]);
+
+    await expect(
+      applyScopeAddFeature(db as never, { configurationId: 'cfg-1', functionId: 'fn-lang' }),
+    ).rejects.toMatchObject({ response: { code: 'FUNCTION_TIER_REQUIRED' } });
   });
 });

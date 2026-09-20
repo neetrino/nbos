@@ -18,6 +18,7 @@ export type ReadinessConfigRow = {
   baseProfileVersion: { roleUnits: NormativeRoleUnitRow[] } | null;
   features: Array<{
     functionId: string;
+    tierId: string | null;
     origin: 'INCLUDED' | 'EXTRA';
     selectedPriceVersionId: string | null;
     archivedAt: Date | null;

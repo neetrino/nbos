@@ -133,9 +133,12 @@ export class DeliveryConfigurationService {
   async addFeature(
     configurationId: string,
     functionId: string,
-    expectedRevision?: number,
-    actorEmployeeId?: string,
-    reason?: string,
+    options: {
+      expectedRevision?: number;
+      actorEmployeeId?: string;
+      reason?: string;
+      tierId?: string | null;
+    } = {},
   ): Promise<OperationalConfigurationDto> {
     const fn = await this.prisma.deliveryFunction.findUnique({ where: { id: functionId } });
     if (!fn || fn.status !== 'ACTIVE') {
@@ -145,9 +148,10 @@ export class DeliveryConfigurationService {
       applyScopeAddFeature(tx, {
         configurationId,
         functionId,
-        expectedRevision,
-        actorEmployeeId,
-        reason,
+        tierId: options.tierId,
+        expectedRevision: options.expectedRevision,
+        actorEmployeeId: options.actorEmployeeId,
+        reason: options.reason,
       }),
     );
     if (written.createdBonusEntryIds.length > 0) {

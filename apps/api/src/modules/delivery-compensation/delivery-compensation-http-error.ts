@@ -14,6 +14,9 @@ const SAFE_MESSAGES: Record<DeliveryCompensationErrorCode, string> = {
   AI_DESIGNER_REVIEW_REQUIRED: 'AI design with a Designer requires an explicit Reviewer role.',
   UNITS_NOT_CONFIGURED: 'Published function units are incomplete. Ask the Owner to finish setup.',
   RATE_NOT_CONFIGURED: 'Published role rates are incomplete. Ask the Owner to finish setup.',
+  FUNCTION_TIER_REQUIRED:
+    'This function is sold in several volumes. Choose the one that applies to this product.',
+  FUNCTION_TIER_UNKNOWN: 'That volume does not belong to this function.',
 };
 
 export function throwDeliveryCompensationError(code: DeliveryCompensationErrorCode): never {

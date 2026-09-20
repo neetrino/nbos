@@ -7,6 +7,7 @@ import { loadAddedFeaturePlan } from './load-added-feature-plan';
 import { lockDeliveryConfigurationRow } from './lock-delivery-configuration';
 import { assertDeliveryOpenForConfiguration } from './assert-delivery-open';
 import { resolveFeatureOrigin } from './resolve-feature-origin';
+import { resolveFeatureTierId } from './resolve-feature-tier';
 import { restoreArchivedFeature } from './restore-archived-feature';
 import { writeAddedFeatureLines } from './write-added-feature-lines';
 
@@ -15,6 +16,7 @@ export async function applyScopeAddFeature(
   input: {
     configurationId: string;
     functionId: string;
+    tierId?: string | null;
     expectedRevision?: number;
     actorEmployeeId?: string;
     reason?: string;
@@ -29,6 +31,8 @@ export async function applyScopeAddFeature(
       features: true,
       baseProfileVersion: { include: { roleUnits: true, includedFunctions: true } },
       order: { select: { id: true, projectId: true } },
+      product: { select: { productType: true } },
+      extension: { select: { product: { select: { productType: true } } } },
     },
   });
   if (!configuration || configuration.mode !== 'V2') {
@@ -55,7 +59,12 @@ export async function applyScopeAddFeature(
   if (restored) {
     return { createdBonusEntryIds: [], orderId: configuration.orderId };
   }
-  return createNewFeature(db, configuration, input);
+  const tierId = resolveFeatureTierId({
+    tiers: await loadFunctionTiers(db, input.functionId),
+    productType: productTypeOf(configuration),
+    requestedTierId: input.tierId,
+  });
+  return createNewFeature(db, configuration, { ...input, tierId });
 }
 
 async function createNewFeature(
@@ -84,6 +93,7 @@ async function createNewFeature(
   input: {
     configurationId: string;
     functionId: string;
+    tierId: string | null;
     actorEmployeeId?: string;
     reason?: string;
   },
@@ -93,7 +103,12 @@ async function createNewFeature(
   );
   const origin = resolveFeatureOrigin(input.functionId, includedIds);
   const feature = await db.deliveryConfigurationFeature.create({
-    data: { configurationId: input.configurationId, functionId: input.functionId, origin },
+    data: {
+      configurationId: input.configurationId,
+      functionId: input.functionId,
+      tierId: input.tierId,
+      origin,
+    },
   });
   if (origin === 'INCLUDED' || !configuration.initialRevisionId) {
     return { createdBonusEntryIds: [], orderId: configuration.orderId };
@@ -104,6 +119,7 @@ async function createNewFeature(
   const planned = await loadAddedFeaturePlan(db, {
     configuration: { ...configuration, baseProfileVersion: configuration.baseProfileVersion },
     functionId: input.functionId,
+    tierId: input.tierId,
   });
   const written = await writeAddedFeatureLines(db, {
     configuration,
@@ -115,6 +131,24 @@ async function createNewFeature(
     asOf: new Date(),
   });
   return { createdBonusEntryIds: written.createdBonusEntryIds, orderId: configuration.orderId };
+}
+
+async function loadFunctionTiers(db: TransactionClient, functionId: string) {
+  return db.deliveryFunctionTier.findMany({
+    where: { functionId },
+    select: { id: true, position: true, productTypes: { select: { productType: true } } },
+    orderBy: { position: 'asc' },
+  });
+}
+
+/** A gradation follows the kind of product being sold; an extension follows its parent product. */
+function productTypeOf(configuration: {
+  product: { productType: string } | null;
+  extension: { product: { productType: string } | null } | null;
+}): string | null {
+  return (
+    configuration.product?.productType ?? configuration.extension?.product?.productType ?? null
+  );
 }
 
 function assertPostPlanReason(initialRevisionId: string | null, reason?: string): void {

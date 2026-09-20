@@ -24,6 +24,7 @@ export async function loadAddedFeaturePlan(
       baseProfileVersion: { roleUnits: NormativeRoleUnitRow[] };
     };
     functionId: string;
+    tierId: string | null;
   },
 ): Promise<{
   lines: DeliveryPlanLine[];
@@ -47,7 +48,7 @@ export async function loadAddedFeaturePlan(
       rates: await db.deliveryRoleRateVersion.findMany({ where: { status: 'PUBLISHED' } }),
       features: [{ functionId: input.functionId, origin: 'EXTRA', selectedPriceVersionId: null }],
       extraPriceVersions: await db.deliveryFunctionPriceVersion.findMany({
-        where: { functionId: input.functionId },
+        where: { functionId: input.functionId, tierId: input.tierId },
         include: { roleUnits: true },
       }),
     }),

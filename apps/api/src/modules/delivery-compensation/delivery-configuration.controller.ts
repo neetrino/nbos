@@ -74,15 +74,19 @@ export class DeliveryConfigurationController {
     @CurrentUser() user: CurrentUserPayload,
     @Param('id', ParseUUIDPipe) id: string,
     @Body()
-    body: { functionId?: string; expectedRevision?: number; reason?: string },
+    body: {
+      functionId?: string;
+      expectedRevision?: number;
+      reason?: string;
+      tierId?: string | null;
+    },
   ) {
-    return this.service.addFeature(
-      id,
-      body.functionId ?? '',
-      body.expectedRevision,
-      user.id,
-      body.reason,
-    );
+    return this.service.addFeature(id, body.functionId ?? '', {
+      expectedRevision: body.expectedRevision,
+      actorEmployeeId: user.id,
+      reason: body.reason,
+      tierId: body.tierId,
+    });
   }
 
   @Delete(':id/features/:featureId')

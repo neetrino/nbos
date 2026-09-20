@@ -50,6 +50,7 @@ export async function loadV2Normatives(
     baseProfileVersion: { roleUnits: NormativeRoleUnitRow[] } | null;
     features: Array<{
       functionId: string;
+      tierId: string | null;
       origin: 'INCLUDED' | 'EXTRA';
       selectedPriceVersionId: string | null;
       archivedAt: Date | null;
@@ -73,7 +74,12 @@ export async function loadV2Normatives(
       selectedPriceVersionId: feature.selectedPriceVersionId,
     })),
     extraPriceVersions: await db.deliveryFunctionPriceVersion.findMany({
-      where: { functionId: { in: active.map((feature) => feature.functionId) } },
+      where: {
+        OR: active.map((feature) => ({
+          functionId: feature.functionId,
+          tierId: feature.tierId,
+        })),
+      },
       include: { roleUnits: true },
     }),
   });
