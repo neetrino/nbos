@@ -1,52 +1,85 @@
-# Delivery Compensation v2 — довести до рабочей системы
+# Delivery Compensation v2 — что осталось и как работаем
 
-Канон заморожен: не выдумывать production units/тарифы, не трогать Seller кроме Network, не migrate production (`DATABASE_URL_PROD`).
+Единый рабочий список. Читать **первым делом** после сжатия контекста или перезапуска сессии.
+
+Канон продукта: [`docs/NBOS/03-Business-Logic/11-Delivery-Compensation-Configurator.md`](docs/NBOS/03-Business-Logic/11-Delivery-Compensation-Configurator.md).
+Журнал слайсов: [`docs/implementation/delivery-compensation/02-PHASES-AND-SLICES.md`](docs/implementation/delivery-compensation/02-PHASES-AND-SLICES.md).
+Принятые решения (не переспрашивать): [`docs/implementation/delivery-compensation/12-AUTONOMOUS-DECISIONS.md`](docs/implementation/delivery-compensation/12-AUTONOMOUS-DECISIONS.md).
+
+Заморожено: не выдумывать production units и тарифы, не трогать Seller кроме Network, не migrate
+на `DATABASE_URL_PROD`, не запускать production cutover.
+
+## Как работаем (процесс, согласован 2026-09-20)
+
+1. **Цикл работы:** реализация связного куска → Prettier на затронутом → typecheck → targeted-тесты
+   → ревью субагентом → исправление найденного → **commit этого куска**. Дальше следующий кусок.
+2. **Ревью в конце цикла обязательно.** Ревьюер — субагент другой модельной семьи, чтобы ловить то,
+   что исполнитель не видит. Для денежного пути и схемы — всегда. Для чистого UI, локалей и
+   документации — не нужно.
+3. **Коммиты по этапам.** Если в цикле несколько этапов, закрывать их по очереди: этап → проверки →
+   ревью → commit → следующий. Не накапливать один огромный diff. Push и PR — только по запросу.
+4. **Делегирование.** Механическое и шаблонное (перенос кода, повторяющийся UI, массовые локали,
+   разбивка файлов) — субагенту на Grok, я задаю точный план и проверяю diff. Денежная логика,
+   схема БД, транзакции, трактовка канона — делаю сам.
+5. **Статусы в журнале честные.** `IMPLEMENTED_NOT_VERIFIED` до реальной проверки на живой среде;
+   `DONE` только с evidence. Не закрывать пункт по факту наличия файлов.
+6. **Незапущенные проверки называть прямо.** Живой БД, миграций и браузерного QA у агента нет.
+
+## Фаза A. Каталог как набор функций (из обсуждения, в код не заведено)
+
+Источники: [`08-CONSTRUCTOR-AND-SIZING.md`](docs/implementation/delivery-compensation/08-CONSTRUCTOR-AND-SIZING.md),
+[`09-CATALOG-DRAFT.md`](docs/implementation/delivery-compensation/09-CATALOG-DRAFT.md).
+Структуру строим с пустыми значениями — цифры заполняет владелец.
+
+- [ ] Ядро продукта (core): сущность с версиями и структурным составом включённых работ, а не текстом
+      в `description`. Неделимо, одинаково для всех размеров, модули добавляются сверху.
+- [ ] Градации (tiers) внутри карточки функции: один справочник, варианты по объёму (импорт товаров,
+      мультиязычность Site/System, мессенджер S/M/L). Не плодить отдельные карточки на каждый объём.
+- [ ] Пресеты по `configSize`: набор включённых модулей для SMALL / CLASSIC / LARGE / VERY_LARGE /
+      ENTERPRISE. Размер — шаблон комплектации, **не** отдельная ось цены.
+- [ ] Категория `services` для разовых услуг (заливка контента, обработка фото, импорт) с градациями
+      по объёму и своим множителем продажи.
+- [ ] Цена продажи (решение 1.12): множитель на карточке модуля и ядра, глобальный дефолт 10, плюс
+      необязательная фиксированная сумма — если она задана, считается по ней. Версионность как у units,
+      чтобы старые сделки не пересчитывались. Без слоя «по типу продукта».
+- [ ] Ось `platform` (web / mobile app / desktop) как отдельный признак сделки. На units не влияет:
+      одинаковый функционал стоит одинаково — решение владельца.
+- [ ] Конструктор функций в карточке сделки: сборка комплекта, себестоимость скрыта, видна цена
+      продажи и средняя наценка. Публичная витрина — позже, тем же каталогом.
+
+## Фаза B. Хвосты слайсов
+
+- [ ] Переоткрытие карточки после Done: снять статус можно, конфигуратор остаётся read-only навсегда.
+      Метка `scopeLockedAt` на конфигурации ставится при первом закрытии, guard смотрит на неё, а не на
+      текущий статус. Оплачиваемая доработка — только через Extension. Решение 1.11.
+
+- [ ] S06: copy-from конфигурации — только scope и параметры, без людей, денег и заметок.
+- [ ] S06: object-scope grants на конфигурацию.
+- [ ] S15: применить подготовленную миграцию `NETWORK` на dev-хост, затем проверить Classic /
+      первую подписку / recurring.
+
+## Фаза C. Качество кода
+
+- [ ] Разбить `products.service.ts` и `extensions.service.ts` до лимита 300 строк — делегировано
+      субагенту, результат проверить по diff и тестам.
+- [ ] После разбивки перепроверить лимит 300 строк по всем файлам, затронутым в v2.
+
+## Фаза D. Приёмка S18 (нужна живая среда)
+
+- [ ] Browser QA desktop и mobile: каталог, ставки Compensation, вкладка Функции продукта,
+      Delivery sheet, Wallet.
+- [ ] Негативные проверки: PM не видит units; mass-assignment; PATCH команды после плана.
+- [ ] Полный проход Starting → Development → изменение scope и команды → Done → Finance/Wallet.
+- [ ] Обновить журнал по факту проверок. Production launch не отмечать выполненным.
+
+## Открытые вопросы владельцу
+
+Задавать **по одному**, ответ сразу фиксировать в `12-AUTONOMOUS-DECISIONS.md` и удалять отсюда.
+
+- [ ] Наполнение каталога: состав ядер, пресеты, градации, units.
 
 ## От владельца (не код)
 
-- [ ] Войти локально как Owner/CEO (каталог, нормы, enrollment) и отдельно как PM (Product/Delivery).
-- [ ] После UI: сам заполнить реальные units/rates и published-профили — агент цифры не придумывает.
-- [ ] Включить enrollment новых продуктов только когда нормы опубликованы.
-- [ ] Прогнать в браузере Starting → Development → Wallet на тестовом продукте.
-- [ ] Production migrate / cutover — отдельное явное разрешение, не этот список.
-
-## Сейчас: база и локальный запуск
-
-- [x] Применить additive migrate к **dev** Neon из `.env.local` (не PROD host) — 2026-09-19 `migrate deploy`, 4 SQL applied.
-- [ ] Проверить в UI, что каталог/Compensation открываются без Prisma-ошибок.
-- [ ] Поднять API + web и открыть `/my-company/function-catalog`.
-
-## S17 — чтобы Owner мог включить модель без кода
-
-- [ ] Идемпотентный draft-seed каталога (stable codes из `04-CATALOG-BOOTSTRAP.md`, без units/rates).
-- [ ] Owner UI: переключатель `newEnrollmentEnabled` + статус readiness.
-- [ ] Явный **local/demo** fixture с synthetic published нормами (только dev, не production seed).
-- [ ] Проставить `checked` scope и base profile на enroll, иначе Development всегда blocked.
-
-## Product / Delivery UI (сейчас только просмотр)
-
-- [ ] Enroll V2 с Product (orderId) когда switch ON.
-- [ ] Picker «+ Добавить» ACTIVE-функций, included badge, Save/expectedRevision.
-- [ ] Удаление extra + 409 при конфликте ревизии.
-- [ ] Modal замены исполнителя: пустые обязательные доли, один API `replacements`.
-- [ ] Extension: enroll, 6 ролей (`ExtensionDeliveryRoleAssignment`), тот же workspace.
-- [ ] Copy-from: только scope/параметры, без людей/денег/notes.
-
-## Деньги и Finance (без нового payout engine)
-
-- [ ] На **первом Done** один раз проставить `earnedPeriod` (не трогать при late funding).
-- [ ] QA/Tech в payroll matrix linking + history (слоты `qaLeadId` / `technicalSpecialistId`).
-- [ ] Wallet: свои суммы с Development, без units; подписи ролей для 6 ролей.
-- [ ] Closed/archive: scope read-only, ledger не удалять.
-
-## Network
-
-- [ ] После migrate: выбрать From=Network в Lead/Deal и проверить Classic / first sub / recurring.
-- [ ] Убедиться, что CLIENT/SALES/MARKETING/PARTNER и канал NETWORKING не изменились.
-
-## Приёмка S18
-
-- [ ] Browser QA desktop/mobile: catalog, Compensation rates, Product Functions, Delivery sheet, Wallet.
-- [ ] Targeted tests + typecheck + Prettier на всё затронутое.
-- [ ] Негатив: PM не видит units; mass-assignment; team PATCH после плана.
-- [ ] Обновить журнал; production launch **не** отмечать выполненным.
+- [ ] Опубликовать реальные units, тарифы и профили через готовый UI — агент цифры не придумывает.
+- [ ] Включить enrollment новых продуктов только после публикации норм.
+- [ ] Production migrate и cutover — отдельное явное разрешение, вне этого списка.

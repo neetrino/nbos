@@ -75,17 +75,32 @@ published units simply cannot reach `DONE`. The block is the point: the case is 
 must force the norm to be filled in rather than let a closed project slip through unpriced. No button,
 no endpoint, no `0 units` workaround published into the shared catalog for the sake of one card.
 
+**1.11 A closed card may be reopened for work, but never for money — Owner decision of 2026-09-20.**
+Taking `DONE` off a card so a defect can be fixed is allowed; the configurator stays read-only from
+the first close onwards. Scope, role holders and amounts are frozen: the fix is either unpaid warranty
+work in ordinary tasks, or, when it is large enough to be paid, a new Extension with its own plan.
+Nothing is recalculated on the closed plan, which is what canon means by "a finished product does not
+reopen the configurator".
+
+Implementation consequence: the read-only guard must key off "this delivery was closed at least once",
+not off the current status, because a reopened card is `DEVELOPMENT` again. A `scopeLockedAt` stamp on
+the configuration, written at the first close, is the intended carrier. Today no reopen path exists at
+all (`ensureNotTerminal` refuses any move once a resolution is set), so the guard is still correct;
+the stamp has to land together with the reopen action, not after it.
+
+**1.12 Sale price: a multiplier on the card, plus an optional fixed amount that wins — Owner decision
+of 2026-09-20.** A module or core carries a sale multiplier (default 10 globally, ~20 for AI work,
+~3–5 for blogs and similar low-value work). Sale price is `units × developer rate × multiplier`, unless
+the card also carries a fixed sale amount, in which case the amount is used verbatim. Reason: standard
+and AI modules follow cost and should re-price themselves when the developer rate moves, while a blog
+or a landing page is a round market number that does not follow cost at all. One mechanism covers both,
+and the card always shows where the price came from.
+
+Sale prices are versioned like units, so a price change never re-prices deals that were already
+assembled. This was not asked separately: unversioned prices would silently rewrite history, which
+canon already forbids for units and rates.
+
 ## 2. Open points that need the Owner
-
-**2.2 Reopening a closed delivery.** Decision 1.3 locks scope after close. If a card is reopened
-after Done — for a defect or a late change — the current rules leave the configuration locked.
-Decision needed: is a reopened card allowed to change scope again, and does the new work belong to
-the same accrual or to an extension.
-
-**2.3 Sale prices are not stored yet.** The discussion settled on a per-card sale price plus a global
-default, with no product-type layer. The schema and UI for that are not built; the catalog only
-carries cost units. This was left out deliberately because it is a new money surface rather than a
-completion of the current slices.
 
 **2.4 The catalog content itself.** The seed ships twenty-one draft cards with scope boundaries taken
 from the bootstrap document, with placeholder instructions and acceptance criteria. The cores,
