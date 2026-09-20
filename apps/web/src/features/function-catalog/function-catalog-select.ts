@@ -1,5 +1,6 @@
 import {
   ACTIVE_FUNCTION_STATUS,
+  FUNCTION_TIER_REQUIRED_CODE,
   MATERIALIZED_PLAN_STATE,
   TERMINAL_DELIVERY_STATUSES,
 } from './function-catalog.constants';
@@ -51,8 +52,9 @@ export function canConfirmSelection(input: {
 
 export function addFeatureMessageKey(
   code: string | undefined,
-): 'alreadySelected' | 'closedReadOnly' | null {
+): 'alreadySelected' | 'closedReadOnly' | 'tierRequired' | null {
   if (code === 'FUNCTION_ALREADY_SELECTED') return 'alreadySelected';
   if (code === 'FINANCIAL_ALLOCATION_LOCKED') return 'closedReadOnly';
+  if (code === FUNCTION_TIER_REQUIRED_CODE) return 'tierRequired';
   return null;
 }

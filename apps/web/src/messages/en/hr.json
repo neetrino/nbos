@@ -308,6 +308,9 @@
     "closedReadOnly": "This delivery is closed. Functions cannot be changed.",
     "addedFunctions": "{count, plural, one {# function added} other {# functions added}}",
     "addFailed": "The selected functions could not be added.",
+    "unpublishedPrice": "Not yet published",
+    "tierRequired": "Choose a volume for this function before adding it.",
+    "chooseVolume": "Volume",
     "categories": {
       "all": "All",
       "other": "Other",
@@ -448,6 +451,67 @@
       "hint": "Catalog functions already covered by this base profile.",
       "empty": "No catalog functions to include yet."
     },
+    "coreItems": {
+      "title": "Core composition",
+      "subtitle": "What the product core contains. Items have no units; the profile's role units price the core.",
+      "pickVersion": "Select a base profile version",
+      "empty": "This core has no items yet.",
+      "emptyVersions": "Create a base profile version first.",
+      "readOnly": "Only a draft version can be edited.",
+      "addTitle": "Add a core item",
+      "save": "Save composition",
+      "saving": "Saving…",
+      "add": "Add item",
+      "label": "Item",
+      "note": "Note",
+      "noteOptional": "Note (optional)",
+      "remove": "Remove",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "noUnits": "No units — this list is composition only."
+    },
+    "sizePresets": {
+      "title": "Size presets",
+      "subtitle": "Modules pre-checked for a product size. They are still charged as extras, unlike functions included in the base.",
+      "hint": "A preset only pre-selects modules. It does not make them free. The “included in base” list is the one that covers work at no extra charge.",
+      "pickProfile": "Select a profile key",
+      "emptyProfiles": "Create a base profile first.",
+      "emptyFunctions": "No catalog functions to pre-select yet.",
+      "pickerTitle": "Pre-selected modules (charged as extras)",
+      "pickerHint": "Ticked modules are pre-checked for this size and billed as normal extras. They are not included in the base.",
+      "save": "Save this size",
+      "saving": "Saving…",
+      "selectedCount": "{count, plural, one {# module} other {# modules}}",
+      "cleared": "None pre-selected"
+    },
+    "salePrices": {
+      "title": "Sale prices",
+      "subtitle": "What the client pays for a function, a gradation, or a product core. A fixed AMD amount wins over a multiplier.",
+      "createTitle": "New sale price draft",
+      "empty": "No sale prices for this target yet.",
+      "pickTarget": "Select what to price",
+      "targetKind": "Priced as",
+      "targetKinds": {
+        "FUNCTION": "Function",
+        "TIER": "Gradation",
+        "CORE": "Product core"
+      },
+      "pickFunction": "Select a function",
+      "pickTier": "Select a gradation",
+      "pickCore": "Select a base profile version",
+      "noTiers": "No gradations with a sale price yet. Price functions and cores from the lists above.",
+      "multiplier": "Multiplier",
+      "fixedAmount": "Fixed amount ({currency})",
+      "fixedWins": "If both are set, the fixed amount is used.",
+      "unknownTarget": "Unknown target",
+      "defaultTitle": "Default sale multiplier",
+      "defaultSubtitle": "Used when a card carries no price of its own.",
+      "defaultSave": "Save default",
+      "savingDefault": "Saving…",
+      "sourceFixed": "Fixed amount",
+      "sourceMultiplier": "Multiplier",
+      "sourceDefault": "Default multiplier"
+    },
     "fields": {
       "effectiveFrom": "Effective from",
       "profileKey": "Profile key",
@@ -473,7 +537,8 @@
       "creating": "Creating…",
       "rate": "Create rate drafts",
       "profile": "Create profile draft",
-      "price": "Create price draft"
+      "price": "Create price draft",
+      "salePrice": "Create sale price draft"
     },
     "publish": {
       "action": "Publish",
@@ -488,7 +553,15 @@
       "rateRequired": "Enter at least one rate.",
       "roleUnits": "Check role units: no negatives, at most 4 decimal places.",
       "functionRequired": "Pick a catalog function.",
-      "enrollment": "Enrollment switch could not be changed."
+      "enrollment": "Enrollment switch could not be changed.",
+      "coreItems": "The core composition could not be saved.",
+      "coreItemLabel": "Enter an item label.",
+      "sizePresets": "The size preset could not be saved.",
+      "salePrices": "The sale price draft could not be created.",
+      "salePriceRequired": "Set a sale multiplier or a fixed sale amount.",
+      "salePricePositive": "Multiplier and fixed amount must be greater than zero.",
+      "defaultMultiplier": "The default multiplier could not be saved.",
+      "targetRequired": "Pick what this sale price applies to."
     },
     "status": {
       "DRAFT": "Draft",

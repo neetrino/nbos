@@ -3,17 +3,25 @@ import {
   deliveryConfigurationsApi,
   type OperationalConfigurationDto,
 } from '@/lib/api/delivery-configurations';
+import { tierIdForAdd, type GradationSelectionState } from './function-catalog-gradation';
 
 export type AddSelectionInput = {
   configurationId: string;
   functionIds: readonly string[];
   expectedRevision: number;
   reason?: string;
+  gradationByFunctionId?: GradationSelectionState;
 };
 
 export type AddSelectionResult = {
   addedIds: string[];
   error: unknown | null;
+};
+
+export type AddFeatureOptions = {
+  reason?: string;
+  expectedRevision: number;
+  tierId?: string;
 };
 
 /**
@@ -30,10 +38,11 @@ export async function addSelectedCatalogFunctions(
   let revision = input.expectedRevision;
   for (const functionId of input.functionIds) {
     try {
-      const configuration = await addFeature(input.configurationId, functionId, {
-        reason: input.reason,
-        expectedRevision: revision,
-      });
+      const configuration = await addFeature(
+        input.configurationId,
+        functionId,
+        addFeatureOptions(input, functionId, revision),
+      );
       addedIds.push(functionId);
       revision = configuration.expectedRevision;
     } catch (caught) {
@@ -47,10 +56,22 @@ export function addFeatureErrorCode(caught: unknown): string | undefined {
   return caught instanceof ApiError ? caught.code : undefined;
 }
 
+function addFeatureOptions(
+  input: AddSelectionInput,
+  functionId: string,
+  expectedRevision: number,
+): AddFeatureOptions {
+  const options: AddFeatureOptions = { expectedRevision };
+  if (input.reason) options.reason = input.reason;
+  const tierId = tierIdForAdd(input.gradationByFunctionId ?? {}, functionId);
+  if (tierId) options.tierId = tierId;
+  return options;
+}
+
 type AddFeatureFn = (
   configurationId: string,
   functionId: string,
-  options: { reason?: string; expectedRevision: number },
+  options: AddFeatureOptions,
 ) => Promise<OperationalConfigurationDto>;
 
 const defaultAddFeature: AddFeatureFn = (configurationId, functionId, options) =>

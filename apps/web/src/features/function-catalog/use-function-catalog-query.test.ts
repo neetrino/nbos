@@ -14,5 +14,8 @@ describe('useFunctionCatalogQuery', () => {
     expect(source).toContain("can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE)");
     expect(source).toContain('loadCatalogUnitsIfPermitted(canSeeRules');
     expect(source).toContain('deliveryNormsApi.listFunctionPrices');
+    expect(source).toContain('deliveryCatalogStructureApi.listSalePrices');
+    expect(source).toContain('loadDeveloperRateIfPermitted(canSeeRules');
+    expect(source).toContain('deliveryNormsApi.listRoleRates');
   });
 });

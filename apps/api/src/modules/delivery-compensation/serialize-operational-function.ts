@@ -25,6 +25,7 @@ export type CatalogFunctionRecord = {
       sortOrder: number;
     }>;
   }>;
+  tiers?: Array<{ id: string; code: string; label: string; position: number }>;
 };
 
 function pickContent(record: CatalogFunctionRecord) {
@@ -57,6 +58,14 @@ export function serializeOperationalFunction(
     instructions: content?.instructions ?? '',
     acceptanceCriteria: content?.acceptanceCriteria ?? '',
     contentVersion: content?.version ?? null,
+    tiers: [...(record.tiers ?? [])]
+      .sort((left, right) => left.position - right.position)
+      .map((tier) => ({
+        id: tier.id,
+        code: tier.code,
+        label: tier.label,
+        position: tier.position,
+      })),
     attachments,
   };
 

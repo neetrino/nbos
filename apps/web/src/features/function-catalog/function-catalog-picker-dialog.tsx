@@ -98,11 +98,14 @@ function PickerSession({
           selectedCategory={picker.selectedCategory}
           onSelectCategory={picker.selectCategory}
           unitsByFunctionId={picker.catalog.unitsByFunctionId}
+          salePriceByFunctionId={picker.catalog.salePriceByFunctionId}
           mode={{
             kind: 'pick',
             selectedIds: picker.selectedSet,
             alreadyAddedIds,
             onToggle: picker.toggle,
+            gradationByFunctionId: picker.gradationByFunctionId,
+            onSelectGradation: picker.selectGradation,
           }}
         />
       </div>
@@ -135,6 +138,7 @@ function PickerSession({
           void confirmSelection({
             configurationId,
             selectedIds: picker.selectedIds,
+            gradationByFunctionId: picker.gradationByFunctionId,
             expectedRevision,
             reason: picker.reason.trim() || undefined,
             fallback: t('addFailed'),
@@ -187,11 +191,12 @@ function PickerFooter({
 async function confirmSelection(input: {
   configurationId: string;
   selectedIds: readonly string[];
+  gradationByFunctionId: Parameters<typeof addSelectedCatalogFunctions>[0]['gradationByFunctionId'];
   expectedRevision: number;
   reason?: string;
   fallback: string;
   success: string;
-  translate: (key: 'alreadySelected' | 'closedReadOnly') => string;
+  translate: (key: NonNullable<ReturnType<typeof addFeatureMessageKey>>) => string;
   setSaving: (value: boolean) => void;
   onAdded: () => void;
   onClose: () => void;
@@ -203,6 +208,7 @@ async function confirmSelection(input: {
       functionIds: input.selectedIds,
       expectedRevision: input.expectedRevision,
       reason: input.reason,
+      gradationByFunctionId: input.gradationByFunctionId,
     });
     if (result.addedIds.length > 0) input.onAdded();
     if (!result.error) {

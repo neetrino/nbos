@@ -21,6 +21,10 @@ const CONTENT_INCLUDE = {
       attachments: { orderBy: { sortOrder: 'asc' as const } },
     },
   },
+  tiers: {
+    orderBy: { position: 'asc' as const },
+    select: { id: true, code: true, label: true, position: true },
+  },
 } as const;
 
 @Injectable()

@@ -63,6 +63,28 @@ describe('addSelectedCatalogFunctions', () => {
     });
   });
 
+  it('sends the chosen volume as tierId and leaves it unset when none is chosen', async () => {
+    const addFeature = vi.fn().mockResolvedValue(configurationAtRevision(6));
+
+    await addSelectedCatalogFunctions(
+      {
+        configurationId: 'cfg-1',
+        functionIds: ['fn-1'],
+        expectedRevision: 5,
+        gradationByFunctionId: { 'fn-1': 'tier-site' },
+      },
+      addFeature,
+    );
+    expect(addFeature.mock.calls[0]?.[2]).toEqual({ expectedRevision: 5, tierId: 'tier-site' });
+
+    addFeature.mockClear();
+    await addSelectedCatalogFunctions(
+      { configurationId: 'cfg-1', functionIds: ['fn-1'], expectedRevision: 5 },
+      addFeature,
+    );
+    expect(addFeature.mock.calls[0]?.[2]).toEqual({ expectedRevision: 5 });
+  });
+
   it('stops at the first refusal and reports what was already accepted', async () => {
     const conflict = new ApiError('stale', { code: 'CONFIGURATION_CONFLICT' });
     const addFeature = vi

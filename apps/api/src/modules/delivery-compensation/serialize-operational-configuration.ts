@@ -11,6 +11,8 @@ export type OperationalConfigurationDto = {
   configSize: string | null;
   implementationBase: string | null;
   checkedAt: string | null;
+  /** Frozen core of this card. Null until the parameters are confirmed. */
+  baseProfileVersionId: string | null;
   draftVersion: number;
   /**
    * Revision a scope change must send back as `expectedRevision`. Once the plan is materialized the
@@ -40,6 +42,7 @@ export function serializeOperationalConfiguration(input: {
   configSize: string | null;
   implementationBase: string | null;
   checkedAt: Date | null;
+  baseProfileVersionId?: string | null;
   draftVersion: number;
   currentRevision?: { sequence: number } | null;
   features: Array<{
@@ -63,6 +66,7 @@ export function serializeOperationalConfiguration(input: {
     configSize: input.configSize,
     implementationBase: input.implementationBase,
     checkedAt: input.checkedAt?.toISOString() ?? null,
+    baseProfileVersionId: input.baseProfileVersionId ?? null,
     draftVersion: input.draftVersion,
     expectedRevision: input.currentRevision?.sequence ?? input.draftVersion,
     features: input.features

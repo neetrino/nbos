@@ -63,6 +63,7 @@ describe('addFeatureMessageKey', () => {
   it('maps duplicate and closed codes to readable keys', () => {
     expect(addFeatureMessageKey('FUNCTION_ALREADY_SELECTED')).toBe('alreadySelected');
     expect(addFeatureMessageKey('FINANCIAL_ALLOCATION_LOCKED')).toBe('closedReadOnly');
+    expect(addFeatureMessageKey('FUNCTION_TIER_REQUIRED')).toBe('tierRequired');
     expect(addFeatureMessageKey('CONFIGURATION_CONFLICT')).toBeNull();
   });
 });

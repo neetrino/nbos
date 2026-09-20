@@ -4,11 +4,16 @@ import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { useTranslations } from 'next-intl';
 import { FunctionCatalogCard } from './function-catalog-card';
 import {
+  catalogFunctionGradations,
+  type GradationSelectionState,
+} from './function-catalog-gradation';
+import {
   FUNCTION_CATALOG_CARD_GRID_CLASS,
   FUNCTION_CATALOG_CATEGORY_MESSAGE_KEYS,
   STATUS_LABEL_KEY,
 } from './function-catalog.constants';
 import type { CatalogCategoryBlock } from './function-catalog-grouping';
+import { salePriceCardLabels, type VisibleSalePrice } from './function-catalog-sale-price';
 import { isCatalogFunctionSelectable } from './function-catalog-select';
 import { visibleUnitsTotal } from './function-catalog-units';
 
@@ -19,18 +24,24 @@ export type FunctionCatalogBrowserMode =
       selectedIds: ReadonlySet<string>;
       alreadyAddedIds: ReadonlySet<string>;
       onToggle: (id: string) => void;
+      gradationByFunctionId: GradationSelectionState;
+      onSelectGradation: (functionId: string, tierId: string) => void;
     };
 
 export function FunctionCatalogCategoryBlocks({
   blocks,
   mode,
   unitsByFunctionId,
+  salePriceByFunctionId,
   formatUnits,
+  formatSalePrice,
 }: {
   blocks: CatalogCategoryBlock<DeliveryFunctionOperationalDto>[];
   mode: FunctionCatalogBrowserMode;
   unitsByFunctionId: Map<string, number> | undefined;
+  salePriceByFunctionId: Map<string, VisibleSalePrice>;
   formatUnits: (total: number) => string;
+  formatSalePrice: (amount: string) => string;
 }) {
   const t = useTranslations('hr.functionCatalog');
   return (
@@ -45,6 +56,11 @@ export function FunctionCatalogCategoryBlocks({
                 item={item}
                 variant="compact"
                 unitsLabel={unitsLabelFor(item.id, unitsByFunctionId, formatUnits)}
+                {...salePriceCardLabels(
+                  salePriceByFunctionId.get(item.id),
+                  formatSalePrice,
+                  t('unpublishedPrice'),
+                )}
                 {...cardModeProps(item, mode, t)}
               />
             ))}
@@ -90,6 +106,10 @@ function cardModeProps(
   | 'selectable'
   | 'alreadyAdded'
   | 'alreadyAddedLabel'
+  | 'gradations'
+  | 'selectedTierId'
+  | 'chooseVolumeLabel'
+  | 'onSelectGradation'
 > {
   if (mode.kind === 'browse') {
     return {
@@ -105,6 +125,10 @@ function cardModeProps(
     alreadyAdded,
     alreadyAddedLabel: alreadyAdded ? t('alreadyAdded') : undefined,
     onToggle: mode.onToggle,
+    gradations: catalogFunctionGradations(item),
+    selectedTierId: mode.gradationByFunctionId[item.id],
+    chooseVolumeLabel: t('chooseVolume'),
+    onSelectGradation: mode.onSelectGradation,
   };
 }
 

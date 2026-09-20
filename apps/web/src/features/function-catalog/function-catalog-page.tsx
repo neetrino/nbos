@@ -47,6 +47,7 @@ export function FunctionCatalogPage() {
           if (isCatalogRailId(id)) setSelectedCategory(id);
         }}
         unitsByFunctionId={catalog.unitsByFunctionId}
+        salePriceByFunctionId={catalog.salePriceByFunctionId}
         mode={{ kind: 'browse', showStatus: canEdit, onOpen: setOpenId }}
       />
       <FunctionCatalogDetailSheet

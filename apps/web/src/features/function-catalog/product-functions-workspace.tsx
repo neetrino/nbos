@@ -3,17 +3,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
+  DELIVERY_COMPENSATION_RULES_MODULE,
   DELIVERY_CONFIGURATION_PERMISSION_MODULE,
   type DeliveryFunctionOperationalDto,
 } from '@nbos/shared';
-import { deliveryConfigurationsApi } from '@/lib/api/delivery-configurations';
-import { deliveryFunctionsApi } from '@/lib/api/delivery-functions';
-import { productsApi } from '@/lib/api/products';
+import { formatMoneyDram } from '@/lib/format/money';
 import { usePermission } from '@/lib/permissions';
 import { AddFunctionTrigger } from './add-function-trigger';
 import { FunctionCatalogCard } from './function-catalog-card';
 import { FunctionCatalogDetailSheet } from './function-catalog-detail-sheet';
 import { canAddFunctionsToConfiguration, isPlanMaterialized } from './function-catalog-select';
+import { salePriceCardLabels, type VisibleSalePrice } from './function-catalog-sale-price';
+import { loadProductFunctionsWorkspace } from './product-functions-workspace-data';
 import { ReplaceAssigneeTrigger } from './replace-assignee-trigger';
 
 type V2Config = {
@@ -47,23 +48,21 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
   const { can } = usePermission();
   const [config, setConfig] = useState<LegacyOrConfig | null>(null);
   const [catalog, setCatalog] = useState<DeliveryFunctionOperationalDto[]>([]);
+  const [salePriceByFunctionId, setSalePriceByFunctionId] = useState<Map<string, VisibleSalePrice>>(
+    () => new Map(),
+  );
   const [deliveryStatus, setDeliveryStatus] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const canEdit = can('EDIT', DELIVERY_CONFIGURATION_PERMISSION_MODULE);
+  const canSeeRules = can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE);
   const reload = useCallback(() => {
-    void Promise.all([
-      deliveryConfigurationsApi.getByProduct(productId),
-      deliveryFunctionsApi.listAll(),
-      productsApi
-        .getById(productId)
-        .then((product) => product.status)
-        .catch(() => null),
-    ]).then(([nextConfig, nextCatalog, status]) => {
-      setConfig(normalizeConfig(nextConfig));
-      setCatalog(nextCatalog);
-      setDeliveryStatus(status);
+    void loadProductFunctionsWorkspace(productId, canSeeRules).then((loaded) => {
+      setConfig(normalizeConfig(loaded.config));
+      setCatalog(loaded.catalog);
+      setDeliveryStatus(loaded.deliveryStatus);
+      setSalePriceByFunctionId(loaded.salePriceByFunctionId);
     });
-  }, [productId]);
+  }, [canSeeRules, productId]);
 
   useEffect(() => {
     reload();
@@ -79,6 +78,7 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
     <EnrolledFunctionsWorkspace
       config={config}
       catalog={catalog}
+      salePriceByFunctionId={salePriceByFunctionId}
       openId={openId}
       setOpenId={setOpenId}
       onReload={reload}
@@ -97,6 +97,7 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
 function EnrolledFunctionsWorkspace({
   config,
   catalog,
+  salePriceByFunctionId,
   openId,
   setOpenId,
   onReload,
@@ -107,6 +108,7 @@ function EnrolledFunctionsWorkspace({
 }: {
   config: V2Config;
   catalog: DeliveryFunctionOperationalDto[];
+  salePriceByFunctionId: Map<string, VisibleSalePrice>;
   openId: string | null;
   setOpenId: (id: string | null) => void;
   onReload: () => void;
@@ -144,7 +146,12 @@ function EnrolledFunctionsWorkspace({
           {t(READINESS_MESSAGE_KEYS[code])}
         </p>
       ))}
-      <SelectedFunctionCards selected={selected} included={included} onOpen={setOpenId} />
+      <SelectedFunctionCards
+        selected={selected}
+        included={included}
+        salePriceByFunctionId={salePriceByFunctionId}
+        onOpen={setOpenId}
+      />
       <FunctionCatalogDetailSheet
         item={openItem}
         onOpenChange={(open) => {
@@ -193,10 +200,12 @@ function WorkspaceActions({
 function SelectedFunctionCards({
   selected,
   included,
+  salePriceByFunctionId,
   onOpen,
 }: {
   selected: DeliveryFunctionOperationalDto[];
   included: Set<string>;
+  salePriceByFunctionId: Map<string, VisibleSalePrice>;
   onOpen: (id: string | null) => void;
 }) {
   const t = useTranslations('hr.functionCatalog');
@@ -207,7 +216,17 @@ function SelectedFunctionCards({
           {included.has(item.id) ? (
             <p className="text-muted-foreground text-xs">{t('includedBadge')}</p>
           ) : null}
-          <FunctionCatalogCard item={item} showStatus={false} statusLabel="" onOpen={onOpen} />
+          <FunctionCatalogCard
+            item={item}
+            showStatus={false}
+            statusLabel=""
+            onOpen={onOpen}
+            {...salePriceCardLabels(
+              salePriceByFunctionId.get(item.id),
+              (amount) => formatMoneyDram(Number(amount)),
+              t('unpublishedPrice'),
+            )}
+          />
         </div>
       ))}
     </div>

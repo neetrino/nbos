@@ -29,7 +29,16 @@ export type DeliveryFunctionOperationalDto = {
   instructions: string;
   acceptanceCriteria: string;
   contentVersion: number | null;
+  /** Volumes this card is sold at. Empty for a card with a single volume. Labels only, no units. */
+  tiers: DeliveryFunctionTierOperationalDto[];
   attachments: DeliveryFunctionAttachmentOperationalDto[];
+};
+
+export type DeliveryFunctionTierOperationalDto = {
+  id: string;
+  code: string;
+  label: string;
+  position: number;
 };
 
 export type DeliveryFunctionAttachmentOperationalDto = {
