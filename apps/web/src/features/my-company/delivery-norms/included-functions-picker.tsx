@@ -9,24 +9,32 @@ export function IncludedFunctionsPicker({
   options,
   selectedIds,
   disabled,
+  title,
+  hint,
+  emptyLabel,
   onChange,
 }: {
   options: DeliveryFunctionOperationalDto[];
   selectedIds: string[];
   disabled?: boolean;
+  title?: string;
+  hint?: string;
+  emptyLabel?: string;
   onChange: (next: string[]) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const selected = new Set(selectedIds);
   if (options.length === 0) {
-    return <p className="text-muted-foreground text-sm">{t('includedFunctions.empty')}</p>;
+    return (
+      <p className="text-muted-foreground text-sm">{emptyLabel ?? t('includedFunctions.empty')}</p>
+    );
   }
   return (
     <fieldset className="space-y-2" disabled={disabled}>
       <legend className="text-foreground text-sm font-semibold">
-        {t('includedFunctions.title')}
+        {title ?? t('includedFunctions.title')}
       </legend>
-      <p className="text-muted-foreground text-xs">{t('includedFunctions.hint')}</p>
+      <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
       <ul className={INCLUDED_FUNCTIONS_LIST_CLASS}>
         {options.map((item) => (
           <li key={item.id}>

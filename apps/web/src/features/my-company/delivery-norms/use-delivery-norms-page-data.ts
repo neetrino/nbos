@@ -6,6 +6,10 @@ import type {
   DeliveryFunctionPriceFinancialDto,
   DeliveryRoleRateFinancialDto,
 } from '@nbos/shared';
+import {
+  deliveryCatalogStructureApi,
+  type SalePriceVersionDto,
+} from '@/lib/api/delivery-catalog-structure';
 import { deliveryFunctionsApi } from '@/lib/api/delivery-functions';
 import { deliveryNormsApi, type DeliveryEnrollmentSetting } from '@/lib/api/delivery-norms';
 import { isAccessRevokedApiError } from '@/lib/api-errors';
@@ -17,6 +21,8 @@ export type DeliveryNormsPageData = {
   prices: DeliveryFunctionPriceFinancialDto[];
   catalog: DeliveryFunctionOperationalDto[];
   enrollment: DeliveryEnrollmentSetting | null;
+  salePrices: SalePriceVersionDto[];
+  defaultMultiplier: string | null;
 };
 
 const EMPTY_DATA: DeliveryNormsPageData = {
@@ -25,6 +31,8 @@ const EMPTY_DATA: DeliveryNormsPageData = {
   prices: [],
   catalog: [],
   enrollment: null,
+  salePrices: [],
+  defaultMultiplier: null,
 };
 
 export function useDeliveryNormsPageData() {
@@ -57,12 +65,22 @@ export function useDeliveryNormsPageData() {
 }
 
 async function fetchDeliveryNorms(): Promise<DeliveryNormsPageData> {
-  const [rates, profiles, prices, catalog, enrollment] = await Promise.all([
+  const [rates, profiles, prices, catalog, enrollment, salePrices, multiplier] = await Promise.all([
     deliveryNormsApi.listRoleRates(),
     deliveryNormsApi.listBaseProfiles(),
     deliveryNormsApi.listFunctionPrices(),
     deliveryFunctionsApi.listAll(),
     deliveryNormsApi.getEnrollment(),
+    deliveryCatalogStructureApi.listSalePrices(),
+    deliveryCatalogStructureApi.getDefaultMultiplier(),
   ]);
-  return { rates, profiles, prices, catalog, enrollment };
+  return {
+    rates,
+    profiles,
+    prices,
+    catalog,
+    enrollment,
+    salePrices,
+    defaultMultiplier: multiplier.defaultSaleMultiplier,
+  };
 }

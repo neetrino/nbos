@@ -15,6 +15,7 @@ function configurationAtRevision(expectedRevision: number): OperationalConfigura
     configSize: null,
     implementationBase: null,
     checkedAt: null,
+    baseProfileVersionId: null,
     draftVersion: 1,
     expectedRevision,
     features: [],

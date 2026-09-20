@@ -12,10 +12,13 @@ import {
 } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import { BaseProfilesSection } from './base-profiles-section';
+import { CoreItemsSection } from './core-items-section';
 import { EnrollmentSwitchSection } from './enrollment-switch-section';
 import { LOADING_CARD_COUNT } from './delivery-norms.constants';
 import { FunctionPricesSection } from './function-prices-section';
 import { RoleRatesSection } from './role-rates-section';
+import { SalePricesSection } from './sale-prices-section';
+import { SizePresetsSection } from './size-presets-section';
 import { useDeliveryNormsPageData } from './use-delivery-norms-page-data';
 
 export function DeliveryNormsPage() {
@@ -28,7 +31,9 @@ export function DeliveryNormsPage() {
     data.enrollment !== null ||
     data.rates.length > 0 ||
     data.profiles.length > 0 ||
-    data.prices.length > 0;
+    data.prices.length > 0 ||
+    data.salePrices.length > 0 ||
+    data.defaultMultiplier !== null;
   const content = (
     <DeliveryNormsSections
       data={data}
@@ -109,6 +114,39 @@ function DeliveryNormsSections({
         onChanged={onChanged}
         onError={onError}
       />
+      <DeliveryCatalogStructureSections
+        data={data}
+        canAdd={canAdd}
+        canPublish={canPublish}
+        onChanged={onChanged}
+        onError={onError}
+      />
+    </div>
+  );
+}
+
+function DeliveryCatalogStructureSections({
+  data,
+  canAdd,
+  canPublish,
+  onChanged,
+  onError,
+}: {
+  data: ReturnType<typeof useDeliveryNormsPageData>['data'];
+  canAdd: boolean;
+  canPublish: boolean;
+  onChanged: () => void;
+  onError: (message: string) => void;
+}) {
+  return (
+    <>
+      <CoreItemsSection rows={data.profiles} canEdit={canPublish} onError={onError} />
+      <SizePresetsSection
+        rows={data.profiles}
+        catalog={data.catalog}
+        canEdit={canPublish}
+        onError={onError}
+      />
       <FunctionPricesSection
         rows={data.prices}
         catalog={data.catalog}
@@ -117,6 +155,15 @@ function DeliveryNormsSections({
         onChanged={onChanged}
         onError={onError}
       />
-    </div>
+      <SalePricesSection
+        rows={data.salePrices}
+        catalog={data.catalog}
+        profiles={data.profiles}
+        defaultMultiplier={data.defaultMultiplier}
+        canEdit={canPublish}
+        onChanged={onChanged}
+        onError={onError}
+      />
+    </>
   );
 }
