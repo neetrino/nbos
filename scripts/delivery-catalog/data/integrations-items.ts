@@ -29,7 +29,7 @@ export const INTEGRATIONS_ITEMS: readonly CatalogSeedItem[] = [
     title: 'Интеграция с ERP',
     summary: 'Обмен согласованными сущностями с ERP клиента.',
     scopeBoundaries:
-      'Одна ERP, согласованные сущности и mapping, авторизация, обработка ошибок, повторный обмен без дублей.',
+      'Одна ERP, до пяти согласованных сущностей и их сопоставление полей, одно направление обмена на сущность, авторизация, обработка ошибок, повторный обмен без дублей. Перенос истории и каждая следующая сущность — отдельная оценка.',
     units: { BACKEND: 30, FRONTEND: 6, PM: 4, QA: 8, TECHNICAL_SPECIALIST: 5 },
   },
   {
@@ -131,6 +131,26 @@ export const INTEGRATIONS_ITEMS: readonly CatalogSeedItem[] = [
     scopeBoundaries:
       'Один протокол, регистрация партнёрских приложений, выдача и отзыв токенов, security review.',
     units: { BACKEND: 26, FRONTEND: 6, PM: 4, QA: 7, TECHNICAL_SPECIALIST: 3 },
+  },
+  {
+    code: 'INT_CATALOG_IMPORT_EXPORT',
+    category: 'integrations',
+    iconKey: 'ArrowLeftRight',
+    title: 'Импорт и экспорт каталога в продукте',
+    summary: 'Клиент сам загружает и выгружает товары файлом или по ссылке.',
+    scopeBoundaries:
+      'Согласованные форматы XML, YML и Excel, сопоставление полей, обновление по расписанию или по кнопке, отчёт об ошибках строк, защита от дублей. Разовая заливка силами команды — это услуга, а не эта функция.',
+    units: { BACKEND: 20, FRONTEND: 10, PM: 3, QA: 6, TECHNICAL_SPECIALIST: 3 },
+  },
+  {
+    code: 'INT_ARMENIAN_E_INVOICING',
+    category: 'integrations',
+    iconKey: 'Receipt',
+    title: 'Электронные счёта и отчётность в госсистему',
+    summary: 'Обмен счетами и отчётами с государственной системой.',
+    scopeBoundaries:
+      'Одна государственная система, выпуск и отмена электронного счёта, статусы и квитанции, сопоставление номенклатуры и налогов, повторная отправка без дублей. Бухгалтерская методология и подписи на стороне клиента не входят.',
+    units: { BACKEND: 22, FRONTEND: 6, PM: 3, QA: 7, TECHNICAL_SPECIALIST: 4 },
   },
   {
     code: 'INT_LEGACY_DB_BRIDGE',

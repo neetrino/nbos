@@ -100,6 +100,6 @@ export const LOGISTICS_ITEMS: readonly CatalogSeedItem[] = [
     summary: 'Формирование печатных документов для отправлений.',
     scopeBoundaries:
       'Шаблоны документов, печать одной и пачки, размеры этикеток, проверка на реальном принтере.',
-    units: { BACKEND: 10, FRONTEND: 6, PM: 2, DESIGNER: 2, QA: 3, TECHNICAL_SPECIALIST: 1 },
+    units: { BACKEND: 10, FRONTEND: 6, PM: 2, DESIGNER: 2, QA: 3, TECHNICAL_SPECIALIST: 4 },
   },
 ] as const;

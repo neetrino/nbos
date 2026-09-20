@@ -12,8 +12,8 @@ export const CONTENT_ITEMS: readonly CatalogSeedItem[] = [
     title: 'Мультиязычность сайта',
     summary: 'Ещё один язык интерфейса и контента на сайте.',
     scopeBoundaries:
-      'Согласованные языки, маршруты и переключатель, перевод интерфейса, fallback. Сам перевод текстов клиента — отдельная услуга.',
-    units: { BACKEND: 8, FRONTEND: 8, PM: 2, QA: 3 },
+      'Один добавляемый язык: ключи и статические тексты, маршруты и переключатель, fallback. Перевод текстов клиента в объём не входит и отдельной услугой не продаётся — переводит ИИ.',
+    units: { BACKEND: 4, FRONTEND: 3, PM: 1, QA: 2 },
   },
   {
     code: 'CNT_MULTILINGUAL_SYSTEM',
@@ -22,7 +22,7 @@ export const CONTENT_ITEMS: readonly CatalogSeedItem[] = [
     title: 'Мультиязычность системы',
     summary: 'Языки в системе с данными, справочниками и документами.',
     scopeBoundaries:
-      'Языки интерфейса и данных, переводимые справочники, документы и письма на языке пользователя, fallback, влияние на отчёты.',
+      'Один добавляемый язык: ключи по всем экранам, переводимые справочники, письма и системные тексты, fallback, влияние на отчёты. Перенос уже накопленного контента на новый язык не входит.',
     units: { BACKEND: 26, FRONTEND: 18, PM: 4, QA: 7 },
   },
   {
@@ -113,16 +113,6 @@ export const CONTENT_ITEMS: readonly CatalogSeedItem[] = [
     scopeBoundaries:
       'Места размещения, расписание, ссылки, поведение на мобильном, приоритет показа.',
     units: { BACKEND: 8, FRONTEND: 8, PM: 2, DESIGNER: 3, QA: 3 },
-  },
-  {
-    code: 'CNT_ACCESSIBILITY_PASS',
-    category: 'content',
-    iconKey: 'LifeBuoy',
-    title: 'Доступность интерфейса',
-    summary: 'Приведение интерфейса к требованиям доступности.',
-    scopeBoundaries:
-      'Согласованный уровень требований, клавиатурная навигация, контраст, семантика и ARIA, проверка скринридером.',
-    units: { FRONTEND: 18, PM: 2, DESIGNER: 4, QA: 5 },
   },
   {
     code: 'CNT_PRINT_TEMPLATES',

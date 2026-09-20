@@ -72,7 +72,7 @@ export const PAYMENTS_ITEMS: readonly CatalogSeedItem[] = [
     summary: 'Подключение ещё одного армянского банковского шлюза.',
     scopeBoundaries:
       'Один дополнительный банк со своим API, 3-D Secure, возвраты, сверка. Каждый следующий банк — отдельная карточка.',
-    units: { BACKEND: 12, FRONTEND: 3, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
+    units: { BACKEND: 14, FRONTEND: 4, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
   },
   {
     code: 'PAY_STRIPE',
@@ -92,16 +92,6 @@ export const PAYMENTS_ITEMS: readonly CatalogSeedItem[] = [
     summary: 'Приём платежей через PayPal.',
     scopeBoundaries: 'Checkout, webhooks, возвраты, валюта расчёта, sandbox и продакшн.',
     units: { BACKEND: 12, FRONTEND: 4, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 1 },
-  },
-  {
-    code: 'PAY_CASH_ON_DELIVERY',
-    category: 'payments',
-    iconKey: 'Banknote',
-    title: 'Оплата при получении',
-    summary: 'Оформление заказа без онлайн-оплаты.',
-    scopeBoundaries:
-      'Способ оплаты в checkout, статусы заказа, ограничения по зонам и суммам, подтверждение менеджером.',
-    units: { BACKEND: 4, FRONTEND: 2, PM: 1, QA: 1 },
   },
   {
     code: 'PAY_BANK_TRANSFER',

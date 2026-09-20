@@ -23,7 +23,7 @@ export const MESSAGING_ITEMS: readonly CatalogSeedItem[] = [
     summary: 'Отправка SMS по событиям через провайдера.',
     scopeBoundaries:
       'Один провайдер, согласованные события, шаблоны, лимиты и стоимость отправки, обработка отказов.',
-    units: { BACKEND: 10, FRONTEND: 2, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 1 },
+    units: { BACKEND: 12, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 1 },
   },
   {
     code: 'MSG_WHATSAPP_NOTIFICATIONS',
@@ -33,7 +33,7 @@ export const MESSAGING_ITEMS: readonly CatalogSeedItem[] = [
     summary: 'Отправка шаблонных сообщений в WhatsApp.',
     scopeBoundaries:
       'Подключение номера, согласование шаблонов, отправка по событиям, обработка ошибок и лимитов. Диалог с оператором — отдельная карточка.',
-    units: { BACKEND: 14, FRONTEND: 4, PM: 3, QA: 4, TECHNICAL_SPECIALIST: 3 },
+    units: { BACKEND: 18, PM: 3, QA: 4, TECHNICAL_SPECIALIST: 3 },
   },
   {
     code: 'MSG_TELEGRAM_BOT',
@@ -52,7 +52,7 @@ export const MESSAGING_ITEMS: readonly CatalogSeedItem[] = [
     title: 'Viber-уведомления',
     summary: 'Отправка сообщений через Viber Business.',
     scopeBoundaries: 'Подключение канала, шаблоны, отправка по событиям, обработка отказов.',
-    units: { BACKEND: 12, FRONTEND: 3, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
+    units: { BACKEND: 15, PM: 2, QA: 3, TECHNICAL_SPECIALIST: 2 },
   },
   {
     code: 'MSG_PUSH_WEB',

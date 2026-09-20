@@ -72,18 +72,8 @@ export const MOBILE_ITEMS: readonly CatalogSeedItem[] = [
     title: 'Публикация в сторах',
     summary: 'Выпуск приложения в App Store и Google Play.',
     scopeBoundaries:
-      'Аккаунты клиента, сборки и подписи, метаданные и скриншоты, прохождение ревью, первый релиз. Последующие релизы — отдельная услуга.',
+      'Аккаунты клиента, сборки и подписи, метаданные и скриншоты, прохождение ревью, первый релиз, экран обязательного обновления версии. Последующие релизы — отдельная услуга.',
     units: { PM: 4, DESIGNER: 4, QA: 4, TECHNICAL_SPECIALIST: 12 },
-  },
-  {
-    code: 'MOB_APP_UPDATE_GATE',
-    category: 'mobile',
-    iconKey: 'RefreshCw',
-    title: 'Принудительное обновление версии',
-    summary: 'Требование обновиться при устаревшей версии.',
-    scopeBoundaries:
-      'Проверка версии, экран обновления, мягкое и жёсткое требование, обход для тестов.',
-    units: { BACKEND: 6, FRONTEND: 6, PM: 1, QA: 3 },
   },
   {
     code: 'MOB_TABLET_LAYOUT',
@@ -94,6 +84,16 @@ export const MOBILE_ITEMS: readonly CatalogSeedItem[] = [
     scopeBoundaries:
       'Согласованные экраны, поведение при повороте, разделённые панели, проверка на планшете.',
     units: { FRONTEND: 18, PM: 2, DESIGNER: 6, QA: 4 },
+  },
+  {
+    code: 'MOB_CRASH_AND_PRODUCT_ANALYTICS',
+    category: 'mobile',
+    iconKey: 'Gauge',
+    title: 'Сбор сбоев и аналитика приложения',
+    summary: 'Крэш-репорты и продуктовые события в приложении.',
+    scopeBoundaries:
+      'Один провайдер, сбор сбоев с расшифровкой символов, согласованная карта событий, здоровье релиза, панель показателей. Реакция на найденные сбои — отдельная работа.',
+    units: { BACKEND: 10, FRONTEND: 8, PM: 2, QA: 4, TECHNICAL_SPECIALIST: 4 },
   },
   {
     code: 'MOB_WEARABLE_COMPANION',

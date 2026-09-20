@@ -28,8 +28,13 @@ pnpm seed:delivery-catalog -- --apply --author=<employeeId>
 ```
 
 The seed is idempotent: existing codes are kept as they are, so a second run creates nothing and
-never overwrites content, units or status the Owner has edited. Everything it creates is `DRAFT`
-with placeholder instructions and acceptance criteria, and with **no units**.
+never overwrites content, units or status the Owner has edited.
+
+Everything it creates is `DRAFT`: the card itself, its content with placeholder instructions and
+acceptance criteria, and a **draft unit vector proposed by the executor**. Those numbers are a
+starting point for review, not an agreement — a draft version pays nobody. Read them in step 4 and
+publish only what you accept, after correcting what you disagree with. The scale used in the proposal
+is one unit per thousand AMD of internal cost, with a tenfold default sale price.
 
 ## 2. Publish role rates
 
@@ -47,11 +52,17 @@ are **included in the base** (included functions are unpaid extras inside that p
 An empty units field means not configured and blocks publishing. A typed `0` is an explicit decision
 and requires an extra confirmation when publishing.
 
-## 4. Publish units for the functions in play
+## 4. Review and publish units for the functions in play
 
-Same screen → Function prices. Only the functions actually being sold need units before go-live; the
-rest may stay draft. A selected function without published units blocks Done on the product card and
-names itself in the error.
+Same screen → Function prices. Every seeded card already carries a draft proposal; publishing is how
+you accept it. Only the functions actually being sold need to be published before go-live, the rest
+may stay draft. A selected function without published units blocks Done on the product card and names
+itself in the error.
+
+Two cards in the catalog describe the same work at different volumes — catalogue import by size, and
+multilingual support for a site versus a system. Until the tier mechanism lands, nothing stops a PM
+from selecting two of those variants on one product, which would charge the same work twice. Publish
+the variants you actually sell and keep the rest as drafts: a draft cannot be selected.
 
 ## 5. Open enrollment
 

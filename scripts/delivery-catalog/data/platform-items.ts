@@ -113,13 +113,23 @@ export const PLATFORM_ITEMS: readonly CatalogSeedItem[] = [
     units: { BACKEND: 14, FRONTEND: 8, PM: 2, QA: 4 },
   },
   {
+    code: 'PLT_ACCESSIBILITY_PASS',
+    category: 'platform',
+    iconKey: 'LifeBuoy',
+    title: 'Доступность интерфейса',
+    summary: 'Приведение интерфейса к требованиям доступности.',
+    scopeBoundaries:
+      'Согласованный уровень требований и перечень экранов, клавиатурная навигация, контраст, семантика и ARIA, проверка скринридером.',
+    units: { FRONTEND: 18, PM: 2, DESIGNER: 4, QA: 5 },
+  },
+  {
     code: 'PLT_SECURITY_HARDENING',
     category: 'platform',
     iconKey: 'Shield',
     title: 'Усиление безопасности',
     summary: 'Проверка и закрытие уязвимостей продукта.',
     scopeBoundaries:
-      'Согласованный объём проверки, исправление найденного, заголовки и лимиты, повторная проверка. Сертификация не входит.',
+      'Согласованный перечень проверяемых поверхностей, отчёт о найденном и исправление уязвимостей высокого и критического уровня, заголовки и лимиты, повторная проверка. Средние и низкие находки, переработка архитектуры и сертификация не входят.',
     units: { BACKEND: 20, FRONTEND: 8, PM: 3, QA: 6, TECHNICAL_SPECIALIST: 6 },
   },
 ] as const;

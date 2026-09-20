@@ -112,6 +112,33 @@ one unit for one thousand AMD of cost and a tenfold default sale price. The cata
 one to two hundred cards, so categories are browsing aids, not restrictions: a `commerce` function may
 be selected for a CRM.
 
+**1.14 Catalog review of 2026-09-20: what was accepted and what was not.** A cross-family review of the
+202 cards raised fifteen findings. Accepted and fixed: the paid translation service was removed, since
+the Owner had already decided there is no such service and the AI does the translating; site
+multilingual support dropped from 21 to 10 units to match his own estimate; the unnamed ARCA bank was
+raised to the same 25 units as the named banks, because the work is identical; catalogue import lost its
+backend share to the technical specialist and gained bounded ranges instead of an open "above 10 000";
+security hardening was capped to high and critical findings on a named list of surfaces; channel
+integrations for SMS, WhatsApp and Viber moved their frontend units to backend, as their scope contains
+no interface; label printing raised its technical specialist share to match comparable device work; cash
+on delivery, the forced-update screen and demo data were folded into the core, the store publishing card
+and launch support, being too small to be catalog functions on their own; accessibility moved from
+content to platform; three genuinely sold functions were missing and were added — catalogue import and
+export inside the product, crash and product analytics for mobile, and electronic invoicing with the
+state system; the AI chatbot and the generic ERP integration got measurable caps on sources, entities
+and languages.
+
+Rejected, with reasons. The one-click quick order stays a separate card: it is sold on its own in this
+market, and canon forbids splitting the catalog down to buttons, not keeping a small but real feature.
+Data migration stays a service rather than an integration: the Owner treats a migration as one-off work
+done by people, and its units sit with PM and the technical specialist accordingly.
+
+Not a defect but real: the review is right that mutually exclusive variants — import by volume,
+multilingual site versus system — are currently separate selectable cards, so both could be added to one
+product and charge the same work twice. The agreed model puts gradations inside one card, which needs
+tier-scoped price versions and a feature-to-tier link. That is the next slice; until it lands, the
+runbook tells the Owner to publish only the variants he sells, because a draft cannot be selected.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any
