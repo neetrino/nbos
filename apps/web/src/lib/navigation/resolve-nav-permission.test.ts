@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DELIVERY_COMPENSATION_RULES_MODULE,
   FINANCE_CLIENT_SERVICES_MODULE,
   FINANCE_EXPENSE_PLANS_MODULE,
   FUNCTION_CATALOG_MODULE,
@@ -171,6 +172,13 @@ describe('resolveNavPermission', () => {
     });
     expect(resolveNavPermission('/my-company/compensation')).toEqual({
       module: 'FINANCE_SALARY',
+      action: 'VIEW',
+    });
+  });
+
+  it('gates delivery norms on DELIVERY_COMPENSATION_RULES, not COMPANY', () => {
+    expect(resolveNavPermission('/my-company/delivery-norms')).toEqual({
+      module: DELIVERY_COMPENSATION_RULES_MODULE,
       action: 'VIEW',
     });
   });

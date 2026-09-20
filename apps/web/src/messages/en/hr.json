@@ -317,6 +317,198 @@
       "UNITS_NOT_CONFIGURED": "Owner still needs to publish function units.",
       "RATE_NOT_CONFIGURED": "Owner still needs to publish role rates.",
       "AI_DESIGNER_REVIEW_REQUIRED": "AI design with a Designer needs an explicit Reviewer."
+    },
+    "replaceAssignee": {
+      "trigger": "Replace role holder",
+      "title": "Replace a delivery role holder",
+      "description": "Money already earned stays with the outgoing person. Enter the remaining split by hand. Empty percents mean not decided yet.",
+      "role": "Role",
+      "rolePlaceholder": "Select a role",
+      "outgoing": "Current holder",
+      "outgoingPlaceholder": "Select the outgoing employee",
+      "incoming": "Incoming holder",
+      "incomingPlaceholder": "Select the incoming employee",
+      "reason": "Reason",
+      "reasonPlaceholder": "Why this person is being replaced",
+      "submit": "Replace holder",
+      "submitting": "Replacing…",
+      "planLoading": "Loading the replacement plan…",
+      "planEmpty": "This role has no components to redistribute.",
+      "pickOutgoing": "Select the outgoing employee to see what has to be redistributed.",
+      "noHeldComponents": "This person holds nothing to redistribute in this role.",
+      "planFailed": "The replacement plan could not be loaded.",
+      "noHolders": "No current holders for this role.",
+      "sameEmployee": "Pick a different incoming employee.",
+      "conflict": "This configuration changed. The plan was reloaded. Re-enter the percents and try again.",
+      "submitFailed": "The replacement could not be saved.",
+      "releasesHint": "Already released money stays with the outgoing person.",
+      "percentOutgoing": "Outgoing %",
+      "percentIncoming": "Incoming %",
+      "undecided": "Enter both percents. Empty means not decided yet.",
+      "mustSumTo100": "Outgoing and incoming percents must add up to {total}.",
+      "roles": {
+        "BACKEND": "Backend",
+        "FRONTEND": "Frontend",
+        "PM": "PM",
+        "DESIGNER": "Designer",
+        "QA": "QA",
+        "TECHNICAL_SPECIALIST": "Technical specialist"
+      }
+    }
+  },
+  "deliveryNorms": {
+    "title": "Delivery norms",
+    "subtitle": "Owner and CEO publish same-role AMD rates, base-profile units, and function units. Empty means not configured; 0 is an explicit decision.",
+    "refresh": "Refresh",
+    "none": "Not set",
+    "enrollment": {
+      "title": "V2 enrollment",
+      "subtitle": "Decides whether new deliveries may be enrolled in the unit model.",
+      "stateOn": "New deliveries can be enrolled",
+      "stateOff": "New deliveries stay on the legacy model",
+      "turnOn": "Turn enrollment on",
+      "turnOff": "Turn enrollment off",
+      "updatedAt": "Changed: {at}",
+      "hint": "Existing deliveries are unaffected: turning this off only stops new enrollments."
+    },
+    "rates": {
+      "title": "Role rates",
+      "subtitle": "Same-role AMD tariffs. Employee salary is never used.",
+      "createTitle": "New rate draft",
+      "fillSeed": "Fill all six at 1000 AMD",
+      "empty": "No role rates yet."
+    },
+    "profiles": {
+      "title": "Base profiles",
+      "subtitle": "Per-role unit vectors for a product or extension size.",
+      "createTitle": "New profile draft",
+      "empty": "No base profiles yet.",
+      "includedCount": "{count, plural, one {# included function} other {# included functions}}"
+    },
+    "prices": {
+      "title": "Function prices",
+      "subtitle": "Per-role unit vectors for catalog functions.",
+      "createTitle": "New function price draft",
+      "empty": "No function prices yet.",
+      "pickFunction": "Select a function",
+      "unknownFunction": "Unknown function"
+    },
+    "roleUnits": {
+      "title": "Role units",
+      "hint": "Leave a field empty to send null (not configured). Type 0 only when the role is explicitly unpaid.",
+      "placeholder": "empty = not configured",
+      "required": "Required",
+      "notRequired": "Not required",
+      "notRequiredHint": "Not required — units are sent as null.",
+      "notConfigured": "Not configured (null)",
+      "explicitZero": "Explicit 0",
+      "configured": "Configured"
+    },
+    "includedFunctions": {
+      "title": "Included in base",
+      "hint": "Catalog functions already covered by this base profile.",
+      "empty": "No catalog functions to include yet."
+    },
+    "fields": {
+      "effectiveFrom": "Effective from",
+      "profileKey": "Profile key",
+      "entityKind": "Entity kind",
+      "productType": "Product type",
+      "productCategory": "Product category",
+      "configSize": "Config size",
+      "implementationBase": "Implementation base",
+      "designMode": "Design mode",
+      "aiDesignerReview": "AI designer review",
+      "description": "Description",
+      "function": "Function"
+    },
+    "columns": {
+      "role": "Role",
+      "rate": "Rate",
+      "currency": "Currency",
+      "version": "Version",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "create": {
+      "creating": "Creating…",
+      "rate": "Create rate drafts",
+      "profile": "Create profile draft",
+      "price": "Create price draft"
+    },
+    "publish": {
+      "action": "Publish",
+      "publishing": "Publishing…",
+      "confirmZeroUnits": "This vector has an explicit 0 on a required role. Publish it as a confirmed zero?"
+    },
+    "errors": {
+      "load": "Delivery norms could not be loaded.",
+      "create": "The draft could not be created.",
+      "publish": "The draft could not be published.",
+      "effectiveFrom": "Enter a valid effective-from date.",
+      "rateRequired": "Enter at least one rate.",
+      "roleUnits": "Check role units: no negatives, at most 4 decimal places.",
+      "functionRequired": "Pick a catalog function.",
+      "enrollment": "Enrollment switch could not be changed."
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "ARCHIVED": "Archived"
+    },
+    "roles": {
+      "BACKEND": "Backend",
+      "FRONTEND": "Frontend",
+      "PM": "PM",
+      "DESIGNER": "Designer",
+      "QA": "QA",
+      "TECHNICAL_SPECIALIST": "Technical specialist"
+    },
+    "entityKinds": {
+      "PRODUCT": "Product",
+      "EXTENSION": "Extension"
+    },
+    "productTypes": {
+      "BUSINESS_CARD_WEBSITE": "Business card website",
+      "COMPANY_WEBSITE": "Company website",
+      "MOBILE_APP": "Mobile app",
+      "WEB_APP": "Web app",
+      "CRM": "CRM",
+      "ECOMMERCE": "E-commerce",
+      "SAAS": "SaaS",
+      "LANDING": "Landing",
+      "ERP": "ERP",
+      "LOGO": "Logo",
+      "BRANDING": "Branding",
+      "DESIGN": "Design",
+      "SEO": "SEO",
+      "PPC": "PPC",
+      "SMM": "SMM",
+      "OTHER": "Other"
+    },
+    "productCategories": {
+      "CODE": "Code",
+      "WORDPRESS": "WordPress",
+      "SHOPIFY": "Shopify",
+      "MARKETING": "Marketing",
+      "OTHER": "Other"
+    },
+    "configSizes": {
+      "SMALL": "Small",
+      "CLASSIC": "Classic",
+      "LARGE": "Large",
+      "VERY_LARGE": "Very large",
+      "ENTERPRISE": "Enterprise"
+    },
+    "implementationBases": {
+      "FROM_SCRATCH": "From scratch",
+      "EXISTING_BASE": "Existing base",
+      "WHITE_LABEL": "White label"
+    },
+    "designModes": {
+      "AI_DESIGN": "AI design",
+      "CONCEPT": "Concept",
+      "FULL_DESIGN": "Full design"
     }
   },
   "rolesSeats": {

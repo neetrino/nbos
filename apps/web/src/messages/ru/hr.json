@@ -317,6 +317,198 @@
       "UNITS_NOT_CONFIGURED": "Owner ещё не опубликовал units функций.",
       "RATE_NOT_CONFIGURED": "Owner ещё не опубликовал ставки ролей.",
       "AI_DESIGNER_REVIEW_REQUIRED": "AI-дизайн с Designer требует явную роль Reviewer."
+    },
+    "replaceAssignee": {
+      "trigger": "Заменить исполнителя роли",
+      "title": "Замена исполнителя роли поставки",
+      "description": "Уже заработанные деньги остаются у уходящего. Оставшуюся долю введите вручную. Пустые проценты значат, что решение ещё не принято.",
+      "role": "Роль",
+      "rolePlaceholder": "Выберите роль",
+      "outgoing": "Текущий исполнитель",
+      "outgoingPlaceholder": "Выберите уходящего сотрудника",
+      "incoming": "Будущий исполнитель",
+      "incomingPlaceholder": "Выберите входящего сотрудника",
+      "reason": "Причина",
+      "reasonPlaceholder": "Почему этого человека заменяют",
+      "submit": "Заменить исполнителя",
+      "submitting": "Замена…",
+      "planLoading": "Загружаем план замены…",
+      "planEmpty": "У этой роли нет компонентов для перераспределения.",
+      "pickOutgoing": "Выберите уходящего сотрудника, чтобы увидеть, что нужно перераспределить.",
+      "noHeldComponents": "У этого сотрудника нет доли для перераспределения в этой роли.",
+      "planFailed": "Не удалось загрузить план замены.",
+      "noHolders": "У этой роли нет текущих исполнителей.",
+      "sameEmployee": "Выберите другого входящего сотрудника.",
+      "conflict": "Конфигурация изменилась. План перезагружен. Введите проценты заново и повторите.",
+      "submitFailed": "Не удалось сохранить замену.",
+      "releasesHint": "Уже выплаченные деньги остаются у уходящего.",
+      "percentOutgoing": "Уходящий, %",
+      "percentIncoming": "Входящий, %",
+      "undecided": "Введите оба процента. Пустое поле значит, что решение ещё не принято.",
+      "mustSumTo100": "Проценты уходящего и входящего должны в сумме давать {total}.",
+      "roles": {
+        "BACKEND": "Backend",
+        "FRONTEND": "Frontend",
+        "PM": "PM",
+        "DESIGNER": "Дизайнер",
+        "QA": "QA",
+        "TECHNICAL_SPECIALIST": "Технический специалист"
+      }
+    }
+  },
+  "deliveryNorms": {
+    "title": "Нормы поставки",
+    "subtitle": "Owner и CEO публикуют одинаковые AMD-ставки ролей, units базового профиля и units функций. Пустое поле — не настроено; 0 — явное решение.",
+    "refresh": "Обновить",
+    "none": "Не задано",
+    "enrollment": {
+      "title": "Зачисление в V2",
+      "subtitle": "Определяет, можно ли зачислять новые поставки в модель юнитов.",
+      "stateOn": "Новые поставки можно зачислять",
+      "stateOff": "Новые поставки остаются в старой модели",
+      "turnOn": "Включить зачисление",
+      "turnOff": "Выключить зачисление",
+      "updatedAt": "Изменено: {at}",
+      "hint": "Текущие поставки не затрагиваются: выключение останавливает только новые зачисления."
+    },
+    "rates": {
+      "title": "Ставки ролей",
+      "subtitle": "Одинаковая ставка роли в AMD. Зарплата сотрудника не используется.",
+      "createTitle": "Новый черновик ставки",
+      "fillSeed": "Заполнить все шесть по 1000 AMD",
+      "empty": "Ставок ролей пока нет."
+    },
+    "profiles": {
+      "title": "Базовые профили",
+      "subtitle": "Вектор units по ролям для размера продукта или доработки.",
+      "createTitle": "Новый черновик профиля",
+      "empty": "Базовых профилей пока нет.",
+      "includedCount": "{count, plural, one {# функция в базе} few {# функции в базе} many {# функций в базе} other {# функции в базе}}"
+    },
+    "prices": {
+      "title": "Нормы функций",
+      "subtitle": "Вектор units по ролям для функций каталога.",
+      "createTitle": "Новый черновик нормы функции",
+      "empty": "Норм функций пока нет.",
+      "pickFunction": "Выберите функцию",
+      "unknownFunction": "Неизвестная функция"
+    },
+    "roleUnits": {
+      "title": "Units ролей",
+      "hint": "Пустое поле отправляется как null (не настроено). 0 вводите только если роль явно не оплачивается.",
+      "placeholder": "пусто = не настроено",
+      "required": "Обязательна",
+      "notRequired": "Не требуется",
+      "notRequiredHint": "Не требуется — units отправляются как null.",
+      "notConfigured": "Не настроено (null)",
+      "explicitZero": "Явный 0",
+      "configured": "Задано"
+    },
+    "includedFunctions": {
+      "title": "Входит в базу",
+      "hint": "Функции каталога, которые уже покрыты этим базовым профилем.",
+      "empty": "В каталоге пока нет функций для включения."
+    },
+    "fields": {
+      "effectiveFrom": "Действует с",
+      "profileKey": "Ключ профиля",
+      "entityKind": "Тип сущности",
+      "productType": "Тип продукта",
+      "productCategory": "Категория продукта",
+      "configSize": "Размер конфигурации",
+      "implementationBase": "База реализации",
+      "designMode": "Режим дизайна",
+      "aiDesignerReview": "AI-ревью дизайнера",
+      "description": "Описание",
+      "function": "Функция"
+    },
+    "columns": {
+      "role": "Роль",
+      "rate": "Ставка",
+      "currency": "Валюта",
+      "version": "Версия",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "create": {
+      "creating": "Создание…",
+      "rate": "Создать черновики ставок",
+      "profile": "Создать черновик профиля",
+      "price": "Создать черновик нормы"
+    },
+    "publish": {
+      "action": "Опубликовать",
+      "publishing": "Публикация…",
+      "confirmZeroUnits": "В векторе есть явный 0 у обязательной роли. Опубликовать его как подтверждённый ноль?"
+    },
+    "errors": {
+      "load": "Не удалось загрузить нормы поставки.",
+      "create": "Не удалось создать черновик.",
+      "publish": "Не удалось опубликовать черновик.",
+      "effectiveFrom": "Укажите корректную дату начала действия.",
+      "rateRequired": "Укажите хотя бы одну ставку.",
+      "roleUnits": "Проверьте units: без отрицательных, не больше 4 знаков после запятой.",
+      "functionRequired": "Выберите функцию каталога.",
+      "enrollment": "Не удалось изменить рубильник зачисления."
+    },
+    "status": {
+      "DRAFT": "Черновик",
+      "PUBLISHED": "Опубликовано",
+      "ARCHIVED": "В архиве"
+    },
+    "roles": {
+      "BACKEND": "Backend",
+      "FRONTEND": "Frontend",
+      "PM": "PM",
+      "DESIGNER": "Designer",
+      "QA": "QA",
+      "TECHNICAL_SPECIALIST": "Technical specialist"
+    },
+    "entityKinds": {
+      "PRODUCT": "Продукт",
+      "EXTENSION": "Доработка"
+    },
+    "productTypes": {
+      "BUSINESS_CARD_WEBSITE": "Сайт-визитка",
+      "COMPANY_WEBSITE": "Корпоративный сайт",
+      "MOBILE_APP": "Мобильное приложение",
+      "WEB_APP": "Веб-приложение",
+      "CRM": "CRM",
+      "ECOMMERCE": "Интернет-магазин",
+      "SAAS": "SaaS",
+      "LANDING": "Лендинг",
+      "ERP": "ERP",
+      "LOGO": "Логотип",
+      "BRANDING": "Брендинг",
+      "DESIGN": "Дизайн",
+      "SEO": "SEO",
+      "PPC": "PPC",
+      "SMM": "SMM",
+      "OTHER": "Другое"
+    },
+    "productCategories": {
+      "CODE": "Код",
+      "WORDPRESS": "WordPress",
+      "SHOPIFY": "Shopify",
+      "MARKETING": "Маркетинг",
+      "OTHER": "Другое"
+    },
+    "configSizes": {
+      "SMALL": "Small",
+      "CLASSIC": "Classic",
+      "LARGE": "Large",
+      "VERY_LARGE": "Very large",
+      "ENTERPRISE": "Enterprise"
+    },
+    "implementationBases": {
+      "FROM_SCRATCH": "С нуля",
+      "EXISTING_BASE": "Существующая база",
+      "WHITE_LABEL": "White label"
+    },
+    "designModes": {
+      "AI_DESIGN": "AI-дизайн",
+      "CONCEPT": "Концепт",
+      "FULL_DESIGN": "Полный дизайн"
     }
   },
   "rolesSeats": {

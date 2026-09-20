@@ -317,6 +317,198 @@
       "UNITS_NOT_CONFIGURED": "Owner-ը դեռ չի հրապարակել ֆունկցիաների units-երը։",
       "RATE_NOT_CONFIGURED": "Owner-ը դեռ չի հրապարակել դերերի դրույքները։",
       "AI_DESIGNER_REVIEW_REQUIRED": "AI դիզայնը Designer-ով պահանջում է հստակ Reviewer դեր։"
+    },
+    "replaceAssignee": {
+      "trigger": "Փոխարինել դերի կատարողին",
+      "title": "Առաքման դերի կատարողի փոխարինում",
+      "description": "Արդեն վաստակած գումարը մնում է հեռացողին։ Մնացորդի բաժինը մուտքագրեք ձեռքով։ Դատարկ տոկոսը նշանակում է, որ որոշումը դեռ չկա։",
+      "role": "Դեր",
+      "rolePlaceholder": "Ընտրեք դեր",
+      "outgoing": "Ներկայիս կատարող",
+      "outgoingPlaceholder": "Ընտրեք հեռացող աշխատակցին",
+      "incoming": "Ապագա կատարող",
+      "incomingPlaceholder": "Ընտրեք մտնող աշխատակցին",
+      "reason": "Պատճառ",
+      "reasonPlaceholder": "Ինչու է այս մարդուն փոխարինում",
+      "submit": "Փոխարինել կատարողին",
+      "submitting": "Փոխարինում…",
+      "planLoading": "Բեռնվում է փոխարինման պլանը…",
+      "planEmpty": "Այս դերը բաշխման ենթակա բաղադրիչներ չունի։",
+      "pickOutgoing": "Ընտրեք հեռացող աշխատակցին՝ տեսնելու, թե ինչ պետք է վերաբաշխվի։",
+      "noHeldComponents": "Այս աշխատակիցը այս դերում վերաբաշխելու բաժին չունի։",
+      "planFailed": "Չհաջողվեց բեռնել փոխարինման պլանը։",
+      "noHolders": "Այս դերը ներկայիս կատարողներ չունի։",
+      "sameEmployee": "Ընտրեք այլ մտնող աշխատակից։",
+      "conflict": "Կարգավորումը փոխվել է։ Պլանը նորից բեռնվեց։ Կրկին մուտքագրեք տոկոսները և փորձեք։",
+      "submitFailed": "Չհաջողվեց պահել փոխարինումը։",
+      "releasesHint": "Արդեն վճարված գումարը մնում է հեռացողին։",
+      "percentOutgoing": "Հեռացող, %",
+      "percentIncoming": "Մտնող, %",
+      "undecided": "Մուտքագրեք երկու տոկոսն էլ։ Դատարկ դաշտը նշանակում է, որ որոշումը դեռ չկա։",
+      "mustSumTo100": "Հեռացողի և մտնողի տոկոսների գումարը պետք է լինի {total}։",
+      "roles": {
+        "BACKEND": "Backend",
+        "FRONTEND": "Frontend",
+        "PM": "PM",
+        "DESIGNER": "Դիզայներ",
+        "QA": "QA",
+        "TECHNICAL_SPECIALIST": "Տեխնիկական մասնագետ"
+      }
+    }
+  },
+  "deliveryNorms": {
+    "title": "Առաքման նորմեր",
+    "subtitle": "Owner-ը և CEO-ն հրապարակում են նույն դերի AMD դրույքները, բազային պրոֆիլի և ֆունկցիաների units-երը։ Դատարկը նշանակում է չկարգավորված, 0-ն՝ հստակ որոշում։",
+    "refresh": "Թարմացնել",
+    "none": "Նշված չէ",
+    "enrollment": {
+      "title": "Ընդգրկում V2-ում",
+      "subtitle": "Որոշում է՝ արդյոք նոր առաքումները կարող են ընդգրկվել յունիթների մոդելում։",
+      "stateOn": "Նոր առաքումները կարող են ընդգրկվել",
+      "stateOff": "Նոր առաքումները մնում են հին մոդելում",
+      "turnOn": "Միացնել ընդգրկումը",
+      "turnOff": "Անջատել ընդգրկումը",
+      "updatedAt": "Փոփոխվել է՝ {at}",
+      "hint": "Ընթացիկ առաքումները չեն փոխվում. անջատումը կանգնեցնում է միայն նոր ընդգրկումները։"
+    },
+    "rates": {
+      "title": "Դերերի դրույքներ",
+      "subtitle": "Նույն դերի AMD սակագիր։ Աշխատակցի աշխատավարձը չի օգտագործվում։",
+      "createTitle": "Դրույքի նոր սևագիր",
+      "fillSeed": "Լրացնել բոլոր վեցը 1000 AMD-ով",
+      "empty": "Դերերի դրույքներ դեռ չկան։"
+    },
+    "profiles": {
+      "title": "Բազային պրոֆիլներ",
+      "subtitle": "Դերերի units վեկտոր՝ արտադրանքի կամ ընդլայնման չափի համար։",
+      "createTitle": "Պրոֆիլի նոր սևագիր",
+      "empty": "Բազային պրոֆիլներ դեռ չկան։",
+      "includedCount": "{count, plural, one {# ներառված ֆունկցիա} other {# ներառված ֆունկցիա}}"
+    },
+    "prices": {
+      "title": "Ֆունկցիաների նորմեր",
+      "subtitle": "Դերերի units վեկտոր՝ կատալոգի ֆունկցիաների համար։",
+      "createTitle": "Ֆունկցիայի նորմի նոր սևագիր",
+      "empty": "Ֆունկցիաների նորմեր դեռ չկան։",
+      "pickFunction": "Ընտրեք ֆունկցիա",
+      "unknownFunction": "Անհայտ ֆունկցիա"
+    },
+    "roleUnits": {
+      "title": "Դերերի units",
+      "hint": "Դատարկ դաշտը ուղարկվում է որպես null (չկարգավորված)։ 0 գրեք միայն երբ դերը հստակ չի վճարվում։",
+      "placeholder": "դատարկ = չկարգավորված",
+      "required": "Պարտադիր",
+      "notRequired": "Պարտադիր չէ",
+      "notRequiredHint": "Պարտադիր չէ — units-ը ուղարկվում է որպես null։",
+      "notConfigured": "Չկարգավորված (null)",
+      "explicitZero": "Հստակ 0",
+      "configured": "Կարգավորված"
+    },
+    "includedFunctions": {
+      "title": "Ներառված է բազայում",
+      "hint": "Կատալոգի ֆունկցիաներ, որոնք արդեն ծածկված են այս բազային պրոֆիլով։",
+      "empty": "Ներառելու կատալոգի ֆունկցիաներ դեռ չկան։"
+    },
+    "fields": {
+      "effectiveFrom": "Ուժի մեջ է",
+      "profileKey": "Պրոֆիլի բանալի",
+      "entityKind": "Սուբյեկտի տեսակ",
+      "productType": "Արտադրանքի տեսակ",
+      "productCategory": "Արտադրանքի կատեգորիա",
+      "configSize": "Կոնֆիգի չափ",
+      "implementationBase": "Իրականացման բազա",
+      "designMode": "Դիզայնի ռեժիմ",
+      "aiDesignerReview": "AI դիզայների վերանայում",
+      "description": "Նկարագրություն",
+      "function": "Ֆունկցիա"
+    },
+    "columns": {
+      "role": "Դեր",
+      "rate": "Դրույք",
+      "currency": "Արժույթ",
+      "version": "Տարբերակ",
+      "status": "Կարգավիճակ",
+      "actions": "Գործողություններ"
+    },
+    "create": {
+      "creating": "Ստեղծվում է…",
+      "rate": "Ստեղծել դրույքի սևագրեր",
+      "profile": "Ստեղծել պրոֆիլի սևագիր",
+      "price": "Ստեղծել նորմի սևագիր"
+    },
+    "publish": {
+      "action": "Հրապարակել",
+      "publishing": "Հրապարակվում է…",
+      "confirmZeroUnits": "Վեկտորում պարտադիր դերի վրա հստակ 0 կա։ Հրապարակե՞լ այն որպես հաստատված զրո։"
+    },
+    "errors": {
+      "load": "Չհաջողվեց բեռնել առաքման նորմերը։",
+      "create": "Չհաջողվեց ստեղծել սևագիրը։",
+      "publish": "Չհաջողվեց հրապարակել սևագիրը։",
+      "effectiveFrom": "Մուտքագրեք ուժի մեջ մտնելու ճիշտ ամսաթիվ։",
+      "rateRequired": "Մուտքագրեք առնվազն մեկ դրույք։",
+      "roleUnits": "Ստուգեք units-երը՝ առանց բացասականների, առավելագույնը 4 տասնորդական։",
+      "functionRequired": "Ընտրեք կատալոգի ֆունկցիա։",
+      "enrollment": "Չհաջողվեց փոխել ընդգրկման անջատիչը։"
+    },
+    "status": {
+      "DRAFT": "Սևագիր",
+      "PUBLISHED": "Հրապարակված",
+      "ARCHIVED": "Արխիվ"
+    },
+    "roles": {
+      "BACKEND": "Backend",
+      "FRONTEND": "Frontend",
+      "PM": "PM",
+      "DESIGNER": "Designer",
+      "QA": "QA",
+      "TECHNICAL_SPECIALIST": "Technical specialist"
+    },
+    "entityKinds": {
+      "PRODUCT": "Արտադրանք",
+      "EXTENSION": "Ընդլայնում"
+    },
+    "productTypes": {
+      "BUSINESS_CARD_WEBSITE": "Վիզիտ-կայք",
+      "COMPANY_WEBSITE": "Կորպորատիվ կայք",
+      "MOBILE_APP": "Բջջային հավելված",
+      "WEB_APP": "Վեբ հավելված",
+      "CRM": "CRM",
+      "ECOMMERCE": "Էլեկտրոնային առևտուր",
+      "SAAS": "SaaS",
+      "LANDING": "Landing",
+      "ERP": "ERP",
+      "LOGO": "Լոգո",
+      "BRANDING": "Բրենդինգ",
+      "DESIGN": "Դիզայն",
+      "SEO": "SEO",
+      "PPC": "PPC",
+      "SMM": "SMM",
+      "OTHER": "Այլ"
+    },
+    "productCategories": {
+      "CODE": "Կոդ",
+      "WORDPRESS": "WordPress",
+      "SHOPIFY": "Shopify",
+      "MARKETING": "Մարքեթինգ",
+      "OTHER": "Այլ"
+    },
+    "configSizes": {
+      "SMALL": "Small",
+      "CLASSIC": "Classic",
+      "LARGE": "Large",
+      "VERY_LARGE": "Very large",
+      "ENTERPRISE": "Enterprise"
+    },
+    "implementationBases": {
+      "FROM_SCRATCH": "Զրոյից",
+      "EXISTING_BASE": "Առկա բազա",
+      "WHITE_LABEL": "White label"
+    },
+    "designModes": {
+      "AI_DESIGN": "AI դիզայն",
+      "CONCEPT": "Կոնցեպտ",
+      "FULL_DESIGN": "Լրիվ դիզայն"
     }
   },
   "rolesSeats": {

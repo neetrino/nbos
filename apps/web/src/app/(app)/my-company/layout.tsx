@@ -1,9 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Library } from 'lucide-react';
+import { Library, Ruler } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FUNCTION_CATALOG_MODULE } from '@nbos/shared';
+import { DELIVERY_COMPENSATION_RULES_MODULE, FUNCTION_CATALOG_MODULE } from '@nbos/shared';
 import { ModuleHeroSlotProvider, PageHeroNavLinks } from '@/components/shared/page-hero';
 import { MY_COMPANY_MODULE_NAV } from '@/features/hr/constants/my-company-module-nav';
 import { usePermission } from '@/lib/permissions';
@@ -13,6 +13,7 @@ export default function MyCompanyLayout({ children }: { children: ReactNode }) {
   const { can } = usePermission();
   const canOpenHr = can('VIEW', 'COMPANY');
   const canOpenCatalog = can('VIEW', FUNCTION_CATALOG_MODULE);
+  const canOpenDeliveryNorms = can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE);
   const items = [
     ...(canOpenHr ? MY_COMPANY_MODULE_NAV : []).map((item) => ({
       href: item.href,
@@ -27,6 +28,16 @@ export default function MyCompanyLayout({ children }: { children: ReactNode }) {
             icon: Library,
             exactMatch: true,
             label: t('functionCatalog.title'),
+          },
+        ]
+      : []),
+    ...(canOpenDeliveryNorms
+      ? [
+          {
+            href: '/my-company/delivery-norms',
+            icon: Ruler,
+            exactMatch: true,
+            label: t('deliveryNorms.title'),
           },
         ]
       : []),

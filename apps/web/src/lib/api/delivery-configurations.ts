@@ -41,4 +41,59 @@ export const deliveryConfigurationsApi = {
     );
     return resp.data;
   },
+
+  async getReplacementPlan(configurationId: string, roleKey: string): Promise<ReplacementPlanDto> {
+    const resp = await api.get<ReplacementPlanDto>(
+      `/api/delivery-configurations/${configurationId}/replacement-plan`,
+      { params: { roleKey } },
+    );
+    return resp.data;
+  },
+
+  async replaceEmployee(
+    configurationId: string,
+    body: ReplaceEmployeeBody,
+  ): Promise<OperationalConfigurationDto> {
+    const resp = await api.post<OperationalConfigurationDto>(
+      `/api/delivery-configurations/${configurationId}/replacements`,
+      body,
+    );
+    return resp.data;
+  },
+};
+
+export type ReplacementPlanHolderDto = {
+  allocationId: string;
+  employeeId: string;
+  employeeName: string;
+  hasReleases: boolean;
+};
+
+export type ReplacementPlanComponentDto = {
+  componentId: string;
+  componentKey: string;
+  kind: string;
+  holders: ReplacementPlanHolderDto[];
+};
+
+export type ReplacementPlanDto = {
+  configurationId: string;
+  roleKey: string;
+  expectedRevision: number | null;
+  components: ReplacementPlanComponentDto[];
+};
+
+export type ReplaceEmployeeShareInput = {
+  componentId: string;
+  outgoingPercent: string;
+  incomingPercent: string;
+};
+
+export type ReplaceEmployeeBody = {
+  roleKey: string;
+  fromEmployeeId: string;
+  toEmployeeId: string;
+  shares: ReplaceEmployeeShareInput[];
+  reason: string;
+  expectedRevision?: number;
 };

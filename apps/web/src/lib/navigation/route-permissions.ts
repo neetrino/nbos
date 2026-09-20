@@ -1,4 +1,5 @@
 import {
+  DELIVERY_COMPENSATION_RULES_MODULE,
   FINANCE_CLIENT_SERVICES_MODULE,
   FINANCE_EXPENSE_PLANS_MODULE,
   FUNCTION_CATALOG_MODULE,
@@ -89,5 +90,9 @@ export const EXPLICIT_ROUTE_PERMISSIONS: RoutePermissionEntry[] = [
   {
     href: '/my-company/function-catalog',
     permission: { module: FUNCTION_CATALOG_MODULE, action: 'VIEW' },
+  },
+  {
+    href: '/my-company/delivery-norms',
+    permission: { module: DELIVERY_COMPENSATION_RULES_MODULE, action: 'VIEW' },
   },
 ];

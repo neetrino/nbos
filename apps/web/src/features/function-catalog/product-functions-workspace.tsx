@@ -1,16 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
+import {
+  DELIVERY_CONFIGURATION_PERMISSION_MODULE,
+  type DeliveryFunctionOperationalDto,
+} from '@nbos/shared';
 import { deliveryConfigurationsApi } from '@/lib/api/delivery-configurations';
 import { deliveryFunctionsApi } from '@/lib/api/delivery-functions';
+import { usePermission } from '@/lib/permissions';
 import { FunctionCatalogCard } from './function-catalog-card';
 import { FunctionInstructionSheet } from './function-instruction-sheet';
+import { ReplaceAssigneeTrigger } from './replace-assignee-trigger';
 
 type V2Config = {
   id: string;
   mode: 'V2';
+  enrolled: boolean;
   features: { functionId: string; origin: string }[];
   readiness?: { planState: string; errors: string[] };
 };
@@ -34,19 +40,23 @@ function isReadinessMessageCode(code: string): code is ReadinessMessageCode {
 
 export function ProductFunctionsWorkspace({ productId }: { productId: string }) {
   const t = useTranslations('hr.functionCatalog');
+  const { can } = usePermission();
   const [config, setConfig] = useState<LegacyOrConfig | null>(null);
   const [catalog, setCatalog] = useState<DeliveryFunctionOperationalDto[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
-
-  useEffect(() => {
+  const reload = useCallback(() => {
     void Promise.all([
       deliveryConfigurationsApi.getByProduct(productId),
       deliveryFunctionsApi.listAll(),
-    ]).then(([nextConfig, catalog]) => {
+    ]).then(([nextConfig, nextCatalog]) => {
       setConfig(normalizeConfig(nextConfig));
-      setCatalog(catalog);
+      setCatalog(nextCatalog);
     });
   }, [productId]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
 
   if (!config) {
     return <p className="text-muted-foreground text-sm">{t('loadFailed')}</p>;
@@ -54,7 +64,34 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
   if (config.mode === 'LEGACY') {
     return <p className="text-muted-foreground text-sm">{t('legacySkip')}</p>;
   }
+  return (
+    <EnrolledFunctionsWorkspace
+      config={config}
+      catalog={catalog}
+      openId={openId}
+      setOpenId={setOpenId}
+      onReplaced={reload}
+      canReplace={config.enrolled && can('EDIT', DELIVERY_CONFIGURATION_PERMISSION_MODULE)}
+    />
+  );
+}
 
+function EnrolledFunctionsWorkspace({
+  config,
+  catalog,
+  openId,
+  setOpenId,
+  onReplaced,
+  canReplace,
+}: {
+  config: V2Config;
+  catalog: DeliveryFunctionOperationalDto[];
+  openId: string | null;
+  setOpenId: (id: string | null) => void;
+  onReplaced: () => void;
+  canReplace: boolean;
+}) {
+  const t = useTranslations('hr.functionCatalog');
   const selectedIds = new Set(config.features.map((feature) => feature.functionId));
   const selected = catalog.filter((item) => selectedIds.has(item.id));
   const openItem = catalog.find((item) => item.id === openId) ?? null;
@@ -64,26 +101,45 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
       .map((feature) => feature.functionId),
   );
   const blockers = (config.readiness?.errors ?? []).filter(isReadinessMessageCode);
-
   return (
     <div className="space-y-4">
-      <p className="text-muted-foreground text-sm">{t('subtitle')}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="text-muted-foreground text-sm">{t('subtitle')}</p>
+        {canReplace ? (
+          <ReplaceAssigneeTrigger configurationId={config.id} onReplaced={onReplaced} />
+        ) : null}
+      </div>
       {blockers.map((code) => (
         <p key={code} className="text-sm text-amber-700">
           {t(READINESS_MESSAGE_KEYS[code])}
         </p>
       ))}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {selected.map((item) => (
-          <div key={item.id} className="space-y-1">
-            {included.has(item.id) ? (
-              <p className="text-muted-foreground text-xs">{t('includedBadge')}</p>
-            ) : null}
-            <FunctionCatalogCard item={item} showStatus={false} statusLabel="" onOpen={setOpenId} />
-          </div>
-        ))}
-      </div>
+      <SelectedFunctionCards selected={selected} included={included} onOpen={setOpenId} />
       {openItem ? <FunctionInstructionSheet item={openItem} /> : null}
+    </div>
+  );
+}
+
+function SelectedFunctionCards({
+  selected,
+  included,
+  onOpen,
+}: {
+  selected: DeliveryFunctionOperationalDto[];
+  included: Set<string>;
+  onOpen: (id: string | null) => void;
+}) {
+  const t = useTranslations('hr.functionCatalog');
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {selected.map((item) => (
+        <div key={item.id} className="space-y-1">
+          {included.has(item.id) ? (
+            <p className="text-muted-foreground text-xs">{t('includedBadge')}</p>
+          ) : null}
+          <FunctionCatalogCard item={item} showStatus={false} statusLabel="" onOpen={onOpen} />
+        </div>
+      ))}
     </div>
   );
 }

@@ -27,6 +27,7 @@
   "children": {
     "myCompany": {
       "functionCatalog": "Ֆունկցիաների կատալոգ",
+      "deliveryNorms": "Առաքման նորմեր",
       "compensation": "Փոխհատուցում",
       "kpi": "KPI / ցուցանիշներ",
       "kpiPolicies": "KPI կանոններ",

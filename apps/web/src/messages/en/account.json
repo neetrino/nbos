@@ -167,6 +167,7 @@
       "burnedKpi": "Burned KPI {amount}",
       "carryOver": "Carry-over {amount}",
       "payrollRelease": "Payroll (release): {month}",
+      "deliveryRole": "Role: {role}",
       "subscription": "Subscription order — bonus releases may follow client invoice payments.",
       "clawback": "Clawback — this bonus was reversed or reduced. Check Corrections or ask Finance.",
       "paidTiming": "Marked paid; a small remaining amount may reflect timing between release and entry totals.",

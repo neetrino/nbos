@@ -22,6 +22,7 @@ const base: EmployeeWalletBonusRow = {
   project: { code: 'PRJ', name: 'Alpha' },
   order: { code: 'ORD-1' },
   policyBreakdownStatuses: [],
+  deliveryRoleKey: null,
   createdAt: '',
 };
 
