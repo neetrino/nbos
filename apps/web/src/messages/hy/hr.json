@@ -611,11 +611,7 @@
       "noTiers": "Վաճառքի գնով աստիճաններ դեռ չկան։ Ֆունկցիաներն ու միջուկները կարելի է գնագոյացնել վերևի ցանկերից։",
       "amountPerUnit": "Վաճառքի գին unit-ի համար ({currency})",
       "amountPerUnitShort": "Unit-ի համար",
-      "unknownTarget": "Անհայտ նպատակ",
-      "defaultTitle": "Լռելյայն վաճառքի գին unit-ի համար",
-      "defaultSubtitle": "Օգտագործվում է, երբ քարտը սեփական դրույք չունի։ Լռելյայն՝ 10 000 AMD։",
-      "defaultSave": "Պահել լռելյայնը",
-      "savingDefault": "Պահվում է…"
+      "unknownTarget": "Անհայտ նպատակ"
     },
     "fields": {
       "effectiveFrom": "Ուժի մեջ է",
@@ -664,7 +660,6 @@
       "salePrices": "Չհաջողվեց ստեղծել վաճառքի գնի սևագիրը։",
       "salePriceRequired": "Նշեք վաճառքի գինը unit-ի համար։",
       "salePricePositive": "Unit-ի վաճառքի գինը պետք է զրոյից մեծ լինի։",
-      "defaultUnitPrice": "Չհաջողվեց պահել լռելյայն վաճառքի գինը unit-ի համար։",
       "targetRequired": "Ընտրեք, թե ինչի վրա է կիրառվում այս վաճառքի գինը։"
     },
     "status": {

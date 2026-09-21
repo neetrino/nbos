@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CatalogContentValidationError } from './catalog-write';
 import {
-  DEFAULT_SALE_AMOUNT_PER_UNIT,
-  parseDefaultSaleAmountPerUnit,
   parseSalePriceBody,
   resolveSalePrice,
   salePriceTargetKey,
@@ -19,33 +17,24 @@ describe('salePriceTargetKey', () => {
 
 describe('resolveSalePrice', () => {
   it('sells a blog core of 100 units at 5 000 AMD each for 500 000', () => {
-    expect(
-      resolveSalePrice({
-        units: '100',
-        amountPerUnit: '5000',
-        defaultAmountPerUnit: DEFAULT_SALE_AMOUNT_PER_UNIT,
-      }),
-    ).toEqual({ amount: '500000.00', source: 'CARD' });
+    expect(resolveSalePrice({ units: '100', amountPerUnit: '5000' })).toEqual({
+      amount: '500000.00',
+      source: 'CARD',
+    });
   });
 
-  it('uses the 10 000 AMD default when the card has no rate of its own', () => {
-    expect(
-      resolveSalePrice({
-        units: '30',
-        amountPerUnit: null,
-        defaultAmountPerUnit: DEFAULT_SALE_AMOUNT_PER_UNIT,
-      }),
-    ).toEqual({ amount: '300000.00', source: 'DEFAULT' });
+  it('does not invent a price when the card has no stored rate', () => {
+    expect(resolveSalePrice({ units: '30', amountPerUnit: null })).toEqual({
+      amount: null,
+      source: 'UNKNOWN',
+    });
   });
 
   it('reports an unknown price rather than inventing one without units', () => {
-    expect(
-      resolveSalePrice({
-        units: null,
-        amountPerUnit: '5000',
-        defaultAmountPerUnit: DEFAULT_SALE_AMOUNT_PER_UNIT,
-      }),
-    ).toEqual({ amount: null, source: 'UNKNOWN' });
+    expect(resolveSalePrice({ units: null, amountPerUnit: '5000' })).toEqual({
+      amount: null,
+      source: 'UNKNOWN',
+    });
   });
 });
 
@@ -78,7 +67,6 @@ describe('parseSalePriceBody', () => {
     expect(() =>
       parseSalePriceBody({ amountPerUnit: '0', effectiveFrom: '2026-10-01' }, target),
     ).toThrow(/greater than zero/);
-    expect(() => parseDefaultSaleAmountPerUnit('-5')).toThrow(/greater than zero/);
   });
 
   it('requires a date the version takes effect from', () => {

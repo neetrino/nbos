@@ -611,11 +611,7 @@
       "noTiers": "Пока нет градаций с ценой продажи. Функции и ядра можно оценить из списков выше.",
       "amountPerUnit": "Цена продажи за unit ({currency})",
       "amountPerUnitShort": "За unit",
-      "unknownTarget": "Неизвестная цель",
-      "defaultTitle": "Цена продажи за unit по умолчанию",
-      "defaultSubtitle": "Используется, когда у карточки нет своей ставки. По умолчанию 10 000 AMD.",
-      "defaultSave": "Сохранить дефолт",
-      "savingDefault": "Сохранение…"
+      "unknownTarget": "Неизвестная цель"
     },
     "fields": {
       "effectiveFrom": "Действует с",
@@ -664,7 +660,6 @@
       "salePrices": "Не удалось создать черновик цены продажи.",
       "salePriceRequired": "Укажите цену продажи за unit.",
       "salePricePositive": "Цена продажи за unit должна быть больше нуля.",
-      "defaultUnitPrice": "Не удалось сохранить цену продажи за unit по умолчанию.",
       "targetRequired": "Выберите, к чему относится эта цена продажи."
     },
     "status": {

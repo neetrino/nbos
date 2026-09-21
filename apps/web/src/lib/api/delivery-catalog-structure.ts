@@ -93,19 +93,4 @@ export const deliveryCatalogStructureApi = {
     const resp = await api.post<SalePriceVersionDto>(`${BASE}/sale-prices/${id}/publish`, {});
     return resp.data;
   },
-
-  async getDefaultUnitPrice(): Promise<{ defaultSaleAmountPerUnit: string }> {
-    const resp = await api.get<{ defaultSaleAmountPerUnit: string }>(
-      `${BASE}/sale-prices/default-unit-price`,
-    );
-    return resp.data;
-  },
-
-  async setDefaultUnitPrice(amountPerUnit: string): Promise<{ defaultSaleAmountPerUnit: string }> {
-    const resp = await api.post<{ defaultSaleAmountPerUnit: string }>(
-      `${BASE}/sale-prices/default-unit-price`,
-      { amountPerUnit },
-    );
-    return resp.data;
-  },
 };

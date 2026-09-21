@@ -88,7 +88,6 @@ function hasDeliveryNormsData(data: DeliveryNormsPageData): boolean {
     data.rates.length > 0 ||
     data.profiles.length > 0 ||
     data.prices.length > 0 ||
-    data.salePrices.length > 0 ||
-    data.defaultAmountPerUnit !== null
+    data.salePrices.length > 0
   );
 }

@@ -1,15 +1,12 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import {
-  DEFAULT_SALE_AMOUNT_PER_UNIT,
-  parseDefaultSaleAmountPerUnit,
   parseSalePriceBody,
   resolveSalePrice,
   salePriceTargetKey,
   type SalePriceTarget,
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
-import { DELIVERY_RUNTIME_SETTING_ID } from './delivery-compensation-rules.service';
 import { loadUnitsBySaleTarget } from './sale-price-target-units';
 
 export type SalePriceVersionDto = {
@@ -91,24 +88,6 @@ export class SalePricesService {
     return requiredSerialized(await this.serializeMany([published], true));
   }
 
-  async defaultUnitPrice(): Promise<string> {
-    const setting = await this.prisma.deliveryCompensationRuntimeSetting.findUnique({
-      where: { id: DELIVERY_RUNTIME_SETTING_ID },
-      select: { defaultSaleAmountPerUnit: true },
-    });
-    return setting?.defaultSaleAmountPerUnit?.toString() ?? DEFAULT_SALE_AMOUNT_PER_UNIT;
-  }
-
-  async setDefaultUnitPrice(raw: unknown): Promise<{ defaultSaleAmountPerUnit: string }> {
-    const amountPerUnit = parseDefaultSaleAmountPerUnit(raw);
-    const setting = await this.prisma.deliveryCompensationRuntimeSetting.upsert({
-      where: { id: DELIVERY_RUNTIME_SETTING_ID },
-      create: { id: DELIVERY_RUNTIME_SETTING_ID, defaultSaleAmountPerUnit: amountPerUnit },
-      update: { defaultSaleAmountPerUnit: amountPerUnit },
-    });
-    return { defaultSaleAmountPerUnit: setting.defaultSaleAmountPerUnit.toString() };
-  }
-
   private async serializeMany(
     rows: readonly SalePriceRecord[],
     includeRate: boolean,
@@ -166,11 +145,7 @@ function serializeWithoutUnits(
     status: row.status,
     effectiveFrom: row.effectiveFrom.toISOString(),
     amountPerUnit: includeRate ? amountPerUnit : null,
-    resolvedAmount: resolveSalePrice({
-      units,
-      amountPerUnit,
-      defaultAmountPerUnit: DEFAULT_SALE_AMOUNT_PER_UNIT,
-    }).amount,
+    resolvedAmount: resolveSalePrice({ units, amountPerUnit }).amount,
     currency: row.currency,
   };
 }

@@ -29,8 +29,6 @@ enum DeliveryBonusComponentKindEnum {
 model DeliveryCompensationRuntimeSetting {
   id                   String   @id
   newEnrollmentEnabled Boolean  @default(false) @map("new_enrollment_enabled")
-  /// AMD the client pays per unit when a card has no sale rate of its own. Ten thousand by default.
-  defaultSaleAmountPerUnit Decimal @default(10000) @map("default_sale_amount_per_unit") @db.Decimal(14, 4)
   updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@map("delivery_compensation_runtime_settings")

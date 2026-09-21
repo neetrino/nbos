@@ -46,14 +46,6 @@ function buildPrisma(overrides: Record<string, unknown> = {}) {
         },
       ]),
     },
-    deliveryCompensationRuntimeSetting: {
-      findUnique: vi.fn().mockResolvedValue({
-        defaultSaleAmountPerUnit: { toString: () => '10000' },
-      }),
-      upsert: vi.fn().mockResolvedValue({
-        defaultSaleAmountPerUnit: { toString: () => '12000' },
-      }),
-    },
     $transaction: vi.fn(async (fn: (client: unknown) => Promise<unknown>) => fn(buildTx())),
     ...overrides,
   };
@@ -203,21 +195,9 @@ describe('SalePricesService', () => {
     expect(first).toMatchObject({ amountPerUnit: '10000.0000', resolvedAmount: null });
   });
 
-  it('falls back to 10 000 AMD per unit when no setting exists', async () => {
-    const prisma = buildPrisma({
-      deliveryCompensationRuntimeSetting: {
-        findUnique: vi.fn().mockResolvedValue(null),
-        upsert: vi.fn(),
-      },
-    });
-    const service = new SalePricesService(prisma as never);
-
-    await expect(service.defaultUnitPrice()).resolves.toBe('10000');
-  });
-
-  it('rejects a default rate of zero', async () => {
+  it('does not invent a fallback rate when the card has none', () => {
     const service = new SalePricesService(buildPrisma() as never);
-
-    await expect(service.setDefaultUnitPrice('0')).rejects.toThrow(/greater than zero/);
+    expect(service).not.toHaveProperty('defaultUnitPrice');
+    expect(service).not.toHaveProperty('setDefaultUnitPrice');
   });
 });

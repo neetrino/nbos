@@ -4,8 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
 import type { SearchOption } from '@/components/shared';
-import { COMPACT_PANEL_CLASS, OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
-import { DefaultUnitPriceForm } from './default-unit-price-form';
+import { OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
 import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
@@ -25,7 +24,6 @@ export function SalePricesSection({
   rows,
   catalog,
   profiles,
-  defaultAmountPerUnit,
   canEdit,
   onChanged,
   onError,
@@ -34,7 +32,6 @@ export function SalePricesSection({
   rows: SalePriceVersionDto[];
   catalog: DeliveryFunctionOperationalDto[];
   profiles: DeliveryBaseProfileFinancialDto[];
-  defaultAmountPerUnit: string | null;
   canEdit: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
@@ -75,15 +72,6 @@ export function SalePricesSection({
       title={embedded ? undefined : t('salePrices.title')}
       description={embedded ? undefined : t('salePrices.subtitle')}
     >
-      <div className={COMPACT_PANEL_CLASS}>
-        <DefaultUnitPriceForm
-          key={defaultAmountPerUnit ?? 'none'}
-          value={defaultAmountPerUnit}
-          canEdit={canEdit}
-          onChanged={onChanged}
-          onError={onError}
-        />
-      </div>
       <DeliveryNormsSectionToolbar
         query={query}
         onQueryChange={setQuery}

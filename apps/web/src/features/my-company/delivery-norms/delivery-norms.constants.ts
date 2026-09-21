@@ -103,8 +103,6 @@ export const NORMS_SHEET_ROLE_BLOCK_CLASS = 'flex flex-col gap-3 py-4 first:pt-0
 
 export const LIST_SEARCH_MAX_CLASS = 'min-w-[12rem] max-w-sm flex-1';
 
-export const COMPACT_PANEL_CLASS = 'max-w-xl';
-
 export const STATUS_BADGE_VARIANT: Record<DeliveryNormativeStatus, StatusVariant> = {
   DRAFT: 'amber',
   PUBLISHED: 'emerald',

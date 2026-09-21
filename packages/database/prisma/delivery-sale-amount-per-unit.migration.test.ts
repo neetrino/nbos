@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SALE_AMOUNT_PER_UNIT } from '@nbos/shared';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const sql = readFileSync(
@@ -18,7 +17,6 @@ describe('sale amount per unit migration', () => {
     );
     expect(sql).toContain('SET "amount_per_unit" = "multiplier" * 1000');
     expect(sql).toContain('SET "default_sale_amount_per_unit" = "default_sale_multiplier" * 1000');
-    expect(DEFAULT_SALE_AMOUNT_PER_UNIT).toBe('10000');
   });
 
   it('drops the old multiplier and fixed-amount columns', () => {

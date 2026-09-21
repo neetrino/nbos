@@ -22,7 +22,6 @@ export type DeliveryNormsPageData = {
   catalog: DeliveryFunctionOperationalDto[];
   enrollment: DeliveryEnrollmentSetting | null;
   salePrices: SalePriceVersionDto[];
-  defaultAmountPerUnit: string | null;
 };
 
 const EMPTY_DATA: DeliveryNormsPageData = {
@@ -32,7 +31,6 @@ const EMPTY_DATA: DeliveryNormsPageData = {
   catalog: [],
   enrollment: null,
   salePrices: [],
-  defaultAmountPerUnit: null,
 };
 
 export function useDeliveryNormsPageData() {
@@ -65,16 +63,14 @@ export function useDeliveryNormsPageData() {
 }
 
 async function fetchDeliveryNorms(): Promise<DeliveryNormsPageData> {
-  const [rates, profiles, prices, catalog, enrollment, salePrices, defaultUnitPrice] =
-    await Promise.all([
-      deliveryNormsApi.listRoleRates(),
-      deliveryNormsApi.listBaseProfiles(),
-      deliveryNormsApi.listFunctionPrices(),
-      deliveryFunctionsApi.listAll(),
-      deliveryNormsApi.getEnrollment(),
-      deliveryCatalogStructureApi.listSalePrices(),
-      deliveryCatalogStructureApi.getDefaultUnitPrice(),
-    ]);
+  const [rates, profiles, prices, catalog, enrollment, salePrices] = await Promise.all([
+    deliveryNormsApi.listRoleRates(),
+    deliveryNormsApi.listBaseProfiles(),
+    deliveryNormsApi.listFunctionPrices(),
+    deliveryFunctionsApi.listAll(),
+    deliveryNormsApi.getEnrollment(),
+    deliveryCatalogStructureApi.listSalePrices(),
+  ]);
   return {
     rates,
     profiles,
@@ -82,6 +78,5 @@ async function fetchDeliveryNorms(): Promise<DeliveryNormsPageData> {
     catalog,
     enrollment,
     salePrices,
-    defaultAmountPerUnit: defaultUnitPrice.defaultSaleAmountPerUnit,
   };
 }

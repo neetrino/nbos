@@ -9,8 +9,6 @@ import {
 } from './decimal-scale';
 import { DELIVERY_UNITS_SCALE } from './constants';
 
-export const DEFAULT_SALE_AMOUNT_PER_UNIT = '10000';
-
 export type SalePriceTarget =
   | { kind: 'FUNCTION'; functionId: string }
   | { kind: 'TIER'; tierId: string }
@@ -22,7 +20,7 @@ export type SalePriceWriteInput = {
   amountPerUnit: string;
 };
 
-export type SalePriceSource = 'CARD' | 'DEFAULT' | 'UNKNOWN';
+export type SalePriceSource = 'CARD' | 'UNKNOWN';
 
 /**
  * Identifies what a sale price version prices. A plain identifier would not be enough: the same
@@ -36,24 +34,17 @@ export function salePriceTargetKey(target: SalePriceTarget): string {
 }
 
 /**
- * Client line amount: units × the card's AMD-per-unit rate, or the global default when the card
- * has none. Cost and the developer rate are not part of this.
+ * Client line amount: units × the card's stored AMD-per-unit rate. No stored rate means no price.
+ * Cost and the developer rate are not part of this.
  */
-export function resolveSalePrice(input: {
-  units: string | null;
-  amountPerUnit: string | null;
-  defaultAmountPerUnit: string;
-}): { amount: string | null; source: SalePriceSource } {
-  if (input.units === null) {
+export function resolveSalePrice(input: { units: string | null; amountPerUnit: string | null }): {
+  amount: string | null;
+  source: SalePriceSource;
+} {
+  if (input.units === null || input.amountPerUnit === null) {
     return { amount: null, source: 'UNKNOWN' };
   }
-  if (input.amountPerUnit !== null) {
-    return { amount: unitsTimesRate(input.units, input.amountPerUnit), source: 'CARD' };
-  }
-  return {
-    amount: unitsTimesRate(input.units, input.defaultAmountPerUnit),
-    source: 'DEFAULT',
-  };
+  return { amount: unitsTimesRate(input.units, input.amountPerUnit), source: 'CARD' };
 }
 
 /** Total units of a priced item. Unconfigured roles do not count as zero. */
@@ -85,10 +76,6 @@ export function parseSalePriceBody(body: unknown, target: SalePriceTarget): Sale
     effectiveFrom: requireDate(row.effectiveFrom),
     amountPerUnit: requirePositiveAmount(row.amountPerUnit, 'amountPerUnit'),
   };
-}
-
-export function parseDefaultSaleAmountPerUnit(raw: unknown): string {
-  return requirePositiveAmount(raw, 'amountPerUnit');
 }
 
 function requirePositiveAmount(value: unknown, field: string): string {

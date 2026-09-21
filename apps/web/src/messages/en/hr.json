@@ -611,11 +611,7 @@
       "noTiers": "No gradations with a sale price yet. Price functions and cores from the lists above.",
       "amountPerUnit": "Sale price per unit ({currency})",
       "amountPerUnitShort": "Per unit",
-      "unknownTarget": "Unknown target",
-      "defaultTitle": "Default sale price per unit",
-      "defaultSubtitle": "Used when a card carries no rate of its own. 10 000 AMD unless you change it.",
-      "defaultSave": "Save default",
-      "savingDefault": "Saving…"
+      "unknownTarget": "Unknown target"
     },
     "fields": {
       "effectiveFrom": "Effective from",
@@ -664,7 +660,6 @@
       "salePrices": "The sale price draft could not be created.",
       "salePriceRequired": "Set the sale price per unit.",
       "salePricePositive": "The sale price per unit must be greater than zero.",
-      "defaultUnitPrice": "The default sale price per unit could not be saved.",
       "targetRequired": "Pick what this sale price applies to."
     },
     "status": {

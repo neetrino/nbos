@@ -100,24 +100,6 @@ export class CatalogStructureController {
     }
   }
 
-  @Get('sale-prices/default-unit-price')
-  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'AMD per unit used when a card carries no rate of its own.' })
-  async getDefaultUnitPrice() {
-    return { defaultSaleAmountPerUnit: await this.salePrices.defaultUnitPrice() };
-  }
-
-  @Post('sale-prices/default-unit-price')
-  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Set the global AMD-per-unit sale rate.' })
-  async setDefaultUnitPrice(@Body() body: { amountPerUnit?: string | number }) {
-    try {
-      return await this.salePrices.setDefaultUnitPrice(body.amountPerUnit);
-    } catch (error) {
-      mapCatalogWriteError(error);
-    }
-  }
-
   @Post('sale-prices/:id/publish')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Publish a draft sale price, superseding the previous one.' })

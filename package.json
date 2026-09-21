@@ -33,6 +33,7 @@
     "test:regression": "vitest run --config vitest.regression.config.ts",
     "seed:delivery-catalog": "tsx scripts/delivery-catalog/seed-delivery-catalog.ts",
     "seed:delivery-profiles": "tsx scripts/delivery-profiles/seed-delivery-profiles.ts",
+    "seed:delivery-sale-prices": "tsx scripts/delivery-sale-prices/seed-delivery-sale-prices.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "knip": "knip --dependencies --files",

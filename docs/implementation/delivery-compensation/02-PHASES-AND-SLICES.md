@@ -608,6 +608,19 @@ Won, deal write, product create, SEND_OFFER); Prettier; `pnpm --filter @nbos/dat
 shared + database + API + web `tsc --noEmit` (API/web 8GB); migrate deploy on dev.
 **Not run:** browser QA of deal sheet / create product / planning; production migrate.
 
+### Sale price always stored, no implicit default (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.12 withdrawn the implicit “empty = 10 000” fallback. A card has a client amount only when
+a sale version stores `amountPerUnit`. `resolveSalePrice` returns `CARD` or `UNKNOWN`. Column
+`defaultSaleAmountPerUnit` dropped (`20260921220000_drop_default_sale_amount`). Default-unit-price
+API and the norms form are gone. New drafts still require a number. Seed
+`pnpm seed:delivery-sale-prices` publishes 10 000 (AI 20 000) per function, KEEP if any version
+exists. Catalog still shows AMD only from `resolvedAmount` after **units** are published — this slice
+does not publish units.
+
+**Checks:** recorded in the commit that follows.
+**Not run:** production migrate; seed `--apply` waits for the Owner employee id.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).

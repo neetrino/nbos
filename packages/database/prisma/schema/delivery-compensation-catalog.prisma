@@ -303,8 +303,8 @@ model DeliveryDealQuoteItem {
 }
 
 /// Client sale rate of one catalog item, versioned like units so a later edit never re-prices a
-/// deal that was already assembled. `amountPerUnit` is AMD the client pays per unit; empty means
-/// the global default (10 000). The line is units × that rate. Cost and the developer rate are not
+/// deal that was already assembled. `amountPerUnit` is AMD the client pays per unit; no version
+/// means no client amount. The line is units × that rate. Cost and the developer rate are not
 /// part of this. `targetKey` spells out what the version prices, because a nullable foreign key
 /// cannot carry a unique version number on its own.
 model DeliverySalePriceVersion {
