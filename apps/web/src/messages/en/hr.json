@@ -403,6 +403,80 @@
     "subtitle": "Owner and CEO publish same-role AMD rates, base-profile units, and function units. Empty means not configured; 0 is an explicit decision.",
     "refresh": "Refresh",
     "none": "Not set",
+    "workspace": {
+      "tabs": {
+        "aria": "Delivery norms sections",
+        "overview": "Model",
+        "rates": "Role rates",
+        "profiles": "Profiles",
+        "functions": "Functions",
+        "sale": "Sale prices"
+      },
+      "profileTabs": {
+        "aria": "Base profile parts",
+        "versions": "Versions and units",
+        "core": "Core composition",
+        "presets": "Size presets"
+      },
+      "panel": {
+        "open": "Open"
+      },
+      "overview": {
+        "index": "00",
+        "title": "How to manage this",
+        "lead": "Work top to bottom. Each point opens the editor that belongs to it, so the links between rates, profiles, and prices stay visible.",
+        "counts": {
+          "published": "{published} published",
+          "rates": "{count, plural, one {# rate} other {# rates}}",
+          "profiles": "{count, plural, one {# profile} other {# profiles}}",
+          "functions": "{count, plural, one {# function price} other {# function prices}}",
+          "sale": "{count, plural, one {# sale price} other {# sale prices}}"
+        }
+      },
+      "map": {
+        "enrollment": {
+          "index": "01",
+          "title": "V2 enrollment",
+          "body": "Master switch. New deliveries join the unit model only while this is on."
+        },
+        "rates": {
+          "index": "02",
+          "title": "Role rates",
+          "body": "AMD price of one unit for each of the six roles. Employee salary is never used."
+        },
+        "profiles": {
+          "index": "03",
+          "title": "Base profiles",
+          "body": "The core package for a product type, size, implementation base, and design mode."
+        },
+        "profileUnits": {
+          "title": "3.1 Role units",
+          "body": "How many units the core pays each role."
+        },
+        "profileIncluded": {
+          "title": "3.2 Included in base",
+          "body": "Catalog functions already covered by the core — no extra charge."
+        },
+        "profileCore": {
+          "title": "3.3 Core composition",
+          "body": "The written list of what the core contains. Items have no units of their own."
+        },
+        "profilePresets": {
+          "title": "3.4 Size presets",
+          "body": "Extra modules pre-checked for a size. They are still billed, unlike included-in-base."
+        },
+        "functions": {
+          "index": "04",
+          "title": "Function units",
+          "body": "Units by role for catalog functions that are not already in the base."
+        },
+        "sale": {
+          "index": "05",
+          "title": "Sale prices",
+          "body": "What the client pays for a function, a gradation, or a product core."
+        }
+      }
+    },
     "enrollment": {
       "title": "V2 enrollment",
       "subtitle": "Decides whether new deliveries may be enrolled in the unit model.",

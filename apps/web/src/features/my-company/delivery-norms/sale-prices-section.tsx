@@ -30,6 +30,7 @@ export function SalePricesSection({
   canEdit,
   onChanged,
   onError,
+  embedded = false,
 }: {
   rows: SalePriceVersionDto[];
   catalog: DeliveryFunctionOperationalDto[];
@@ -38,6 +39,7 @@ export function SalePricesSection({
   canEdit: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
+  embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const [kind, setKind] = useState<SalePriceTargetKind>('FUNCTION');
@@ -46,7 +48,10 @@ export function SalePricesSection({
   const versions = salePricesForTarget(rows, targetKey);
 
   return (
-    <DeliveryNormsSectionCard title={t('salePrices.title')} description={t('salePrices.subtitle')}>
+    <DeliveryNormsSectionCard
+      title={embedded ? undefined : t('salePrices.title')}
+      description={embedded ? undefined : t('salePrices.subtitle')}
+    >
       <DefaultMultiplierForm
         key={defaultMultiplier ?? 'none'}
         value={defaultMultiplier}

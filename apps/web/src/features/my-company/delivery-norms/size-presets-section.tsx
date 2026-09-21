@@ -33,11 +33,13 @@ export function SizePresetsSection({
   catalog,
   canEdit,
   onError,
+  embedded = false,
 }: {
   rows: DeliveryBaseProfileFinancialDto[];
   catalog: DeliveryFunctionOperationalDto[];
   canEdit: boolean;
   onError: (message: string) => void;
+  embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const profileKeys = useMemo(() => uniqueProfileKeys(rows), [rows]);
@@ -51,8 +53,8 @@ export function SizePresetsSection({
 
   return (
     <DeliveryNormsSectionCard
-      title={t('sizePresets.title')}
-      description={t('sizePresets.subtitle')}
+      title={embedded ? undefined : t('sizePresets.title')}
+      description={embedded ? undefined : t('sizePresets.subtitle')}
     >
       {/* A preset pre-selects extras; it is not the included-in-base list that makes work free. */}
       <p className="text-muted-foreground text-xs">{t('sizePresets.hint')}</p>

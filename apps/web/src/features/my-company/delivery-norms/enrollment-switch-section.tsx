@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { deliveryNormsApi, type DeliveryEnrollmentSetting } from '@/lib/api/delivery-norms';
+import { StatusBadge } from '@/components/shared';
+import { DELIVERY_NORMS_ENROLLMENT_ELEMENT_ID } from './delivery-norms-workspace';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { messageFromCaught } from './message-from-caught';
 
@@ -24,11 +26,15 @@ export function EnrollmentSwitchSection({
 
   return (
     <DeliveryNormsSectionCard title={t('enrollment.title')} description={t('enrollment.subtitle')}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-foreground text-sm font-medium">
-            {enabled ? t('enrollment.stateOn') : t('enrollment.stateOff')}
-          </p>
+      <div
+        id={DELIVERY_NORMS_ENROLLMENT_ELEMENT_ID}
+        className="flex flex-wrap items-center justify-between gap-3"
+      >
+        <div className="space-y-2">
+          <StatusBadge
+            label={enabled ? t('enrollment.stateOn') : t('enrollment.stateOff')}
+            variant={enabled ? 'emerald' : 'gray'}
+          />
           {setting?.updatedAt ? (
             <p className="text-muted-foreground text-xs">
               {t('enrollment.updatedAt', { at: setting.updatedAt })}

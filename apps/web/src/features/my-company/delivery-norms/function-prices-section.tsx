@@ -16,6 +16,7 @@ export function FunctionPricesSection({
   canPublish,
   onChanged,
   onError,
+  embedded = false,
 }: {
   rows: DeliveryFunctionPriceFinancialDto[];
   catalog: DeliveryFunctionOperationalDto[];
@@ -23,10 +24,14 @@ export function FunctionPricesSection({
   canPublish: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
+  embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <DeliveryNormsSectionCard title={t('prices.title')} description={t('prices.subtitle')}>
+    <DeliveryNormsSectionCard
+      title={embedded ? undefined : t('prices.title')}
+      description={embedded ? undefined : t('prices.subtitle')}
+    >
       {canAdd ? (
         <FunctionPriceCreateForm catalog={catalog} onCreated={onChanged} onError={onError} />
       ) : null}

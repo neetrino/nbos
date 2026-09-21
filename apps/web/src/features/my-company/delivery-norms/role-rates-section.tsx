@@ -12,16 +12,21 @@ export function RoleRatesSection({
   canPublish,
   onChanged,
   onError,
+  embedded = false,
 }: {
   rows: DeliveryRoleRateFinancialDto[];
   canAdd: boolean;
   canPublish: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
+  embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <DeliveryNormsSectionCard title={t('rates.title')} description={t('rates.subtitle')}>
+    <DeliveryNormsSectionCard
+      title={embedded ? undefined : t('rates.title')}
+      description={embedded ? undefined : t('rates.subtitle')}
+    >
       {canAdd ? (
         <RoleRateCreateForm disabled={false} onCreated={onChanged} onError={onError} />
       ) : null}

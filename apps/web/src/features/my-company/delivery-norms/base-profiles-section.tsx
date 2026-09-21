@@ -13,6 +13,7 @@ export function BaseProfilesSection({
   canPublish,
   onChanged,
   onError,
+  embedded = false,
 }: {
   rows: DeliveryBaseProfileFinancialDto[];
   catalog: DeliveryFunctionOperationalDto[];
@@ -20,10 +21,14 @@ export function BaseProfilesSection({
   canPublish: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
+  embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <DeliveryNormsSectionCard title={t('profiles.title')} description={t('profiles.subtitle')}>
+    <DeliveryNormsSectionCard
+      title={embedded ? undefined : t('profiles.title')}
+      description={embedded ? undefined : t('profiles.subtitle')}
+    >
       {canAdd ? (
         <BaseProfileCreateForm catalog={catalog} onCreated={onChanged} onError={onError} />
       ) : null}

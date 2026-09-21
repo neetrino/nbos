@@ -26,10 +26,12 @@ export function CoreItemsSection({
   rows,
   canEdit,
   onError,
+  embedded = false,
 }: {
   rows: DeliveryBaseProfileFinancialDto[];
   canEdit: boolean;
   onError: (message: string) => void;
+  embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const [versionId, setVersionId] = useState(OPTIONAL_SELECT_NONE);
@@ -39,7 +41,10 @@ export function CoreItemsSection({
   const labels = versionOptionLabels(rows, t);
 
   return (
-    <DeliveryNormsSectionCard title={t('coreItems.title')} description={t('coreItems.subtitle')}>
+    <DeliveryNormsSectionCard
+      title={embedded ? undefined : t('coreItems.title')}
+      description={embedded ? undefined : t('coreItems.subtitle')}
+    >
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('coreItems.emptyVersions')}</p>
       ) : (
