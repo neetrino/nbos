@@ -3,10 +3,10 @@ import { BadRequestException } from '@nestjs/common';
 import { resolveDealProductPlatform, resolveProductPlatform } from './resolve-product-platform';
 
 describe('resolveProductPlatform', () => {
-  it('defaults a code shop to WEB and a legacy MOBILE_APP kind to APP', () => {
-    expect(resolveProductPlatform({ productCategory: 'CODE', productType: 'ECOMMERCE' })).toBe(
-      'WEB',
-    );
+  it('leaves a code shop empty until a platform is chosen, and maps MOBILE_APP to APP', () => {
+    expect(
+      resolveProductPlatform({ productCategory: 'CODE', productType: 'ECOMMERCE' }),
+    ).toBeNull();
     expect(resolveProductPlatform({ productCategory: 'CODE', productType: 'MOBILE_APP' })).toBe(
       'APP',
     );
@@ -38,8 +38,8 @@ describe('resolveDealProductPlatform', () => {
     expect(resolveDealProductPlatform({})).toBeNull();
   });
 
-  it('fills WEB once a code category is chosen', () => {
-    expect(resolveDealProductPlatform({ productCategory: 'CODE' })).toBe('WEB');
+  it('does not fill WEB once a code category is chosen', () => {
+    expect(resolveDealProductPlatform({ productCategory: 'CODE' })).toBeNull();
   });
 
   it('leaves marketing without a platform', () => {

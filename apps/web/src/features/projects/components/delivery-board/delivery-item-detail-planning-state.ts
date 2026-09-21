@@ -154,20 +154,21 @@ function productPlanTaxonomyPatch(
 ): UpdateProductData {
   if (draft.productCategory !== snap.productCategory) {
     const allowed = listedProductTypesForPicker(draft.productCategory);
-    const productType = allowed.includes(draft.productType)
-      ? draft.productType
-      : (allowed[0] ?? draft.productType);
+    const productType = allowed.includes(draft.productType) ? draft.productType : '';
     return {
       productCategory: draft.productCategory,
-      productType,
+      ...(productType ? { productType } : {}),
       productPlatform: coerceOptionalProductPlatform({
         productCategory: draft.productCategory,
-        productType,
+        productType: productType || null,
         requested: draft.productPlatform,
       }),
     };
   }
   if (draft.productType !== snap.productType) {
+    if (!draft.productType) {
+      return {};
+    }
     return {
       productType: draft.productType,
       productPlatform: coerceOptionalProductPlatform({

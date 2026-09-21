@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { AppWindow } from 'lucide-react';
-import { allowedProductPlatforms, productPlatformApplies } from '@nbos/shared';
+import { allowedProductPlatforms, productPlatformPickerApplies } from '@nbos/shared';
 import { InlineField } from '@/components/shared';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 import { translateProductPlatformLabel } from '../i18n/crm-copy';
@@ -20,7 +20,7 @@ export function DealInfoProductPlatformField({
   gateRequiredFields?: ReadonlySet<string>;
 }) {
   const t = useTranslations('crm');
-  if (!productPlatformApplies(draft.productCategory)) return null;
+  if (!productPlatformPickerApplies(draft.productCategory)) return null;
   return (
     <InlineField
       variant="controlled"

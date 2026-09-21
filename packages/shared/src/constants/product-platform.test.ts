@@ -6,6 +6,8 @@ import {
   defaultProductPlatform,
   isProductPlatform,
   productPlatformApplies,
+  productPlatformPickerApplies,
+  productTypeFieldReady,
   PRODUCT_PLATFORMS,
 } from './product-platform';
 
@@ -54,6 +56,27 @@ describe('product platform', () => {
 
   it('stays empty on a deal that has not picked a category yet', () => {
     expect(coerceOptionalProductPlatform({ requested: 'APP' })).toBeNull();
+  });
+
+  it('does not invent WEB on a Code card until the seller picks a platform', () => {
+    expect(
+      coerceOptionalProductPlatform({ productCategory: 'CODE', productType: 'ECOMMERCE' }),
+    ).toBe(null);
+    expect(
+      coerceOptionalProductPlatform({
+        productCategory: 'CODE',
+        productType: 'ECOMMERCE',
+        requested: 'WEB',
+      }),
+    ).toBe('WEB');
+    expect(productTypeFieldReady({ productCategory: 'CODE', productPlatform: null })).toBe(false);
+    expect(productTypeFieldReady({ productCategory: 'CODE', productPlatform: 'APP' })).toBe(true);
+    expect(productTypeFieldReady({ productCategory: 'WORDPRESS', productPlatform: null })).toBe(
+      true,
+    );
+    expect(productPlatformPickerApplies('CODE')).toBe(true);
+    expect(productPlatformPickerApplies('WORDPRESS')).toBe(false);
+    expect(productPlatformPickerApplies('MARKETING')).toBe(false);
   });
 
   it('does not stamp WEB onto a marketing deal', () => {

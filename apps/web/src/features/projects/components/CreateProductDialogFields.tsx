@@ -4,10 +4,10 @@ import { useTranslations } from 'next-intl';
 import {
   allowedProductPlatforms,
   coerceOptionalProductPlatform,
-  productPlatformApplies,
+  productPlatformPickerApplies,
+  productTypeFieldReady,
 } from '@nbos/shared';
-import { FormFieldRow, InlineField } from '@/components/shared';
-import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import { InlineField } from '@/components/shared';
 
 export interface CreateProductFormState {
   name: string;
@@ -77,31 +77,16 @@ function CreateProductTaxonomyFields({
   const t = useTranslations('forms');
   return (
     <>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('product.fields.category')}
-          type="select"
-          value={form.productCategory}
-          options={categoryOptions}
-          placeholder={t('product.placeholders.selectCategory')}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(productCategory) => onFormChange(categoryChange(productCategory))}
-        />
-        {form.productCategory ? (
-          <InlineField
-            variant="controlled"
-            label={t('product.fields.type')}
-            type="select"
-            value={form.productType}
-            options={typeOptions}
-            placeholder={t('product.placeholders.selectType')}
-            className={FORM_FIELD_CELL_CLASS}
-            onValueChange={(productType) => onFormChange(typeChange(form, productType))}
-          />
-        ) : null}
-      </FormFieldRow>
-      {productPlatformApplies(form.productCategory) ? (
+      <InlineField
+        variant="controlled"
+        label={t('product.fields.category')}
+        type="select"
+        value={form.productCategory}
+        options={categoryOptions}
+        placeholder={t('product.placeholders.selectCategory')}
+        onValueChange={(productCategory) => onFormChange(categoryChange(productCategory))}
+      />
+      {productPlatformPickerApplies(form.productCategory) ? (
         <InlineField
           variant="controlled"
           label={t('product.fields.platform')}
@@ -113,6 +98,20 @@ function CreateProductTaxonomyFields({
             if (!productPlatform) return;
             onFormChange(platformChange(form, productPlatform));
           }}
+        />
+      ) : null}
+      {productTypeFieldReady({
+        productCategory: form.productCategory,
+        productPlatform: form.productPlatform,
+      }) ? (
+        <InlineField
+          variant="controlled"
+          label={t('product.fields.type')}
+          type="select"
+          value={form.productType}
+          options={typeOptions}
+          placeholder={t('product.placeholders.selectType')}
+          onValueChange={(productType) => onFormChange(typeChange(form, productType))}
         />
       ) : null}
     </>

@@ -15,7 +15,8 @@ import {
   allowedProductPlatforms,
   coerceOptionalProductPlatform,
   listedProductTypesForPicker,
-  productPlatformApplies,
+  productPlatformPickerApplies,
+  productTypeFieldReady,
 } from '@nbos/shared';
 import { cn } from '@/lib/utils';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
@@ -104,45 +105,23 @@ export function ProductPlanningSection({
             onValueChange={(v) => {
               if (!v) return;
               const allowed = listedProductTypesForPicker(v);
-              const nextType = allowed.includes(draft.productType)
-                ? draft.productType
-                : (allowed[0] ?? draft.productType);
+              const keepType = allowed.includes(draft.productType) ? draft.productType : '';
+              const keepPlatform =
+                v === 'CODE' && draft.productCategory === 'CODE' ? draft.productPlatform : null;
               onDraftChange({
                 ...draft,
                 productCategory: v,
-                productType: nextType,
+                productType: keepType,
                 productPlatform:
                   coerceOptionalProductPlatform({
                     productCategory: v,
-                    productType: nextType,
-                    requested: draft.productPlatform,
+                    productType: keepType || null,
+                    requested: keepPlatform,
                   }) ?? '',
               });
             }}
           />
-          <InlineField
-            variant="controlled"
-            label={t('plan.productType')}
-            type="select"
-            value={draft.productType}
-            options={typeOptions}
-            icon={<Tag size={12} />}
-            disabled={disabled}
-            selectContentClassName={PRODUCT_TYPE_SELECT_MENU_CLASS}
-            onValueChange={(v) => {
-              if (!v) return;
-              patchDraft({
-                productType: v,
-                productPlatform:
-                  coerceOptionalProductPlatform({
-                    productCategory: draft.productCategory,
-                    productType: v,
-                    requested: v === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
-                  }) ?? '',
-              });
-            }}
-          />
-          {productPlatformApplies(draft.productCategory) ? (
+          {productPlatformPickerApplies(draft.productCategory) ? (
             <InlineField
               variant="controlled"
               label={t('plan.productPlatform')}
@@ -156,12 +135,44 @@ export function ProductPlanningSection({
               disabled={disabled}
               onValueChange={(v) => {
                 if (!v) return;
+                const allowed = listedProductTypesForPicker(
+                  draft.productCategory,
+                  draft.productType,
+                );
                 patchDraft({
                   productPlatform:
                     coerceOptionalProductPlatform({
                       productCategory: draft.productCategory,
                       productType: draft.productType,
                       requested: v,
+                    }) ?? '',
+                  productType: allowed.includes(draft.productType) ? draft.productType : '',
+                });
+              }}
+            />
+          ) : null}
+          {productTypeFieldReady({
+            productCategory: draft.productCategory,
+            productPlatform: draft.productPlatform,
+          }) ? (
+            <InlineField
+              variant="controlled"
+              label={t('plan.productType')}
+              type="select"
+              value={draft.productType}
+              options={typeOptions}
+              icon={<Tag size={12} />}
+              disabled={disabled}
+              selectContentClassName={PRODUCT_TYPE_SELECT_MENU_CLASS}
+              onValueChange={(v) => {
+                if (!v) return;
+                patchDraft({
+                  productType: v,
+                  productPlatform:
+                    coerceOptionalProductPlatform({
+                      productCategory: draft.productCategory,
+                      productType: v,
+                      requested: v === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
                     }) ?? '',
                 });
               }}

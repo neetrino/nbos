@@ -29,6 +29,7 @@ import { assertDealSellerRefs, validateDealCreate } from './deal-create-validati
 import { resolveDealCreateDefaults } from './deal-create-defaults.op';
 import { parseOptionalSubscriptionTermMonths } from './deal-subscription-term';
 import { dealProductPlatformWrite } from './deal-product-platform-write';
+import { resetDealQuoteForProductTypeChange } from '../../delivery-compensation/reset-deal-quote-for-type-change';
 import {
   dealNeedsPartnerReferralTerms,
   patchPartnerReferralTerms as persistPartnerReferralTerms,
@@ -312,76 +313,82 @@ export class DealsService {
       resolvedContactId = primaryContactId;
     }
 
-    const deal = await this.prisma.deal.update({
-      where: { id },
-      data: {
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.status && { status: data.status as Prisma.DealUpdateInput['status'] }),
-        ...(data.type && { type: data.type as Prisma.DealUpdateInput['type'] }),
-        ...(data.amount !== undefined && { amount: data.amount }),
-        ...(data.paymentType && {
-          paymentType: data.paymentType as Prisma.DealUpdateInput['paymentType'],
-        }),
-        ...(subscriptionTermMonths !== undefined && { subscriptionTermMonths }),
-        ...(data.taxStatus && { taxStatus: data.taxStatus as Prisma.DealUpdateInput['taxStatus'] }),
-        ...(data.companyId !== undefined && { companyId: data.companyId }),
-        ...(data.sellerId !== undefined && { sellerId: data.sellerId }),
-        ...(data.sellerAssistantId !== undefined && {
-          sellerAssistantId: data.sellerAssistantId,
-        }),
-        ...((data.contactIds !== undefined || data.contactId !== undefined) && {
-          contactId: data.contactIds !== undefined ? resolvedContactId : data.contactId,
-        }),
-        ...(data.projectId !== undefined && { projectId: data.projectId }),
-        ...(data.source !== undefined && {
-          source: data.source ? (data.source as Prisma.DealUpdateInput['source']) : null,
-        }),
-        ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
-        ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
-        ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
-        ...(data.marketingAccountId !== undefined && {
-          marketingAccountId: data.marketingAccountId,
-        }),
-        ...(data.marketingActivityId !== undefined && {
-          marketingActivityId: data.marketingActivityId,
-        }),
-        ...(data.notes !== undefined && { notes: data.notes }),
-        ...(data.productCategory !== undefined && {
-          productCategory: data.productCategory as Prisma.DealUpdateInput['productCategory'],
-        }),
-        ...(data.productType !== undefined && { productType: data.productType }),
-        ...dealProductPlatformWrite(data, {
-          productCategory: existing.productCategory,
-          productType: existing.productType,
-          productPlatform: existing.productPlatform,
-        }),
-        ...(data.pmId !== undefined && { pmId: data.pmId }),
-        ...(data.deadline !== undefined && {
-          deadline: data.deadline ? new Date(data.deadline) : null,
-        }),
-        ...(data.existingProductId !== undefined && {
-          existingProductId: data.existingProductId,
-        }),
-        ...(data.offerSentAt !== undefined && {
-          offerSentAt: data.offerSentAt ? new Date(data.offerSentAt) : null,
-        }),
-        ...(data.offerLink !== undefined && { offerLink: data.offerLink }),
-        ...(data.offerFileUrl !== undefined && { offerFileUrl: data.offerFileUrl }),
-        ...(data.offerScreenshotUrl !== undefined && {
-          offerScreenshotUrl: data.offerScreenshotUrl,
-        }),
-        ...(data.contractSignedAt !== undefined && {
-          contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : null,
-        }),
-        ...(data.contractFileUrl !== undefined && { contractFileUrl: data.contractFileUrl }),
-        ...(data.maintenanceStartAt !== undefined && {
-          maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : null,
-        }),
-        ...(data.outsourceGoesToDelivery !== undefined && {
-          outsourceGoesToDelivery: data.outsourceGoesToDelivery,
-        }),
-      },
-      include: dealUpdateInclude,
+    const deal = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.deal.update({
+        where: { id },
+        data: {
+          ...(data.name !== undefined && { name: data.name }),
+          ...(data.status && { status: data.status as Prisma.DealUpdateInput['status'] }),
+          ...(data.type && { type: data.type as Prisma.DealUpdateInput['type'] }),
+          ...(data.amount !== undefined && { amount: data.amount }),
+          ...(data.paymentType && {
+            paymentType: data.paymentType as Prisma.DealUpdateInput['paymentType'],
+          }),
+          ...(subscriptionTermMonths !== undefined && { subscriptionTermMonths }),
+          ...(data.taxStatus && {
+            taxStatus: data.taxStatus as Prisma.DealUpdateInput['taxStatus'],
+          }),
+          ...(data.companyId !== undefined && { companyId: data.companyId }),
+          ...(data.sellerId !== undefined && { sellerId: data.sellerId }),
+          ...(data.sellerAssistantId !== undefined && {
+            sellerAssistantId: data.sellerAssistantId,
+          }),
+          ...((data.contactIds !== undefined || data.contactId !== undefined) && {
+            contactId: data.contactIds !== undefined ? resolvedContactId : data.contactId,
+          }),
+          ...(data.projectId !== undefined && { projectId: data.projectId }),
+          ...(data.source !== undefined && {
+            source: data.source ? (data.source as Prisma.DealUpdateInput['source']) : null,
+          }),
+          ...(data.sourceDetail !== undefined && { sourceDetail: data.sourceDetail }),
+          ...(data.sourcePartnerId !== undefined && { sourcePartnerId: data.sourcePartnerId }),
+          ...(data.sourceContactId !== undefined && { sourceContactId: data.sourceContactId }),
+          ...(data.marketingAccountId !== undefined && {
+            marketingAccountId: data.marketingAccountId,
+          }),
+          ...(data.marketingActivityId !== undefined && {
+            marketingActivityId: data.marketingActivityId,
+          }),
+          ...(data.notes !== undefined && { notes: data.notes }),
+          ...(data.productCategory !== undefined && {
+            productCategory: data.productCategory as Prisma.DealUpdateInput['productCategory'],
+          }),
+          ...(data.productType !== undefined && { productType: data.productType }),
+          ...dealProductPlatformWrite(data, {
+            productCategory: existing.productCategory,
+            productType: existing.productType,
+            productPlatform: existing.productPlatform,
+          }),
+          ...(data.pmId !== undefined && { pmId: data.pmId }),
+          ...(data.deadline !== undefined && {
+            deadline: data.deadline ? new Date(data.deadline) : null,
+          }),
+          ...(data.existingProductId !== undefined && {
+            existingProductId: data.existingProductId,
+          }),
+          ...(data.offerSentAt !== undefined && {
+            offerSentAt: data.offerSentAt ? new Date(data.offerSentAt) : null,
+          }),
+          ...(data.offerLink !== undefined && { offerLink: data.offerLink }),
+          ...(data.offerFileUrl !== undefined && { offerFileUrl: data.offerFileUrl }),
+          ...(data.offerScreenshotUrl !== undefined && {
+            offerScreenshotUrl: data.offerScreenshotUrl,
+          }),
+          ...(data.contractSignedAt !== undefined && {
+            contractSignedAt: data.contractSignedAt ? new Date(data.contractSignedAt) : null,
+          }),
+          ...(data.contractFileUrl !== undefined && { contractFileUrl: data.contractFileUrl }),
+          ...(data.maintenanceStartAt !== undefined && {
+            maintenanceStartAt: data.maintenanceStartAt ? new Date(data.maintenanceStartAt) : null,
+          }),
+          ...(data.outsourceGoesToDelivery !== undefined && {
+            outsourceGoesToDelivery: data.outsourceGoesToDelivery,
+          }),
+        },
+        include: dealUpdateInclude,
+      });
+      await resetDealQuoteForProductTypeChange(tx, id, existing.productType, data.productType);
+      return updated;
     });
 
     const termsSnapshot = this.partnerTermsSnapshot(deal);

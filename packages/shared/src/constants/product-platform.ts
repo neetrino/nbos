@@ -56,12 +56,40 @@ export function coerceProductPlatform(input: {
   return allowed.includes(input.requested) ? input.requested : fallback;
 }
 
-/** Deal taxonomy is optional until SEND_OFFER; no category / no-platform stack means no platform. */
+/** Platform picker is only for Code. WordPress/Shopify write WEB without a field. */
+export function productPlatformPickerApplies(productCategory: string | null | undefined): boolean {
+  return allowedProductPlatforms(productCategory).length > 1;
+}
+
+/** Type waits for an explicit Code platform. Other stacks show type after category. */
+export function productTypeFieldReady(input: {
+  productCategory: string | null | undefined;
+  productPlatform: string | null | undefined;
+}): boolean {
+  if (!input.productCategory) return false;
+  if (input.productCategory === 'CODE') {
+    return isProductPlatform(input.productPlatform ?? '');
+  }
+  return true;
+}
+
+/**
+ * Deal taxonomy is optional until SEND_OFFER. Code stays empty until the seller picks
+ * WEB / APP / DESKTOP. WordPress and Shopify write WEB. Marketing stays null.
+ */
 export function coerceOptionalProductPlatform(input: {
   productCategory?: string | null;
   productType?: string | null;
   requested?: string | null;
 }): ProductPlatform | null {
   if (!productPlatformApplies(input.productCategory)) return null;
-  return coerceProductPlatform(input);
+  if (input.productCategory && WEB_ONLY_PRODUCT_CATEGORIES.has(input.productCategory)) {
+    return 'WEB';
+  }
+  if (input.requested && isProductPlatform(input.requested)) {
+    const allowed = allowedProductPlatforms(input.productCategory);
+    return allowed.includes(input.requested) ? input.requested : null;
+  }
+  if (input.productType === 'MOBILE_APP') return 'APP';
+  return null;
 }

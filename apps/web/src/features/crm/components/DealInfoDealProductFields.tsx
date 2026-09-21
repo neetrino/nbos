@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Calendar, Layers, Tag } from 'lucide-react';
+import { productTypeFieldReady } from '@nbos/shared';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   InlineField,
@@ -132,11 +133,20 @@ function DealInfoProductTaxonomyFields({
             patchDraft(buildDealTaxonomyPatch(null, null, null));
             return;
           }
-          patchDraft(buildDealTaxonomyPatch(v, null, draft.productPlatform));
+          const keepPlatform =
+            v === 'CODE' && draft.productCategory === 'CODE' ? draft.productPlatform : null;
+          patchDraft(buildDealTaxonomyPatch(v, null, keepPlatform));
         }}
       />
 
-      {draft.productCategory ? (
+      <DealInfoProductPlatformField
+        draft={draft}
+        patchDraft={patchDraft}
+        disabled={disabled}
+        gateRequiredFields={gateRequiredFields}
+      />
+
+      {productTypeFieldReady(draft) ? (
         <InlineField
           variant="controlled"
           label={t('dealSheet.productType')}
@@ -158,13 +168,6 @@ function DealInfoProductTaxonomyFields({
           }
         />
       ) : null}
-
-      <DealInfoProductPlatformField
-        draft={draft}
-        patchDraft={patchDraft}
-        disabled={disabled}
-        gateRequiredFields={gateRequiredFields}
-      />
 
       {draft.type === 'OUTSOURCE' ? (
         <DealInfoOutsourceToggle
