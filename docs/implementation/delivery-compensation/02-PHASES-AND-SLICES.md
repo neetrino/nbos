@@ -181,7 +181,7 @@ pnpm run build:web
 | S03   | IMPLEMENTED_NOT_VERIFIED | Catalog pagination/search, content versions, activate without units, archive-if-unused, FileAsset attach+ACL. Tests 15 files / 38. API typecheck passed. No live DB.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | S04   | IMPLEMENTED_NOT_VERIFIED | Pure calculator C01–C10 on synthetic fixtures; share split keeps 10.01; publish blocks null units; role rates reject employeeId. Shared+module tests 18/52 then 10/48 with UI. No live publish.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | S05   | IMPLEMENTED_NOT_VERIFIED | `/my-company/function-catalog` grid/sheet/draft form; pricing panel and Compensation rates only if RULES VIEW. i18n EN/RU/HY. Web typecheck passed. **Browser QA not run** (no local app).                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| S06   | IMPLEMENTED_NOT_VERIFIED | Enroll gated by readiness switch; implicit LEGACY; add ACTIVE features; included vs extra. 2026-09-20: extension enroll, `by-extension` read and extension role assignments added; assignments refused once the plan is materialized. Still missing: copy-from, object-scope grants. No live DB.                                                                                                                                                                                                                                                                                                                                                                    |
+| S06   | IMPLEMENTED_NOT_VERIFIED | Enroll gated by readiness switch; implicit LEGACY; add ACTIVE features; included vs extra. 2026-09-20: extension enroll, `by-extension` read and extension role assignments added; assignments refused once the plan is materialized. 2026-09-21: object-scope closed — every configuration route now narrows to the caller's access to the underlying Product. Copy-from is not missing work: the Owner cancelled it on 2026-09-19 (07-OWNER-DISCUSSION §6). No live DB.                                                                                                                                                                                           |
 | S07   | IMPLEMENTED_NOT_VERIFIED | Product `?tab=functions` (+ `bonus` alias); Delivery sheet Bonus tab replaced. Shared Functions workspace, no money in DOM. **Browser QA not run.**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | S08   | IMPLEMENTED_NOT_VERIFIED | First Development materializes plan+BonusEntry in the same transaction as stage write (Product/Extension, moveStage + status PATCH). Starting/legacy skip. Retry uses initialRevisionId. No live DB.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | S09   | IMPLEMENTED_NOT_VERIFIED | Operational readiness codes on configuration GET; Functions workspace shows safe blockers. No units in messages. **Browser QA not run.**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -436,6 +436,40 @@ replaced through this path after confirming all of them were `DRAFT` and unrefer
 against dev, the last reporting 25 kept and nothing written; Prettier `--check`; every file under
 300 lines. **Not run:** browser QA of the norms screen against the new profiles; the unit
 proposals themselves are unvalidated by the Owner.
+
+### Object-level access on configurations (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Canon §16: an actor "manages their configuration within the bounds of their access to the Product".
+Until now only half of that was wired. `PermissionGuard` checks that `PROJECTS_VIEW` / `PROJECTS_EDIT`
+is not `NONE` and treats `OWN`, `DEPARTMENT` and `ALL` alike, and no configuration route looked at
+the record id. A developer or designer, whose seeded `PROJECTS_EDIT` is `OWN`, could therefore enroll
+a card, add or remove paid features, confirm parameters and replace assignees on **any** delivery in
+the company by supplying its UUID — the commands that decide who gets paid.
+
+`delivery-configuration-access.ts` resolves the caller against the same product-participation graph
+Tasks, Expenses, Client Services and Drive already use (`buildProductParticipationWhere`). All
+eleven routes pass it: `ALL` keeps its company-wide meaning and skips the row filter, `DEPARTMENT`
+widens to the colleagues of the departments that actually granted it, and anything narrower stays on
+the caller's own cards. Denials answer `404`, as elsewhere, so a probe cannot confirm that an id
+exists. An extension reaches its team through its assignee or its parent product.
+
+The scope consulted is the scope of the action the route required, so a caller with `VIEW: ALL` and
+`EDIT: OWN` is company-wide on reads and narrow on money commands.
+
+**Out of scope and still open for the Owner:** a developer who is legitimately on a product team can
+still change scope on that product, name themselves in an extension role assignment, and take a
+share in a replacement — `applyEmployeeReplacement` refuses only `from === to`, not self as the
+incoming holder. That is the permission matrix granting `PROJECTS_EDIT` to delivery specialists, not
+object scope: this slice narrows **which cards** such a person reaches, not **what they may do** on
+a card they legitimately reach. Closing it means deciding whether configuration edits need a
+permission of their own instead of riding on `PROJECTS`.
+
+Security review found no medium-or-higher issue: all eleven routes are covered, the `ALL` bypass and
+the grant-scoped `DEPARTMENT` expansion match the other modules, and denials do not leak existence.
+
+**Checks:** vitest `apps/api/src/modules/{delivery-compensation,projects,common}` (458 passed, 6
+skipped); API `tsc --noEmit` (8GB); Prettier on touched files; every file under 300 lines.
+**Not run:** live HTTP probe on dev with a narrow-scope account, browser QA.
 
 ### Production launch
 

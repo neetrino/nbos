@@ -12,6 +12,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DELIVERY_CONFIGURATION_PERMISSION_MODULE } from '@nbos/shared';
 import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
+import { configurationAccessFromUser } from './delivery-configuration-access';
 import { DeliveryConfigurationService } from './delivery-configuration.service';
 
 @ApiTags('Delivery configurations')
@@ -23,48 +24,63 @@ export class DeliveryConfigurationController {
   @Get('by-product/:productId')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Operational configuration or implicit LEGACY. No units.' })
-  getByProduct(@Param('productId', ParseUUIDPipe) productId: string) {
-    return this.service.getByProduct(productId);
+  getByProduct(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('productId', ParseUUIDPipe) productId: string,
+  ) {
+    return this.service.getByProduct(productId, configurationAccessFromUser(user, 'VIEW'));
   }
 
   @Post('by-product/:productId')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Enroll V2 only when Owner readiness switch is on. No BonusEntry.' })
   enrollProduct(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('productId', ParseUUIDPipe) productId: string,
     @Body() body: { orderId?: string },
   ) {
-    return this.service.enrollProduct(productId, body.orderId ?? '');
+    const access = configurationAccessFromUser(user, 'EDIT');
+    return this.service.enrollProduct(productId, body.orderId ?? '', access);
   }
 
   @Get('by-extension/:extensionId')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Operational configuration of an extension or implicit LEGACY.' })
-  getByExtension(@Param('extensionId', ParseUUIDPipe) extensionId: string) {
-    return this.service.getByExtension(extensionId);
+  getByExtension(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('extensionId', ParseUUIDPipe) extensionId: string,
+  ) {
+    return this.service.getByExtension(extensionId, configurationAccessFromUser(user, 'VIEW'));
   }
 
   @Post('by-extension/:extensionId')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Enroll an extension in V2 under the Owner readiness switch.' })
   enrollExtension(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('extensionId', ParseUUIDPipe) extensionId: string,
     @Body() body: { orderId?: string },
   ) {
-    return this.service.enrollExtension(extensionId, body.orderId ?? '');
+    const access = configurationAccessFromUser(user, 'EDIT');
+    return this.service.enrollExtension(extensionId, body.orderId ?? '', access);
   }
 
   @Get('by-extension/:extensionId/role-assignments')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Who holds each compensated role on an extension.' })
-  listExtensionRoleAssignments(@Param('extensionId', ParseUUIDPipe) extensionId: string) {
-    return this.service.listExtensionRoleAssignments(extensionId);
+  listExtensionRoleAssignments(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('extensionId', ParseUUIDPipe) extensionId: string,
+  ) {
+    const access = configurationAccessFromUser(user, 'VIEW');
+    return this.service.listExtensionRoleAssignments(extensionId, access);
   }
 
   @Post('by-extension/:extensionId/role-assignments')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Set extension role holders before the plan is materialized.' })
   setExtensionRoleAssignments(
+    @CurrentUser() user: CurrentUserPayload,
     @Param('extensionId', ParseUUIDPipe) extensionId: string,
     @Body() body: { assignments?: Array<{ roleKey?: string; employeeId?: string | null }> },
   ) {
@@ -74,6 +90,7 @@ export class DeliveryConfigurationController {
         roleKey: row.roleKey ?? '',
         employeeId: row.employeeId ?? null,
       })),
+      configurationAccessFromUser(user, 'EDIT'),
     );
   }
 
@@ -87,7 +104,8 @@ export class DeliveryConfigurationController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: unknown,
   ) {
-    return this.service.setParameters(id, body, user.id);
+    const access = configurationAccessFromUser(user, 'EDIT');
+    return this.service.setParameters(id, body, access, user.id);
   }
 
   @Post(':id/features')
@@ -104,12 +122,17 @@ export class DeliveryConfigurationController {
       tierId?: string | null;
     },
   ) {
-    return this.service.addFeature(id, body.functionId ?? '', {
-      expectedRevision: body.expectedRevision,
-      actorEmployeeId: user.id,
-      reason: body.reason,
-      tierId: body.tierId,
-    });
+    return this.service.addFeature(
+      id,
+      body.functionId ?? '',
+      configurationAccessFromUser(user, 'EDIT'),
+      {
+        expectedRevision: body.expectedRevision,
+        actorEmployeeId: user.id,
+        reason: body.reason,
+        tierId: body.tierId,
+      },
+    );
   }
 
   @Delete(':id/features/:featureId')
@@ -130,7 +153,8 @@ export class DeliveryConfigurationController {
     const parsedQuery = expectedRevision ? Number(expectedRevision) : undefined;
     const parsedBody = body?.expectedRevision;
     const parsed = parsedBody ?? (Number.isFinite(parsedQuery) ? parsedQuery : undefined);
-    return this.service.removeFeature(id, featureId, {
+    const access = configurationAccessFromUser(user, 'EDIT');
+    return this.service.removeFeature(id, featureId, access, {
       expectedRevision: parsed,
       reason: body?.reason,
       acceptedAmounts: (body?.acceptedAmounts ?? []).map((row) => ({
@@ -144,8 +168,13 @@ export class DeliveryConfigurationController {
   @Get(':id/replacement-plan')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Components a replacement must redistribute for one role. No money.' })
-  getReplacementPlan(@Param('id', ParseUUIDPipe) id: string, @Query('roleKey') roleKey?: string) {
-    return this.service.getReplacementPlan(id, (roleKey ?? '') as never);
+  getReplacementPlan(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('roleKey') roleKey?: string,
+  ) {
+    const access = configurationAccessFromUser(user, 'EDIT');
+    return this.service.getReplacementPlan(id, (roleKey ?? '') as never, access);
   }
 
   @Post(':id/replacements')
@@ -166,7 +195,7 @@ export class DeliveryConfigurationController {
       expectedRevision?: number;
     },
   ) {
-    return this.service.replaceEmployee(id, {
+    return this.service.replaceEmployee(id, configurationAccessFromUser(user, 'EDIT'), {
       roleKey: body.roleKey as never,
       fromEmployeeId: body.fromEmployeeId ?? '',
       toEmployeeId: body.toEmployeeId ?? '',

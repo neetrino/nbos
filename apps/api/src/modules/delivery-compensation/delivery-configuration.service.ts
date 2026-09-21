@@ -18,6 +18,12 @@ import {
 } from '@nbos/shared';
 import type { ReplacementShareInput } from './apply-employee-replacement';
 import { attachConfigurationReadiness } from './attach-configuration-readiness';
+import {
+  assertConfigurationAccessible,
+  assertExtensionConfigurable,
+  assertProductConfigurable,
+  type DeliveryConfigurationAccess,
+} from './delivery-configuration-access';
 import { insertDeliveryEnrollment } from './insert-delivery-enrollment';
 import { syncProductBonusPoolForOrder } from '../bonus/product-bonus-pool-sync';
 import { NotificationService } from '../notifications/notification.service';
@@ -56,7 +62,11 @@ export class DeliveryConfigurationService {
     @Optional() private readonly notifications?: NotificationService,
   ) {}
 
-  async getByProduct(productId: string): Promise<OperationalConfigurationDto | { mode: 'LEGACY' }> {
+  async getByProduct(
+    productId: string,
+    access: DeliveryConfigurationAccess,
+  ): Promise<OperationalConfigurationDto | { mode: 'LEGACY' }> {
+    await assertProductConfigurable(this.prisma, productId, access);
     const row = await this.prisma.deliveryConfiguration.findFirst({
       where: { productId },
       include: CONFIG_INCLUDE,
@@ -67,10 +77,15 @@ export class DeliveryConfigurationService {
     return this.toOperational(row);
   }
 
-  async enrollProduct(productId: string, orderId: string): Promise<OperationalConfigurationDto> {
+  async enrollProduct(
+    productId: string,
+    orderId: string,
+    access: DeliveryConfigurationAccess,
+  ): Promise<OperationalConfigurationDto> {
     if (!orderId.trim()) {
       throw new BadRequestException('orderId is required');
     }
+    await assertProductConfigurable(this.prisma, productId, access);
     await assertEnrollmentEnabled(this.prisma);
     const existing = await this.prisma.deliveryConfiguration.findFirst({ where: { productId } });
     if (existing) {
@@ -84,7 +99,9 @@ export class DeliveryConfigurationService {
 
   async getByExtension(
     extensionId: string,
+    access: DeliveryConfigurationAccess,
   ): Promise<OperationalConfigurationDto | { mode: 'LEGACY' }> {
+    await assertExtensionConfigurable(this.prisma, extensionId, access);
     const row = await this.prisma.deliveryConfiguration.findFirst({
       where: { extensionId },
       include: CONFIG_INCLUDE,
@@ -99,10 +116,12 @@ export class DeliveryConfigurationService {
   async enrollExtension(
     extensionId: string,
     orderId: string,
+    access: DeliveryConfigurationAccess,
   ): Promise<OperationalConfigurationDto> {
     if (!orderId.trim()) {
       throw new BadRequestException('orderId is required');
     }
+    await assertExtensionConfigurable(this.prisma, extensionId, access);
     await assertEnrollmentEnabled(this.prisma);
     const existing = await this.prisma.deliveryConfiguration.findFirst({ where: { extensionId } });
     if (existing) {
@@ -121,12 +140,18 @@ export class DeliveryConfigurationService {
   async setExtensionRoleAssignments(
     extensionId: string,
     assignments: ExtensionRoleAssignmentInput[],
+    access: DeliveryConfigurationAccess,
   ): Promise<ExtensionRoleAssignmentDto[]> {
+    await assertExtensionConfigurable(this.prisma, extensionId, access);
     await writeExtensionRoleAssignments(this.prisma, extensionId, assignments);
-    return this.listExtensionRoleAssignments(extensionId);
+    return this.listExtensionRoleAssignments(extensionId, access);
   }
 
-  async listExtensionRoleAssignments(extensionId: string): Promise<ExtensionRoleAssignmentDto[]> {
+  async listExtensionRoleAssignments(
+    extensionId: string,
+    access: DeliveryConfigurationAccess,
+  ): Promise<ExtensionRoleAssignmentDto[]> {
+    await assertExtensionConfigurable(this.prisma, extensionId, access);
     const rows = await this.prisma.extensionDeliveryRoleAssignment.findMany({
       where: { extensionId },
       select: {
@@ -141,6 +166,7 @@ export class DeliveryConfigurationService {
   async addFeature(
     configurationId: string,
     functionId: string,
+    access: DeliveryConfigurationAccess,
     options: {
       expectedRevision?: number;
       actorEmployeeId?: string;
@@ -148,6 +174,7 @@ export class DeliveryConfigurationService {
       tierId?: string | null;
     } = {},
   ): Promise<OperationalConfigurationDto> {
+    await assertConfigurationAccessible(this.prisma, configurationId, access);
     const fn = await this.prisma.deliveryFunction.findUnique({ where: { id: functionId } });
     if (!fn || fn.status !== 'ACTIVE') {
       throw new BadRequestException('FUNCTION_NOT_ACTIVE');
@@ -172,8 +199,10 @@ export class DeliveryConfigurationService {
   async setParameters(
     configurationId: string,
     body: unknown,
+    access: DeliveryConfigurationAccess,
     actorEmployeeId?: string,
   ): Promise<OperationalConfigurationDto> {
+    await assertConfigurationAccessible(this.prisma, configurationId, access);
     const parameters = parseConfigurationParametersBody(body);
     await this.prisma.$transaction((tx) =>
       applyConfigurationParameters(tx, { configurationId, parameters, actorEmployeeId }),
@@ -184,6 +213,7 @@ export class DeliveryConfigurationService {
   async removeFeature(
     configurationId: string,
     featureId: string,
+    access: DeliveryConfigurationAccess,
     input: {
       expectedRevision?: number;
       reason?: string;
@@ -191,6 +221,7 @@ export class DeliveryConfigurationService {
       actorEmployeeId?: string;
     },
   ): Promise<OperationalConfigurationDto> {
+    await assertConfigurationAccessible(this.prisma, configurationId, access);
     const orderId = await this.prisma.$transaction(async (tx) => {
       const row = await tx.deliveryConfiguration.findUnique({
         where: { id: configurationId },
@@ -209,15 +240,18 @@ export class DeliveryConfigurationService {
   async getReplacementPlan(
     configurationId: string,
     roleKey: DeliveryCompensationRoleKey,
+    access: DeliveryConfigurationAccess,
   ): Promise<ReplacementPlanDto> {
     if (!DELIVERY_COMPENSATION_ROLE_KEYS.includes(roleKey)) {
       throw new BadRequestException('roleKey is required');
     }
+    await assertConfigurationAccessible(this.prisma, configurationId, access);
     return loadReplacementPlan(this.prisma, configurationId, roleKey);
   }
 
   async replaceEmployee(
     configurationId: string,
+    access: DeliveryConfigurationAccess,
     input: {
       roleKey: DeliveryCompensationRoleKey;
       fromEmployeeId: string;
@@ -231,6 +265,7 @@ export class DeliveryConfigurationService {
     if (!DELIVERY_COMPENSATION_ROLE_KEYS.includes(input.roleKey)) {
       throw new BadRequestException('roleKey is required');
     }
+    await assertConfigurationAccessible(this.prisma, configurationId, access);
     const written = await this.prisma.$transaction((tx) =>
       applyEmployeeReplacement(tx, { configurationId, ...input }),
     );

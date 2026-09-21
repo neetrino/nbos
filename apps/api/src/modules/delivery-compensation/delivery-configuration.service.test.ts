@@ -1,13 +1,19 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { DeliveryConfigurationService } from './delivery-configuration.service';
+import type { DeliveryConfigurationAccess } from './delivery-configuration-access';
+
+/** Company-wide scope, so these cases exercise the rule under test and not the row filter. */
+const ALL: DeliveryConfigurationAccess = { employeeId: 'emp-1', departmentIds: [], scope: 'ALL' };
 
 describe('DeliveryConfigurationService', () => {
   it('returns implicit LEGACY without creating BonusEntry', async () => {
     const service = new DeliveryConfigurationService({
       deliveryConfiguration: { findFirst: vi.fn().mockResolvedValue(null) },
     } as never);
-    await expect(service.getByProduct('11111111-1111-1111-1111-111111111111')).resolves.toEqual({
+    await expect(
+      service.getByProduct('11111111-1111-1111-1111-111111111111', ALL),
+    ).resolves.toEqual({
       mode: 'LEGACY',
     });
   });
@@ -20,7 +26,7 @@ describe('DeliveryConfigurationService', () => {
       deliveryConfiguration: { findFirst: vi.fn(), create: vi.fn() },
     } as never);
     await expect(
-      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1'),
+      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1', ALL),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
@@ -42,7 +48,7 @@ describe('DeliveryConfigurationService', () => {
       },
     } as never);
     await expect(
-      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-other'),
+      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-other', ALL),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
@@ -60,7 +66,7 @@ describe('DeliveryConfigurationService', () => {
       order: { findUnique: vi.fn().mockResolvedValue(null) },
     } as never);
     await expect(
-      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'missing-order'),
+      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'missing-order', ALL),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
@@ -83,7 +89,7 @@ describe('DeliveryConfigurationService', () => {
       bonusEntry: { count: vi.fn().mockResolvedValue(2) },
     } as never);
     await expect(
-      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1'),
+      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1', ALL),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
@@ -104,7 +110,7 @@ describe('DeliveryConfigurationService', () => {
     } as never);
 
     await expect(
-      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1'),
+      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1', ALL),
     ).rejects.toMatchObject({ response: { code: 'FINANCIAL_ALLOCATION_LOCKED' } });
     expect(create).not.toHaveBeenCalled();
   });
@@ -118,6 +124,8 @@ describe('DeliveryConfigurationService', () => {
       },
       deliveryFunction: { findUnique: vi.fn().mockResolvedValue({ id: 'fn-1', status: 'DRAFT' }) },
     } as never);
-    await expect(service.addFeature('cfg-1', 'fn-1')).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.addFeature('cfg-1', 'fn-1', ALL)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 });
