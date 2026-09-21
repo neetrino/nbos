@@ -608,7 +608,7 @@ Won, deal write, product create, SEND_OFFER); Prettier; `pnpm --filter @nbos/dat
 shared + database + API + web `tsc --noEmit` (API/web 8GB); migrate deploy on dev.
 **Not run:** browser QA of deal sheet / create product / planning; production migrate.
 
-### Sale price always stored, no implicit default (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+### Sale price always stored, no implicit default (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED` `2231f2ba6`
 
 Decision 1.12 withdrawn the implicit “empty = 10 000” fallback. A card has a client amount only when
 a sale version stores `amountPerUnit`. `resolveSalePrice` returns `CARD` or `UNKNOWN`. Column
@@ -618,7 +618,10 @@ API and the norms form are gone. New drafts still require a number. Seed
 exists. Catalog still shows AMD only from `resolvedAmount` after **units** are published — this slice
 does not publish units.
 
-**Checks:** recorded in the commit that follows.
+**Checks:** vitest 6 files / 28 passed (shared resolver, drop-migration SQL, sale-prices service,
+default-endpoint removed, seed plan); Prettier; prisma generate + migrate deploy on **dev**;
+shared + API + web `tsc --noEmit` (API/web 8GB). Review: no confirmed defects. Browser: Sale
+prices tab has no default-10 000 block; empty amount on a selected function is refused.
 **Not run:** production migrate; seed `--apply` waits for the Owner employee id.
 
 ### Production launch
