@@ -622,7 +622,9 @@ does not publish units.
 default-endpoint removed, seed plan); Prettier; prisma generate + migrate deploy on **dev**;
 shared + API + web `tsc --noEmit` (API/web 8GB). Review: no confirmed defects. Browser: Sale
 prices tab has no default-10 000 block; empty amount on a selected function is refused.
-**Not run:** production migrate; seed `--apply` waits for the Owner employee id.
+Seed `--apply` on **dev** (2026-09-21): 205 PUBLISHED function rates (195 × 10 000, 10 AI × 20 000),
+author Sipan / Owner. Re-run KEEP. Units stay DRAFT — catalog AMD still waits on published units.
+**Not run:** production migrate.
 
 ### Production launch
 
