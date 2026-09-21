@@ -77,6 +77,10 @@ export const deliveryCatalogStructureApi = {
     return resp.data;
   },
 
+  async deleteCollection(id: string): Promise<void> {
+    await api.delete(`${BASE}/collections/${id}`);
+  },
+
   async listSalePrices(targetKey?: string): Promise<SalePriceVersionDto[]> {
     const resp = await api.get<SalePriceVersionDto[]>(`${BASE}/sale-prices`, {
       params: targetKey ? { targetKey } : undefined,

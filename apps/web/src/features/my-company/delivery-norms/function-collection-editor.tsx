@@ -16,6 +16,7 @@ export function FunctionCollectionEditor({
   onNameChange,
   onChange,
   onSave,
+  onDelete,
 }: {
   name: string;
   selectedIds: string[];
@@ -25,6 +26,7 @@ export function FunctionCollectionEditor({
   onNameChange: (name: string) => void;
   onChange: (next: string[]) => void;
   onSave: () => void;
+  onDelete?: () => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const locked = disabled || saving;
@@ -49,7 +51,14 @@ export function FunctionCollectionEditor({
         onChange={onChange}
       />
       {disabled ? null : (
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-2">
+          {onDelete ? (
+            <Button type="button" size="sm" variant="outline" disabled={locked} onClick={onDelete}>
+              {t('collections.delete')}
+            </Button>
+          ) : (
+            <span />
+          )}
           <Button type="button" size="sm" disabled={locked || name.trim() === ''} onClick={onSave}>
             {saving ? t('collections.saving') : t('collections.save')}
           </Button>

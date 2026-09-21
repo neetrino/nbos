@@ -596,6 +596,10 @@
       "create": "New collection",
       "save": "Save collection",
       "saving": "Saving…",
+      "delete": "Delete collection",
+      "deleting": "Deleting…",
+      "deleteTitle": "Delete this collection?",
+      "deleteDescription": "Type the collection name to confirm. Deal extras stay; only the last-applied mark is cleared.",
       "selectedCount": "{count, plural, one {# function} other {# functions}}"
     },
     "salePrices": {
@@ -665,6 +669,7 @@
       "coreItems": "The core composition could not be saved.",
       "coreItemLabel": "Enter an item label.",
       "collections": "The collection could not be saved.",
+      "collectionsDelete": "The collection could not be deleted.",
       "salePrices": "The sale price draft could not be created.",
       "salePriceRequired": "Set the sale price per unit.",
       "salePricePositive": "The sale price per unit must be greater than zero.",

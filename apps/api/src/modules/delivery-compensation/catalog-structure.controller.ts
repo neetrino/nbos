@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   DELIVERY_COMPENSATION_RULES_MODULE,
@@ -65,6 +75,20 @@ export class CatalogStructureController {
   async replaceCollection(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
     try {
       return await this.collections.replace(id, body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Delete('collections/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({
+    summary:
+      'Delete a named extra-function kit. Deal extras stay; the last-applied mark is cleared.',
+  })
+  async removeCollection(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      await this.collections.remove(id);
     } catch (error) {
       mapCatalogWriteError(error);
     }

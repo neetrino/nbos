@@ -9,6 +9,7 @@ import {
   type FunctionCollectionDto,
 } from '@/lib/api/delivery-catalog-structure';
 import { LOADING_LIST_COUNT } from './delivery-norms.constants';
+import { FunctionCollectionDeleteDialog } from './function-collection-delete-dialog';
 import { FunctionCollectionEditor } from './function-collection-editor';
 import { FunctionCollectionsList } from './function-collections-list';
 import { messageFromCaught } from './message-from-caught';
@@ -34,6 +35,9 @@ export function FunctionCollectionKindEditor({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draftOverride, setDraftOverride] = useState<typeof EMPTY_DRAFT | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const resolvedId = resolveCollectionId(selectedId, listState.collections, canEdit);
   const selected = listState.collections.find((row) => row.id === resolvedId) ?? null;
   const draft = draftOverride ?? draftFromSelection(resolvedId, selected);
@@ -48,51 +52,169 @@ export function FunctionCollectionKindEditor({
         <NormsLoadError message={listState.error ?? ''} onRetry={() => void listState.load()} />
       }
     >
-      <div className="space-y-4">
-        <FunctionCollectionsList
-          collections={listState.collections}
-          selectedId={resolvedId}
-          canCreate={canEdit}
-          onSelect={(id) => {
-            setSelectedId(id);
-            setDraftOverride(null);
-          }}
-          onCreate={() => {
-            setSelectedId(NEW_COLLECTION_ID);
-            setDraftOverride(EMPTY_DRAFT);
-          }}
-        />
-        {resolvedId ? (
-          <FunctionCollectionEditor
-            name={draft.name}
-            selectedIds={draft.functionIds}
-            options={catalog}
-            disabled={!canEdit}
-            saving={saving}
-            onNameChange={(name) => setDraftOverride({ ...draft, name })}
-            onChange={(functionIds) => setDraftOverride({ ...draft, functionIds })}
-            onSave={() => {
-              void submitCollection({
-                productType,
-                collectionId: resolvedId === NEW_COLLECTION_ID ? null : resolvedId,
-                name: draft.name,
-                functionIds: draft.functionIds,
-                fallback: t('errors.collections'),
-                onError,
-                onSaved: (saved) => {
-                  void listState.load();
-                  setSelectedId(saved.id);
-                  setDraftOverride(null);
-                },
-                setSaving,
-              });
-            }}
-          />
-        ) : (
-          <p className="text-muted-foreground text-sm">{t('collections.empty')}</p>
-        )}
-      </div>
+      <KindEditorBody
+        productType={productType}
+        catalog={catalog}
+        canEdit={canEdit}
+        collections={listState.collections}
+        resolvedId={resolvedId}
+        selected={selected}
+        draft={draft}
+        saving={saving}
+        deleteOpen={deleteOpen}
+        deleting={deleting}
+        deleteError={deleteError}
+        emptyLabel={t('collections.empty')}
+        saveFailed={t('errors.collections')}
+        deleteFailed={t('errors.collectionsDelete')}
+        onError={onError}
+        onSelect={(id) => {
+          setSelectedId(id);
+          setDraftOverride(null);
+        }}
+        onCreate={() => {
+          setSelectedId(NEW_COLLECTION_ID);
+          setDraftOverride(EMPTY_DRAFT);
+        }}
+        onNameChange={(name) => setDraftOverride({ ...draft, name })}
+        onFunctionsChange={(functionIds) => setDraftOverride({ ...draft, functionIds })}
+        onSaved={(saved) => {
+          void listState.load();
+          setSelectedId(saved.id);
+          setDraftOverride(null);
+        }}
+        setSaving={setSaving}
+        onAskDelete={() => {
+          setDeleteError(null);
+          setDeleteOpen(true);
+        }}
+        onDeleteOpenChange={(open) => {
+          if (!open) setDeleteError(null);
+          setDeleteOpen(open);
+        }}
+        onDeleted={() => {
+          setDeleteOpen(false);
+          setSelectedId(null);
+          setDraftOverride(null);
+          void listState.load();
+        }}
+        setDeleting={setDeleting}
+        setDeleteError={setDeleteError}
+      />
     </DataView>
+  );
+}
+
+type KindEditorBodyProps = {
+  productType: string;
+  catalog: DeliveryFunctionOperationalDto[];
+  canEdit: boolean;
+  collections: FunctionCollectionDto[];
+  resolvedId: string | null;
+  selected: FunctionCollectionDto | null;
+  draft: typeof EMPTY_DRAFT;
+  saving: boolean;
+  deleteOpen: boolean;
+  deleting: boolean;
+  deleteError: string | null;
+  emptyLabel: string;
+  saveFailed: string;
+  deleteFailed: string;
+  onError: (message: string) => void;
+  onSelect: (id: string) => void;
+  onCreate: () => void;
+  onNameChange: (name: string) => void;
+  onFunctionsChange: (functionIds: string[]) => void;
+  onSaved: (saved: FunctionCollectionDto) => void;
+  setSaving: (value: boolean) => void;
+  onAskDelete: () => void;
+  onDeleteOpenChange: (open: boolean) => void;
+  onDeleted: () => void;
+  setDeleting: (value: boolean) => void;
+  setDeleteError: (message: string | null) => void;
+};
+
+function KindEditorBody({
+  productType,
+  catalog,
+  canEdit,
+  collections,
+  resolvedId,
+  selected,
+  draft,
+  saving,
+  deleteOpen,
+  deleting,
+  deleteError,
+  emptyLabel,
+  saveFailed,
+  deleteFailed,
+  onError,
+  onSelect,
+  onCreate,
+  onNameChange,
+  onFunctionsChange,
+  onSaved,
+  setSaving,
+  onAskDelete,
+  onDeleteOpenChange,
+  onDeleted,
+  setDeleting,
+  setDeleteError,
+}: KindEditorBodyProps) {
+  return (
+    <div className="space-y-4">
+      <FunctionCollectionsList
+        collections={collections}
+        selectedId={resolvedId}
+        canCreate={canEdit}
+        onSelect={onSelect}
+        onCreate={onCreate}
+      />
+      {resolvedId ? (
+        <FunctionCollectionEditor
+          name={draft.name}
+          selectedIds={draft.functionIds}
+          options={catalog}
+          disabled={!canEdit}
+          saving={saving}
+          onNameChange={onNameChange}
+          onChange={onFunctionsChange}
+          onSave={() =>
+            void submitCollection({
+              productType,
+              collectionId: resolvedId === NEW_COLLECTION_ID ? null : resolvedId,
+              name: draft.name,
+              functionIds: draft.functionIds,
+              fallback: saveFailed,
+              onError,
+              onSaved,
+              setSaving,
+            })
+          }
+          onDelete={resolvedId !== NEW_COLLECTION_ID ? onAskDelete : undefined}
+        />
+      ) : (
+        <p className="text-muted-foreground text-sm">{emptyLabel}</p>
+      )}
+      <FunctionCollectionDeleteDialog
+        open={deleteOpen}
+        name={selected?.name ?? draft.name}
+        submitting={deleting}
+        errorMessage={deleteError}
+        onOpenChange={onDeleteOpenChange}
+        onConfirm={() => {
+          if (!resolvedId || resolvedId === NEW_COLLECTION_ID) return;
+          void removeCollection({
+            collectionId: resolvedId,
+            fallback: deleteFailed,
+            onError: setDeleteError,
+            onDeleted,
+            setDeleting,
+          });
+        }}
+      />
+    </div>
   );
 }
 
@@ -140,5 +262,23 @@ async function submitCollection(input: {
     input.onError(messageFromCaught(caught, input.fallback));
   } finally {
     input.setSaving(false);
+  }
+}
+
+async function removeCollection(input: {
+  collectionId: string;
+  fallback: string;
+  onError: (message: string) => void;
+  onDeleted: () => void;
+  setDeleting: (value: boolean) => void;
+}): Promise<void> {
+  input.setDeleting(true);
+  try {
+    await deliveryCatalogStructureApi.deleteCollection(input.collectionId);
+    input.onDeleted();
+  } catch (caught) {
+    input.onError(messageFromCaught(caught, input.fallback));
+  } finally {
+    input.setDeleting(false);
   }
 }
