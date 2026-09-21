@@ -28,6 +28,7 @@ export function useDealConstructor(dealId: string, productType: string) {
     catalog,
     quote: loaded.quote,
     collections: loaded.collections,
+    coreTitle: loaded.coreTitle,
     error: loaded.error,
     saving: writes.saving,
     canSeeUnits,
@@ -85,6 +86,7 @@ function useDealConstructorQuery(
     collections: data?.collections ?? [],
     saleVersions: data?.saleVersions ?? [],
     coreUnits: data?.coreUnits,
+    coreTitle: data?.coreTitle ?? null,
     error: writeError ?? (query.error ? getApiErrorMessage(query.error, loadFailed) : null),
     setQuote: (next: DealQuoteDto) => setOverride({ key: queryKey, quote: next }),
     setError: setWriteError,
@@ -151,26 +153,36 @@ async function loadDealConstructor(
   collections: Awaited<ReturnType<typeof deliveryCatalogStructureApi.listCollections>>;
   saleVersions: CatalogSalePriceRow[];
   coreUnits: number | undefined;
+  coreTitle: string | null;
 }> {
   const [quote, collections, saleVersions] = await Promise.all([
     deliveryDealQuoteApi.get(dealId),
     deliveryCatalogStructureApi.listCollections(productType),
     deliveryCatalogStructureApi.listSalePrices(),
   ]);
+  const core = await loadPublishedCore(quote.coreProfileVersionId, canSeeUnits);
   return {
     quote,
     collections,
     saleVersions,
-    coreUnits: canSeeUnits ? await loadCoreUnits(quote.coreProfileVersionId) : undefined,
+    coreUnits: core.units,
+    coreTitle: core.title,
   };
 }
 
-async function loadCoreUnits(coreVersionId: string | null): Promise<number | undefined> {
-  if (!coreVersionId) return undefined;
+async function loadPublishedCore(
+  coreVersionId: string | null,
+  canSeeUnits: boolean,
+): Promise<{ units: number | undefined; title: string | null }> {
+  if (!coreVersionId) return { units: undefined, title: null };
   try {
     const rows = await deliveryNormsApi.listBaseProfiles();
-    return profileUnitsTotal(rows.find((row) => row.id === coreVersionId) ?? null);
+    const profile = rows.find((row) => row.id === coreVersionId) ?? null;
+    return {
+      units: canSeeUnits ? profileUnitsTotal(profile) : undefined,
+      title: profile?.profileKey ?? null,
+    };
   } catch {
-    return undefined;
+    return { units: undefined, title: null };
   }
 }

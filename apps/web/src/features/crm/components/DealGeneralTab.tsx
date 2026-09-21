@@ -143,15 +143,6 @@ export function DealGeneralTab({
             outsourceToggleLocked={deal.status === 'WON'}
             gateRequiredFields={gateRequiredFields}
           />
-          <DealConstructorSection
-            deal={{
-              ...deal,
-              type: draft.type,
-              productType: draft.productType,
-            }}
-            productType={draft.productType}
-            disabled={formDisabled}
-          />
           <DealNotesSection
             entityId={deal.id}
             draft={draft}
@@ -193,6 +184,16 @@ export function DealGeneralTab({
 
         <aside className="flex w-full shrink-0 flex-col gap-4 @[48rem]/deal-general:w-64">
           <DealFinanceActionsPanel deal={deal} firstOrder={firstOrder} />
+          <DealConstructorSection
+            deal={{
+              ...deal,
+              type: draft.type,
+            }}
+            productCategory={draft.productCategory}
+            productType={draft.productType}
+            productPlatform={draft.productPlatform}
+            disabled={formDisabled}
+          />
           <DealClientCommunicationPanel deal={deal} />
           <DealHandoffPanel deal={deal} onOpenDeal={onOpenDeal} />
         </aside>
