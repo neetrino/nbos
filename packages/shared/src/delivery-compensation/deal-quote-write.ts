@@ -1,10 +1,5 @@
 import { CatalogContentValidationError } from './catalog-write';
-import {
-  DELIVERY_DESIGN_MODES,
-  DELIVERY_IMPLEMENTATION_BASES,
-  type DeliveryDesignMode,
-  type DeliveryImplementationBase,
-} from './constants';
+import { frozenDeliveryAxes } from './constants';
 
 export type DealQuoteItemInput = {
   functionId: string;
@@ -12,12 +7,9 @@ export type DealQuoteItemInput = {
 };
 
 export type DealQuoteWriteInput = {
-  implementationBase: DeliveryImplementationBase;
-  designMode: DeliveryDesignMode;
-  aiDesignerReview: boolean;
   appliedCollectionId: string | null;
   items: DealQuoteItemInput[];
-};
+} & ReturnType<typeof frozenDeliveryAxes>;
 
 export type DealQuoteApplyCollectionInput = {
   collectionId: string;
@@ -28,20 +20,14 @@ const MAX_QUOTE_FUNCTIONS = 120;
 
 /**
  * Parses the seller's draft composition on a deal. A collection id here is last-clicked UI
- * state; the items are the source of truth after any manual edit.
+ * state; the items are the source of truth after any manual edit. Client axes are ignored.
  */
 export function parseDealQuoteBody(body: unknown): DealQuoteWriteInput {
   if (!isRecord(body)) {
     throw new CatalogContentValidationError('Body must be an object.');
   }
   return {
-    implementationBase: requireOneOf(
-      body.implementationBase,
-      DELIVERY_IMPLEMENTATION_BASES,
-      'implementationBase',
-    ),
-    designMode: requireOneOf(body.designMode, DELIVERY_DESIGN_MODES, 'designMode'),
-    aiDesignerReview: body.aiDesignerReview === true,
+    ...frozenDeliveryAxes(),
     appliedCollectionId: optionalUuid(body.appliedCollectionId, 'appliedCollectionId'),
     items: requireItems(body.items),
   };
@@ -100,13 +86,6 @@ function optionalUuid(value: unknown, field: string): string | null {
     throw new CatalogContentValidationError(`${field} must be a uuid.`);
   }
   return value.trim();
-}
-
-function requireOneOf<T extends string>(value: unknown, allowed: readonly T[], field: string): T {
-  if (typeof value !== 'string' || !(allowed as readonly string[]).includes(value)) {
-    throw new CatalogContentValidationError(`${field} must be one of: ${allowed.join(', ')}.`);
-  }
-  return value as T;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

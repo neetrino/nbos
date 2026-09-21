@@ -33,3 +33,19 @@ export function firstReadinessError(
 ): DeliveryCompensationErrorCode | null {
   return codes[0] ?? null;
 }
+
+export function isDeliveryCompensationCode(
+  error: unknown,
+  code: DeliveryCompensationErrorCode,
+): boolean {
+  if (!(error instanceof BadRequestException)) {
+    return false;
+  }
+  const response = error.getResponse();
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    'code' in response &&
+    response.code === code
+  );
+}

@@ -35,8 +35,9 @@ export function inspectV2DevelopmentReadiness(input: {
   }
 
   const plan = calculateDeliveryPlan({
-    ...input.normatives,
-    designerAssigned: Boolean(input.assignees.DESIGNER),
+    baseRoleUnits: input.normatives.baseRoleUnits,
+    rates: input.normatives.rates,
+    features: input.normatives.features,
   });
   errors.push(...plan.errors);
   const missingAssignees = plan.lines
@@ -58,7 +59,7 @@ export function inspectV2DevelopmentReadiness(input: {
 
 function emptyNormatives(): LoadedPublishedNormatives {
   return {
-    designMode: 'FULL_DESIGN',
+    designMode: 'AI_DESIGN',
     aiDesignerReview: false,
     baseRoleUnits: [],
     rates: [],

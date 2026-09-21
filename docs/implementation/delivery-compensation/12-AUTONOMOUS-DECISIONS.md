@@ -212,6 +212,13 @@ WordPress and Shopify stay WEB. `MOBILE_APP` stays in the enum for legacy cards 
 new type pickers (current value still shows). App Store access slots follow platform APP (legacy
 `MOBILE_APP` type still qualifies). `WEB_APP` remains a real kind (web application), not a platform.
 
+**1.21 Implementation base, design modes and AI-reviewer are not axes — Owner decision of 2026-09-21.**
+They will not be chosen in Deal, Product, Delivery or norms. Matching a published core uses
+`entityKind` + `productType` (category wildcard as before). Standard design lives in the core.
+Columns stay in the database and every new write freezes `FROM_SCRATCH` / `AI_DESIGN` / `false`.
+`AI_DESIGNER_REVIEW_REQUIRED` no longer blocks a plan. Enrollment binds the published core when
+one exists so Starting is not stuck on `CONFIGURATION_INCOMPLETE`.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any

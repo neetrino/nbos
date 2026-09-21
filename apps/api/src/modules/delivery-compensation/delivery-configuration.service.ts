@@ -9,6 +9,7 @@ import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { applyEmployeeReplacement } from './apply-employee-replacement';
 import { applyConfigurationParameters } from './apply-configuration-parameters';
+import { isDeliveryCompensationCode } from './delivery-compensation-http-error';
 import { applyScopeAddFeature } from './apply-scope-add-feature';
 import { applyScopeRemoveFeature } from './apply-scope-remove-feature';
 import {
@@ -90,6 +91,7 @@ export class DeliveryConfigurationService {
     await assertEnrollmentEnabled(this.prisma);
     const existing = await this.prisma.deliveryConfiguration.findFirst({ where: { productId } });
     if (existing) {
+      await this.bindCoreIfUnbound(existing);
       return this.getRequired(existing.id);
     }
     await assertProductNeverClosed(this.prisma, productId);
@@ -97,6 +99,7 @@ export class DeliveryConfigurationService {
     await assertOrderHasNoBonusEntries(this.prisma, orderId);
     const configurationId = await insertDeliveryEnrollment(this.prisma, { productId }, orderId);
     await copyDealQuoteExtras(this.prisma, productId, configurationId, orderId);
+    await this.bindPublishedCoreIfPresent(configurationId);
     return this.getRequired(configurationId);
   }
 
@@ -128,12 +131,15 @@ export class DeliveryConfigurationService {
     await assertEnrollmentEnabled(this.prisma);
     const existing = await this.prisma.deliveryConfiguration.findFirst({ where: { extensionId } });
     if (existing) {
+      await this.bindCoreIfUnbound(existing);
       return this.getRequired(existing.id);
     }
     await assertExtensionNeverClosed(this.prisma, extensionId);
     await assertOrderBelongsToExtension(this.prisma, extensionId, orderId);
     await assertOrderHasNoBonusEntries(this.prisma, orderId);
-    return this.getRequired(await insertDeliveryEnrollment(this.prisma, { extensionId }, orderId));
+    const configurationId = await insertDeliveryEnrollment(this.prisma, { extensionId }, orderId);
+    await this.bindPublishedCoreIfPresent(configurationId);
+    return this.getRequired(configurationId);
   }
 
   /**
@@ -206,9 +212,9 @@ export class DeliveryConfigurationService {
     actorEmployeeId?: string,
   ): Promise<OperationalConfigurationDto> {
     await assertConfigurationAccessible(this.prisma, configurationId, access);
-    const parameters = parseConfigurationParametersBody(body);
+    parseConfigurationParametersBody(body);
     await this.prisma.$transaction((tx) =>
-      applyConfigurationParameters(tx, { configurationId, parameters, actorEmployeeId }),
+      applyConfigurationParameters(tx, { configurationId, actorEmployeeId }),
     );
     return this.getRequired(configurationId);
   }
@@ -274,6 +280,24 @@ export class DeliveryConfigurationService {
     );
     await syncProductBonusPoolForOrder(this.prisma, written.orderId, this.notifications);
     return this.getRequired(configurationId);
+  }
+
+  private async bindCoreIfUnbound(existing: { id: string; baseProfileVersionId: string | null }) {
+    if (existing.baseProfileVersionId) {
+      return;
+    }
+    await this.bindPublishedCoreIfPresent(existing.id);
+  }
+
+  private async bindPublishedCoreIfPresent(configurationId: string): Promise<void> {
+    try {
+      await this.prisma.$transaction((tx) => applyConfigurationParameters(tx, { configurationId }));
+    } catch (error) {
+      if (isDeliveryCompensationCode(error, 'NORMATIVE_NOT_CONFIGURED')) {
+        return;
+      }
+      throw error;
+    }
   }
 
   private async getRequired(id: string): Promise<OperationalConfigurationDto> {

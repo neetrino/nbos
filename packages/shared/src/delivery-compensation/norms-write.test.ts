@@ -140,6 +140,8 @@ describe('parseBaseProfileWriteBody', () => {
 
     expect(parsed.profileKey).toBe('ecommerce-classic');
     expect(parsed.productType).toBe('ECOMMERCE');
+    expect(parsed.implementationBase).toBe('FROM_SCRATCH');
+    expect(parsed.designMode).toBe('AI_DESIGN');
     expect(parsed.aiDesignerReview).toBe(false);
     expect(parsed.includedFunctionIds).toEqual([FUNCTION_ID, OTHER_ID]);
   });

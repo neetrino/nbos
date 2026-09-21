@@ -5,10 +5,9 @@ import {
 } from './catalog-write';
 import {
   DELIVERY_COMPENSATION_ROLE_KEYS,
-  DELIVERY_DESIGN_MODES,
   DELIVERY_ENTITY_KINDS,
-  DELIVERY_IMPLEMENTATION_BASES,
   DELIVERY_ROLE_UNIT_KINDS,
+  frozenDeliveryAxes,
   type DeliveryDesignMode,
   type DeliveryEntityKind,
   type DeliveryImplementationBase,
@@ -70,13 +69,7 @@ export function parseBaseProfileWriteBody(body: unknown): BaseProfileWriteInput 
       PRODUCT_CATEGORIES,
       'productCategory',
     ),
-    implementationBase: readEnum(
-      record.implementationBase,
-      DELIVERY_IMPLEMENTATION_BASES,
-      'implementationBase',
-    ),
-    designMode: readEnum(record.designMode, DELIVERY_DESIGN_MODES, 'designMode'),
-    aiDesignerReview: record.aiDesignerReview === true,
+    ...frozenDeliveryAxes(),
     description: readOptionalText(record.description),
     effectiveFrom: readEffectiveFrom(record.effectiveFrom),
     roleUnits: parseRoleUnitVector(record.roleUnits),

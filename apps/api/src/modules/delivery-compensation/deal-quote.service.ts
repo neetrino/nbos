@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import {
+  frozenDeliveryAxes,
   parseDealQuoteApplyCollectionBody,
   parseDealQuoteBody,
   type DealQuoteWriteInput,
@@ -63,11 +64,8 @@ export class DealQuoteService {
     if (deal.productType && collection.productType !== deal.productType) {
       throw new BadRequestException('Collection does not match the deal product type.');
     }
-    const current = await this.get(dealId);
     return this.write(deal, {
-      implementationBase: current.implementationBase as DealQuoteWriteInput['implementationBase'],
-      designMode: current.designMode as DealQuoteWriteInput['designMode'],
-      aiDesignerReview: current.aiDesignerReview,
+      ...frozenDeliveryAxes(),
       appliedCollectionId: collection.id,
       items: collection.items.map((item) => ({ functionId: item.functionId, tierId: null })),
     });
@@ -88,15 +86,11 @@ export class DealQuoteService {
         create: {
           dealId: deal.id,
           appliedCollectionId: input.appliedCollectionId,
-          implementationBase: input.implementationBase,
-          designMode: input.designMode,
-          aiDesignerReview: input.aiDesignerReview,
+          ...frozenDeliveryAxes(),
         },
         update: {
           appliedCollectionId: input.appliedCollectionId,
-          implementationBase: input.implementationBase,
-          designMode: input.designMode,
-          aiDesignerReview: input.aiDesignerReview,
+          ...frozenDeliveryAxes(),
         },
       });
       const quote = await tx.deliveryDealQuote.findUniqueOrThrow({ where: { dealId: deal.id } });
@@ -125,9 +119,6 @@ export class DealQuoteService {
       coreProfileVersionId: await findPublishedCoreId(this.prisma, {
         productType: deal.productType,
         productCategory: deal.productCategory,
-        implementationBase: quote.implementationBase,
-        designMode: quote.designMode,
-        aiDesignerReview: quote.aiDesignerReview,
       }),
     };
   }
@@ -187,9 +178,7 @@ function emptyQuote(dealId: string): DealQuoteDto {
   return {
     dealId,
     appliedCollectionId: null,
-    implementationBase: 'FROM_SCRATCH',
-    designMode: 'AI_DESIGN',
-    aiDesignerReview: false,
+    ...frozenDeliveryAxes(),
     coreProfileVersionId: null,
     items: [],
   };

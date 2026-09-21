@@ -12,16 +12,9 @@ import {
   SYNTHETIC_TEST_WAREHOUSE_UNITS,
 } from './synthetic-test-fixtures';
 
-const READY_DESIGN = {
-  designMode: 'FULL_DESIGN' as const,
-  designerAssigned: true,
-  aiDesignerReview: false,
-};
-
 describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
   it('C01: base only totals 187500 across six roles, not an order price', () => {
     const result = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS,
       rates: SYNTHETIC_TEST_RATES,
       features: [],
@@ -33,7 +26,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
 
   it('C02: included Bank is visible and does not add money', () => {
     const result = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS,
       rates: SYNTHETIC_TEST_RATES,
       features: [{ functionId: 'bank', origin: 'INCLUDED', roleUnits: SYNTHETIC_TEST_BANK_UNITS }],
@@ -45,7 +37,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
 
   it('C03: extra Warehouse adds 15200 on three roles only', () => {
     const result = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS,
       rates: SYNTHETIC_TEST_RATES,
       features: [
@@ -61,7 +52,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
 
   it('C04: Bank as extra on profile B is added once from its price vector', () => {
     const result = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS,
       rates: SYNTHETIC_TEST_RATES,
       features: [{ functionId: 'bank', origin: 'EXTRA', roleUnits: SYNTHETIC_TEST_BANK_UNITS }],
@@ -73,7 +63,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
 
   it('C05: one employee Backend+Frontend keeps both role amounts, no 70/30', () => {
     const result = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS,
       rates: SYNTHETIC_TEST_RATES,
       features: [],
@@ -85,7 +74,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
 
   it('C06: null required units block; explicit zero is allowed and pays nothing', () => {
     const blocked = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
         row.roleKey === 'QA' ? { ...row, units: null } : row,
       ),
@@ -96,7 +84,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
     expect(blocked.errors).toContain('UNITS_NOT_CONFIGURED');
 
     const zero = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
         row.roleKey === 'QA' ? { ...row, units: '0' } : row,
       ),
@@ -109,7 +96,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
 
   it('C07: new Backend rate 1200 applies only to new components', () => {
     const result = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: [],
       rates: SYNTHETIC_TEST_RATES.map((row) =>
         row.roleKey === 'BACKEND' ? { ...row, rate: '1200' } : row,
@@ -144,30 +130,17 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
     expect(frozen?.rate).toBe('1000');
   });
 
-  it('C08: AI Design with Designer requires Reviewer; modes stay distinct', () => {
-    const blocked = calculateDeliveryPlan({
-      designMode: 'AI_DESIGN',
-      designerAssigned: true,
-      aiDesignerReview: false,
-      baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS,
-      rates: SYNTHETIC_TEST_RATES,
-      features: [],
-    });
-    expect(blocked.ok).toBe(false);
-    expect(blocked.errors).toContain('AI_DESIGNER_REVIEW_REQUIRED');
-
-    const concept = calculateDeliveryPlan({
-      designMode: 'CONCEPT',
-      designerAssigned: true,
-      aiDesignerReview: false,
+  it('C08: Designer units pay from the core vector; design mode is not an axis', () => {
+    const result = calculateDeliveryPlan({
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
         row.roleKey === 'DESIGNER' ? { ...row, units: '10' } : row,
       ),
       rates: SYNTHETIC_TEST_RATES,
       features: [],
     });
-    expect(concept.ok).toBe(true);
-    expect(concept.totalsByRole.DESIGNER).toBe('7000.00');
+    expect(result.ok).toBe(true);
+    expect(result.errors).not.toContain('AI_DESIGNER_REVIEW_REQUIRED');
+    expect(result.totalsByRole.DESIGNER).toBe('7000.00');
   });
 
   it('C09: 10.01 split 33/67 keeps the exact sum', () => {
@@ -180,7 +153,6 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
 
   it('C10: a later 5-unit vector does not multiply an older 50-unit snapshot', () => {
     const fresh = calculateDeliveryPlan({
-      ...READY_DESIGN,
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
         row.roleKey === 'BACKEND' ? { ...row, units: '5' } : row,
       ),

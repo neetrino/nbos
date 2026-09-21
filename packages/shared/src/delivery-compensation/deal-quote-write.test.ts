@@ -8,8 +8,6 @@ describe('parseDealQuoteBody', () => {
   it('reads a replaceable draft composition', () => {
     expect(
       parseDealQuoteBody({
-        implementationBase: 'FROM_SCRATCH',
-        designMode: 'AI_DESIGN',
         items: [{ functionId: FUNCTION_A, tierId: null }],
       }),
     ).toEqual({

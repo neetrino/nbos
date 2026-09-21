@@ -2,9 +2,7 @@ import {
   parseBaseProfileWriteBody,
   type BaseProfileWriteInput,
   type DeliveryRoleUnitInput,
-  type DeliveryDesignMode,
   type DeliveryEntityKind,
-  type DeliveryImplementationBase,
   type ProductCategoryKey,
   type ProductTypeKey,
 } from '@nbos/shared';
@@ -18,9 +16,6 @@ export type ProfileDraft = {
   entityKind: DeliveryEntityKind;
   productType: ProductTypeKey | typeof OPTIONAL_SELECT_NONE;
   productCategory: ProductCategoryKey | typeof OPTIONAL_SELECT_NONE;
-  implementationBase: DeliveryImplementationBase;
-  designMode: DeliveryDesignMode;
-  aiDesignerReview: boolean;
   description: string;
   effectiveFrom: string;
   roleUnits: RoleUnitDraftRow[];
@@ -39,9 +34,6 @@ export function emptyProfileDraft(): ProfileDraft {
     entityKind: 'PRODUCT',
     productType: OPTIONAL_SELECT_NONE,
     productCategory: OPTIONAL_SELECT_NONE,
-    implementationBase: 'FROM_SCRATCH',
-    designMode: 'FULL_DESIGN',
-    aiDesignerReview: false,
     description: '',
     effectiveFrom: todayDateInputValue(),
     roleUnits: createEmptyRoleUnitDrafts(),
@@ -76,9 +68,6 @@ function parseProfileDraft(draft: ProfileDraft, roleUnits: DeliveryRoleUnitInput
     entityKind: draft.entityKind,
     productType: optionalEnumToNull(draft.productType),
     productCategory: optionalEnumToNull(draft.productCategory),
-    implementationBase: draft.implementationBase,
-    designMode: draft.designMode,
-    aiDesignerReview: draft.aiDesignerReview,
     description: draft.description,
     effectiveFrom: dateInputToIso(draft.effectiveFrom),
     roleUnits,

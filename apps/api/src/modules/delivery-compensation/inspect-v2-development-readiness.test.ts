@@ -59,7 +59,7 @@ describe('inspectV2DevelopmentReadiness', () => {
     expect(JSON.stringify(result.errors)).not.toMatch(/\d{2,}/);
   });
 
-  it('blocks AI design with a Designer when reviewer is missing', () => {
+  it('does not block Development on a missing AI reviewer', () => {
     const result = inspectV2DevelopmentReadiness({
       mode: 'V2',
       initialRevisionId: null,
@@ -69,6 +69,6 @@ describe('inspectV2DevelopmentReadiness', () => {
     });
     expect(result.apply).toBe(true);
     if (!result.apply) return;
-    expect(result.errors).toContain('AI_DESIGNER_REVIEW_REQUIRED');
+    expect(result.errors).not.toContain('AI_DESIGNER_REVIEW_REQUIRED');
   });
 });

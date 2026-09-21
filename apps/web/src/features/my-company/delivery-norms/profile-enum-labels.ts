@@ -1,10 +1,5 @@
 import type { useTranslations } from 'next-intl';
-import type {
-  DeliveryDesignMode,
-  DeliveryImplementationBase,
-  ProductCategoryKey,
-  ProductTypeKey,
-} from '@nbos/shared';
+import type { ProductCategoryKey, ProductTypeKey } from '@nbos/shared';
 
 type DeliveryNormsT = ReturnType<typeof useTranslations<'hr.deliveryNorms'>>;
 
@@ -36,23 +31,5 @@ export function productCategoryLabels(t: DeliveryNormsT): Record<ProductCategory
     SHOPIFY: t('productCategories.SHOPIFY'),
     MARKETING: t('productCategories.MARKETING'),
     OTHER: t('productCategories.OTHER'),
-  };
-}
-
-export function implementationBaseLabels(
-  t: DeliveryNormsT,
-): Record<DeliveryImplementationBase, string> {
-  return {
-    FROM_SCRATCH: t('implementationBases.FROM_SCRATCH'),
-    EXISTING_BASE: t('implementationBases.EXISTING_BASE'),
-    WHITE_LABEL: t('implementationBases.WHITE_LABEL'),
-  };
-}
-
-export function designModeLabels(t: DeliveryNormsT): Record<DeliveryDesignMode, string> {
-  return {
-    AI_DESIGN: t('designModes.AI_DESIGN'),
-    CONCEPT: t('designModes.CONCEPT'),
-    FULL_DESIGN: t('designModes.FULL_DESIGN'),
   };
 }

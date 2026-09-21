@@ -39,8 +39,9 @@ export async function writeInitialDeliveryPlan(
   input: WriteInitialPlanInput,
 ): Promise<WrittenInitialPlan> {
   const plan = calculateDeliveryPlan({
-    ...input.normatives,
-    designerAssigned: Boolean(input.assignees.DESIGNER),
+    baseRoleUnits: input.normatives.baseRoleUnits,
+    rates: input.normatives.rates,
+    features: input.normatives.features,
   });
   const revision = await db.deliveryConfigurationRevision.create({
     data: {

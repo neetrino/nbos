@@ -18,9 +18,6 @@ export type DealQuoteDto = {
 };
 
 export type DealQuoteWriteBody = {
-  implementationBase: string;
-  designMode: string;
-  aiDesignerReview: boolean;
   appliedCollectionId: string | null;
   items: DealQuoteItemDto[];
 };

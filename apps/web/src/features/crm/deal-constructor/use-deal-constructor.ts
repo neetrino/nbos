@@ -108,7 +108,12 @@ function useDealConstructorWrites(
     async (next: DealQuoteDto) => {
       setSaving(true);
       try {
-        setQuote(await deliveryDealQuoteApi.replace(dealId, next));
+        setQuote(
+          await deliveryDealQuoteApi.replace(dealId, {
+            appliedCollectionId: next.appliedCollectionId,
+            items: next.items,
+          }),
+        );
         setError(null);
       } catch (caught) {
         setError(getApiErrorMessage(caught, t('saveFailed')));

@@ -1,5 +1,5 @@
 import type { ProductCategoryEnum, ProductTypeEnum, TransactionClient } from '@nbos/database';
-import type { ConfigurationParametersInput } from '@nbos/shared';
+import { frozenDeliveryAxes } from '@nbos/shared';
 import { assertDeliveryOpenForConfiguration } from './assert-delivery-open';
 import { throwDeliveryCompensationError } from './delivery-compensation-http-error';
 import { lockDeliveryConfigurationRow } from './lock-delivery-configuration';
@@ -17,18 +17,16 @@ type ConfigurationRow = {
 };
 
 /**
- * Confirms the parameters of a configuration and freezes the published base profile that prices its
- * core. Without this step a card has no core, so nothing can be planned from it.
+ * Freezes the published base profile that prices the card's core. Matching is by product kind
+ * only; implementation base, design mode and reviewer are written as frozen constants.
  *
- * Refused once the plan is materialized: changing the size, the design mode or the implementation base
- * after money exists is a reclassification, which canon routes through a separate corrective flow
- * rather than a silent repricing of the whole plan.
+ * Refused once the plan is materialized: changing the core after money exists is a
+ * reclassification, which canon routes through a separate corrective flow.
  */
 export async function applyConfigurationParameters(
   db: TransactionClient,
   input: {
     configurationId: string;
-    parameters: ConfigurationParametersInput;
     actorEmployeeId?: string;
   },
 ): Promise<void> {
@@ -41,13 +39,14 @@ export async function applyConfigurationParameters(
   if (configuration.initialRevisionId) {
     throwDeliveryCompensationError('REDISTRIBUTION_REQUIRED');
   }
-  const profile = await findPublishedProfile(db, configuration, input.parameters);
+  const axes = frozenDeliveryAxes();
+  const profile = await findPublishedProfile(db, configuration);
   await db.deliveryConfiguration.update({
     where: { id: input.configurationId },
     data: {
-      implementationBase: input.parameters.implementationBase,
-      designMode: input.parameters.designMode,
-      aiDesignerReview: input.parameters.aiDesignerReview,
+      implementationBase: axes.implementationBase,
+      designMode: axes.designMode,
+      aiDesignerReview: axes.aiDesignerReview,
       baseProfileVersionId: profile.id,
       checkedAt: new Date(),
       checkedById: input.actorEmployeeId ?? null,
@@ -77,24 +76,15 @@ async function loadConfiguration(
   return row as ConfigurationRow;
 }
 
-/**
- * A profile is matched on the kind of product and the confirmed parameters. A profile that names no
- * product type or category is a wildcard for that field, which is how a rare combination is covered
- * without publishing the full cartesian set.
- */
 async function findPublishedProfile(
   db: TransactionClient,
   configuration: ConfigurationRow,
-  parameters: ConfigurationParametersInput,
 ): Promise<{ id: string; includedFunctions: Array<{ functionId: string }> }> {
   const product = configuration.product ?? configuration.extension?.product ?? null;
   const id = await findPublishedCoreId(db, {
     entityKind: configuration.entityKind,
     productType: product?.productType ?? null,
     productCategory: product?.productCategory ?? null,
-    implementationBase: parameters.implementationBase,
-    designMode: parameters.designMode,
-    aiDesignerReview: parameters.aiDesignerReview,
   });
   if (!id) {
     throwDeliveryCompensationError('NORMATIVE_NOT_CONFIGURED');

@@ -60,4 +60,57 @@ describe('DeliveryCompensationRulesPublishService', () => {
       response: { message: 'ZERO_UNITS_CONFIRMATION_REQUIRED' },
     });
   });
+
+  it('archives the same kind and freezes axes when publishing a base profile', async () => {
+    const updateMany = vi.fn();
+    const update = vi.fn().mockResolvedValue({ id: 'bp-2' });
+    const service = new DeliveryCompensationRulesPublishService({
+      $transaction: (fn: (tx: unknown) => Promise<unknown>) =>
+        fn({
+          deliveryBaseProfileVersion: {
+            findUnique: vi.fn().mockResolvedValue({
+              id: 'bp-2',
+              profileKey: 'shop-v2',
+              entityKind: 'PRODUCT',
+              productType: 'ECOMMERCE',
+              productCategory: 'CODE',
+              status: 'DRAFT',
+              roleUnits: [
+                { roleKey: 'BACKEND', unitKind: 'REQUIRED', units: '1' },
+                { roleKey: 'FRONTEND', unitKind: 'REQUIRED', units: '1' },
+                { roleKey: 'PM', unitKind: 'REQUIRED', units: '1' },
+                { roleKey: 'DESIGNER', unitKind: 'REQUIRED', units: '1' },
+                { roleKey: 'QA', unitKind: 'REQUIRED', units: '1' },
+                { roleKey: 'TECHNICAL_SPECIALIST', unitKind: 'REQUIRED', units: '1' },
+              ],
+            }),
+            updateMany,
+            update,
+          },
+        }),
+    } as never);
+
+    await service.publishBaseProfile('bp-2', 'emp-1');
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: {
+        status: 'PUBLISHED',
+        OR: [
+          { profileKey: 'shop-v2' },
+          {
+            entityKind: 'PRODUCT',
+            productType: 'ECOMMERCE',
+            productCategory: 'CODE',
+          },
+        ],
+      },
+      data: { status: 'ARCHIVED' },
+    });
+    expect(update.mock.calls[0]?.[0].data).toMatchObject({
+      status: 'PUBLISHED',
+      implementationBase: 'FROM_SCRATCH',
+      designMode: 'AI_DESIGN',
+      aiDesignerReview: false,
+    });
+  });
 });

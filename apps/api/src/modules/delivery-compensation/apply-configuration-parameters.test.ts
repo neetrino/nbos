@@ -1,12 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { applyConfigurationParameters } from './apply-configuration-parameters';
 
-const PARAMETERS = {
-  implementationBase: 'FROM_SCRATCH',
-  designMode: 'AI_DESIGN',
-  aiDesignerReview: false,
-} as const;
-
 function buildDb(overrides: Record<string, unknown> = {}) {
   const update = vi.fn();
   const createMany = vi.fn();
@@ -52,7 +46,6 @@ describe('applyConfigurationParameters', () => {
 
     await applyConfigurationParameters(db as never, {
       configurationId: 'cfg-1',
-      parameters: PARAMETERS,
       actorEmployeeId: 'emp-1',
     });
 
@@ -70,7 +63,6 @@ describe('applyConfigurationParameters', () => {
 
     await applyConfigurationParameters(db as never, {
       configurationId: 'cfg-1',
-      parameters: PARAMETERS,
     });
 
     expect(createMany).toHaveBeenCalledWith({
@@ -90,7 +82,6 @@ describe('applyConfigurationParameters', () => {
 
     await applyConfigurationParameters(db as never, {
       configurationId: 'cfg-1',
-      parameters: PARAMETERS,
     });
 
     expect(createMany).not.toHaveBeenCalled();
@@ -102,10 +93,7 @@ describe('applyConfigurationParameters', () => {
     });
 
     await expect(
-      applyConfigurationParameters(db as never, {
-        configurationId: 'cfg-1',
-        parameters: PARAMETERS,
-      }),
+      applyConfigurationParameters(db as never, { configurationId: 'cfg-1' }),
     ).rejects.toMatchObject({ response: { code: 'NORMATIVE_NOT_CONFIGURED' } });
   });
 
@@ -126,10 +114,7 @@ describe('applyConfigurationParameters', () => {
     });
 
     await expect(
-      applyConfigurationParameters(db as never, {
-        configurationId: 'cfg-1',
-        parameters: PARAMETERS,
-      }),
+      applyConfigurationParameters(db as never, { configurationId: 'cfg-1' }),
     ).rejects.toMatchObject({ response: { code: 'REDISTRIBUTION_REQUIRED' } });
   });
 
@@ -150,10 +135,7 @@ describe('applyConfigurationParameters', () => {
     });
 
     await expect(
-      applyConfigurationParameters(db as never, {
-        configurationId: 'cfg-1',
-        parameters: PARAMETERS,
-      }),
+      applyConfigurationParameters(db as never, { configurationId: 'cfg-1' }),
     ).rejects.toMatchObject({ response: { code: 'LEGACY_ADOPTION_REQUIRED' } });
   });
 });

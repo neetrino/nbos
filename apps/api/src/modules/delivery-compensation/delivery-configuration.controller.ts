@@ -97,7 +97,7 @@ export class DeliveryConfigurationController {
   @Put(':id/parameters')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
   @ApiOperation({
-    summary: 'Confirm size, base and design mode; freezes the matching base profile.',
+    summary: 'Bind the published core for this product kind and freeze stored axes.',
   })
   setParameters(
     @CurrentUser() user: CurrentUserPayload,

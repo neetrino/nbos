@@ -58,13 +58,13 @@ export async function loadV2Normatives(
   },
   asOf: Date,
 ): Promise<LoadedPublishedNormatives | null> {
-  if (!locked.baseProfileVersion || !locked.designMode) {
+  if (!locked.baseProfileVersion) {
     return null;
   }
   const active = locked.features.filter((feature) => feature.archivedAt === null);
   return loadPublishedDeliveryNormatives({
     asOf,
-    designMode: locked.designMode as DeliveryDesignMode,
+    designMode: (locked.designMode as DeliveryDesignMode | null) ?? 'AI_DESIGN',
     aiDesignerReview: locked.aiDesignerReview,
     baseRoleUnits: locked.baseProfileVersion.roleUnits,
     rates: await db.deliveryRoleRateVersion.findMany({ where: { status: 'PUBLISHED' } }),

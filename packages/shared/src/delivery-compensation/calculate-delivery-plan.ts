@@ -6,10 +6,6 @@ import {
 } from './constants';
 import { unitsTimesRate, sumMoney } from './decimal-scale';
 import { findUnconfiguredRequiredRoles, type DeliveryRoleUnitInput } from './role-units';
-import {
-  validateDesignModeAssignment,
-  type DesignModeAssignmentInput,
-} from './validate-design-mode';
 
 export type DeliveryPlanRateInput = {
   roleKey: DeliveryCompensationRoleKey;
@@ -38,7 +34,7 @@ export type DeliveryPlanLine = {
   amount: string;
 };
 
-export type CalculateDeliveryPlanInput = DesignModeAssignmentInput & {
+export type CalculateDeliveryPlanInput = {
   baseRoleUnits: DeliveryRoleUnitInput[];
   rates: DeliveryPlanRateInput[];
   features: DeliveryPlanFeatureInput[];
@@ -121,11 +117,6 @@ export function calculateDeliveryPlan(
   input: CalculateDeliveryPlanInput,
 ): CalculateDeliveryPlanResult {
   const errors: DeliveryCompensationErrorCode[] = [];
-  const designError = validateDesignModeAssignment(input);
-  if (designError) {
-    errors.push(designError);
-  }
-
   const rates = rateByRole(input.rates);
   errors.push(...collectConfigErrors(input.baseRoleUnits, rates));
   for (const feature of input.features) {

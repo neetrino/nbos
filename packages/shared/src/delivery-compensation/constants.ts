@@ -40,6 +40,27 @@ export type DeliveryImplementationBase = (typeof DELIVERY_IMPLEMENTATION_BASES)[
 export const DELIVERY_DESIGN_MODES = ['AI_DESIGN', 'CONCEPT', 'FULL_DESIGN'] as const;
 export type DeliveryDesignMode = (typeof DELIVERY_DESIGN_MODES)[number];
 
+/**
+ * Implementation base, design mode and AI-reviewer are no longer selectable axes.
+ * Columns stay in the database; every new write uses this frozen triple.
+ */
+export const FROZEN_IMPLEMENTATION_BASE =
+  'FROM_SCRATCH' as const satisfies DeliveryImplementationBase;
+export const FROZEN_DESIGN_MODE = 'AI_DESIGN' as const satisfies DeliveryDesignMode;
+export const FROZEN_AI_DESIGNER_REVIEW = false;
+
+export function frozenDeliveryAxes(): {
+  implementationBase: typeof FROZEN_IMPLEMENTATION_BASE;
+  designMode: typeof FROZEN_DESIGN_MODE;
+  aiDesignerReview: typeof FROZEN_AI_DESIGNER_REVIEW;
+} {
+  return {
+    implementationBase: FROZEN_IMPLEMENTATION_BASE,
+    designMode: FROZEN_DESIGN_MODE,
+    aiDesignerReview: FROZEN_AI_DESIGNER_REVIEW,
+  };
+}
+
 export const DELIVERY_FEATURE_ORIGINS = ['INCLUDED', 'EXTRA'] as const;
 export type DeliveryFeatureOrigin = (typeof DELIVERY_FEATURE_ORIGINS)[number];
 
