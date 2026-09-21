@@ -20,11 +20,13 @@ import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highligh
 import { buildDealExistingProductSelectPatch } from './deal-existing-product-search';
 import {
   buildDealExistingProductChangePatch,
+  buildDealTaxonomyPatch,
   buildDealTypeChangePatch,
   isLinkedProductDealType,
   isProductLikeDealType,
   type DealGeneralDraft,
 } from './deal-general-form-state';
+import { DealInfoProductPlatformField } from './DealInfoProductPlatformField';
 import type { SearchLoader } from './deal-general-tab.types';
 
 interface DealInfoDealProductFieldsProps {
@@ -127,10 +129,10 @@ function DealInfoProductTaxonomyFields({
         className={dealStageGateFieldClass(gateRequiredFields, 'productCategory')}
         onValueChange={(v) => {
           if (!v) {
-            patchDraft({ productCategory: null, productType: null });
+            patchDraft(buildDealTaxonomyPatch(null, null, null));
             return;
           }
-          patchDraft({ productCategory: v, productType: null });
+          patchDraft(buildDealTaxonomyPatch(v, null, draft.productPlatform));
         }}
       />
 
@@ -149,9 +151,20 @@ function DealInfoProductTaxonomyFields({
           clearable
           disabled={disabled}
           className={dealStageGateFieldClass(gateRequiredFields, 'productType')}
-          onValueChange={(v) => patchDraft({ productType: v || null })}
+          onValueChange={(v) =>
+            patchDraft(
+              buildDealTaxonomyPatch(draft.productCategory, v || null, draft.productPlatform),
+            )
+          }
         />
       ) : null}
+
+      <DealInfoProductPlatformField
+        draft={draft}
+        patchDraft={patchDraft}
+        disabled={disabled}
+        gateRequiredFields={gateRequiredFields}
+      />
 
       {draft.type === 'OUTSOURCE' ? (
         <DealInfoOutsourceToggle

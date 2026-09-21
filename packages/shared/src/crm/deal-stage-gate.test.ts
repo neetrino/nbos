@@ -8,6 +8,7 @@ const baseDeal = {
   paymentType: null as string | null,
   productCategory: null as string | null,
   productType: null as string | null,
+  productPlatform: null as string | null,
   pmId: null as string | null,
   deadline: null as Date | null,
   projectId: null as string | null,
@@ -84,6 +85,7 @@ describe('getDealStageGateErrors', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
       projectId: 'proj-1',
@@ -99,6 +101,7 @@ describe('getDealStageGateErrors', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
       deadline: new Date(),
@@ -121,6 +124,7 @@ describe('getDealStageGateErrors', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
       projectId: 'proj-1',
@@ -140,6 +144,7 @@ describe('getDealStageGateErrors', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
       projectId: 'proj-1',
@@ -159,9 +164,29 @@ describe('getDealStageGateErrors', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       linkedOfferAssetCount: 1,
     };
     expect(getDealStageGateErrors(deal, 'SEND_OFFER')).toEqual([]);
+  });
+
+  it('requires productPlatform for PRODUCT at SEND_OFFER', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'COMPANY_WEBSITE',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(getDealStageGateErrors(deal, 'SEND_OFFER').map((error) => error.field)).toContain(
+      'productPlatform',
+    );
+    expect(
+      getDealStageGateErrors({ ...deal, type: 'OUTSOURCE' }, 'SEND_OFFER').map(
+        (error) => error.field,
+      ),
+    ).toContain('productPlatform');
   });
 
   it('requires existingProductId for EXTENSION and MAINTENANCE at DEPOSIT_AND_CONTRACT', () => {

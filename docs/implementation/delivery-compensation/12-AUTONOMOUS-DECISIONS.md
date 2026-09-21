@@ -173,6 +173,13 @@ recognise it as something they do. The card stays in the catalog as a draft, whi
 selected by anyone, and it must not be published unless such work is actually sold. Kept rather than
 deleted so the norm is ready if a client asks; it costs nothing while it stays draft.
 
+**1.17 Platform is WEB / APP / DESKTOP, never MOBILE_APP — Owner confirmation of 2026-09-21.** Kind
+and platform are separate fields. `ProductTypeEnum.MOBILE_APP` stays as a legacy kind until the type
+list is revised; the new axis is `productPlatform` with values WEB, APP and DESKTOP. Same function,
+same units on every platform, so platform is not part of the base-profile key. WordPress, Shopify and
+marketing stay WEB-only. Legacy `MOBILE_APP` kinds backfill to APP; the Owner still assigns a real
+kind by hand.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any

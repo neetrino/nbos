@@ -80,6 +80,11 @@
       "MARKETING": "Маркетинг",
       "OTHER": "Другое"
     },
+    "productPlatform": {
+      "WEB": "Веб",
+      "APP": "Приложение",
+      "DESKTOP": "Desktop"
+    },
     "productType": {
       "BUSINESS_CARD_WEBSITE": "Сайт-визитка",
       "COMPANY_WEBSITE": "Корпоративный сайт",
@@ -494,8 +499,10 @@
     "dealType": "Тип сделки",
     "productCategory": "Категория продукта",
     "productType": "Тип продукта",
+    "productPlatform": "Платформа",
     "selectCategory": "Выберите категорию…",
     "selectProductType": "Выберите тип продукта…",
+    "selectPlatform": "Выберите платформу…",
     "outsourceToDelivery": "На доску Delivery",
     "outsourceToDeliveryHint": "Выкл (по умолчанию): продукт в Hub / Finance / WhatsApp без активного Starting…Transfer. Вкл: полный цикл delivery после выигрыша. Блокируется после выигрыша.",
     "plannedMaintenanceStart": "Плановый старт сопровождения",

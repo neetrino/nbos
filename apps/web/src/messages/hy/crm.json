@@ -122,6 +122,11 @@
       "MARKETING": "Մարքեթինգ",
       "OTHER": "Այլ"
     },
+    "productPlatform": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
+    },
     "productType": {
       "BUSINESS_CARD_WEBSITE": "Վիզիտ-կայք",
       "COMPANY_WEBSITE": "Կորպորատիվ կայք",
@@ -536,8 +541,10 @@
     "dealType": "Գործարքի տեսակ",
     "productCategory": "Արտադրանքի կատեգորիա",
     "productType": "Արտադրանքի տեսակ",
+    "productPlatform": "Հարթակ",
     "selectCategory": "Ընտրել կատեգորիա…",
     "selectProductType": "Ընտրել արտադրանքի տեսակը…",
+    "selectPlatform": "Ընտրել հարթակը…",
     "outsourceToDelivery": "Գնում է Delivery Board",
     "outsourceToDeliveryHint": "OFF (լռելյայն). Արտադրանքը հայտնվում է Hub / Finance / WhatsApp-ում՝ առանց ակտիվ Starting…Transfer ընթացքի։ ON. հաղթելուց հետո ամբողջական delivery lifecycle։ Հաղթելուց հետո կողպվում է։",
     "plannedMaintenanceStart": "Սպասվող սպասարկման սկիզբ",

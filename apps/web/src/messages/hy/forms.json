@@ -207,6 +207,7 @@
       "name": "Արտադրանքի անուն *",
       "category": "Արտադրանքի կատեգորիա *",
       "type": "Արտադրանքի տեսակ *",
+      "platform": "Հարթակ *",
       "deadline": "Ոսեկալին ամիսեր",
       "deadlineAria": "Ոսեկալին ամիսեր",
       "description": "Նկարագրություն"
@@ -215,6 +216,7 @@
       "name": "օր. Company Website, Mobile App",
       "selectCategory": "Երկրանել կատեգորիա",
       "selectType": "Երկրանել տեսակ",
+      "selectPlatform": "Ընտրել հարթակը",
       "description": "Արտադրանքի պահանագումներ, սախման…"
     },
     "categories": {
@@ -241,6 +243,11 @@
       "PPC": "PPC",
       "SMM": "SMM",
       "OTHER": "Այլ"
+    },
+    "platforms": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
     }
   },
   "errors": {

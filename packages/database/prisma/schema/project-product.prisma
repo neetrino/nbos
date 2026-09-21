@@ -105,6 +105,13 @@ enum ProductTypeEnum {
   OTHER
 }
 
+/// Where the product runs. Not a compensation axis and not a product kind.
+enum ProductPlatformEnum {
+  WEB
+  APP
+  DESKTOP
+}
+
 enum ProductStatusEnum {
   NEW
   CREATING
@@ -141,6 +148,7 @@ model Product {
   name                 String
   productCategory      ProductCategoryEnum     @map("product_category")
   productType          ProductTypeEnum         @map("product_type")
+  productPlatform      ProductPlatformEnum     @default(WEB) @map("product_platform")
   status               ProductStatusEnum       @default(NEW)
   deliveryStage        DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
   deliveryWorkStatus   DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")

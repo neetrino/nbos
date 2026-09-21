@@ -92,6 +92,7 @@ export interface Deal {
   notes: string | null;
   productCategory: string | null;
   productType: string | null;
+  productPlatform: string | null;
   pmId: string | null;
   deadline: string | null;
   pm: DealEmployeeRef | null;
@@ -235,6 +236,7 @@ export const dealsApi = {
     notes?: string;
     productCategory?: string;
     productType?: string;
+    productPlatform?: string | null;
     pmId?: string;
     deadline?: string;
     existingProductId?: string;

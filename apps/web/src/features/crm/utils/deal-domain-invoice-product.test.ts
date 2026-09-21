@@ -21,6 +21,7 @@ function deal(overrides: Partial<Deal> = {}): Deal {
     notes: null,
     productCategory: null,
     productType: null,
+    productPlatform: null,
     pmId: null,
     deadline: null,
     pm: null,

@@ -67,6 +67,7 @@ const PRODUCT_TYPE_KEYS = [
   'OTHER',
 ] as const;
 const PAYMENT_TYPE_KEYS = ['CLASSIC', 'SUBSCRIPTION'] as const;
+const PRODUCT_PLATFORM_KEYS = ['WEB', 'APP', 'DESKTOP'] as const;
 const TAX_STATUS_KEYS = ['TAX', 'TAX_FREE'] as const;
 
 function isOneOf<T extends string>(value: string, allowed: readonly T[]): value is T {
@@ -142,6 +143,13 @@ export function translateProductCategoryLabel(t: CrmTranslate, value: string): s
 export function translateProductTypeLabel(t: CrmTranslate, value: string): string {
   if (isOneOf(value, PRODUCT_TYPE_KEYS)) {
     return crmMessage(t, `catalogs.productType.${value}`);
+  }
+  return value;
+}
+
+export function translateProductPlatformLabel(t: CrmTranslate, value: string): string {
+  if (isOneOf(value, PRODUCT_PLATFORM_KEYS)) {
+    return crmMessage(t, `catalogs.productPlatform.${value}`);
   }
   return value;
 }

@@ -207,6 +207,7 @@
       "name": "Product Name *",
       "category": "Product Category *",
       "type": "Product Type *",
+      "platform": "Platform *",
       "deadline": "Deadline",
       "deadlineAria": "Deadline",
       "description": "Description"
@@ -215,6 +216,7 @@
       "name": "e.g. Company Website, Mobile App",
       "selectCategory": "Select category",
       "selectType": "Select type",
+      "selectPlatform": "Select platform",
       "description": "Product requirements, scope..."
     },
     "categories": {
@@ -241,6 +243,11 @@
       "PPC": "PPC",
       "SMM": "SMM",
       "OTHER": "Other"
+    },
+    "platforms": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
     }
   },
   "errors": {

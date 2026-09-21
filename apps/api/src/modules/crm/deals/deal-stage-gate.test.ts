@@ -10,6 +10,7 @@ const baseDeal = {
   subscriptionTermMonths: null as number | null,
   productCategory: null as string | null,
   productType: null as string | null,
+  productPlatform: null as string | null,
   pmId: null as string | null,
   deadline: null as Date | null,
   projectId: null as string | null,
@@ -48,6 +49,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
       projectId: 'proj-1',
@@ -76,6 +78,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();
@@ -88,6 +91,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       linkedOfferAssetCount: 1,
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();
@@ -100,6 +104,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
   });
@@ -111,6 +116,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerFileUrl: '   ',
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
@@ -123,6 +129,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer.pdf',
     };
     expect(() => validateDealStageGate(deal, 'GET_ANSWER')).not.toThrow();
@@ -135,6 +142,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
@@ -153,6 +161,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
       deadline: new Date(),
@@ -170,6 +179,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
@@ -188,6 +198,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerSentAt: new Date(),
       offerLink: 'https://example.com/offer',
       companyId: 'company-1',
@@ -255,6 +266,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       companyId: 'company-1',
       projectId: 'proj-1',
       pmId: 'pm-1',
@@ -274,6 +286,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'SUBSCRIPTION',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
@@ -315,6 +328,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'SUBSCRIPTION',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
     };
     expect(() => validateDealStageGate(outsource, 'SEND_OFFER')).not.toThrow();
@@ -327,6 +341,7 @@ describe('validateDealStageGate', () => {
       paymentType: 'CLASSIC',
       productCategory: 'CODE',
       productType: 'COMPANY_WEBSITE',
+      productPlatform: 'WEB',
       offerLink: 'https://example.com/offer',
     };
     expect(() => validateDealStageGate(deal, 'SEND_OFFER')).not.toThrow();

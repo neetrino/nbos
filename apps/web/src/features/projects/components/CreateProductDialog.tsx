@@ -27,6 +27,7 @@ const EMPTY_PRODUCT_FORM: CreateProductFormState = {
   name: '',
   productCategory: '',
   productType: '',
+  productPlatform: '',
   description: '',
   deadline: '',
 };
@@ -73,7 +74,9 @@ function CreateProductDialogSession({
       label: t(`product.types.${productType.value}` as never),
     }));
   }, [form.productCategory, t]);
-  const canSubmit = Boolean(form.name.trim() && form.productCategory && form.productType);
+  const canSubmit = Boolean(
+    form.name.trim() && form.productCategory && form.productType && form.productPlatform,
+  );
 
   return (
     <CreateFormDialog
@@ -126,6 +129,7 @@ async function submitProduct(options: {
       name: options.form.name.trim(),
       productCategory: options.form.productCategory,
       productType: options.form.productType,
+      productPlatform: options.form.productPlatform,
       description: options.form.description || undefined,
       deadline: options.form.deadline || undefined,
     };

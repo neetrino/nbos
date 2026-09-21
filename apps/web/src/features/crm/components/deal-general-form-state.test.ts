@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildDealExistingProductChangePatch,
+  buildDealPlatformPatch,
   buildDealProjectChangePatch,
+  buildDealTaxonomyPatch,
   buildDealTypeChangePatch,
   type DealGeneralDraft,
 } from './deal-general-form-state';
@@ -18,6 +20,7 @@ const baseDraft: DealGeneralDraft = {
   maintenanceStartAt: null,
   productCategory: 'CODE',
   productType: 'COMPANY_WEBSITE',
+  productPlatform: 'WEB',
   existingProductId: null,
   existingProductPickLabel: null,
   companyId: null,
@@ -53,6 +56,7 @@ describe('buildDealTypeChangePatch', () => {
       type: 'EXTENSION',
       productCategory: null,
       productType: null,
+      productPlatform: null,
     });
   });
 
@@ -113,5 +117,30 @@ describe('buildDealExistingProductChangePatch', () => {
       projectId: null,
       linkedProjectLabel: null,
     });
+  });
+});
+
+describe('buildDealTaxonomyPatch', () => {
+  it('maps a leftover MOBILE_APP kind onto platform APP', () => {
+    expect(buildDealTaxonomyPatch('CODE', 'MOBILE_APP', 'WEB')).toEqual({
+      productCategory: 'CODE',
+      productType: 'MOBILE_APP',
+      productPlatform: 'APP',
+    });
+  });
+
+  it('clears platform with the rest of the taxonomy', () => {
+    expect(buildDealTaxonomyPatch(null, 'ECOMMERCE', 'APP')).toEqual({
+      productCategory: null,
+      productType: null,
+      productPlatform: null,
+    });
+  });
+});
+
+describe('buildDealPlatformPatch', () => {
+  it('keeps APP on a code deal and never writes MOBILE_APP', () => {
+    expect(buildDealPlatformPatch(baseDraft, 'APP')).toEqual({ productPlatform: 'APP' });
+    expect(buildDealPlatformPatch(baseDraft, 'MOBILE_APP')).toEqual({ productPlatform: 'WEB' });
   });
 });

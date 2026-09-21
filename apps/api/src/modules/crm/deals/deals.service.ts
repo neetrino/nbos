@@ -28,6 +28,7 @@ import {
 import { assertDealSellerRefs, validateDealCreate } from './deal-create-validation';
 import { resolveDealCreateDefaults } from './deal-create-defaults.op';
 import { parseOptionalSubscriptionTermMonths } from './deal-subscription-term';
+import { dealProductPlatformWrite } from './deal-product-platform-write';
 import {
   dealNeedsPartnerReferralTerms,
   patchPartnerReferralTerms as persistPartnerReferralTerms,
@@ -206,6 +207,11 @@ export class DealsService {
         productCategory:
           (resolved.productCategory as Prisma.DealCreateInput['productCategory']) ?? undefined,
         productType: resolved.productType ?? undefined,
+        ...dealProductPlatformWrite({
+          productCategory: resolved.productCategory ?? null,
+          productType: resolved.productType ?? null,
+          productPlatform: resolved.productPlatform ?? null,
+        }),
         pmId: resolved.pmId ?? undefined,
         deadline: resolved.deadline ? new Date(resolved.deadline) : undefined,
         existingProductId: resolved.existingProductId ?? undefined,
@@ -344,6 +350,11 @@ export class DealsService {
           productCategory: data.productCategory as Prisma.DealUpdateInput['productCategory'],
         }),
         ...(data.productType !== undefined && { productType: data.productType }),
+        ...dealProductPlatformWrite(data, {
+          productCategory: existing.productCategory,
+          productType: existing.productType,
+          productPlatform: existing.productPlatform,
+        }),
         ...(data.pmId !== undefined && { pmId: data.pmId }),
         ...(data.deadline !== undefined && {
           deadline: data.deadline ? new Date(data.deadline) : null,

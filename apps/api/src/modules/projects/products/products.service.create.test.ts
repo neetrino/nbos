@@ -76,7 +76,11 @@ describe('ProductsService', () => {
       expect(result.productType).toBe('COMPANY_WEBSITE');
       expect(prisma.product.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ contactId: 'contact-1', companyId: 'co-1' }),
+          data: expect.objectContaining({
+            contactId: 'contact-1',
+            companyId: 'co-1',
+            productPlatform: 'WEB',
+          }),
         }),
       );
       expect(productWhatsApp.ensureGroupForProduct).not.toHaveBeenCalled();
@@ -139,6 +143,7 @@ describe('ProductsService', () => {
             pmId: 'pm-1',
             description: 'Mobile app',
             contactId: 'contact-1',
+            productPlatform: 'APP',
           }),
         }),
       );

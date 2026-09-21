@@ -1,4 +1,8 @@
-import { contactIdListsEqual } from '@nbos/shared';
+import {
+  contactIdListsEqual,
+  coerceOptionalProductPlatform,
+  coerceProductPlatform,
+} from '@nbos/shared';
 import type { Deal } from '@/lib/api/deals';
 import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
@@ -17,6 +21,7 @@ export interface DealGeneralDraft {
   maintenanceStartAt: string | null;
   productCategory: string | null;
   productType: string | null;
+  productPlatform: string | null;
   existingProductId: string | null;
   existingProductPickLabel: string | null;
   companyId: string | null;
@@ -70,6 +75,7 @@ export function createDealGeneralDraft(deal: Deal): DealGeneralDraft {
     maintenanceStartAt: toDateInputValue(deal.maintenanceStartAt),
     productCategory: deal.productCategory,
     productType: deal.productType,
+    productPlatform: deal.productPlatform,
     existingProductId: deal.existingProductId,
     existingProductPickLabel: deal.existingProduct?.name ?? null,
     companyId: deal.companyId ?? null,
@@ -130,8 +136,12 @@ export function buildDealGeneralPatch(
   if (draft.productCategory !== snap.productCategory) {
     out.productCategory = draft.productCategory;
     out.productType = draft.productType;
+    out.productPlatform = draft.productPlatform;
   } else if (draft.productType !== snap.productType) {
     out.productType = draft.productType;
+    out.productPlatform = draft.productPlatform;
+  } else if (draft.productPlatform !== snap.productPlatform) {
+    out.productPlatform = draft.productPlatform;
   }
   if (draft.existingProductId !== snap.existingProductId) {
     out.existingProductId = draft.existingProductId;
@@ -199,6 +209,7 @@ export function buildDealTypeChangePatch(
   if (PRODUCT_LIKE_TYPES.has(prevType) && !PRODUCT_LIKE_TYPES.has(nextType)) {
     patch.productCategory = null;
     patch.productType = null;
+    patch.productPlatform = null;
   }
   if (prevType === 'OUTSOURCE' && nextType !== 'OUTSOURCE') {
     patch.outsourceGoesToDelivery = false;
@@ -236,5 +247,38 @@ export function buildDealExistingProductChangePatch(
     existingProductPickLabel,
     projectId,
     linkedProjectLabel,
+  };
+}
+
+export function buildDealTaxonomyPatch(
+  productCategory: string | null,
+  productType: string | null,
+  requestedPlatform: string | null,
+): Pick<DealGeneralDraft, 'productCategory' | 'productType' | 'productPlatform'> {
+  if (!productCategory) {
+    return { productCategory: null, productType: null, productPlatform: null };
+  }
+  const requested = productType === 'MOBILE_APP' ? 'APP' : requestedPlatform;
+  return {
+    productCategory,
+    productType,
+    productPlatform: coerceProductPlatform({
+      productCategory,
+      productType,
+      requested,
+    }),
+  };
+}
+
+export function buildDealPlatformPatch(
+  draft: DealGeneralDraft,
+  productPlatform: string | null,
+): Pick<DealGeneralDraft, 'productPlatform'> {
+  return {
+    productPlatform: coerceOptionalProductPlatform({
+      productCategory: draft.productCategory,
+      productType: draft.productType,
+      requested: productPlatform,
+    }),
   };
 }

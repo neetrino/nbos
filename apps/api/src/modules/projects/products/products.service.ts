@@ -25,6 +25,7 @@ import {
   type CreateProductDto,
   type UpdateProductDto,
 } from './product-write-data';
+import { resolveProductPlatform } from './resolve-product-platform';
 import {
   enqueueTechnicalSpecialistIfSlotChanged,
   syncProductContactsIfPatched,
@@ -93,6 +94,11 @@ export class ProductsService {
         name: data.name,
         productCategory: data.productCategory as ProductCategoryEnum,
         productType: data.productType as ProductTypeEnum,
+        productPlatform: resolveProductPlatform({
+          productCategory: data.productCategory,
+          productType: data.productType,
+          requested: data.productPlatform,
+        }),
         pmId: data.pmId,
         deadline: data.deadline ? new Date(data.deadline) : undefined,
         description: data.description,

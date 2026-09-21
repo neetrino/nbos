@@ -41,6 +41,7 @@ export interface Product {
   name: string;
   productCategory: string;
   productType: string;
+  productPlatform: string;
   status: string;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;
@@ -225,6 +226,7 @@ export interface CreateProductData {
   name: string;
   productCategory: string;
   productType: string;
+  productPlatform?: string | null;
   pmId?: string;
   deadline?: string;
   description?: string;
@@ -238,6 +240,7 @@ export interface UpdateProductData {
   name?: string;
   productCategory?: string;
   productType?: string;
+  productPlatform?: string | null;
   pmId?: string | null;
   developerId?: string | null;
   frontendDeveloperId?: string | null;

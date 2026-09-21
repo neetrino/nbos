@@ -250,6 +250,7 @@ export const SLA_DEADLINES = {
   P3: { response: 24, resolve: 72 },
 } as const;
 
+export * from './product-platform';
 export * from './auth-session-client';
 export * from './sidebar-navigation';
 export * from './crm-attribution';

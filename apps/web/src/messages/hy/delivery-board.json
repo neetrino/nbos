@@ -142,6 +142,12 @@
     "deadline": "Վերջնաժամկետ",
     "productCategory": "Արտադրանքի կատեգորիա",
     "productType": "Արտադրանքի տեսակ",
+    "productPlatform": "Հարթակ",
+    "platforms": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
+    },
     "extensionName": "Ընդլայնման անվանում",
     "size": "Չափ",
     "productLine": "Արտադրանքի գիծ՝",

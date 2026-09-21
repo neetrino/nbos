@@ -508,6 +508,28 @@ and web `tsc --noEmit` (8GB); Prettier on touched files; migration applied to **
 resulting grants read back; guard metadata asserted on all eleven routes, not a sample.
 **Not run:** browser QA of the Settings → Roles row, live HTTP probe under a specialist account.
 
+### Product platform axis WEB / APP / DESKTOP (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+`productType` mixed kind with where the product runs, so a deal could not say "online shop + app".
+`productPlatform` is a new field on Deal and Product: WEB, APP, DESKTOP. The Owner named it APP, not
+MOBILE_APP. It does not enter the base-profile key and does not change units. WordPress, Shopify and
+marketing are WEB-only; Code and Other may be any of the three.
+
+Migration `20260921163000_product_platform` adds the enum and columns, backfills legacy
+`product_type = MOBILE_APP` to APP, and leaves other **typed** rows on WEB. Deals with no
+`product_type` stay `NULL` — platform is only meaningful with taxonomy. Existing `MOBILE_APP` /
+`WEB_APP` kinds are not rewritten — the Owner still sets a real kind by hand. Won copies the
+platform onto the new product. SEND_OFFER requires it for PRODUCT/OUTSOURCE the same way it
+requires type.
+
+The type list itself is not expanded in this slice.
+
+**Checks:** vitest 14 files / 129 passed (shared coerce, migration SQL, product create/update,
+deal write, SEND_OFFER including OUTSOURCE, Won copy); shared + API + web `tsc --noEmit` (API/web
+8GB after prisma generate); Prettier. Review: clearing only `productCategory` no longer keeps APP;
+untyped legacy deals stay `NULL` on purpose.
+**Not run:** browser QA of the deal sheet and product create dialog. Production migrate not run.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).

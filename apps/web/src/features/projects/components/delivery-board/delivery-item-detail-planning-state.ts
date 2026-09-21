@@ -1,3 +1,4 @@
+import { coerceProductPlatform } from '@nbos/shared';
 import type { FullExtension, UpdateExtensionData } from '@/lib/api/extensions';
 import type { FullProduct, UpdateProductData } from '@/lib/api/products';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
@@ -34,6 +35,7 @@ export type ProductPlanSnapshot = {
   qaLeadAvatar: string | null;
   productCategory: string;
   productType: string;
+  productPlatform: string;
   description: string;
   languages: string[];
 };
@@ -74,6 +76,7 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     qaLeadAvatar: employeeAvatarUrl(p.qaLead),
     productCategory: p.productCategory,
     productType: p.productType,
+    productPlatform: p.productPlatform,
     description: p.description ?? '',
     languages: [...(p.languages ?? [])],
   };
@@ -130,15 +133,7 @@ export function buildProductPlanPatch(
     patch.qaLeadId = draft.qaLeadId;
   }
 
-  if (draft.productCategory !== snap.productCategory) {
-    patch.productCategory = draft.productCategory;
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
-    patch.productType = allowed.includes(draft.productType)
-      ? draft.productType
-      : (allowed[0] ?? draft.productType);
-  } else if (draft.productType !== snap.productType) {
-    patch.productType = draft.productType;
-  }
+  Object.assign(patch, productPlanTaxonomyPatch(snap, draft));
 
   const nextDesc = draft.description;
   if (nextDesc !== snap.description) {
@@ -152,6 +147,47 @@ export function buildProductPlanPatch(
   }
 
   return Object.keys(patch).length > 0 ? patch : null;
+}
+
+function productPlanTaxonomyPatch(
+  snap: ProductPlanSnapshot,
+  draft: ProductPlanSnapshot,
+): UpdateProductData {
+  if (draft.productCategory !== snap.productCategory) {
+    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
+    const productType = allowed.includes(draft.productType)
+      ? draft.productType
+      : (allowed[0] ?? draft.productType);
+    return {
+      productCategory: draft.productCategory,
+      productType,
+      productPlatform: coerceProductPlatform({
+        productCategory: draft.productCategory,
+        productType,
+        requested: draft.productPlatform,
+      }),
+    };
+  }
+  if (draft.productType !== snap.productType) {
+    return {
+      productType: draft.productType,
+      productPlatform: coerceProductPlatform({
+        productCategory: draft.productCategory,
+        productType: draft.productType,
+        requested: draft.productType === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
+      }),
+    };
+  }
+  if (draft.productPlatform !== snap.productPlatform) {
+    return {
+      productPlatform: coerceProductPlatform({
+        productCategory: draft.productCategory,
+        productType: draft.productType,
+        requested: draft.productPlatform,
+      }),
+    };
+  }
+  return {};
 }
 
 export function buildExtensionPlanPatch(

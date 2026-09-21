@@ -26,6 +26,7 @@ export interface CreateDealDto {
   notes?: string;
   productCategory?: string | null;
   productType?: string | null;
+  productPlatform?: string | null;
   pmId?: string | null;
   deadline?: string | null;
   existingProductId?: string | null;

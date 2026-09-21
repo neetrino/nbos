@@ -207,6 +207,7 @@
       "name": "Название продукта *",
       "category": "Категория продукта *",
       "type": "Тип продукта *",
+      "platform": "Платформа *",
       "deadline": "Дедлайн",
       "deadlineAria": "Дедлайн",
       "description": "Описание"
@@ -215,6 +216,7 @@
       "name": "например, Company Website, Mobile App",
       "selectCategory": "Выберите категорию",
       "selectType": "Выберите тип",
+      "selectPlatform": "Выберите платформу",
       "description": "Требования к продукту, объём работ…"
     },
     "categories": {
@@ -241,6 +243,11 @@
       "PPC": "PPC",
       "SMM": "SMM",
       "OTHER": "Другое"
+    },
+    "platforms": {
+      "WEB": "Веб",
+      "APP": "Приложение",
+      "DESKTOP": "Desktop"
     }
   },
   "errors": {

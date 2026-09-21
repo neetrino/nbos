@@ -80,6 +80,11 @@
       "MARKETING": "Marketing",
       "OTHER": "Other"
     },
+    "productPlatform": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
+    },
     "productType": {
       "BUSINESS_CARD_WEBSITE": "Business Card Website",
       "COMPANY_WEBSITE": "Company Website",
@@ -494,8 +499,10 @@
     "dealType": "Deal Type",
     "productCategory": "Product Category",
     "productType": "Product Type",
+    "productPlatform": "Platform",
     "selectCategory": "Select category...",
     "selectProductType": "Select product type...",
+    "selectPlatform": "Select platform...",
     "outsourceToDelivery": "Goes to Delivery Board",
     "outsourceToDeliveryHint": "OFF (default): Product in Hub / Finance / WhatsApp without active Starting…Transfer. ON: full delivery lifecycle after Won. Locked after Won.",
     "plannedMaintenanceStart": "Planned Maintenance Start",

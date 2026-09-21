@@ -8,12 +8,14 @@ import {
 import { assertTeamPatchAllowedAfterPlan } from '../../delivery-compensation/assert-team-patch-after-plan';
 import { lockProductDeveloperSlots } from './product-developer-slot-lock';
 import { assertProductDeveloperSlotsForUpdate } from './product-developer-slots';
+import { resolveProductPlatform } from './resolve-product-platform';
 
 export interface CreateProductDto {
   projectId: string;
   name: string;
   productCategory: string;
   productType: string;
+  productPlatform?: string | null;
   pmId?: string;
   deadline?: string;
   description?: string;
@@ -27,6 +29,7 @@ export interface UpdateProductDto {
   name?: string;
   productCategory?: string;
   productType?: string;
+  productPlatform?: string | null;
   pmId?: string | null;
   developerId?: string | null;
   frontendDeveloperId?: string | null;
@@ -61,12 +64,6 @@ export function normalizeProductLanguages(input: unknown): string[] {
 export function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUpdateInput {
   return {
     ...(data.name !== undefined && { name: data.name }),
-    ...(data.productCategory !== undefined && {
-      productCategory: data.productCategory as ProductCategoryEnum,
-    }),
-    ...(data.productType !== undefined && {
-      productType: data.productType as ProductTypeEnum,
-    }),
     ...(data.pmId !== undefined && { pmId: data.pmId }),
     ...(data.developerId !== undefined && { developerId: data.developerId }),
     ...(data.frontendDeveloperId !== undefined && {
@@ -94,6 +91,31 @@ export function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUp
   };
 }
 
+export function buildProductTaxonomyPatch(
+  data: UpdateProductDto,
+  current: { productCategory: string; productType: string; productPlatform: string },
+): Prisma.ProductUpdateInput {
+  if (
+    data.productCategory === undefined &&
+    data.productType === undefined &&
+    data.productPlatform === undefined
+  ) {
+    return {};
+  }
+  const productCategory = data.productCategory ?? current.productCategory;
+  const productType = data.productType ?? current.productType;
+  return {
+    productCategory: productCategory as ProductCategoryEnum,
+    productType: productType as ProductTypeEnum,
+    productPlatform: resolveProductPlatform({
+      productCategory,
+      productType,
+      requested:
+        data.productPlatform !== undefined ? data.productPlatform : current.productPlatform,
+    }),
+  };
+}
+
 export async function writeProductUpdate(
   prisma: InstanceType<typeof PrismaClient>,
   id: string,
@@ -104,10 +126,15 @@ export async function writeProductUpdate(
     const current = await lockProductDeveloperSlots(tx, id);
     assertProductDeveloperSlotsForUpdate(current, data);
     await assertTeamPatchAllowedAfterPlan(tx, id, data);
+    const taxonomy = await tx.product.findUniqueOrThrow({
+      where: { id },
+      select: { productCategory: true, productType: true, productPlatform: true },
+    });
     await tx.product.update({
       where: { id },
       data: {
         ...buildProductUpdateData(data),
+        ...buildProductTaxonomyPatch(data, taxonomy),
         ...(primaryContactId ? { contact: { connect: { id: primaryContactId } } } : {}),
       },
     });

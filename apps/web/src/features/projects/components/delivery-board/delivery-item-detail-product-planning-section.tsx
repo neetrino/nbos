@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
+import { Calendar, ClipboardList, Layers, Tag, Wallet, AppWindow } from 'lucide-react';
 import {
   DetailSheetCollapsibleSection,
   DetailSheetCollapsibleSubsection,
@@ -15,6 +15,7 @@ import {
   PRODUCT_TYPES,
   PRODUCT_TYPES_BY_CATEGORY,
 } from '@/features/projects/constants/projects';
+import { allowedProductPlatforms, coerceProductPlatform } from '@nbos/shared';
 import { cn } from '@/lib/utils';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
@@ -105,7 +106,16 @@ export function ProductPlanningSection({
               const nextType = allowed.includes(draft.productType)
                 ? draft.productType
                 : (allowed[0] ?? draft.productType);
-              onDraftChange({ ...draft, productCategory: v, productType: nextType });
+              onDraftChange({
+                ...draft,
+                productCategory: v,
+                productType: nextType,
+                productPlatform: coerceProductPlatform({
+                  productCategory: v,
+                  productType: nextType,
+                  requested: draft.productPlatform,
+                }),
+              });
             }}
           />
           <InlineField
@@ -118,7 +128,37 @@ export function ProductPlanningSection({
             disabled={disabled}
             selectContentClassName={PRODUCT_TYPE_SELECT_MENU_CLASS}
             onValueChange={(v) => {
-              if (v) patchDraft({ productType: v });
+              if (!v) return;
+              patchDraft({
+                productType: v,
+                productPlatform: coerceProductPlatform({
+                  productCategory: draft.productCategory,
+                  productType: v,
+                  requested: v === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
+                }),
+              });
+            }}
+          />
+          <InlineField
+            variant="controlled"
+            label={t('plan.productPlatform')}
+            type="select"
+            value={draft.productPlatform}
+            options={allowedProductPlatforms(draft.productCategory).map((value) => ({
+              value,
+              label: t(`plan.platforms.${value}`),
+            }))}
+            icon={<AppWindow size={12} />}
+            disabled={disabled}
+            onValueChange={(v) => {
+              if (!v) return;
+              patchDraft({
+                productPlatform: coerceProductPlatform({
+                  productCategory: draft.productCategory,
+                  productType: draft.productType,
+                  requested: v,
+                }),
+              });
             }}
           />
         </DetailSheetCollapsibleSubsection>

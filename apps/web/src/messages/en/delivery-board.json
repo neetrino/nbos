@@ -142,6 +142,12 @@
     "deadline": "Deadline",
     "productCategory": "Product category",
     "productType": "Product type",
+    "productPlatform": "Platform",
+    "platforms": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
+    },
     "extensionName": "Extension name",
     "size": "Size",
     "productLine": "Product line:",

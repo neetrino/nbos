@@ -142,6 +142,12 @@
     "deadline": "Срок",
     "productCategory": "Категория продукта",
     "productType": "Тип продукта",
+    "productPlatform": "Платформа",
+    "platforms": {
+      "WEB": "Веб",
+      "APP": "Приложение",
+      "DESKTOP": "Desktop"
+    },
     "extensionName": "Название Extension",
     "size": "Размер",
     "productLine": "Линейка продукта:",

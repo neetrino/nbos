@@ -10,6 +10,7 @@ export interface DealStageGateInput extends AttributionForValidation {
   paymentType: string | null;
   productCategory: string | null;
   productType: string | null;
+  productPlatform: string | null;
   pmId: string | null;
   deadline: Date | string | null;
   projectId: string | null;
@@ -111,6 +112,12 @@ export function getDealStageGateErrors(
       errors.push({
         field: 'productType',
         message: 'Product type is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',
+      });
+    }
+    if (isProductLike && !deal.productPlatform) {
+      errors.push({
+        field: 'productPlatform',
+        message: 'Product platform is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',
       });
     }
     if (!hasOfferProof(deal)) {
