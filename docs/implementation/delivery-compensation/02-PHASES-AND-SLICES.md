@@ -530,7 +530,7 @@ deal write, SEND_OFFER including OUTSOURCE, Won copy); shared + API + web `tsc -
 untyped legacy deals stay `NULL` on purpose.
 **Not run:** browser QA of the deal sheet and product create dialog. Production migrate not run.
 
-### Sale price: AMD per unit, no multiplier (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+### Sale price: AMD per unit, no multiplier (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED` `647d12b2e`
 
 Decision 1.12 withdrawn the 2026-09-20 multiplier + fixed-amount pair. A card now carries one
 AMD-per-unit sale rate; empty uses the global default 10 000. The client line is `units × that
