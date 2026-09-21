@@ -47,8 +47,7 @@ export function SalePriceCreateSheet({
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
-  const [multiplier, setMultiplier] = useState('');
-  const [fixedAmount, setFixedAmount] = useState('');
+  const [amountPerUnit, setAmountPerUnit] = useState('');
   const [effectiveFrom, setEffectiveFrom] = useState(todayDateInputValue);
   const [saving, setSaving] = useState(false);
 
@@ -57,8 +56,7 @@ export function SalePriceCreateSheet({
       open={open}
       onOpenChange={(next) => {
         if (!next) {
-          setMultiplier('');
-          setFixedAmount('');
+          setAmountPerUnit('');
           setEffectiveFrom(todayDateInputValue());
         }
         onOpenChange(next);
@@ -72,8 +70,7 @@ export function SalePriceCreateSheet({
         void submitSalePrice({
           kind,
           targetId,
-          multiplier,
-          fixedAmount,
+          amountPerUnit,
           effectiveFrom,
           missingTarget: t('errors.targetRequired'),
           invalidDate: t('errors.effectiveFrom'),
@@ -108,19 +105,11 @@ export function SalePriceCreateSheet({
         <InlineField
           variant="controlled"
           className={FORM_FIELD_CELL_CLASS}
-          label={t('salePrices.multiplier')}
-          value={multiplier}
-          disabled={saving}
-          onValueChange={setMultiplier}
-        />
-        <InlineField
-          variant="controlled"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('salePrices.fixedAmount', { currency: DELIVERY_COMPENSATION_CURRENCY })}
-          value={fixedAmount}
+          label={t('salePrices.amountPerUnit', { currency: DELIVERY_COMPENSATION_CURRENCY })}
+          value={amountPerUnit}
           disabled={saving}
           icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
-          onValueChange={setFixedAmount}
+          onValueChange={setAmountPerUnit}
         />
         <InlineField
           variant="controlled"
@@ -131,7 +120,6 @@ export function SalePriceCreateSheet({
           disabled={saving}
           onValueChange={setEffectiveFrom}
         />
-        <p className="text-muted-foreground text-xs">{t('salePrices.fixedWins')}</p>
         <p className="text-muted-foreground text-xs">{t('salePrices.targetHint')}</p>
       </NormsSheetSection>
     </DeliveryNormsCreateSheet>
@@ -141,8 +129,7 @@ export function SalePriceCreateSheet({
 async function submitSalePrice(input: {
   kind: SalePriceTargetKind;
   targetId: string;
-  multiplier: string;
-  fixedAmount: string;
+  amountPerUnit: string;
   effectiveFrom: string;
   missingTarget: string;
   invalidDate: string;
@@ -158,8 +145,7 @@ async function submitSalePrice(input: {
     return;
   }
   const parsed = buildSalePriceFormInput({
-    multiplier: input.multiplier,
-    fixedAmount: input.fixedAmount,
+    amountPerUnit: input.amountPerUnit,
     effectiveFrom: input.effectiveFrom,
   });
   if (!parsed.ok) {
@@ -195,7 +181,7 @@ function salePriceFormError(
 function salePriceDraftBody(
   kind: SalePriceTargetKind,
   targetId: string,
-  input: { multiplier?: string; fixedAmount?: string; effectiveFrom: string },
+  input: { amountPerUnit: string; effectiveFrom: string },
 ): SalePriceDraftInput {
   return {
     ...(kind === 'FUNCTION' ? { functionId: targetId } : {}),

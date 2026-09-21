@@ -34,7 +34,7 @@ Everything it creates is `DRAFT`: the card itself, its content with placeholder 
 acceptance criteria, and a **draft unit vector proposed by the executor**. Those numbers are a
 starting point for review, not an agreement — a draft version pays nobody. Read them in step 4 and
 publish only what you accept, after correcting what you disagree with. The scale used in the proposal
-is one unit per thousand AMD of internal cost, with a tenfold default sale price.
+is one unit per thousand AMD of internal cost, with a default sale rate of 10 000 AMD per unit.
 
 ## 2. Publish role rates
 

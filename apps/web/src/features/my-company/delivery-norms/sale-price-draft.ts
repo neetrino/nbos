@@ -14,18 +14,13 @@ import { dateInputToIso, isValidDateInput } from './effective-from';
 export type { SalePriceTargetKind };
 
 export type SalePriceFormDraft = {
-  multiplier: string;
-  fixedAmount: string;
+  amountPerUnit: string;
   effectiveFrom: string;
 };
 
 export type SalePriceFormResult =
   | { ok: false; error: 'effectiveFrom' | 'priceRequired' | 'notPositive' }
-  | {
-      ok: true;
-      input: Pick<SalePriceDraftInput, 'multiplier' | 'fixedAmount' | 'effectiveFrom'>;
-      source: 'FIXED' | 'MULTIPLIER';
-    };
+  | { ok: true; input: Pick<SalePriceDraftInput, 'amountPerUnit' | 'effectiveFrom'> };
 
 export function parsePositiveDecimal(raw: string): string | null {
   const trimmed = raw.trim();
@@ -39,47 +34,21 @@ export function parsePositiveDecimal(raw: string): string | null {
   return trimmed;
 }
 
-export function salePriceDraftSource(
-  multiplier: string,
-  fixedAmount: string,
-): 'FIXED' | 'MULTIPLIER' | 'NONE' {
-  if (fixedAmount.trim() !== '') {
-    return 'FIXED';
-  }
-  if (multiplier.trim() !== '') {
-    return 'MULTIPLIER';
-  }
-  return 'NONE';
-}
-
 export function buildSalePriceFormInput(draft: SalePriceFormDraft): SalePriceFormResult {
   if (!isValidDateInput(draft.effectiveFrom)) {
     return { ok: false, error: 'effectiveFrom' };
   }
-  const multiplier = optionalPositiveField(draft.multiplier);
-  const fixedAmount = optionalPositiveField(draft.fixedAmount);
-  if (multiplier === 'empty' && fixedAmount === 'empty') {
+  if (draft.amountPerUnit.trim() === '') {
     return { ok: false, error: 'priceRequired' };
   }
-  if (multiplier === 'invalid' || fixedAmount === 'invalid') {
+  const amountPerUnit = parsePositiveDecimal(draft.amountPerUnit);
+  if (amountPerUnit === null) {
     return { ok: false, error: 'notPositive' };
   }
   return {
     ok: true,
-    source: fixedAmount === 'empty' ? 'MULTIPLIER' : 'FIXED',
-    input: {
-      ...(multiplier === 'empty' ? {} : { multiplier }),
-      ...(fixedAmount === 'empty' ? {} : { fixedAmount }),
-      effectiveFrom: dateInputToIso(draft.effectiveFrom),
-    },
+    input: { amountPerUnit, effectiveFrom: dateInputToIso(draft.effectiveFrom) },
   };
-}
-
-function optionalPositiveField(raw: string): string | 'empty' | 'invalid' {
-  if (raw.trim() === '') {
-    return 'empty';
-  }
-  return parsePositiveDecimal(raw) ?? 'invalid';
 }
 
 export function salePriceTargetFromKind(kind: SalePriceTargetKind, id: string): SalePriceTarget {

@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { InlineField } from '@/components/shared';
+import { DELIVERY_COMPENSATION_CURRENCY } from '@nbos/shared';
+import { AmdCurrencyIcon, InlineField } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
 import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
 import { messageFromCaught } from './message-from-caught';
 import { parsePositiveDecimal } from './sale-price-draft';
 
-export function DefaultMultiplierForm({
+export function DefaultUnitPriceForm({
   value,
   canEdit,
   onChanged,
@@ -29,9 +30,10 @@ export function DefaultMultiplierForm({
       <p className="text-muted-foreground text-xs">{t('salePrices.defaultSubtitle')}</p>
       <InlineField
         variant="controlled"
-        label={t('salePrices.multiplier')}
+        label={t('salePrices.amountPerUnit', { currency: DELIVERY_COMPENSATION_CURRENCY })}
         value={draft}
         disabled={!canEdit || saving}
+        icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
         onValueChange={setDraft}
       />
       {canEdit ? (
@@ -41,9 +43,9 @@ export function DefaultMultiplierForm({
             size="sm"
             disabled={saving}
             onClick={() => {
-              void submitDefaultMultiplier({
+              void submitDefaultUnitPrice({
                 draft,
-                fallback: t('errors.defaultMultiplier'),
+                fallback: t('errors.defaultUnitPrice'),
                 notPositive: t('errors.salePricePositive'),
                 onError,
                 onChanged,
@@ -59,7 +61,7 @@ export function DefaultMultiplierForm({
   );
 }
 
-async function submitDefaultMultiplier(input: {
+async function submitDefaultUnitPrice(input: {
   draft: string;
   fallback: string;
   notPositive: string;
@@ -67,14 +69,14 @@ async function submitDefaultMultiplier(input: {
   onChanged: () => void;
   setSaving: (value: boolean) => void;
 }): Promise<void> {
-  const multiplier = parsePositiveDecimal(input.draft);
-  if (multiplier === null) {
+  const amountPerUnit = parsePositiveDecimal(input.draft);
+  if (amountPerUnit === null) {
     input.onError(input.notPositive);
     return;
   }
   input.setSaving(true);
   try {
-    await deliveryCatalogStructureApi.setDefaultMultiplier(multiplier);
+    await deliveryCatalogStructureApi.setDefaultUnitPrice(amountPerUnit);
     input.onChanged();
   } catch (caught) {
     input.onError(messageFromCaught(caught, input.fallback));

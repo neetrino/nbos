@@ -30,8 +30,6 @@ export const PUBLISHED_PRICE_STATUS = 'PUBLISHED' as const;
 
 export const DRAFT_PRICE_STATUS = 'DRAFT' as const;
 
-export const DEVELOPER_RATE_ROLE_KEY = 'BACKEND' as const;
-
 export const FUNCTION_TIER_REQUIRED_CODE = 'FUNCTION_TIER_REQUIRED' as const;
 
 export const STATUS_LABEL_KEY = {

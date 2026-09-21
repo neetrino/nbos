@@ -5,8 +5,10 @@ import {
   FUNCTION_CATALOG_MODULE,
   type SalePriceTarget,
 } from '@nbos/shared';
+import { hasCallerPermission } from '../../common/authorization/caller-permission';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CatalogStructureService } from './catalog-structure.service';
+import { mapCatalogWriteError } from './map-catalog-write-error';
 import { SalePricesService } from './sale-prices.service';
 
 /**
@@ -54,8 +56,11 @@ export class CatalogStructureController {
   @Get('sale-prices')
   @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Sale price versions of catalog items.' })
-  listSalePrices(@Query('targetKey') targetKey?: string) {
-    return this.salePrices.list(targetKey);
+  listSalePrices(@CurrentUser() user: CurrentUserPayload, @Query('targetKey') targetKey?: string) {
+    return this.salePrices.list(
+      targetKey,
+      hasCallerPermission(user.permissions, DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW'),
+    );
   }
 
   @Post('sale-prices')
@@ -67,12 +72,33 @@ export class CatalogStructureController {
       functionId?: string;
       tierId?: string;
       baseProfileVersionId?: string;
-      multiplier?: string | number;
-      fixedAmount?: string | number;
+      amountPerUnit?: string | number;
       effectiveFrom?: string;
     },
   ) {
-    return this.salePrices.createDraft(readSalePriceTarget(body), body);
+    try {
+      return this.salePrices.createDraft(readSalePriceTarget(body), body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Get('sale-prices/default-unit-price')
+  @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'AMD per unit used when a card carries no rate of its own.' })
+  async getDefaultUnitPrice() {
+    return { defaultSaleAmountPerUnit: await this.salePrices.defaultUnitPrice() };
+  }
+
+  @Post('sale-prices/default-unit-price')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Set the global AMD-per-unit sale rate.' })
+  setDefaultUnitPrice(@Body() body: { amountPerUnit?: string | number }) {
+    try {
+      return this.salePrices.setDefaultUnitPrice(body.amountPerUnit);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
   }
 
   @Post('sale-prices/:id/publish')
@@ -83,20 +109,6 @@ export class CatalogStructureController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.salePrices.publish(id, user.id);
-  }
-
-  @Get('sale-prices/default-multiplier')
-  @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Multiplier applied when a card carries no price of its own.' })
-  async getDefaultMultiplier() {
-    return { defaultSaleMultiplier: await this.salePrices.defaultMultiplier() };
-  }
-
-  @Post('sale-prices/default-multiplier')
-  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Set the global sale multiplier.' })
-  setDefaultMultiplier(@Body() body: { multiplier?: string | number }) {
-    return this.salePrices.setDefaultMultiplier(body.multiplier);
   }
 }
 

@@ -530,6 +530,27 @@ deal write, SEND_OFFER including OUTSOURCE, Won copy); shared + API + web `tsc -
 untyped legacy deals stay `NULL` on purpose.
 **Not run:** browser QA of the deal sheet and product create dialog. Production migrate not run.
 
+### Sale price: AMD per unit, no multiplier (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.12 withdrawn the 2026-09-20 multiplier + fixed-amount pair. A card now carries one
+AMD-per-unit sale rate; empty uses the global default 10 000. The client line is `units × that
+rate`. Cost and the developer rate are not inputs.
+
+- `DeliverySalePriceVersion.amountPerUnit`, `defaultSaleAmountPerUnit`. Migration
+  `20260921180000_sale_amount_per_unit` backfills `multiplier * 1000` (1 development unit = 1 000
+  AMD). Leftover fixed-only rows received 10 000 so the column can be required — Owner re-enters
+  those rare drafts. Applied to **dev**. Production migrate not run.
+- `GET`/`POST sale-prices/default-unit-price`. DTO: `amountPerUnit` only with RULES VIEW, so catalog
+  VIEW cannot recover units by dividing `resolvedAmount`. `resolvedAmount` uses published units only.
+- Norms editor: one AMD field. Catalog cards read `resolvedAmount`. Constructor still not built.
+
+Review: catalog VIEW leaking units via rate ÷ amount — fixed before commit. Draft units no longer
+price a published card. Validation on write routes now maps to 400.
+
+**Checks:** vitest 6 files / 43 passed; shared + API + web `tsc --noEmit` (API/web 8GB after prisma
+generate); Prettier on touched files; migrate deploy on **dev**.
+**Not run:** browser QA of the norms screen (API process was down after generate); production migrate.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).

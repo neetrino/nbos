@@ -14,8 +14,8 @@ export type SalePriceVersionDto = {
   version: number;
   status: string;
   effectiveFrom: string;
-  multiplier: string | null;
-  fixedAmount: string | null;
+  amountPerUnit: string | null;
+  resolvedAmount: string | null;
   currency: string;
 };
 
@@ -23,8 +23,7 @@ export type SalePriceDraftInput = {
   functionId?: string;
   tierId?: string;
   baseProfileVersionId?: string;
-  multiplier?: string;
-  fixedAmount?: string;
+  amountPerUnit: string;
   effectiveFrom: string;
 };
 
@@ -75,17 +74,17 @@ export const deliveryCatalogStructureApi = {
     return resp.data;
   },
 
-  async getDefaultMultiplier(): Promise<{ defaultSaleMultiplier: string }> {
-    const resp = await api.get<{ defaultSaleMultiplier: string }>(
-      `${BASE}/sale-prices/default-multiplier`,
+  async getDefaultUnitPrice(): Promise<{ defaultSaleAmountPerUnit: string }> {
+    const resp = await api.get<{ defaultSaleAmountPerUnit: string }>(
+      `${BASE}/sale-prices/default-unit-price`,
     );
     return resp.data;
   },
 
-  async setDefaultMultiplier(multiplier: string): Promise<{ defaultSaleMultiplier: string }> {
-    const resp = await api.post<{ defaultSaleMultiplier: string }>(
-      `${BASE}/sale-prices/default-multiplier`,
-      { multiplier },
+  async setDefaultUnitPrice(amountPerUnit: string): Promise<{ defaultSaleAmountPerUnit: string }> {
+    const resp = await api.post<{ defaultSaleAmountPerUnit: string }>(
+      `${BASE}/sale-prices/default-unit-price`,
+      { amountPerUnit },
     );
     return resp.data;
   },

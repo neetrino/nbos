@@ -258,13 +258,11 @@ model DeliveryConfigSizePreset {
   @@map("delivery_config_size_presets")
 }
 
-/// Sale price of one catalog item, versioned exactly like units so that changing a price never
-/// re-prices a deal that was already assembled. A multiplier follows cost: the price moves when the
-/// developer rate moves, which is right for standard and AI work. A fixed amount ignores cost and is
-/// used where the market sets a round number, such as a blog. When both are present the fixed amount
-/// wins, and the card shows which of the two produced the price.
-/// `targetKey` spells out what the version prices, because a nullable foreign key cannot carry a
-/// unique version number on its own.
+/// Client sale rate of one catalog item, versioned like units so a later edit never re-prices a
+/// deal that was already assembled. `amountPerUnit` is AMD the client pays per unit; empty means
+/// the global default (10 000). The line is units × that rate. Cost and the developer rate are not
+/// part of this. `targetKey` spells out what the version prices, because a nullable foreign key
+/// cannot carry a unique version number on its own.
 model DeliverySalePriceVersion {
   id                   String                      @id @default(uuid())
   targetKey            String                      @map("target_key")
@@ -274,8 +272,7 @@ model DeliverySalePriceVersion {
   version              Int
   status               DeliveryNormativeStatusEnum @default(DRAFT)
   effectiveFrom        DateTime                    @map("effective_from")
-  multiplier           Decimal?                    @db.Decimal(8, 4)
-  fixedAmount          Decimal?                    @map("fixed_amount") @db.Decimal(12, 2)
+  amountPerUnit        Decimal                     @map("amount_per_unit") @db.Decimal(14, 4)
   currency             String                      @default("AMD")
   publishedById        String?                     @map("published_by_id")
   publishedAt          DateTime?                   @map("published_at")

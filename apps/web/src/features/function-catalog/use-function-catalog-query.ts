@@ -12,11 +12,7 @@ import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structur
 import { deliveryFunctionsApi } from '@/lib/api/delivery-functions';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { usePermission } from '@/lib/permissions';
-import {
-  loadDeveloperRateIfPermitted,
-  visibleSalePriceByFunctionId,
-  type VisibleSalePrice,
-} from './function-catalog-sale-price';
+import { visibleSalePriceByFunctionId, type VisibleSalePrice } from './function-catalog-sale-price';
 import { loadCatalogUnitsIfPermitted } from './function-catalog-units';
 
 export function useFunctionCatalogQuery(params: { search: string; status?: string }) {
@@ -71,19 +67,15 @@ async function loadCatalogQuery(
   unitsByFunctionId: Map<string, number> | undefined;
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
 }> {
-  const [nextItems, saleVersions, multiplier] = await Promise.all([
+  const [nextItems, saleVersions] = await Promise.all([
     deliveryFunctionsApi.listAll({
       search: params.search || undefined,
       status: params.status,
     }),
     deliveryCatalogStructureApi.listSalePrices(),
-    deliveryCatalogStructureApi.getDefaultMultiplier(),
   ]);
   const unitsByFunctionId = await loadCatalogUnitsIfPermitted(canSeeRules, () =>
     deliveryNormsApi.listFunctionPrices(),
-  );
-  const developerRate = await loadDeveloperRateIfPermitted(canSeeRules, () =>
-    deliveryNormsApi.listRoleRates(),
   );
   return {
     items: nextItems,
@@ -91,12 +83,7 @@ async function loadCatalogQuery(
     salePriceByFunctionId: visibleSalePriceByFunctionId(
       nextItems.map((item) => item.id),
       saleVersions,
-      {
-        canViewRules: canSeeRules,
-        unitsByFunctionId,
-        developerRate,
-        defaultMultiplier: multiplier.defaultSaleMultiplier,
-      },
+      canSeeRules,
     ),
   };
 }

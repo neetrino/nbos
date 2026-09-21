@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
 import type { SearchOption } from '@/components/shared';
 import { COMPACT_PANEL_CLASS, OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
-import { DefaultMultiplierForm } from './default-multiplier-form';
+import { DefaultUnitPriceForm } from './default-unit-price-form';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
 import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
@@ -25,7 +25,7 @@ export function SalePricesSection({
   rows,
   catalog,
   profiles,
-  defaultMultiplier,
+  defaultAmountPerUnit,
   canEdit,
   onChanged,
   onError,
@@ -34,7 +34,7 @@ export function SalePricesSection({
   rows: SalePriceVersionDto[];
   catalog: DeliveryFunctionOperationalDto[];
   profiles: DeliveryBaseProfileFinancialDto[];
-  defaultMultiplier: string | null;
+  defaultAmountPerUnit: string | null;
   canEdit: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
@@ -63,8 +63,8 @@ export function SalePricesSection({
       itemsMatchingSearch(rows, query, (row) => [
         labels.get(row.targetKey) ?? row.targetKey,
         row.status,
-        row.multiplier ?? '',
-        row.fixedAmount ?? '',
+        row.amountPerUnit ?? '',
+        row.resolvedAmount ?? '',
       ]),
     [labels, query, rows],
   );
@@ -76,9 +76,9 @@ export function SalePricesSection({
       description={embedded ? undefined : t('salePrices.subtitle')}
     >
       <div className={COMPACT_PANEL_CLASS}>
-        <DefaultMultiplierForm
-          key={defaultMultiplier ?? 'none'}
-          value={defaultMultiplier}
+        <DefaultUnitPriceForm
+          key={defaultAmountPerUnit ?? 'none'}
+          value={defaultAmountPerUnit}
           canEdit={canEdit}
           onChanged={onChanged}
           onError={onError}

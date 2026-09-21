@@ -7,11 +7,13 @@ function row(overrides: Record<string, unknown> = {}) {
   return {
     id: 'sp-1',
     targetKey: 'FUNCTION:fn-1',
+    functionId: 'fn-1',
+    tierId: null,
+    baseProfileVersionId: null,
     version: 1,
     status: 'DRAFT',
     effectiveFrom: new Date(NOW),
-    multiplier: { toString: () => '10.0000' },
-    fixedAmount: null,
+    amountPerUnit: { toString: () => '10000.0000' },
     currency: 'AMD',
     ...overrides,
   };
@@ -29,10 +31,28 @@ function buildPrisma(overrides: Record<string, unknown> = {}) {
     },
     deliveryFunction: { count: vi.fn().mockResolvedValue(1) },
     deliveryFunctionTier: { count: vi.fn().mockResolvedValue(1) },
-    deliveryBaseProfileVersion: { count: vi.fn().mockResolvedValue(1) },
+    deliveryBaseProfileVersion: {
+      count: vi.fn().mockResolvedValue(1),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    deliveryFunctionPriceVersion: {
+      findMany: vi.fn().mockResolvedValue([
+        {
+          functionId: 'fn-1',
+          tierId: null,
+          version: 1,
+          status: 'PUBLISHED',
+          roleUnits: [{ units: { toString: () => '30' } }],
+        },
+      ]),
+    },
     deliveryCompensationRuntimeSetting: {
-      findUnique: vi.fn().mockResolvedValue({ defaultSaleMultiplier: { toString: () => '10' } }),
-      upsert: vi.fn().mockResolvedValue({ defaultSaleMultiplier: { toString: () => '12' } }),
+      findUnique: vi.fn().mockResolvedValue({
+        defaultSaleAmountPerUnit: { toString: () => '10000' },
+      }),
+      upsert: vi.fn().mockResolvedValue({
+        defaultSaleAmountPerUnit: { toString: () => '12000' },
+      }),
     },
     $transaction: vi.fn(async (fn: (client: unknown) => Promise<unknown>) => fn(buildTx())),
     ...overrides,
@@ -55,15 +75,14 @@ describe('SalePricesService', () => {
 
     await service.createDraft(
       { kind: 'FUNCTION', functionId: 'fn-1' },
-      { multiplier: '12', effectiveFrom: NOW },
+      { amountPerUnit: '12000', effectiveFrom: NOW },
     );
 
     expect(prisma.deliverySalePriceVersion.create.mock.calls[0]?.[0].data).toMatchObject({
       targetKey: 'FUNCTION:fn-1',
       version: 3,
       status: 'DRAFT',
-      multiplier: '12.0000',
-      fixedAmount: null,
+      amountPerUnit: '12000.0000',
     });
   });
 
@@ -73,14 +92,32 @@ describe('SalePricesService', () => {
 
     await service.createDraft(
       { kind: 'TIER', tierId: 'tier-1' },
-      { fixedAmount: 400000, effectiveFrom: NOW },
+      { amountPerUnit: 5000, effectiveFrom: NOW },
     );
 
     expect(prisma.deliverySalePriceVersion.create.mock.calls[0]?.[0].data).toMatchObject({
       targetKey: 'TIER:tier-1',
       tierId: 'tier-1',
       functionId: null,
-      fixedAmount: '400000.00',
+      amountPerUnit: '5000.0000',
+    });
+  });
+
+  it('resolves the client line from published units without exposing the rate to catalog viewers', async () => {
+    const service = new SalePricesService(buildPrisma() as never);
+    const [first] = await service.list();
+    expect(first).toMatchObject({
+      amountPerUnit: null,
+      resolvedAmount: '300000.00',
+    });
+  });
+
+  it('returns the AMD-per-unit rate only when rules permission is granted', async () => {
+    const service = new SalePricesService(buildPrisma() as never);
+    const [first] = await service.list(undefined, true);
+    expect(first).toMatchObject({
+      amountPerUnit: '10000.0000',
+      resolvedAmount: '300000.00',
     });
   });
 
@@ -91,7 +128,7 @@ describe('SalePricesService', () => {
     await expect(
       service.createDraft(
         { kind: 'FUNCTION', functionId: 'gone' },
-        { multiplier: '10', effectiveFrom: NOW },
+        { amountPerUnit: '10000', effectiveFrom: NOW },
       ),
     ).rejects.toThrow(/does not exist/);
   });
@@ -116,7 +153,26 @@ describe('SalePricesService', () => {
     await expect(service.publish('sp-1', 'emp-1')).rejects.toThrow(/draft sale price/);
   });
 
-  it('falls back to the agreed tenfold multiplier when no setting exists', async () => {
+  it('does not resolve a client line from unpublished units', async () => {
+    const prisma = buildPrisma({
+      deliveryFunctionPriceVersion: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            functionId: 'fn-1',
+            tierId: null,
+            version: 1,
+            status: 'DRAFT',
+            roleUnits: [{ units: { toString: () => '30' } }],
+          },
+        ]),
+      },
+    });
+    const service = new SalePricesService(prisma as never);
+    const [first] = await service.list(undefined, true);
+    expect(first).toMatchObject({ amountPerUnit: '10000.0000', resolvedAmount: null });
+  });
+
+  it('falls back to 10 000 AMD per unit when no setting exists', async () => {
     const prisma = buildPrisma({
       deliveryCompensationRuntimeSetting: {
         findUnique: vi.fn().mockResolvedValue(null),
@@ -125,12 +181,12 @@ describe('SalePricesService', () => {
     });
     const service = new SalePricesService(prisma as never);
 
-    await expect(service.defaultMultiplier()).resolves.toBe('10');
+    await expect(service.defaultUnitPrice()).resolves.toBe('10000');
   });
 
-  it('rejects a default multiplier of zero', async () => {
+  it('rejects a default rate of zero', async () => {
     const service = new SalePricesService(buildPrisma() as never);
 
-    await expect(service.setDefaultMultiplier('0')).rejects.toThrow(/greater than zero/);
+    await expect(service.setDefaultUnitPrice('0')).rejects.toThrow(/greater than zero/);
   });
 });

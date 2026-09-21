@@ -4,7 +4,6 @@ import {
   buildSalePriceFormInput,
   parsePositiveDecimal,
   parseSalePriceTargetKey,
-  salePriceDraftSource,
   salePricesForTarget,
   targetKeyForKind,
   gradationsFromCatalog,
@@ -14,7 +13,7 @@ import {
 
 describe('parsePositiveDecimal', () => {
   it('accepts a positive number and rejects zero, negatives and blank', () => {
-    expect(parsePositiveDecimal('10')).toBe('10');
+    expect(parsePositiveDecimal('10000')).toBe('10000');
     expect(parsePositiveDecimal(' 7.5 ')).toBe('7.5');
     expect(parsePositiveDecimal('0')).toBeNull();
     expect(parsePositiveDecimal('-5')).toBeNull();
@@ -22,67 +21,32 @@ describe('parsePositiveDecimal', () => {
   });
 });
 
-describe('salePriceDraftSource', () => {
-  it('lets a fixed amount win when both fields are filled', () => {
-    expect(salePriceDraftSource('10', '400000')).toBe('FIXED');
-    expect(salePriceDraftSource('10', '')).toBe('MULTIPLIER');
-    expect(salePriceDraftSource('', '400000')).toBe('FIXED');
-    expect(salePriceDraftSource('', '')).toBe('NONE');
-  });
-});
-
 describe('buildSalePriceFormInput', () => {
-  it('requires a multiplier or a fixed amount', () => {
-    expect(
-      buildSalePriceFormInput({ multiplier: '', fixedAmount: '', effectiveFrom: '2026-10-01' }),
-    ).toEqual({ ok: false, error: 'priceRequired' });
+  it('requires an AMD-per-unit rate', () => {
+    expect(buildSalePriceFormInput({ amountPerUnit: '', effectiveFrom: '2026-10-01' })).toEqual({
+      ok: false,
+      error: 'priceRequired',
+    });
   });
 
   it('rejects zero and negative values', () => {
-    expect(
-      buildSalePriceFormInput({
-        multiplier: '0',
-        fixedAmount: '',
-        effectiveFrom: '2026-10-01',
-      }),
-    ).toEqual({ ok: false, error: 'notPositive' });
-    expect(
-      buildSalePriceFormInput({
-        multiplier: '',
-        fixedAmount: '-1',
-        effectiveFrom: '2026-10-01',
-      }),
-    ).toEqual({ ok: false, error: 'notPositive' });
+    expect(buildSalePriceFormInput({ amountPerUnit: '0', effectiveFrom: '2026-10-01' })).toEqual({
+      ok: false,
+      error: 'notPositive',
+    });
+    expect(buildSalePriceFormInput({ amountPerUnit: '-1', effectiveFrom: '2026-10-01' })).toEqual({
+      ok: false,
+      error: 'notPositive',
+    });
   });
 
-  it('keeps both values when both are set and marks the fixed amount as winner', () => {
-    const result = buildSalePriceFormInput({
-      multiplier: '10',
-      fixedAmount: '400000',
-      effectiveFrom: '2026-10-01',
-    });
-    expect(result).toEqual({
-      ok: true,
-      source: 'FIXED',
-      input: {
-        multiplier: '10',
-        fixedAmount: '400000',
-        effectiveFrom: '2026-10-01T00:00:00.000Z',
+  it('accepts a positive AMD-per-unit rate', () => {
+    expect(buildSalePriceFormInput({ amountPerUnit: '5000', effectiveFrom: '2026-10-01' })).toEqual(
+      {
+        ok: true,
+        input: { amountPerUnit: '5000', effectiveFrom: '2026-10-01T00:00:00.000Z' },
       },
-    });
-  });
-
-  it('accepts a multiplier alone', () => {
-    const result = buildSalePriceFormInput({
-      multiplier: '7.5',
-      fixedAmount: '',
-      effectiveFrom: '2026-10-01',
-    });
-    expect(result).toEqual({
-      ok: true,
-      source: 'MULTIPLIER',
-      input: { multiplier: '7.5', effectiveFrom: '2026-10-01T00:00:00.000Z' },
-    });
+    );
   });
 });
 
@@ -121,8 +85,8 @@ function saleRow(targetKey: string, version: number): SalePriceVersionDto {
     version,
     status: 'DRAFT',
     effectiveFrom: '2026-10-01T00:00:00.000Z',
-    multiplier: '10',
-    fixedAmount: null,
+    amountPerUnit: '10000',
+    resolvedAmount: '300000.00',
     currency: 'AMD',
   };
 }

@@ -113,22 +113,13 @@ function SalePriceRow({
 
 function SalePriceSummary({ row }: { row: SalePriceVersionDto }) {
   const t = useTranslations('hr.deliveryNorms');
-  if (row.fixedAmount !== null) {
-    return (
-      <p className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs leading-relaxed">
-        <span>{t('salePrices.sourceFixed')}:</span>
-        <EntityListAmount amount={row.fixedAmount} currency={row.currency} className="text-xs" />
-      </p>
-    );
-  }
-  if (row.multiplier !== null) {
-    return (
-      <p className="text-muted-foreground text-xs leading-relaxed">
-        {t('salePrices.sourceMultiplier')}: {row.multiplier}
-      </p>
-    );
+  if (row.amountPerUnit === null) {
+    return null;
   }
   return (
-    <p className="text-muted-foreground text-xs leading-relaxed">{t('salePrices.sourceDefault')}</p>
+    <p className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs leading-relaxed">
+      <span>{t('salePrices.amountPerUnitShort')}:</span>
+      <EntityListAmount amount={row.amountPerUnit} currency={row.currency} className="text-xs" />
+    </p>
   );
 }

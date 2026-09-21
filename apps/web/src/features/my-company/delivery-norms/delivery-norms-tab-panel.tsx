@@ -172,7 +172,7 @@ function DomainEditorBody({
       rows={data.salePrices}
       catalog={data.catalog}
       profiles={data.profiles}
-      defaultMultiplier={data.defaultMultiplier}
+      defaultAmountPerUnit={data.defaultAmountPerUnit}
       canEdit={canPublish}
       onChanged={onChanged}
       onError={onError}

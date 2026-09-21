@@ -1,13 +1,16 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import {
-  DEFAULT_SALE_MULTIPLIER,
+  DEFAULT_SALE_AMOUNT_PER_UNIT,
+  parseDefaultSaleAmountPerUnit,
   parseSalePriceBody,
+  resolveSalePrice,
   salePriceTargetKey,
   type SalePriceTarget,
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import { DELIVERY_RUNTIME_SETTING_ID } from './delivery-compensation-rules.service';
+import { loadUnitsBySaleTarget } from './sale-price-target-units';
 
 export type SalePriceVersionDto = {
   id: string;
@@ -15,28 +18,28 @@ export type SalePriceVersionDto = {
   version: number;
   status: string;
   effectiveFrom: string;
-  multiplier: string | null;
-  fixedAmount: string | null;
+  amountPerUnit: string | null;
+  resolvedAmount: string | null;
   currency: string;
 };
 
 const FIRST_VERSION = 1;
 
 /**
- * Sale prices of catalog items. This is what a client pays, not what a team is paid: publishing a
- * sale price cannot change anybody's bonus. Versioned all the same, so a price change never re-prices
- * a deal that was already assembled.
+ * Sale rates of catalog items. This is what a client pays per unit, not what a team is paid:
+ * publishing a sale rate cannot change anybody's bonus. Versioned all the same, so a later edit
+ * never re-prices a deal that was already assembled.
  */
 @Injectable()
 export class SalePricesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async list(targetKey?: string): Promise<SalePriceVersionDto[]> {
+  async list(targetKey?: string, includeRate = false): Promise<SalePriceVersionDto[]> {
     const rows = await this.prisma.deliverySalePriceVersion.findMany({
       where: targetKey ? { targetKey } : {},
       orderBy: [{ targetKey: 'asc' }, { version: 'desc' }],
     });
-    return rows.map(serializeSalePrice);
+    return this.serializeMany(rows, includeRate);
   }
 
   async createDraft(target: SalePriceTarget, body: unknown): Promise<SalePriceVersionDto> {
@@ -57,11 +60,10 @@ export class SalePricesService {
         version: (last?.version ?? 0) + FIRST_VERSION,
         status: 'DRAFT',
         effectiveFrom: new Date(input.effectiveFrom),
-        multiplier: input.multiplier,
-        fixedAmount: input.fixedAmount,
+        amountPerUnit: input.amountPerUnit,
       },
     });
-    return serializeSalePrice(created);
+    return requiredSerialized(await this.serializeMany([created], true));
   }
 
   /** Publishing supersedes the previously published price of the same item. */
@@ -83,31 +85,36 @@ export class SalePricesService {
         data: { status: 'PUBLISHED', publishedById, publishedAt: new Date() },
       });
     });
-    return serializeSalePrice(published);
+    return requiredSerialized(await this.serializeMany([published], true));
   }
 
-  async defaultMultiplier(): Promise<string> {
+  async defaultUnitPrice(): Promise<string> {
     const setting = await this.prisma.deliveryCompensationRuntimeSetting.findUnique({
       where: { id: DELIVERY_RUNTIME_SETTING_ID },
-      select: { defaultSaleMultiplier: true },
+      select: { defaultSaleAmountPerUnit: true },
     });
-    return setting?.defaultSaleMultiplier?.toString() ?? DEFAULT_SALE_MULTIPLIER;
+    return setting?.defaultSaleAmountPerUnit?.toString() ?? DEFAULT_SALE_AMOUNT_PER_UNIT;
   }
 
-  async setDefaultMultiplier(raw: unknown): Promise<{ defaultSaleMultiplier: string }> {
-    const parsed = parseSalePriceBody(
-      { multiplier: raw, effectiveFrom: new Date().toISOString() },
-      { kind: 'FUNCTION', functionId: 'default' },
-    );
-    if (parsed.multiplier === null) {
-      throw new BadRequestException('A default sale multiplier is required.');
-    }
+  async setDefaultUnitPrice(raw: unknown): Promise<{ defaultSaleAmountPerUnit: string }> {
+    const amountPerUnit = parseDefaultSaleAmountPerUnit(raw);
     const setting = await this.prisma.deliveryCompensationRuntimeSetting.upsert({
       where: { id: DELIVERY_RUNTIME_SETTING_ID },
-      create: { id: DELIVERY_RUNTIME_SETTING_ID, defaultSaleMultiplier: parsed.multiplier },
-      update: { defaultSaleMultiplier: parsed.multiplier },
+      create: { id: DELIVERY_RUNTIME_SETTING_ID, defaultSaleAmountPerUnit: amountPerUnit },
+      update: { defaultSaleAmountPerUnit: amountPerUnit },
     });
-    return { defaultSaleMultiplier: setting.defaultSaleMultiplier.toString() };
+    return { defaultSaleAmountPerUnit: setting.defaultSaleAmountPerUnit.toString() };
+  }
+
+  private async serializeMany(
+    rows: readonly SalePriceRecord[],
+    includeRate: boolean,
+  ): Promise<SalePriceVersionDto[]> {
+    if (rows.length === 0) return [];
+    const unitsByTarget = await loadUnitsBySaleTarget(this.prisma, rows);
+    return rows.map((row) =>
+      serializeWithoutUnits(row, unitsByTarget.get(row.targetKey) ?? null, includeRate),
+    );
   }
 
   private async assertTargetExists(target: SalePriceTarget): Promise<void> {
@@ -130,24 +137,45 @@ export class SalePricesService {
   }
 }
 
-function serializeSalePrice(row: {
+type SalePriceRecord = {
   id: string;
   targetKey: string;
+  functionId: string | null;
+  tierId: string | null;
+  baseProfileVersionId: string | null;
   version: number;
   status: string;
   effectiveFrom: Date;
-  multiplier: { toString(): string } | null;
-  fixedAmount: { toString(): string } | null;
+  amountPerUnit: { toString(): string };
   currency: string;
-}): SalePriceVersionDto {
+};
+
+function serializeWithoutUnits(
+  row: SalePriceRecord,
+  units: string | null,
+  includeRate: boolean,
+): SalePriceVersionDto {
+  const amountPerUnit = row.amountPerUnit.toString();
   return {
     id: row.id,
     targetKey: row.targetKey,
     version: row.version,
     status: row.status,
     effectiveFrom: row.effectiveFrom.toISOString(),
-    multiplier: row.multiplier?.toString() ?? null,
-    fixedAmount: row.fixedAmount?.toString() ?? null,
+    amountPerUnit: includeRate ? amountPerUnit : null,
+    resolvedAmount: resolveSalePrice({
+      units,
+      amountPerUnit,
+      defaultAmountPerUnit: DEFAULT_SALE_AMOUNT_PER_UNIT,
+    }).amount,
     currency: row.currency,
   };
+}
+
+function requiredSerialized(rows: SalePriceVersionDto[]): SalePriceVersionDto {
+  const first = rows[0];
+  if (!first) {
+    throw new NotFoundException('Sale price version could not be read back.');
+  }
+  return first;
 }

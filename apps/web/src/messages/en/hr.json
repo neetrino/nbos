@@ -595,9 +595,9 @@
     },
     "salePrices": {
       "title": "Sale prices",
-      "subtitle": "What the client pays for a function, a gradation, or a product core. A fixed AMD amount wins over a multiplier.",
+      "subtitle": "What the client pays for a function, a gradation, or a product core: units × this AMD-per-unit rate.",
       "createTitle": "New sale price draft",
-      "createHint": "Price a function, a gradation, or a core. A fixed AMD amount wins over a multiplier.",
+      "createHint": "Set the AMD the client pays per unit of a function, a gradation, or a core.",
       "targetHint": "Function is a catalog card price. Gradation is a volume price for one function. Core is the selected profile composition price.",
       "empty": "No sale prices for this target yet.",
       "allEmpty": "No sale prices yet.",
@@ -612,17 +612,13 @@
       "pickTier": "Select a gradation",
       "pickCore": "Select a base profile version",
       "noTiers": "No gradations with a sale price yet. Price functions and cores from the lists above.",
-      "multiplier": "Multiplier",
-      "fixedAmount": "Fixed amount ({currency})",
-      "fixedWins": "If both are set, the fixed amount is used.",
+      "amountPerUnit": "Sale price per unit ({currency})",
+      "amountPerUnitShort": "Per unit",
       "unknownTarget": "Unknown target",
-      "defaultTitle": "Default sale multiplier",
-      "defaultSubtitle": "Used when a card carries no price of its own.",
+      "defaultTitle": "Default sale price per unit",
+      "defaultSubtitle": "Used when a card carries no rate of its own. 10 000 AMD unless you change it.",
       "defaultSave": "Save default",
-      "savingDefault": "Saving…",
-      "sourceFixed": "Fixed amount",
-      "sourceMultiplier": "Multiplier",
-      "sourceDefault": "Default multiplier"
+      "savingDefault": "Saving…"
     },
     "fields": {
       "effectiveFrom": "Effective from",
@@ -670,9 +666,9 @@
       "coreItemLabel": "Enter an item label.",
       "sizePresets": "The size preset could not be saved.",
       "salePrices": "The sale price draft could not be created.",
-      "salePriceRequired": "Set a sale multiplier or a fixed sale amount.",
-      "salePricePositive": "Multiplier and fixed amount must be greater than zero.",
-      "defaultMultiplier": "The default multiplier could not be saved.",
+      "salePriceRequired": "Set the sale price per unit.",
+      "salePricePositive": "The sale price per unit must be greater than zero.",
+      "defaultUnitPrice": "The default sale price per unit could not be saved.",
       "targetRequired": "Pick what this sale price applies to."
     },
     "status": {

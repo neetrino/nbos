@@ -1,16 +1,15 @@
 import { CatalogContentValidationError } from './catalog-write';
 import {
-  multiplyScaled,
+  addScaled,
   parseScaledDecimal,
-  quantizeScaled,
+  parseUnits,
   scaledToString,
   sumMoney,
   unitsTimesRate,
 } from './decimal-scale';
-import { DELIVERY_MONEY_SCALE } from './constants';
+import { DELIVERY_UNITS_SCALE } from './constants';
 
-export const SALE_MULTIPLIER_SCALE = 4;
-export const DEFAULT_SALE_MULTIPLIER = '10';
+export const DEFAULT_SALE_AMOUNT_PER_UNIT = '10000';
 
 export type SalePriceTarget =
   | { kind: 'FUNCTION'; functionId: string }
@@ -20,9 +19,10 @@ export type SalePriceTarget =
 export type SalePriceWriteInput = {
   target: SalePriceTarget;
   effectiveFrom: string;
-  multiplier: string | null;
-  fixedAmount: string | null;
+  amountPerUnit: string;
 };
+
+export type SalePriceSource = 'CARD' | 'DEFAULT' | 'UNKNOWN';
 
 /**
  * Identifies what a sale price version prices. A plain identifier would not be enough: the same
@@ -36,44 +36,34 @@ export function salePriceTargetKey(target: SalePriceTarget): string {
 }
 
 /**
- * Sale price of one item. A fixed amount wins over a multiplier, because a round market price is a
- * decision and a multiplier is only a rule of thumb. With neither, the global default multiplier
- * applies, so a card never ends up without a price while the Owner fills the catalog.
+ * Client line amount: units × the card's AMD-per-unit rate, or the global default when the card
+ * has none. Cost and the developer rate are not part of this.
  */
 export function resolveSalePrice(input: {
   units: string | null;
-  developerRate: string | null;
-  multiplier: string | null;
-  fixedAmount: string | null;
-  defaultMultiplier: string;
-}): { amount: string | null; source: 'FIXED' | 'MULTIPLIER' | 'DEFAULT_MULTIPLIER' | 'UNKNOWN' } {
-  if (input.fixedAmount !== null) {
-    return { amount: toMoney(input.fixedAmount), source: 'FIXED' };
-  }
-  if (input.units === null || input.developerRate === null) {
+  amountPerUnit: string | null;
+  defaultAmountPerUnit: string;
+}): { amount: string | null; source: SalePriceSource } {
+  if (input.units === null) {
     return { amount: null, source: 'UNKNOWN' };
   }
-  const cost = unitsTimesRate(input.units, input.developerRate);
-  if (input.multiplier !== null) {
-    return { amount: applyMultiplier(cost, input.multiplier), source: 'MULTIPLIER' };
+  if (input.amountPerUnit !== null) {
+    return { amount: unitsTimesRate(input.units, input.amountPerUnit), source: 'CARD' };
   }
   return {
-    amount: applyMultiplier(cost, input.defaultMultiplier),
-    source: 'DEFAULT_MULTIPLIER',
+    amount: unitsTimesRate(input.units, input.defaultAmountPerUnit),
+    source: 'DEFAULT',
   };
 }
 
-function applyMultiplier(cost: string, multiplier: string): string {
-  const product = multiplyScaled(
-    parseScaledDecimal(cost, DELIVERY_MONEY_SCALE),
-    parseScaledDecimal(multiplier, SALE_MULTIPLIER_SCALE),
-  );
-  return scaledToString(quantizeScaled(product, DELIVERY_MONEY_SCALE));
-}
-
-function toMoney(raw: string): string {
+/** Total units of a priced item. Unconfigured roles do not count as zero. */
+export function sumConfiguredRoleUnits(
+  rows: ReadonlyArray<{ units: string | null }>,
+): string | null {
+  const values = rows.map((row) => row.units).filter((units): units is string => units !== null);
+  if (values.length === 0) return null;
   return scaledToString(
-    quantizeScaled(parseScaledDecimal(raw, DELIVERY_MONEY_SCALE), DELIVERY_MONEY_SCALE),
+    values.reduce((total, units) => addScaled(total, parseUnits(units)), parseUnits('0')),
   );
 }
 
@@ -90,41 +80,33 @@ export function parseSalePriceBody(body: unknown, target: SalePriceTarget): Sale
     throw new CatalogContentValidationError('Body must be an object.');
   }
   const row = body as Record<string, unknown>;
-  const multiplier = optionalPositiveNumber(row.multiplier, 'multiplier', SALE_MULTIPLIER_SCALE);
-  const fixedAmount = optionalPositiveNumber(row.fixedAmount, 'fixedAmount', DELIVERY_MONEY_SCALE);
-  if (multiplier === null && fixedAmount === null) {
-    throw new CatalogContentValidationError('Set a sale multiplier or a fixed sale amount.');
-  }
   return {
     target,
     effectiveFrom: requireDate(row.effectiveFrom),
-    multiplier,
-    fixedAmount,
+    amountPerUnit: requirePositiveAmount(row.amountPerUnit, 'amountPerUnit'),
   };
 }
 
-function optionalPositiveNumber(value: unknown, field: string, scale: number): string | null {
+export function parseDefaultSaleAmountPerUnit(raw: unknown): string {
+  return requirePositiveAmount(raw, 'amountPerUnit');
+}
+
+function requirePositiveAmount(value: unknown, field: string): string {
   if (value === undefined || value === null || value === '') {
-    return null;
+    throw new CatalogContentValidationError(`${field} is required.`);
   }
   if (typeof value !== 'string' && typeof value !== 'number') {
     throw new CatalogContentValidationError(`${field} must be a number.`);
   }
-  const parsed = safeParse(String(value), scale);
-  if (parsed === null) {
-    throw new CatalogContentValidationError(`${field} must be a number.`);
-  }
-  if (parsed.value <= 0n) {
-    throw new CatalogContentValidationError(`${field} must be greater than zero.`);
-  }
-  return scaledToString(parsed);
-}
-
-function safeParse(raw: string, scale: number) {
   try {
-    return parseScaledDecimal(raw, scale);
-  } catch {
-    return null;
+    const parsed = parseScaledDecimal(String(value), DELIVERY_UNITS_SCALE);
+    if (parsed.value <= 0n) {
+      throw new CatalogContentValidationError(`${field} must be greater than zero.`);
+    }
+    return scaledToString(parsed);
+  } catch (error) {
+    if (error instanceof CatalogContentValidationError) throw error;
+    throw new CatalogContentValidationError(`${field} must be a number.`);
   }
 }
 

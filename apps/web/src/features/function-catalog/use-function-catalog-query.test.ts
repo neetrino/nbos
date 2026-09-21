@@ -15,7 +15,7 @@ describe('useFunctionCatalogQuery', () => {
     expect(source).toContain('loadCatalogUnitsIfPermitted(canSeeRules');
     expect(source).toContain('deliveryNormsApi.listFunctionPrices');
     expect(source).toContain('deliveryCatalogStructureApi.listSalePrices');
-    expect(source).toContain('loadDeveloperRateIfPermitted(canSeeRules');
-    expect(source).toContain('deliveryNormsApi.listRoleRates');
+    expect(source).not.toContain('listRoleRates');
+    expect(source).not.toContain('loadDeveloperRateIfPermitted');
   });
 });
