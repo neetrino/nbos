@@ -123,6 +123,7 @@ describe('sale price confidential values stay off the card', () => {
     const root = path.join(process.cwd(), 'apps/web/src/features/function-catalog');
     const card = readFileSync(path.join(root, 'function-catalog-card.tsx'), 'utf8');
     const blocks = readFileSync(path.join(root, 'function-catalog-blocks.tsx'), 'utf8');
+    const constants = readFileSync(path.join(root, 'function-catalog.constants.ts'), 'utf8');
     for (const source of [card, blocks]) {
       expect(source).not.toContain('developerRate');
       expect(source).not.toContain('listRoleRates');
@@ -131,5 +132,9 @@ describe('sale price confidential values stay off the card', () => {
       expect(source).not.toContain('resolveSalePrice');
     }
     expect(card).toContain('salePriceLabel');
+    expect(card).not.toContain('item.summary');
+    expect(card).not.toContain('CATALOG_SUMMARY_CLAMP_CLASS');
+    expect(constants).toContain('xl:grid-cols-4');
+    expect(constants).not.toContain('minmax(min(100%,16rem)');
   });
 });

@@ -5,18 +5,16 @@ export const FUNCTION_CATALOG_OTHER_ID = 'other' as const;
 export const FUNCTION_CATALOG_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]';
 
 export const FUNCTION_CATALOG_CARD_GRID_CLASS =
-  'grid w-full content-start gap-2 [grid-template-columns:repeat(auto-fill,minmax(min(100%,16rem),1fr))]';
+  'grid w-full content-start grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
 export const FUNCTION_CATALOG_PICKER_DIALOG_CLASS =
   'flex max-h-[90vh] flex-col gap-4 overflow-hidden sm:max-w-5xl';
 
 export const FUNCTION_CATALOG_PICKER_BODY_CLASS = 'min-h-0 flex-1 overflow-y-auto';
 
-export const CATALOG_ICON_SIZE_PX = 20;
+export const CATALOG_ICON_SIZE_PX = 16;
 
-export const CATALOG_ICON_COMPACT_SIZE_PX = 16;
-
-export const CATALOG_SUMMARY_CLAMP_CLASS = 'line-clamp-2';
+export const CATALOG_ICON_COMPACT_SIZE_PX = 14;
 
 export const TERMINAL_DELIVERY_STATUSES = ['DONE', 'LOST'] as const;
 

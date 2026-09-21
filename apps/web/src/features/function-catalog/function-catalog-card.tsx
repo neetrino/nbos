@@ -4,10 +4,7 @@ import { cn } from '@/lib/utils';
 import { CatalogFunctionIcon } from './catalog-icon';
 import type { CatalogFunctionGradation } from './function-catalog-gradation';
 import { FunctionCatalogGradationChips } from './function-catalog-gradation-chips';
-import {
-  CATALOG_ICON_COMPACT_SIZE_PX,
-  CATALOG_SUMMARY_CLAMP_CLASS,
-} from './function-catalog.constants';
+import { CATALOG_ICON_COMPACT_SIZE_PX } from './function-catalog.constants';
 
 type FunctionCatalogCardProps = {
   item: DeliveryFunctionOperationalDto;
@@ -148,7 +145,7 @@ function cardClassName(
 ): string {
   return cn(
     'border-border bg-card flex h-full text-left transition-colors',
-    compact ? 'gap-3 rounded-xl border p-3' : 'flex-col gap-2 rounded-2xl border p-4',
+    compact ? 'gap-2 rounded-xl border p-2.5' : 'flex-col gap-1.5 rounded-xl border p-3',
     stacked && 'flex-col',
     interactive ? 'hover:bg-muted/40' : 'cursor-default opacity-70',
     selected && 'border-primary bg-primary/5',
@@ -165,7 +162,7 @@ function CardContents({
       <span
         className={cn(
           'bg-muted flex shrink-0 items-center justify-center',
-          compact ? 'size-9 rounded-lg' : 'size-10 rounded-xl',
+          compact ? 'size-8 rounded-md' : 'size-8 rounded-lg',
         )}
       >
         <CatalogFunctionIcon
@@ -189,9 +186,6 @@ function CardBody({
         <p className="text-foreground truncate text-sm font-semibold">{item.title}</p>
         <CardMeta {...copy} />
       </div>
-      <p className={cn('text-muted-foreground text-xs', CATALOG_SUMMARY_CLAMP_CLASS)}>
-        {item.summary}
-      </p>
     </div>
   );
 }
