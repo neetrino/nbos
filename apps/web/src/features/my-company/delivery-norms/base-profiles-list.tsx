@@ -2,13 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
-import { deliveryNormsApi } from '@/lib/api/delivery-norms';
-import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
-import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
-import { NORMS_LIST_GRID_CLASS } from './delivery-norms.constants';
-import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
-import { PublishDraftButton } from './publish-draft-button';
-import { summarizeRoleUnits } from './summarize-role-units';
+import { BaseProfileCard } from './base-profile-card';
+import { dictionariesForProfileLabel } from './base-profile-label';
+import { NORMS_CARD_GRID_CLASS } from './delivery-norms.constants';
 
 export function BaseProfilesList({
   rows,
@@ -27,39 +23,16 @@ export function BaseProfilesList({
     return <p className="text-muted-foreground text-sm">{t('profiles.empty')}</p>;
   }
   return (
-    <ul className={NORMS_LIST_GRID_CLASS}>
+    <ul className={NORMS_CARD_GRID_CLASS}>
       {rows.map((row) => (
-        <DeliveryNormsRecordRow key={row.id}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-foreground text-sm font-semibold">
-                {formatBaseProfileLabel(row.profileKey, row.version, dictionaries)}
-              </p>
-              <p className="text-muted-foreground text-xs">
-                {t('profiles.includedCount', { count: row.includedFunctionIds.length })}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <NormativeStatusBadge
-                status={row.status}
-                label={t(normativeStatusLabelKey(row.status))}
-              />
-              {row.status === 'DRAFT' && canPublish ? (
-                <PublishDraftButton
-                  roleUnits={row.roleUnits}
-                  onPublish={async (confirmZeroUnits) => {
-                    await deliveryNormsApi.publishBaseProfile(row.id, { confirmZeroUnits });
-                  }}
-                  onError={onError}
-                  onPublished={onPublished}
-                />
-              ) : null}
-            </div>
-          </div>
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            {summarizeRoleUnits(row.roleUnits)}
-          </p>
-        </DeliveryNormsRecordRow>
+        <BaseProfileCard
+          key={row.id}
+          row={row}
+          dictionaries={dictionaries}
+          canPublish={canPublish}
+          onPublished={onPublished}
+          onError={onError}
+        />
       ))}
     </ul>
   );

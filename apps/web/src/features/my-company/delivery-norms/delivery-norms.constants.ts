@@ -81,6 +81,19 @@ export const NORMS_SHEET_FOOTER_CLASS = 'px-5 py-3';
 
 export const NORMS_LIST_GRID_CLASS = 'grid gap-3 lg:grid-cols-2';
 
+export const NORMS_CARD_GRID_CLASS =
+  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))]';
+
+export const NORMS_PROFILE_CARD_CLASS =
+  'border-border/70 bg-background flex h-full min-w-0 flex-col gap-3 rounded-2xl border p-4 shadow-[var(--shadow-panel)]';
+
+export const NORMS_PROFILE_CARD_ACTIONS_CLASS = 'mt-auto [&_button]:w-full';
+
+export const ROLE_UNITS_BREAKDOWN_CLASS = 'divide-border/50 divide-y';
+
+export const ROLE_UNITS_BREAKDOWN_ROW_CLASS =
+  'flex items-center justify-between gap-3 py-1.5 first:pt-0 last:pb-0';
+
 export const SHEET_STACK_CLASS = 'flex flex-col gap-3';
 
 export const LIST_SEARCH_MAX_CLASS = 'min-w-[12rem] max-w-sm flex-1';
