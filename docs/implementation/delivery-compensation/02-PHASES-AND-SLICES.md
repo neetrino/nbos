@@ -575,10 +575,12 @@ Four DRAFT cores added for existing enum: `BUSINESS_CARD_WEBSITE`, `WEB_APP`, `E
 Nine kinds total. OTHER and marketing not seeded. `retiredSizedProfileKeys` kept for other envs.
 
 Dev `ep-nameless-term` already had the five unsized cores and no size axis (other-chat evidence,
-2026-09-21). This agent did not re-migrate and did not `--apply` the four new cores.
+2026-09-21). **2026-09-21 later:** `pnpm seed:delivery-profiles -- --apply` created the four missing
+DRAFT cores (`business-card-code`, `web-app-code`, `erp-code`, `saas-code`). Read-back: 9 keys.
 
-**Checks:** targeted vitest profile seed + `base-profile-label`; Prettier on touched files.
-**Not run:** `pnpm seed:delivery-profiles -- --apply` on live dev; browser QA; production migrate.
+**Checks:** targeted vitest profile seed + `base-profile-label`; Prettier on touched files;
+`--apply` on live dev; 9 profile rows read back.
+**Not run:** browser QA; production migrate.
 
 ### Extension.size three values (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
 
