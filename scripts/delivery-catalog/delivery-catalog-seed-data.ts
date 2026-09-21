@@ -50,7 +50,7 @@ export const DELIVERY_CATALOG_SEED_ITEMS: readonly CatalogSeedItem[] = [
 ];
 
 export const SEED_INSTRUCTIONS_PLACEHOLDER =
-  'Шаги исполнения заполняет специалист по реальной практике перед публикацией карточки.';
+  'The specialist documents the execution steps from actual practice before publishing the card.';
 
 export const SEED_ACCEPTANCE_PLACEHOLDER =
-  'Критерии приёмки уточняет ответственный специалист перед публикацией карточки.';
+  'The responsible specialist defines the acceptance criteria before publishing the card.';

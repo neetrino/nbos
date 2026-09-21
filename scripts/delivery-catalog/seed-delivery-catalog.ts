@@ -11,31 +11,39 @@ const FIRST_CONTENT_VERSION = 1;
 const FIRST_PRICE_VERSION = 1;
 const FIRST_TIER_POSITION = 1;
 const APPLY_FLAG = '--apply';
+const UPDATE_COPY_FLAG = '--update-copy';
 const AUTHOR_FLAG = '--author=';
 
 /**
  * Creates the draft delivery catalog. Dry run by default; `--apply` writes.
- * Everything is DRAFT, nothing is published, and existing codes are left untouched on a re-run.
+ * Everything created is DRAFT and nothing is published. Existing codes stay untouched unless
+ * `--update-copy` explicitly requests copy-only updates.
  */
 async function main(): Promise<void> {
   const apply = process.argv.includes(APPLY_FLAG);
+  const updateCopy = process.argv.includes(UPDATE_COPY_FLAG);
   const authorId = readAuthorId();
   const prisma = createPrismaClient({ role: 'all', skipBudgetAssert: true });
   try {
     const existing = await prisma.deliveryFunction.findMany({ select: { id: true, code: true } });
-    const plan = planDeliveryCatalogSeed(existing);
+    const plan = planDeliveryCatalogSeed(existing, { updateCopy });
     process.stdout.write(`${formatSeedPlan(plan, apply)}\n`);
     if (!apply) {
       process.stdout.write(`Re-run with ${APPLY_FLAG} to write these rows.\n`);
       return;
     }
-    const author = await resolveAuthorId(prisma, authorId);
+    const author = plan.createCount > 0 ? await resolveAuthorId(prisma, authorId) : null;
     for (const entry of plan.entries) {
       if (entry.action === 'KEEP') continue;
+      if (entry.action === 'UPDATE_COPY') {
+        await updateFunctionCopy(prisma, entry.existingId, entry.item);
+        continue;
+      }
+      if (!author) throw new Error('Author is required to create catalog functions.');
       await createDraftFunction(prisma, entry.item, author);
     }
     process.stdout.write(
-      `Created ${plan.createCount} draft catalog functions with draft unit proposals.\n`,
+      `Created ${plan.createCount} draft catalog functions and updated copy for ${plan.updateCopyCount} existing functions.\n`,
     );
   } finally {
     await prisma.$disconnect();
@@ -94,6 +102,39 @@ async function createDraftFunction(
     },
   });
   await createDraftPricing(prisma, item, created.id);
+}
+
+async function updateFunctionCopy(
+  prisma: PrismaClient,
+  functionId: string,
+  item: DeliveryCatalogSeedItem,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const latestContent = await tx.deliveryFunctionContentVersion.findFirst({
+      where: { functionId },
+      orderBy: { version: 'desc' },
+      select: { id: true },
+    });
+    if (!latestContent) {
+      throw new Error(`Delivery function ${item.code} has no content version to update.`);
+    }
+    await tx.deliveryFunctionContentVersion.update({
+      where: { id: latestContent.id },
+      data: {
+        title: item.title,
+        summary: item.summary,
+        scopeBoundaries: item.scopeBoundaries,
+        instructions: SEED_INSTRUCTIONS_PLACEHOLDER,
+        acceptanceCriteria: SEED_ACCEPTANCE_PLACEHOLDER,
+      },
+    });
+    for (const tier of item.tiers ?? []) {
+      await tx.deliveryFunctionTier.updateMany({
+        where: { functionId, code: tier.code },
+        data: { label: tier.label },
+      });
+    }
+  });
 }
 
 /**

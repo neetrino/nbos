@@ -28,9 +28,10 @@ const items: DeliveryCatalogSeedItem[] = [
 
 describe('planDeliveryCatalogSeed', () => {
   it('creates missing codes and keeps existing ones untouched', () => {
-    const plan = planDeliveryCatalogSeed([{ id: 'fn-1', code: 'PAY_IDBANK' }], items);
+    const plan = planDeliveryCatalogSeed([{ id: 'fn-1', code: 'PAY_IDBANK' }], undefined, items);
 
     expect(plan.createCount).toBe(1);
+    expect(plan.updateCopyCount).toBe(0);
     expect(plan.keepCount).toBe(1);
     expect(plan.entries).toEqual([
       { action: 'KEEP', item: items[0], existingId: 'fn-1' },
@@ -40,10 +41,29 @@ describe('planDeliveryCatalogSeed', () => {
 
   it('is a no-op on a second run', () => {
     const existing = items.map((item, index) => ({ id: `fn-${index}`, code: item.code }));
-    const plan = planDeliveryCatalogSeed(existing, items);
+    const plan = planDeliveryCatalogSeed(existing, undefined, items);
 
     expect(plan.createCount).toBe(0);
+    expect(plan.updateCopyCount).toBe(0);
     expect(plan.entries.every((entry) => entry.action === 'KEEP')).toBe(true);
+  });
+
+  it('updates only copy when explicitly requested', () => {
+    const plan = planDeliveryCatalogSeed(
+      [{ id: 'fn-1', code: 'PAY_IDBANK' }],
+      { updateCopy: true },
+      items,
+    );
+
+    expect(plan).toMatchObject({
+      createCount: 1,
+      updateCopyCount: 1,
+      keepCount: 0,
+      entries: [
+        { action: 'UPDATE_COPY', item: items[0], existingId: 'fn-1' },
+        { action: 'CREATE', item: items[1] },
+      ],
+    });
   });
 
   it('ships unique codes in the shipped catalog data', () => {
@@ -52,8 +72,19 @@ describe('planDeliveryCatalogSeed', () => {
   });
 
   it('marks a dry run in the printed plan', () => {
-    const plan = planDeliveryCatalogSeed([], items);
+    const plan = planDeliveryCatalogSeed([], undefined, items);
     expect(formatSeedPlan(plan, false)).toContain('Dry run');
     expect(formatSeedPlan(plan, true)).toContain('Applying');
+  });
+
+  it('prints copy updates and their count', () => {
+    const plan = planDeliveryCatalogSeed(
+      [{ id: 'fn-1', code: 'PAY_IDBANK' }],
+      { updateCopy: true },
+      [items[0]],
+    );
+
+    expect(formatSeedPlan(plan, false)).toContain('1 copy updates');
+    expect(formatSeedPlan(plan, false)).toContain('UPDATE_COPY PAY_IDBANK -> fn-1');
   });
 });
