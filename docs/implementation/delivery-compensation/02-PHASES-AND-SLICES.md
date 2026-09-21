@@ -456,13 +456,7 @@ exists. An extension reaches its team through its assignee or its parent product
 The scope consulted is the scope of the action the route required, so a caller with `VIEW: ALL` and
 `EDIT: OWN` is company-wide on reads and narrow on money commands.
 
-**Out of scope and still open for the Owner:** a developer who is legitimately on a product team can
-still change scope on that product, name themselves in an extension role assignment, and take a
-share in a replacement — `applyEmployeeReplacement` refuses only `from === to`, not self as the
-incoming holder. That is the permission matrix granting `PROJECTS_EDIT` to delivery specialists, not
-object scope: this slice narrows **which cards** such a person reaches, not **what they may do** on
-a card they legitimately reach. Closing it means deciding whether configuration edits need a
-permission of their own instead of riding on `PROJECTS`.
+**Follow-up, now closed:** the matrix half of this was settled the same day — see the next entry.
 
 Security review found no medium-or-higher issue: all eleven routes are covered, the `ALL` bypass and
 the grant-scoped `DEPARTMENT` expansion match the other modules, and denials do not leak existence.
@@ -470,6 +464,49 @@ the grant-scoped `DEPARTMENT` expansion match the other modules, and denials do 
 **Checks:** vitest `apps/api/src/modules/{delivery-compensation,projects,common}` (458 passed, 6
 skipped); API `tsc --noEmit` (8GB); Prettier on touched files; every file under 300 lines.
 **Not run:** live HTTP probe on dev with a narrow-scope account, browser QA.
+
+### The configurator gets a permission of its own (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Object scope answered _which cards_; this answers _whether at all_. The configurator rode on
+`PROJECTS_EDIT`, which delivery specialists hold at `OWN` because that same permission carries
+domains, technical data and the WhatsApp integration — 19 routes they need for ordinary work. So
+narrowing them out of `PROJECTS` was never an option, and on their own cards they could still change
+scope, name role holders and replace assignees. Canon §12 already speaks of "the configuration
+right" apart from being a PM, so it becomes a module.
+
+`DELIVERY_CONFIGURATION` is registered exactly the way `FUNCTION_CATALOG` and
+`DELIVERY_COMPENSATION_RULES` were, through migration `20260921140000_delivery_configuration_permissions`
+plus `MODULES` and the role matrices. Nothing bespoke: the Settings → Roles matrix is built from
+`GET /permissions`, so the row and its NONE/OWN/DEPARTMENT/ALL selectors appear on their own. All
+four actions exist as on every other module; only VIEW and EDIT gate an endpoint, ADD and DELETE are
+reserved.
+
+Defaults keep every existing read and remove only the edit. VIEW mirrors the `PROJECTS_VIEW` scope
+each role already had — delivery specialists `OWN`, Finance Director, Head of Support and Operations
+Manager `ALL`. EDIT goes to Owner, CEO, PM and Head of Delivery, and to nobody else. Verified on dev
+after `migrate deploy`: four permission rows, EDIT on exactly those four roles, `VIEW: OWN` on the
+six specialist roles. Grants use `ON CONFLICT DO NOTHING`, so a scope an administrator already tuned
+is never overwritten.
+
+**Deploy this migration before the code.** In that order the old `PROJECTS` gate stays live for a
+moment; in the other order every configuration route denies everyone, including reads, until the
+grants land. Neither order widens anything.
+
+**Still open for the Owner:** a PM may name themselves as the PM role holder or take a share in a
+replacement, and that is legitimate — PM is one of the six compensated roles, so a blanket refusal
+would break the normal case. `applyEmployeeReplacement` refuses only `from === to`. Agreed direction
+is to surface these in the audit trail for the Owner rather than block them; not built yet.
+
+Review caught the role match being half dead: the fallback branch spelled slugs `'role-owner'`,
+while `roles.slug` holds the bare `owner`. On dev the id branch carried every grant, so nothing was
+mis-granted, but a database with generated role ids would have received none. Slugs now match the
+column, and the migration test asserts it against the spelling `20260919123000` already used.
+
+**Checks:** vitest `packages/database/prisma`, `packages/shared`,
+`apps/api/src/modules/delivery-compensation` (651 passed, then 193 re-run after the slug fix); API
+and web `tsc --noEmit` (8GB); Prettier on touched files; migration applied to **dev** and the
+resulting grants read back; guard metadata asserted on all eleven routes, not a sample.
+**Not run:** browser QA of the Settings → Roles row, live HTTP probe under a specialist account.
 
 ### Production launch
 

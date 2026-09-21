@@ -6,6 +6,7 @@
 
 export const FUNCTION_CATALOG_MODULE = 'FUNCTION_CATALOG' as const;
 export const DELIVERY_COMPENSATION_RULES_MODULE = 'DELIVERY_COMPENSATION_RULES' as const;
+export const DELIVERY_CONFIGURATION_MODULE = 'DELIVERY_CONFIGURATION' as const;
 
 export const FUNCTION_CATALOG_VIEW = `${FUNCTION_CATALOG_MODULE}_VIEW` as const;
 export const FUNCTION_CATALOG_EDIT = `${FUNCTION_CATALOG_MODULE}_EDIT` as const;
@@ -19,6 +20,9 @@ export const DELIVERY_COMPENSATION_RULES_EDIT =
 export const DELIVERY_COMPENSATION_RULES_ADD = `${DELIVERY_COMPENSATION_RULES_MODULE}_ADD` as const;
 export const DELIVERY_COMPENSATION_RULES_DELETE =
   `${DELIVERY_COMPENSATION_RULES_MODULE}_DELETE` as const;
+
+export const DELIVERY_CONFIGURATION_VIEW = `${DELIVERY_CONFIGURATION_MODULE}_VIEW` as const;
+export const DELIVERY_CONFIGURATION_EDIT = `${DELIVERY_CONFIGURATION_MODULE}_EDIT` as const;
 
 export const FUNCTION_CATALOG_VIEW_PERMISSION_ID = 'perm-function-catalog-view' as const;
 export const FUNCTION_CATALOG_EDIT_PERMISSION_ID = 'perm-function-catalog-edit' as const;
@@ -63,7 +67,33 @@ export const FUNCTION_CATALOG_CONTENT_EDIT_DEFAULT_ROLE_IDS = [
 export const DELIVERY_COMPENSATION_RULES_DEFAULT_ROLE_IDS = ['role-owner', 'role-ceo'] as const;
 
 /**
- * Product/Extension configuration edits stay on PROJECTS object scope.
- * Do not grant DELIVERY_COMPENSATION_RULES to PM/Finance for this capability.
+ * Who may change the scope, parameters and role holders of a delivery. Canon §12 calls this "the
+ * configuration right" and speaks of it apart from being a PM, so it is a module of its own rather
+ * than a side effect of `PROJECTS_EDIT`: that permission also carries domains, technical data and
+ * the WhatsApp integration, which delivery specialists need for ordinary work. Object scope still
+ * applies on top and decides which cards, not whether.
  */
-export const DELIVERY_CONFIGURATION_PERMISSION_MODULE = 'PROJECTS' as const;
+export const DELIVERY_CONFIGURATION_EDIT_DEFAULT_ROLE_IDS = [
+  'role-owner',
+  'role-ceo',
+  'role-pm',
+  'role-head-delivery',
+] as const;
+
+/** Readers keep exactly the visibility their `PROJECTS_VIEW` already gave them. */
+export const DELIVERY_CONFIGURATION_READ_ALL_DEFAULT_ROLE_IDS = [
+  'role-finance-director',
+  'role-head-support',
+  'role-operations-manager',
+] as const;
+
+export const DELIVERY_CONFIGURATION_READ_OWN_DEFAULT_ROLE_IDS = [
+  'role-developer',
+  'role-developer-frontend',
+  'role-junior-developer',
+  'role-designer',
+  'role-qa',
+  'role-tech-specialist',
+] as const;
+
+export const DELIVERY_CONFIGURATION_PERMISSION_MODULE = DELIVERY_CONFIGURATION_MODULE;
