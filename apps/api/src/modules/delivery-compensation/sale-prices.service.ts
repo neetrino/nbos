@@ -36,7 +36,10 @@ export class SalePricesService {
 
   async list(targetKey?: string, includeRate = false): Promise<SalePriceVersionDto[]> {
     const rows = await this.prisma.deliverySalePriceVersion.findMany({
-      where: targetKey ? { targetKey } : {},
+      where: {
+        ...(targetKey ? { targetKey } : {}),
+        ...(includeRate ? {} : { status: 'PUBLISHED' }),
+      },
       orderBy: [{ targetKey: 'asc' }, { version: 'desc' }],
     });
     return this.serializeMany(rows, includeRate);

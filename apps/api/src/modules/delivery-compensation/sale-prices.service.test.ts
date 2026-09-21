@@ -104,12 +104,43 @@ describe('SalePricesService', () => {
   });
 
   it('resolves the client line from published units without exposing the rate to catalog viewers', async () => {
-    const service = new SalePricesService(buildPrisma() as never);
+    const prisma = buildPrisma({
+      deliverySalePriceVersion: {
+        ...buildPrisma().deliverySalePriceVersion,
+        findMany: vi.fn().mockResolvedValue([row({ status: 'PUBLISHED' })]),
+      },
+    });
+    const service = new SalePricesService(prisma as never);
     const [first] = await service.list();
     expect(first).toMatchObject({
       amountPerUnit: null,
       resolvedAmount: '300000.00',
     });
+    expect(prisma.deliverySalePriceVersion.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { status: 'PUBLISHED' } }),
+    );
+  });
+
+  it('asks only for published core units', async () => {
+    const prisma = buildPrisma({
+      deliverySalePriceVersion: {
+        ...buildPrisma().deliverySalePriceVersion,
+        findMany: vi.fn().mockResolvedValue([
+          row({
+            targetKey: 'CORE:core-1',
+            functionId: null,
+            baseProfileVersionId: 'core-1',
+            status: 'PUBLISHED',
+          }),
+        ]),
+      },
+    });
+    await new SalePricesService(prisma as never).list(undefined, true);
+    expect(prisma.deliveryBaseProfileVersion.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ status: 'PUBLISHED' }),
+      }),
+    );
   });
 
   it('returns the AMD-per-unit rate only when rules permission is granted', async () => {

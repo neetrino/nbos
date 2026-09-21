@@ -66,7 +66,7 @@ export class CatalogStructureController {
   @Post('sale-prices')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Create a draft sale price for a function, a gradation or a core.' })
-  createSalePriceDraft(
+  async createSalePriceDraft(
     @Body()
     body: {
       functionId?: string;
@@ -77,14 +77,14 @@ export class CatalogStructureController {
     },
   ) {
     try {
-      return this.salePrices.createDraft(readSalePriceTarget(body), body);
+      return await this.salePrices.createDraft(readSalePriceTarget(body), body);
     } catch (error) {
       mapCatalogWriteError(error);
     }
   }
 
   @Get('sale-prices/default-unit-price')
-  @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW')
   @ApiOperation({ summary: 'AMD per unit used when a card carries no rate of its own.' })
   async getDefaultUnitPrice() {
     return { defaultSaleAmountPerUnit: await this.salePrices.defaultUnitPrice() };
@@ -93,9 +93,9 @@ export class CatalogStructureController {
   @Post('sale-prices/default-unit-price')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Set the global AMD-per-unit sale rate.' })
-  setDefaultUnitPrice(@Body() body: { amountPerUnit?: string | number }) {
+  async setDefaultUnitPrice(@Body() body: { amountPerUnit?: string | number }) {
     try {
-      return this.salePrices.setDefaultUnitPrice(body.amountPerUnit);
+      return await this.salePrices.setDefaultUnitPrice(body.amountPerUnit);
     } catch (error) {
       mapCatalogWriteError(error);
     }

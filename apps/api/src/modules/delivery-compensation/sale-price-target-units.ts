@@ -11,8 +11,8 @@ type SalePriceTargetRow = {
 type RoleUnitRow = { units: { toString(): string } | null };
 
 /**
- * Published (or newest draft) units of each priced item, so the client line amount can be
- * computed without sending units to a caller who may not see cost.
+ * Published units of each priced item, so the client line amount can be computed without
+ * sending units to a caller who may not see cost. Draft vectors do not price a card.
  */
 export async function loadUnitsBySaleTarget(
   prisma: InstanceType<typeof PrismaClient>,
@@ -79,7 +79,7 @@ async function loadCoreUnits(
 ): Promise<Map<string, string | null>> {
   if (coreIds.length === 0) return new Map();
   const versions = await prisma.deliveryBaseProfileVersion.findMany({
-    where: { id: { in: coreIds } },
+    where: { id: { in: coreIds }, status: 'PUBLISHED' },
     select: { id: true, roleUnits: { select: { units: true } } },
   });
   return new Map(versions.map((row) => [row.id, unitsFromRoles(row.roleUnits)]));
