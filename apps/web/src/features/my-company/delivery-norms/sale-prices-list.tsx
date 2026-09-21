@@ -2,7 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
+import { EntityListAmount } from '@/components/shared';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
+import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
 
@@ -22,7 +24,7 @@ export function SalePricesList({
     return <p className="text-muted-foreground text-sm">{t('salePrices.empty')}</p>;
   }
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {rows.map((row) => (
         <SalePriceRow
           key={row.id}
@@ -49,7 +51,7 @@ function SalePriceRow({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <li className="border-border space-y-2 rounded-xl border p-3">
+    <DeliveryNormsRecordRow>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-muted-foreground text-xs">
           {t('columns.version')} {row.version}
@@ -70,20 +72,29 @@ function SalePriceRow({
           ) : null}
         </div>
       </div>
-      <p className="text-muted-foreground text-xs">{salePriceSummary(row, t)}</p>
-    </li>
+      <SalePriceSummary row={row} />
+    </DeliveryNormsRecordRow>
   );
 }
 
-function salePriceSummary(
-  row: SalePriceVersionDto,
-  t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
-): string {
+function SalePriceSummary({ row }: { row: SalePriceVersionDto }) {
+  const t = useTranslations('hr.deliveryNorms');
   if (row.fixedAmount !== null) {
-    return `${t('salePrices.sourceFixed')}: ${row.fixedAmount} ${row.currency}`;
+    return (
+      <p className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs leading-relaxed">
+        <span>{t('salePrices.sourceFixed')}:</span>
+        <EntityListAmount amount={row.fixedAmount} currency={row.currency} className="text-xs" />
+      </p>
+    );
   }
   if (row.multiplier !== null) {
-    return `${t('salePrices.sourceMultiplier')}: ${row.multiplier}`;
+    return (
+      <p className="text-muted-foreground text-xs leading-relaxed">
+        {t('salePrices.sourceMultiplier')}: {row.multiplier}
+      </p>
+    );
   }
-  return t('salePrices.sourceDefault');
+  return (
+    <p className="text-muted-foreground text-xs leading-relaxed">{t('salePrices.sourceDefault')}</p>
+  );
 }

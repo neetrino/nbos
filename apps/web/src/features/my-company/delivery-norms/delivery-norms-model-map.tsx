@@ -3,6 +3,7 @@
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { MAP_STEP_CLASS } from './delivery-norms.constants';
 import { type DeliveryNormsMapKey, locationForMapKey } from './delivery-norms-workspace';
 
 const PROFILE_CHILD_KEYS = [
@@ -33,7 +34,7 @@ function TopLevelStep({
 }) {
   const t = useTranslations('hr.deliveryNorms.workspace.map');
   return (
-    <li className="border-border bg-card rounded-2xl border p-4">
+    <li className={MAP_STEP_CLASS}>
       <MapRow
         mapKey={mapKey}
         index={t(`${mapKey}.index`)}
@@ -48,7 +49,7 @@ function TopLevelStep({
 function ProfilesStep({ onOpen }: { onOpen: (key: DeliveryNormsMapKey) => void }) {
   const t = useTranslations('hr.deliveryNorms.workspace.map');
   return (
-    <li className="border-border bg-card space-y-3 rounded-2xl border p-4">
+    <li className={MAP_STEP_CLASS}>
       <MapRow
         mapKey="profiles"
         index={t('profiles.index')}

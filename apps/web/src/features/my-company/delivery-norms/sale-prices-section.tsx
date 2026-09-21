@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
 import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
+import { DetailSheetFieldSegmented, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { DefaultMultiplierForm } from './default-multiplier-form';
 import {
   OPTIONAL_SELECT_NONE,
@@ -11,9 +13,8 @@ import {
   type SalePriceTargetKind,
 } from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
-import { NormEnumSelect } from './norm-enum-select';
-import { NormField } from './norm-field';
 import { SalePriceCreateForm } from './sale-price-create-form';
+import { selectOptionsFromRecord } from './select-options-from-record';
 import {
   gradationsFromCatalog,
   salePricesForTarget,
@@ -120,26 +121,24 @@ function SalePriceTargetPicker({
 
   return (
     <div className="space-y-2">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <NormField label={t('salePrices.targetKind')}>
-          <NormEnumSelect
-            id="sale-price-kind"
-            value={kind}
-            options={SALE_PRICE_TARGET_KINDS}
-            labels={kindLabels}
-            onChange={onKindChange}
-          />
-        </NormField>
-        <NormField label={t('salePrices.pickTarget')}>
-          <NormEnumSelect
-            id="sale-price-target"
-            value={targetId}
-            options={[OPTIONAL_SELECT_NONE, ...options]}
-            labels={labels}
-            onChange={onTargetIdChange}
-          />
-        </NormField>
-      </div>
+      <FormFieldRow>
+        <DetailSheetFieldSegmented
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('salePrices.targetKind')}
+          value={kind}
+          options={selectOptionsFromRecord(SALE_PRICE_TARGET_KINDS, kindLabels)}
+          onValueChange={onKindChange}
+        />
+        <InlineField
+          variant="controlled"
+          type="select"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('salePrices.pickTarget')}
+          value={targetId}
+          options={selectOptionsFromRecord([OPTIONAL_SELECT_NONE, ...options], labels)}
+          onValueChange={onTargetIdChange}
+        />
+      </FormFieldRow>
       {kind === 'TIER' && options.length === 0 ? (
         <p className="text-muted-foreground text-xs">{t('salePrices.noTiers')}</p>
       ) : null}

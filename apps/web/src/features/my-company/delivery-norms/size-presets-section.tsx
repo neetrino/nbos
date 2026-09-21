@@ -8,14 +8,13 @@ import {
   type DeliveryConfigSize,
   type DeliveryFunctionOperationalDto,
 } from '@nbos/shared';
-import { DataView, LoadingState } from '@/components/shared';
+import { DataView, InlineField, LoadingState } from '@/components/shared';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
 import { LOADING_LIST_COUNT, OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { messageFromCaught } from './message-from-caught';
-import { NormEnumSelect } from './norm-enum-select';
-import { NormField } from './norm-field';
 import { NormsLoadError } from './norms-load-error';
+import { selectOptionsFromRecord } from './select-options-from-record';
 import { SizePresetCreateForm } from './size-preset-create-form';
 import { SizePresetsList } from './size-presets-list';
 import {
@@ -47,7 +46,7 @@ export function SizePresetsSection({
   const selectedKey = profileKey === OPTIONAL_SELECT_NONE ? null : profileKey;
   const { presets, setPresets, loading, error, load } = useSizePresets(selectedKey);
   const labels = Object.fromEntries([
-    [OPTIONAL_SELECT_NONE, t('sizePresets.pickProfile')],
+    [OPTIONAL_SELECT_NONE, t('none')],
     ...profileKeys.map((key) => [key, key]),
   ]) as Record<string, string>;
 
@@ -61,15 +60,14 @@ export function SizePresetsSection({
       {profileKeys.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('sizePresets.emptyProfiles')}</p>
       ) : (
-        <NormField label={t('sizePresets.pickProfile')}>
-          <NormEnumSelect
-            id="size-presets-profile"
-            value={profileKey}
-            options={[OPTIONAL_SELECT_NONE, ...profileKeys]}
-            labels={labels}
-            onChange={setProfileKey}
-          />
-        </NormField>
+        <InlineField
+          variant="controlled"
+          type="select"
+          label={t('sizePresets.pickProfile')}
+          value={profileKey}
+          options={selectOptionsFromRecord([OPTIONAL_SELECT_NONE, ...profileKeys], labels)}
+          onValueChange={setProfileKey}
+        />
       )}
       {selectedKey ? (
         <SizePresetEditor

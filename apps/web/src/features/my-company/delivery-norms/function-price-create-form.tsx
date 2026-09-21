@@ -3,20 +3,21 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { parseFunctionPriceWriteBody, type DeliveryFunctionOperationalDto } from '@nbos/shared';
+import { FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
+import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
 import { dateInputToIso, isValidDateInput, todayDateInputValue } from './effective-from';
 import { messageFromCaught } from './message-from-caught';
-import { NormEnumSelect } from './norm-enum-select';
-import { NormField } from './norm-field';
 import { RoleUnitsEditor } from './role-units-editor';
 import {
   buildCompleteRoleUnitVector,
   createEmptyRoleUnitDrafts,
   type RoleUnitDraftRow,
 } from './role-units-draft';
+import { selectOptionsFromRecord } from './select-options-from-record';
 
 export function FunctionPriceCreateForm({
   catalog,
@@ -37,40 +38,42 @@ export function FunctionPriceCreateForm({
   const locked = Boolean(disabled || saving);
 
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void submitFunctionPrice({
-          functionId,
-          effectiveFrom,
-          roleUnits,
-          fallback: t('errors.create'),
-          invalidDate: t('errors.effectiveFrom'),
-          invalidUnits: t('errors.roleUnits'),
-          missingFunction: t('errors.functionRequired'),
-          onError,
-          onCreated: () => {
-            setFunctionId(OPTIONAL_SELECT_NONE);
-            setRoleUnits(createEmptyRoleUnitDrafts());
-            onCreated();
-          },
-          setSaving,
-        });
-      }}
-    >
-      <FunctionPriceDraftFields
-        catalog={catalog}
-        functionId={functionId}
-        effectiveFrom={effectiveFrom}
-        roleUnits={roleUnits}
-        locked={locked}
-        saving={saving}
-        onFunctionIdChange={setFunctionId}
-        onEffectiveFromChange={setEffectiveFrom}
-        onRoleUnitsChange={setRoleUnits}
-      />
-    </form>
+    <DeliveryNormsFormBlock title={t('prices.createTitle')}>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submitFunctionPrice({
+            functionId,
+            effectiveFrom,
+            roleUnits,
+            fallback: t('errors.create'),
+            invalidDate: t('errors.effectiveFrom'),
+            invalidUnits: t('errors.roleUnits'),
+            missingFunction: t('errors.functionRequired'),
+            onError,
+            onCreated: () => {
+              setFunctionId(OPTIONAL_SELECT_NONE);
+              setRoleUnits(createEmptyRoleUnitDrafts());
+              onCreated();
+            },
+            setSaving,
+          });
+        }}
+      >
+        <FunctionPriceDraftFields
+          catalog={catalog}
+          functionId={functionId}
+          effectiveFrom={effectiveFrom}
+          roleUnits={roleUnits}
+          locked={locked}
+          saving={saving}
+          onFunctionIdChange={setFunctionId}
+          onEffectiveFromChange={setEffectiveFrom}
+          onRoleUnitsChange={setRoleUnits}
+        />
+      </form>
+    </DeliveryNormsFormBlock>
   );
 }
 
@@ -96,33 +99,36 @@ function FunctionPriceDraftFields({
   onRoleUnitsChange: (value: RoleUnitDraftRow[]) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
-  const labels = Object.fromEntries([
-    [OPTIONAL_SELECT_NONE, t('prices.pickFunction')],
+  const labels: Record<string, string> = Object.fromEntries([
+    [OPTIONAL_SELECT_NONE, t('none')],
     ...catalog.map((item) => [item.id, item.title]),
-  ]) as Record<string, string>;
+  ]);
   return (
     <>
-      <h3 className="text-foreground text-sm font-semibold">{t('prices.createTitle')}</h3>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <NormField label={t('fields.function')}>
-          <NormEnumSelect
-            id="function-price-function"
-            value={functionId}
-            options={[OPTIONAL_SELECT_NONE, ...catalog.map((item) => item.id)]}
-            labels={labels}
-            disabled={locked}
-            onChange={onFunctionIdChange}
-          />
-        </NormField>
-        <NormField label={t('fields.effectiveFrom')}>
-          <Input
-            type="date"
-            value={effectiveFrom}
-            disabled={locked}
-            onChange={(event) => onEffectiveFromChange(event.target.value)}
-          />
-        </NormField>
-      </div>
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          type="select"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('fields.function')}
+          value={functionId}
+          disabled={locked}
+          options={selectOptionsFromRecord(
+            [OPTIONAL_SELECT_NONE, ...catalog.map((item) => item.id)],
+            labels,
+          )}
+          onValueChange={onFunctionIdChange}
+        />
+        <InlineField
+          variant="controlled"
+          type="date"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('fields.effectiveFrom')}
+          value={effectiveFrom}
+          disabled={locked}
+          onValueChange={onEffectiveFromChange}
+        />
+      </FormFieldRow>
       <RoleUnitsEditor rows={roleUnits} disabled={locked} onChange={onRoleUnitsChange} />
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={locked}>

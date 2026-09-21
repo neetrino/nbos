@@ -7,6 +7,7 @@ import type {
   DeliveryFunctionPriceFinancialDto,
 } from '@nbos/shared';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
+import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
 import { summarizeRoleUnits } from './summarize-role-units';
@@ -37,7 +38,7 @@ export function FunctionPricesList({
           <h4 className="text-foreground text-sm font-semibold">
             {titles.get(group.functionId) ?? t('prices.unknownFunction')}
           </h4>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {group.rows.map((row) => (
               <FunctionPriceRow
                 key={row.id}
@@ -67,7 +68,7 @@ function FunctionPriceRow({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <li className="border-border space-y-2 rounded-xl border p-3">
+    <DeliveryNormsRecordRow>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-muted-foreground text-xs">
           {t('columns.version')} {row.version}
@@ -89,8 +90,10 @@ function FunctionPriceRow({
           ) : null}
         </div>
       </div>
-      <p className="text-muted-foreground text-xs">{summarizeRoleUnits(row.roleUnits)}</p>
-    </li>
+      <p className="text-muted-foreground text-xs leading-relaxed">
+        {summarizeRoleUnits(row.roleUnits)}
+      </p>
+    </DeliveryNormsRecordRow>
   );
 }
 

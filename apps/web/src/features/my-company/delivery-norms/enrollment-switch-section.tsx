@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
+import { CreateFormSwitchField } from '@/components/shared';
 import { deliveryNormsApi, type DeliveryEnrollmentSetting } from '@/lib/api/delivery-norms';
-import { StatusBadge } from '@/components/shared';
 import { DELIVERY_NORMS_ENROLLMENT_ELEMENT_ID } from './delivery-norms-workspace';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { messageFromCaught } from './message-from-caught';
@@ -26,42 +25,28 @@ export function EnrollmentSwitchSection({
 
   return (
     <DeliveryNormsSectionCard title={t('enrollment.title')} description={t('enrollment.subtitle')}>
-      <div
-        id={DELIVERY_NORMS_ENROLLMENT_ELEMENT_ID}
-        className="flex flex-wrap items-center justify-between gap-3"
-      >
-        <div className="space-y-2">
-          <StatusBadge
-            label={enabled ? t('enrollment.stateOn') : t('enrollment.stateOff')}
-            variant={enabled ? 'emerald' : 'gray'}
-          />
-          {setting?.updatedAt ? (
-            <p className="text-muted-foreground text-xs">
-              {t('enrollment.updatedAt', { at: setting.updatedAt })}
-            </p>
-          ) : null}
-        </div>
-        {canToggle ? (
-          <Button
-            type="button"
-            size="sm"
-            variant={enabled ? 'outline' : 'default'}
-            disabled={saving}
-            onClick={() => {
-              void toggleEnrollment({
-                next: !enabled,
-                fallback: t('errors.enrollment'),
-                onChanged,
-                onError,
-                setSaving,
-              });
-            }}
-          >
-            {enabled ? t('enrollment.turnOff') : t('enrollment.turnOn')}
-          </Button>
+      <div id={DELIVERY_NORMS_ENROLLMENT_ELEMENT_ID} className="space-y-3">
+        <CreateFormSwitchField
+          label={enabled ? t('enrollment.stateOn') : t('enrollment.stateOff')}
+          checked={enabled}
+          disabled={!canToggle || saving}
+          onCheckedChange={(next) => {
+            void toggleEnrollment({
+              next,
+              fallback: t('errors.enrollment'),
+              onChanged,
+              onError,
+              setSaving,
+            });
+          }}
+        />
+        {setting?.updatedAt ? (
+          <p className="text-muted-foreground text-xs">
+            {t('enrollment.updatedAt', { at: setting.updatedAt })}
+          </p>
         ) : null}
+        <p className="text-muted-foreground text-xs">{t('enrollment.hint')}</p>
       </div>
-      <p className="text-muted-foreground text-xs">{t('enrollment.hint')}</p>
     </DeliveryNormsSectionCard>
   );
 }

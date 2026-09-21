@@ -3,16 +3,17 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DELIVERY_COMPENSATION_CURRENCY } from '@nbos/shared';
+import { AmdCurrencyIcon, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   deliveryCatalogStructureApi,
   type SalePriceDraftInput,
 } from '@/lib/api/delivery-catalog-structure';
-import { OPTIONAL_SELECT_NONE, PROFILE_FORM_GRID_CLASS } from './delivery-norms.constants';
+import { OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
+import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
 import { todayDateInputValue } from './effective-from';
 import { messageFromCaught } from './message-from-caught';
-import { NormField } from './norm-field';
 import { buildSalePriceFormInput, type SalePriceTargetKind } from './sale-price-draft';
 
 export function SalePriceCreateForm({
@@ -36,42 +37,44 @@ export function SalePriceCreateForm({
   const locked = Boolean(disabled || saving);
 
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void submitSalePrice({
-          kind,
-          targetId,
-          multiplier,
-          fixedAmount,
-          effectiveFrom,
-          missingTarget: t('errors.targetRequired'),
-          invalidDate: t('errors.effectiveFrom'),
-          priceRequired: t('errors.salePriceRequired'),
-          notPositive: t('errors.salePricePositive'),
-          fallback: t('errors.salePrices'),
-          onError,
-          onCreated: () => {
-            setMultiplier('');
-            setFixedAmount('');
-            onCreated();
-          },
-          setSaving,
-        });
-      }}
-    >
-      <SalePriceDraftFields
-        multiplier={multiplier}
-        fixedAmount={fixedAmount}
-        effectiveFrom={effectiveFrom}
-        locked={locked}
-        saving={saving}
-        onMultiplierChange={setMultiplier}
-        onFixedAmountChange={setFixedAmount}
-        onEffectiveFromChange={setEffectiveFrom}
-      />
-    </form>
+    <DeliveryNormsFormBlock title={t('salePrices.createTitle')}>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submitSalePrice({
+            kind,
+            targetId,
+            multiplier,
+            fixedAmount,
+            effectiveFrom,
+            missingTarget: t('errors.targetRequired'),
+            invalidDate: t('errors.effectiveFrom'),
+            priceRequired: t('errors.salePriceRequired'),
+            notPositive: t('errors.salePricePositive'),
+            fallback: t('errors.salePrices'),
+            onError,
+            onCreated: () => {
+              setMultiplier('');
+              setFixedAmount('');
+              onCreated();
+            },
+            setSaving,
+          });
+        }}
+      >
+        <SalePriceDraftFields
+          multiplier={multiplier}
+          fixedAmount={fixedAmount}
+          effectiveFrom={effectiveFrom}
+          locked={locked}
+          saving={saving}
+          onMultiplierChange={setMultiplier}
+          onFixedAmountChange={setFixedAmount}
+          onEffectiveFromChange={setEffectiveFrom}
+        />
+      </form>
+    </DeliveryNormsFormBlock>
   );
 }
 
@@ -97,35 +100,33 @@ function SalePriceDraftFields({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <>
-      <h3 className="text-foreground text-sm font-semibold">{t('salePrices.createTitle')}</h3>
-      <div className={PROFILE_FORM_GRID_CLASS}>
-        <NormField label={t('salePrices.multiplier')}>
-          <Input
-            value={multiplier}
-            disabled={locked}
-            inputMode="decimal"
-            onChange={(event) => onMultiplierChange(event.target.value)}
-          />
-        </NormField>
-        <NormField
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('salePrices.multiplier')}
+          value={multiplier}
+          disabled={locked}
+          onValueChange={onMultiplierChange}
+        />
+        <InlineField
+          variant="controlled"
+          className={FORM_FIELD_CELL_CLASS}
           label={t('salePrices.fixedAmount', { currency: DELIVERY_COMPENSATION_CURRENCY })}
-        >
-          <Input
-            value={fixedAmount}
-            disabled={locked}
-            inputMode="decimal"
-            onChange={(event) => onFixedAmountChange(event.target.value)}
-          />
-        </NormField>
-        <NormField label={t('fields.effectiveFrom')}>
-          <Input
-            type="date"
-            value={effectiveFrom}
-            disabled={locked}
-            onChange={(event) => onEffectiveFromChange(event.target.value)}
-          />
-        </NormField>
-      </div>
+          value={fixedAmount}
+          disabled={locked}
+          icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
+          onValueChange={onFixedAmountChange}
+        />
+      </FormFieldRow>
+      <InlineField
+        variant="controlled"
+        type="date"
+        label={t('fields.effectiveFrom')}
+        value={effectiveFrom}
+        disabled={locked}
+        onValueChange={onEffectiveFromChange}
+      />
       <p className="text-muted-foreground text-xs">{t('salePrices.fixedWins')}</p>
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={locked}>

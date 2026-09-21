@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { BaseProfileConfigFields, BaseProfileIdentityFields } from './base-profile-form-fields';
 import { buildBaseProfileWriteBody, emptyProfileDraft } from './base-profile-draft';
+import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
 import { IncludedFunctionsPicker } from './included-functions-picker';
 import { messageFromCaught } from './message-from-caught';
 import { RoleUnitsEditor } from './role-units-editor';
@@ -27,54 +28,55 @@ export function BaseProfileCreateForm({
   const [saving, setSaving] = useState(false);
 
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void submitProfile({
-          draft,
-          fallback: t('errors.create'),
-          invalidDate: t('errors.effectiveFrom'),
-          invalidUnits: t('errors.roleUnits'),
-          onError,
-          onCreated: () => {
-            setDraft(emptyProfileDraft());
-            onCreated();
-          },
-          setSaving,
-        });
-      }}
-    >
-      <h3 className="text-foreground text-sm font-semibold">{t('profiles.createTitle')}</h3>
-      <BaseProfileIdentityFields
-        draft={draft}
-        disabled={Boolean(disabled || saving)}
-        onChange={setDraft}
-      />
-      <BaseProfileConfigFields
-        draft={draft}
-        disabled={Boolean(disabled || saving)}
-        onChange={setDraft}
-      />
-      <RoleUnitsEditor
-        rows={draft.roleUnits}
-        disabled={disabled || saving}
-        onChange={(roleUnits) => setDraft((current) => ({ ...current, roleUnits }))}
-      />
-      <IncludedFunctionsPicker
-        options={catalog}
-        selectedIds={draft.includedFunctionIds}
-        disabled={disabled || saving}
-        onChange={(includedFunctionIds) =>
-          setDraft((current) => ({ ...current, includedFunctionIds }))
-        }
-      />
-      <div className="flex justify-end">
-        <Button type="submit" size="sm" disabled={disabled || saving}>
-          {saving ? t('create.creating') : t('create.profile')}
-        </Button>
-      </div>
-    </form>
+    <DeliveryNormsFormBlock title={t('profiles.createTitle')}>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submitProfile({
+            draft,
+            fallback: t('errors.create'),
+            invalidDate: t('errors.effectiveFrom'),
+            invalidUnits: t('errors.roleUnits'),
+            onError,
+            onCreated: () => {
+              setDraft(emptyProfileDraft());
+              onCreated();
+            },
+            setSaving,
+          });
+        }}
+      >
+        <BaseProfileIdentityFields
+          draft={draft}
+          disabled={Boolean(disabled || saving)}
+          onChange={setDraft}
+        />
+        <BaseProfileConfigFields
+          draft={draft}
+          disabled={Boolean(disabled || saving)}
+          onChange={setDraft}
+        />
+        <RoleUnitsEditor
+          rows={draft.roleUnits}
+          disabled={disabled || saving}
+          onChange={(roleUnits) => setDraft((current) => ({ ...current, roleUnits }))}
+        />
+        <IncludedFunctionsPicker
+          options={catalog}
+          selectedIds={draft.includedFunctionIds}
+          disabled={disabled || saving}
+          onChange={(includedFunctionIds) =>
+            setDraft((current) => ({ ...current, includedFunctionIds }))
+          }
+        />
+        <div className="flex justify-end">
+          <Button type="submit" size="sm" disabled={disabled || saving}>
+            {saving ? t('create.creating') : t('create.profile')}
+          </Button>
+        </div>
+      </form>
+    </DeliveryNormsFormBlock>
   );
 }
 

@@ -513,6 +513,7 @@
       "title": "Role units",
       "hint": "Leave a field empty to send null (not configured). Type 0 only when the role is explicitly unpaid.",
       "placeholder": "empty = not configured",
+      "unitsLabel": "Units",
       "required": "Required",
       "notRequired": "Not required",
       "notRequiredHint": "Not required — units are sent as null.",

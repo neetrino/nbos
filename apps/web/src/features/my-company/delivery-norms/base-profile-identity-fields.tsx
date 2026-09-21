@@ -2,12 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import { DELIVERY_ENTITY_KINDS, PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@nbos/shared';
-import { Input } from '@/components/ui/input';
-import { OPTIONAL_SELECT_NONE, PROFILE_FORM_GRID_CLASS } from './delivery-norms.constants';
+import { DetailSheetFieldSegmented, FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import { OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import type { ProfileDraft } from './base-profile-draft';
-import { NormEnumSelect } from './norm-enum-select';
-import { NormField } from './norm-field';
 import { productCategoryLabels, productTypeLabels } from './profile-enum-labels';
+import { selectOptionsFromRecord, applySelectValue } from './select-options-from-record';
 
 export function BaseProfileIdentityFields({
   draft,
@@ -20,44 +20,66 @@ export function BaseProfileIdentityFields({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <div className={PROFILE_FORM_GRID_CLASS}>
-      <NormField label={t('fields.profileKey')}>
-        <Input
+    <div className="space-y-3">
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('fields.profileKey')}
           value={draft.profileKey}
           disabled={disabled}
-          onChange={(event) => onChange({ ...draft, profileKey: event.target.value })}
+          onValueChange={(profileKey) => onChange({ ...draft, profileKey })}
         />
-      </NormField>
-      <NormField label={t('fields.entityKind')}>
-        <NormEnumSelect
-          id="profile-entity-kind"
+        <DetailSheetFieldSegmented
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('fields.entityKind')}
           value={draft.entityKind}
-          options={DELIVERY_ENTITY_KINDS}
-          labels={{ PRODUCT: t('entityKinds.PRODUCT'), EXTENSION: t('entityKinds.EXTENSION') }}
           disabled={disabled}
-          onChange={(entityKind) => onChange({ ...draft, entityKind })}
+          options={selectOptionsFromRecord(DELIVERY_ENTITY_KINDS, {
+            PRODUCT: t('entityKinds.PRODUCT'),
+            EXTENSION: t('entityKinds.EXTENSION'),
+          })}
+          onValueChange={(entityKind) => onChange({ ...draft, entityKind })}
         />
-      </NormField>
-      <NormField label={t('fields.productType')}>
-        <NormEnumSelect
-          id="profile-product-type"
+      </FormFieldRow>
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          type="select"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('fields.productType')}
           value={draft.productType}
-          options={[OPTIONAL_SELECT_NONE, ...PRODUCT_TYPES]}
-          labels={{ [OPTIONAL_SELECT_NONE]: t('none'), ...productTypeLabels(t) }}
           disabled={disabled}
-          onChange={(productType) => onChange({ ...draft, productType })}
+          options={selectOptionsFromRecord([OPTIONAL_SELECT_NONE, ...PRODUCT_TYPES], {
+            [OPTIONAL_SELECT_NONE]: t('none'),
+            ...productTypeLabels(t),
+          })}
+          onValueChange={(value) =>
+            applySelectValue([OPTIONAL_SELECT_NONE, ...PRODUCT_TYPES], value, (productType) =>
+              onChange({ ...draft, productType }),
+            )
+          }
         />
-      </NormField>
-      <NormField label={t('fields.productCategory')}>
-        <NormEnumSelect
-          id="profile-product-category"
+        <InlineField
+          variant="controlled"
+          type="select"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('fields.productCategory')}
           value={draft.productCategory}
-          options={[OPTIONAL_SELECT_NONE, ...PRODUCT_CATEGORIES]}
-          labels={{ [OPTIONAL_SELECT_NONE]: t('none'), ...productCategoryLabels(t) }}
           disabled={disabled}
-          onChange={(productCategory) => onChange({ ...draft, productCategory })}
+          options={selectOptionsFromRecord([OPTIONAL_SELECT_NONE, ...PRODUCT_CATEGORIES], {
+            [OPTIONAL_SELECT_NONE]: t('none'),
+            ...productCategoryLabels(t),
+          })}
+          onValueChange={(value) =>
+            applySelectValue(
+              [OPTIONAL_SELECT_NONE, ...PRODUCT_CATEGORIES],
+              value,
+              (productCategory) => onChange({ ...draft, productCategory }),
+            )
+          }
         />
-      </NormField>
+      </FormFieldRow>
     </div>
   );
 }

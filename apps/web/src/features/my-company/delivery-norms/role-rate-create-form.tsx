@@ -8,13 +8,14 @@ import {
   parseRoleRateWriteBody,
   type DeliveryCompensationRoleKey,
 } from '@nbos/shared';
+import { AmdCurrencyIcon, FormFieldRow, InlineField } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { FORM_FIELD_CELL_CLASS, FORM_FIELD_ROW_3_CLASS } from '@/components/shared/create-form';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
-import { ROLE_MESSAGE_KEYS, ROLE_RATE_GRID_CLASS } from './delivery-norms.constants';
+import { ROLE_MESSAGE_KEYS } from './delivery-norms.constants';
+import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
 import { dateInputToIso, isValidDateInput, todayDateInputValue } from './effective-from';
 import { messageFromCaught } from './message-from-caught';
-import { NormField } from './norm-field';
 import {
   createEmptyRoleRateDrafts,
   fillRoleRatesAtSeed,
@@ -38,35 +39,37 @@ export function RoleRateCreateForm({
   const locked = Boolean(disabled || saving);
 
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        void submitRoleRates({
-          rates,
-          effectiveFrom,
-          fallback: t('errors.create'),
-          invalidDate: t('errors.effectiveFrom'),
-          emptyRates: t('errors.rateRequired'),
-          onError,
-          onCreated: () => {
-            setRates(createEmptyRoleRateDrafts());
-            onCreated();
-          },
-          setSaving,
-        });
-      }}
-    >
-      <RoleRateDraftFields
-        rates={rates}
-        effectiveFrom={effectiveFrom}
-        locked={locked}
-        canSubmit={filledRoles.length > 0}
-        saving={saving}
-        onRatesChange={setRates}
-        onEffectiveFromChange={setEffectiveFrom}
-      />
-    </form>
+    <DeliveryNormsFormBlock title={t('rates.createTitle')}>
+      <form
+        className="space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submitRoleRates({
+            rates,
+            effectiveFrom,
+            fallback: t('errors.create'),
+            invalidDate: t('errors.effectiveFrom'),
+            emptyRates: t('errors.rateRequired'),
+            onError,
+            onCreated: () => {
+              setRates(createEmptyRoleRateDrafts());
+              onCreated();
+            },
+            setSaving,
+          });
+        }}
+      >
+        <RoleRateDraftFields
+          rates={rates}
+          effectiveFrom={effectiveFrom}
+          locked={locked}
+          canSubmit={filledRoles.length > 0}
+          saving={saving}
+          onRatesChange={setRates}
+          onEffectiveFromChange={setEffectiveFrom}
+        />
+      </form>
+    </DeliveryNormsFormBlock>
   );
 }
 
@@ -90,8 +93,7 @@ function RoleRateDraftFields({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-foreground text-sm font-semibold">{t('rates.createTitle')}</h3>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button
           type="button"
           variant="outline"
@@ -102,29 +104,31 @@ function RoleRateDraftFields({
           {t('rates.fillSeed')}
         </Button>
       </div>
-      <div className={ROLE_RATE_GRID_CLASS}>
+      <div className={FORM_FIELD_ROW_3_CLASS}>
         {DELIVERY_COMPENSATION_ROLE_KEYS.map((roleKey) => (
-          <NormField
+          <InlineField
             key={roleKey}
+            variant="controlled"
+            className={FORM_FIELD_CELL_CLASS}
             label={`${t(ROLE_MESSAGE_KEYS[roleKey])} · ${DELIVERY_COMPENSATION_CURRENCY}`}
-          >
-            <Input
-              value={rates[roleKey]}
-              disabled={locked}
-              inputMode="decimal"
-              onChange={(event) => onRatesChange({ ...rates, [roleKey]: event.target.value })}
-            />
-          </NormField>
+            value={rates[roleKey]}
+            disabled={locked}
+            icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
+            onValueChange={(value) => onRatesChange({ ...rates, [roleKey]: value })}
+          />
         ))}
       </div>
-      <NormField label={t('fields.effectiveFrom')}>
-        <Input
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
           type="date"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('fields.effectiveFrom')}
           value={effectiveFrom}
           disabled={locked}
-          onChange={(event) => onEffectiveFromChange(event.target.value)}
+          onValueChange={onEffectiveFromChange}
         />
-      </NormField>
+      </FormFieldRow>
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={locked || !canSubmit}>
           {saving ? t('create.creating') : t('create.rate')}

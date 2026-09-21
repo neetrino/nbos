@@ -5,6 +5,7 @@ import { StatusBadge } from '@/components/shared';
 import type { DeliveryNormsPageData } from './use-delivery-norms-page-data';
 import { DeliveryNormsModelMap } from './delivery-norms-model-map';
 import { DeliveryNormsPanelHeader } from './delivery-norms-panel-header';
+import { OVERVIEW_COUNT_CARD_CLASS } from './delivery-norms.constants';
 import { countPublished, type DeliveryNormsMapKey } from './delivery-norms-workspace';
 import { EnrollmentSwitchSection } from './enrollment-switch-section';
 
@@ -86,11 +87,7 @@ function CountCard({
 }) {
   const t = useTranslations('hr.deliveryNorms.workspace.overview.counts');
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="border-border bg-card hover:bg-muted/40 space-y-2 rounded-2xl border p-4 text-left"
-    >
+    <button type="button" onClick={onOpen} className={OVERVIEW_COUNT_CARD_CLASS}>
       <p className="text-foreground text-sm font-medium">{label}</p>
       <StatusBadge label={t('published', { published })} variant="emerald" />
     </button>

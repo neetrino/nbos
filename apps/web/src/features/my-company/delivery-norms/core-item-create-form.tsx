@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { NormField } from './norm-field';
-import { PROFILE_FORM_GRID_CLASS } from './delivery-norms.constants';
+import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
 
 export function CoreItemCreateForm({
   disabled,
@@ -20,36 +20,43 @@ export function CoreItemCreateForm({
   const locked = Boolean(disabled);
 
   return (
-    <form
-      className="space-y-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (!onAdd(label, note)) {
-          return;
-        }
-        setLabel('');
-        setNote('');
-      }}
-    >
-      <h3 className="text-foreground text-sm font-semibold">{t('coreItems.addTitle')}</h3>
-      <div className={PROFILE_FORM_GRID_CLASS}>
-        <NormField label={t('coreItems.label')}>
-          <Input
+    <DeliveryNormsFormBlock title={t('coreItems.addTitle')}>
+      <form
+        className="space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!onAdd(label, note)) {
+            return;
+          }
+          setLabel('');
+          setNote('');
+        }}
+      >
+        <FormFieldRow>
+          <InlineField
+            variant="controlled"
+            className={FORM_FIELD_CELL_CLASS}
+            label={t('coreItems.label')}
             value={label}
             disabled={locked}
-            onChange={(event) => setLabel(event.target.value)}
+            onValueChange={setLabel}
           />
-        </NormField>
-        <NormField label={t('coreItems.noteOptional')}>
-          <Input value={note} disabled={locked} onChange={(event) => setNote(event.target.value)} />
-        </NormField>
-      </div>
-      <p className="text-muted-foreground text-xs">{t('coreItems.noUnits')}</p>
-      <div className="flex justify-end">
-        <Button type="submit" size="sm" disabled={locked}>
-          {t('coreItems.add')}
-        </Button>
-      </div>
-    </form>
+          <InlineField
+            variant="controlled"
+            className={FORM_FIELD_CELL_CLASS}
+            label={t('coreItems.noteOptional')}
+            value={note}
+            disabled={locked}
+            onValueChange={setNote}
+          />
+        </FormFieldRow>
+        <p className="text-muted-foreground text-xs">{t('coreItems.noUnits')}</p>
+        <div className="flex justify-end">
+          <Button type="submit" size="sm" disabled={locked}>
+            {t('coreItems.add')}
+          </Button>
+        </div>
+      </form>
+    </DeliveryNormsFormBlock>
   );
 }

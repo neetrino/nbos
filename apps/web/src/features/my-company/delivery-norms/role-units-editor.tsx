@@ -1,15 +1,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { isExplicitZeroUnits, type DeliveryRoleUnitKind } from '@nbos/shared';
-import { Input } from '@/components/ui/input';
-import { ROLE_MESSAGE_KEYS, ROLE_UNIT_ROW_CLASS } from './delivery-norms.constants';
-import { NormEnumSelect } from './norm-enum-select';
+import { isExplicitZeroUnits } from '@nbos/shared';
+import { FormFieldRow, InlineField } from '@/components/shared';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import { DETAIL_SHEET_SUBSECTION_LABEL_CLASS } from '@/components/shared/detail-sheet-classes';
+import { RECORD_ROW_CLASS, ROLE_MESSAGE_KEYS } from './delivery-norms.constants';
 import {
   emptyUnitsInputToNull,
   replaceRoleUnitDraft,
   type RoleUnitDraftRow,
 } from './role-units-draft';
+import { selectOptionsFromRecord, applySelectValue } from './select-options-from-record';
 
 const UNIT_KIND_OPTIONS = ['REQUIRED', 'NOT_REQUIRED'] as const;
 
@@ -25,7 +27,7 @@ export function RoleUnitsEditor({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <fieldset className="space-y-3" disabled={disabled}>
-      <legend className="text-foreground text-sm font-semibold">{t('roleUnits.title')}</legend>
+      <legend className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{t('roleUnits.title')}</legend>
       <p className="text-muted-foreground text-xs">{t('roleUnits.hint')}</p>
       <div className="space-y-3">
         {rows.map((row) => (
@@ -53,28 +55,36 @@ function RoleUnitRow({
   const t = useTranslations('hr.deliveryNorms');
   const notRequired = row.unitKind === 'NOT_REQUIRED';
   return (
-    <div className={ROLE_UNIT_ROW_CLASS}>
-      <p className="text-foreground self-center text-sm font-medium">
-        {t(ROLE_MESSAGE_KEYS[row.roleKey])}
-      </p>
-      <NormEnumSelect
-        id={`role-unit-kind-${row.roleKey}`}
-        value={row.unitKind}
-        options={UNIT_KIND_OPTIONS}
-        labels={{ REQUIRED: t('roleUnits.required'), NOT_REQUIRED: t('roleUnits.notRequired') }}
-        disabled={disabled}
-        onChange={(unitKind: DeliveryRoleUnitKind) => onChange({ unitKind })}
-      />
-      <div className="space-y-1">
-        <Input
+    <div className={RECORD_ROW_CLASS}>
+      <p className="text-foreground text-sm font-medium">{t(ROLE_MESSAGE_KEYS[row.roleKey])}</p>
+      <FormFieldRow>
+        <InlineField
+          variant="controlled"
+          type="select"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('roleUnits.required')}
+          hideLabel
+          value={row.unitKind}
+          disabled={disabled}
+          options={selectOptionsFromRecord(UNIT_KIND_OPTIONS, {
+            REQUIRED: t('roleUnits.required'),
+            NOT_REQUIRED: t('roleUnits.notRequired'),
+          })}
+          onValueChange={(value) =>
+            applySelectValue(UNIT_KIND_OPTIONS, value, (unitKind) => onChange({ unitKind }))
+          }
+        />
+        <InlineField
+          variant="controlled"
+          className={FORM_FIELD_CELL_CLASS}
+          label={t('roleUnits.unitsLabel')}
           value={row.unitsInput}
           disabled={disabled || notRequired}
-          inputMode="decimal"
           placeholder={t('roleUnits.placeholder')}
-          onChange={(event) => onChange({ unitsInput: event.target.value })}
+          onValueChange={(unitsInput) => onChange({ unitsInput })}
         />
-        <p className="text-muted-foreground text-xs">{unitsHint(row, t)}</p>
-      </div>
+      </FormFieldRow>
+      <p className="text-muted-foreground text-xs">{unitsHint(row, t)}</p>
     </div>
   );
 }

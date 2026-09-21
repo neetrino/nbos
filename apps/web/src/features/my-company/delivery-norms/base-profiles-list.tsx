@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
+import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
 import { summarizeRoleUnits } from './summarize-role-units';
@@ -25,9 +26,9 @@ export function BaseProfilesList({
   return (
     <ul className="space-y-3">
       {rows.map((row) => (
-        <li key={row.id} className="border-border space-y-2 rounded-xl border p-3">
+        <DeliveryNormsRecordRow key={row.id}>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
+            <div className="min-w-0">
               <p className="text-foreground text-sm font-semibold">{row.profileKey}</p>
               <p className="text-muted-foreground text-xs">
                 {t('columns.version')} {row.version} ·{' '}
@@ -51,8 +52,10 @@ export function BaseProfilesList({
               ) : null}
             </div>
           </div>
-          <p className="text-muted-foreground text-xs">{summarizeRoleUnits(row.roleUnits)}</p>
-        </li>
+          <p className="text-muted-foreground text-xs leading-relaxed">
+            {summarizeRoleUnits(row.roleUnits)}
+          </p>
+        </DeliveryNormsRecordRow>
       ))}
     </ul>
   );

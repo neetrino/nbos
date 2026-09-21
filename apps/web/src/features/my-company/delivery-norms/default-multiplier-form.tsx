@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { InlineField } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
+import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
 import { messageFromCaught } from './message-from-caught';
-import { NormField } from './norm-field';
 import { parsePositiveDecimal } from './sale-price-draft';
 
 export function DefaultMultiplierForm({
@@ -25,19 +25,15 @@ export function DefaultMultiplierForm({
   const [saving, setSaving] = useState(false);
 
   return (
-    <div className="border-border space-y-3 rounded-xl border p-3">
-      <div>
-        <h3 className="text-foreground text-sm font-semibold">{t('salePrices.defaultTitle')}</h3>
-        <p className="text-muted-foreground text-xs">{t('salePrices.defaultSubtitle')}</p>
-      </div>
-      <NormField label={t('salePrices.defaultTitle')}>
-        <Input
-          value={draft}
-          disabled={!canEdit || saving}
-          inputMode="decimal"
-          onChange={(event) => setDraft(event.target.value)}
-        />
-      </NormField>
+    <DeliveryNormsFormBlock title={t('salePrices.defaultTitle')}>
+      <p className="text-muted-foreground text-xs">{t('salePrices.defaultSubtitle')}</p>
+      <InlineField
+        variant="controlled"
+        label={t('salePrices.multiplier')}
+        value={draft}
+        disabled={!canEdit || saving}
+        onValueChange={setDraft}
+      />
       {canEdit ? (
         <div className="flex justify-end">
           <Button
@@ -59,7 +55,7 @@ export function DefaultMultiplierForm({
           </Button>
         </div>
       ) : null}
-    </div>
+    </DeliveryNormsFormBlock>
   );
 }
 

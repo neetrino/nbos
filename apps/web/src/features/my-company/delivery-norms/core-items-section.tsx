@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
-import { DataView, LoadingState } from '@/components/shared';
+import { DataView, InlineField, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
 import { CoreItemCreateForm } from './core-item-create-form';
@@ -17,9 +17,8 @@ import { CoreItemsList } from './core-items-list';
 import { LOADING_LIST_COUNT, OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { messageFromCaught } from './message-from-caught';
-import { NormEnumSelect } from './norm-enum-select';
-import { NormField } from './norm-field';
 import { NormsLoadError } from './norms-load-error';
+import { selectOptionsFromRecord } from './select-options-from-record';
 import { useCoreItems } from './use-catalog-structure-lists';
 
 export function CoreItemsSection({
@@ -48,15 +47,17 @@ export function CoreItemsSection({
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('coreItems.emptyVersions')}</p>
       ) : (
-        <NormField label={t('coreItems.pickVersion')}>
-          <NormEnumSelect
-            id="core-items-version"
-            value={versionId}
-            options={[OPTIONAL_SELECT_NONE, ...rows.map((row) => row.id)]}
-            labels={labels}
-            onChange={setVersionId}
-          />
-        </NormField>
+        <InlineField
+          variant="controlled"
+          type="select"
+          label={t('coreItems.pickVersion')}
+          value={versionId}
+          options={selectOptionsFromRecord(
+            [OPTIONAL_SELECT_NONE, ...rows.map((row) => row.id)],
+            labels,
+          )}
+          onValueChange={setVersionId}
+        />
       )}
       {selected ? (
         <CoreItemsEditor
@@ -250,7 +251,7 @@ function versionOptionLabels(
   t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
 ): Record<string, string> {
   return Object.fromEntries([
-    [OPTIONAL_SELECT_NONE, t('coreItems.pickVersion')],
+    [OPTIONAL_SELECT_NONE, t('none')],
     ...rows.map((row) => [row.id, `${row.profileKey} · ${t('columns.version')} ${row.version}`]),
   ]) as Record<string, string>;
 }
