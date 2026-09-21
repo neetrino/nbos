@@ -221,7 +221,9 @@ one exists so Starting is not stuck on `CONFIGURATION_INCOMPLETE`.
 
 **1.22 Code type list is filtered by platform — Owner confirmation of 2026-09-21.** Platform is a
 Deal/Product Code field, not a units axis and not a third core. One kind has one core; the same
-function costs the same on WEB, APP and DESKTOP. New Code picks:
+function costs the same on WEB, APP and DESKTOP. The eight-kind matrix below was the 1.22 slice;
+**1.23 replaces the type list** while keeping the same filter rules (sites WEB-only, illegal pairs
+rejected, Category → Platform → Type).
 
 | Platform | Types                                                                               |
 | -------- | ----------------------------------------------------------------------------------- |
@@ -229,7 +231,7 @@ function costs the same on WEB, APP and DESKTOP. New Code picks:
 | APP      | ECOMMERCE, CRM, ERP, SAAS, WEB_APP                                                  |
 | DESKTOP  | ECOMMERCE, CRM, ERP, SAAS, WEB_APP                                                  |
 
-`WEB_APP` stays a kind (web application / custom system) on all three platforms. Sites are not
+`WEB_APP` stays a kind (custom system) on all three platforms. Sites are not
 offered on APP or DESKTOP. `MOBILE_APP` stays in the enum for legacy cards and is hidden from new
 picks; the `mobile-app-code` core is not offered on the norms screen. WordPress stays WEB-only with
 the previous type list. Shopify is ECOMMERCE on WEB. Marketing has no platform; its types are
@@ -238,10 +240,17 @@ allowed on the new platform; a leftover invalid pair or `MOBILE_APP` remains vis
 the current value. SEND_OFFER and Product/Deal create/update reject an illegal pair. New
 `ProductTypeEnum` values were not added in this slice.
 
+**1.23 Code kinds are sellable directions — Owner confirmation of 2026-09-21.** Twenty-nine Code
+kinds, one core each. English abbreviations with a helper word in en/ru/hy. `BOS` is the all-in-one
+company OS; `INDUSTRY_OPERATIONS_SYSTEM` is a vertical process. `MOBILE_APP` and `SAAS` stay hidden
+legacy values. Platform matrix: Web widest, App thinner, Desktop thinnest. POS is APP/DESKTOP only.
+WordPress adds catalog and blog. Function extras for LMS, marketplace, POS and ticketing were
+seeded alongside existing catalog cards. Hover-help on the Deal picker is a later slice.
+
 ## 2. Open points that need the Owner
 
-**2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any
-Neon host, including the development one. The runbook lists the exact commands in order. Until they
-run, every slice in the journal stays `IMPLEMENTED_NOT_VERIFIED`, and browser QA of the norms screen,
-the Functions workspace, the catalog browser and the replacement dialog has not happened. This is not
-a question to answer: it is work only the Owner can start.
+**2.1 Everything that needs a live database.** Decision 1.23 was applied on development
+`ep-nameless-term` (kinds migration, extra catalog cards, 29 published cores, function units and
+`PRODUCT_TYPE` list). Production (`ep-sweet-dew`) was not touched. Browser QA of Deal picker,
+norms, catalog rail and constructor is still pending. Other earlier slices stay
+`IMPLEMENTED_NOT_VERIFIED` until their own live evidence exists.

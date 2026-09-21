@@ -164,6 +164,7 @@ model DeliveryFunctionPriceVersion {
   roleUnits     DeliveryFunctionPriceRoleUnit[]
   extraFeatures DeliveryConfigurationFeature[]  @relation("ConfigurationFeaturePriceVersion")
 
+  /// SQL also keeps one PUBLISHED row per card (`tier_id` null) and one per gradation.
   @@unique([functionId, version])
   @@index([functionId, status])
   @@index([tierId, status])

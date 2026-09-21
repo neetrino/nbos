@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { isHiddenFromNewProductTypePick } from '@nbos/shared';
 import {
   PrismaClient,
   type Prisma,
@@ -138,7 +139,8 @@ export function buildProductTaxonomyPatch(
     { productCategory, productType, productPlatform },
     {
       requirePlatform: true,
-      allowLegacyMobileApp: current.productType === 'MOBILE_APP',
+      allowLegacyHiddenType: isHiddenFromNewProductTypePick(current.productType),
+      currentProductType: current.productType,
     },
   );
   return {

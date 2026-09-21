@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Calendar, CalendarPlus, FolderKanban, Layers, User, Wallet } from 'lucide-react';
 import { ActionTileButton, StatusBadge } from '@/components/shared';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
@@ -10,7 +11,7 @@ import { SIDEBAR_MODULE_VISUALS } from '@/components/layout/sidebar-module-visua
 import { EntityDriveNavAction } from '@/features/drive/EntityDriveNavAction';
 import { buildDriveHrefWithProduct } from '@/features/drive/drive-deep-link';
 import { getProductDeliveryStageBadgeDisplay } from '@/features/projects/constants/delivery-stage-display';
-import { getProductType } from '@/features/projects/constants/projects';
+import { formsProductTypeKey } from '@/features/projects/constants/projects';
 import {
   OverviewMetaGrid,
   OverviewMetaTile,
@@ -37,6 +38,7 @@ export function ProductInfoPanel({
   gateRequiredFields,
   className,
 }: ProductInfoPanelProps) {
+  const tForms = useTranslations('forms');
   const searchParams = useSearchParams();
   const isMobileViewport = useIsMobileViewport();
   const [whatsappOpen, setWhatsappOpen] = useState(
@@ -45,7 +47,7 @@ export function ProductInfoPanel({
   const description = product.description?.trim();
   const hasDescription = Boolean(description);
   const forceDescription = gateRequiredFields.has('description');
-  const productType = getProductType(product.productType);
+  const productTypeLabel = tForms(formsProductTypeKey(product.productType) as never);
   const stageStatus = getProductDeliveryStageBadgeDisplay(product);
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
@@ -61,7 +63,7 @@ export function ProductInfoPanel({
         <div className="min-w-0">
           <h2 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0 text-xs')}>About product</h2>
           <p className="text-muted-foreground mt-0.5 truncate text-xs font-medium">
-            {productType?.label ?? product.productType}
+            {productTypeLabel}
             <span className="mx-1.5 opacity-40">·</span>
             {product.project.name}
           </p>

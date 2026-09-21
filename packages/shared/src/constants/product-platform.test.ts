@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   allowedProductPlatforms,
-  CODE_CROSS_PLATFORM_PRODUCT_TYPES,
   CODE_SITE_PRODUCT_TYPES,
   coerceOptionalProductPlatform,
   coerceProductPlatform,
   defaultProductPlatform,
   isProductPlatform,
   keepProductTypeAfterPlatformChange,
+  listedProductTypesForActiveOptions,
   listedProductTypesForPicker,
+  OFFERED_CODE_PRODUCT_TYPES,
   productPlatformApplies,
   productPlatformPickerApplies,
   PRODUCT_TYPE_PLATFORM_MISMATCH,
@@ -107,19 +108,27 @@ describe('product platform', () => {
 });
 
 describe('product type by platform', () => {
-  it('offers sites only on Code WEB and systems on every Code platform', () => {
-    expect(listedProductTypesForPicker('CODE', null, 'WEB')).toEqual([
-      ...CODE_SITE_PRODUCT_TYPES,
-      ...CODE_CROSS_PLATFORM_PRODUCT_TYPES,
-    ]);
-    expect(listedProductTypesForPicker('CODE', null, 'APP')).toEqual([
-      ...CODE_CROSS_PLATFORM_PRODUCT_TYPES,
-    ]);
-    expect(listedProductTypesForPicker('CODE', null, 'DESKTOP')).toEqual([
-      ...CODE_CROSS_PLATFORM_PRODUCT_TYPES,
-    ]);
-    expect(listedProductTypesForPicker('CODE', null, 'APP')).not.toContain('LANDING');
-    expect(listedProductTypesForPicker('CODE', null, 'APP')).toContain('WEB_APP');
+  it('offers sites only on Code WEB; App is thinner; Desktop is thinnest', () => {
+    const web = listedProductTypesForPicker('CODE', null, 'WEB');
+    const app = listedProductTypesForPicker('CODE', null, 'APP');
+    const desktop = listedProductTypesForPicker('CODE', null, 'DESKTOP');
+
+    expect(web).toEqual(expect.arrayContaining([...CODE_SITE_PRODUCT_TYPES, 'ECOMMERCE', 'BOS']));
+    expect(web).not.toContain('POS');
+    expect(web).not.toContain('MOBILE_APP');
+    expect(web).not.toContain('SAAS');
+
+    expect(app).toEqual(expect.arrayContaining(['ECOMMERCE', 'POS', 'CRM', 'BOS', 'WEB_APP']));
+    expect(app).not.toContain('LANDING');
+    expect(app).not.toContain('BLOG');
+
+    expect(desktop).toEqual(expect.arrayContaining(['POS', 'CRM', 'ERP', 'BOS', 'WEB_APP']));
+    expect(desktop).not.toContain('ECOMMERCE');
+    expect(desktop).not.toContain('LMS');
+    expect(desktop).not.toContain('CUSTOMER_PORTAL');
+    expect(web.length).toBeGreaterThan(app.length);
+    expect(app.length).toBeGreaterThan(desktop.length);
+    expect(OFFERED_CODE_PRODUCT_TYPES).toHaveLength(29);
   });
 
   it('waits for a Code platform before offering types', () => {
@@ -132,7 +141,16 @@ describe('product type by platform', () => {
     expect(keepProductTypeAfterPlatformChange('CODE', 'ECOMMERCE', 'APP')).toBe('ECOMMERCE');
   });
 
-  it('rejects a site on APP and a new MOBILE_APP pick, and keeps a legacy mobile pair', () => {
+  it('intersects the picker with active system-list options and keeps the current value', () => {
+    expect(listedProductTypesForActiveOptions(['LMS', 'BOS'], ['BOS'], null)).toEqual(['BOS']);
+    expect(listedProductTypesForActiveOptions(['LMS', 'BOS'], ['BOS'], 'LMS')).toEqual([
+      'LMS',
+      'BOS',
+    ]);
+    expect(listedProductTypesForActiveOptions(['LMS', 'BOS'], null, null)).toEqual(['LMS', 'BOS']);
+  });
+
+  it('rejects a site on APP and a new MOBILE_APP or SAAS pick, and keeps legacy pairs', () => {
     expect(
       productTypePlatformPairError({
         productCategory: 'CODE',
@@ -154,9 +172,36 @@ describe('product type by platform', () => {
           productType: 'MOBILE_APP',
           productPlatform: 'APP',
         },
-        { allowLegacyMobileApp: true },
+        { allowLegacyHiddenType: true, currentProductType: 'MOBILE_APP' },
       ),
     ).toBeNull();
+    expect(
+      productTypePlatformPairError(
+        {
+          productCategory: 'CODE',
+          productType: 'SAAS',
+          productPlatform: 'WEB',
+        },
+        { allowLegacyHiddenType: true, currentProductType: 'SAAS' },
+      ),
+    ).toBeNull();
+    expect(
+      productTypePlatformPairError(
+        {
+          productCategory: 'CODE',
+          productType: 'MOBILE_APP',
+          productPlatform: 'APP',
+        },
+        { allowLegacyHiddenType: true, currentProductType: 'SAAS' },
+      ),
+    ).toBe(PRODUCT_TYPE_PLATFORM_MISMATCH);
+    expect(
+      productTypePlatformPairError({
+        productCategory: 'CODE',
+        productType: 'SAAS',
+        productPlatform: 'WEB',
+      }),
+    ).toBe(PRODUCT_TYPE_PLATFORM_MISMATCH);
     expect(
       productTypePlatformPairError({
         productCategory: 'CODE',

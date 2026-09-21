@@ -1,4 +1,5 @@
 import { createPrismaClient, type PrismaClient, type TransactionClient } from '@nbos/database';
+import { loadDevDeliveryEnv } from '../delivery-dev/load-dev-delivery-env';
 import { buildSeedRoleUnits } from '../delivery-catalog/build-seed-role-units';
 import {
   buildSeededProfileKeys,
@@ -10,6 +11,8 @@ import {
   type ProfileSeedVersion,
 } from './delivery-profiles-seed-data';
 import { formatProfileSeedPlan, planDeliveryProfilesSeed } from './plan-delivery-profiles-seed';
+
+loadDevDeliveryEnv();
 
 const FIRST_PROFILE_VERSION = 1;
 const APPLY_FLAG = '--apply';

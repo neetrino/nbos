@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import {
   CatalogContentValidationError,
+  functionPriceTierTargetError,
   type BaseProfileWriteInput,
   type DeliveryBaseProfileFinancialDto,
   type DeliveryFunctionPriceFinancialDto,
@@ -101,10 +102,17 @@ export class DeliveryCompensationRulesService {
   ): Promise<DeliveryFunctionPriceFinancialDto> {
     const target = await this.prisma.deliveryFunction.findUnique({
       where: { id: input.functionId },
-      select: { id: true },
+      select: { id: true, tiers: { select: { id: true } } },
     });
     if (!target) {
       throw new NotFoundException('Function not found');
+    }
+    const tierError = functionPriceTierTargetError(
+      target.tiers.map((tier) => tier.id),
+      input.tierId,
+    );
+    if (tierError) {
+      throw new CatalogContentValidationError(tierError);
     }
     const latest = await this.prisma.deliveryFunctionPriceVersion.findFirst({
       where: { functionId: input.functionId },
@@ -114,6 +122,7 @@ export class DeliveryCompensationRulesService {
     const row = await this.prisma.deliveryFunctionPriceVersion.create({
       data: {
         functionId: input.functionId,
+        tierId: input.tierId,
         version: (latest?.version ?? 0) + 1,
         status: 'DRAFT',
         effectiveFrom: new Date(input.effectiveFrom),

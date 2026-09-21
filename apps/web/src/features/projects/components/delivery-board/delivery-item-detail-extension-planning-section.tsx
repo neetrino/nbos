@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
 import { DetailSheetCollapsibleSection, EntityNotesField, InlineField } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
-import { EXTENSION_SIZES, getProductType } from '@/features/projects/constants/projects';
+import { EXTENSION_SIZES, formsProductTypeKey } from '@/features/projects/constants/projects';
 import { cn } from '@/lib/utils';
 import type { ExtensionPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
@@ -14,13 +14,15 @@ import { DeliveryItemLanguagesMultiselect } from './DeliveryItemLanguagesMultise
 
 function ExtensionPlanProductLine({ extension }: { extension: FullExtension }) {
   const t = useTranslations('deliveryBoard');
+  const tForms = useTranslations('forms');
   const line = extension.product.productType ?? '';
+  const typeLabel = line ? tForms(formsProductTypeKey(line) as never) : extension.product.name;
   return (
     <div className="text-muted-foreground flex items-start gap-2 text-sm">
       <Tag size={14} className="mt-0.5 shrink-0 opacity-70" />
       <span>
         <span className="text-foreground font-medium">{t('plan.productLine')} </span>
-        {(getProductType(line)?.label ?? line) || extension.product.name}
+        {typeLabel}
       </span>
     </div>
   );

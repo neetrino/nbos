@@ -1,9 +1,13 @@
 import { createPrismaClient, type PrismaClient } from '@nbos/database';
+import { loadDevDeliveryEnv } from '../delivery-dev/load-dev-delivery-env';
+import { resolveSeedAuthorId } from '../delivery-dev/resolve-seed-author';
 import {
   formatSalePriceSeedPlan,
   planDeliverySalePricesSeed,
   type SalePriceSeedPlanEntry,
 } from './plan-delivery-sale-prices-seed';
+
+loadDevDeliveryEnv();
 
 const FIRST_VERSION = 1;
 const APPLY_FLAG = '--apply';
@@ -36,7 +40,7 @@ async function main(): Promise<void> {
       );
       return;
     }
-    const author = await resolveAuthorId(prisma, authorId);
+    const author = await resolveSeedAuthorId(prisma, authorId);
     for (const entry of plan.entries) {
       if (entry.action === 'KEEP') continue;
       await createPublishedSalePrice(prisma, entry, author);
@@ -52,22 +56,6 @@ async function main(): Promise<void> {
 function readAuthorId(): string | null {
   const arg = process.argv.find((value) => value.startsWith(AUTHOR_FLAG));
   return arg ? arg.slice(AUTHOR_FLAG.length).trim() || null : null;
-}
-
-async function resolveAuthorId(prisma: PrismaClient, requested: string | null): Promise<string> {
-  if (requested) {
-    const employee = await prisma.employee.findUnique({
-      where: { id: requested },
-      select: { id: true },
-    });
-    if (!employee) {
-      throw new Error(`Employee ${requested} not found. Pass a valid ${AUTHOR_FLAG}<employeeId>.`);
-    }
-    return employee.id;
-  }
-  throw new Error(
-    `Author is required: pass ${AUTHOR_FLAG}<employeeId> of the Owner who publishes these prices.`,
-  );
 }
 
 async function createPublishedSalePrice(

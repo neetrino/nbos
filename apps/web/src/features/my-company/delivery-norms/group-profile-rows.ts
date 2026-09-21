@@ -1,4 +1,4 @@
-import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
+import { isHiddenFromNewProductTypePick, type DeliveryBaseProfileFinancialDto } from '@nbos/shared';
 import {
   formatBaseProfileLabel,
   parseProfileKey,
@@ -19,7 +19,7 @@ export function groupProfileRows(
   const order: string[] = [];
   const grouped = new Map<string, DeliveryBaseProfileFinancialDto[]>();
   for (const row of rows) {
-    if (parseProfileKey(row.profileKey).productType === 'MOBILE_APP') continue;
+    if (isHiddenFromNewProductTypePick(parseProfileKey(row.profileKey).productType)) continue;
     const kindId = kindIdForProfile(row);
     const list = grouped.get(kindId);
     if (!list) {

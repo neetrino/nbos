@@ -1,26 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import { PRODUCT_TYPES, type ProductTypeKey } from '@nbos/shared';
 import { formatBaseProfileLabel, parseProfileKey } from './base-profile-label';
 
 const LABELS = {
   productTypes: {
+    ...Object.fromEntries(PRODUCT_TYPES.map((key) => [key, key])),
     BUSINESS_CARD_WEBSITE: 'Сайт-визитка',
     COMPANY_WEBSITE: 'Корпоративный сайт',
     MOBILE_APP: 'Мобильное приложение',
-    WEB_APP: 'Веб-приложение',
-    CRM: 'CRM',
-    ECOMMERCE: 'Интернет-магазин',
-    SAAS: 'SaaS',
     LANDING: 'Лендинг',
-    ERP: 'ERP',
-    LOGO: 'Логотип',
-    BRANDING: 'Брендинг',
-    DESIGN: 'Дизайн',
-    SEO: 'SEO',
-    PPC: 'PPC',
-    SMM: 'SMM',
-    OTHER: 'Другое',
-  },
-} as const;
+    SAAS: 'SaaS',
+  } as Record<ProductTypeKey, string>,
+};
 
 describe('parseProfileKey', () => {
   it('reads seeded company-site and shop keys without a size segment', () => {
@@ -50,6 +41,14 @@ describe('parseProfileKey', () => {
     });
     expect(parseProfileKey('saas-code')).toEqual({
       productType: 'SAAS',
+      productCategory: 'CODE',
+    });
+    expect(parseProfileKey('lms-code')).toEqual({
+      productType: 'LMS',
+      productCategory: 'CODE',
+    });
+    expect(parseProfileKey('bos-code')).toEqual({
+      productType: 'BOS',
       productCategory: 'CODE',
     });
   });

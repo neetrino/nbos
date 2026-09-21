@@ -49,6 +49,7 @@ export const FUNCTION_CATALOG_CATEGORY_MESSAGE_KEYS = {
   content: 'categories.content',
   loyalty: 'categories.loyalty',
   booking: 'categories.booking',
+  learning: 'categories.learning',
   crm_ops: 'categories.crm_ops',
   finance_ops: 'categories.finance_ops',
   hr_ops: 'categories.hr_ops',

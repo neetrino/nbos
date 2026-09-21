@@ -10,6 +10,7 @@ import { DeliveryCompensationRulesService } from './delivery-compensation-rules.
 
 const FUNCTION_ID = '11111111-2222-3333-4444-555555555555';
 const OTHER_ID = '66666666-7777-8888-9999-aaaaaaaaaaaa';
+const TIER_ID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
 
 function vector(units: string | null = '10') {
   return DELIVERY_COMPENSATION_ROLE_KEYS.map((roleKey) => ({
@@ -32,12 +33,15 @@ describe('createFunctionPriceDraft', () => {
     const create = vi.fn().mockResolvedValue({
       id: 'price-1',
       functionId: FUNCTION_ID,
+      tierId: null,
       version: 1,
       status: 'DRAFT',
       roleUnits: persistedRoleUnits(null),
     });
     const service = new DeliveryCompensationRulesService({
-      deliveryFunction: { findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID }) },
+      deliveryFunction: {
+        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [] }),
+      },
       deliveryFunctionPriceVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
     } as never);
 
@@ -51,10 +55,11 @@ describe('createFunctionPriceDraft', () => {
 
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ version: 1, status: 'DRAFT' }),
+        data: expect.objectContaining({ version: 1, status: 'DRAFT', tierId: null }),
       }),
     );
     expect(dto.status).toBe('DRAFT');
+    expect(dto.tierId).toBeNull();
     expect(dto.roleUnits.every((row) => row.units === null)).toBe(true);
   });
 
@@ -62,12 +67,15 @@ describe('createFunctionPriceDraft', () => {
     const create = vi.fn().mockResolvedValue({
       id: 'price-4',
       functionId: FUNCTION_ID,
+      tierId: null,
       version: 4,
       status: 'DRAFT',
       roleUnits: persistedRoleUnits('10'),
     });
     const service = new DeliveryCompensationRulesService({
-      deliveryFunction: { findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID }) },
+      deliveryFunction: {
+        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [] }),
+      },
       deliveryFunctionPriceVersion: {
         findFirst: vi.fn().mockResolvedValue({ version: 3 }),
         create,
@@ -103,6 +111,60 @@ describe('createFunctionPriceDraft', () => {
         }),
       ),
     ).rejects.toBeInstanceOf(NotFoundException);
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('persists the volume when the function has gradations', async () => {
+    const create = vi.fn().mockResolvedValue({
+      id: 'price-tier',
+      functionId: FUNCTION_ID,
+      tierId: TIER_ID,
+      version: 1,
+      status: 'DRAFT',
+      roleUnits: persistedRoleUnits('10'),
+    });
+    const service = new DeliveryCompensationRulesService({
+      deliveryFunction: {
+        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [{ id: TIER_ID }] }),
+      },
+      deliveryFunctionPriceVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
+    } as never);
+
+    const dto = await service.createFunctionPriceDraft(
+      parseFunctionPriceWriteBody({
+        functionId: FUNCTION_ID,
+        tierId: TIER_ID,
+        effectiveFrom: '2026-10-01T00:00:00.000Z',
+        roleUnits: vector(),
+      }),
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tierId: TIER_ID, status: 'DRAFT' }),
+      }),
+    );
+    expect(dto.tierId).toBe(TIER_ID);
+  });
+
+  it('refuses a card-level draft when the function has volumes', async () => {
+    const create = vi.fn();
+    const service = new DeliveryCompensationRulesService({
+      deliveryFunction: {
+        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [{ id: TIER_ID }] }),
+      },
+      deliveryFunctionPriceVersion: { findFirst: vi.fn(), create },
+    } as never);
+
+    await expect(
+      service.createFunctionPriceDraft(
+        parseFunctionPriceWriteBody({
+          functionId: FUNCTION_ID,
+          effectiveFrom: '2026-10-01T00:00:00.000Z',
+          roleUnits: vector(),
+        }),
+      ),
+    ).rejects.toBeInstanceOf(CatalogContentValidationError);
     expect(create).not.toHaveBeenCalled();
   });
 });

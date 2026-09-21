@@ -27,7 +27,11 @@ export class DeliveryCompensationRulesPublishService {
       }
       assertZeroUnitsConfirmed(roleUnits, confirmZeroUnits);
       await tx.deliveryFunctionPriceVersion.updateMany({
-        where: { functionId: draft.functionId, status: 'PUBLISHED' },
+        where: {
+          functionId: draft.functionId,
+          tierId: draft.tierId,
+          status: 'PUBLISHED',
+        },
         data: { status: 'ARCHIVED' },
       });
       return tx.deliveryFunctionPriceVersion.update({

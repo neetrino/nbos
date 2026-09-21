@@ -1,4 +1,6 @@
 import { createPrismaClient, type PrismaClient } from '@nbos/database';
+import { loadDevDeliveryEnv } from '../delivery-dev/load-dev-delivery-env';
+import { resolveSeedAuthorId } from '../delivery-dev/resolve-seed-author';
 import {
   SEED_ACCEPTANCE_PLACEHOLDER,
   SEED_INSTRUCTIONS_PLACEHOLDER,
@@ -6,12 +8,16 @@ import {
 } from './delivery-catalog-seed-data';
 import { formatSeedPlan, planDeliveryCatalogSeed } from './plan-delivery-catalog-seed';
 import { buildSeedRoleUnits } from './build-seed-role-units';
+import { syncCatalogTierProductTypes } from './sync-catalog-tier-types';
+
+loadDevDeliveryEnv();
 
 const FIRST_CONTENT_VERSION = 1;
 const FIRST_PRICE_VERSION = 1;
 const FIRST_TIER_POSITION = 1;
 const APPLY_FLAG = '--apply';
 const UPDATE_COPY_FLAG = '--update-copy';
+const UPDATE_TIERS_FLAG = '--update-tiers';
 const AUTHOR_FLAG = '--author=';
 
 /**
@@ -22,6 +28,7 @@ const AUTHOR_FLAG = '--author=';
 async function main(): Promise<void> {
   const apply = process.argv.includes(APPLY_FLAG);
   const updateCopy = process.argv.includes(UPDATE_COPY_FLAG);
+  const updateTiers = process.argv.includes(UPDATE_TIERS_FLAG);
   const authorId = readAuthorId();
   const prisma = createPrismaClient({ role: 'all', skipBudgetAssert: true });
   try {
@@ -32,7 +39,7 @@ async function main(): Promise<void> {
       process.stdout.write(`Re-run with ${APPLY_FLAG} to write these rows.\n`);
       return;
     }
-    const author = plan.createCount > 0 ? await resolveAuthorId(prisma, authorId) : null;
+    const author = plan.createCount > 0 ? await resolveSeedAuthorId(prisma, authorId) : null;
     for (const entry of plan.entries) {
       if (entry.action === 'KEEP') continue;
       if (entry.action === 'UPDATE_COPY') {
@@ -42,8 +49,14 @@ async function main(): Promise<void> {
       if (!author) throw new Error('Author is required to create catalog functions.');
       await createDraftFunction(prisma, entry.item, author);
     }
+    let tierMappingsAdded = 0;
+    if (updateTiers) {
+      for (const entry of plan.entries) {
+        tierMappingsAdded += await syncCatalogTierProductTypes(prisma, entry.item);
+      }
+    }
     process.stdout.write(
-      `Created ${plan.createCount} draft catalog functions and updated copy for ${plan.updateCopyCount} existing functions.\n`,
+      `Created ${plan.createCount} draft catalog functions, updated copy for ${plan.updateCopyCount}, added ${tierMappingsAdded} tier type mappings.\n`,
     );
   } finally {
     await prisma.$disconnect();
@@ -53,22 +66,6 @@ async function main(): Promise<void> {
 function readAuthorId(): string | null {
   const arg = process.argv.find((value) => value.startsWith(AUTHOR_FLAG));
   return arg ? arg.slice(AUTHOR_FLAG.length).trim() || null : null;
-}
-
-async function resolveAuthorId(prisma: PrismaClient, requested: string | null): Promise<string> {
-  if (requested) {
-    const employee = await prisma.employee.findUnique({
-      where: { id: requested },
-      select: { id: true },
-    });
-    if (!employee) {
-      throw new Error(`Employee ${requested} not found. Pass a valid ${AUTHOR_FLAG}<employeeId>.`);
-    }
-    return employee.id;
-  }
-  throw new Error(
-    `Author is required: pass ${AUTHOR_FLAG}<employeeId> of the Owner or CEO who owns these drafts.`,
-  );
 }
 
 /**

@@ -100,25 +100,26 @@ describe('Constants', () => {
     expect(DEAL_TYPES).toEqual(['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE']);
   });
 
-  it('PRODUCT_TYPES has 16 types', () => {
-    expect(PRODUCT_TYPES).toHaveLength(16);
+  it('PRODUCT_TYPES includes offered Code kinds plus legacy and marketing', () => {
     expect(PRODUCT_TYPES).toContain('BUSINESS_CARD_WEBSITE');
-    expect(PRODUCT_TYPES).toContain('COMPANY_WEBSITE');
+    expect(PRODUCT_TYPES).toContain('BOS');
+    expect(PRODUCT_TYPES).toContain('LMS');
     expect(PRODUCT_TYPES).toContain('MOBILE_APP');
-    expect(PRODUCT_TYPES).toContain('WEB_APP');
-    expect(PRODUCT_TYPES).toContain('CRM');
-    expect(PRODUCT_TYPES).toContain('ECOMMERCE');
-    expect(PRODUCT_TYPES).toContain('BRANDING');
-    expect(PRODUCT_TYPES).toContain('DESIGN');
-    expect(PRODUCT_TYPES).toContain('PPC');
+    expect(PRODUCT_TYPES).toContain('SAAS');
     expect(PRODUCT_TYPES).toContain('OTHER');
+    expect(PRODUCT_TYPES).toHaveLength(38);
   });
 
-  it('hides MOBILE_APP from new Code picks and keeps it for a legacy current value', () => {
+  it('hides MOBILE_APP and SAAS from new Code picks and keeps them for a legacy current value', () => {
     expect(PRODUCT_TYPES_BY_CATEGORY.CODE).not.toContain('MOBILE_APP');
+    expect(PRODUCT_TYPES_BY_CATEGORY.CODE).not.toContain('SAAS');
     expect(listedProductTypesForPicker('CODE', null, 'WEB')).not.toContain('MOBILE_APP');
     expect(listedProductTypesForPicker('CODE', 'MOBILE_APP', 'APP')).toContain('MOBILE_APP');
+    expect(listedProductTypesForPicker('CODE', 'SAAS', 'WEB')).toContain('SAAS');
+    expect(listedProductTypesForPicker('CODE', null, 'WEB')).not.toContain('SAAS');
     expect(listedProductTypesForPicker('CODE', null, 'WEB')).not.toContain('OTHER');
+    expect(listedProductTypesForPicker('WORDPRESS', null, 'WEB')).toContain('BLOG');
+    expect(listedProductTypesForPicker('WORDPRESS', null, 'WEB')).toContain('PRODUCT_CATALOG');
     expect(listedProductTypesForPicker('OTHER')).toContain('OTHER');
   });
 

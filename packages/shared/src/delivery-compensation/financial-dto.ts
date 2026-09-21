@@ -10,6 +10,7 @@ export type DeliveryRoleUnitFinancialDto = {
 export type DeliveryFunctionPriceFinancialDto = {
   id: string;
   functionId: string;
+  tierId: string | null;
   version: number;
   status: string;
   roleUnits: DeliveryRoleUnitFinancialDto[];

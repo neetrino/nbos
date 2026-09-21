@@ -1,4 +1,6 @@
+import { OFFERED_CODE_PRODUCT_TYPES } from '@nbos/shared';
 import { describe, expect, it } from 'vitest';
+import { DELIVERY_CATALOG_SEED_ITEMS } from '../delivery-catalog/delivery-catalog-seed-data';
 import {
   buildProfileSeedVersions,
   PROFILE_SEED_KINDS,
@@ -15,6 +17,13 @@ function draft(profileKey: string) {
 }
 
 describe('delivery profile seed data', () => {
+  it('only references catalog function codes', () => {
+    const catalog = new Set(DELIVERY_CATALOG_SEED_ITEMS.map((item) => item.code));
+    for (const code of referencedFunctionCodes()) {
+      expect(catalog.has(code), code).toBe(true);
+    }
+  });
+
   it('produces one profile key per kind', () => {
     const versions = buildProfileSeedVersions();
     const keys = versions.map((version) => version.profileKey);
@@ -36,26 +45,33 @@ describe('delivery profile seed data', () => {
     for (const kind of PROFILE_SEED_KINDS) {
       expect(kind.presets.BASE.length).toBeLessThan(kind.presets.EXTENDED.length);
       expect(kind.presets.EXTENDED.length).toBeLessThan(kind.presets.FULL.length);
+      expect(new Set(kind.presets.BASE).size).toBe(kind.presets.BASE.length);
+      expect(new Set(kind.presets.EXTENDED).size).toBe(kind.presets.EXTENDED.length);
+      expect(new Set(kind.presets.FULL).size).toBe(kind.presets.FULL.length);
     }
   });
 
   it('builds a key from the kind stem only', () => {
-    expect(profileKeyFor(PROFILE_SEED_KINDS[0])).toBe('shop-code');
+    expect(profileKeyFor(PROFILE_SEED_KINDS[0])).toBe('business-card-code');
   });
 
   it('seeds the remaining enum kinds as one unsized core each', () => {
     const types = PROFILE_SEED_KINDS.map((kind) => kind.productType);
     expect(types).toEqual(
-      expect.arrayContaining(['BUSINESS_CARD_WEBSITE', 'WEB_APP', 'ERP', 'SAAS']),
+      expect.arrayContaining(['BUSINESS_CARD_WEBSITE', 'WEB_APP', 'ERP', 'BOS', 'LMS']),
     );
     expect(types).not.toContain('OTHER');
     expect(types).not.toContain('MOBILE_APP');
+    expect(types).not.toContain('SAAS');
     expect(buildProfileSeedVersions().map((row) => row.profileKey)).toEqual(
-      expect.arrayContaining(['business-card-code', 'web-app-code', 'erp-code', 'saas-code']),
+      expect.arrayContaining(['business-card-code', 'web-app-code', 'erp-code', 'bos-code']),
     );
+    expect(buildProfileSeedVersions().map((row) => row.profileKey)).not.toContain('saas-code');
     expect(buildProfileSeedVersions().map((row) => row.profileKey)).not.toContain(
       'mobile-app-code',
     );
+    expect(types).toHaveLength(29);
+    expect([...types].sort()).toEqual([...OFFERED_CODE_PRODUCT_TYPES].sort());
   });
 });
 
@@ -84,15 +100,21 @@ describe('planDeliveryProfilesSeed', () => {
     ).toBe(1);
   });
 
-  it('retires unused sized draft keys and the leftover mobile-app core', () => {
+  it('retires unused sized draft keys and leftover MOBILE_APP and SAAS cores', () => {
     const plan = planDeliveryProfilesSeed(
-      [draft('shop-code-classic'), draft('shop-code'), draft('mobile-app-code')],
+      [
+        draft('shop-code-classic'),
+        draft('shop-code'),
+        draft('mobile-app-code'),
+        draft('saas-code'),
+      ],
       ALL_CODES,
       { replaceDrafts: true },
     );
 
-    expect(plan.retireCount).toBe(2);
+    expect(plan.retireCount).toBe(3);
     expect(formatProfileSeedPlan(plan, false)).toContain('shop-code-classic');
     expect(formatProfileSeedPlan(plan, false)).toContain('mobile-app-code');
+    expect(formatProfileSeedPlan(plan, false)).toContain('saas-code');
   });
 });

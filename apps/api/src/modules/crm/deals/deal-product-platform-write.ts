@@ -1,3 +1,4 @@
+import { isHiddenFromNewProductTypePick } from '@nbos/shared';
 import {
   resolveDealProductPlatform,
   assertProductTypePlatformPair,
@@ -47,7 +48,10 @@ export function dealProductPlatformWrite(
   });
   assertProductTypePlatformPair(
     { productCategory, productType, productPlatform },
-    { allowLegacyMobileApp: existing?.productType === 'MOBILE_APP' },
+    {
+      allowLegacyHiddenType: isHiddenFromNewProductTypePick(existing?.productType),
+      currentProductType: existing?.productType,
+    },
   );
   return { productPlatform };
 }

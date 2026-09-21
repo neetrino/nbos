@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { listedProductTypesForPicker } from '@nbos/shared';
+import {
+  listedProductTypesForActiveOptions,
+  listedProductTypesForPicker,
+  PRODUCT_TYPES as PRODUCT_TYPE_VALUES,
+} from '@nbos/shared';
 import { PRODUCT_TYPES } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
@@ -30,6 +34,7 @@ import { DealOfferContractSection } from './DealOfferContractSection';
 import { DealSourceLeadSection } from './DealSourceLeadSection';
 import { DealConstructorSection } from '../deal-constructor/DealConstructorSection';
 import type { DealGeneralDraft } from './deal-general-form-state';
+import { translateProductTypeLabel } from '../i18n/crm-copy';
 
 interface DealGeneralTabProps {
   deal: Deal;
@@ -56,18 +61,21 @@ export function DealGeneralTab({
   onOpenDeal,
   gateRequiredFields = new Set(),
 }: DealGeneralTabProps) {
+  const t = useTranslations('crm');
   const [productTypeOptions, setProductTypeOptions] = useState<
     Array<{ value: string; label: string }>
   >(PRODUCT_TYPES.map((product) => ({ value: product.value, label: product.label })));
+  const [activeProductTypeCodes, setActiveProductTypeCodes] = useState<string[] | null>(null);
 
   useEffect(() => {
     systemListsApi
       .getOptionsByKey('PRODUCT_TYPE')
-      .then((options) =>
+      .then((options) => {
         setProductTypeOptions(
           options.map((option) => ({ value: option.code, label: option.label })),
-        ),
-      )
+        );
+        setActiveProductTypeCodes(options.map((option) => option.code));
+      })
       .catch(() => {
         /* keep PRODUCT_TYPES fallback */
       });
@@ -126,7 +134,12 @@ export function DealGeneralTab({
 
   const firstOrder = deal.orders?.[0];
 
-  const filteredProductTypeOptions = getFilteredProductTypeOptions(draft, productTypeOptions);
+  const filteredProductTypeOptions = getFilteredProductTypeOptions(
+    draft,
+    productTypeOptions,
+    activeProductTypeCodes,
+    t,
+  );
 
   return (
     <div className="@container/deal-general">
@@ -205,11 +218,26 @@ export function DealGeneralTab({
 function getFilteredProductTypeOptions(
   draft: DealGeneralDraft,
   productTypeOptions: Array<{ value: string; label: string }>,
+  activeProductTypeCodes: string[] | null,
+  t: ReturnType<typeof useTranslations<'crm'>>,
 ) {
-  const category = draft.productCategory;
-  if (!category) return productTypeOptions;
-  const listed = listedProductTypesForPicker(category, draft.productType, draft.productPlatform);
-  return productTypeOptions.filter((option) => listed.includes(option.value));
+  const listed = listedProductTypesForPicker(
+    draft.productCategory,
+    draft.productType,
+    draft.productPlatform,
+  );
+  const allowed = listedProductTypesForActiveOptions(
+    listed,
+    activeProductTypeCodes,
+    draft.productType,
+  );
+  const labels = new Map(productTypeOptions.map((option) => [option.value, option.label]));
+  return allowed.map((value) => ({
+    value,
+    label: (PRODUCT_TYPE_VALUES as readonly string[]).includes(value)
+      ? translateProductTypeLabel(t, value)
+      : (labels.get(value) ?? value),
+  }));
 }
 
 interface DealEntityMetaLineProps {

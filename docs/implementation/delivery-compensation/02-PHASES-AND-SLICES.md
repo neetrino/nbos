@@ -649,6 +649,29 @@ server is not sent APP + leftover site (400).
 board did not load — `/api/me` 503 at the time); seed `--apply` not run (no new cores; unused
 `mobile-app-code` draft retires on the next apply); production migrate.
 
+### Code kinds 1.23 + extra functions (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.23. `ProductTypeEnum` expanded with 21 Code directions (29 offered kinds total).
+`MOBILE_APP` and `SAAS` stay in the enum for legacy cards and stay hidden from new picks. One
+unsized core per offered kind. Extra catalog cards: LMS (5), marketplace (3), POS (3), ticketing
+(2), plus category `learning`. `CNT_MULTILINGUAL` tiers remap onto the new kinds. Seed units are
+the existing proposals (sale 10 000 / AI 20 000). Hover-help on the Deal picker is not in this
+slice; Deal type labels use i18n so the new kinds are readable.
+
+Migration `20260921230000_product_type_kinds` (ADD VALUE only). Seeds: catalog `--apply
+--update-tiers`, profiles `--apply --replace-drafts`, sale prices `--apply`, then
+`publish:delivery-dev --apply` on **dev** `ep-nameless-term` only. Scripts refuse `sweet-dew`.
+
+**Checks:** targeted vitest (taxonomy, catalog, profile seed, grouping, assert-dev-host); Prisma
+generate; Prettier on touched files.
+**Live on `ep-nameless-term` (2026-09-21):** migrate `20260921230000_product_type_kinds`; catalog
+`--apply --update-tiers` (13 extra cards, 22 tier mappings); profiles `--apply --replace-drafts`
+(22 create, 7 replace, retire `mobile-app-code`/`saas-code`); sale prices 13 × 10 000; migrate
+`20260921240000_price_one_published_per_tier` (one published vector per gradation); publish
+activated remaining cards, published leftover unit drafts, **29 cores PUBLISHED**, upserted 38
+`PRODUCT_TYPE` list options.
+**Not run:** production migrate; browser QA of Deal picker and catalog rail.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).

@@ -55,4 +55,18 @@ describe('dealProductPlatformWrite', () => {
       ),
     ).toThrow(/not available on this platform/);
   });
+
+  it('keeps a stored SAAS deal and refuses switching it to MOBILE_APP', () => {
+    const saas = {
+      productCategory: 'CODE',
+      productType: 'SAAS',
+      productPlatform: 'WEB',
+    };
+    expect(dealProductPlatformWrite({ productType: 'SAAS' }, saas)).toEqual({
+      productPlatform: 'WEB',
+    });
+    expect(() =>
+      dealProductPlatformWrite({ productType: 'MOBILE_APP', productPlatform: 'APP' }, saas),
+    ).toThrow(/not available on this platform/);
+  });
 });

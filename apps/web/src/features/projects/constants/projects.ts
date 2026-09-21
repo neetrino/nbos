@@ -1,5 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
-import { listedProductTypesForPicker } from '@nbos/shared';
+import { listedProductTypesForPicker, PRODUCT_TYPES as PRODUCT_TYPE_VALUES } from '@nbos/shared';
 
 export const PROJECT_HUB_TABS = [
   { value: 'all', label: 'All' },
@@ -24,24 +24,7 @@ export const PRODUCT_CATEGORIES = [
   { value: 'OTHER', label: 'Other' },
 ] as const;
 
-export const PRODUCT_TYPES = [
-  { value: 'BUSINESS_CARD_WEBSITE', label: 'Business Card Website' },
-  { value: 'COMPANY_WEBSITE', label: 'Company Website' },
-  { value: 'MOBILE_APP', label: 'Mobile App' },
-  { value: 'WEB_APP', label: 'Web Application' },
-  { value: 'CRM', label: 'CRM System' },
-  { value: 'ECOMMERCE', label: 'E-Commerce' },
-  { value: 'SAAS', label: 'SaaS Platform' },
-  { value: 'LANDING', label: 'Landing Page' },
-  { value: 'ERP', label: 'ERP System' },
-  { value: 'LOGO', label: 'Logo' },
-  { value: 'BRANDING', label: 'Branding' },
-  { value: 'DESIGN', label: 'Design' },
-  { value: 'SEO', label: 'SEO' },
-  { value: 'PPC', label: 'PPC' },
-  { value: 'SMM', label: 'SMM' },
-  { value: 'OTHER', label: 'Other' },
-] as const;
+export const PRODUCT_TYPES = PRODUCT_TYPE_VALUES.map((value) => ({ value, label: value }));
 
 export function getProductTypesForCategory(
   category: string,
@@ -109,6 +92,11 @@ export function getProductCategory(value: string) {
 
 export function getProductType(value: string) {
   return PRODUCT_TYPES.find((t) => t.value === value);
+}
+
+/** i18n key under the `forms` namespace. */
+export function formsProductTypeKey(value: string) {
+  return `product.types.${value}` as const;
 }
 
 export function getProductStatus(value: string) {

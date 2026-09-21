@@ -14,6 +14,7 @@ import {
   PROFILE_VERSION_PREFIX,
 } from './delivery-norms.constants';
 import { groupPricedFunctions } from './group-catalog-functions';
+import { functionPriceRowTitle } from './function-price-draft';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
 import { summarizeRoleUnits } from './summarize-role-units';
@@ -32,6 +33,7 @@ export function FunctionPricesList({
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
+  const catalogById = useMemo(() => new Map(catalog.map((item) => [item.id, item])), [catalog]);
   const groups = useMemo(
     () => groupPricedFunctions(rows, catalog, t('prices.unknownFunction')),
     [catalog, rows, t],
@@ -50,7 +52,11 @@ export function FunctionPricesList({
                 {cluster.rows.map((row) => (
                   <FunctionPriceRow
                     key={row.id}
-                    title={cluster.title}
+                    title={functionPriceRowTitle(
+                      cluster.title,
+                      row.tierId,
+                      catalogById.get(cluster.functionId)?.tiers ?? [],
+                    )}
                     row={row}
                     canPublish={canPublish}
                     onPublished={onPublished}

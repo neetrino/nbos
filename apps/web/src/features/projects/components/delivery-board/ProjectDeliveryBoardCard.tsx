@@ -11,15 +11,11 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
-import type {
-  DeliveryLifecycleProjection,
-  ProjectExtensionSummary,
-  ProjectProductSummary,
-} from '@/lib/api/projects';
+import type { DeliveryLifecycleProjection, ProjectExtensionSummary } from '@/lib/api/projects';
 import {
   getExtensionSize,
   getDeliveryLifecycleVariant,
-  getProductType,
+  formsProductTypeKey,
 } from '@/features/projects/constants/projects';
 import { translateDeliveryLifecycleLabel } from './delivery-board-message-keys';
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
@@ -103,12 +99,15 @@ export function ProjectDeliveryBoardCard({
   quickTaskDisabled = false,
 }: ProjectDeliveryBoardCardProps) {
   const [hoverActionsVisible, setHoverActionsVisible] = useState(false);
+  const tForms = useTranslations('forms');
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
   const isExtension = item.kind === 'EXTENSION';
   const dealTypeVisual = getDealTypePresentation(isExtension ? 'EXTENSION' : 'PRODUCT');
   const title = isExtension ? item.extension.name : item.product.name;
-  const metaLabel = isExtension ? getExtensionMeta(item.extension) : getProductMeta(item.product);
+  const metaLabel = isExtension
+    ? getExtensionMeta(item.extension)
+    : tForms(formsProductTypeKey(item.product.productType) as never);
   const isClosedCompact = displayMode === 'closedCompact' && Boolean(lifecycle?.isTerminal);
   const stopKanbanPointerBubble = kanbanActionIsolation
     ? (event: ReactPointerEvent) => {
@@ -291,10 +290,6 @@ function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection 
       variant={getDeliveryLifecycleVariant(lifecycle)}
     />
   );
-}
-
-function getProductMeta(product: ProjectProductSummary) {
-  return getProductType(product.productType)?.label ?? product.productType;
 }
 
 function getExtensionMeta(extension: ProjectExtensionSummary) {

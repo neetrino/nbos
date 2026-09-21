@@ -18,6 +18,7 @@ type RoleUnitRecord = {
 export type FunctionPriceRecord = {
   id: string;
   functionId: string;
+  tierId: string | null;
   version: number;
   status: string;
   roleUnits: readonly RoleUnitRecord[];
@@ -55,6 +56,7 @@ export function serializeFunctionPrice(
   return {
     id: row.id,
     functionId: row.functionId,
+    tierId: row.tierId,
     version: row.version,
     status: row.status,
     roleUnits: serializeRoleUnits(row.roleUnits),

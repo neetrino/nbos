@@ -6,9 +6,34 @@
  * Applies only to Code (all three values) and WordPress/Shopify (WEB). Marketing has
  * no platform — store null, do not show the field.
  *
- * New Code type picks follow the owner matrix: sites only on WEB; systems on WEB / APP /
- * DESKTOP. `MOBILE_APP` stays in the enum for legacy cards and is not offered.
+ * New Code type picks follow the owner matrix: Web is widest, App thinner, Desktop
+ * thinnest. Sites are WEB-only. `MOBILE_APP` and `SAAS` stay in the enum for legacy
+ * cards and are not offered.
  */
+
+import {
+  codeProductTypesForPlatform,
+  LEGACY_HIDDEN_PRODUCT_TYPES,
+  PRODUCT_TYPES,
+  PRODUCT_TYPES_BY_CATEGORY,
+} from './product-types';
+
+export {
+  CODE_COMMERCE_PRODUCT_TYPES,
+  CODE_KIND_PLATFORMS,
+  CODE_OPERATIONS_PRODUCT_TYPES,
+  CODE_PORTAL_PRODUCT_TYPES,
+  CODE_SITE_PRODUCT_TYPES,
+  LEGACY_HIDDEN_PRODUCT_TYPES,
+  MARKETING_PRODUCT_TYPES,
+  OFFERED_CODE_PRODUCT_TYPES,
+  PRODUCT_TYPES,
+  PRODUCT_TYPES_BY_CATEGORY,
+  SHOPIFY_PRODUCT_TYPES,
+  WORDPRESS_PRODUCT_TYPES,
+  codeProductTypesForPlatform,
+  isOfferedCodeProductType,
+} from './product-types';
 
 export const PRODUCT_PLATFORMS = ['WEB', 'APP', 'DESKTOP'] as const;
 
@@ -16,58 +41,11 @@ export type ProductPlatform = (typeof PRODUCT_PLATFORMS)[number];
 
 export const PRODUCT_CATEGORIES = ['CODE', 'WORDPRESS', 'SHOPIFY', 'MARKETING', 'OTHER'] as const;
 
-export const PRODUCT_TYPES = [
-  'BUSINESS_CARD_WEBSITE',
-  'COMPANY_WEBSITE',
-  'MOBILE_APP',
-  'WEB_APP',
-  'CRM',
-  'ECOMMERCE',
-  'SAAS',
-  'LANDING',
-  'ERP',
-  'LOGO',
-  'BRANDING',
-  'DESIGN',
-  'SEO',
-  'PPC',
-  'SMM',
-  'OTHER',
-] as const;
-
-/** Sites are WEB-only. Same list on APP and DESKTOP. */
-export const CODE_SITE_PRODUCT_TYPES = [
-  'BUSINESS_CARD_WEBSITE',
-  'COMPANY_WEBSITE',
-  'LANDING',
-] as const;
-
-export const CODE_CROSS_PLATFORM_PRODUCT_TYPES = [
-  'ECOMMERCE',
-  'CRM',
-  'ERP',
-  'SAAS',
-  'WEB_APP',
-] as const;
-
-export const CODE_WEB_PRODUCT_TYPES = [
-  ...CODE_SITE_PRODUCT_TYPES,
-  ...CODE_CROSS_PLATFORM_PRODUCT_TYPES,
-] as const;
-
-export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
-  CODE: CODE_WEB_PRODUCT_TYPES,
-  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
-  SHOPIFY: ['ECOMMERCE'],
-  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
-  OTHER: [],
-} as const;
-
 export const PRODUCT_TYPE_PLATFORM_MISMATCH = 'Product type is not available on this platform';
 
 const WEB_ONLY_PRODUCT_CATEGORIES = new Set(['WORDPRESS', 'SHOPIFY']);
 const PLATFORM_APPLIES_CATEGORIES = new Set(['CODE', 'WORDPRESS', 'SHOPIFY']);
-const HIDDEN_FROM_NEW_PRODUCT_TYPE_PICK = new Set(['MOBILE_APP']);
+const HIDDEN_FROM_NEW_PRODUCT_TYPE_PICK = new Set<string>(LEGACY_HIDDEN_PRODUCT_TYPES);
 
 export function isProductPlatform(value: string): value is ProductPlatform {
   return (PRODUCT_PLATFORMS as readonly string[]).includes(value);
@@ -152,11 +130,8 @@ export function coerceOptionalProductPlatform(input: {
 export function offeredCodeProductTypes(
   productPlatform: string | null | undefined,
 ): readonly string[] {
-  if (productPlatform === 'WEB') return CODE_WEB_PRODUCT_TYPES;
-  if (productPlatform === 'APP' || productPlatform === 'DESKTOP') {
-    return CODE_CROSS_PLATFORM_PRODUCT_TYPES;
-  }
-  return [];
+  if (!isProductPlatform(productPlatform ?? '')) return [];
+  return codeProductTypesForPlatform(productPlatform ?? '');
 }
 
 export function offeredProductTypesForPicker(
@@ -222,13 +197,27 @@ export function isHiddenFromNewProductTypePick(productType: string | null | unde
   return Boolean(productType && HIDDEN_FROM_NEW_PRODUCT_TYPE_PICK.has(productType));
 }
 
+export function listedProductTypesForActiveOptions(
+  listed: readonly string[],
+  activeCodes: readonly string[] | null,
+  currentType?: string | null,
+): string[] {
+  if (activeCodes === null) return [...listed];
+  const active = new Set(activeCodes);
+  return listed.filter((value) => active.has(value) || value === currentType);
+}
+
 export function productTypePlatformPairError(
   input: {
     productCategory?: string | null;
     productType?: string | null;
     productPlatform?: string | null;
   },
-  options: { allowLegacyMobileApp?: boolean } = {},
+  options: {
+    allowLegacyHiddenType?: boolean;
+    allowLegacyMobileApp?: boolean;
+    currentProductType?: string | null;
+  } = {},
 ): string | null {
   const category = input.productCategory ?? null;
   const type = input.productType ?? null;
@@ -249,16 +238,26 @@ export function productTypePlatformPairError(
   ) {
     return null;
   }
-  if (options.allowLegacyMobileApp && isLegacyMobileAppPair(category, type, platform)) {
+  const allowLegacy =
+    options.allowLegacyHiddenType === true || options.allowLegacyMobileApp === true;
+  if (
+    allowLegacy &&
+    type === options.currentProductType &&
+    isLegacyHiddenTypePair(category, type, platform)
+  ) {
     return null;
   }
   return PRODUCT_TYPE_PLATFORM_MISMATCH;
 }
 
-function isLegacyMobileAppPair(
+function isLegacyHiddenTypePair(
   category: string,
   productType: string,
   productPlatform: string,
 ): boolean {
-  return category === 'CODE' && productType === 'MOBILE_APP' && productPlatform === 'APP';
+  if (category !== 'CODE' || !HIDDEN_FROM_NEW_PRODUCT_TYPE_PICK.has(productType)) {
+    return false;
+  }
+  if (productType === 'MOBILE_APP') return productPlatform === 'APP';
+  return isProductPlatform(productPlatform);
 }

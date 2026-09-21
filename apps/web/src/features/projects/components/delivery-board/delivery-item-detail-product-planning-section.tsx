@@ -46,6 +46,7 @@ export function ProductPlanningSection({
   stageChecklist?: ReactNode;
 }) {
   const t = useTranslations('deliveryBoard');
+  const tForms = useTranslations('forms');
   const [sectionOpen, setSectionOpen] = useState(true);
   const typeOptions = useMemo(() => {
     const listed = listedProductTypesForPicker(
@@ -56,9 +57,9 @@ export function ProductPlanningSection({
     const set = new Set(listed);
     return PRODUCT_TYPES.filter((item) => set.has(item.value)).map((item) => ({
       value: item.value,
-      label: item.label,
+      label: tForms(`product.types.${item.value}` as never),
     }));
-  }, [draft.productCategory, draft.productPlatform, draft.productType]);
+  }, [draft.productCategory, draft.productPlatform, draft.productType, tForms]);
 
   const patchDraft = (partial: Partial<ProductPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });

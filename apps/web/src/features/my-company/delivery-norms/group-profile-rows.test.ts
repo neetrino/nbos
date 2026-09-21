@@ -32,9 +32,9 @@ describe('groupProfileRows', () => {
     expect(groups[1]?.kindId).toBe('CRM');
   });
 
-  it('does not offer the retired mobile-app core', () => {
+  it('does not offer retired MOBILE_APP or SAAS cores', () => {
     const groups = groupProfileRows(
-      [row('1', 'company-site-code'), row('2', 'mobile-app-code')],
+      [row('1', 'company-site-code'), row('2', 'mobile-app-code'), row('3', 'saas-code')],
       LABELS,
     );
     expect(groups).toHaveLength(1);

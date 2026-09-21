@@ -1,4 +1,5 @@
 import type { useTranslations } from 'next-intl';
+import { PRODUCT_TYPES } from '@nbos/shared';
 import type { FilterConfig } from '@/components/shared';
 import { getLeadSource, getLeadStage } from '@/features/crm/constants/leadPipeline';
 import { getDealStage } from '@/features/crm/constants/dealPipeline';
@@ -48,24 +49,6 @@ const DEAL_STAGE_KEYS = [
 ] as const;
 const DEAL_TYPE_KEYS = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
 const PRODUCT_CATEGORY_KEYS = ['CODE', 'WORDPRESS', 'SHOPIFY', 'MARKETING', 'OTHER'] as const;
-const PRODUCT_TYPE_KEYS = [
-  'BUSINESS_CARD_WEBSITE',
-  'COMPANY_WEBSITE',
-  'MOBILE_APP',
-  'WEB_APP',
-  'CRM',
-  'ECOMMERCE',
-  'SAAS',
-  'LANDING',
-  'ERP',
-  'LOGO',
-  'BRANDING',
-  'DESIGN',
-  'SEO',
-  'PPC',
-  'SMM',
-  'OTHER',
-] as const;
 const PAYMENT_TYPE_KEYS = ['CLASSIC', 'SUBSCRIPTION'] as const;
 const PRODUCT_PLATFORM_KEYS = ['WEB', 'APP', 'DESKTOP'] as const;
 const TAX_STATUS_KEYS = ['TAX', 'TAX_FREE'] as const;
@@ -141,7 +124,7 @@ export function translateProductCategoryLabel(t: CrmTranslate, value: string): s
 }
 
 export function translateProductTypeLabel(t: CrmTranslate, value: string): string {
-  if (isOneOf(value, PRODUCT_TYPE_KEYS)) {
+  if (isOneOf(value, PRODUCT_TYPES)) {
     return crmMessage(t, `catalogs.productType.${value}`);
   }
   return value;

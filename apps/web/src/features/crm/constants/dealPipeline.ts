@@ -1,4 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
+import { PRODUCT_TYPES as PRODUCT_TYPE_VALUES } from '@nbos/shared';
 
 export interface DealStage {
   key: string;
@@ -89,24 +90,7 @@ export const PRODUCT_CATEGORIES = [
   { value: 'OTHER', label: 'Other' },
 ] as const;
 
-export const PRODUCT_TYPES = [
-  { value: 'BUSINESS_CARD_WEBSITE', label: 'Business Card Website' },
-  { value: 'COMPANY_WEBSITE', label: 'Company Website' },
-  { value: 'MOBILE_APP', label: 'Mobile App' },
-  { value: 'WEB_APP', label: 'Web Application' },
-  { value: 'CRM', label: 'CRM System' },
-  { value: 'ECOMMERCE', label: 'E-Commerce' },
-  { value: 'SAAS', label: 'SaaS Platform' },
-  { value: 'LANDING', label: 'Landing Page' },
-  { value: 'ERP', label: 'ERP System' },
-  { value: 'LOGO', label: 'Logo' },
-  { value: 'BRANDING', label: 'Branding' },
-  { value: 'DESIGN', label: 'Design' },
-  { value: 'SEO', label: 'SEO' },
-  { value: 'PPC', label: 'PPC' },
-  { value: 'SMM', label: 'SMM' },
-  { value: 'OTHER', label: 'Other' },
-] as const;
+export const PRODUCT_TYPES = PRODUCT_TYPE_VALUES.map((value) => ({ value, label: value }));
 
 export const PAYMENT_TYPES = [
   { value: 'CLASSIC', label: 'Classic' },

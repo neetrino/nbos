@@ -23,6 +23,8 @@ const PROFILE_KEY_MAX_LENGTH = 120;
 
 export type FunctionPriceWriteInput = {
   functionId: string;
+  /** Null prices a card with a single volume. Required when the card has gradations. */
+  tierId: string | null;
   effectiveFrom: string;
   roleUnits: DeliveryRoleUnitInput[];
 };
@@ -48,9 +50,27 @@ export function parseFunctionPriceWriteBody(body: unknown): FunctionPriceWriteIn
   const record = readNormRecord(body);
   return {
     functionId: readUuid(record.functionId, 'functionId'),
+    tierId: readOptionalUuid(record.tierId, 'tierId'),
     effectiveFrom: readEffectiveFrom(record.effectiveFrom),
     roleUnits: parseRoleUnitVector(record.roleUnits),
   };
+}
+
+/** Card-level drafts never replace published gradation vectors. */
+export function functionPriceTierTargetError(
+  existingTierIds: readonly string[],
+  requestedTierId: string | null,
+): string | null {
+  if (existingTierIds.length === 0) {
+    return requestedTierId === null ? null : 'tierId is not used for a function without gradations';
+  }
+  if (requestedTierId === null) {
+    return 'tierId is required for a function with gradations';
+  }
+  if (!existingTierIds.includes(requestedTierId)) {
+    return 'tierId does not belong to this function';
+  }
+  return null;
 }
 
 export function parseBaseProfileWriteBody(body: unknown): BaseProfileWriteInput {
@@ -168,6 +188,13 @@ function readUuid(value: unknown, key: string): string {
     throw new CatalogContentValidationError(`${key} must be a uuid`);
   }
   return value.trim();
+}
+
+function readOptionalUuid(value: unknown, key: string): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return readUuid(value, key);
 }
 
 function readEffectiveFrom(value: unknown): string {

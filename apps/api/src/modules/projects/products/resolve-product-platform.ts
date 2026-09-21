@@ -37,7 +37,12 @@ export function assertProductTypePlatformPair(
     productType?: string | null;
     productPlatform?: string | null;
   },
-  options: { allowLegacyMobileApp?: boolean; requirePlatform?: boolean } = {},
+  options: {
+    allowLegacyHiddenType?: boolean;
+    allowLegacyMobileApp?: boolean;
+    currentProductType?: string | null;
+    requirePlatform?: boolean;
+  } = {},
 ): void {
   if (
     options.requirePlatform &&
@@ -47,7 +52,8 @@ export function assertProductTypePlatformPair(
     throw new BadRequestException('Product platform is required');
   }
   const message = productTypePlatformPairError(input, {
-    allowLegacyMobileApp: options.allowLegacyMobileApp,
+    allowLegacyHiddenType: options.allowLegacyHiddenType ?? options.allowLegacyMobileApp,
+    currentProductType: options.currentProductType,
   });
   if (message) throw new BadRequestException(message);
 }

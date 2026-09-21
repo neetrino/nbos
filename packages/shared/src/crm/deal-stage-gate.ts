@@ -1,6 +1,7 @@
 import { DEAL_STAGE_GATE_ORDER } from '../constants/crm-attribution';
 import { getAttributionValidationErrors, type AttributionForValidation } from './attribution-gate';
 import {
+  isHiddenFromNewProductTypePick,
   productPlatformApplies,
   productTypePlatformPairError,
 } from '../constants/product-platform';
@@ -130,7 +131,10 @@ export function getDealStageGateErrors(
         productType: deal.productType,
         productPlatform: deal.productPlatform,
       },
-      { allowLegacyMobileApp: deal.productType === 'MOBILE_APP' },
+      {
+        allowLegacyHiddenType: isHiddenFromNewProductTypePick(deal.productType),
+        currentProductType: deal.productType,
+      },
     );
     if (isProductLike && pairError) {
       errors.push({ field: 'productType', message: pairError });

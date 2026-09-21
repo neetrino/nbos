@@ -92,6 +92,7 @@ export const DELIVERY_FUNCTION_CATEGORIES = [
   'content',
   'loyalty',
   'booking',
+  'learning',
   'crm_ops',
   'finance_ops',
   'hr_ops',

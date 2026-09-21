@@ -19,6 +19,7 @@ export type CreateRoleRateBody = {
 
 export type CreateFunctionPriceBody = {
   functionId: string;
+  tierId?: string | null;
   effectiveFrom: string;
   roleUnits: DeliveryRoleUnitInput[];
 };

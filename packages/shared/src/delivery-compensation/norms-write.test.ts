@@ -4,7 +4,11 @@ import {
   CatalogFinancialMassAssignmentError,
 } from './catalog-write';
 import { DELIVERY_COMPENSATION_ROLE_KEYS } from './constants';
-import { parseBaseProfileWriteBody, parseFunctionPriceWriteBody } from './norms-write';
+import {
+  parseBaseProfileWriteBody,
+  parseFunctionPriceWriteBody,
+  functionPriceTierTargetError,
+} from './norms-write';
 
 const FUNCTION_ID = '11111111-2222-3333-4444-555555555555';
 const OTHER_ID = '66666666-7777-8888-9999-aaaaaaaaaaaa';
@@ -40,6 +44,7 @@ describe('parseFunctionPriceWriteBody', () => {
     });
 
     expect(parsed.functionId).toBe(FUNCTION_ID);
+    expect(parsed.tierId).toBeNull();
     expect(parsed.roleUnits).toHaveLength(DELIVERY_COMPENSATION_ROLE_KEYS.length);
     expect(parsed.roleUnits.every((row) => row.units === '12.5')).toBe(true);
   });
@@ -130,6 +135,48 @@ describe('parseFunctionPriceWriteBody', () => {
       }),
     ).toThrow(/uuid/);
   });
+
+  it('keeps a missing tierId as null and accepts a uuid', () => {
+    expect(
+      parseFunctionPriceWriteBody({
+        functionId: FUNCTION_ID,
+        effectiveFrom: '2026-10-01T00:00:00.000Z',
+        roleUnits: fullVector(),
+      }).tierId,
+    ).toBeNull();
+    expect(
+      parseFunctionPriceWriteBody({
+        functionId: FUNCTION_ID,
+        tierId: OTHER_ID,
+        effectiveFrom: '2026-10-01T00:00:00.000Z',
+        roleUnits: fullVector(),
+      }).tierId,
+    ).toBe(OTHER_ID);
+  });
+
+  it('rejects a non-uuid tierId', () => {
+    expect(() =>
+      parseFunctionPriceWriteBody({
+        functionId: FUNCTION_ID,
+        tierId: 'not-a-uuid',
+        effectiveFrom: '2026-10-01T00:00:00.000Z',
+        roleUnits: fullVector(),
+      }),
+    ).toThrow(/uuid/);
+  });
+});
+
+describe('functionPriceTierTargetError', () => {
+  it('allows a card-level draft only when the function has no volumes', () => {
+    expect(functionPriceTierTargetError([], null)).toBeNull();
+    expect(functionPriceTierTargetError([], OTHER_ID)).toMatch(/not used/);
+  });
+
+  it('requires a belonging volume when the function has gradations', () => {
+    expect(functionPriceTierTargetError([OTHER_ID], null)).toMatch(/required/);
+    expect(functionPriceTierTargetError([OTHER_ID], FUNCTION_ID)).toMatch(/belong/);
+    expect(functionPriceTierTargetError([OTHER_ID], OTHER_ID)).toBeNull();
+  });
 });
 
 describe('parseBaseProfileWriteBody', () => {
@@ -163,7 +210,7 @@ describe('parseBaseProfileWriteBody', () => {
 
   it('rejects an unknown product type', () => {
     expect(() =>
-      parseBaseProfileWriteBody(baseProfileBody({ productType: 'MARKETPLACE' })),
+      parseBaseProfileWriteBody(baseProfileBody({ productType: 'NOT_A_PRODUCT_TYPE' })),
     ).toThrow(/productType is invalid/);
   });
 
