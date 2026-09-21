@@ -14,6 +14,7 @@ import {
 } from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { SalePriceCreateForm } from './sale-price-create-form';
+import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
 import { selectOptionsFromRecord } from './select-options-from-record';
 import {
   gradationsFromCatalog,
@@ -173,9 +174,11 @@ function targetOptionLabels(
     ...catalog.map((item) => [item.id, item.title] as const),
     ...gradations.map((tier) => [tier.id, tier.label] as const),
   ]);
+  const dictionaries = dictionariesForProfileLabel(t);
   const cores = new Map(
     profiles.map(
-      (row) => [`${row.id}`, `${row.profileKey} · ${t('columns.version')} ${row.version}`] as const,
+      (row) =>
+        [`${row.id}`, formatBaseProfileLabel(row.profileKey, row.version, dictionaries)] as const,
     ),
   );
   const entries: Array<[string, string]> = [

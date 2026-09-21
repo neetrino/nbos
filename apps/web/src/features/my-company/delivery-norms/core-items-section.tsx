@@ -14,6 +14,7 @@ import {
   type CoreItemDraft,
 } from './core-item-draft';
 import { CoreItemsList } from './core-items-list';
+import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
 import { LOADING_LIST_COUNT, OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { messageFromCaught } from './message-from-caught';
@@ -37,7 +38,7 @@ export function CoreItemsSection({
   const selectedId = versionId === OPTIONAL_SELECT_NONE ? null : versionId;
   const selected = rows.find((row) => row.id === selectedId) ?? null;
   const { items, loading, error, load } = useCoreItems(selectedId);
-  const labels = versionOptionLabels(rows, t);
+  const labels = versionOptionLabels(rows, dictionariesForProfileLabel(t), t);
 
   return (
     <DeliveryNormsSectionCard
@@ -248,10 +249,14 @@ async function submitCoreItems(input: {
 
 function versionOptionLabels(
   rows: DeliveryBaseProfileFinancialDto[],
+  dictionaries: ReturnType<typeof dictionariesForProfileLabel>,
   t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
 ): Record<string, string> {
   return Object.fromEntries([
     [OPTIONAL_SELECT_NONE, t('none')],
-    ...rows.map((row) => [row.id, `${row.profileKey} · ${t('columns.version')} ${row.version}`]),
-  ]) as Record<string, string>;
+    ...rows.map((row) => [
+      row.id,
+      formatBaseProfileLabel(row.profileKey, row.version, dictionaries),
+    ]),
+  ]);
 }

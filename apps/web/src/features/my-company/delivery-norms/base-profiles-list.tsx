@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
+import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
 import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
@@ -20,6 +21,7 @@ export function BaseProfilesList({
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
+  const dictionaries = dictionariesForProfileLabel(t);
   if (rows.length === 0) {
     return <p className="text-muted-foreground text-sm">{t('profiles.empty')}</p>;
   }
@@ -29,9 +31,10 @@ export function BaseProfilesList({
         <DeliveryNormsRecordRow key={row.id}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-foreground text-sm font-semibold">{row.profileKey}</p>
+              <p className="text-foreground text-sm font-semibold">
+                {formatBaseProfileLabel(row.profileKey, row.version, dictionaries)}
+              </p>
               <p className="text-muted-foreground text-xs">
-                {t('columns.version')} {row.version} ·{' '}
                 {t('profiles.includedCount', { count: row.includedFunctionIds.length })}
               </p>
             </div>

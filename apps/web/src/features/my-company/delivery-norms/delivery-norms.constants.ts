@@ -46,6 +46,10 @@ export const ISO_CALENDAR_DATE_LENGTH = 10;
 
 export const OPTIONAL_SELECT_NONE = 'none';
 
+export const PROFILE_LABEL_SEPARATOR = ' · ';
+
+export const PROFILE_VERSION_PREFIX = 'v';
+
 export const ZERO_UNITS_CONFIRMATION_MESSAGE = 'ZERO_UNITS_CONFIRMATION_REQUIRED';
 
 export const INCLUDED_FUNCTIONS_LIST_CLASS = 'max-h-64 space-y-2 overflow-y-auto pr-1';

@@ -14,6 +14,7 @@ import { LOADING_LIST_COUNT, OPTIONAL_SELECT_NONE } from './delivery-norms.const
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { messageFromCaught } from './message-from-caught';
 import { NormsLoadError } from './norms-load-error';
+import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
 import { selectOptionsFromRecord } from './select-options-from-record';
 import { SizePresetCreateForm } from './size-preset-create-form';
 import { SizePresetsList } from './size-presets-list';
@@ -45,10 +46,11 @@ export function SizePresetsSection({
   const [profileKey, setProfileKey] = useState(OPTIONAL_SELECT_NONE);
   const selectedKey = profileKey === OPTIONAL_SELECT_NONE ? null : profileKey;
   const { presets, setPresets, loading, error, load } = useSizePresets(selectedKey);
+  const dictionaries = dictionariesForProfileLabel(t);
   const labels = Object.fromEntries([
     [OPTIONAL_SELECT_NONE, t('none')],
-    ...profileKeys.map((key) => [key, key]),
-  ]) as Record<string, string>;
+    ...profileKeys.map((key) => [key, formatBaseProfileLabel(key, null, dictionaries)]),
+  ]);
 
   return (
     <DeliveryNormsSectionCard
