@@ -25,6 +25,7 @@ const bonusRow: EmployeeWalletBonusRow = {
   project: { code: 'P', name: 'Proj' },
   order: { code: 'O-1' },
   policyBreakdownStatuses: [],
+  deliveryRoleKey: null,
   createdAt: '2026-04-01T00:00:00.000Z',
 };
 

@@ -1,4 +1,6 @@
 import {
+  DELIVERY_COMPENSATION_RULES_MODULE,
+  FUNCTION_CATALOG_MODULE,
   MARKETING_MODULE,
   SETTINGS_MODULE,
   SETTINGS_RBAC_MODULE,
@@ -134,6 +136,16 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     href: '/my-company',
     permission: { module: 'COMPANY', action: 'VIEW' },
     children: [
+      {
+        label: 'children.myCompany.functionCatalog',
+        href: '/my-company/function-catalog',
+        permission: { module: FUNCTION_CATALOG_MODULE, action: 'VIEW' },
+      },
+      {
+        label: 'children.myCompany.deliveryNorms',
+        href: '/my-company/delivery-norms',
+        permission: { module: DELIVERY_COMPENSATION_RULES_MODULE, action: 'VIEW' },
+      },
       {
         label: 'children.myCompany.compensation',
         href: '/my-company/compensation',

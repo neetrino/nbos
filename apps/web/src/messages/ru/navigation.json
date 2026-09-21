@@ -26,6 +26,8 @@
   },
   "children": {
     "myCompany": {
+      "functionCatalog": "Каталог функций",
+      "deliveryNorms": "Нормы поставки",
       "compensation": "Компенсация",
       "kpi": "KPI / Сводка показателей",
       "kpiPolicies": "Политики KPI",

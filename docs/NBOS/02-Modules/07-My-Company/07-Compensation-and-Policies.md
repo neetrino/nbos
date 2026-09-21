@@ -1,5 +1,7 @@
 # Compensation and Policies
 
+**Дополнение 2026-09-18:** для [Delivery Compensation v2](../../03-Business-Logic/11-Delivery-Compensation-Configurator.md) нормативы и AMD/unit настраиваются только Owner/CEO, отдельно по роли, без employee/grade overrides. Инструкции функций имеют отдельное право редактирования. Экраны и границы доступа: [каталог и конфигуратор](../../05-UI-Specifications/15-Delivery-Function-Catalog-and-Configurator.md). Общие права Finance не дают автоматически права изменять v2-тарифы.
+
 > NBOS Platform - My Company: compensation profiles, bonus policies, KPI policies, templates, overrides and UI.
 
 ## Назначение
@@ -116,15 +118,15 @@ Draft -> Review -> Active -> Archived
 
 ### Типы Bonus Policy
 
-| Тип                    | Для кого / чего                                   |
-| ---------------------- | ------------------------------------------------- |
-| `Sales Bonus`          | Seller / Head of Sales                            |
-| `Delivery Bonus`       | Developer / PM / Designer / QA                    |
-| `Marketing Bonus`      | Marketing roles                                   |
-| `Support Bonus`        | Support / Maintenance roles                       |
-| `Manual Bonus`         | Разовое решение CEO/Finance                       |
-| `Product Bonus Pool`   | Плановый фонд бонусов по Product / Extension      |
-| `Subscription Release` | Выпуск бонусов по подписочным Product / Extension |
+| Тип                    | Для кого / чего                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `Sales Bonus`          | Seller / Head of Sales                                                                             |
+| `Delivery Bonus`       | Backend, Frontend, PM, Designer, QA, Technical Specialist. Для v2 сумма из конфигуратора, не 70/30 |
+| `Marketing Bonus`      | Marketing roles                                                                                    |
+| `Support Bonus`        | Support / Maintenance roles                                                                        |
+| `Manual Bonus`         | Разовое решение CEO/Finance                                                                        |
+| `Product Bonus Pool`   | Плановый фонд бонусов по Product / Extension                                                       |
+| `Subscription Release` | Выпуск бонусов по подписочным Product / Extension                                                  |
 
 ### Что можно настраивать
 

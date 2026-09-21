@@ -32,6 +32,8 @@ export interface EmployeeWalletBonusRow {
   salesAccrualHint: string | null;
   /** Product / extension scope for this order (from bonus pool). */
   productLabel: string;
+  /** Compensated delivery role of a V2 accrual; null for legacy and non-delivery bonuses. */
+  deliveryRoleKey: string | null;
   project: { code: string; name: string };
   order: { code: string };
   createdAt: string;

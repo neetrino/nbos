@@ -42,3 +42,4 @@ export * from './integrations/whatsapp-phone';
 export * from './integrations/whatsapp-group-id';
 export * from './platform-appearance';
 export * from './notifications/notification-copy-limits';
+export * from './delivery-compensation';

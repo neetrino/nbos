@@ -8,6 +8,7 @@ export const PRODUCT_DETAIL_TAB_VALUES = [
   'support',
   'technical',
   'credentials',
+  'functions',
   'finance',
 ] as const;
 
@@ -24,11 +25,13 @@ export const PRODUCT_DETAIL_TAB = {
   support: 'support',
   technical: 'technical',
   credentials: 'credentials',
+  functions: 'functions',
   finance: 'finance',
 } as const satisfies Record<string, ProductDetailTab>;
 
 const LEGACY_TAB_ALIASES: Record<string, ProductDetailTab> = {
   tickets: 'support',
+  bonus: 'functions',
 };
 
 export function parseProductDetailTab(value: string | null): ProductDetailTab {

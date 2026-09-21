@@ -1,7 +1,7 @@
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import type { DeliveryDetailSecondaryId } from './delivery-item-detail.constants';
-import { DeliveryItemDetailBonusPanel } from './DeliveryItemDetailBonusPanel';
+import { ProductFunctionsWorkspace } from '@/features/function-catalog/product-functions-workspace';
 import { DeliveryItemDetailCallsPanel } from './DeliveryItemDetailCallsPanel';
 import { DeliveryItemDetailHistoryPanel } from './DeliveryItemDetailHistoryPanel';
 import { DeliveryItemDetailWorkSpacePanel } from './DeliveryItemDetailWorkSpacePanel';
@@ -25,13 +25,13 @@ export function DeliveryItemDetailSecondaryPanels({
   view,
   auditEntityType,
   auditEntityId,
-  financeTabHref,
+  financeTabHref: _financeTabHref,
   projectHubHref,
   workSpaceHref,
   productId,
   onTaskCreateOpenChange,
   tasksRefreshSignal,
-  bonusOrderId,
+  bonusOrderId: _bonusOrderId,
   openDealHref,
   dealCode,
 }: DeliveryItemDetailSecondaryPanelsProps) {
@@ -56,9 +56,9 @@ export function DeliveryItemDetailSecondaryPanels({
         </SecondaryCard>
       ) : null}
 
-      {view === 'bonus' ? (
-        <SecondaryCard title="Bonus">
-          <DeliveryItemDetailBonusPanel orderId={bonusOrderId} financeTabHref={financeTabHref} />
+      {view === 'functions' ? (
+        <SecondaryCard title="Functions">
+          <ProductFunctionsWorkspace productId={productId} />
         </SecondaryCard>
       ) : null}
 

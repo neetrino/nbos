@@ -31,6 +31,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "test": "vitest run",
     "test:regression": "vitest run --config vitest.regression.config.ts",
+    "seed:delivery-catalog": "tsx scripts/delivery-catalog/seed-delivery-catalog.ts",
+    "seed:delivery-profiles": "tsx scripts/delivery-profiles/seed-delivery-profiles.ts",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "knip": "knip --dependencies --files",
@@ -53,11 +55,14 @@
     "deploy:prod:status": "node scripts/coolify-sequential-deploy.mjs --status",
     "release:prod": "node scripts/release-prod.mjs",
     "release:prod:status": "node scripts/release-prod.mjs --status",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cleanup:delivery-catalog": "tsx scripts/delivery-catalog/cleanup-superseded-catalog.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@nbos/database": "workspace:*",
+    "@nbos/shared": "workspace:*",
     "@types/jsdom": "^28.0.3",
     "@vitest/coverage-v8": "^4.1.10",
     "eslint": "^9",

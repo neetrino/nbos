@@ -27,6 +27,8 @@ If documents conflict, use this priority:
 5. `docs/NBOS/02-Modules/*`
 6. `docs/NBOS/05-UI-Specifications/*`
 
+**Scoped exception:** for new-model delivery bonus calculation, function catalog, Delivery/Product money surfaces, and `From = Network`, use `docs/NBOS/03-Business-Logic/11-Delivery-Compensation-Configurator.md` and `docs/implementation/delivery-compensation/` over older 70/30, Bonus-tab, and four-value `From` text. See `docs/implementation/delivery-compensation/06-CANON-RECONCILIATION.md`.
+
 ## What Not To Treat As Canon
 
 - `docs/archive/*` is historical context only.

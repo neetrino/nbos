@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CircleDollarSign, ShieldCheck, Users } from 'lucide-react';
 import { PageHero, StatusBadge } from '@/components/shared';
 import { employeesApi, type Employee } from '@/lib/api/employees';
+import { DeliveryRatesPanel } from '@/features/function-catalog/delivery-rates-panel';
 import { CompensationProfileWorkspace } from '@/features/my-company/compensation/compensation-profile-workspace';
 import { bonusesApi, type SalesBonusPolicyRow } from '@/lib/api/bonus';
 
@@ -49,6 +50,7 @@ export default function CompensationPage() {
         Compensation profiles runtime view: base salary coverage, active sales bonus policies, and
         links to payroll controls.
       </p>
+      <DeliveryRatesPanel />
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="border-border bg-card rounded-2xl border p-4">

@@ -113,4 +113,42 @@ describe('getVisibleNavModules', () => {
       ),
     ).toBe(false);
   });
+
+  it('shows My Company catalog child without opening HR or Compensation', () => {
+    const canCatalogOnly = (action: string, module: string) =>
+      action === 'VIEW' && module === 'FUNCTION_CATALOG';
+    const visible = getVisibleNavModules(canCatalogOnly, false, NAV_MODULE_DEFINITIONS);
+    const company = visible.find((item) => item.key === 'my-company');
+    const hrefs = company?.children?.flatMap((child) =>
+      'href' in child && child.href ? [child.href] : [],
+    );
+
+    expect(hrefs).toEqual(['/my-company/function-catalog']);
+  });
+
+  it('keeps HR hub on COMPANY without revealing the catalog', () => {
+    const canCompanyOnly = (action: string, module: string) =>
+      action === 'VIEW' && module === 'COMPANY';
+    const visible = getVisibleNavModules(canCompanyOnly, false, NAV_MODULE_DEFINITIONS);
+    const company = visible.find((item) => item.key === 'my-company');
+    const hrefs = company?.children?.flatMap((child) =>
+      'href' in child && child.href ? [child.href] : [],
+    );
+
+    expect(hrefs ?? []).not.toContain('/my-company/function-catalog');
+    expect(hrefs ?? []).not.toContain('/my-company/delivery-norms');
+    expect(hrefs ?? []).not.toContain('/my-company/compensation');
+  });
+
+  it('shows Delivery norms without opening HR or the function catalog', () => {
+    const canRulesOnly = (action: string, module: string) =>
+      action === 'VIEW' && module === 'DELIVERY_COMPENSATION_RULES';
+    const visible = getVisibleNavModules(canRulesOnly, false, NAV_MODULE_DEFINITIONS);
+    const company = visible.find((item) => item.key === 'my-company');
+    const hrefs = company?.children?.flatMap((child) =>
+      'href' in child && child.href ? [child.href] : [],
+    );
+
+    expect(hrefs).toEqual(['/my-company/delivery-norms']);
+  });
 });

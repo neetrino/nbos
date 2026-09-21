@@ -4,7 +4,7 @@ export const DELIVERY_DETAIL_TABS = [
   { id: 'general' as const, label: 'General' },
   { id: 'workspace' as const, label: 'Work Space' },
   { id: 'calls' as const, label: 'Calls' },
-  { id: 'bonus' as const, label: 'Bonus' },
+  { id: 'functions' as const, label: 'Functions' },
   { id: 'history' as const, label: 'History' },
 ] as const;
 

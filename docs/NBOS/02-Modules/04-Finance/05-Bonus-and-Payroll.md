@@ -1,5 +1,7 @@
 # Бонусы, зарплата и payroll (Bonus, Salary & Payroll)
 
+**Дополнение 2026-09-18:** [Delivery Compensation v2](../../03-Business-Logic/11-Delivery-Compensation-Configurator.md) заменяет способ расчёта плановых delivery-бонусов для новой модели. Проценты, employee overrides и split 70/30 не определяют v2-суммы. Funding, release, payroll и выплата сохраняются; совместимость earned period, late funding и корректировок обязательна по [техническому контракту](../../../implementation/delivery-compensation/01-TECHNICAL-CONTRACT.md). Product/Delivery больше не являются финансовыми экранами; суммы доступны в Wallet/авторизованном Finance.
+
 ## Общая концепция
 
 Этот контур отвечает за мотивацию сотрудников и выплаты:
@@ -130,7 +132,7 @@ Developer Backend:
 Developer Frontend:
 
 - фиксированная зарплата;
-- бонусы по закрытым работам (delivery developer pool: **30%** при совместном назначении с Backend, иначе Backend **100%**);
+- для v2 — собственные нормативные units роли Frontend; старый split **30% / 70%** относится только к legacy;
 - та же Bonus Policy engine, отдельная роль в расчёте.
 
 Compensation Profile не должен хранить только одну текущую зарплату. Он должен иметь историю версий, потому что условия сотрудника могут меняться: фикс, проценты, KPI, уровень, договорённости.
@@ -238,7 +240,7 @@ Product Done
 
 По умолчанию частичный auto-release распределяется пропорционально между оставшимися плановыми бонусами сотрудников.
 
-**Delivery developer pool (Backend + Frontend):** доля бонуса роли Developer по Product / Extension делится **70%** Backend (`developerId`) / **30%** Frontend (`frontendDeveloperId`) только когда это **разные** сотрудники. Если Frontend не назначен или совпадает с Backend — Backend **100%**; отдельная строка Frontend не создаётся. Frontend без Backend запрещён. Правило не распространяется на PM, Designer, Seller и прочие роли product pool.
+**Delivery developer pool (Backend + Frontend) — только legacy:** доля бонуса роли Developer по Product / Extension делится **70%** Backend (`developerId`) / **30%** Frontend (`frontendDeveloperId`) только когда это **разные** сотрудники. Если Frontend не назначен или совпадает с Backend — Backend **100%**; отдельная строка Frontend не создаётся. Frontend без Backend запрещён. Правило не распространяется на PM, Designer, Seller и прочие роли product pool. Для продуктов [Delivery Compensation v2](../../03-Business-Logic/11-Delivery-Compensation-Configurator.md) этот split не вызывается: каждая роль имеет свои units × тариф.
 
 Пример:
 

@@ -50,7 +50,8 @@
       "MARKETING": "Маркетинг",
       "SALES": "Продажи",
       "PARTNER": "Партнёр",
-      "CLIENT": "Клиент"
+      "CLIENT": "Клиент",
+      "NETWORK": "Network"
     },
     "salesChannel": {
       "COLD_CALL": "Холодный звонок",

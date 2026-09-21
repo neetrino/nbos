@@ -1,4 +1,4 @@
-import { Gift, History, Kanban, LayoutGrid, Phone } from 'lucide-react';
+import { History, Kanban, Layers, LayoutGrid, Phone } from 'lucide-react';
 import type { DetailSheetTabItem } from '@/components/shared';
 import { DELIVERY_DETAIL_TABS } from './delivery-item-detail.constants';
 
@@ -6,7 +6,7 @@ const TAB_ICONS = {
   general: LayoutGrid,
   workspace: Kanban,
   calls: Phone,
-  bonus: Gift,
+  functions: Layers,
   history: History,
 } as const;
 
@@ -14,7 +14,7 @@ export interface DeliveryDetailSheetTabLabels {
   general: string;
   workspace: string;
   calls: string;
-  bonus: string;
+  functions: string;
   history: string;
   createTask: string;
 }

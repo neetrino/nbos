@@ -69,6 +69,7 @@ model Order {
   operationalJournalEntries OperationalJournalEntry[]
   partnerAccruals           PartnerAccrual[]
   payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
+  deliveryConfiguration     DeliveryConfiguration?
 
   @@map("orders")
 }
@@ -538,6 +539,15 @@ model BonusEntry {
   salesAccrualInvoiceId String?             @map("sales_accrual_invoice_id")
   salesBonusSlot        SalesBonusSlotEnum? @map("sales_bonus_slot")
   calculationSnapshot   Json?               @map("calculation_snapshot")
+  /// v2 configurator source. Null keeps legacy/manual/sales entries unchanged.
+  deliverySource        DeliveryBonusSourceEnum? @map("delivery_source")
+  deliveryAllocationId  String?             @unique @map("delivery_allocation_id")
+  deliveryRoleKey       DeliveryCompensationRoleKeyEnum? @map("delivery_role_key")
+  deliveryConfigurationId String?           @map("delivery_configuration_id")
+  deliveryComponentId   String?             @map("delivery_component_id")
+  deliveryRevisionId    String?             @map("delivery_revision_id")
+  /// Owner/CEO private units/rate snapshot. Never serialize to team/Wallet/Finance list DTOs.
+  deliveryNormativeSnapshot Json?           @map("delivery_normative_snapshot")
   type                  BonusTypeEnum
   amount                Decimal             @db.Decimal(12, 2)
   /// Snapshot at creation; preserved when `amount` is edited.
@@ -561,11 +571,17 @@ model BonusEntry {
   order         Order          @relation(fields: [orderId], references: [id])
   project       Project        @relation(fields: [projectId], references: [id])
   deal          Deal?          @relation("DealSalesBonusEntries", fields: [dealId], references: [id])
+  deliveryAllocation    DeliveryBonusAllocation? @relation(fields: [deliveryAllocationId], references: [id], onDelete: SetNull)
+  deliveryConfiguration DeliveryConfiguration?   @relation(fields: [deliveryConfigurationId], references: [id], onDelete: SetNull)
+  deliveryComponent     DeliveryBonusComponent?  @relation(fields: [deliveryComponentId], references: [id], onDelete: SetNull)
+  deliveryRevision      DeliveryConfigurationRevision? @relation("BonusEntryDeliveryRevision", fields: [deliveryRevisionId], references: [id], onDelete: SetNull)
   bonusReleases BonusRelease[]
   payrollBonusAllocationDrafts PayrollBonusAllocationDraft[]
 
   @@index([orderId, salesBonusSlot])
   @@index([orderId, salesAccrualInvoiceId])
+  @@index([deliveryConfigurationId])
+  @@index([deliverySource])
   /// Partial unique indexes: `bonus_entries_sales_slotted_unique`, `bonus_entries_sales_invoice_employee_unique`.
   @@map("bonus_entries")
 }

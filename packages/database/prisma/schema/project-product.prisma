@@ -208,6 +208,7 @@ model Product {
   invoices                  Invoice[]
   expensePlans              ExpensePlan[]
   expenses                  Expense[]
+  deliveryConfigurations    DeliveryConfiguration[]
 
   @@index([contactId])
   @@index([companyId])
@@ -304,6 +305,8 @@ model Extension {
   bonusReleases     BonusRelease[]
   tasks             Task[]
   workSpace         WorkSpace?
+  deliveryConfigurations DeliveryConfiguration[]
+  deliveryRoleAssignments ExtensionDeliveryRoleAssignment[]
 
   @@index([deliveryStage])
   @@index([deliveryWorkStatus])

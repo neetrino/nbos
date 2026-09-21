@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  holdsDeliveryRole,
   linkedEmployeeIdsForUnit,
   resolveDeliveryPayableUnits,
 } from './delivery-payable-unit.resolver';
@@ -112,6 +113,8 @@ describe('linkedEmployeeIdsForUnit', () => {
         developerId: 'dev-be',
         frontendDeveloperId: 'dev-fe',
         designerId: null,
+        qaLeadId: null,
+        technicalSpecialistId: null,
       },
       bonusEmployeeIds: [],
     });
@@ -125,9 +128,62 @@ describe('linkedEmployeeIdsForUnit', () => {
         developerId: 'dev-be',
         frontendDeveloperId: null,
         designerId: null,
+        qaLeadId: null,
+        technicalSpecialistId: null,
       },
       bonusEmployeeIds: [],
     });
     expect([...ids]).toEqual(['dev-be']);
+  });
+
+  it('links QA and the technical specialist so their payroll rows are not hidden', () => {
+    const ids = linkedEmployeeIdsForUnit({
+      product: {
+        pmId: null,
+        developerId: null,
+        frontendDeveloperId: null,
+        designerId: null,
+        qaLeadId: 'qa-1',
+        technicalSpecialistId: 'tech-1',
+      },
+      bonusEmployeeIds: [],
+    });
+    expect([...ids]).toEqual(['qa-1', 'tech-1']);
+  });
+
+  it('keeps one id when the same employee holds two delivery roles', () => {
+    const ids = linkedEmployeeIdsForUnit({
+      product: {
+        pmId: 'multi-1',
+        developerId: null,
+        frontendDeveloperId: null,
+        designerId: null,
+        qaLeadId: 'multi-1',
+        technicalSpecialistId: null,
+      },
+      bonusEmployeeIds: ['multi-1'],
+    });
+    expect([...ids]).toEqual(['multi-1']);
+  });
+});
+
+describe('holdsDeliveryRole', () => {
+  const product = {
+    pmId: 'pm-1',
+    developerId: null,
+    frontendDeveloperId: null,
+    designerId: null,
+    qaLeadId: 'qa-1',
+    technicalSpecialistId: 'tech-1',
+  };
+
+  it('recognizes QA and technical specialist holders', () => {
+    expect(holdsDeliveryRole(product, 'qa-1')).toBe(true);
+    expect(holdsDeliveryRole(product, 'tech-1')).toBe(true);
+  });
+
+  it('rejects an employee without any delivery role, and a missing product', () => {
+    expect(holdsDeliveryRole(product, 'other-1')).toBe(false);
+    expect(holdsDeliveryRole(null, 'pm-1')).toBe(false);
   });
 });

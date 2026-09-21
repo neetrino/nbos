@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Decimal, type PrismaClient } from '@nbos/database';
+import { DELIVERY_BONUS_SOURCE_V2 } from '@nbos/shared';
 import { BONUS_POOL_ZERO, decimalFrom } from './bonus-pool-decimal';
 import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
@@ -64,10 +65,14 @@ export async function patchBonusEntryPlannedAmount(
       employeeId: true,
       type: true,
       earnedPeriod: true,
+      deliverySource: true,
     },
   });
   if (!entry) {
     throw new BadRequestException('Bonus entry not found');
+  }
+  if (entry.deliverySource === DELIVERY_BONUS_SOURCE_V2) {
+    throw new BadRequestException('V2 generated delivery entries cannot be patched here');
   }
 
   const paidCount = await prisma.bonusRelease.count({

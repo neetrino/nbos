@@ -134,6 +134,7 @@ model FileAsset {
   partnerAgreementDocuments   Partner[]                  @relation("PartnerAgreementDocument")
   assetGrants                 FileAssetGrant[]
   atsCallRecordings           AtsCallEvent[]             @relation("AtsCallRecording")
+  deliveryFunctionAttachments DeliveryFunctionAttachment[]
 
   @@index([status])
   @@index([purpose])

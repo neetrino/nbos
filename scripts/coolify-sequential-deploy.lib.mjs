@@ -27,6 +27,30 @@ export const DEPLOY_TIMEOUT_MS = 45 * 60 * 1000;
 export const QUEUE_RETRY_DEFAULT_MS = 30_000;
 export const MAX_QUEUE_RETRIES = 5;
 
+const TRANSIENT_NETWORK_PATTERN =
+  /fetch failed|network error|econnreset|etimedout|econnrefused|enotfound|socket|undici|other side closed/i;
+
+/**
+ * @param {unknown} error
+ * @returns {string}
+ */
+export function formatNetworkError(error) {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause instanceof Error ? error.cause.message : '';
+  return cause ? `${error.message}: ${cause}` : error.message;
+}
+
+/**
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+export function isTransientNetworkError(error) {
+  if (typeof error === 'object' && error !== null && 'status' in error) {
+    return false;
+  }
+  return TRANSIENT_NETWORK_PATTERN.test(formatNetworkError(error));
+}
+
 const SUCCESS_STATUSES = new Set(['finished']);
 const FAILED_STATUSES = new Set(['failed', 'cancelled-by-user', 'cancelled']);
 const RUNNING_STATUSES = new Set(['queued', 'in_progress']);

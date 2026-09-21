@@ -1,59 +1,34 @@
-import {
-  BadRequestException,
-  Injectable,
-  Inject,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
-import {
-  PrismaClient,
-  type Prisma,
-  type ExtensionSizeEnum,
-  type ExtensionStatusEnum,
-  type DeliveryResolutionEnum,
-  type DeliveryStageEnum,
-  type DeliveryWorkStatusEnum,
-  type InputJsonValue,
-} from '@nbos/database';
+import { Injectable, Inject, ConflictException } from '@nestjs/common';
+import { PrismaClient, type ExtensionSizeEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import {
-  employeePersonSelect,
-  employeePersonWithEmailSelect,
-} from '../../../common/employee-person.select';
+import { employeePersonSelect } from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
-import { mergeActiveParentProjectScope } from '../active-project-list-scope';
-import { extensionBillingCompanyWhere } from '../products/product-billing-company.where';
-import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
-import { buildExtensionCurrentStageReadiness } from './extension-current-stage-readiness';
-import {
-  attachExtensionReadiness,
-  validateExtensionStageGate,
-  validateExtensionTransition,
-} from './extension-stage-gates';
-import {
-  buildDeliveryLifecycleWrite,
-  buildDeliveryPauseWrite,
-  buildDeliveryResumeWrite,
-  extensionLegacyStatusForStage,
-  requireDeliveryStage,
-} from '../delivery-lifecycle';
-import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { PartnerAccrualClassicService } from '../../finance/partner-accrual/partner-accrual-classic.service';
 import { PartnerAccrualSubscriptionService } from '../../finance/partner-accrual/partner-accrual-subscription.service';
 import { SupportService } from '../../support/support.service';
 import { AuditService } from '../../audit/audit.service';
-import {
-  DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
-  isLegacyPatchStatusTerminalOutcome,
-} from '../delivery-status-deprecation';
-import {
-  loadStageChecklistProgressByOwner,
-  pickProgressForEntity,
-} from '../../checklist-templates/checklist-instance-stage-progress';
 import { DeliveryStageChecklistSyncService } from '../../checklist-templates/delivery-stage-checklist-sync.service';
 import { ChecklistTemplatesService } from '../../checklist-templates/checklist-templates.service';
 import { ProductTeamSyncService } from '../../platform-access/product-team-sync.service';
 import { DeliveryRealtimePublisher } from '../../realtime/delivery-realtime.publisher';
+import { attachExtensionReadiness } from './extension-stage-gates';
+import { findExtensionById } from './extension-detail-read';
+import { findAllExtensions, type ExtensionQueryParams } from './extension-find-all';
+import { getExtensionStats } from './extension-stats';
+import { requireText } from './extension-input';
+import { ensureProductBelongsToProject } from './extension-lifecycle-writes';
+import {
+  cancelExtension,
+  completeExtension,
+  moveExtensionStage,
+  pauseExtension,
+  resumeExtension,
+  updateExtensionStatus,
+  type CancelDeliveryDto,
+  type MoveStageDto,
+  type PauseDeliveryDto,
+  type ExtensionDeliveryCommandDeps,
+} from './extension-delivery-commands';
 
 interface CreateExtensionDto {
   projectId: string;
@@ -70,35 +45,6 @@ interface UpdateExtensionDto {
   size?: string;
   assignedTo?: string | null;
   description?: string | null;
-}
-
-interface PauseDeliveryDto {
-  reason: string;
-  onHoldUntil: string;
-}
-
-interface CancelDeliveryDto {
-  reason: string;
-}
-
-interface MoveStageDto {
-  stage: string;
-}
-
-interface ExtensionQueryParams {
-  page?: number;
-  pageSize?: number;
-  projectId?: string;
-  /** Filter by parent product billing company, falling back to the project default. */
-  companyId?: string;
-  productId?: string;
-  status?: string;
-  deliveryStage?: string;
-  deliveryWorkStatus?: string;
-  deliveryResolution?: string;
-  size?: string;
-  assignedTo?: string;
-  search?: string;
 }
 
 @Injectable()
@@ -118,215 +64,16 @@ export class ExtensionsService {
   ) {}
 
   async findAll(params: ExtensionQueryParams) {
-    const {
-      page = 1,
-      pageSize = 20,
-      projectId,
-      companyId,
-      productId,
-      status,
-      deliveryStage,
-      deliveryWorkStatus,
-      deliveryResolution,
-      size,
-      assignedTo,
-      search,
-    } = params;
-    const where: Prisma.ExtensionWhereInput = {};
-
-    if (projectId) where.projectId = projectId;
-    if (companyId) {
-      Object.assign(where, extensionBillingCompanyWhere(companyId));
-    }
-    if (productId) where.productId = productId;
-    if (status) where.status = status as ExtensionStatusEnum;
-    if (deliveryStage) where.deliveryStage = deliveryStage as DeliveryStageEnum;
-    if (deliveryWorkStatus) {
-      where.deliveryWorkStatus = deliveryWorkStatus as DeliveryWorkStatusEnum;
-    }
-    if (deliveryResolution) {
-      where.deliveryResolution = deliveryResolution as DeliveryResolutionEnum;
-    }
-    if (size) where.size = size as ExtensionSizeEnum;
-    if (assignedTo) where.assignedTo = assignedTo;
-    if (search) {
-      where.name = { contains: search, mode: 'insensitive' };
-    }
-
-    const scopedWhere = mergeActiveParentProjectScope(where, { projectId });
-
-    const [items, total] = await Promise.all([
-      this.prisma.extension.findMany({
-        where: scopedWhere,
-        include: {
-          project: {
-            select: {
-              id: true,
-              code: true,
-              name: true,
-              companyId: true,
-              company: { select: { id: true, name: true } },
-            },
-          },
-          product: {
-            select: {
-              id: true,
-              name: true,
-              productType: true,
-              companyId: true,
-              company: { select: { id: true, name: true } },
-            },
-          },
-          assignee: { select: employeePersonSelect },
-          order: {
-            select: {
-              id: true,
-              code: true,
-              status: true,
-              paymentType: true,
-              invoices: { select: { moneyStatus: true } },
-            },
-          },
-          _count: { select: { tasks: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.extension.count({ where: scopedWhere }),
-    ]);
-
-    const openTasksByExt = await batchExtensionOpenTaskCounts(
-      this.prisma,
-      items.map((e) => e.id),
-    );
-
-    const lifecycleByExtension = new Map(
-      items.map((extension) => [extension.id, attachExtensionReadiness(extension)]),
-    );
-    const checklistProgressMap = await loadStageChecklistProgressByOwner(
-      this.prisma,
-      items.map((extension) => ({
-        ownerEntityType: 'EXTENSION' as const,
-        ownerEntityId: extension.id,
-        stage: lifecycleByExtension.get(extension.id)?.deliveryLifecycle.stage ?? null,
-      })),
-    );
-
-    return {
-      items: items.map((extension) => {
-        const base = lifecycleByExtension.get(extension.id) ?? attachExtensionReadiness(extension);
-        const openTasks = openTasksByExt.get(extension.id) ?? 0;
-        const readiness = buildExtensionCurrentStageReadiness(extension, base.deliveryLifecycle, {
-          openTasks,
-        });
-        const checklistStageProgress = pickProgressForEntity(
-          checklistProgressMap,
-          'EXTENSION',
-          extension.id,
-          base.deliveryLifecycle.stage,
-        );
-        const currentStageReadiness = mergeChecklistIntoReadiness(
-          readiness,
-          checklistStageProgress,
-        );
-        return {
-          ...base,
-          deliveryLifecycle: {
-            ...base.deliveryLifecycle,
-            ...(currentStageReadiness ? { currentStageReadiness } : {}),
-          },
-          checklistStageProgress,
-        };
-      }),
-      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
-    };
+    return findAllExtensions(this.prisma, params);
   }
 
   async findById(id: string) {
-    const extension = await this.prisma.extension.findUnique({
-      where: { id },
-      include: {
-        project: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            contactId: true,
-            companyId: true,
-            company: { select: { id: true, name: true } },
-            contact: { select: { id: true, firstName: true, lastName: true } },
-          },
-        },
-        product: {
-          select: {
-            id: true,
-            name: true,
-            productType: true,
-            status: true,
-            languages: true,
-            companyId: true,
-            company: { select: { id: true, name: true } },
-            technicalProfiles: {
-              select: {
-                productionUrl: true,
-                stagingUrl: true,
-                repositoryUrl: true,
-                hostingProvider: true,
-                technicalOwnerId: true,
-              },
-            },
-          },
-        },
-        assignee: { select: employeePersonWithEmailSelect },
-        closedBy: { select: employeePersonSelect },
-        order: {
-          include: {
-            deal: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-                offerFileUrl: true,
-                contractFileUrl: true,
-                seller: { select: employeePersonSelect },
-              },
-            },
-            invoices: {
-              select: { id: true, code: true, moneyStatus: true, amount: true, dueDate: true },
-            },
-          },
-        },
-        tasks: {
-          select: { id: true, code: true, title: true, status: true, priority: true },
-          orderBy: { createdAt: 'desc' },
-          take: 20,
-        },
-      },
-    });
-    if (!extension) throw new NotFoundException(`Extension ${id} not found`);
-    const base = attachExtensionReadiness(extension);
-    const checklistProgressMap = await loadStageChecklistProgressByOwner(this.prisma, [
-      {
-        ownerEntityType: 'EXTENSION',
-        ownerEntityId: extension.id,
-        stage: attachExtensionReadiness(extension).deliveryLifecycle.stage,
-      },
-    ]);
-    return {
-      ...base,
-      checklistStageProgress: pickProgressForEntity(
-        checklistProgressMap,
-        'EXTENSION',
-        extension.id,
-        base.deliveryLifecycle.stage,
-      ),
-    };
+    return findExtensionById(this.prisma, id);
   }
 
   async create(data: CreateExtensionDto) {
     const productId = requireText(data.productId, 'productId');
-    await this.ensureProductBelongsToProject(productId, data.projectId);
+    await ensureProductBelongsToProject(this.prisma, productId, data.projectId);
     const extension = await this.prisma.extension.create({
       data: {
         projectId: data.projectId,
@@ -355,12 +102,12 @@ export class ExtensionsService {
   }
 
   async update(id: string, data: UpdateExtensionDto) {
-    const current = await this.findById(id);
+    const current = await findExtensionById(this.prisma, id);
     const productId =
       data.productId !== undefined
         ? requireText(data.productId ?? undefined, 'productId')
         : undefined;
-    if (productId) await this.ensureProductBelongsToProject(productId, current.projectId);
+    if (productId) await ensureProductBelongsToProject(this.prisma, productId, current.projectId);
     const extension = await this.prisma.extension.update({
       where: { id },
       data: {
@@ -387,288 +134,52 @@ export class ExtensionsService {
   }
 
   async updateStatus(id: string, newStatus: string, actorId: string) {
-    const extension = await this.findById(id);
-    const current = extension.status as ExtensionStatusEnum;
-    const target = newStatus as ExtensionStatusEnum;
-
-    validateExtensionTransition(current, target);
-    validateExtensionStageGate(extension, target);
-
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-      },
-    });
-    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
-    await this.applyDeliveryOutcomeSideEffects(id, target);
-    if (isLegacyPatchStatusTerminalOutcome(target)) {
-      await this.audit.log({
-        entityType: 'EXTENSION',
-        entityId: id,
-        action: DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION,
-        userId: actorId,
-        projectId: extension.projectId,
-        changes: {
-          deprecatedApiPath: 'PATCH /projects/extensions/:id/status',
-          previousStatus: current,
-          targetStatus: target,
-          deliveryResolution: target === 'DONE' ? 'DONE' : 'CANCELLED',
-        } as InputJsonValue,
-      });
-    }
-    return attachExtensionReadiness(updated);
+    return updateExtensionStatus(this.deliveryDeps(), id, newStatus, actorId);
   }
 
-  async moveStage(id: string, data: MoveStageDto) {
-    const extension = await this.findById(id);
-    this.ensureActiveForStageMove(extension.deliveryLifecycle);
-    const stage = this.parseDeliveryStage(data.stage);
-    const target = extensionLegacyStatusForStage(stage) as ExtensionStatusEnum;
-
-    validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
-    validateExtensionStageGate(extension, target);
-    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
-
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: { status: target, ...buildDeliveryLifecycleWrite(target, extension) },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-      },
-    });
-    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
-    await this.applyDeliveryOutcomeSideEffects(id, target);
-    await this.publishExtensionChanged(updated.id);
-    return attachExtensionReadiness(updated);
+  async moveStage(id: string, data: MoveStageDto, actorId?: string) {
+    return moveExtensionStage(this.deliveryDeps(), id, data, actorId);
   }
 
   async pause(id: string, data: PauseDeliveryDto) {
-    const extension = await this.findById(id);
-    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
-    const reason = requireText(data.reason, 'reason');
-    const onHoldUntil = parseDate(data.onHoldUntil, 'onHoldUntil');
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: buildDeliveryPauseWrite(extension, reason, onHoldUntil),
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-      },
-    });
-    await this.publishExtensionChanged(updated.id);
-    return attachExtensionReadiness(updated);
+    return pauseExtension(this.deliveryDeps(), id, data);
   }
 
   async resume(id: string) {
-    const extension = await this.findById(id);
-    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
-    if (extension.deliveryLifecycle.workStatus !== 'ON_HOLD') {
-      throw new BadRequestException('Extension is not on hold');
-    }
-    const nextStatus = extensionLegacyStatusForStage(extension.deliveryLifecycle.stage);
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: { status: nextStatus as ExtensionStatusEnum, ...buildDeliveryResumeWrite(extension) },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-      },
-    });
-    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(updated.id);
-    await this.publishExtensionChanged(updated.id);
-    return attachExtensionReadiness(updated);
+    return resumeExtension(this.deliveryDeps(), id);
   }
 
   async cancel(id: string, data: CancelDeliveryDto, actorId: string) {
-    const extension = await this.findById(id);
-    this.ensureNotTerminal(extension.deliveryLifecycle.resolution);
-    const reason = requireText(data.reason, 'reason');
-    const closedAt = new Date();
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: {
-        status: 'LOST',
-        ...buildDeliveryLifecycleWrite('LOST', extension),
-        cancellationReason: reason,
-        closedAt,
-        closedById: actorId,
-      },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-        closedBy: { select: { id: true, firstName: true, lastName: true } },
-      },
-    });
-    await this.applyDeliveryOutcomeSideEffects(id, 'LOST');
-    await this.audit.log({
-      entityType: 'EXTENSION',
-      entityId: id,
-      action: 'delivery.cancelled',
-      userId: actorId,
-      projectId: extension.projectId,
-      changes: { reason } as InputJsonValue,
-    });
-    await this.publishExtensionChanged(updated.id);
-    return attachExtensionReadiness(updated);
+    return cancelExtension(this.deliveryDeps(), id, data, actorId);
   }
 
   async complete(id: string, actorId: string) {
-    const extension = await this.findById(id);
-    this.ensureActiveForStageMove(extension.deliveryLifecycle);
-    const target = 'DONE' as ExtensionStatusEnum;
-
-    validateExtensionTransition(extension.status as ExtensionStatusEnum, target);
-    validateExtensionStageGate(extension, target);
-    if (target === 'DEVELOPMENT') await this.validateDevelopmentGate(extension.id);
-
-    const closedAt = new Date();
-    const updated = await this.prisma.extension.update({
-      where: { id },
-      data: {
-        status: target,
-        ...buildDeliveryLifecycleWrite(target, extension),
-        closedAt,
-        closedById: actorId,
-      },
-      include: {
-        project: { select: { id: true, code: true, name: true } },
-        product: { select: { id: true, name: true } },
-        order: { select: { id: true, code: true, status: true } },
-        closedBy: { select: { id: true, firstName: true, lastName: true } },
-      },
-    });
-    await this.applyDeliveryOutcomeSideEffects(id, target);
-    await this.supportService.closeLinkedTicketsAfterExtensionDelivered(id, actorId);
-    await this.audit.log({
-      entityType: 'EXTENSION',
-      entityId: id,
-      action: 'delivery.completed',
-      userId: actorId,
-      projectId: extension.projectId,
-      changes: { deliveryResolution: 'DONE' } as InputJsonValue,
-    });
-    await this.publishExtensionChanged(updated.id);
-    return attachExtensionReadiness(updated);
+    return completeExtension(this.deliveryDeps(), id, actorId);
   }
 
   /** @deprecated Hard delete removed — use PATCH :id/cancel or :id/complete. */
   async delete(id: string): Promise<never> {
-    await this.findById(id);
+    await findExtensionById(this.prisma, id);
     throw new ConflictException(
       'Extensions cannot be deleted. Cancel delivery (PATCH /extensions/:id/cancel) or complete it (PATCH /extensions/:id/complete).',
     );
   }
 
   async getStats(projectId?: string) {
-    const where = mergeActiveParentProjectScope(projectId ? { projectId } : {}, { projectId });
-
-    const [total, byStatus, bySize] = await Promise.all([
-      this.prisma.extension.count({ where }),
-      this.prisma.extension.groupBy({ by: ['status'], where, _count: true }),
-      this.prisma.extension.groupBy({ by: ['size'], where, _count: true }),
-    ]);
-
-    return { total, byStatus, bySize };
+    return getExtensionStats(this.prisma, projectId);
   }
 
-  private async applyDeliveryOutcomeSideEffects(
-    extensionId: string,
-    targetStatus: string,
-  ): Promise<void> {
-    if (targetStatus !== 'DONE' && targetStatus !== 'LOST') return;
-    const linkedOrder = await this.prisma.order.findUnique({
-      where: { extensionId },
-      select: { id: true },
-    });
-    if (!linkedOrder) return;
-    if (targetStatus === 'DONE') {
-      await syncProductBonusPoolForOrder(this.prisma, linkedOrder.id, this.notifications);
-      await this.partnerAccrualClassic.tryInboundClassicAfterDelivery(linkedOrder.id);
-      await this.partnerAccrualSubscription.releaseHeldAccrualsAfterDelivery(linkedOrder.id);
-      return;
-    }
-    await this.partnerAccrualSubscription.cancelHeldAccrualsAfterLostDelivery(linkedOrder.id);
+  private deliveryDeps(): ExtensionDeliveryCommandDeps {
+    return {
+      prisma: this.prisma,
+      notifications: this.notifications,
+      partnerAccrualClassic: this.partnerAccrualClassic,
+      partnerAccrualSubscription: this.partnerAccrualSubscription,
+      supportService: this.supportService,
+      audit: this.audit,
+      deliveryStageChecklistSync: this.deliveryStageChecklistSync,
+      checklistTemplates: this.checklistTemplates,
+      deliveryRealtime: this.deliveryRealtime,
+    };
   }
-
-  private ensureNotTerminal(resolution: string | null) {
-    if (resolution) {
-      throw new BadRequestException('Terminal delivery item cannot be changed');
-    }
-  }
-
-  private ensureActiveForStageMove(lifecycle: { resolution: string | null; workStatus: string }) {
-    this.ensureNotTerminal(lifecycle.resolution);
-    if (lifecycle.workStatus === 'ON_HOLD') {
-      throw new BadRequestException('Paused extension must be resumed before stage movement');
-    }
-  }
-
-  private parseDeliveryStage(stage: string) {
-    try {
-      return requireDeliveryStage(stage);
-    } catch {
-      throw new BadRequestException(`Invalid delivery stage: ${stage}`);
-    }
-  }
-
-  private async validateDevelopmentGate(extensionId: string) {
-    await this.deliveryStageChecklistSync.syncExtensionAfterLifecycleWrite(extensionId);
-    await this.checklistTemplates.assertStageInstancesCompleted({
-      ownerEntityType: 'EXTENSION',
-      ownerEntityId: extensionId,
-      deliveryStage: 'STARTING',
-    });
-  }
-
-  private async ensureProductBelongsToProject(productId: string, projectId: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      select: { id: true, projectId: true },
-    });
-
-    if (!product) throw new NotFoundException(`Product ${productId} not found`);
-    if (product.projectId !== projectId) {
-      throw new BadRequestException('Extension product must belong to the same project');
-    }
-  }
-
-  private async publishExtensionChanged(entityId: string): Promise<void> {
-    await this.deliveryRealtime.publishItemChanged('extension', entityId);
-  }
-}
-
-function requireText(value: string | undefined, field: string) {
-  const text = value?.trim();
-  if (!text) throw new BadRequestException(`${field} is required`);
-  return text;
-}
-
-function parseDate(value: string | undefined, field: string) {
-  const raw = requireText(value, field);
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
-  return date;
-}
-
-function mergeChecklistIntoReadiness(
-  readiness: { completed: number; total: number } | undefined,
-  checklist: { completedChecklists?: number; totalChecklists?: number } | null,
-) {
-  if (!checklist?.totalChecklists) return readiness;
-  const base = readiness ?? { completed: 0, total: 0 };
-  const completedChecklists = checklist.completedChecklists ?? 0;
-  const totalChecklists = checklist.totalChecklists;
-  return {
-    completed: base.completed + (completedChecklists >= totalChecklists ? totalChecklists : 0),
-    total: base.total + totalChecklists,
-  };
 }

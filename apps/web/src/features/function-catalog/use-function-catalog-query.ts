@@ -1,0 +1,102 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import {
+  DELIVERY_COMPENSATION_RULES_MODULE,
+  type DeliveryFunctionOperationalDto,
+} from '@nbos/shared';
+import { useRevalidationState } from '@/hooks/use-revalidation-state';
+import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
+import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
+import { deliveryFunctionsApi } from '@/lib/api/delivery-functions';
+import { deliveryNormsApi } from '@/lib/api/delivery-norms';
+import { usePermission } from '@/lib/permissions';
+import {
+  loadDeveloperRateIfPermitted,
+  visibleSalePriceByFunctionId,
+  type VisibleSalePrice,
+} from './function-catalog-sale-price';
+import { loadCatalogUnitsIfPermitted } from './function-catalog-units';
+
+export function useFunctionCatalogQuery(params: { search: string; status?: string }) {
+  const t = useTranslations('hr.functionCatalog');
+  const { can } = usePermission();
+  const canSeeRules = can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE);
+  const [items, setItems] = useState<DeliveryFunctionOperationalDto[]>([]);
+  const [unitsByFunctionId, setUnitsByFunctionId] = useState<Map<string, number> | undefined>();
+  const [salePriceByFunctionId, setSalePriceByFunctionId] = useState<Map<string, VisibleSalePrice>>(
+    () => new Map(),
+  );
+  const { loading, begin, end } = useRevalidationState();
+  const [error, setError] = useState<string | null>(null);
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+
+  const load = useCallback(async () => {
+    begin(itemsRef.current.length > 0);
+    try {
+      const loaded = await loadCatalogQuery(
+        { search: params.search, status: params.status },
+        canSeeRules,
+      );
+      setItems(loaded.items);
+      setUnitsByFunctionId(loaded.unitsByFunctionId);
+      setSalePriceByFunctionId(loaded.salePriceByFunctionId);
+      setError(null);
+    } catch (caught) {
+      setError(getApiErrorMessage(caught, t('loadFailed')));
+      if (isAccessRevokedApiError(caught)) {
+        setItems([]);
+        setUnitsByFunctionId(undefined);
+        setSalePriceByFunctionId(new Map());
+      }
+    } finally {
+      end();
+    }
+  }, [begin, canSeeRules, end, params.search, params.status, t]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  return { items, unitsByFunctionId, salePriceByFunctionId, loading, error, reload: load };
+}
+
+async function loadCatalogQuery(
+  params: { search: string; status?: string },
+  canSeeRules: boolean,
+): Promise<{
+  items: DeliveryFunctionOperationalDto[];
+  unitsByFunctionId: Map<string, number> | undefined;
+  salePriceByFunctionId: Map<string, VisibleSalePrice>;
+}> {
+  const [nextItems, saleVersions, multiplier] = await Promise.all([
+    deliveryFunctionsApi.listAll({
+      search: params.search || undefined,
+      status: params.status,
+    }),
+    deliveryCatalogStructureApi.listSalePrices(),
+    deliveryCatalogStructureApi.getDefaultMultiplier(),
+  ]);
+  const unitsByFunctionId = await loadCatalogUnitsIfPermitted(canSeeRules, () =>
+    deliveryNormsApi.listFunctionPrices(),
+  );
+  const developerRate = await loadDeveloperRateIfPermitted(canSeeRules, () =>
+    deliveryNormsApi.listRoleRates(),
+  );
+  return {
+    items: nextItems,
+    unitsByFunctionId,
+    salePriceByFunctionId: visibleSalePriceByFunctionId(
+      nextItems.map((item) => item.id),
+      saleVersions,
+      {
+        canViewRules: canSeeRules,
+        unitsByFunctionId,
+        developerRate,
+        defaultMultiplier: multiplier.defaultSaleMultiplier,
+      },
+    ),
+  };
+}

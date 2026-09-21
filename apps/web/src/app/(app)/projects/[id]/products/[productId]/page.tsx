@@ -8,6 +8,7 @@ import {
   Puzzle,
   Headphones,
   KeyRound,
+  Layers,
   DollarSign,
   ServerCog,
   MessageSquare,
@@ -27,6 +28,7 @@ import { ProductExtensionsTab } from '@/features/projects/components/product-tab
 import { ProductSupportTab } from '@/features/projects/components/product-tabs/ProductSupportTab';
 import { ProductTechnicalTab } from '@/features/projects/components/product-tabs/ProductTechnicalTab';
 import { ProductCredentialsTab } from '@/features/projects/components/product-tabs/ProductCredentialsTab';
+import { ProductFunctionsWorkspace } from '@/features/function-catalog/product-functions-workspace';
 import { FinanceTab } from '@/features/projects/components/tabs/FinanceTab';
 import { useProductDetailHeader } from '@/features/projects/hooks/use-product-detail-header';
 import { useProductCredentialsTab } from '@/features/projects/hooks/use-product-credentials-tab';
@@ -47,6 +49,7 @@ const TAB_ITEMS = [
   { value: 'extensions', label: 'Extensions', icon: Puzzle },
   { value: 'support', label: 'Support', icon: Headphones },
   { value: 'credentials', label: 'Credentials', icon: KeyRound },
+  { value: 'functions', label: 'Functions', icon: Layers },
   { value: 'finance', label: 'Finance', icon: DollarSign },
   { value: 'technical', label: 'Technical', icon: ServerCog },
 ] as const satisfies ReadonlyArray<{
@@ -211,6 +214,10 @@ function ProductDetailPageContent() {
 
         <TabsContent value="credentials" className="mt-5 flex min-h-0 flex-1 flex-col">
           <ProductCredentialsTab {...credentialsTab} productId={product.id} projectId={params.id} />
+        </TabsContent>
+
+        <TabsContent value="functions" className="mt-5 flex min-h-0 flex-1 flex-col">
+          <ProductFunctionsWorkspace productId={product.id} />
         </TabsContent>
 
         <TabsContent value="finance" className="mt-5 flex min-h-0 flex-1 flex-col">

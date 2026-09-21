@@ -1,54 +1,112 @@
-# Blanking leftover — close one by one
+# Delivery Compensation v2 — что осталось и как работаем
 
-Контракт: `docs/architecture/data-loading-and-refresh.md`
-`DataView` + `useRevalidationState` + keep stale on transient error + clear on 401/403/404 + banner.
+Единый рабочий список. Читать **первым делом** после сжатия контекста или перезапуска сессии.
 
-## Уже закрыто
+Канон продукта: [`docs/NBOS/03-Business-Logic/11-Delivery-Compensation-Configurator.md`](docs/NBOS/03-Business-Logic/11-Delivery-Compensation-Configurator.md).
+Журнал слайсов: [`docs/implementation/delivery-compensation/02-PHASES-AND-SLICES.md`](docs/implementation/delivery-compensation/02-PHASES-AND-SLICES.md).
+Принятые решения (не переспрашивать): [`docs/implementation/delivery-compensation/12-AUTONOMOUS-DECISIONS.md`](docs/implementation/delivery-compensation/12-AUTONOMOUS-DECISIONS.md).
 
-- [x] Expenses board (Pay Now)
-- [x] Product finance expenses
-- [x] Expense plans (list / board / coverage grid)
-- [x] Bonus board
-- [x] Recurring tasks
-- [x] Project participants
-- [x] Payroll runs list
-- [x] Salary board
-- [x] Finance dashboard
-- [x] Product finance invoices / orders
+Заморожено: не выдумывать production units и тарифы, не трогать Seller кроме Network, не migrate
+на `DATABASE_URL_PROD`, не запускать production cutover.
 
-## Осталось закрыть (очередь)
+## Как работаем (процесс, согласован 2026-09-20)
 
-1. [x] Drive file board — `DriveWorkspace` / `DriveFileSurface`
-2. [x] Drive virtual folder grid — `DriveLibraryVirtualFolderGrid`
-3. [x] Entity drive preview — `EntityDriveFilesPanel`
-4. [x] Calendar day event list — `app/(app)/calendar/page.tsx`
-5. [x] Marketing accounts — `use-marketing-settings-data` / `MarketingAccountsSection`
-6. [x] Integrations registry — `app/(app)/settings/integrations/page.tsx`
-7. [x] Roles / seats grid — `RolesSeatsWorkspace`
-8. [x] Partner detail cards — Accruals / Outbound / Analytics / Commission
-9. [x] Finance reports — `app/(app)/finance/reports/page.tsx`
-10. [x] Credentials vault table/tiles (filter refetch)
-11. [x] Settings lists — `app/(app)/settings/lists/page.tsx`
-12. [x] Mail thread detail — `MailThreadDetailContent`
-13. [x] Product participants — `ProductParticipantsSection`
+1. **Цикл работы:** реализация связного куска → Prettier на затронутом → typecheck → targeted-тесты
+   → ревью субагентом → исправление найденного → **commit этого куска**. Дальше следующий кусок.
+2. **Ревью в конце цикла обязательно.** Ревьюер — субагент другой модельной семьи, чтобы ловить то,
+   что исполнитель не видит. Для денежного пути и схемы — всегда. Для чистого UI, локалей и
+   документации — не нужно.
+3. **Коммиты по этапам.** Если в цикле несколько этапов, закрывать их по очереди: этап → проверки →
+   ревью → commit → следующий. Не накапливать один огромный diff. Push и PR — только по запросу.
+4. **Делегирование.** Механическое и шаблонное (перенос кода, повторяющийся UI, массовые локали,
+   разбивка файлов) — субагенту на Grok, я задаю точный план и проверяю diff. Денежная логика,
+   схема БД, транзакции, трактовка канона — делаю сам.
+5. **Статусы в журнале честные.** `IMPLEMENTED_NOT_VERIFIED` до реальной проверки на живой среде;
+   `DONE` только с evidence. Не закрывать пункт по факту наличия файлов.
+6. **Незапущенные проверки называть прямо.** Живой БД, миграций и браузерного QA у агента нет.
 
-## После каждого экрана
+## Фаза A. Каталог как набор функций (из обсуждения, в код не заведено)
 
-- [x] Ревью: loading не снимает уже показанные строки
-- [x] Typecheck / lint / Prettier по тронутым файлам
-- [x] Отметить пункт выше
+Источники: [`08-CONSTRUCTOR-AND-SIZING.md`](docs/implementation/delivery-compensation/08-CONSTRUCTOR-AND-SIZING.md),
+[`09-CATALOG-DRAFT.md`](docs/implementation/delivery-compensation/09-CATALOG-DRAFT.md).
+Структуру строим с пустыми значениями — цифры заполняет владелец.
 
-## Финал
+- [x] Ядро продукта (core): схема, API и редактор состава на экране норм (2026-09-20).
+- [x] Содержимое ядер: 25 черновых профилей (магазин, сайт компании, лендинг, CRM, приложение ×
+      пять размеров) с составом ядра, юнитами по шести ролям и пресетом модулей на размер. Засеяно
+      на dev, всё DRAFT — публикует владелец. `pnpm seed:delivery-profiles` (2026-09-21).
+      Ревью сняло двойную оплату: аналитика и публикация в сторы ушли из ядер, потому что карточки
+      `INT_WEB_ANALYTICS` и `MOB_STORE_PUBLISHING` начинаются ровно с той же работы.
+- [x] Каталог наполнен: 202 карточки, 18 категорий, юниты по ролям черновиками (2026-09-20).
+      Категории — в `DELIVERY_FUNCTION_CATEGORIES`, данные — `scripts/delivery-catalog/data/`.
+      Масштаб: 1 юнит = 1000 AMD себестоимости, продажа ×10 по умолчанию.
+- [x] Экран каталога: левая колонка категорий, поиск, блоки по категориям, мелкие карточки; тот же
+      браузер — выбор функций на продукте (2026-09-20). Юниты видны только с правом RULES VIEW.
+      Браузерная проверка не выполнена.
+- [x] Цена продажи на карточке каталога; вычисляемая цена скрыта без права на финансовые правила.
+- [x] Градации внутри карточки: схема, серверное разрешение градации по типу продукта, выбор объёма в
+      подборе, цена по градации (2026-09-20). Мультиязычность и импорт сведены в одну карточку каждая.
+- [x] Пресеты по `configSize`: схема, API и редактор (2026-09-20). **Осталось содержимое:** какие
+      модули входят в каждый уровень для каждого профиля.
+- [x] Категория `services`: 14 карточек, импорт с тремя объёмами, своя цена продажи на карточке.
+- [x] Цена продажи (решение 1.12) целиком: множитель или фиксированная сумма, версионность, глобальный
+      дефолт, API и редактор (2026-09-20).
+- [ ] Ось `platform` (web / mobile app / desktop) как отдельный признак сделки. На units не влияет:
+      одинаковый функционал стоит одинаково — решение владельца.
+- [ ] Конструктор в карточке сделки: продавец собирает комплект до создания продукта — себестоимость
+      скрыта, видна цена продажи и средняя наценка. Нужны черновая конфигурация на сделке и цена
+      продажи, поэтому идёт после схемы цен. Публичная витрина — позже, тем же каталогом.
 
-- [x] Независимый проход по оставшимся `if (loading) return <LoadingState`
-- [x] Короткий итог в этом файле
+- [ ] Типы продуктов: ревизия `ProductTypeEnum` под направления code / website / app / desktop.
 
-## Итог
+**Критическая дыра, закрытая по дороге:** конфигурация не получала ни размера, ни основы, ни режима
+дизайна, ни базового профиля — план физически не мог сформироваться. Закрыто эндпоинтом подтверждения
+параметров (`2302d0392`).
 
-Очередь закрыта. Все 13 экранов переведены на `DataView` + `useRevalidationState`: refetch/filter/save не снимают уже показанные строки; 401/403/404 чистят данные; transient error держит stale + `ListMutationErrorBanner`.
+## Фаза B. Хвосты слайсов
 
-Grep `if (loading) return <LoadingState` / `loading ? (<LoadingState` по `apps/web/src` — совпадений нет.
+- [x] Переоткрытие карточки после Done: снять статус можно, конфигуратор остаётся read-only навсегда.
+      Метка `scopeLockedAt` на конфигурации ставится при первом закрытии, guard смотрит на неё, а не на
+      текущий статус. Оплачиваемая доработка — только через Extension. Решение 1.11 (2026-09-21,
+      `0b0b4354a`). Карточку, которая хоть раз закрывалась, теперь не пускает и enrollment: у закрытой
+      до подключения карточки нет строки конфигурации, которую можно пометить. Схема на dev применена.
 
-Не трогали: диалоги первого открытия (`DriveFolderPickerDialog` и т.п.), узкие панели вроде `DriveDetailPanel` / grants, если они не входили в очередь и не матчили запрещённый паттерн.
+- [x] S06: copy-from конфигурации — **не делаем.** Решение владельца от 2026-09-19,
+      `07-OWNER-DISCUSSION.md` пункт 6: «не делаем, сейчас не нужно... Не реализовывать».
+      Пункт попадал в остаток из устаревшей строки журнала S06, подтверждён отменённым 2026-09-21.
+- [x] S06: доступ уровня объекта на конфигурацию. Право говорит, можно ли вообще конфигурировать,
+      участие в продукте — какие карточки. Без этого `PROJECTS_EDIT` со scope `OWN` (разработчик,
+      дизайнер) доставал по UUID любую конфигурацию компании и двигал деньги. Канон §16: актор
+      управляет конфигурацией «в границах доступа к Product».
+- [x] S15: миграции `NETWORK` на dev применены. **Осталось:** функционально проверить Classic,
+      первую подписку и recurring.
 
-Проверки: Prettier по тронутым файлам, `pnpm typecheck` в `apps/web` (ok), eslint по тронутым файлам (ok после фикса unused import + `loadAll` deps).
+## Фаза C. Качество кода
+
+- [x] `products.service.ts` 994 → 199 и `extensions.service.ts` 711 → 185 строк, перенос без смены
+      поведения (2026-09-20, `ad3dd644f`).
+- [x] Проверен лимит 300 строк по файлам v2: весь рабочий код в пределах лимита.
+- [x] Тестовые файлы сверх лимита разбиты вслед за сервисами: `products.service.test.ts` (1404) → 9
+      файлов, `extensions.service.test.ts` (881) → 7, общий harness на сервис. 207 тестов до и после
+      (2026-09-21, `35831fc2a`).
+
+## Фаза D. Приёмка S18 (нужна живая среда)
+
+- [ ] Browser QA desktop и mobile: каталог, ставки Compensation, вкладка Функции продукта,
+      Delivery sheet, Wallet.
+- [ ] Негативные проверки: PM не видит units; mass-assignment; PATCH команды после плана.
+- [ ] Полный проход Starting → Development → изменение scope и команды → Done → Finance/Wallet.
+- [ ] Обновить журнал по факту проверок. Production launch не отмечать выполненным.
+
+## Открытые вопросы владельцу
+
+Закрыты все пять (решения 1.10–1.13 в [`12-AUTONOMOUS-DECISIONS.md`](docs/implementation/delivery-compensation/12-AUTONOMOUS-DECISIONS.md)):
+waiver не делаем; переоткрытие без изменения scope; цена продажи — множитель плюс необязательная
+фиксированная сумма с версионностью; каталог наполняет исполнитель, владелец проверяет цифры.
+Пятый пункт — запуск на живой базе — не вопрос, а работа владельца, см. ниже. Не переспрашивать.
+
+## От владельца (не код)
+
+- [ ] Опубликовать реальные units, тарифы и профили через готовый UI — агент цифры не придумывает.
+- [ ] Включить enrollment новых продуктов только после публикации норм.
+- [ ] Production migrate и cutover — отдельное явное разрешение, вне этого списка.

@@ -235,8 +235,12 @@ export class ProductsController {
 
   @Patch(':id/stage')
   @ApiOperation({ summary: 'Move product to a canonical delivery stage' })
-  async moveStage(@Param('id') id: string, @Body() body: { stage: string }) {
-    return this.productsService.moveStage(id, body);
+  async moveStage(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { stage: string },
+  ) {
+    return this.productsService.moveStage(id, body, user.id);
   }
 
   @Patch(':id/pause')

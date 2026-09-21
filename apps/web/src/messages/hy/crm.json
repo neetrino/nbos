@@ -92,7 +92,8 @@
       "MARKETING": "Մարքեթինգ",
       "SALES": "Վաճառք",
       "PARTNER": "Գործընկեր",
-      "CLIENT": "Հաճախորդ"
+      "CLIENT": "Հաճախորդ",
+      "NETWORK": "Network"
     },
     "salesChannel": {
       "COLD_CALL": "Սառը զանգ",

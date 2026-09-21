@@ -6,6 +6,8 @@
 
 В NBOS каждый сотрудник имеет одну или несколько ролей, определяющих его зону ответственности и уровень доступа к модулям платформы. Роли спроектированы по принципу **минимально необходимого доступа**: каждый видит только то, что нужно для выполнения его работы.
 
+**Дополнение 2026-09-18/19:** для продуктов [Delivery Compensation v2](../03-Business-Logic/11-Delivery-Compensation-Configurator.md) delivery-бонус роли считается units × тариф роли. Split 70/30 ниже — только legacy. Сотрудник видит свои деньги в Wallet, не units и не чужие суммы на Delivery.
+
 ---
 
 ## 1. CEO (Генеральный директор)
@@ -111,9 +113,9 @@ Legacy role slug `owner` может остаться у Founder для совм�
 
 **Бонусная система:**
 
-- Процент по Product / Extension зависит от Product/Extension bonus policy: category/type, complexity, role и configured rate
-- Доля **delivery developer pool** (только PM/Designer/прочие роли вне этого пула): **70%** Backend, если Frontend — **другой** сотрудник; если Frontend не назначен или совпадает с Backend — **100%** Backend. Frontend без Backend запрещён.
-- Выпускается через Product Bonus Pool (Classic — по оплате Product / Extension, Subscription — по доступному funding первого/следующих платежей)
+- **Новая модель:** units Backend × тариф Backend; 70/30 не применяется. Деньги — в Wallet.
+- **Legacy:** доля **delivery developer pool** (PM/Designer вне этого пула): **70%** Backend, если Frontend — **другой** сотрудник; если Frontend не назначен или совпадает с Backend — **100%** Backend. Frontend без Backend запрещён.
+- Выпуск выплаты — через существующий Product Bonus Pool / funding (Classic и Subscription). Плановый бонус v2 появляется при первом Development, не как немедленная выплата.
 
 ---
 
@@ -133,8 +135,8 @@ Legacy role slug `owner` может остаться у Founder для совм�
 
 **Бонусная система:**
 
-- Та же Product/Extension bonus policy по роли Developer
-- Доля **delivery developer pool**: **30%** Frontend только если это **другой** сотрудник; если Frontend не назначен или совпадает с Backend — отдельная строка Frontend не создаётся, Backend получает **100%** developer pool. Frontend без Backend запрещён.
+- **Новая модель:** собственные units Frontend × тариф Frontend; отдельная роль, не 30% от пула Backend.
+- **Legacy:** доля **delivery developer pool**: **30%** Frontend только если это **другой** сотрудник; если Frontend не назначен или совпадает с Backend — отдельная строка Frontend не создаётся, Backend получает **100%** developer pool. Frontend без Backend запрещён.
 
 **Отличие от Junior Developer:** полный доступ Developer (Scrum-доска, проектный контекст), а не только явно назначенные задачи.
 

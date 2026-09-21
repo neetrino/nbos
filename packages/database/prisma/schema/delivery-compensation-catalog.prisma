@@ -1,0 +1,337 @@
+// Delivery Compensation v2 — catalog, base profiles, role rates.
+// Commercial units/rates are Owner-published. Seed must not invent production prices.
+// Existing products have no rows here and stay implicit LEGACY.
+
+enum DeliveryFunctionStatusEnum {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum DeliveryNormativeStatusEnum {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum DeliveryCompensationRoleKeyEnum {
+  BACKEND
+  FRONTEND
+  PM
+  DESIGNER
+  QA
+  TECHNICAL_SPECIALIST
+}
+
+enum DeliveryRoleUnitKindEnum {
+  REQUIRED
+  NOT_REQUIRED
+}
+
+enum DeliveryEntityKindEnum {
+  PRODUCT
+  EXTENSION
+}
+
+enum DeliveryConfigSizeEnum {
+  SMALL
+  CLASSIC
+  LARGE
+  VERY_LARGE
+  ENTERPRISE
+}
+
+enum DeliveryImplementationBaseEnum {
+  FROM_SCRATCH
+  EXISTING_BASE
+  WHITE_LABEL
+}
+
+enum DeliveryDesignModeEnum {
+  AI_DESIGN
+  CONCEPT
+  FULL_DESIGN
+}
+
+model DeliveryFunction {
+  id        String                     @id @default(uuid())
+  code      String                     @unique
+  category  String
+  iconKey   String                     @map("icon_key")
+  status    DeliveryFunctionStatusEnum @default(DRAFT)
+  authorId  String                     @map("author_id")
+  createdAt DateTime                   @default(now()) @map("created_at")
+  updatedAt DateTime                   @updatedAt @map("updated_at")
+
+  author                 Employee                         @relation("DeliveryFunctionAuthor", fields: [authorId], references: [id])
+  contentVersions        DeliveryFunctionContentVersion[]
+  priceVersions          DeliveryFunctionPriceVersion[]
+  includedInBaseProfiles DeliveryBaseIncludedFunction[]
+  configurationFeatures  DeliveryConfigurationFeature[]
+  sizePresets            DeliveryConfigSizePreset[]
+  tiers                  DeliveryFunctionTier[]
+  salePrices             DeliverySalePriceVersion[]
+
+  @@index([status])
+  @@index([category])
+  @@map("delivery_functions")
+}
+
+model DeliveryFunctionContentVersion {
+  id                 String    @id @default(uuid())
+  functionId         String    @map("function_id")
+  version            Int
+  title              String
+  summary            String
+  scopeBoundaries    String    @map("scope_boundaries")
+  instructions       String
+  acceptanceCriteria String    @map("acceptance_criteria")
+  authorId           String    @map("author_id")
+  publishedAt        DateTime? @map("published_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  function    DeliveryFunction             @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  author      Employee                     @relation("DeliveryFunctionContentAuthor", fields: [authorId], references: [id])
+  attachments DeliveryFunctionAttachment[]
+
+  @@unique([functionId, version])
+  @@index([functionId])
+  @@map("delivery_function_content_versions")
+}
+
+model DeliveryFunctionAttachment {
+  id               String  @id @default(uuid())
+  contentVersionId String  @map("content_version_id")
+  fileAssetId      String  @map("file_asset_id")
+  caption          String?
+  sortOrder        Int     @default(0) @map("sort_order")
+
+  contentVersion DeliveryFunctionContentVersion @relation(fields: [contentVersionId], references: [id], onDelete: Cascade)
+  fileAsset      FileAsset                      @relation(fields: [fileAssetId], references: [id], onDelete: Restrict)
+
+  @@index([contentVersionId])
+  @@index([fileAssetId])
+  @@map("delivery_function_attachments")
+}
+
+/// Gradation of one function: the same work at the volume a given kind of product implies, for example
+/// multilingual support on a landing page versus in an ERP. One card with gradations instead of one card
+/// per volume, so a configuration cannot hold two variants of the same work and pay for it twice.
+/// Units live on the gradation's price version, never here.
+model DeliveryFunctionTier {
+  id         String   @id @default(uuid())
+  functionId String   @map("function_id")
+  code       String
+  label      String
+  position   Int
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  function     DeliveryFunction                  @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  productTypes  DeliveryFunctionTierProductType[]
+  priceVersions DeliveryFunctionPriceVersion[]
+  salePrices    DeliverySalePriceVersion[]
+  selectedBy    DeliveryConfigurationFeature[]
+
+  @@unique([functionId, code])
+  @@unique([functionId, position])
+  @@index([functionId])
+  @@map("delivery_function_tiers")
+}
+
+/// Product types this gradation is the default for, so the configurator resolves the gradation from the
+/// card being sold instead of asking a person which volume applies.
+model DeliveryFunctionTierProductType {
+  id          String          @id @default(uuid())
+  tierId      String          @map("tier_id")
+  productType ProductTypeEnum @map("product_type")
+
+  tier DeliveryFunctionTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+
+  @@unique([tierId, productType])
+  @@index([productType])
+  @@map("delivery_function_tier_product_types")
+}
+
+model DeliveryFunctionPriceVersion {
+  id            String                      @id @default(uuid())
+  functionId    String                      @map("function_id")
+  /// Null for a function without gradations. Set means these units price that gradation only.
+  tierId        String?                     @map("tier_id")
+  version       Int
+  status        DeliveryNormativeStatusEnum @default(DRAFT)
+  effectiveFrom DateTime                    @map("effective_from")
+  publishedById String?                     @map("published_by_id")
+  publishedAt   DateTime?                   @map("published_at")
+  createdAt     DateTime                    @default(now()) @map("created_at")
+
+  function      DeliveryFunction                @relation(fields: [functionId], references: [id], onDelete: Restrict)
+  tier          DeliveryFunctionTier?           @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  publishedBy   Employee?                       @relation("DeliveryFunctionPricePublishedBy", fields: [publishedById], references: [id])
+  roleUnits     DeliveryFunctionPriceRoleUnit[]
+  extraFeatures DeliveryConfigurationFeature[]  @relation("ConfigurationFeaturePriceVersion")
+
+  @@unique([functionId, version])
+  @@index([functionId, status])
+  @@index([tierId, status])
+  @@map("delivery_function_price_versions")
+}
+
+model DeliveryFunctionPriceRoleUnit {
+  id             String                          @id @default(uuid())
+  priceVersionId String                          @map("price_version_id")
+  roleKey        DeliveryCompensationRoleKeyEnum @map("role_key")
+  unitKind       DeliveryRoleUnitKindEnum        @map("unit_kind")
+  /// Null = not configured. 0 = explicit zero. Never treat null as 0.
+  units          Decimal?                        @db.Decimal(14, 4)
+
+  priceVersion DeliveryFunctionPriceVersion @relation(fields: [priceVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([priceVersionId, roleKey])
+  @@map("delivery_function_price_role_units")
+}
+
+model DeliveryBaseProfileVersion {
+  id                 String                         @id @default(uuid())
+  profileKey         String                         @map("profile_key")
+  version            Int
+  entityKind         DeliveryEntityKindEnum         @map("entity_kind")
+  productType        ProductTypeEnum?               @map("product_type")
+  productCategory    ProductCategoryEnum?           @map("product_category")
+  configSize         DeliveryConfigSizeEnum         @map("config_size")
+  implementationBase DeliveryImplementationBaseEnum @map("implementation_base")
+  designMode         DeliveryDesignModeEnum         @map("design_mode")
+  aiDesignerReview   Boolean                        @default(false) @map("ai_designer_review")
+  description        String?
+  status             DeliveryNormativeStatusEnum    @default(DRAFT)
+  effectiveFrom      DateTime                       @map("effective_from")
+  publishedById      String?                        @map("published_by_id")
+  publishedAt        DateTime?                      @map("published_at")
+  createdAt          DateTime                       @default(now()) @map("created_at")
+
+  publishedBy       Employee?                      @relation("DeliveryBaseProfilePublishedBy", fields: [publishedById], references: [id])
+  roleUnits         DeliveryBaseProfileRoleUnit[]
+  includedFunctions DeliveryBaseIncludedFunction[]
+  coreItems         DeliveryBaseProfileCoreItem[]
+  salePrices        DeliverySalePriceVersion[]
+  configurations    DeliveryConfiguration[]
+
+  @@unique([profileKey, version])
+  @@index([profileKey, status])
+  @@index([entityKind, status])
+  @@map("delivery_base_profile_versions")
+}
+
+/// Structured composition of the product core. The core is indivisible and cannot be removed or
+/// discounted, so what it contains has to be an explicit list rather than prose in `description`:
+/// the same list is what a client is shown and what settles an "was this included" argument.
+/// Content only, no units and no money — the core is priced by the profile's role units.
+model DeliveryBaseProfileCoreItem {
+  id               String   @id @default(uuid())
+  profileVersionId String   @map("profile_version_id")
+  position         Int
+  label            String
+  note             String?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  profileVersion DeliveryBaseProfileVersion @relation(fields: [profileVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([profileVersionId, position])
+  @@index([profileVersionId])
+  @@map("delivery_base_profile_core_items")
+}
+
+/// Modules pre-checked in the constructor for a size level. This is NOT `includedFunctions`:
+/// included-in-base means the work is already paid by the base units, a preset only means
+/// "usually sold at this size" and is charged as a normal extra. Mixing the two would make every
+/// module of the largest level free. Presets carry no money, so they are not versioned.
+model DeliveryConfigSizePreset {
+  id         String                 @id @default(uuid())
+  profileKey String                 @map("profile_key")
+  configSize DeliveryConfigSizeEnum @map("config_size")
+  functionId String                 @map("function_id")
+  createdAt  DateTime               @default(now()) @map("created_at")
+
+  function DeliveryFunction @relation(fields: [functionId], references: [id], onDelete: Cascade)
+
+  @@unique([profileKey, configSize, functionId])
+  @@index([profileKey, configSize])
+  @@map("delivery_config_size_presets")
+}
+
+/// Sale price of one catalog item, versioned exactly like units so that changing a price never
+/// re-prices a deal that was already assembled. A multiplier follows cost: the price moves when the
+/// developer rate moves, which is right for standard and AI work. A fixed amount ignores cost and is
+/// used where the market sets a round number, such as a blog. When both are present the fixed amount
+/// wins, and the card shows which of the two produced the price.
+/// `targetKey` spells out what the version prices, because a nullable foreign key cannot carry a
+/// unique version number on its own.
+model DeliverySalePriceVersion {
+  id                   String                      @id @default(uuid())
+  targetKey            String                      @map("target_key")
+  functionId           String?                     @map("function_id")
+  tierId               String?                     @map("tier_id")
+  baseProfileVersionId String?                     @map("base_profile_version_id")
+  version              Int
+  status               DeliveryNormativeStatusEnum @default(DRAFT)
+  effectiveFrom        DateTime                    @map("effective_from")
+  multiplier           Decimal?                    @db.Decimal(8, 4)
+  fixedAmount          Decimal?                    @map("fixed_amount") @db.Decimal(12, 2)
+  currency             String                      @default("AMD")
+  publishedById        String?                     @map("published_by_id")
+  publishedAt          DateTime?                   @map("published_at")
+  createdAt            DateTime                    @default(now()) @map("created_at")
+
+  function           DeliveryFunction?           @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  tier               DeliveryFunctionTier?       @relation(fields: [tierId], references: [id], onDelete: Cascade)
+  baseProfileVersion DeliveryBaseProfileVersion? @relation(fields: [baseProfileVersionId], references: [id], onDelete: Cascade)
+  publishedBy        Employee?                   @relation("DeliverySalePricePublishedBy", fields: [publishedById], references: [id])
+
+  @@unique([targetKey, version])
+  @@index([targetKey, status])
+  @@map("delivery_sale_price_versions")
+}
+
+model DeliveryBaseProfileRoleUnit {
+  id                   String                          @id @default(uuid())
+  baseProfileVersionId String                          @map("base_profile_version_id")
+  roleKey              DeliveryCompensationRoleKeyEnum @map("role_key")
+  unitKind             DeliveryRoleUnitKindEnum        @map("unit_kind")
+  units                Decimal?                        @db.Decimal(14, 4)
+
+  baseProfileVersion DeliveryBaseProfileVersion @relation(fields: [baseProfileVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([baseProfileVersionId, roleKey])
+  @@map("delivery_base_profile_role_units")
+}
+
+model DeliveryBaseIncludedFunction {
+  id                   String @id @default(uuid())
+  baseProfileVersionId String @map("base_profile_version_id")
+  functionId           String @map("function_id")
+
+  baseProfileVersion DeliveryBaseProfileVersion @relation(fields: [baseProfileVersionId], references: [id], onDelete: Cascade)
+  function           DeliveryFunction           @relation(fields: [functionId], references: [id], onDelete: Restrict)
+
+  @@unique([baseProfileVersionId, functionId])
+  @@index([functionId])
+  @@map("delivery_base_included_functions")
+}
+
+model DeliveryRoleRateVersion {
+  id            String                          @id @default(uuid())
+  roleKey       DeliveryCompensationRoleKeyEnum @map("role_key")
+  currency      String                          @default("AMD")
+  rate          Decimal                         @db.Decimal(14, 4)
+  version       Int
+  status        DeliveryNormativeStatusEnum     @default(DRAFT)
+  effectiveFrom DateTime                        @map("effective_from")
+  publishedById String?                         @map("published_by_id")
+  publishedAt   DateTime?                       @map("published_at")
+  createdAt     DateTime                        @default(now()) @map("created_at")
+
+  publishedBy Employee? @relation("DeliveryRoleRatePublishedBy", fields: [publishedById], references: [id])
+
+  @@unique([roleKey, version])
+  @@index([roleKey, status])
+  @@map("delivery_role_rate_versions")
+}

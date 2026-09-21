@@ -123,8 +123,12 @@ export class ExtensionsController {
 
   @Patch(':id/stage')
   @ApiOperation({ summary: 'Move extension to a canonical delivery stage' })
-  async moveStage(@Param('id') id: string, @Body() body: { stage: string }) {
-    return this.extensionsService.moveStage(id, body);
+  async moveStage(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: { stage: string },
+  ) {
+    return this.extensionsService.moveStage(id, body, user.id);
   }
 
   @Patch(':id/pause')

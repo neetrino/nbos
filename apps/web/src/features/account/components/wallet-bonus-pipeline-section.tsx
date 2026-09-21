@@ -73,7 +73,11 @@ export function WalletBonusPipelineSection({
                         <div className="text-muted-foreground mt-1 text-[11px]">
                           {b.project.name} · {b.order.code}
                         </div>
-                        <div className="text-muted-foreground mt-0.5">{b.type}</div>
+                        <div className="text-muted-foreground mt-0.5">
+                          {b.deliveryRoleKey
+                            ? t('bonus.deliveryRole', { role: b.deliveryRoleKey })
+                            : b.type}
+                        </div>
                         {b.policyBreakdownStatuses.length > 0 ? (
                           <div className="mt-2">
                             <BonusPolicyBreakdownBadges statuses={b.policyBreakdownStatuses} />

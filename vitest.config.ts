@@ -13,6 +13,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'apps/web/src'),
+      // `scripts/` is not a workspace package, so shared contracts need an explicit path.
+      '@nbos/shared': path.resolve(__dirname, 'packages/shared/src'),
     },
   },
   // Nest HTTP contract tests use legacy decorators. apps/api/tsconfig.json

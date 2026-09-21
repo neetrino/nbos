@@ -1,5 +1,7 @@
 # Employee Wallet (Кошелёк сотрудника)
 
+**Дополнение 2026-09-18:** [Delivery Compensation v2](../../03-Business-Logic/11-Delivery-Compensation-Configurator.md) создаёт личный прогноз бонуса при первом Development, не готовую выплату. Wallet показывает сотруднику его суммы и историю изменений, но не units, тарифы и чужие бонусы. Product/Delivery содержат только рабочую информацию. Старые release/payment правила сохраняются.
+
 ## Назначение
 
 `Employee Wallet / Кошелёк сотрудника` - это read-only экран, где сотрудник видит свои деньги в компании:

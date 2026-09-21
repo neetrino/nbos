@@ -27,6 +27,7 @@ const row = (
   productLabel: 'P',
   project: { code: 'PRJ', name: 'A' },
   order: { code: 'O' },
+  deliveryRoleKey: null,
   createdAt: '',
 });
 

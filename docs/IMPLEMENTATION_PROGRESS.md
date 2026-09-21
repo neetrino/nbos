@@ -1,5 +1,9 @@
 # NBOS Implementation Progress
 
+## Delivery Compensation v2 — документация закрыта, 2026-09-19
+
+Канон, UI, технический контракт, seed, приёмка, промпт Cursor и [сверка со старым каноном](implementation/delivery-compensation/06-CANON-RECONCILIATION.md) готовы. **Разработка не начата:** фазы 0–8, slices S00–S18 остаются TODO в [плане](implementation/delivery-compensation/02-PHASES-AND-SLICES.md). Не считать закрытие документов реализацией или разрешением production rollout.
+
 ## Мультиязычность — первый EN/RU срез, 2026-09-12
 
 Статус: этапы 0–5 закрыты как реализация и отчёт. Prod-миграция `interface_locale` применена. Этап 6 начат (аккаунт/кошелёк). Этап 7 — черновик HY-пилота, язык выключен. Срез не в IMPLEMENTATION_DONE. [Канон](NBOS/01-Platform-Overview/07-Interface-Localization.md), [план](implementation/I18N-IMPLEMENTATION-PLAN.md).

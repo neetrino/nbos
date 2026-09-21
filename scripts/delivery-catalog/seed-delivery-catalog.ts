@@ -1,0 +1,151 @@
+import { createPrismaClient, type PrismaClient } from '@nbos/database';
+import {
+  SEED_ACCEPTANCE_PLACEHOLDER,
+  SEED_INSTRUCTIONS_PLACEHOLDER,
+  type DeliveryCatalogSeedItem,
+} from './delivery-catalog-seed-data';
+import { formatSeedPlan, planDeliveryCatalogSeed } from './plan-delivery-catalog-seed';
+import { buildSeedRoleUnits } from './build-seed-role-units';
+
+const FIRST_CONTENT_VERSION = 1;
+const FIRST_PRICE_VERSION = 1;
+const FIRST_TIER_POSITION = 1;
+const APPLY_FLAG = '--apply';
+const AUTHOR_FLAG = '--author=';
+
+/**
+ * Creates the draft delivery catalog. Dry run by default; `--apply` writes.
+ * Everything is DRAFT, nothing is published, and existing codes are left untouched on a re-run.
+ */
+async function main(): Promise<void> {
+  const apply = process.argv.includes(APPLY_FLAG);
+  const authorId = readAuthorId();
+  const prisma = createPrismaClient({ role: 'all', skipBudgetAssert: true });
+  try {
+    const existing = await prisma.deliveryFunction.findMany({ select: { id: true, code: true } });
+    const plan = planDeliveryCatalogSeed(existing);
+    process.stdout.write(`${formatSeedPlan(plan, apply)}\n`);
+    if (!apply) {
+      process.stdout.write(`Re-run with ${APPLY_FLAG} to write these rows.\n`);
+      return;
+    }
+    const author = await resolveAuthorId(prisma, authorId);
+    for (const entry of plan.entries) {
+      if (entry.action === 'KEEP') continue;
+      await createDraftFunction(prisma, entry.item, author);
+    }
+    process.stdout.write(
+      `Created ${plan.createCount} draft catalog functions with draft unit proposals.\n`,
+    );
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+function readAuthorId(): string | null {
+  const arg = process.argv.find((value) => value.startsWith(AUTHOR_FLAG));
+  return arg ? arg.slice(AUTHOR_FLAG.length).trim() || null : null;
+}
+
+async function resolveAuthorId(prisma: PrismaClient, requested: string | null): Promise<string> {
+  if (requested) {
+    const employee = await prisma.employee.findUnique({
+      where: { id: requested },
+      select: { id: true },
+    });
+    if (!employee) {
+      throw new Error(`Employee ${requested} not found. Pass a valid ${AUTHOR_FLAG}<employeeId>.`);
+    }
+    return employee.id;
+  }
+  throw new Error(
+    `Author is required: pass ${AUTHOR_FLAG}<employeeId> of the Owner or CEO who owns these drafts.`,
+  );
+}
+
+/**
+ * Creates the card together with a DRAFT unit vector. Draft means exactly that: the numbers are a
+ * proposal for the Owner to review in the norms screen, and nothing can be earned from them until
+ * he publishes the version himself.
+ */
+async function createDraftFunction(
+  prisma: PrismaClient,
+  item: DeliveryCatalogSeedItem,
+  authorId: string,
+): Promise<void> {
+  const created = await prisma.deliveryFunction.create({
+    data: {
+      code: item.code,
+      category: item.category,
+      iconKey: item.iconKey,
+      status: 'DRAFT',
+      authorId,
+      contentVersions: {
+        create: {
+          version: FIRST_CONTENT_VERSION,
+          title: item.title,
+          summary: item.summary,
+          scopeBoundaries: item.scopeBoundaries,
+          instructions: SEED_INSTRUCTIONS_PLACEHOLDER,
+          acceptanceCriteria: SEED_ACCEPTANCE_PLACEHOLDER,
+          authorId,
+        },
+      },
+    },
+  });
+  await createDraftPricing(prisma, item, created.id);
+}
+
+/**
+ * Units are attached either to the card itself or to each of its gradations, never to both. A tiered
+ * card gets one draft version per gradation, so the Owner reviews the volumes separately and the
+ * server can price a selection by the gradation it resolved.
+ */
+async function createDraftPricing(
+  prisma: PrismaClient,
+  item: DeliveryCatalogSeedItem,
+  functionId: string,
+): Promise<void> {
+  if (!item.tiers) {
+    await prisma.deliveryFunctionPriceVersion.create({
+      data: {
+        functionId,
+        version: FIRST_PRICE_VERSION,
+        status: 'DRAFT',
+        effectiveFrom: new Date(),
+        roleUnits: { create: buildSeedRoleUnits(item.units ?? {}) },
+      },
+    });
+    return;
+  }
+  let version = FIRST_PRICE_VERSION;
+  let position = FIRST_TIER_POSITION;
+  for (const tier of item.tiers) {
+    const created = await prisma.deliveryFunctionTier.create({
+      data: {
+        functionId,
+        code: tier.code,
+        label: tier.label,
+        position,
+        productTypes: { create: tier.productTypes.map((productType) => ({ productType })) },
+      },
+    });
+    await prisma.deliveryFunctionPriceVersion.create({
+      data: {
+        functionId,
+        tierId: created.id,
+        version,
+        status: 'DRAFT',
+        effectiveFrom: new Date(),
+        roleUnits: { create: buildSeedRoleUnits(tier.units) },
+      },
+    });
+    version += 1;
+    position += 1;
+  }
+}
+
+main().catch((error: unknown) => {
+  process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+  process.exitCode = 1;
+});
