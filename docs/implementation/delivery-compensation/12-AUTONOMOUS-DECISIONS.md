@@ -183,6 +183,21 @@ same units on every platform, so platform is not part of the base-profile key. W
 marketing stay WEB-only. Legacy `MOBILE_APP` kinds backfill to APP; the Owner still assigns a real
 kind by hand.
 
+**1.18 Size is gone; named collections are a replace-helper — Owner decision of 2026-09-21.**
+`configSize` is not a product, not a core price and not a calculation axis. One kind has one core
+and one core price (today's CLASSIC numbers). The 0.8…2 core multipliers and the five shop cards
+were a lie: composition did not change, money did. Catalog volume (500 vs 500 000 SKU) is not a
+global multiplier; it lives on import, search and load cards.
+
+A collection is a named list of extra function ids for a product type. The Owner authors it. A click
+in the deal constructor _replaces_ the extra selection; the seller then removes and adds by hand.
+The collection is not included-in-base and is not stored on the deal as a norm (last-applied id is
+UI only). The quote does not overwrite the deal amount.
+
+The constructor lives on the deal until Won, then extras copy onto the product configuration.
+The public vitrine is stage 3: same catalog, sale price only, not in this wave. `Extension.size`
+is a different enum and stays.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any

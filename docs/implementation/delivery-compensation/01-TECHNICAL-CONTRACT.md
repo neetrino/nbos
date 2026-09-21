@@ -39,21 +39,23 @@
 
 Имена новых таблиц можно адаптировать к соглашениям репозитория; инварианты обязательны. Финансовые версии immutable после публикации. Базовые scalar связи/unique keys не прятать в непрозрачный JSON.
 
-| Сущность                        | Минимальные поля / ограничения                                                                                                                                                 |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| DeliveryFunction                | id, stable unique code, category, iconKey из allowlist, status, author, timestamps; archive вместо удаления используемой функции                                               |
-| DeliveryFunctionContentVersion  | functionId, version, title, summary, scope boundaries, instructions rich text, acceptance criteria, author, publishedAt; unique(functionId, version)                           |
-| DeliveryFunctionAttachment      | contentVersionId, existing FileAsset id, caption/order; FK + существующий file ACL                                                                                             |
-| DeliveryFunctionPriceVersion    | functionId, version, role-unit rows, effectiveFrom, status, publishedBy; единая complete matrix ролей, null запрещён при publish                                               |
-| DeliveryBaseProfileVersion      | stable profile key, version, entityKind, productType/category, configSize, implementationBase, designMode, aiDesignerReview, role-unit rows, description, effectiveFrom/status |
-| DeliveryBaseIncludedFunction    | baseProfileVersionId, functionId; unique пары; включённость snapshot-ится, не является формулой baseUnits                                                                      |
-| DeliveryRoleRateVersion         | roleKey, currency=AMD, Decimal rate, effectiveFrom, version/status; единственная опубликованная действующая ставка роли на дату, без employeeId                                |
-| DeliveryConfiguration           | unique orderId, derived Product/Extension owner, modelVersion/mode, current revision, classification, checkedBy/At, draftVersion; CHECK на корректный owner                    |
-| DeliveryConfigurationFeature    | configurationId, functionId, selected price version для extra, origin INCLUDED/EXTRA, local note, work state; stable identity, архивирование вместо потери истории             |
-| DeliveryConfigurationRevision   | configurationId, sequence, reason, actor, immutable scope/team/source snapshots, financial effectiveAt; unique(configurationId, sequence)                                      |
-| DeliveryBonusComponent          | stable component key BASE или feature instance + roleKey; normative/rate snapshot, exact amount, originating revision; отдельная роль даже при одном employee                  |
-| DeliveryBonusAllocation         | componentId, employeeId, share, retained/accepted amount, current planned amount, history refs; stable anchor для BonusEntry                                                   |
-| ExtensionDeliveryRoleAssignment | extensionId, roleKey, employeeId; unique(extensionId, roleKey), draft/live API с теми же правилами замены                                                                      |
+| Сущность                        | Минимальные поля / ограничения                                                                                                                                                                       |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DeliveryFunction                | id, stable unique code, category, iconKey из allowlist, status, author, timestamps; archive вместо удаления используемой функции                                                                     |
+| DeliveryFunctionContentVersion  | functionId, version, title, summary, scope boundaries, instructions rich text, acceptance criteria, author, publishedAt; unique(functionId, version)                                                 |
+| DeliveryFunctionAttachment      | contentVersionId, existing FileAsset id, caption/order; FK + существующий file ACL                                                                                                                   |
+| DeliveryFunctionPriceVersion    | functionId, version, role-unit rows, effectiveFrom, status, publishedBy; единая complete matrix ролей, null запрещён при publish                                                                     |
+| DeliveryBaseProfileVersion      | stable profile key, version, entityKind, productType/category, implementationBase, designMode, aiDesignerReview, role-unit rows, description, effectiveFrom/status. `configSize` removed 2026-09-21. |
+| DeliveryFunctionCollection      | named extra-function kit per productType; not money; apply replaces the deal quote selection                                                                                                         |
+| DeliveryDealQuote               | one draft composition per Deal until Won; sale-price quote is computed, does not overwrite deal amount                                                                                               |
+| DeliveryBaseIncludedFunction    | baseProfileVersionId, functionId; unique пары; включённость snapshot-ится, не является формулой baseUnits                                                                                            |
+| DeliveryRoleRateVersion         | roleKey, currency=AMD, Decimal rate, effectiveFrom, version/status; единственная опубликованная действующая ставка роли на дату, без employeeId                                                      |
+| DeliveryConfiguration           | unique orderId, derived Product/Extension owner, modelVersion/mode, current revision, classification, checkedBy/At, draftVersion; CHECK на корректный owner                                          |
+| DeliveryConfigurationFeature    | configurationId, functionId, selected price version для extra, origin INCLUDED/EXTRA, local note, work state; stable identity, архивирование вместо потери истории                                   |
+| DeliveryConfigurationRevision   | configurationId, sequence, reason, actor, immutable scope/team/source snapshots, financial effectiveAt; unique(configurationId, sequence)                                                            |
+| DeliveryBonusComponent          | stable component key BASE или feature instance + roleKey; normative/rate snapshot, exact amount, originating revision; отдельная роль даже при одном employee                                        |
+| DeliveryBonusAllocation         | componentId, employeeId, share, retained/accepted amount, current planned amount, history refs; stable anchor для BonusEntry                                                                         |
+| ExtensionDeliveryRoleAssignment | extensionId, roleKey, employeeId; unique(extensionId, roleKey), draft/live API с теми же правилами замены                                                                                            |
 
 Role keys: BACKEND, FRONTEND, PM, DESIGNER, QA, TECHNICAL_SPECIALIST. Product slots остаются source of truth: `developerId`, `frontendDeveloperId`, `pmId`, `designerId`, `qaLeadId`, `technicalSpecialistId`. Не создавать второй независимо редактируемый live-team Product. Snapshot хранит назначения на момент расчёта.
 

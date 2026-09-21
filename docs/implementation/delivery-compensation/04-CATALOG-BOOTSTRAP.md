@@ -62,9 +62,9 @@
 
 В первую очередь подготовить draft профили для фактически используемых направлений: Website (существующие COMPANY_WEBSITE/LANDING/BUSINESS_CARD_WEBSITE), ECOMMERCE, CRM, MOBILE_APP, WEB_APP и разовая SEO. Не переименовывать existing ProductType enum в обобщённый Website.
 
-Размеры конфигуратора: SMALL, CLASSIC, LARGE, VERY_LARGE, ENTERPRISE. Основы: FROM_SCRATCH, EXISTING_BASE, WHITE_LABEL. Дизайн: AI_DESIGN, CONCEPT, FULL_DESIGN, дополнительный вариант AI reviewer.
+Ось размера конфигуратора снята 2026-09-21: один вид — один профиль ядра. Комплектация — именованные наборы extra-функций, не декартов ряд размеров. Основы: FROM_SCRATCH, EXISTING_BASE, WHITE_LABEL. Дизайн: AI_DESIGN, CONCEPT, FULL_DESIGN, дополнительный вариант AI reviewer.
 
-Не seed-ить сотни бесполезных комбинаций. Owner создаёт нужные профили через UI, указывает стандартный объём, роли/units и включённые функции. Для непубличного admin preview можно иметь один synthetic demo profile только в тестовой среде.
+Не seed-ить сотни бесполезных комбинаций. Owner создаёт нужные профили через UI, указывает стандартный объём, роли/units и включённые функции. Именованные комплекты — помощник конструктора. Для непубличного admin preview можно иметь один synthetic demo profile только в тестовой среде.
 
 Extension использует собственный draft base profile: не наследует автоматически денежный base parent Product. Вводимые PM параметры подбирают конкретный extension profile; если он отсутствует, readiness объясняет настройку Owner.
 

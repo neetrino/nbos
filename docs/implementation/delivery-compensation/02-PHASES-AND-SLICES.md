@@ -551,6 +551,21 @@ price a published card. Validation on write routes now maps to 400.
 generate); Prettier on touched files; migrate deploy on **dev**.
 **Not run:** browser QA of the norms screen (API process was down after generate); production migrate.
 
+### Size off, named collections, deal constructor (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.18. `configSize` is not a product and not a core price. One kind, one core (former
+CLASSIC units). Size presets deleted. Named collections replace the extra-function selection
+(replace, not union). Deal quote stores the draft until Won; sale-price quote does not overwrite
+the deal amount. Public vitrine remains stage 3 — planned, not in this wave.
+
+**Landed:** migration `20260921190000_delivery_size_off_collections`; matching without size;
+collections + deal-quote API; norms UI without size chips; seed 5 cores + named kits; Deal
+constructor block; extras copy on V2 enroll.
+
+**Checks:** `pnpm --filter @nbos/database generate`; shared/API/web `tsc --noEmit` (API/web 8GB);
+Prettier on touched TS/JSON; targeted vitest 19 files / 86 passed.
+**Not run:** live migrate, seed against a live DB, browser QA, production.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).
