@@ -18,29 +18,26 @@ export type ProfileSeedKind = {
   productCategory: ProductCategoryKey;
   description: string;
   coreItems: readonly ProfileSeedCoreItem[];
-  classicUnits: ProfileSeedUnits;
+  units: ProfileSeedUnits;
   includedFunctionCodes: readonly string[];
-  /**
-   * Former size presets, kept as the source for named collections. SMALL and VERY_LARGE are not
-   * seeded as kits: three names per kind is enough for a helper.
-   */
+  /** Named extra-function kits. A click replaces extras; it does not price the core. */
   presets: {
-    CLASSIC: readonly string[];
-    LARGE: readonly string[];
-    ENTERPRISE: readonly string[];
+    BASE: readonly string[];
+    EXTENDED: readonly string[];
+    FULL: readonly string[];
   };
 };
 
 export const SEEDED_COLLECTION_NAMES = {
-  CLASSIC: 'Базовый',
-  LARGE: 'Расширенный',
-  ENTERPRISE: 'Полный',
+  BASE: 'Базовый',
+  EXTENDED: 'Расширенный',
+  FULL: 'Полный',
 } as const;
 
 export function collectionsForKind(kind: ProfileSeedKind): ProfileSeedCollection[] {
   return [
-    { name: SEEDED_COLLECTION_NAMES.CLASSIC, functionCodes: kind.presets.CLASSIC },
-    { name: SEEDED_COLLECTION_NAMES.LARGE, functionCodes: kind.presets.LARGE },
-    { name: SEEDED_COLLECTION_NAMES.ENTERPRISE, functionCodes: kind.presets.ENTERPRISE },
+    { name: SEEDED_COLLECTION_NAMES.BASE, functionCodes: kind.presets.BASE },
+    { name: SEEDED_COLLECTION_NAMES.EXTENDED, functionCodes: kind.presets.EXTENDED },
+    { name: SEEDED_COLLECTION_NAMES.FULL, functionCodes: kind.presets.FULL },
   ];
 }

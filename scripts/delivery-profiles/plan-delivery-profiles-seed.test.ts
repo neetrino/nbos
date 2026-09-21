@@ -34,13 +34,24 @@ describe('delivery profile seed data', () => {
 
   it('grows named collections instead of replacing them', () => {
     for (const kind of PROFILE_SEED_KINDS) {
-      expect(kind.presets.CLASSIC.length).toBeLessThan(kind.presets.LARGE.length);
-      expect(kind.presets.LARGE.length).toBeLessThan(kind.presets.ENTERPRISE.length);
+      expect(kind.presets.BASE.length).toBeLessThan(kind.presets.EXTENDED.length);
+      expect(kind.presets.EXTENDED.length).toBeLessThan(kind.presets.FULL.length);
     }
   });
 
   it('builds a key from the kind stem only', () => {
     expect(profileKeyFor(PROFILE_SEED_KINDS[0])).toBe('shop-code');
+  });
+
+  it('seeds the remaining enum kinds as one unsized core each', () => {
+    const types = PROFILE_SEED_KINDS.map((kind) => kind.productType);
+    expect(types).toEqual(
+      expect.arrayContaining(['BUSINESS_CARD_WEBSITE', 'WEB_APP', 'ERP', 'SAAS']),
+    );
+    expect(types).not.toContain('OTHER');
+    expect(buildProfileSeedVersions().map((row) => row.profileKey)).toEqual(
+      expect.arrayContaining(['business-card-code', 'web-app-code', 'erp-code', 'saas-code']),
+    );
   });
 });
 

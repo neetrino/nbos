@@ -566,6 +566,19 @@ constructor block; extras copy on V2 enroll.
 Prettier on touched TS/JSON; targeted vitest 19 files / 86 passed.
 **Not run:** live migrate, seed against a live DB, browser QA, production.
 
+### Cores leftover wipe + four enum kinds (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Dead `configSize` / `configSizes` keys removed from hr.json (en/ru/hy). Seed kits renamed
+`BASE` / `EXTENDED` / `FULL` (Базовый / Расширенный / Полный). `classicUnits` → `units`.
+Four DRAFT cores added for existing enum: `BUSINESS_CARD_WEBSITE`, `WEB_APP`, `ERP`, `SAAS`.
+Nine kinds total. OTHER and marketing not seeded. `retiredSizedProfileKeys` kept for other envs.
+
+Dev `ep-nameless-term` already had the five unsized cores and no size axis (other-chat evidence,
+2026-09-21). This agent did not re-migrate and did not `--apply` the four new cores.
+
+**Checks:** targeted vitest profile seed + `base-profile-label`; Prettier on touched files.
+**Not run:** `pnpm seed:delivery-profiles -- --apply` on live dev; browser QA; production migrate.
+
 ### Extension.size three values (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
 
 `ExtensionSizeEnum` is `SMALL` / `STANDARD` / `LARGE`. Migration remaps `MICRO→SMALL`,

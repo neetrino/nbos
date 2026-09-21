@@ -1,6 +1,6 @@
 import type { ProfileSeedKind } from './profile-seed-types';
 
-const SMALL = [
+const BASE = [
   'CRM_TASKS',
   'CRM_LEAD_CAPTURE',
   'CRM_CALL_LOG',
@@ -11,10 +11,6 @@ const SMALL = [
   'SRV_DATA_MIGRATION',
   'SRV_TEAM_TRAINING',
   'SRV_ACCEPTANCE_SUPPORT',
-] as const;
-
-const CLASSIC = [
-  ...SMALL,
   'CRM_TASK_BOARD',
   'CRM_QUOTES',
   'ANL_DASHBOARD',
@@ -22,8 +18,8 @@ const CLASSIC = [
   'CNT_MULTILINGUAL',
 ] as const;
 
-const LARGE = [
-  ...CLASSIC,
+const EXTENDED = [
+  ...BASE,
   'CRM_WORKFLOW_AUTOMATION',
   'CRM_CONTRACTS',
   'CRM_SUPPORT_TICKETS',
@@ -32,18 +28,14 @@ const LARGE = [
   'MSG_WHATSAPP_NOTIFICATIONS',
 ] as const;
 
-const VERY_LARGE = [
-  ...LARGE,
+const FULL = [
+  ...EXTENDED,
   'CRM_ESIGNATURE',
   'FIN_INVOICES',
   'FIN_PAYMENTS_LEDGER',
   'HR_EMPLOYEE_DIRECTORY',
   'ANL_REPORT_BUILDER',
   'INT_PUBLIC_API',
-] as const;
-
-const ENTERPRISE = [
-  ...VERY_LARGE,
   'ACC_SSO_ENTERPRISE',
   'ACC_AUDIT_LOG',
   'PLT_MULTI_TENANCY',
@@ -64,7 +56,7 @@ export const CRM_PROFILE: ProfileSeedKind = {
   productType: 'CRM',
   productCategory: 'CODE',
   description:
-    'Ядро CRM на собственной разработке. Состав одинаков на всех размерах; размер меняет только объём ядра и набор предвыбранных модулей.',
+    'Ядро CRM на собственной разработке. Один вид — одно ядро; комплекты меняют только набор extra-модулей.',
   coreItems: [
     { label: 'Клиенты, компании и сделки' },
     { label: 'Карточка записи' },
@@ -79,7 +71,7 @@ export const CRM_PROFILE: ProfileSeedKind = {
     { label: 'Базовые отчёты' },
     { label: 'Адаптивность' },
   ],
-  classicUnits: {
+  units: {
     BACKEND: 80,
     FRONTEND: 65,
     PM: 18,
@@ -89,8 +81,8 @@ export const CRM_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    CLASSIC,
-    LARGE,
-    ENTERPRISE,
+    BASE,
+    EXTENDED,
+    FULL,
   },
 };

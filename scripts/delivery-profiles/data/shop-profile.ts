@@ -1,6 +1,6 @@
 import type { ProfileSeedKind } from './profile-seed-types';
 
-const SMALL = [
+const BASE = [
   'PAY_AMERIABANK',
   'LOG_DELIVERY_ZONES',
   'MSG_EMAIL_NOTIFICATIONS',
@@ -11,10 +11,6 @@ const SMALL = [
   'SRV_DOMAIN_HOSTING_SETUP',
   'SRV_ACCEPTANCE_SUPPORT',
   'INT_WEB_ANALYTICS',
-] as const;
-
-const CLASSIC = [
-  ...SMALL,
   'CNT_MULTILINGUAL',
   'LOY_DISCOUNT_COUPONS',
   'SHOP_REVIEWS',
@@ -22,8 +18,8 @@ const CLASSIC = [
   'PAY_IDRAM',
 ] as const;
 
-const LARGE = [
-  ...CLASSIC,
+const EXTENDED = [
+  ...BASE,
   'LOY_BONUS_POINTS',
   'LOY_CUSTOMER_WALLET',
   'LOG_WAREHOUSE_OPERATIONS',
@@ -31,18 +27,14 @@ const LARGE = [
   'MSG_WHATSAPP_NOTIFICATIONS',
 ] as const;
 
-const VERY_LARGE = [
-  ...LARGE,
+const FULL = [
+  ...EXTENDED,
   'SHOP_B2B_PRICING',
   'SHOP_STOCK_MANAGEMENT',
   'ANL_DASHBOARD',
   'INT_MARKETPLACE_FEED',
   'INT_PUBLIC_API',
   'INT_1C',
-] as const;
-
-const ENTERPRISE = [
-  ...VERY_LARGE,
   'SHOP_MULTI_BRANCH',
   'ACC_SSO_ENTERPRISE',
   'ACC_ROLE_MATRIX',
@@ -59,14 +51,14 @@ const ENTERPRISE = [
  *
  * Аналитики в ядре нет намеренно: карточка `INT_WEB_ANALYTICS` начинается с установки счётчика,
  * поэтому строка про подключение аналитики означала бы оплату одной и той же работы дважды —
- * базовыми units и потом пресетом.
+ * базовыми units и потом комплектом.
  */
 export const SHOP_PROFILE: ProfileSeedKind = {
   keyStem: 'shop-code',
   productType: 'ECOMMERCE',
   productCategory: 'CODE',
   description:
-    'Ядро интернет-магазина на собственной разработке. Состав одинаков на всех размерах; размер меняет только объём ядра и набор предвыбранных модулей.',
+    'Ядро интернет-магазина на собственной разработке. Один вид — одно ядро; комплекты меняют только набор extra-модулей.',
   coreItems: [
     { label: 'Главная страница' },
     { label: 'Каталог с категориями' },
@@ -81,7 +73,7 @@ export const SHOP_PROFILE: ProfileSeedKind = {
     { label: 'Адаптивность' },
     { label: 'Базовое SEO', note: 'Метаданные, sitemap, robots.' },
   ],
-  classicUnits: {
+  units: {
     BACKEND: 60,
     FRONTEND: 55,
     PM: 14,
@@ -91,8 +83,8 @@ export const SHOP_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: ['ACC_CUSTOMER_PORTAL'],
   presets: {
-    CLASSIC,
-    LARGE,
-    ENTERPRISE,
+    BASE,
+    EXTENDED,
+    FULL,
   },
 };

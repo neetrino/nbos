@@ -11,6 +11,7 @@ import { productTypeLabels } from './profile-enum-labels';
 const PRODUCT_TYPE_ALIASES: ReadonlyArray<readonly [string, ProductTypeKey]> = [
   ['company-site', 'COMPANY_WEBSITE'],
   ['shop', 'ECOMMERCE'],
+  ['business-card', 'BUSINESS_CARD_WEBSITE'],
 ];
 
 const CATEGORY_SLUGS = slugEntries(PRODUCT_CATEGORIES);

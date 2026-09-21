@@ -1,6 +1,6 @@
 import type { ProfileSeedKind } from './profile-seed-types';
 
-const SMALL = [
+const BASE = [
   'SRV_DOMAIN_HOSTING_SETUP',
   'SRV_ACCEPTANCE_SUPPORT',
   'SRV_CONTENT_FILL',
@@ -9,10 +9,6 @@ const SMALL = [
   'CNT_FORMS_BUILDER',
   'CNT_MEDIA_GALLERY',
   'MSG_EMAIL_NOTIFICATIONS',
-] as const;
-
-const CLASSIC = [
-  ...SMALL,
   'CNT_MULTILINGUAL',
   'CNT_BLOG',
   'CNT_SEO_STRUCTURE',
@@ -20,8 +16,8 @@ const CLASSIC = [
   'CNT_FAQ_KNOWLEDGE_BASE',
 ] as const;
 
-const LARGE = [
-  ...CLASSIC,
+const EXTENDED = [
+  ...BASE,
   'CNT_PAGE_BUILDER',
   'CNT_VIDEO_HOSTING',
   'CNT_DOCUMENT_LIBRARY',
@@ -30,18 +26,14 @@ const LARGE = [
   'ACC_TEAM_ACCOUNTS',
 ] as const;
 
-const VERY_LARGE = [
-  ...LARGE,
+const FULL = [
+  ...EXTENDED,
   'CNT_COMMENTS_MODERATION',
   'PLT_CUSTOM_DOMAINS',
   'PLT_MULTI_TENANCY',
   'ANL_DASHBOARD',
   'INT_EXTERNAL_CRM',
   'AI_SEMANTIC_SEARCH',
-] as const;
-
-const ENTERPRISE = [
-  ...VERY_LARGE,
   'ACC_SSO_ENTERPRISE',
   'PLT_SECURITY_HARDENING',
   'PLT_PERFORMANCE_HARDENING',
@@ -64,7 +56,7 @@ export const COMPANY_SITE_PROFILE: ProfileSeedKind = {
   productType: 'COMPANY_WEBSITE',
   productCategory: 'CODE',
   description:
-    'Ядро корпоративного сайта на собственной разработке. Состав одинаков на всех размерах; размер меняет только объём ядра и набор предвыбранных модулей.',
+    'Ядро корпоративного сайта на собственной разработке. Один вид — одно ядро; комплекты меняют только набор extra-модулей.',
   coreItems: [
     { label: 'Главная страница' },
     { label: 'Внутренние страницы', note: 'Услуги, о компании, контакты.' },
@@ -78,7 +70,7 @@ export const COMPANY_SITE_PROFILE: ProfileSeedKind = {
     { label: 'Адаптивность' },
     { label: 'Базовое SEO', note: 'Метаданные, sitemap, robots.' },
   ],
-  classicUnits: {
+  units: {
     BACKEND: 20,
     FRONTEND: 28,
     PM: 8,
@@ -88,8 +80,8 @@ export const COMPANY_SITE_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    CLASSIC,
-    LARGE,
-    ENTERPRISE,
+    BASE,
+    EXTENDED,
+    FULL,
   },
 };

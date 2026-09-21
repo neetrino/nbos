@@ -623,7 +623,6 @@
       "entityKind": "Entity kind",
       "productType": "Product type",
       "productCategory": "Product category",
-      "configSize": "Config size",
       "implementationBase": "Implementation base",
       "designMode": "Design mode",
       "aiDesignerReview": "AI designer review",
@@ -709,13 +708,6 @@
       "SHOPIFY": "Shopify",
       "MARKETING": "Marketing",
       "OTHER": "Other"
-    },
-    "configSizes": {
-      "SMALL": "Small",
-      "CLASSIC": "Classic",
-      "LARGE": "Large",
-      "VERY_LARGE": "Very large",
-      "ENTERPRISE": "Enterprise"
     },
     "implementationBases": {
       "FROM_SCRATCH": "From scratch",

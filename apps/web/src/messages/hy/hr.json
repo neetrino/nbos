@@ -623,7 +623,6 @@
       "entityKind": "Սուբյեկտի տեսակ",
       "productType": "Արտադրանքի տեսակ",
       "productCategory": "Արտադրանքի կատեգորիա",
-      "configSize": "Կոնֆիգի չափ",
       "implementationBase": "Իրականացման բազա",
       "designMode": "Դիզայնի ռեժիմ",
       "aiDesignerReview": "AI դիզայների վերանայում",
@@ -709,13 +708,6 @@
       "SHOPIFY": "Shopify",
       "MARKETING": "Մարքեթինգ",
       "OTHER": "Այլ"
-    },
-    "configSizes": {
-      "SMALL": "Small",
-      "CLASSIC": "Classic",
-      "LARGE": "Large",
-      "VERY_LARGE": "Very large",
-      "ENTERPRISE": "Enterprise"
     },
     "implementationBases": {
       "FROM_SCRATCH": "Զրոյից",

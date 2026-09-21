@@ -1,16 +1,12 @@
 import type { ProfileSeedKind } from './profile-seed-types';
 
-const SMALL = [
+const BASE = [
   'MOB_PUSH_NOTIFICATIONS',
   'MOB_STORE_PUBLISHING',
   'MOB_DEEP_LINKS',
   'MSG_EMAIL_NOTIFICATIONS',
   'SRV_ACCEPTANCE_SUPPORT',
   'SRV_DOMAIN_HOSTING_SETUP',
-] as const;
-
-const CLASSIC = [
-  ...SMALL,
   'CNT_MULTILINGUAL',
   'ACC_SOCIAL_LOGIN',
   'MOB_CAMERA_SCANNER',
@@ -18,8 +14,8 @@ const CLASSIC = [
   'MOB_GEOLOCATION',
 ] as const;
 
-const LARGE = [
-  ...CLASSIC,
+const EXTENDED = [
+  ...BASE,
   'MOB_IN_APP_PURCHASE',
   'MOB_OFFLINE_MODE',
   'MOB_TABLET_LAYOUT',
@@ -28,18 +24,14 @@ const LARGE = [
   'ANL_DASHBOARD',
 ] as const;
 
-const VERY_LARGE = [
-  ...LARGE,
+const FULL = [
+  ...EXTENDED,
   'PAY_AMERIABANK',
   'LOY_BONUS_POINTS',
   'MSG_WHATSAPP_NOTIFICATIONS',
   'ACC_TWO_FACTOR',
   'INT_PUBLIC_API',
   'ANL_FUNNEL_ANALYSIS',
-] as const;
-
-const ENTERPRISE = [
-  ...VERY_LARGE,
   'MOB_WEARABLE_COMPANION',
   'ACC_SSO_ENTERPRISE',
   'ACC_ROLE_MATRIX',
@@ -80,7 +72,7 @@ export const MOBILE_APP_PROFILE: ProfileSeedKind = {
     },
     { label: 'Адаптивность под размеры телефонов' },
   ],
-  classicUnits: {
+  units: {
     BACKEND: 45,
     FRONTEND: 60,
     PM: 14,
@@ -90,8 +82,8 @@ export const MOBILE_APP_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    CLASSIC,
-    LARGE,
-    ENTERPRISE,
+    BASE,
+    EXTENDED,
+    FULL,
   },
 };

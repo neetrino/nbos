@@ -4,11 +4,15 @@ import {
   type ProfileSeedKind,
   type ProfileSeedUnits,
 } from './data/profile-seed-types';
+import { BUSINESS_CARD_PROFILE } from './data/business-card-profile';
 import { COMPANY_SITE_PROFILE } from './data/company-site-profile';
 import { CRM_PROFILE } from './data/crm-profile';
+import { ERP_PROFILE } from './data/erp-profile';
 import { LANDING_PROFILE } from './data/landing-profile';
 import { MOBILE_APP_PROFILE } from './data/mobile-app-profile';
+import { SAAS_PROFILE } from './data/saas-profile';
 import { SHOP_PROFILE } from './data/shop-profile';
+import { WEB_APP_PROFILE } from './data/web-app-profile';
 
 export type {
   ProfileSeedCollection,
@@ -18,13 +22,17 @@ export type {
 export { collectionsForKind } from './data/profile-seed-types';
 
 /**
- * Первая волна: магазин, сайт компании, лендинг, CRM и мобильное приложение. Один вид — одно ядро.
+ * Виды с ядром в существующем enum. Один вид — одно ядро. OTHER и маркетинг не сеем.
  */
 export const PROFILE_SEED_KINDS: readonly ProfileSeedKind[] = [
   SHOP_PROFILE,
   COMPANY_SITE_PROFILE,
   LANDING_PROFILE,
+  BUSINESS_CARD_PROFILE,
   CRM_PROFILE,
+  WEB_APP_PROFILE,
+  ERP_PROFILE,
+  SAAS_PROFILE,
   MOBILE_APP_PROFILE,
 ];
 
@@ -46,7 +54,7 @@ export function buildProfileSeedVersions(
   return kinds.map((kind) => ({
     profileKey: profileKeyFor(kind),
     kind,
-    units: kind.classicUnits,
+    units: kind.units,
   }));
 }
 

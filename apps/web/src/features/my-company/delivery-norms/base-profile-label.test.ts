@@ -36,6 +36,22 @@ describe('parseProfileKey', () => {
       productType: 'CRM',
       productCategory: 'CODE',
     });
+    expect(parseProfileKey('business-card-code')).toEqual({
+      productType: 'BUSINESS_CARD_WEBSITE',
+      productCategory: 'CODE',
+    });
+    expect(parseProfileKey('web-app-code')).toEqual({
+      productType: 'WEB_APP',
+      productCategory: 'CODE',
+    });
+    expect(parseProfileKey('erp-code')).toEqual({
+      productType: 'ERP',
+      productCategory: 'CODE',
+    });
+    expect(parseProfileKey('saas-code')).toEqual({
+      productType: 'SAAS',
+      productCategory: 'CODE',
+    });
   });
 
   it('accepts underscore keys without a category segment', () => {
@@ -51,6 +67,8 @@ describe('formatBaseProfileLabel', () => {
     expect(formatBaseProfileLabel('company-site-code', 1, LABELS)).toBe('Корпоративный сайт · v1');
     expect(formatBaseProfileLabel('landing-code', 2, LABELS)).toBe('Лендинг · v2');
     expect(formatBaseProfileLabel('mobile-app-code', null, LABELS)).toBe('Мобильное приложение');
+    expect(formatBaseProfileLabel('business-card-code', 1, LABELS)).toBe('Сайт-визитка · v1');
+    expect(formatBaseProfileLabel('saas-code', 1, LABELS)).toBe('SaaS · v1');
   });
 
   it('keeps an unknown key and still shortens the version', () => {

@@ -1,17 +1,17 @@
 import type { ProfileSeedKind } from './profile-seed-types';
 
-const SMALL = ['SRV_DOMAIN_HOSTING_SETUP', 'SRV_ACCEPTANCE_SUPPORT', 'INT_WEB_ANALYTICS'] as const;
-
-const CLASSIC = [
-  ...SMALL,
+const BASE = [
+  'SRV_DOMAIN_HOSTING_SETUP',
+  'SRV_ACCEPTANCE_SUPPORT',
+  'INT_WEB_ANALYTICS',
   'CNT_MULTILINGUAL',
   'INT_ADS_PIXELS',
   'MSG_EMAIL_NOTIFICATIONS',
   'SRV_SEO_TECH_SETUP',
 ] as const;
 
-const LARGE = [
-  ...CLASSIC,
+const EXTENDED = [
+  ...BASE,
   'CRM_LEAD_CAPTURE',
   'CNT_VIDEO_HOSTING',
   'CNT_FORMS_BUILDER',
@@ -19,17 +19,13 @@ const LARGE = [
   'MSG_SMS_NOTIFICATIONS',
 ] as const;
 
-const VERY_LARGE = [
-  ...LARGE,
+const FULL = [
+  ...EXTENDED,
   'PAY_AMERIABANK',
   'CNT_PAGE_BUILDER',
   'INT_EXTERNAL_CRM',
   'ANL_FUNNEL_ANALYSIS',
   'AI_CONTENT_GENERATION',
-] as const;
-
-const ENTERPRISE = [
-  ...VERY_LARGE,
   'PLT_CUSTOM_DOMAINS',
   'PLT_PERFORMANCE_HARDENING',
   'PLT_ACCESSIBILITY_PASS',
@@ -39,8 +35,8 @@ const ENTERPRISE = [
 
 /**
  * Ядро лендинга. Админки, личного кабинета и мультиязычности в нём нет — это отдельные модули,
- * решение владельца. Поэтому даже маленький лендинг с мультиязычностью считается как ядро плюс
- * модуль, а не как «другой лендинг».
+ * решение владельца. Поэтому лендинг с мультиязычностью считается как ядро плюс модуль, а не как
+ * «другой лендинг».
  *
  * Аналитики в ядре нет намеренно: карточка `INT_WEB_ANALYTICS` начинается с установки счётчика,
  * поэтому строка про подключение аналитики означала бы двойную оплату той же работы.
@@ -50,14 +46,14 @@ export const LANDING_PROFILE: ProfileSeedKind = {
   productType: 'LANDING',
   productCategory: 'CODE',
   description:
-    'Ядро лендинга на собственной разработке. Состав одинаков на всех размерах; размер меняет только объём ядра и набор предвыбранных модулей.',
+    'Ядро лендинга на собственной разработке. Один вид — одно ядро; комплекты меняют только набор extra-модулей.',
   coreItems: [
     { label: 'Одна страница с секциями' },
     { label: 'Форма заявки' },
     { label: 'Адаптивность' },
     { label: 'Базовое SEO', note: 'Метаданные, sitemap, robots.' },
   ],
-  classicUnits: {
+  units: {
     BACKEND: 5,
     FRONTEND: 14,
     PM: 4,
@@ -67,8 +63,8 @@ export const LANDING_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    CLASSIC,
-    LARGE,
-    ENTERPRISE,
+    BASE,
+    EXTENDED,
+    FULL,
   },
 };

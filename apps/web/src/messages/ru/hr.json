@@ -623,7 +623,6 @@
       "entityKind": "Тип сущности",
       "productType": "Тип продукта",
       "productCategory": "Категория продукта",
-      "configSize": "Размер конфигурации",
       "implementationBase": "База реализации",
       "designMode": "Режим дизайна",
       "aiDesignerReview": "AI-ревью дизайнера",
@@ -709,13 +708,6 @@
       "SHOPIFY": "Shopify",
       "MARKETING": "Маркетинг",
       "OTHER": "Другое"
-    },
-    "configSizes": {
-      "SMALL": "Small",
-      "CLASSIC": "Classic",
-      "LARGE": "Large",
-      "VERY_LARGE": "Very large",
-      "ENTERPRISE": "Enterprise"
     },
     "implementationBases": {
       "FROM_SCRATCH": "С нуля",
