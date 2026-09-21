@@ -27,6 +27,7 @@ import { DealNotesSection } from './DealNotesSection';
 import { DealMarketingSection } from './DealMarketingSection';
 import { DealOfferContractSection } from './DealOfferContractSection';
 import { DealSourceLeadSection } from './DealSourceLeadSection';
+import { DealConstructorSection } from '../deal-constructor/DealConstructorSection';
 import type { DealGeneralDraft } from './deal-general-form-state';
 
 interface DealGeneralTabProps {
@@ -140,6 +141,15 @@ export function DealGeneralTab({
             disabled={formDisabled}
             outsourceToggleLocked={deal.status === 'WON'}
             gateRequiredFields={gateRequiredFields}
+          />
+          <DealConstructorSection
+            deal={{
+              ...deal,
+              type: draft.type,
+              productType: draft.productType,
+            }}
+            productType={draft.productType}
+            disabled={formDisabled}
           />
           <DealNotesSection
             entityId={deal.id}
