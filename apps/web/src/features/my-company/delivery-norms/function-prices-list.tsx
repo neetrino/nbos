@@ -8,6 +8,12 @@ import type {
 } from '@nbos/shared';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
+import {
+  GROUP_HEADING_CLASS,
+  NORMS_LIST_GRID_CLASS,
+  PROFILE_VERSION_PREFIX,
+} from './delivery-norms.constants';
+import { groupPricedFunctions } from './group-catalog-functions';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
 import { summarizeRoleUnits } from './summarize-role-units';
@@ -26,41 +32,48 @@ export function FunctionPricesList({
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
-  const titles = useMemo(() => functionTitleMap(catalog), [catalog]);
-  const groups = useMemo(() => groupPrices(rows), [rows]);
+  const groups = useMemo(
+    () => groupPricedFunctions(rows, catalog, t('prices.unknownFunction')),
+    [catalog, rows, t],
+  );
   if (rows.length === 0) {
     return <p className="text-muted-foreground text-sm">{t('prices.empty')}</p>;
   }
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {groups.map((group) => (
-        <div key={group.functionId} className="space-y-2">
-          <h4 className="text-foreground text-sm font-semibold">
-            {titles.get(group.functionId) ?? t('prices.unknownFunction')}
-          </h4>
-          <ul className="space-y-3">
-            {group.rows.map((row) => (
-              <FunctionPriceRow
-                key={row.id}
-                row={row}
-                canPublish={canPublish}
-                onPublished={onPublished}
-                onError={onError}
-              />
+        <section key={group.category} className="space-y-3">
+          <h4 className={GROUP_HEADING_CLASS}>{group.category}</h4>
+          <div className={NORMS_LIST_GRID_CLASS}>
+            {group.functions.map((cluster) => (
+              <ul key={cluster.functionId} className="space-y-3">
+                {cluster.rows.map((row) => (
+                  <FunctionPriceRow
+                    key={row.id}
+                    title={cluster.title}
+                    row={row}
+                    canPublish={canPublish}
+                    onPublished={onPublished}
+                    onError={onError}
+                  />
+                ))}
+              </ul>
             ))}
-          </ul>
-        </div>
+          </div>
+        </section>
       ))}
     </div>
   );
 }
 
 function FunctionPriceRow({
+  title,
   row,
   canPublish,
   onPublished,
   onError,
 }: {
+  title: string;
   row: DeliveryFunctionPriceFinancialDto;
   canPublish: boolean;
   onPublished: () => void;
@@ -70,10 +83,12 @@ function FunctionPriceRow({
   return (
     <DeliveryNormsRecordRow>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-muted-foreground text-xs">
-          {t('columns.version')} {row.version}
-        </p>
+        <p className="text-foreground text-sm font-semibold">{title}</p>
         <div className="flex items-center gap-2">
+          <p className="text-muted-foreground text-xs">
+            {PROFILE_VERSION_PREFIX}
+            {row.version}
+          </p>
           <NormativeStatusBadge
             status={row.status}
             label={t(normativeStatusLabelKey(row.status))}
@@ -95,29 +110,4 @@ function FunctionPriceRow({
       </p>
     </DeliveryNormsRecordRow>
   );
-}
-
-function functionTitleMap(catalog: DeliveryFunctionOperationalDto[]): Map<string, string> {
-  return new Map(catalog.map((item) => [item.id, item.title]));
-}
-
-function groupPrices(rows: DeliveryFunctionPriceFinancialDto[]): Array<{
-  functionId: string;
-  rows: DeliveryFunctionPriceFinancialDto[];
-}> {
-  const order: string[] = [];
-  const grouped = new Map<string, DeliveryFunctionPriceFinancialDto[]>();
-  for (const row of rows) {
-    const list = grouped.get(row.functionId);
-    if (!list) {
-      grouped.set(row.functionId, [row]);
-      order.push(row.functionId);
-      continue;
-    }
-    list.push(row);
-  }
-  return order.map((functionId) => ({
-    functionId,
-    rows: [...(grouped.get(functionId) ?? [])].sort((a, b) => b.version - a.version),
-  }));
 }

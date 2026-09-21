@@ -2,10 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 import { isExplicitZeroUnits } from '@nbos/shared';
-import { FormFieldRow, InlineField } from '@/components/shared';
+import { InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { DETAIL_SHEET_SUBSECTION_LABEL_CLASS } from '@/components/shared/detail-sheet-classes';
-import { RECORD_ROW_CLASS, ROLE_MESSAGE_KEYS } from './delivery-norms.constants';
+import { RECORD_ROW_CLASS, ROLE_MESSAGE_KEYS, SHEET_STACK_CLASS } from './delivery-norms.constants';
 import {
   emptyUnitsInputToNull,
   replaceRoleUnitDraft,
@@ -26,10 +26,10 @@ export function RoleUnitsEditor({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <fieldset className="space-y-3" disabled={disabled}>
+    <fieldset className={SHEET_STACK_CLASS} disabled={disabled}>
       <legend className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{t('roleUnits.title')}</legend>
       <p className="text-muted-foreground text-xs">{t('roleUnits.hint')}</p>
-      <div className="space-y-3">
+      <div className={SHEET_STACK_CLASS}>
         {rows.map((row) => (
           <RoleUnitRow
             key={row.roleKey}
@@ -55,35 +55,32 @@ function RoleUnitRow({
   const t = useTranslations('hr.deliveryNorms');
   const notRequired = row.unitKind === 'NOT_REQUIRED';
   return (
-    <div className={RECORD_ROW_CLASS}>
+    <div className={`${RECORD_ROW_CLASS} flex flex-col`}>
       <p className="text-foreground text-sm font-medium">{t(ROLE_MESSAGE_KEYS[row.roleKey])}</p>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          type="select"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('roleUnits.required')}
-          hideLabel
-          value={row.unitKind}
-          disabled={disabled}
-          options={selectOptionsFromRecord(UNIT_KIND_OPTIONS, {
-            REQUIRED: t('roleUnits.required'),
-            NOT_REQUIRED: t('roleUnits.notRequired'),
-          })}
-          onValueChange={(value) =>
-            applySelectValue(UNIT_KIND_OPTIONS, value, (unitKind) => onChange({ unitKind }))
-          }
-        />
-        <InlineField
-          variant="controlled"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('roleUnits.unitsLabel')}
-          value={row.unitsInput}
-          disabled={disabled || notRequired}
-          placeholder={t('roleUnits.placeholder')}
-          onValueChange={(unitsInput) => onChange({ unitsInput })}
-        />
-      </FormFieldRow>
+      <InlineField
+        variant="controlled"
+        type="select"
+        className={FORM_FIELD_CELL_CLASS}
+        label={t('roleUnits.required')}
+        value={row.unitKind}
+        disabled={disabled}
+        options={selectOptionsFromRecord(UNIT_KIND_OPTIONS, {
+          REQUIRED: t('roleUnits.required'),
+          NOT_REQUIRED: t('roleUnits.notRequired'),
+        })}
+        onValueChange={(value) =>
+          applySelectValue(UNIT_KIND_OPTIONS, value, (unitKind) => onChange({ unitKind }))
+        }
+      />
+      <InlineField
+        variant="controlled"
+        className={FORM_FIELD_CELL_CLASS}
+        label={t('roleUnits.unitsLabel')}
+        value={row.unitsInput}
+        disabled={disabled || notRequired}
+        placeholder={t('roleUnits.placeholder')}
+        onValueChange={(unitsInput) => onChange({ unitsInput })}
+      />
       <p className="text-muted-foreground text-xs">{unitsHint(row, t)}</p>
     </div>
   );

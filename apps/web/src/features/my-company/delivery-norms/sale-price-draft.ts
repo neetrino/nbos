@@ -150,6 +150,40 @@ export function salePricesForTarget(
     .sort((left, right) => right.version - left.version);
 }
 
+export function groupSalePrices(
+  rows: readonly SalePriceVersionDto[],
+): Array<{ targetKey: string; rows: SalePriceVersionDto[] }> {
+  const order: string[] = [];
+  const grouped = new Map<string, SalePriceVersionDto[]>();
+  for (const row of rows) {
+    const list = grouped.get(row.targetKey);
+    if (!list) {
+      grouped.set(row.targetKey, [row]);
+      order.push(row.targetKey);
+      continue;
+    }
+    list.push(row);
+  }
+  return order.map((targetKey) => ({
+    targetKey,
+    rows: [...(grouped.get(targetKey) ?? [])].sort((left, right) => right.version - left.version),
+  }));
+}
+
+export type SalePriceKindGroup = {
+  kind: SalePriceTargetKind;
+  groups: Array<{ targetKey: string; rows: SalePriceVersionDto[] }>;
+};
+
+export function groupSalePricesByKind(rows: readonly SalePriceVersionDto[]): SalePriceKindGroup[] {
+  return SALE_PRICE_TARGET_KINDS.flatMap((kind) => {
+    const groups = groupSalePrices(
+      rows.filter((row) => parseSalePriceTargetKey(row.targetKey)?.kind === kind),
+    );
+    return groups.length === 0 ? [] : [{ kind, groups }];
+  });
+}
+
 function isSalePriceTargetKind(value: string): value is SalePriceTargetKind {
   return (SALE_PRICE_TARGET_KINDS as readonly string[]).includes(value);
 }

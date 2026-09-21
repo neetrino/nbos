@@ -25,12 +25,14 @@ describe('buildBaseProfileWriteBody', () => {
     draft.entityKind = 'EXTENSION';
     draft.productType = OPTIONAL_SELECT_NONE;
     draft.roleUnits = replaceRoleUnitDraft(draft.roleUnits, 'BACKEND', { unitsInput: '0' });
+    draft.includedFunctionIds = ['fn-1'];
     const result = buildBaseProfileWriteBody(draft);
     expect(result.error).toBeNull();
     if (result.error !== null) {
       return;
     }
     expect(result.body.productType).toBeNull();
+    expect(result.body.includedFunctionIds).toEqual([]);
     expect(result.body.roleUnits.find((row) => row.roleKey === 'BACKEND')?.units).toBe('0');
   });
 });

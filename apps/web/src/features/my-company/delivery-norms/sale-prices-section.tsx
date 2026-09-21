@@ -3,26 +3,23 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
-import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
-import { DetailSheetFieldSegmented, FormFieldRow, InlineField } from '@/components/shared';
-import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import type { SearchOption } from '@/components/shared';
+import { COMPACT_PANEL_CLASS, OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import { DefaultMultiplierForm } from './default-multiplier-form';
-import {
-  OPTIONAL_SELECT_NONE,
-  SALE_PRICE_TARGET_KINDS,
-  type SalePriceTargetKind,
-} from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
-import { SalePriceCreateForm } from './sale-price-create-form';
+import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
 import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
-import { selectOptionsFromRecord } from './select-options-from-record';
+import { itemsMatchingSearch } from './matches-norm-search';
+import { SalePriceCreateSheet } from './sale-price-create-sheet';
 import {
   gradationsFromCatalog,
-  salePricesForTarget,
+  groupSalePricesByKind,
   targetKeyForKind,
   type CatalogGradation,
+  type SalePriceTargetKind,
 } from './sale-price-draft';
 import { SalePricesList } from './sale-prices-list';
+import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
 
 export function SalePricesSection({
   rows,
@@ -44,175 +41,140 @@ export function SalePricesSection({
   embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<SalePriceTargetKind>('FUNCTION');
   const [targetId, setTargetId] = useState(OPTIONAL_SELECT_NONE);
-  const targetKey = targetId === OPTIONAL_SELECT_NONE ? null : targetKeyForKind(kind, targetId);
-  const versions = salePricesForTarget(rows, targetKey);
-
-  return (
-    <DeliveryNormsSectionCard
-      title={embedded ? undefined : t('salePrices.title')}
-      description={embedded ? undefined : t('salePrices.subtitle')}
-    >
-      <DefaultMultiplierForm
-        key={defaultMultiplier ?? 'none'}
-        value={defaultMultiplier}
-        canEdit={canEdit}
-        onChanged={onChanged}
-        onError={onError}
-      />
-      <SalePriceTargetPicker
-        kind={kind}
-        targetId={targetId}
-        catalog={catalog}
-        profiles={profiles}
-        gradations={gradationsFromCatalog(catalog)}
-        onKindChange={(next) => {
-          setKind(next);
-          setTargetId(OPTIONAL_SELECT_NONE);
-        }}
-        onTargetIdChange={setTargetId}
-      />
-      {canEdit ? (
-        <SalePriceCreateForm
-          kind={kind}
-          targetId={targetId}
-          onCreated={onChanged}
-          onError={onError}
-        />
-      ) : null}
-      <SalePricesList
-        rows={versions}
-        canPublish={canEdit}
-        onPublished={onChanged}
-        onError={onError}
-      />
-    </DeliveryNormsSectionCard>
+  const labels = useMemo(
+    () => targetLabelMap(catalog, profiles, gradationsFromCatalog(catalog), t),
+    [catalog, profiles, t],
   );
-}
-
-function SalePriceTargetPicker({
-  kind,
-  targetId,
-  catalog,
-  profiles,
-  gradations,
-  onKindChange,
-  onTargetIdChange,
-}: {
-  kind: SalePriceTargetKind;
-  targetId: string;
-  catalog: DeliveryFunctionOperationalDto[];
-  profiles: DeliveryBaseProfileFinancialDto[];
-  gradations: CatalogGradation[];
-  onKindChange: (kind: SalePriceTargetKind) => void;
-  onTargetIdChange: (id: string) => void;
-}) {
-  const t = useTranslations('hr.deliveryNorms');
   const kindLabels = {
     FUNCTION: t('salePrices.targetKinds.FUNCTION'),
     TIER: t('salePrices.targetKinds.TIER'),
     CORE: t('salePrices.targetKinds.CORE'),
   } as const;
   const options = useMemo(
-    () => targetOptions(kind, catalog, profiles, gradations),
-    [kind, catalog, profiles, gradations],
+    () => targetSearchOptions(kind, catalog, profiles, gradationsFromCatalog(catalog), labels),
+    [catalog, kind, labels, profiles],
   );
-  const labels = targetOptionLabels(kind, options, catalog, profiles, gradations, t);
+  const filtered = useMemo(
+    () =>
+      itemsMatchingSearch(rows, query, (row) => [
+        labels.get(row.targetKey) ?? row.targetKey,
+        row.status,
+        row.multiplier ?? '',
+        row.fixedAmount ?? '',
+      ]),
+    [labels, query, rows],
+  );
+  const groups = useMemo(() => groupSalePricesByKind(filtered), [filtered]);
 
   return (
-    <div className="space-y-2">
-      <FormFieldRow>
-        <DetailSheetFieldSegmented
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('salePrices.targetKind')}
-          value={kind}
-          options={selectOptionsFromRecord(SALE_PRICE_TARGET_KINDS, kindLabels)}
-          onValueChange={onKindChange}
+    <DeliveryNormsSectionCard
+      title={embedded ? undefined : t('salePrices.title')}
+      description={embedded ? undefined : t('salePrices.subtitle')}
+    >
+      <div className={COMPACT_PANEL_CLASS}>
+        <DefaultMultiplierForm
+          key={defaultMultiplier ?? 'none'}
+          value={defaultMultiplier}
+          canEdit={canEdit}
+          onChanged={onChanged}
+          onError={onError}
         />
-        <InlineField
-          variant="controlled"
-          type="select"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('salePrices.pickTarget')}
-          value={targetId}
-          options={selectOptionsFromRecord([OPTIONAL_SELECT_NONE, ...options], labels)}
-          onValueChange={onTargetIdChange}
+      </div>
+      <DeliveryNormsSectionToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchLabel={t('search.label')}
+        searchPlaceholder={t('search.placeholder')}
+        addLabel={t('add')}
+        canAdd={canEdit}
+        onAdd={() => setOpen(true)}
+      />
+      {canEdit ? (
+        <SalePriceCreateSheet
+          open={open}
+          kind={kind}
+          targetId={targetId}
+          targetOptions={options}
+          kindLabels={kindLabels}
+          onOpenChange={setOpen}
+          onKindChange={(next) => {
+            setKind(next);
+            setTargetId(OPTIONAL_SELECT_NONE);
+          }}
+          onTargetIdChange={setTargetId}
+          onCreated={onChanged}
+          onError={onError}
         />
-      </FormFieldRow>
-      {kind === 'TIER' && options.length === 0 ? (
-        <p className="text-muted-foreground text-xs">{t('salePrices.noTiers')}</p>
       ) : null}
-    </div>
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground text-sm">{t('salePrices.allEmpty')}</p>
+      ) : query.trim() !== '' && filtered.length === 0 ? (
+        <p className="text-muted-foreground text-sm">{t('search.empty')}</p>
+      ) : (
+        <SalePricesList
+          groups={groups}
+          labels={labels}
+          kindLabels={kindLabels}
+          canPublish={canEdit}
+          onPublished={onChanged}
+          onError={onError}
+        />
+      )}
+    </DeliveryNormsSectionCard>
   );
 }
 
-function targetOptions(
+function targetSearchOptions(
   kind: SalePriceTargetKind,
   catalog: DeliveryFunctionOperationalDto[],
   profiles: DeliveryBaseProfileFinancialDto[],
-  gradations: readonly CatalogGradation[],
-): string[] {
+  gradations: CatalogGradation[],
+  labels: Map<string, string>,
+): SearchOption[] {
   if (kind === 'FUNCTION') {
-    return catalog.map((item) => item.id);
+    return catalog.map((item) => ({
+      value: item.id,
+      label: labels.get(targetKeyForKind('FUNCTION', item.id)) ?? item.title,
+      subtitle: item.code,
+    }));
   }
   if (kind === 'CORE') {
-    return profiles.map((row) => row.id);
+    return profiles.map((row) => ({
+      value: row.id,
+      label: labels.get(targetKeyForKind('CORE', row.id)) ?? row.profileKey,
+    }));
   }
-  return gradations.map((tier) => tier.id);
+  return gradations.map((tier) => ({
+    value: tier.id,
+    label: labels.get(targetKeyForKind('TIER', tier.id)) ?? tier.label,
+  }));
 }
 
-function targetOptionLabels(
-  kind: SalePriceTargetKind,
-  options: readonly string[],
+function targetLabelMap(
   catalog: DeliveryFunctionOperationalDto[],
   profiles: DeliveryBaseProfileFinancialDto[],
-  gradations: readonly CatalogGradation[],
+  gradations: CatalogGradation[],
   t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
-): Record<string, string> {
-  const functions = new Map<string, string>([
-    ...catalog.map((item) => [item.id, item.title] as const),
-    ...gradations.map((tier) => [tier.id, tier.label] as const),
-  ]);
+): Map<string, string> {
   const dictionaries = dictionariesForProfileLabel(t);
-  const cores = new Map(
-    profiles.map(
-      (row) =>
-        [`${row.id}`, formatBaseProfileLabel(row.profileKey, row.version, dictionaries)] as const,
-    ),
-  );
   const entries: Array<[string, string]> = [
-    [OPTIONAL_SELECT_NONE, pickerPlaceholder(kind, t)],
-    ...options.map((id) => [id, labelForTarget(kind, id, functions, cores, t)] as [string, string]),
+    ...catalog.map(
+      (item) => [targetKeyForKind('FUNCTION', item.id), item.title] as [string, string],
+    ),
+    ...gradations.map(
+      (tier) => [targetKeyForKind('TIER', tier.id), tier.label] as [string, string],
+    ),
+    ...profiles.map(
+      (row) =>
+        [
+          targetKeyForKind('CORE', row.id),
+          formatBaseProfileLabel(row.profileKey, row.version, dictionaries),
+        ] as [string, string],
+    ),
   ];
-  return Object.fromEntries(entries);
-}
-
-function pickerPlaceholder(
-  kind: SalePriceTargetKind,
-  t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
-): string {
-  if (kind === 'FUNCTION') {
-    return t('salePrices.pickFunction');
-  }
-  if (kind === 'CORE') {
-    return t('salePrices.pickCore');
-  }
-  return t('salePrices.pickTier');
-}
-
-function labelForTarget(
-  kind: SalePriceTargetKind,
-  id: string,
-  functions: Map<string, string>,
-  cores: Map<string, string>,
-  t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
-): string {
-  if (kind === 'FUNCTION') {
-    return functions.get(id) ?? t('salePrices.unknownTarget');
-  }
-  if (kind === 'CORE') {
-    return cores.get(id) ?? t('salePrices.unknownTarget');
-  }
-  return id;
+  return new Map(entries);
 }

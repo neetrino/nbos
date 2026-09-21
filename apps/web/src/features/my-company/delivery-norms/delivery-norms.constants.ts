@@ -11,7 +11,7 @@ export const RECORD_ROW_CLASS =
   'border-border/60 bg-muted/10 space-y-2 rounded-2xl border px-4 py-3';
 
 export const CHECKBOX_ROW_CLASS =
-  'border-border/50 bg-background/50 hover:bg-muted/40 flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-sm';
+  'border-border/50 bg-background/50 hover:bg-muted/40 flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm';
 
 export const CHECKBOX_ROW_ACTIVE_CLASS = 'border-primary bg-primary/10 hover:bg-primary/15';
 
@@ -52,7 +52,40 @@ export const PROFILE_VERSION_PREFIX = 'v';
 
 export const ZERO_UNITS_CONFIRMATION_MESSAGE = 'ZERO_UNITS_CONFIRMATION_REQUIRED';
 
-export const INCLUDED_FUNCTIONS_LIST_CLASS = 'max-h-64 space-y-2 overflow-y-auto pr-1';
+export const INCLUDED_FUNCTIONS_LIST_CLASS =
+  'max-h-[min(24rem,55vh)] space-y-3 overflow-y-auto pr-1';
+
+export const CHECKBOX_ITEMS_GRID_CLASS = 'grid gap-2 lg:grid-cols-2';
+
+export const SIZE_LADDER_GRID_CLASS = 'grid grid-cols-2 gap-2 lg:grid-cols-5';
+
+export const GROUP_HEADING_CLASS =
+  'text-muted-foreground text-[11px] font-semibold tracking-wide uppercase';
+
+export const WORKSPACE_SPLIT_CLASS =
+  'grid gap-5 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] lg:items-start';
+
+export const WORKSPACE_PAIR_CLASS = 'grid gap-5 lg:grid-cols-2 lg:items-start';
+
+export const TOOLBAR_ROW_CLASS = 'flex flex-wrap items-center justify-between gap-3';
+
+export const PICKER_LIST_CLASS = 'max-h-[min(32rem,70vh)] space-y-2 overflow-y-auto pr-1';
+
+export const SEARCH_SELECT_MAX_RESULTS = 24;
+
+export const NORMS_SHEET_HEADER_CLASS = 'border-border shrink-0 space-y-3 border-b px-5 py-3';
+
+export const NORMS_SHEET_BODY_CLASS = 'min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4';
+
+export const NORMS_SHEET_FOOTER_CLASS = 'px-5 py-3';
+
+export const NORMS_LIST_GRID_CLASS = 'grid gap-3 lg:grid-cols-2';
+
+export const SHEET_STACK_CLASS = 'flex flex-col gap-3';
+
+export const LIST_SEARCH_MAX_CLASS = 'min-w-[12rem] max-w-sm flex-1';
+
+export const COMPACT_PANEL_CLASS = 'max-w-xl';
 
 export const STATUS_BADGE_VARIANT: Record<DeliveryNormativeStatus, StatusVariant> = {
   DRAFT: 'amber',

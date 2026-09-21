@@ -2,14 +2,21 @@
 
 import { useTranslations } from 'next-intl';
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import type { SearchOption } from '@/components/shared';
 import { DETAIL_SHEET_SUBSECTION_LABEL_CLASS } from '@/components/shared/detail-sheet-classes';
-import { cn } from '@/lib/utils';
 import {
-  CHECKBOX_ROW_ACTIVE_CLASS,
-  CHECKBOX_ROW_CLASS,
   INCLUDED_FUNCTIONS_LIST_CLASS,
+  RECORD_ROW_CLASS,
+  SHEET_STACK_CLASS,
 } from './delivery-norms.constants';
+import { DeliveryNormsSearchSelect } from './delivery-norms-search-select';
+import {
+  addableIncludedOptions,
+  addIncludedFunctionId,
+  removeIncludedFunctionId,
+  selectedIncludedFunctions,
+} from './included-function-selection';
 
 export function IncludedFunctionsPicker({
   options,
@@ -29,45 +36,105 @@ export function IncludedFunctionsPicker({
   onChange: (next: string[]) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
-  const selected = new Set(selectedIds);
+  const selectedItems = selectedIncludedFunctions(options, selectedIds);
+  const addOptions = addableIncludedOptions(options, selectedIds);
   if (options.length === 0) {
     return (
       <p className="text-muted-foreground text-sm">{emptyLabel ?? t('includedFunctions.empty')}</p>
     );
   }
   return (
-    <fieldset className="space-y-2" disabled={disabled}>
+    <fieldset className={SHEET_STACK_CLASS} disabled={disabled}>
       <legend className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>
         {title ?? t('includedFunctions.title')}
       </legend>
       <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
-      <ul className={INCLUDED_FUNCTIONS_LIST_CLASS}>
-        {options.map((item) => (
-          <li key={item.id}>
-            <label
-              className={cn(
-                CHECKBOX_ROW_CLASS,
-                selected.has(item.id) ? CHECKBOX_ROW_ACTIVE_CLASS : null,
-              )}
-            >
-              <Checkbox
-                checked={selected.has(item.id)}
-                disabled={disabled}
-                onCheckedChange={() => onChange(toggleId(selectedIds, item.id))}
-              />
-              <span className="text-foreground min-w-0 flex-1 font-medium">{item.title}</span>
-              <span className="text-muted-foreground text-xs">{item.code}</span>
-            </label>
-          </li>
-        ))}
-      </ul>
+      <IncludedAddSearch
+        options={addOptions}
+        disabled={disabled}
+        selectedIds={selectedIds}
+        onChange={onChange}
+      />
+      <SelectedIncludedList
+        items={selectedItems}
+        disabled={disabled}
+        selectedIds={selectedIds}
+        onChange={onChange}
+      />
     </fieldset>
   );
 }
 
-function toggleId(ids: readonly string[], id: string): string[] {
-  if (ids.includes(id)) {
-    return ids.filter((item) => item !== id);
+function IncludedAddSearch({
+  options,
+  disabled,
+  selectedIds,
+  onChange,
+}: {
+  options: SearchOption[];
+  disabled?: boolean;
+  selectedIds: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const t = useTranslations('hr.deliveryNorms');
+  if (options.length === 0) {
+    return null;
   }
-  return [...ids, id];
+  return (
+    <DeliveryNormsSearchSelect
+      label={t('includedFunctions.add')}
+      value={null}
+      placeholder={t('includedFunctions.addPlaceholder')}
+      disabled={disabled}
+      options={options}
+      onChange={(value) => {
+        if (value === null) {
+          return;
+        }
+        onChange(addIncludedFunctionId(selectedIds, value));
+      }}
+    />
+  );
+}
+
+function SelectedIncludedList({
+  items,
+  disabled,
+  selectedIds,
+  onChange,
+}: {
+  items: DeliveryFunctionOperationalDto[];
+  disabled?: boolean;
+  selectedIds: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const t = useTranslations('hr.deliveryNorms');
+  if (items.length === 0) {
+    return <p className="text-muted-foreground text-sm">{t('includedFunctions.noneSelected')}</p>;
+  }
+  return (
+    <ul className={INCLUDED_FUNCTIONS_LIST_CLASS}>
+      {items.map((item) => (
+        <li
+          key={item.id}
+          className={`${RECORD_ROW_CLASS} flex items-start justify-between gap-3 space-y-0`}
+        >
+          <span className="min-w-0 flex-1 space-y-0.5">
+            <span className="text-foreground block truncate text-sm font-medium">{item.title}</span>
+            <span className="text-muted-foreground block truncate text-xs">{item.code}</span>
+          </span>
+          {disabled ? null : (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onChange(removeIncludedFunctionId(selectedIds, item.id))}
+            >
+              {t('includedFunctions.remove')}
+            </Button>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 }

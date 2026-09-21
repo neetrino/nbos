@@ -1,26 +1,20 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
-import { DataView, InlineField, LoadingState } from '@/components/shared';
-import { Button } from '@/components/ui/button';
-import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
-import { CoreItemCreateForm } from './core-item-create-form';
-import {
-  addCoreItemDraft,
-  coreItemDraftsFromDto,
-  toCoreItemInputs,
-  type CoreItemDraft,
-} from './core-item-draft';
-import { CoreItemsList } from './core-items-list';
-import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
-import { LOADING_LIST_COUNT, OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
+import { dictionariesForProfileLabel } from './base-profile-label';
+import { CoreItemsEditor } from './core-items-editor';
+import { PROFILE_VERSION_PREFIX, WORKSPACE_SPLIT_CLASS } from './delivery-norms.constants';
+import { DeliveryNormsKindRail } from './delivery-norms-kind-rail';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
-import { messageFromCaught } from './message-from-caught';
-import { NormsLoadError } from './norms-load-error';
-import { selectOptionsFromRecord } from './select-options-from-record';
-import { useCoreItems } from './use-catalog-structure-lists';
+import {
+  availableSizesForGroup,
+  profileRowMatchingSize,
+  type ProfileKindGroup,
+} from './group-profile-rows';
+import { normativeStatusLabelKey } from './normative-status-badge';
+import { SizePresetsList } from './size-presets-list';
+import { useProfileKindSelection } from './use-profile-kind-selection';
 
 export function CoreItemsSection({
   rows,
@@ -34,229 +28,90 @@ export function CoreItemsSection({
   embedded?: boolean;
 }) {
   const t = useTranslations('hr.deliveryNorms');
-  const [versionId, setVersionId] = useState(OPTIONAL_SELECT_NONE);
-  const selectedId = versionId === OPTIONAL_SELECT_NONE ? null : versionId;
-  const selected = rows.find((row) => row.id === selectedId) ?? null;
-  const { items, loading, error, load } = useCoreItems(selectedId);
-  const labels = versionOptionLabels(rows, dictionariesForProfileLabel(t), t);
+  const dictionaries = dictionariesForProfileLabel(t);
+  const selection = useProfileKindSelection(rows, dictionaries);
 
   return (
     <DeliveryNormsSectionCard
       title={embedded ? undefined : t('coreItems.title')}
       description={embedded ? undefined : t('coreItems.subtitle')}
     >
-      {rows.length === 0 ? (
+      <p className="text-muted-foreground text-xs">{t('coreItems.hint')}</p>
+      {selection.groups.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('coreItems.emptyVersions')}</p>
       ) : (
-        <InlineField
-          variant="controlled"
-          type="select"
-          label={t('coreItems.pickVersion')}
-          value={versionId}
-          options={selectOptionsFromRecord(
-            [OPTIONAL_SELECT_NONE, ...rows.map((row) => row.id)],
-            labels,
-          )}
-          onValueChange={setVersionId}
-        />
+        <div className={WORKSPACE_SPLIT_CLASS}>
+          <DeliveryNormsKindRail
+            options={selection.visibleGroups.map((group) => ({
+              id: group.kindId,
+              title: group.title,
+              subtitle: t('sizePresets.sizeCount', { count: group.rows.length }),
+            }))}
+            selectedId={selection.resolvedKindId}
+            query={selection.query}
+            emptySearch={selection.query.trim() !== '' && selection.visibleGroups.length === 0}
+            emptySearchLabel={t('coreItems.emptySearch')}
+            searchLabel={t('search.label')}
+            searchPlaceholder={t('search.placeholder')}
+            onQueryChange={selection.setQuery}
+            onSelect={selection.setKindId}
+          />
+          <CoreKindEditor selection={selection} canEdit={canEdit} onError={onError} />
+        </div>
       )}
-      {selected ? (
-        <CoreItemsEditor
-          versionId={selected.id}
-          items={items}
-          loading={loading}
-          error={error}
-          editable={canEdit && selected.status === 'DRAFT'}
-          onReload={() => void load()}
-          onError={onError}
-        />
-      ) : null}
     </DeliveryNormsSectionCard>
   );
 }
 
-function CoreItemsEditor({
-  versionId,
-  items,
-  loading,
-  error,
-  editable,
-  onReload,
+function CoreKindEditor({
+  selection,
+  canEdit,
   onError,
 }: {
-  versionId: string;
-  items: ReturnType<typeof useCoreItems>['items'];
-  loading: boolean;
-  error: string | null;
-  editable: boolean;
-  onReload: () => void;
+  selection: ReturnType<typeof useProfileKindSelection>;
+  canEdit: boolean;
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
-  const [drafts, setDrafts] = useState<CoreItemDraft[]>(() => coreItemDraftsFromDto(items));
-  const [seenItems, setSeenItems] = useState(items);
-  const [saving, setSaving] = useState(false);
-  if (items !== seenItems) {
-    setSeenItems(items);
-    setDrafts(coreItemDraftsFromDto(items));
+  if (selection.selectedGroup === null) {
+    return <p className="text-muted-foreground text-sm">{t('coreItems.pickKind')}</p>;
   }
-
   return (
     <div className="space-y-4">
-      <CoreItemsToolbar
-        drafts={drafts}
-        editable={editable}
-        saving={saving}
-        onDraftsChange={setDrafts}
-        onError={onError}
+      <SizePresetsList
+        selectedSize={selection.resolvedSize}
+        available={availableSizesForGroup(selection.selectedGroup)}
+        onSelect={selection.setSelectedSize}
+        detail={(size, enabled) => coreSizeDetail(selection.selectedGroup, size, enabled, t)}
       />
-      <DataView
-        loading={loading}
-        error={error}
-        hasData={drafts.length > 0}
-        loadingFallback={<LoadingState variant="list" count={LOADING_LIST_COUNT} />}
-        errorFallback={<NormsLoadError message={error ?? ''} onRetry={onReload} />}
-        emptyFallback={<p className="text-muted-foreground text-sm">{t('coreItems.empty')}</p>}
-      >
-        <CoreItemsList drafts={drafts} disabled={!editable || saving} onChange={setDrafts} />
-      </DataView>
-      <CoreItemsSaveButton
-        versionId={versionId}
-        drafts={drafts}
-        editable={editable}
-        saving={saving}
-        onError={onError}
-        onSaved={onReload}
-        setSaving={setSaving}
-      />
+      {selection.selectedRow ? (
+        <CoreItemsEditor
+          versionId={selection.selectedRow.id}
+          editable={canEdit && selection.selectedRow.status === 'DRAFT'}
+          onError={onError}
+        />
+      ) : (
+        <p className="text-muted-foreground text-sm">{t('sizePresets.noProfileForSize')}</p>
+      )}
     </div>
   );
 }
 
-function CoreItemsToolbar({
-  drafts,
-  editable,
-  saving,
-  onDraftsChange,
-  onError,
-}: {
-  drafts: CoreItemDraft[];
-  editable: boolean;
-  saving: boolean;
-  onDraftsChange: (next: CoreItemDraft[]) => void;
-  onError: (message: string) => void;
-}) {
-  const t = useTranslations('hr.deliveryNorms');
-  if (!editable) {
-    return <p className="text-muted-foreground text-xs">{t('coreItems.readOnly')}</p>;
-  }
-  return (
-    <CoreItemCreateForm
-      disabled={saving}
-      onAdd={(label, note) =>
-        addDraftRow(drafts, label, note, t('errors.coreItemLabel'), onError, onDraftsChange)
-      }
-    />
-  );
-}
-
-function CoreItemsSaveButton({
-  versionId,
-  drafts,
-  editable,
-  saving,
-  onError,
-  onSaved,
-  setSaving,
-}: {
-  versionId: string;
-  drafts: CoreItemDraft[];
-  editable: boolean;
-  saving: boolean;
-  onError: (message: string) => void;
-  onSaved: () => void;
-  setSaving: (value: boolean) => void;
-}) {
-  const t = useTranslations('hr.deliveryNorms');
-  if (!editable) {
-    return null;
-  }
-  return (
-    <div className="flex justify-end">
-      <Button
-        type="button"
-        size="sm"
-        disabled={saving}
-        onClick={() => {
-          void submitCoreItems({
-            versionId,
-            drafts,
-            fallback: t('errors.coreItems'),
-            blankLabel: t('errors.coreItemLabel'),
-            onError,
-            onSaved,
-            setSaving,
-          });
-        }}
-      >
-        {saving ? t('coreItems.saving') : t('coreItems.save')}
-      </Button>
-    </div>
-  );
-}
-
-function addDraftRow(
-  drafts: CoreItemDraft[],
-  label: string,
-  note: string,
-  blankLabel: string,
-  onError: (message: string) => void,
-  setDrafts: (next: CoreItemDraft[]) => void,
-): boolean {
-  const next = addCoreItemDraft(drafts, { key: crypto.randomUUID(), label, note });
-  if (next === null) {
-    onError(blankLabel);
-    return false;
-  }
-  setDrafts(next);
-  return true;
-}
-
-async function submitCoreItems(input: {
-  versionId: string;
-  drafts: CoreItemDraft[];
-  fallback: string;
-  blankLabel: string;
-  onError: (message: string) => void;
-  onSaved: () => void;
-  setSaving: (value: boolean) => void;
-}): Promise<void> {
-  const parsed = toCoreItemInputs(input.drafts);
-  if (parsed.error === 'blankLabel') {
-    input.onError(input.blankLabel);
-    return;
-  }
-  input.setSaving(true);
-  try {
-    await deliveryCatalogStructureApi.replaceCoreItems(input.versionId, parsed.items);
-    input.onSaved();
-  } catch (caught) {
-    input.onError(messageFromCaught(caught, input.fallback));
-  } finally {
-    input.setSaving(false);
-  }
-}
-
-function versionOptionLabels(
-  rows: DeliveryBaseProfileFinancialDto[],
-  dictionaries: ReturnType<typeof dictionariesForProfileLabel>,
+function coreSizeDetail(
+  group: ProfileKindGroup | null,
+  size: Parameters<typeof profileRowMatchingSize>[1],
+  enabled: boolean,
   t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
-): Record<string, string> {
-  return Object.fromEntries([
-    [OPTIONAL_SELECT_NONE, t('none')],
-    ...rows.map((row) => [
-      row.id,
-      formatBaseProfileLabel(row.profileKey, row.version, dictionaries),
-    ]),
-  ]);
+): string {
+  if (!enabled || group === null) {
+    return t('sizePresets.missingProfile');
+  }
+  const row = profileRowMatchingSize(group, size);
+  if (row === null) {
+    return t('sizePresets.missingProfile');
+  }
+  return t('coreItems.versionStatus', {
+    version: `${PROFILE_VERSION_PREFIX}${row.version}`,
+    status: t(normativeStatusLabelKey(row.status)),
+  });
 }

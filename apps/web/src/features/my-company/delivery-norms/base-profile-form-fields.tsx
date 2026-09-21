@@ -6,8 +6,9 @@ import {
   DELIVERY_DESIGN_MODES,
   DELIVERY_IMPLEMENTATION_BASES,
 } from '@nbos/shared';
-import { CreateFormSwitchField, FormFieldRow, InlineField } from '@/components/shared';
+import { CreateFormSwitchField, InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import { SHEET_STACK_CLASS } from './delivery-norms.constants';
 import type { ProfileDraft } from './base-profile-draft';
 import {
   configSizeLabels,
@@ -30,65 +31,61 @@ export function BaseProfileConfigFields({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <div className="space-y-3">
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          type="select"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('fields.configSize')}
-          value={draft.configSize}
-          disabled={disabled}
-          options={selectOptionsFromRecord(DELIVERY_CONFIG_SIZES, configSizeLabels(t))}
-          onValueChange={(value) =>
-            applySelectValue(DELIVERY_CONFIG_SIZES, value, (configSize) =>
-              onChange({ ...draft, configSize }),
-            )
-          }
-        />
-        <InlineField
-          variant="controlled"
-          type="select"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('fields.implementationBase')}
-          value={draft.implementationBase}
-          disabled={disabled}
-          options={selectOptionsFromRecord(
-            DELIVERY_IMPLEMENTATION_BASES,
-            implementationBaseLabels(t),
-          )}
-          onValueChange={(value) =>
-            applySelectValue(DELIVERY_IMPLEMENTATION_BASES, value, (implementationBase) =>
-              onChange({ ...draft, implementationBase }),
-            )
-          }
-        />
-      </FormFieldRow>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          type="select"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('fields.designMode')}
-          value={draft.designMode}
-          disabled={disabled}
-          options={selectOptionsFromRecord(DELIVERY_DESIGN_MODES, designModeLabels(t))}
-          onValueChange={(value) =>
-            applySelectValue(DELIVERY_DESIGN_MODES, value, (designMode) =>
-              onChange({ ...draft, designMode }),
-            )
-          }
-        />
-        <InlineField
-          variant="controlled"
-          type="date"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('fields.effectiveFrom')}
-          value={draft.effectiveFrom}
-          disabled={disabled}
-          onValueChange={(effectiveFrom) => onChange({ ...draft, effectiveFrom })}
-        />
-      </FormFieldRow>
+    <div className={SHEET_STACK_CLASS}>
+      <InlineField
+        variant="controlled"
+        type="select"
+        className={FORM_FIELD_CELL_CLASS}
+        label={t('fields.configSize')}
+        value={draft.configSize}
+        disabled={disabled}
+        options={selectOptionsFromRecord(DELIVERY_CONFIG_SIZES, configSizeLabels(t))}
+        onValueChange={(value) =>
+          applySelectValue(DELIVERY_CONFIG_SIZES, value, (configSize) =>
+            onChange({ ...draft, configSize }),
+          )
+        }
+      />
+      <InlineField
+        variant="controlled"
+        type="select"
+        className={FORM_FIELD_CELL_CLASS}
+        label={t('fields.implementationBase')}
+        value={draft.implementationBase}
+        disabled={disabled}
+        options={selectOptionsFromRecord(
+          DELIVERY_IMPLEMENTATION_BASES,
+          implementationBaseLabels(t),
+        )}
+        onValueChange={(value) =>
+          applySelectValue(DELIVERY_IMPLEMENTATION_BASES, value, (implementationBase) =>
+            onChange({ ...draft, implementationBase }),
+          )
+        }
+      />
+      <InlineField
+        variant="controlled"
+        type="select"
+        className={FORM_FIELD_CELL_CLASS}
+        label={t('fields.designMode')}
+        value={draft.designMode}
+        disabled={disabled}
+        options={selectOptionsFromRecord(DELIVERY_DESIGN_MODES, designModeLabels(t))}
+        onValueChange={(value) =>
+          applySelectValue(DELIVERY_DESIGN_MODES, value, (designMode) =>
+            onChange({ ...draft, designMode }),
+          )
+        }
+      />
+      <InlineField
+        variant="controlled"
+        type="date"
+        className={FORM_FIELD_CELL_CLASS}
+        label={t('fields.effectiveFrom')}
+        value={draft.effectiveFrom}
+        disabled={disabled}
+        onValueChange={(effectiveFrom) => onChange({ ...draft, effectiveFrom })}
+      />
       <CreateFormSwitchField
         label={t('fields.aiDesignerReview')}
         checked={draft.aiDesignerReview}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { DELIVERY_COMPENSATION_RULES_MODULE } from '@nbos/shared';
 import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
@@ -26,12 +26,9 @@ export function DeliveryNormsPage() {
   const { data, loading, error, setError, load } = useDeliveryNormsPageData();
   const [tab, setTab] = useState<DeliveryNormsTab>('overview');
   const [profileTab, setProfileTab] = useState<DeliveryNormsProfileTab>('versions');
-  const onRefresh = useCallback(() => void load(), [load]);
   useDeliveryNormsHeroSlots({
     tab,
-    loading,
     onTabChange: setTab,
-    onRefresh,
   });
   const panel = (
     <DeliveryNormsTabPanel

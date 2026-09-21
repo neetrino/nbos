@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   DELIVERY_COMPENSATION_CURRENCY,
@@ -8,12 +8,12 @@ import {
   parseRoleRateWriteBody,
   type DeliveryCompensationRoleKey,
 } from '@nbos/shared';
-import { AmdCurrencyIcon, FormFieldRow, InlineField } from '@/components/shared';
+import { AmdCurrencyIcon, InlineField } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { FORM_FIELD_CELL_CLASS, FORM_FIELD_ROW_3_CLASS } from '@/components/shared/create-form';
+import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
-import { ROLE_MESSAGE_KEYS } from './delivery-norms.constants';
-import { DeliveryNormsFormBlock } from './delivery-norms-form-block';
+import { ROLE_MESSAGE_KEYS, SHEET_STACK_CLASS } from './delivery-norms.constants';
+import { DeliveryNormsCreateSheet } from './delivery-norms-create-sheet';
 import { dateInputToIso, isValidDateInput, todayDateInputValue } from './effective-from';
 import { messageFromCaught } from './message-from-caught';
 import {
@@ -22,12 +22,14 @@ import {
   type RoleRateDraftMap,
 } from './role-units-draft';
 
-export function RoleRateCreateForm({
-  disabled,
+export function RoleRateCreateSheet({
+  open,
+  onOpenChange,
   onCreated,
   onError,
 }: {
-  disabled?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onCreated: () => void;
   onError: (message: string) => void;
 }) {
@@ -35,76 +37,50 @@ export function RoleRateCreateForm({
   const [rates, setRates] = useState<RoleRateDraftMap>(createEmptyRoleRateDrafts);
   const [effectiveFrom, setEffectiveFrom] = useState(todayDateInputValue);
   const [saving, setSaving] = useState(false);
-  const filledRoles = useMemo(() => filledRoleKeys(rates), [rates]);
-  const locked = Boolean(disabled || saving);
 
   return (
-    <DeliveryNormsFormBlock title={t('rates.createTitle')}>
-      <form
-        className="space-y-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void submitRoleRates({
-            rates,
-            effectiveFrom,
-            fallback: t('errors.create'),
-            invalidDate: t('errors.effectiveFrom'),
-            emptyRates: t('errors.rateRequired'),
-            onError,
-            onCreated: () => {
-              setRates(createEmptyRoleRateDrafts());
-              onCreated();
-            },
-            setSaving,
-          });
-        }}
-      >
-        <RoleRateDraftFields
-          rates={rates}
-          effectiveFrom={effectiveFrom}
-          locked={locked}
-          canSubmit={filledRoles.length > 0}
-          saving={saving}
-          onRatesChange={setRates}
-          onEffectiveFromChange={setEffectiveFrom}
-        />
-      </form>
-    </DeliveryNormsFormBlock>
-  );
-}
-
-function RoleRateDraftFields({
-  rates,
-  effectiveFrom,
-  locked,
-  canSubmit,
-  saving,
-  onRatesChange,
-  onEffectiveFromChange,
-}: {
-  rates: RoleRateDraftMap;
-  effectiveFrom: string;
-  locked: boolean;
-  canSubmit: boolean;
-  saving: boolean;
-  onRatesChange: (next: RoleRateDraftMap) => void;
-  onEffectiveFromChange: (next: string) => void;
-}) {
-  const t = useTranslations('hr.deliveryNorms');
-  return (
-    <>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={locked}
-          onClick={() => onRatesChange(fillRoleRatesAtSeed(rates))}
-        >
-          {t('rates.fillSeed')}
-        </Button>
-      </div>
-      <div className={FORM_FIELD_ROW_3_CLASS}>
+    <DeliveryNormsCreateSheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          setRates(createEmptyRoleRateDrafts());
+          setEffectiveFrom(todayDateInputValue());
+        }
+        onOpenChange(next);
+      }}
+      title={t('rates.createTitle')}
+      description={t('rates.createHint')}
+      dirty
+      saving={saving}
+      saveLabel={saving ? t('create.creating') : t('create.rate')}
+      onSave={() => {
+        void submitRoleRates({
+          rates,
+          effectiveFrom,
+          fallback: t('errors.create'),
+          invalidDate: t('errors.effectiveFrom'),
+          emptyRates: t('errors.rateRequired'),
+          onError,
+          onCreated: () => {
+            onCreated();
+            onOpenChange(false);
+          },
+          setSaving,
+        });
+      }}
+    >
+      <div className={SHEET_STACK_CLASS}>
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={saving}
+            onClick={() => setRates(fillRoleRatesAtSeed(rates))}
+          >
+            {t('rates.fillSeed')}
+          </Button>
+        </div>
         {DELIVERY_COMPENSATION_ROLE_KEYS.map((roleKey) => (
           <InlineField
             key={roleKey}
@@ -112,29 +88,22 @@ function RoleRateDraftFields({
             className={FORM_FIELD_CELL_CLASS}
             label={`${t(ROLE_MESSAGE_KEYS[roleKey])} · ${DELIVERY_COMPENSATION_CURRENCY}`}
             value={rates[roleKey]}
-            disabled={locked}
+            disabled={saving}
             icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
-            onValueChange={(value) => onRatesChange({ ...rates, [roleKey]: value })}
+            onValueChange={(value) => setRates({ ...rates, [roleKey]: value })}
           />
         ))}
-      </div>
-      <FormFieldRow>
         <InlineField
           variant="controlled"
           type="date"
           className={FORM_FIELD_CELL_CLASS}
           label={t('fields.effectiveFrom')}
           value={effectiveFrom}
-          disabled={locked}
-          onValueChange={onEffectiveFromChange}
+          disabled={saving}
+          onValueChange={setEffectiveFrom}
         />
-      </FormFieldRow>
-      <div className="flex justify-end">
-        <Button type="submit" size="sm" disabled={locked || !canSubmit}>
-          {saving ? t('create.creating') : t('create.rate')}
-        </Button>
       </div>
-    </>
+    </DeliveryNormsCreateSheet>
   );
 }
 

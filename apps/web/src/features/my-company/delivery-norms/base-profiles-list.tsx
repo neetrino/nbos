@@ -5,6 +5,7 @@ import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
 import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
+import { NORMS_LIST_GRID_CLASS } from './delivery-norms.constants';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
 import { summarizeRoleUnits } from './summarize-role-units';
@@ -26,7 +27,7 @@ export function BaseProfilesList({
     return <p className="text-muted-foreground text-sm">{t('profiles.empty')}</p>;
   }
   return (
-    <ul className="space-y-3">
+    <ul className={NORMS_LIST_GRID_CLASS}>
       {rows.map((row) => (
         <DeliveryNormsRecordRow key={row.id}>
           <div className="flex flex-wrap items-center justify-between gap-2">

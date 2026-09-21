@@ -86,6 +86,6 @@ function parseProfileDraft(draft: ProfileDraft, roleUnits: DeliveryRoleUnitInput
     description: draft.description,
     effectiveFrom: dateInputToIso(draft.effectiveFrom),
     roleUnits,
-    includedFunctionIds: draft.includedFunctionIds,
+    includedFunctionIds: draft.entityKind === 'PRODUCT' ? draft.includedFunctionIds : [],
   });
 }

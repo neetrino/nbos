@@ -9,6 +9,7 @@ import {
   targetKeyForKind,
   gradationsFromCatalog,
   tierIdsFromSalePrices,
+  groupSalePricesByKind,
 } from './sale-price-draft';
 
 describe('parsePositiveDecimal', () => {
@@ -147,5 +148,18 @@ describe('gradationsFromCatalog', () => {
 
   it('finds none when no card is sold at several volumes', () => {
     expect(gradationsFromCatalog([{ title: 'Оплата Idram', tiers: [] }])).toEqual([]);
+  });
+});
+
+describe('groupSalePricesByKind', () => {
+  it('keeps function, gradation and core groups in that order', () => {
+    const grouped = groupSalePricesByKind([
+      saleRow('CORE:c1', 1),
+      saleRow('FUNCTION:f1', 2),
+      saleRow('FUNCTION:f1', 1),
+      saleRow('TIER:t1', 1),
+    ]);
+    expect(grouped.map((group) => group.kind)).toEqual(['FUNCTION', 'TIER', 'CORE']);
+    expect(grouped[0]?.groups[0]?.rows.map((row) => row.version)).toEqual([2, 1]);
   });
 });

@@ -403,6 +403,20 @@
     "subtitle": "Owner and CEO publish same-role AMD rates, base-profile units, and function units. Empty means not configured; 0 is an explicit decision.",
     "refresh": "Refresh",
     "none": "Not set",
+    "search": {
+      "label": "Search",
+      "placeholder": "Find…",
+      "empty": "Nothing matches this search."
+    },
+    "add": "Add",
+    "sheet": {
+      "tabs": {
+        "general": "General",
+        "units": "Role units",
+        "included": "Included in base"
+      },
+      "includedProductOnly": "Included-in-base is a product-core list: those catalog cards are already paid by the core units. An extension uses its own norms, not the parent product package, so this tab is hidden."
+    },
     "workspace": {
       "tabs": {
         "aria": "Delivery norms sections",
@@ -491,6 +505,7 @@
       "title": "Role rates",
       "subtitle": "Same-role AMD tariffs. Employee salary is never used.",
       "createTitle": "New rate draft",
+      "createHint": "One AMD rate per role. Empty roles are not created.",
       "fillSeed": "Fill all six at 1000 AMD",
       "empty": "No role rates yet."
     },
@@ -498,6 +513,7 @@
       "title": "Base profiles",
       "subtitle": "Per-role unit vectors for a product or extension size.",
       "createTitle": "New profile draft",
+      "createHint": "General is identity. Role units are the core volume. Included-in-base are catalog cards already paid by the core. Products only: an extension has its own norms.",
       "empty": "No base profiles yet.",
       "includedCount": "{count, plural, one {# included function} other {# included functions}}"
     },
@@ -505,6 +521,7 @@
       "title": "Function prices",
       "subtitle": "Per-role unit vectors for catalog functions.",
       "createTitle": "New function price draft",
+      "createHint": "Pick a catalog card and set role units. Leave a field empty when the role is not configured.",
       "empty": "No function prices yet.",
       "pickFunction": "Select a function",
       "unknownFunction": "Unknown function"
@@ -523,15 +540,24 @@
     },
     "includedFunctions": {
       "title": "Included in base",
-      "hint": "Catalog functions already covered by this base profile.",
-      "empty": "No catalog functions to include yet."
+      "hint": "The list shows cards already covered by this profile. Search above to pick and add more.",
+      "empty": "No catalog functions to include yet.",
+      "add": "Add to base",
+      "addPlaceholder": "Find and add…",
+      "noneSelected": "Nothing is included in the base yet.",
+      "remove": "Remove"
     },
     "coreItems": {
       "title": "Core composition",
       "subtitle": "What the product core contains. Items have no units; the profile's role units price the core.",
+      "hint": "Composition is per size: Small and Classic can list different items.",
       "pickVersion": "Select a base profile version",
+      "pickKind": "Product type",
+      "versionMeta": "{size} · {version}",
+      "versionStatus": "{version} · {status}",
       "empty": "This core has no items yet.",
       "emptyVersions": "Create a base profile version first.",
+      "emptySearch": "No cores match this search.",
       "readOnly": "Only a draft version can be edited.",
       "addTitle": "Add a core item",
       "save": "Save composition",
@@ -550,7 +576,13 @@
       "subtitle": "Modules pre-checked for a product size. They are still charged as extras, unlike functions included in the base.",
       "hint": "A preset only pre-selects modules. It does not make them free. The “included in base” list is the one that covers work at no extra charge.",
       "pickProfile": "Select a profile key",
+      "pickKind": "Product type",
+      "pickSize": "Size",
+      "sizeCount": "{count, plural, one {# size} other {# sizes}}",
+      "noProfileForSize": "No profile exists for this size yet. Create it in Versions and units.",
+      "missingProfile": "No profile",
       "emptyProfiles": "Create a base profile first.",
+      "emptySearch": "No product types match this search.",
       "emptyFunctions": "No catalog functions to pre-select yet.",
       "pickerTitle": "Pre-selected modules (charged as extras)",
       "pickerHint": "Ticked modules are pre-checked for this size and billed as normal extras. They are not included in the base.",
@@ -563,7 +595,10 @@
       "title": "Sale prices",
       "subtitle": "What the client pays for a function, a gradation, or a product core. A fixed AMD amount wins over a multiplier.",
       "createTitle": "New sale price draft",
+      "createHint": "Price a function, a gradation, or a core. A fixed AMD amount wins over a multiplier.",
+      "targetHint": "Function is a catalog card price. Gradation is a volume price for one function. Core is the selected profile composition price.",
       "empty": "No sale prices for this target yet.",
+      "allEmpty": "No sale prices yet.",
       "pickTarget": "Select what to price",
       "targetKind": "Priced as",
       "targetKinds": {
