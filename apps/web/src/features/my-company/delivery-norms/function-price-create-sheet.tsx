@@ -5,14 +5,14 @@ import { useTranslations } from 'next-intl';
 import { parseFunctionPriceWriteBody, type DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
-import { DETAIL_SHEET_SUBSECTION_LABEL_CLASS } from '@/components/shared/detail-sheet-classes';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
-import { OPTIONAL_SELECT_NONE, SHEET_STACK_CLASS } from './delivery-norms.constants';
+import { OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import { DeliveryNormsCreateSheet } from './delivery-norms-create-sheet';
 import { DeliveryNormsSearchSelect } from './delivery-norms-search-select';
 import { catalogFunctionOption } from './included-function-selection';
 import { dateInputToIso, isValidDateInput, todayDateInputValue } from './effective-from';
 import { messageFromCaught } from './message-from-caught';
+import { NormsSheetSection } from './norms-sheet-section';
 import { RoleUnitsEditor } from './role-units-editor';
 import {
   buildCompleteRoleUnitVector,
@@ -74,31 +74,28 @@ export function FunctionPriceCreateSheet({
         });
       }}
     >
-      <div className={SHEET_STACK_CLASS}>
-        <section className={SHEET_STACK_CLASS}>
-          <p className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{t('sheet.tabs.general')}</p>
-          <div className={SHEET_STACK_CLASS}>
-            <DeliveryNormsSearchSelect
-              label={t('fields.function')}
-              value={functionId === OPTIONAL_SELECT_NONE ? null : functionId}
-              placeholder={t('prices.pickFunction')}
-              disabled={saving}
-              options={options}
-              onChange={(value) => setFunctionId(value ?? OPTIONAL_SELECT_NONE)}
-            />
-            <InlineField
-              variant="controlled"
-              type="date"
-              className={FORM_FIELD_CELL_CLASS}
-              label={t('fields.effectiveFrom')}
-              value={effectiveFrom}
-              disabled={saving}
-              onValueChange={setEffectiveFrom}
-            />
-          </div>
-        </section>
+      <>
+        <NormsSheetSection title={t('sheet.tabs.general')}>
+          <DeliveryNormsSearchSelect
+            label={t('fields.function')}
+            value={functionId === OPTIONAL_SELECT_NONE ? null : functionId}
+            placeholder={t('prices.pickFunction')}
+            disabled={saving}
+            options={options}
+            onChange={(value) => setFunctionId(value ?? OPTIONAL_SELECT_NONE)}
+          />
+          <InlineField
+            variant="controlled"
+            type="date"
+            className={FORM_FIELD_CELL_CLASS}
+            label={t('fields.effectiveFrom')}
+            value={effectiveFrom}
+            disabled={saving}
+            onValueChange={setEffectiveFrom}
+          />
+        </NormsSheetSection>
         <RoleUnitsEditor rows={roleUnits} disabled={saving} onChange={setRoleUnits} />
-      </div>
+      </>
     </DeliveryNormsCreateSheet>
   );
 }

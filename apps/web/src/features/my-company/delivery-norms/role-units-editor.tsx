@@ -4,8 +4,12 @@ import { useTranslations } from 'next-intl';
 import { isExplicitZeroUnits } from '@nbos/shared';
 import { InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
-import { DETAIL_SHEET_SUBSECTION_LABEL_CLASS } from '@/components/shared/detail-sheet-classes';
-import { RECORD_ROW_CLASS, ROLE_MESSAGE_KEYS, SHEET_STACK_CLASS } from './delivery-norms.constants';
+import {
+  NORMS_SHEET_ROLE_BLOCK_CLASS,
+  ROLE_MESSAGE_KEYS,
+  ROLE_UNITS_BREAKDOWN_CLASS,
+} from './delivery-norms.constants';
+import { NormsSheetSection } from './norms-sheet-section';
 import {
   emptyUnitsInputToNull,
   replaceRoleUnitDraft,
@@ -26,20 +30,21 @@ export function RoleUnitsEditor({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <fieldset className={SHEET_STACK_CLASS} disabled={disabled}>
-      <legend className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>{t('roleUnits.title')}</legend>
-      <p className="text-muted-foreground text-xs">{t('roleUnits.hint')}</p>
-      <div className={SHEET_STACK_CLASS}>
-        {rows.map((row) => (
-          <RoleUnitRow
-            key={row.roleKey}
-            row={row}
-            disabled={disabled}
-            onChange={(patch) => onChange(replaceRoleUnitDraft(rows, row.roleKey, patch))}
-          />
-        ))}
-      </div>
-    </fieldset>
+    <NormsSheetSection title={t('roleUnits.title')}>
+      <fieldset className="contents" disabled={disabled}>
+        <p className="text-muted-foreground text-xs">{t('roleUnits.hint')}</p>
+        <div className={ROLE_UNITS_BREAKDOWN_CLASS}>
+          {rows.map((row) => (
+            <RoleUnitRow
+              key={row.roleKey}
+              row={row}
+              disabled={disabled}
+              onChange={(patch) => onChange(replaceRoleUnitDraft(rows, row.roleKey, patch))}
+            />
+          ))}
+        </div>
+      </fieldset>
+    </NormsSheetSection>
   );
 }
 
@@ -55,7 +60,7 @@ function RoleUnitRow({
   const t = useTranslations('hr.deliveryNorms');
   const notRequired = row.unitKind === 'NOT_REQUIRED';
   return (
-    <div className={`${RECORD_ROW_CLASS} flex flex-col`}>
+    <div className={NORMS_SHEET_ROLE_BLOCK_CLASS}>
       <p className="text-foreground text-sm font-medium">{t(ROLE_MESSAGE_KEYS[row.roleKey])}</p>
       <InlineField
         variant="controlled"

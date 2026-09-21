@@ -505,8 +505,10 @@
       "title": "Role rates",
       "subtitle": "Same-role AMD tariffs. Employee salary is never used.",
       "createTitle": "New rate draft",
-      "createHint": "One AMD rate per role. Empty roles are not created.",
+      "createHint": "Current published rate on the left, new amount on the right. Empty roles are not created.",
       "fillSeed": "Fill all six at 1000 AMD",
+      "current": "Current",
+      "next": "New",
       "empty": "No role rates yet."
     },
     "profiles": {

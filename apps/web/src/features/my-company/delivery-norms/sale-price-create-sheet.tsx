@@ -13,13 +13,13 @@ import {
 import {
   OPTIONAL_SELECT_NONE,
   SALE_PRICE_TARGET_KINDS,
-  SHEET_STACK_CLASS,
   type SalePriceTargetKind,
 } from './delivery-norms.constants';
 import { DeliveryNormsCreateSheet } from './delivery-norms-create-sheet';
 import { DeliveryNormsSearchSelect } from './delivery-norms-search-select';
 import { todayDateInputValue } from './effective-from';
 import { messageFromCaught } from './message-from-caught';
+import { NormsSheetSection } from './norms-sheet-section';
 import { buildSalePriceFormInput } from './sale-price-draft';
 import { selectOptionsFromRecord } from './select-options-from-record';
 
@@ -89,7 +89,7 @@ export function SalePriceCreateSheet({
         });
       }}
     >
-      <div className={SHEET_STACK_CLASS}>
+      <NormsSheetSection title={t('salePrices.title')}>
         <DetailSheetFieldSegmented
           className={FORM_FIELD_CELL_CLASS}
           label={t('salePrices.targetKind')}
@@ -133,7 +133,7 @@ export function SalePriceCreateSheet({
         />
         <p className="text-muted-foreground text-xs">{t('salePrices.fixedWins')}</p>
         <p className="text-muted-foreground text-xs">{t('salePrices.targetHint')}</p>
-      </div>
+      </NormsSheetSection>
     </DeliveryNormsCreateSheet>
   );
 }

@@ -96,6 +96,11 @@ export const ROLE_UNITS_BREAKDOWN_ROW_CLASS =
 
 export const SHEET_STACK_CLASS = 'flex flex-col gap-3';
 
+/** Current published rate + new draft amount, side by side in the rates sheet. */
+export const NORMS_SHEET_FIELD_PAIR_CLASS = 'grid grid-cols-2 gap-4';
+
+export const NORMS_SHEET_ROLE_BLOCK_CLASS = 'flex flex-col gap-3 py-4 first:pt-0 last:pb-0';
+
 export const LIST_SEARCH_MAX_CLASS = 'min-w-[12rem] max-w-sm flex-1';
 
 export const COMPACT_PANEL_CLASS = 'max-w-xl';

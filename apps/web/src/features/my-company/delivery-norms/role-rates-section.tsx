@@ -55,6 +55,7 @@ export function RoleRatesSection({
       {canAdd ? (
         <RoleRateCreateSheet
           open={open}
+          rows={rows}
           onOpenChange={setOpen}
           onCreated={onChanged}
           onError={onError}

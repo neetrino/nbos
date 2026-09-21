@@ -1,110 +1,103 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   DELIVERY_COMPENSATION_CURRENCY,
   DELIVERY_COMPENSATION_ROLE_KEYS,
   parseRoleRateWriteBody,
   type DeliveryCompensationRoleKey,
+  type DeliveryRoleRateFinancialDto,
 } from '@nbos/shared';
-import { AmdCurrencyIcon, InlineField } from '@/components/shared';
-import { Button } from '@/components/ui/button';
-import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
-import { ROLE_MESSAGE_KEYS, SHEET_STACK_CLASS } from './delivery-norms.constants';
+import { currentRatesByRole } from './current-published-role-rate';
 import { DeliveryNormsCreateSheet } from './delivery-norms-create-sheet';
 import { dateInputToIso, isValidDateInput, todayDateInputValue } from './effective-from';
 import { messageFromCaught } from './message-from-caught';
-import {
-  createEmptyRoleRateDrafts,
-  fillRoleRatesAtSeed,
-  type RoleRateDraftMap,
-} from './role-units-draft';
+import { RoleRateDraftForm } from './role-rate-draft-form';
+import { createEmptyRoleRateDrafts, type RoleRateDraftMap } from './role-units-draft';
 
 export function RoleRateCreateSheet({
   open,
+  rows,
   onOpenChange,
   onCreated,
   onError,
 }: {
   open: boolean;
+  rows: readonly DeliveryRoleRateFinancialDto[];
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
   onError: (message: string) => void;
 }) {
+  const draft = useRoleRateDraft(rows, onOpenChange, onCreated, onError);
+  return (
+    <DeliveryNormsCreateSheet
+      open={open}
+      onOpenChange={draft.onSheetOpenChange}
+      title={draft.title}
+      description={draft.description}
+      dirty
+      saving={draft.saving}
+      saveLabel={draft.saveLabel}
+      onSave={draft.onSave}
+    >
+      <RoleRateDraftForm
+        rates={draft.rates}
+        currentByRole={draft.currentByRole}
+        effectiveFrom={draft.effectiveFrom}
+        saving={draft.saving}
+        onRatesChange={draft.setRates}
+        onEffectiveFromChange={draft.setEffectiveFrom}
+      />
+    </DeliveryNormsCreateSheet>
+  );
+}
+
+function useRoleRateDraft(
+  rows: readonly DeliveryRoleRateFinancialDto[],
+  onOpenChange: (open: boolean) => void,
+  onCreated: () => void,
+  onError: (message: string) => void,
+) {
   const t = useTranslations('hr.deliveryNorms');
   const [rates, setRates] = useState<RoleRateDraftMap>(createEmptyRoleRateDrafts);
   const [effectiveFrom, setEffectiveFrom] = useState(todayDateInputValue);
   const [saving, setSaving] = useState(false);
-
-  return (
-    <DeliveryNormsCreateSheet
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) {
-          setRates(createEmptyRoleRateDrafts());
-          setEffectiveFrom(todayDateInputValue());
-        }
-        onOpenChange(next);
-      }}
-      title={t('rates.createTitle')}
-      description={t('rates.createHint')}
-      dirty
-      saving={saving}
-      saveLabel={saving ? t('create.creating') : t('create.rate')}
-      onSave={() => {
-        void submitRoleRates({
-          rates,
-          effectiveFrom,
-          fallback: t('errors.create'),
-          invalidDate: t('errors.effectiveFrom'),
-          emptyRates: t('errors.rateRequired'),
-          onError,
-          onCreated: () => {
-            onCreated();
-            onOpenChange(false);
-          },
-          setSaving,
-        });
-      }}
-    >
-      <div className={SHEET_STACK_CLASS}>
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={saving}
-            onClick={() => setRates(fillRoleRatesAtSeed(rates))}
-          >
-            {t('rates.fillSeed')}
-          </Button>
-        </div>
-        {DELIVERY_COMPENSATION_ROLE_KEYS.map((roleKey) => (
-          <InlineField
-            key={roleKey}
-            variant="controlled"
-            className={FORM_FIELD_CELL_CLASS}
-            label={`${t(ROLE_MESSAGE_KEYS[roleKey])} · ${DELIVERY_COMPENSATION_CURRENCY}`}
-            value={rates[roleKey]}
-            disabled={saving}
-            icon={<AmdCurrencyIcon className="text-muted-foreground/70" />}
-            onValueChange={(value) => setRates({ ...rates, [roleKey]: value })}
-          />
-        ))}
-        <InlineField
-          variant="controlled"
-          type="date"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('fields.effectiveFrom')}
-          value={effectiveFrom}
-          disabled={saving}
-          onValueChange={setEffectiveFrom}
-        />
-      </div>
-    </DeliveryNormsCreateSheet>
-  );
+  const currentByRole = useMemo(() => currentRatesByRole(rows), [rows]);
+  return {
+    rates,
+    setRates,
+    currentByRole,
+    effectiveFrom,
+    setEffectiveFrom,
+    saving,
+    title: t('rates.createTitle'),
+    description: t('rates.createHint'),
+    saveLabel: saving ? t('create.creating') : t('create.rate'),
+    onSheetOpenChange: (next: boolean) => {
+      if (!next) {
+        setRates(createEmptyRoleRateDrafts());
+        setEffectiveFrom(todayDateInputValue());
+      }
+      onOpenChange(next);
+    },
+    onSave: () => {
+      void submitRoleRates({
+        rates,
+        effectiveFrom,
+        fallback: t('errors.create'),
+        invalidDate: t('errors.effectiveFrom'),
+        emptyRates: t('errors.rateRequired'),
+        onError,
+        onCreated: () => {
+          onCreated();
+          onOpenChange(false);
+        },
+        setSaving,
+      });
+    },
+  };
 }
 
 function filledRoleKeys(rates: RoleRateDraftMap): DeliveryCompensationRoleKey[] {

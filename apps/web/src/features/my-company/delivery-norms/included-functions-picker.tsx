@@ -4,13 +4,9 @@ import { useTranslations } from 'next-intl';
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import type { SearchOption } from '@/components/shared';
-import { DETAIL_SHEET_SUBSECTION_LABEL_CLASS } from '@/components/shared/detail-sheet-classes';
-import {
-  INCLUDED_FUNCTIONS_LIST_CLASS,
-  RECORD_ROW_CLASS,
-  SHEET_STACK_CLASS,
-} from './delivery-norms.constants';
+import { INCLUDED_FUNCTIONS_LIST_CLASS, RECORD_ROW_CLASS } from './delivery-norms.constants';
 import { DeliveryNormsSearchSelect } from './delivery-norms-search-select';
+import { NormsSheetSection } from './norms-sheet-section';
 import {
   addableIncludedOptions,
   addIncludedFunctionId,
@@ -44,24 +40,23 @@ export function IncludedFunctionsPicker({
     );
   }
   return (
-    <fieldset className={SHEET_STACK_CLASS} disabled={disabled}>
-      <legend className={DETAIL_SHEET_SUBSECTION_LABEL_CLASS}>
-        {title ?? t('includedFunctions.title')}
-      </legend>
-      <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
-      <IncludedAddSearch
-        options={addOptions}
-        disabled={disabled}
-        selectedIds={selectedIds}
-        onChange={onChange}
-      />
-      <SelectedIncludedList
-        items={selectedItems}
-        disabled={disabled}
-        selectedIds={selectedIds}
-        onChange={onChange}
-      />
-    </fieldset>
+    <NormsSheetSection title={title ?? t('includedFunctions.title')}>
+      <fieldset className="contents" disabled={disabled}>
+        <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
+        <IncludedAddSearch
+          options={addOptions}
+          disabled={disabled}
+          selectedIds={selectedIds}
+          onChange={onChange}
+        />
+        <SelectedIncludedList
+          items={selectedItems}
+          disabled={disabled}
+          selectedIds={selectedIds}
+          onChange={onChange}
+        />
+      </fieldset>
+    </NormsSheetSection>
   );
 }
 

@@ -9,8 +9,8 @@ import { buildBaseProfileWriteBody, emptyProfileDraft } from './base-profile-dra
 import { DeliveryNormsCreateSheet } from './delivery-norms-create-sheet';
 import { IncludedFunctionsPicker } from './included-functions-picker';
 import { messageFromCaught } from './message-from-caught';
+import { NormsSheetSection } from './norms-sheet-section';
 import { RoleUnitsEditor } from './role-units-editor';
-import { SHEET_STACK_CLASS } from './delivery-norms.constants';
 
 type ProfileSheetTab = 'general' | 'units' | 'included';
 
@@ -78,7 +78,7 @@ export function BaseProfileCreateSheet({
       }}
     >
       {activeTab === 'general' ? (
-        <div className={SHEET_STACK_CLASS}>
+        <NormsSheetSection title={t('sheet.tabs.general')}>
           <BaseProfileIdentityFields
             draft={draft}
             disabled={saving}
@@ -90,7 +90,7 @@ export function BaseProfileCreateSheet({
             }}
           />
           <BaseProfileConfigFields draft={draft} disabled={saving} onChange={setDraft} />
-        </div>
+        </NormsSheetSection>
       ) : null}
       {activeTab === 'units' ? (
         <RoleUnitsEditor
