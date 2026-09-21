@@ -16,6 +16,6 @@ describe('CreateProductDialogFields', () => {
     );
     expect(source).toContain('productPlatformPickerApplies');
     expect(source).toContain('productTypeFieldReady');
-    expect(source).toContain('requested: null');
+    expect(source).toContain('keepProductTypeAfterPlatformChange');
   });
 });

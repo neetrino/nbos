@@ -203,6 +203,26 @@ describe('getDealStageGateErrors', () => {
     );
   });
 
+  it('rejects a Code site on APP at SEND_OFFER and keeps a leftover MOBILE_APP', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'LANDING',
+      productPlatform: 'APP',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(getDealStageGateErrors(deal, 'SEND_OFFER').map((error) => error.field)).toContain(
+      'productType',
+    );
+    expect(
+      getDealStageGateErrors({ ...deal, productType: 'MOBILE_APP' }, 'SEND_OFFER').map(
+        (error) => error.field,
+      ),
+    ).not.toContain('productType');
+  });
+
   it('requires existingProductId for EXTENSION and MAINTENANCE at DEPOSIT_AND_CONTRACT', () => {
     const extension = {
       ...baseDeal,

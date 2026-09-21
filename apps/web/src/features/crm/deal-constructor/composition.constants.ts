@@ -1,0 +1,1 @@
+export const COMPOSITION_ADD_ICON_SIZE_PX = 16;

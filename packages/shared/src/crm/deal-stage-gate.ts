@@ -1,6 +1,9 @@
 import { DEAL_STAGE_GATE_ORDER } from '../constants/crm-attribution';
 import { getAttributionValidationErrors, type AttributionForValidation } from './attribution-gate';
-import { productPlatformApplies } from '../constants/product-platform';
+import {
+  productPlatformApplies,
+  productTypePlatformPairError,
+} from '../constants/product-platform';
 
 export type { StageGateError } from './attribution-gate';
 
@@ -120,6 +123,17 @@ export function getDealStageGateErrors(
         field: 'productPlatform',
         message: 'Product platform is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',
       });
+    }
+    const pairError = productTypePlatformPairError(
+      {
+        productCategory: deal.productCategory,
+        productType: deal.productType,
+        productPlatform: deal.productPlatform,
+      },
+      { allowLegacyMobileApp: deal.productType === 'MOBILE_APP' },
+    );
+    if (isProductLike && pairError) {
+      errors.push({ field: 'productType', message: pairError });
     }
     if (!hasOfferProof(deal)) {
       errors.push({

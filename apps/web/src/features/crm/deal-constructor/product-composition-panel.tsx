@@ -2,22 +2,21 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { Plus } from 'lucide-react';
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import { FunctionCatalogCard } from '@/features/function-catalog/function-catalog-card';
 import { formatMoneyDram } from '@/lib/format/money';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
-import { DealConstructorCollections } from './DealConstructorCollections';
 import { DealConstructorTotals } from './DealConstructorTotals';
-import type { FunctionCollectionDto } from '@/lib/api/delivery-catalog-structure';
 import type { VisibleSalePrice } from '@/features/function-catalog/function-catalog-sale-price';
+import { COMPOSITION_ADD_ICON_SIZE_PX } from './composition.constants';
 
 export function ProductCompositionPanel({
+  title,
   coreProfileVersionId,
   coreTitle,
   extras,
-  collections,
-  appliedCollectionId,
   saleTotal,
   unitsTotal,
   canSeeUnits,
@@ -28,14 +27,12 @@ export function ProductCompositionPanel({
   error,
   canAdd,
   onAdd,
-  onApplyCollection,
   onRemoveExtra,
 }: {
+  title?: string;
   coreProfileVersionId: string | null;
   coreTitle: string | null;
   extras: DeliveryFunctionOperationalDto[];
-  collections: FunctionCollectionDto[];
-  appliedCollectionId: string | null;
   saleTotal: string | null;
   unitsTotal: number | undefined;
   canSeeUnits: boolean;
@@ -46,7 +43,6 @@ export function ProductCompositionPanel({
   error?: string | null;
   canAdd: boolean;
   onAdd: () => void;
-  onApplyCollection: (collectionId: string) => void;
   onRemoveExtra: (functionId: string) => void;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
@@ -57,8 +53,28 @@ export function ProductCompositionPanel({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col gap-5">
+      <div className="flex items-center justify-between gap-3">
+        {title ? <h2 className="text-foreground text-lg font-semibold">{title}</h2> : <span />}
+        {canAdd ? (
+          <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onAdd}>
+            <Plus size={COMPOSITION_ADD_ICON_SIZE_PX} />
+            {t('addFunctions')}
+          </Button>
+        ) : null}
+      </div>
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto">
+        <CoreReadout title={coreTitle} items={coreItems.data ?? []} loading={coreItems.isLoading} />
+        <ExtraList
+          extras={extras}
+          showSalePrice={showSalePrice}
+          salePriceByFunctionId={salePriceByFunctionId}
+          unitsByFunctionId={canSeeUnits ? unitsByFunctionId : undefined}
+          disabled={disabled || !canAdd}
+          onRemoveExtra={onRemoveExtra}
+        />
+      </div>
       {showSalePrice ? (
         <DealConstructorTotals
           saleTotal={saleTotal}
@@ -66,27 +82,9 @@ export function ProductCompositionPanel({
           canSeeUnits={canSeeUnits}
         />
       ) : canSeeUnits && unitsTotal !== undefined ? (
-        <p className="text-muted-foreground text-sm">{t('unitsTotal', { count: unitsTotal })}</p>
-      ) : null}
-      <CoreReadout title={coreTitle} items={coreItems.data ?? []} loading={coreItems.isLoading} />
-      <DealConstructorCollections
-        collections={collections}
-        appliedCollectionId={appliedCollectionId}
-        disabled={disabled || !canAdd}
-        onApply={onApplyCollection}
-      />
-      <ExtraList
-        extras={extras}
-        showSalePrice={showSalePrice}
-        salePriceByFunctionId={salePriceByFunctionId}
-        unitsByFunctionId={canSeeUnits ? unitsByFunctionId : undefined}
-        disabled={disabled || !canAdd}
-        onRemoveExtra={onRemoveExtra}
-      />
-      {canAdd ? (
-        <Button type="button" size="lg" className="w-full" disabled={disabled} onClick={onAdd}>
-          {t('addFunctions')}
-        </Button>
+        <div className="flex justify-end">
+          <p className="text-muted-foreground text-sm">{t('unitsTotal', { count: unitsTotal })}</p>
+        </div>
       ) : null}
     </div>
   );

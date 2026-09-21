@@ -31,4 +31,13 @@ describe('groupProfileRows', () => {
     expect(groups[0]?.rows).toHaveLength(1);
     expect(groups[1]?.kindId).toBe('CRM');
   });
+
+  it('does not offer the retired mobile-app core', () => {
+    const groups = groupProfileRows(
+      [row('1', 'company-site-code'), row('2', 'mobile-app-code')],
+      LABELS,
+    );
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.kindId).toBe('COMPANY_WEBSITE');
+  });
 });

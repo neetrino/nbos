@@ -17,10 +17,9 @@ export function ProductCompositionSheet({
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <EntityDetailSheetContent open={open} layout="full" width="wide" forceNestedBackdrop>
-        <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-6">
-          <h2 className="text-foreground text-lg font-semibold">{t('compositionSheet')}</h2>
-          <ProductCompositionPanel {...panel} />
+      <EntityDetailSheetContent open={open} layout="full" width="medium" forceNestedBackdrop>
+        <div className="flex h-full min-h-0 flex-col p-5">
+          <ProductCompositionPanel title={t('compositionSheet')} {...panel} />
         </div>
       </EntityDetailSheetContent>
     </Sheet>

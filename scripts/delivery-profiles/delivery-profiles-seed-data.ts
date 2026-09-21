@@ -22,7 +22,8 @@ export type {
 export { collectionsForKind } from './data/profile-seed-types';
 
 /**
- * Виды с ядром в существующем enum. Один вид — одно ядро. OTHER и маркетинг не сеем.
+ * Виды с ядром в существующем enum. Один вид — одно ядро. OTHER, маркетинг и
+ * MOBILE_APP не сеем: Mobile App больше не предлагается как вид.
  */
 export const PROFILE_SEED_KINDS: readonly ProfileSeedKind[] = [
   SHOP_PROFILE,
@@ -33,7 +34,6 @@ export const PROFILE_SEED_KINDS: readonly ProfileSeedKind[] = [
   WEB_APP_PROFILE,
   ERP_PROFILE,
   SAAS_PROFILE,
-  MOBILE_APP_PROFILE,
 ];
 
 export type ProfileSeedVersion = {
@@ -47,6 +47,7 @@ export const SEED_DESIGN_MODE = 'AI_DESIGN';
 export const SEED_ENTITY_KIND = 'PRODUCT';
 
 const RETIRED_SIZE_SLUGS = ['small', 'classic', 'large', 'very-large', 'enterprise'] as const;
+const RETIRED_UNSIZED_PROFILE_KEYS = [MOBILE_APP_PROFILE.keyStem] as const;
 
 export function buildProfileSeedVersions(
   kinds: readonly ProfileSeedKind[] = PROFILE_SEED_KINDS,
@@ -68,11 +69,14 @@ export function buildSeededProfileKeys(
   return kinds.map((kind) => profileKeyFor(kind));
 }
 
-/** Keys the 2026-09-21 size-axis seed wrote. Drafts with no configuration may be dropped. */
+/** Keys the 2026-09-21 size-axis seed wrote, plus cores no longer offered. */
 export function retiredSizedProfileKeys(
   kinds: readonly ProfileSeedKind[] = PROFILE_SEED_KINDS,
 ): string[] {
-  return kinds.flatMap((kind) => RETIRED_SIZE_SLUGS.map((slug) => `${kind.keyStem}-${slug}`));
+  return [
+    ...kinds.flatMap((kind) => RETIRED_SIZE_SLUGS.map((slug) => `${kind.keyStem}-${slug}`)),
+    ...RETIRED_UNSIZED_PROFILE_KEYS,
+  ];
 }
 
 export function referencedFunctionCodes(

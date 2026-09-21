@@ -7,6 +7,9 @@ export const FUNCTION_CATALOG_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_
 export const FUNCTION_CATALOG_CARD_GRID_CLASS =
   'grid w-full content-start grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
+export const FUNCTION_CATALOG_COLLECTION_GRID_CLASS =
+  'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
+
 export const CATALOG_ICON_SIZE_PX = 16;
 
 export const CATALOG_ICON_COMPACT_SIZE_PX = 14;

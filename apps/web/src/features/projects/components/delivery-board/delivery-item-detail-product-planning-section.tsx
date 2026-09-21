@@ -14,6 +14,7 @@ import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants
 import {
   allowedProductPlatforms,
   coerceOptionalProductPlatform,
+  keepProductTypeAfterPlatformChange,
   listedProductTypesForPicker,
   productPlatformPickerApplies,
   productTypeFieldReady,
@@ -47,13 +48,17 @@ export function ProductPlanningSection({
   const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const typeOptions = useMemo(() => {
-    const listed = listedProductTypesForPicker(draft.productCategory, draft.productType);
+    const listed = listedProductTypesForPicker(
+      draft.productCategory,
+      draft.productType,
+      draft.productPlatform,
+    );
     const set = new Set(listed);
-    return PRODUCT_TYPES.filter((item) => set.size === 0 || set.has(item.value)).map((item) => ({
+    return PRODUCT_TYPES.filter((item) => set.has(item.value)).map((item) => ({
       value: item.value,
       label: item.label,
     }));
-  }, [draft.productCategory, draft.productType]);
+  }, [draft.productCategory, draft.productPlatform, draft.productType]);
 
   const patchDraft = (partial: Partial<ProductPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
@@ -104,20 +109,24 @@ export function ProductPlanningSection({
             disabled={disabled}
             onValueChange={(v) => {
               if (!v) return;
-              const allowed = listedProductTypesForPicker(v);
-              const keepType = allowed.includes(draft.productType) ? draft.productType : '';
               const keepPlatform =
                 v === 'CODE' && draft.productCategory === 'CODE' ? draft.productPlatform : null;
+              const nextPlatform =
+                coerceOptionalProductPlatform({
+                  productCategory: v,
+                  productType: draft.productType || null,
+                  requested: keepPlatform,
+                }) ?? '';
+              const keepType = keepProductTypeAfterPlatformChange(
+                v,
+                draft.productType,
+                nextPlatform || null,
+              );
               onDraftChange({
                 ...draft,
                 productCategory: v,
-                productType: keepType,
-                productPlatform:
-                  coerceOptionalProductPlatform({
-                    productCategory: v,
-                    productType: keepType || null,
-                    requested: keepPlatform,
-                  }) ?? '',
+                productType: keepType ?? '',
+                productPlatform: nextPlatform,
               });
             }}
           />
@@ -135,18 +144,20 @@ export function ProductPlanningSection({
               disabled={disabled}
               onValueChange={(v) => {
                 if (!v) return;
-                const allowed = listedProductTypesForPicker(
-                  draft.productCategory,
-                  draft.productType,
-                );
+                const nextPlatform =
+                  coerceOptionalProductPlatform({
+                    productCategory: draft.productCategory,
+                    productType: draft.productType,
+                    requested: v,
+                  }) ?? '';
                 patchDraft({
-                  productPlatform:
-                    coerceOptionalProductPlatform({
-                      productCategory: draft.productCategory,
-                      productType: draft.productType,
-                      requested: v,
-                    }) ?? '',
-                  productType: allowed.includes(draft.productType) ? draft.productType : '',
+                  productPlatform: nextPlatform,
+                  productType:
+                    keepProductTypeAfterPlatformChange(
+                      draft.productCategory,
+                      draft.productType,
+                      nextPlatform,
+                    ) ?? '',
                 });
               }}
             />

@@ -72,6 +72,7 @@ describe('ProductsService', () => {
         name: 'Website',
         productCategory: 'CODE',
         productType: 'COMPANY_WEBSITE',
+        productPlatform: 'WEB',
       });
       expect(result.productType).toBe('COMPANY_WEBSITE');
       expect(prisma.product.create).toHaveBeenCalledWith(
@@ -105,7 +106,7 @@ describe('ProductsService', () => {
         contactId: 'contact-1',
         name: 'App',
         productCategory: 'CODE',
-        productType: 'MOBILE_APP',
+        productType: 'ECOMMERCE',
         status: 'NEW',
         deliveryStage: 'STARTING',
         deliveryWorkStatus: 'ACTIVE',
@@ -132,7 +133,8 @@ describe('ProductsService', () => {
         projectId: 'proj-1',
         name: 'App',
         productCategory: 'CODE',
-        productType: 'MOBILE_APP',
+        productType: 'ECOMMERCE',
+        productPlatform: 'APP',
         pmId: 'pm-1',
         deadline: '2026-12-31',
         description: 'Mobile app',

@@ -8,7 +8,7 @@ import {
 import { assertTeamPatchAllowedAfterPlan } from '../../delivery-compensation/assert-team-patch-after-plan';
 import { lockProductDeveloperSlots } from './product-developer-slot-lock';
 import { assertProductDeveloperSlotsForUpdate } from './product-developer-slots';
-import { resolveProductPlatform } from './resolve-product-platform';
+import { resolveProductPlatform, assertProductTypePlatformPair } from './resolve-product-platform';
 
 export interface CreateProductDto {
   projectId: string;
@@ -91,6 +91,31 @@ export function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUp
   };
 }
 
+export function buildProductCreateTaxonomy(data: CreateProductDto): {
+  productCategory: ProductCategoryEnum;
+  productType: ProductTypeEnum;
+  productPlatform: ReturnType<typeof resolveProductPlatform>;
+} {
+  const productPlatform = resolveProductPlatform({
+    productCategory: data.productCategory,
+    productType: data.productType,
+    requested: data.productPlatform,
+  });
+  assertProductTypePlatformPair(
+    {
+      productCategory: data.productCategory,
+      productType: data.productType,
+      productPlatform,
+    },
+    { requirePlatform: true },
+  );
+  return {
+    productCategory: data.productCategory as ProductCategoryEnum,
+    productType: data.productType as ProductTypeEnum,
+    productPlatform,
+  };
+}
+
 export function buildProductTaxonomyPatch(
   data: UpdateProductDto,
   current: { productCategory: string; productType: string; productPlatform: string | null },
@@ -104,15 +129,22 @@ export function buildProductTaxonomyPatch(
   }
   const productCategory = data.productCategory ?? current.productCategory;
   const productType = data.productType ?? current.productType;
+  const productPlatform = resolveProductPlatform({
+    productCategory,
+    productType,
+    requested: data.productPlatform !== undefined ? data.productPlatform : current.productPlatform,
+  });
+  assertProductTypePlatformPair(
+    { productCategory, productType, productPlatform },
+    {
+      requirePlatform: true,
+      allowLegacyMobileApp: current.productType === 'MOBILE_APP',
+    },
+  );
   return {
     productCategory: productCategory as ProductCategoryEnum,
     productType: productType as ProductTypeEnum,
-    productPlatform: resolveProductPlatform({
-      productCategory,
-      productType,
-      requested:
-        data.productPlatform !== undefined ? data.productPlatform : current.productPlatform,
-    }),
+    productPlatform,
   };
 }
 

@@ -148,8 +148,14 @@ describe('buildDealTaxonomyPatch', () => {
 
 describe('buildDealPlatformPatch', () => {
   it('keeps APP on a code deal and never writes MOBILE_APP or invents WEB', () => {
-    expect(buildDealPlatformPatch(baseDraft, 'APP')).toEqual({ productPlatform: 'APP' });
+    expect(buildDealPlatformPatch(baseDraft, 'APP')).toEqual({
+      productPlatform: 'APP',
+      productType: null,
+    });
     expect(buildDealPlatformPatch(baseDraft, 'MOBILE_APP')).toEqual({ productPlatform: null });
+    expect(buildDealPlatformPatch({ ...baseDraft, productType: 'ECOMMERCE' }, 'APP')).toEqual({
+      productPlatform: 'APP',
+    });
   });
 
   it('writes WEB for WordPress without a picker value', () => {

@@ -49,8 +49,12 @@ describe('delivery profile seed data', () => {
       expect.arrayContaining(['BUSINESS_CARD_WEBSITE', 'WEB_APP', 'ERP', 'SAAS']),
     );
     expect(types).not.toContain('OTHER');
+    expect(types).not.toContain('MOBILE_APP');
     expect(buildProfileSeedVersions().map((row) => row.profileKey)).toEqual(
       expect.arrayContaining(['business-card-code', 'web-app-code', 'erp-code', 'saas-code']),
+    );
+    expect(buildProfileSeedVersions().map((row) => row.profileKey)).not.toContain(
+      'mobile-app-code',
     );
   });
 });
@@ -80,14 +84,15 @@ describe('planDeliveryProfilesSeed', () => {
     ).toBe(1);
   });
 
-  it('retires unused sized draft keys', () => {
+  it('retires unused sized draft keys and the leftover mobile-app core', () => {
     const plan = planDeliveryProfilesSeed(
-      [draft('shop-code-classic'), draft('shop-code')],
+      [draft('shop-code-classic'), draft('shop-code'), draft('mobile-app-code')],
       ALL_CODES,
       { replaceDrafts: true },
     );
 
-    expect(plan.retireCount).toBe(1);
+    expect(plan.retireCount).toBe(2);
     expect(formatProfileSeedPlan(plan, false)).toContain('shop-code-classic');
+    expect(formatProfileSeedPlan(plan, false)).toContain('mobile-app-code');
   });
 });

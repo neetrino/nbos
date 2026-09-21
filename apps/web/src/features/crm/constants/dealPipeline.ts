@@ -108,23 +108,6 @@ export const PRODUCT_TYPES = [
   { value: 'OTHER', label: 'Other' },
 ] as const;
 
-export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
-  CODE: [
-    'BUSINESS_CARD_WEBSITE',
-    'COMPANY_WEBSITE',
-    'WEB_APP',
-    'CRM',
-    'ECOMMERCE',
-    'SAAS',
-    'LANDING',
-    'ERP',
-  ],
-  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
-  SHOPIFY: ['ECOMMERCE'],
-  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
-  OTHER: [],
-};
-
 export const PAYMENT_TYPES = [
   { value: 'CLASSIC', label: 'Classic' },
   { value: 'SUBSCRIPTION', label: 'Subscription' },

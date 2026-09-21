@@ -246,6 +246,19 @@ describe('validateDealStageGate', () => {
     ).not.toThrow();
   });
 
+  it('rejects a Code site on APP at SEND_OFFER', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'CODE',
+      productType: 'LANDING',
+      productPlatform: 'APP',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(() => validateDealStageGate(deal, 'SEND_OFFER')).toThrow(BadRequestException);
+  });
+
   it('MAINTENANCE does not require productCategory at SEND_OFFER', () => {
     const deal = {
       ...baseDeal,

@@ -2,6 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import {
   coerceOptionalProductPlatform,
   isProductPlatform,
+  productPlatformApplies,
+  productTypePlatformPairError,
   type ProductPlatform,
 } from '@nbos/shared';
 
@@ -27,4 +29,25 @@ export function resolveDealProductPlatform(input: {
   requested?: string | null;
 }): ProductPlatform | null {
   return resolveProductPlatform(input);
+}
+
+export function assertProductTypePlatformPair(
+  input: {
+    productCategory?: string | null;
+    productType?: string | null;
+    productPlatform?: string | null;
+  },
+  options: { allowLegacyMobileApp?: boolean; requirePlatform?: boolean } = {},
+): void {
+  if (
+    options.requirePlatform &&
+    productPlatformApplies(input.productCategory) &&
+    !input.productPlatform
+  ) {
+    throw new BadRequestException('Product platform is required');
+  }
+  const message = productTypePlatformPairError(input, {
+    allowLegacyMobileApp: options.allowLegacyMobileApp,
+  });
+  if (message) throw new BadRequestException(message);
 }

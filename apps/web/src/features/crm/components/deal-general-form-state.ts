@@ -1,4 +1,8 @@
-import { contactIdListsEqual, coerceOptionalProductPlatform } from '@nbos/shared';
+import {
+  contactIdListsEqual,
+  coerceOptionalProductPlatform,
+  keepProductTypeAfterPlatformChange,
+} from '@nbos/shared';
 import type { Deal } from '@/lib/api/deals';
 import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
@@ -269,12 +273,19 @@ export function buildDealTaxonomyPatch(
 export function buildDealPlatformPatch(
   draft: DealGeneralDraft,
   productPlatform: string | null,
-): Pick<DealGeneralDraft, 'productPlatform'> {
+): Pick<DealGeneralDraft, 'productPlatform'> & Partial<Pick<DealGeneralDraft, 'productType'>> {
+  const nextPlatform = coerceOptionalProductPlatform({
+    productCategory: draft.productCategory,
+    productType: draft.productType,
+    requested: productPlatform,
+  });
+  const nextType = keepProductTypeAfterPlatformChange(
+    draft.productCategory,
+    draft.productType,
+    nextPlatform,
+  );
   return {
-    productPlatform: coerceOptionalProductPlatform({
-      productCategory: draft.productCategory,
-      productType: draft.productType,
-      requested: productPlatform,
-    }),
+    productPlatform: nextPlatform,
+    ...(nextType !== draft.productType ? { productType: nextType } : {}),
   };
 }

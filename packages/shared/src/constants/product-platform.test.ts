@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
   allowedProductPlatforms,
+  CODE_CROSS_PLATFORM_PRODUCT_TYPES,
+  CODE_SITE_PRODUCT_TYPES,
   coerceOptionalProductPlatform,
   coerceProductPlatform,
   defaultProductPlatform,
   isProductPlatform,
+  keepProductTypeAfterPlatformChange,
+  listedProductTypesForPicker,
   productPlatformApplies,
   productPlatformPickerApplies,
+  PRODUCT_TYPE_PLATFORM_MISMATCH,
   productTypeFieldReady,
+  productTypePlatformPairError,
   PRODUCT_PLATFORMS,
 } from './product-platform';
 
@@ -95,6 +101,67 @@ describe('product platform', () => {
         productCategory: null,
         productType: 'ECOMMERCE',
         requested: 'APP',
+      }),
+    ).toBeNull();
+  });
+});
+
+describe('product type by platform', () => {
+  it('offers sites only on Code WEB and systems on every Code platform', () => {
+    expect(listedProductTypesForPicker('CODE', null, 'WEB')).toEqual([
+      ...CODE_SITE_PRODUCT_TYPES,
+      ...CODE_CROSS_PLATFORM_PRODUCT_TYPES,
+    ]);
+    expect(listedProductTypesForPicker('CODE', null, 'APP')).toEqual([
+      ...CODE_CROSS_PLATFORM_PRODUCT_TYPES,
+    ]);
+    expect(listedProductTypesForPicker('CODE', null, 'DESKTOP')).toEqual([
+      ...CODE_CROSS_PLATFORM_PRODUCT_TYPES,
+    ]);
+    expect(listedProductTypesForPicker('CODE', null, 'APP')).not.toContain('LANDING');
+    expect(listedProductTypesForPicker('CODE', null, 'APP')).toContain('WEB_APP');
+  });
+
+  it('waits for a Code platform before offering types', () => {
+    expect(listedProductTypesForPicker('CODE')).toEqual([]);
+  });
+
+  it('keeps a legacy site type visible on APP until the value changes', () => {
+    expect(listedProductTypesForPicker('CODE', 'LANDING', 'APP')).toContain('LANDING');
+    expect(keepProductTypeAfterPlatformChange('CODE', 'LANDING', 'APP')).toBeNull();
+    expect(keepProductTypeAfterPlatformChange('CODE', 'ECOMMERCE', 'APP')).toBe('ECOMMERCE');
+  });
+
+  it('rejects a site on APP and a new MOBILE_APP pick, and keeps a legacy mobile pair', () => {
+    expect(
+      productTypePlatformPairError({
+        productCategory: 'CODE',
+        productType: 'LANDING',
+        productPlatform: 'APP',
+      }),
+    ).toBe(PRODUCT_TYPE_PLATFORM_MISMATCH);
+    expect(
+      productTypePlatformPairError({
+        productCategory: 'CODE',
+        productType: 'MOBILE_APP',
+        productPlatform: 'APP',
+      }),
+    ).toBe(PRODUCT_TYPE_PLATFORM_MISMATCH);
+    expect(
+      productTypePlatformPairError(
+        {
+          productCategory: 'CODE',
+          productType: 'MOBILE_APP',
+          productPlatform: 'APP',
+        },
+        { allowLegacyMobileApp: true },
+      ),
+    ).toBeNull();
+    expect(
+      productTypePlatformPairError({
+        productCategory: 'CODE',
+        productType: 'WEB_APP',
+        productPlatform: 'DESKTOP',
       }),
     ).toBeNull();
   });

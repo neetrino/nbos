@@ -19,6 +19,7 @@ export function groupProfileRows(
   const order: string[] = [];
   const grouped = new Map<string, DeliveryBaseProfileFinancialDto[]>();
   for (const row of rows) {
+    if (parseProfileKey(row.profileKey).productType === 'MOBILE_APP') continue;
     const kindId = kindIdForProfile(row);
     const list = grouped.get(kindId);
     if (!list) {

@@ -116,8 +116,8 @@ describe('Constants', () => {
 
   it('hides MOBILE_APP from new Code picks and keeps it for a legacy current value', () => {
     expect(PRODUCT_TYPES_BY_CATEGORY.CODE).not.toContain('MOBILE_APP');
-    expect(listedProductTypesForPicker('CODE')).not.toContain('MOBILE_APP');
-    expect(listedProductTypesForPicker('CODE', 'MOBILE_APP')).toContain('MOBILE_APP');
+    expect(listedProductTypesForPicker('CODE', null, 'WEB')).not.toContain('MOBILE_APP');
+    expect(listedProductTypesForPicker('CODE', 'MOBILE_APP', 'APP')).toContain('MOBILE_APP');
   });
 
   it('PAYMENT_TYPES are valid', () => {

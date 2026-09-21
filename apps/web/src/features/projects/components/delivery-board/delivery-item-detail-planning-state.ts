@@ -1,4 +1,4 @@
-import { coerceOptionalProductPlatform, listedProductTypesForPicker } from '@nbos/shared';
+import { coerceOptionalProductPlatform, keepProductTypeAfterPlatformChange } from '@nbos/shared';
 import type { FullExtension, UpdateExtensionData } from '@/lib/api/extensions';
 import type { FullProduct, UpdateProductData } from '@/lib/api/products';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
@@ -153,16 +153,20 @@ function productPlanTaxonomyPatch(
   draft: ProductPlanSnapshot,
 ): UpdateProductData {
   if (draft.productCategory !== snap.productCategory) {
-    const allowed = listedProductTypesForPicker(draft.productCategory);
-    const productType = allowed.includes(draft.productType) ? draft.productType : '';
+    const productPlatform = coerceOptionalProductPlatform({
+      productCategory: draft.productCategory,
+      productType: draft.productType || null,
+      requested: draft.productPlatform,
+    });
+    const productType = keepProductTypeAfterPlatformChange(
+      draft.productCategory,
+      draft.productType,
+      productPlatform,
+    );
     return {
       productCategory: draft.productCategory,
       ...(productType ? { productType } : {}),
-      productPlatform: coerceOptionalProductPlatform({
-        productCategory: draft.productCategory,
-        productType: productType || null,
-        requested: draft.productPlatform,
-      }),
+      productPlatform,
     };
   }
   if (draft.productType !== snap.productType) {

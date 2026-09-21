@@ -680,13 +680,9 @@
       "coreLoading": "Loading core scope…",
       "noExtras": "No extra functions yet.",
       "subtitle": "Pick extras from the catalog or replace the set with a named collection. This does not overwrite the deal amount.",
-      "collections": "Collections",
-      "collectionsHint": "A click replaces the whole extra set. You can still remove or add functions after that.",
-      "noCollections": "No collections for this product type yet.",
       "saleTotal": "Recommended sale price",
       "saleUnknown": "Not all published prices are set",
       "unitsTotal": "{count, plural, one {# unit} other {# units}}",
-      "amountHint": "A recommendation for the proposal. The seller still sets the deal amount.",
       "loadFailed": "The constructor could not be loaded.",
       "saveFailed": "The constructor could not be saved."
     },

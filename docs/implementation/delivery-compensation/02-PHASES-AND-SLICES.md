@@ -628,6 +628,21 @@ Seed `--apply` on **dev** (2026-09-21): 205 PUBLISHED function rates (195 × 10 
 author Sipan / Owner. Re-run KEEP. Units stay DRAFT — catalog AMD still waits on published units.
 **Not run:** production migrate.
 
+### Code type list by platform (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.22. New Code picks are filtered by `productPlatform`. Sites only on WEB. APP and DESKTOP
+offer ECOMMERCE, CRM, ERP, SAAS, WEB_APP. `WEB_APP` remains a kind on all three platforms.
+`MOBILE_APP` stays in the enum for legacy cards and is not offered; `mobile-app-code` is hidden on
+the norms screen and retired from the profile seed when unused. WordPress/Shopify/Marketing type
+lists are unchanged. One shared matrix in `@nbos/shared` (`listedProductTypesForPicker` /
+`product-platform`); Deal, Create Product and delivery planning consume it. Duplicate
+`PRODUCT_TYPES_BY_CATEGORY` copies in web constants were removed. Changing platform resets a type
+that is not allowed. SEND_OFFER and Product/Deal create/update reject an illegal pair. No new
+`ProductTypeEnum` values in this slice.
+
+**Checks:** (filled after verification)
+**Not run:** production migrate; seed `--apply` not run in this slice (no new cores).
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).

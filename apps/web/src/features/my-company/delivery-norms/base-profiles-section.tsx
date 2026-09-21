@@ -5,7 +5,11 @@ import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { BaseProfileCreateSheet } from './base-profile-create-sheet';
 import { BaseProfilesList } from './base-profiles-list';
-import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
+import {
+  dictionariesForProfileLabel,
+  formatBaseProfileLabel,
+  parseProfileKey,
+} from './base-profile-label';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
 import { itemsMatchingSearch } from './matches-norm-search';
@@ -33,11 +37,15 @@ export function BaseProfilesSection({
   const dictionaries = dictionariesForProfileLabel(t);
   const filtered = useMemo(
     () =>
-      itemsMatchingSearch(rows, query, (row) => [
-        formatBaseProfileLabel(row.profileKey, row.version, dictionaries),
-        row.profileKey,
-        row.status,
-      ]),
+      itemsMatchingSearch(
+        rows.filter((row) => parseProfileKey(row.profileKey).productType !== 'MOBILE_APP'),
+        query,
+        (row) => [
+          formatBaseProfileLabel(row.profileKey, row.version, dictionaries),
+          row.profileKey,
+          row.status,
+        ],
+      ),
     [dictionaries, query, rows],
   );
 

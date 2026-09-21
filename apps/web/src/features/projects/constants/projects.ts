@@ -43,22 +43,14 @@ export const PRODUCT_TYPES = [
   { value: 'OTHER', label: 'Other' },
 ] as const;
 
-export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
-  CODE: [
-    'BUSINESS_CARD_WEBSITE',
-    'COMPANY_WEBSITE',
-    'WEB_APP',
-    'CRM',
-    'ECOMMERCE',
-    'SAAS',
-    'LANDING',
-    'ERP',
-  ],
-  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
-  SHOPIFY: ['ECOMMERCE'],
-  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
-  OTHER: [],
-};
+export function getProductTypesForCategory(
+  category: string,
+  currentType?: string,
+  productPlatform?: string | null,
+) {
+  const listed = listedProductTypesForPicker(category, currentType, productPlatform);
+  return PRODUCT_TYPES.filter((t) => listed.includes(t.value) || t.value === 'OTHER');
+}
 
 export const PRODUCT_STATUSES = [
   { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
@@ -117,15 +109,6 @@ export function getProductCategory(value: string) {
 
 export function getProductType(value: string) {
   return PRODUCT_TYPES.find((t) => t.value === value);
-}
-
-/**
- * Возвращает отфильтрованный список ProductType по категории.
- * OTHER всегда добавляется в конец.
- */
-export function getProductTypesForCategory(category: string, currentType?: string) {
-  const listed = listedProductTypesForPicker(category, currentType);
-  return PRODUCT_TYPES.filter((t) => listed.includes(t.value) || t.value === 'OTHER');
 }
 
 export function getProductStatus(value: string) {

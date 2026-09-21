@@ -214,8 +214,6 @@ function MoneyHiddenComposition({
       coreProfileVersionId={config.baseProfileVersionId}
       coreTitle={null}
       extras={extras}
-      collections={[]}
-      appliedCollectionId={null}
       saleTotal={null}
       unitsTotal={undefined}
       canSeeUnits={false}
@@ -225,7 +223,6 @@ function MoneyHiddenComposition({
       disabled={false}
       canAdd={canAdd}
       onAdd={onAdd}
-      onApplyCollection={() => undefined}
       onRemoveExtra={onRemoveExtra}
     />
   );

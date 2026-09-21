@@ -87,8 +87,6 @@ function ReadyDealComposition({
         coreProfileVersionId={model.quote?.coreProfileVersionId ?? null}
         coreTitle={model.coreTitle}
         extras={extras}
-        collections={model.collections}
-        appliedCollectionId={model.quote?.appliedCollectionId ?? null}
         saleTotal={model.saleTotal}
         unitsTotal={model.unitsTotal}
         canSeeUnits={model.canSeeUnits}
@@ -99,7 +97,6 @@ function ReadyDealComposition({
         error={model.error}
         canAdd
         onAdd={() => setCatalogOpen(true)}
-        onApplyCollection={(collectionId) => void model.applyCollection(collectionId)}
         onRemoveExtra={model.toggle}
       />
       <FunctionCatalogSheet
@@ -112,6 +109,10 @@ function ReadyDealComposition({
         unitsByFunctionId={model.canSeeUnits ? model.catalog.unitsByFunctionId : undefined}
         salePriceByFunctionId={model.catalog.salePriceByFunctionId}
         mode={dealCatalogPickerMode(model, selectedIds, disabled)}
+        collections={model.collections}
+        appliedCollectionId={model.quote?.appliedCollectionId ?? null}
+        onApplyCollection={(collectionId) => void model.applyCollection(collectionId)}
+        collectionsDisabled={disabled || model.saving}
       />
     </>
   );

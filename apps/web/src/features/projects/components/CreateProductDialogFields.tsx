@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import {
   allowedProductPlatforms,
   coerceOptionalProductPlatform,
+  keepProductTypeAfterPlatformChange,
   productPlatformPickerApplies,
   productTypeFieldReady,
 } from '@nbos/shared';
@@ -144,12 +145,19 @@ function platformChange(
   form: CreateProductFormState,
   productPlatform: string,
 ): Partial<CreateProductFormState> {
+  const nextPlatform = formPlatform({
+    productCategory: form.productCategory,
+    productType: form.productType,
+    requested: productPlatform,
+  });
   return {
-    productPlatform: formPlatform({
-      productCategory: form.productCategory,
-      productType: form.productType,
-      requested: productPlatform,
-    }),
+    productPlatform: nextPlatform,
+    productType:
+      keepProductTypeAfterPlatformChange(
+        form.productCategory,
+        form.productType || null,
+        nextPlatform,
+      ) ?? '',
   };
 }
 

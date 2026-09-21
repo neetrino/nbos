@@ -40,8 +40,19 @@ describe('dealProductPlatformWrite', () => {
   });
 
   it('clears platform when the category becomes marketing', () => {
-    expect(dealProductPlatformWrite({ productCategory: 'MARKETING' }, codeShop)).toEqual({
+    expect(
+      dealProductPlatformWrite({ productCategory: 'MARKETING', productType: 'SEO' }, codeShop),
+    ).toEqual({
       productPlatform: null,
     });
+  });
+
+  it('rejects a site type on APP', () => {
+    expect(() =>
+      dealProductPlatformWrite(
+        { productPlatform: 'APP' },
+        { productCategory: 'CODE', productType: 'LANDING', productPlatform: 'WEB' },
+      ),
+    ).toThrow(/not available on this platform/);
   });
 });

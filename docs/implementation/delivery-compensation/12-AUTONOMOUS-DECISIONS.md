@@ -219,6 +219,25 @@ Columns stay in the database and every new write freezes `FROM_SCRATCH` / `AI_DE
 `AI_DESIGNER_REVIEW_REQUIRED` no longer blocks a plan. Enrollment binds the published core when
 one exists so Starting is not stuck on `CONFIGURATION_INCOMPLETE`.
 
+**1.22 Code type list is filtered by platform — Owner confirmation of 2026-09-21.** Platform is a
+Deal/Product Code field, not a units axis and not a third core. One kind has one core; the same
+function costs the same on WEB, APP and DESKTOP. New Code picks:
+
+| Platform | Types                                                                               |
+| -------- | ----------------------------------------------------------------------------------- |
+| WEB      | BUSINESS_CARD_WEBSITE, COMPANY_WEBSITE, LANDING, ECOMMERCE, CRM, ERP, SAAS, WEB_APP |
+| APP      | ECOMMERCE, CRM, ERP, SAAS, WEB_APP                                                  |
+| DESKTOP  | ECOMMERCE, CRM, ERP, SAAS, WEB_APP                                                  |
+
+`WEB_APP` stays a kind (web application / custom system) on all three platforms. Sites are not
+offered on APP or DESKTOP. `MOBILE_APP` stays in the enum for legacy cards and is hidden from new
+picks; the `mobile-app-code` core is not offered on the norms screen. WordPress stays WEB-only with
+the previous type list. Shopify is ECOMMERCE on WEB. Marketing has no platform; its types are
+unchanged. UI order is Category → Platform → Type. Changing platform clears a type that is not
+allowed on the new platform; a leftover invalid pair or `MOBILE_APP` remains visible while it is
+the current value. SEND_OFFER and Product/Deal create/update reject an illegal pair. New
+`ProductTypeEnum` values were not added in this slice.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any

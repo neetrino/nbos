@@ -1,4 +1,7 @@
-import { resolveDealProductPlatform } from '../../projects/products/resolve-product-platform';
+import {
+  resolveDealProductPlatform,
+  assertProductTypePlatformPair,
+} from '../../projects/products/resolve-product-platform';
 
 type DealTaxonomy = {
   productCategory: string | null;
@@ -28,18 +31,23 @@ export function dealProductPlatformWrite(
   ) {
     return {};
   }
-  return {
-    productPlatform: resolveDealProductPlatform({
-      productCategory:
-        patch.productCategory !== undefined
-          ? patch.productCategory
-          : (existing?.productCategory ?? null),
-      productType:
-        patch.productType !== undefined ? patch.productType : (existing?.productType ?? null),
-      requested:
-        patch.productPlatform !== undefined
-          ? patch.productPlatform
-          : (existing?.productPlatform ?? null),
-    }),
-  };
+  const productCategory =
+    patch.productCategory !== undefined
+      ? patch.productCategory
+      : (existing?.productCategory ?? null);
+  const productType =
+    patch.productType !== undefined ? patch.productType : (existing?.productType ?? null);
+  const productPlatform = resolveDealProductPlatform({
+    productCategory,
+    productType,
+    requested:
+      patch.productPlatform !== undefined
+        ? patch.productPlatform
+        : (existing?.productPlatform ?? null),
+  });
+  assertProductTypePlatformPair(
+    { productCategory, productType, productPlatform },
+    { allowLegacyMobileApp: existing?.productType === 'MOBILE_APP' },
+  );
+  return { productPlatform };
 }

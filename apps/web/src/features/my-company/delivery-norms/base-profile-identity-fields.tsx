@@ -1,7 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { DELIVERY_ENTITY_KINDS, PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@nbos/shared';
+import {
+  DELIVERY_ENTITY_KINDS,
+  isHiddenFromNewProductTypePick,
+  PRODUCT_CATEGORIES,
+  PRODUCT_TYPES,
+} from '@nbos/shared';
 import { DetailSheetFieldSegmented, InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { OPTIONAL_SELECT_NONE, SHEET_STACK_CLASS } from './delivery-norms.constants';
@@ -50,7 +55,10 @@ export function BaseProfileIdentityFields({
         value={draft.productType === OPTIONAL_SELECT_NONE ? null : draft.productType}
         placeholder={t('none')}
         disabled={disabled}
-        options={selectOptionsFromRecord(PRODUCT_TYPES, productTypeLabels(t))}
+        options={selectOptionsFromRecord(
+          offeredNormsProductTypes(draft.productType),
+          productTypeLabels(t),
+        )}
         onChange={(value) => {
           if (value === null) {
             onChange({ ...draft, productType: OPTIONAL_SELECT_NONE });
@@ -78,5 +86,11 @@ export function BaseProfileIdentityFields({
         }}
       />
     </div>
+  );
+}
+
+function offeredNormsProductTypes(currentType: string): readonly (typeof PRODUCT_TYPES)[number][] {
+  return PRODUCT_TYPES.filter(
+    (type) => type === currentType || !isHiddenFromNewProductTypePick(type),
   );
 }
