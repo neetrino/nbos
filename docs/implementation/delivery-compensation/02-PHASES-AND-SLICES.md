@@ -508,7 +508,7 @@ and web `tsc --noEmit` (8GB); Prettier on touched files; migration applied to **
 resulting grants read back; guard metadata asserted on all eleven routes, not a sample.
 **Not run:** browser QA of the Settings → Roles row, live HTTP probe under a specialist account.
 
-### Product platform axis WEB / APP / DESKTOP (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+### Product platform axis WEB / APP / DESKTOP (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED` `15dc34958`
 
 `productType` mixed kind with where the product runs, so a deal could not say "online shop + app".
 `productPlatform` is a new field on Deal and Product: WEB, APP, DESKTOP. The Owner named it APP, not
