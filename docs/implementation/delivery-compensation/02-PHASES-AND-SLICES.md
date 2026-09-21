@@ -405,6 +405,38 @@ stage move alone writes no `closedAt`, so a reopen from that state would clear t
 (`delivery-configuration.service.ts` was already at 304 before this slice — enrollment inserts moved
 to `insert-delivery-enrollment.ts`). **Not run:** browser QA, live end-to-end close/reopen on dev.
 
+### Draft core profiles for the first five product kinds (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Shop, company site, landing, CRM and mobile app: core composition, a per-role unit proposal, the
+cards the core already pays for, and a module preset per size. 25 profile versions (five kinds ×
+five sizes), all `DRAFT` — a draft pays nobody and cannot be selected, so the numbers stay a
+proposal until the Owner publishes them in the norms screen. Applied to **dev**.
+
+Review by a second model caught paid presets charging for work the core already promised, and all
+of it was corrected before commit:
+
+- analytics left the shop, company site and landing cores: `INT_WEB_ANALYTICS` starts at installing
+  the counter, so a core line about "connecting analytics" meant paying twice for the same work;
+- store publishing left the mobile core for the same reason — `MOB_STORE_PUBLISHING` covers accounts,
+  signing and review for the first store too, so the core now promises a release build and says in
+  its own note that publishing is a separate module;
+- `INT_WEB_ANALYTICS` left the mobile presets: it is a browser card (GA, Tag Manager, cookies,
+  e-commerce events), and mobile crash/product analytics stays unsold per decision 1.16.
+
+A profile version and its size preset are written in one transaction. They are separate models and
+a rerun matches on the profile key alone, so a version left behind without its preset would be
+reported as already present and never repaired.
+
+`--replace-drafts` corrects seeded content while it is still a proposal; the plan refuses any key
+that is published or that a configuration has frozen, so it cannot reach a norm somebody is being
+paid against. The 25 rows seeded earlier the same day carried the pre-review content and were
+replaced through this path after confirming all of them were `DRAFT` and unreferenced.
+
+**Checks:** vitest `scripts/delivery-profiles` (12 passed); dry run, apply and a second dry run
+against dev, the last reporting 25 kept and nothing written; Prettier `--check`; every file under
+300 lines. **Not run:** browser QA of the norms screen against the new profiles; the unit
+proposals themselves are unvalidated by the Owner.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).
