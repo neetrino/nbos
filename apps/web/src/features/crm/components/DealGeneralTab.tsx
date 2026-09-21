@@ -209,9 +209,7 @@ function getFilteredProductTypeOptions(
   const category = draft.productCategory;
   if (!category) return productTypeOptions;
   const listed = listedProductTypesForPicker(category, draft.productType, draft.productPlatform);
-  return productTypeOptions.filter(
-    (option) => listed.includes(option.value) || option.value === 'OTHER',
-  );
+  return productTypeOptions.filter((option) => listed.includes(option.value));
 }
 
 interface DealEntityMetaLineProps {

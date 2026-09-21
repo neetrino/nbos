@@ -118,6 +118,8 @@ describe('Constants', () => {
     expect(PRODUCT_TYPES_BY_CATEGORY.CODE).not.toContain('MOBILE_APP');
     expect(listedProductTypesForPicker('CODE', null, 'WEB')).not.toContain('MOBILE_APP');
     expect(listedProductTypesForPicker('CODE', 'MOBILE_APP', 'APP')).toContain('MOBILE_APP');
+    expect(listedProductTypesForPicker('CODE', null, 'WEB')).not.toContain('OTHER');
+    expect(listedProductTypesForPicker('OTHER')).toContain('OTHER');
   });
 
   it('PAYMENT_TYPES are valid', () => {

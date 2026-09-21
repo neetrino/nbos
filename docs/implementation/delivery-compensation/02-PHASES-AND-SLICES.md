@@ -640,8 +640,14 @@ lists are unchanged. One shared matrix in `@nbos/shared` (`listedProductTypesFor
 that is not allowed. SEND_OFFER and Product/Deal create/update reject an illegal pair. No new
 `ProductTypeEnum` values in this slice.
 
-**Checks:** (filled after verification)
-**Not run:** production migrate; seed `--apply` not run in this slice (no new cores).
+**Checks:** vitest 12 files / 114 passed (shared matrix/picker/gate, product create/update taxonomy,
+deal write, SEND_OFFER, Deal form, CreateProduct field order, norms grouping, profile seed retire);
+shared + API + web `tsc --noEmit` (API/web 8GB); Prettier on touched TS/MD. Independent review:
+Code pickers no longer force-add `OTHER`. Planning save with a cleared type stays a no-op so the
+server is not sent APP + leftover site (400).
+**Not run:** browser QA of Deal Code WEB vs APP/DESKTOP (agent browser had a session but the deals
+board did not load — `/api/me` 503 at the time); seed `--apply` not run (no new cores; unused
+`mobile-app-code` draft retires on the next apply); production migrate.
 
 ### Production launch
 

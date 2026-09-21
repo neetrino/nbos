@@ -38,6 +38,7 @@ type FunctionCatalogBrowserProps = {
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
   mode: FunctionCatalogBrowserMode;
   headerAction?: ReactNode;
+  belowSearch?: ReactNode;
 };
 
 export function FunctionCatalogBrowser(props: FunctionCatalogBrowserProps) {
@@ -60,6 +61,7 @@ export function FunctionCatalogBrowser(props: FunctionCatalogBrowserProps) {
           />
           {props.headerAction}
         </div>
+        {props.belowSearch}
         <CatalogBrowserData
           items={props.items}
           loading={props.loading}

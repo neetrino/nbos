@@ -169,7 +169,7 @@ function productPlanTaxonomyPatch(
       productPlatform,
     };
   }
-  if (draft.productType !== snap.productType) {
+    if (draft.productType !== snap.productType) {
     if (!draft.productType) {
       return {};
     }

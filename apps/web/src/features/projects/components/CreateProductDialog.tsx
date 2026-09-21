@@ -64,12 +64,12 @@ function CreateProductDialogSession({
       form.productType,
       form.productPlatform,
     );
-    return PRODUCT_TYPES.filter(
-      (productType) => listed.includes(productType.value) || productType.value === 'OTHER',
-    ).map((productType) => ({
-      value: productType.value,
-      label: t(`product.types.${productType.value}` as never),
-    }));
+    return PRODUCT_TYPES.filter((productType) => listed.includes(productType.value)).map(
+      (productType) => ({
+        value: productType.value,
+        label: t(`product.types.${productType.value}` as never),
+      }),
+    );
   }, [form.productCategory, form.productType, form.productPlatform, t]);
   const canSubmit = Boolean(
     form.name.trim() &&

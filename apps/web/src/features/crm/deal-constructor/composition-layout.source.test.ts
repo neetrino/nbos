@@ -10,6 +10,8 @@ describe('composition and catalog layout', () => {
     const sheet = readFileSync(path.join(dealRoot, 'product-composition-sheet.tsx'), 'utf8');
     const totals = readFileSync(path.join(dealRoot, 'DealConstructorTotals.tsx'), 'utf8');
     const catalog = readFileSync(path.join(catalogRoot, 'function-catalog-sheet.tsx'), 'utf8');
+    const browser = readFileSync(path.join(catalogRoot, 'function-catalog-browser.tsx'), 'utf8');
+    const chips = readFileSync(path.join(catalogRoot, 'function-catalog-collections.tsx'), 'utf8');
     expect(panel).not.toContain('FunctionCatalogCollections');
     expect(panel).not.toContain('onApplyCollection');
     expect(panel).toContain('justify-between');
@@ -18,5 +20,7 @@ describe('composition and catalog layout', () => {
     expect(totals).not.toContain('amountHint');
     expect(catalog).toContain('FunctionCatalogCollections');
     expect(catalog).toContain('stackAboveEntitySheet');
+    expect(browser).toContain('belowSearch');
+    expect(chips).toContain('FUNCTION_CATALOG_COLLECTION_CHIP_CLASS');
   });
 });

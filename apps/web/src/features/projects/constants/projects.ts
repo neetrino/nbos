@@ -49,7 +49,7 @@ export function getProductTypesForCategory(
   productPlatform?: string | null,
 ) {
   const listed = listedProductTypesForPicker(category, currentType, productPlatform);
-  return PRODUCT_TYPES.filter((t) => listed.includes(t.value) || t.value === 'OTHER');
+  return PRODUCT_TYPES.filter((t) => listed.includes(t.value));
 }
 
 export const PRODUCT_STATUSES = [
