@@ -56,6 +56,10 @@ model DeliveryConfiguration {
   aiDesignerReview     Boolean                        @default(false) @map("ai_designer_review")
   checkedById          String?                        @map("checked_by_id")
   checkedAt            DateTime?                      @map("checked_at")
+  /// Stamped at the first close of the delivery and never cleared. A card may be reopened for work,
+  /// but its scope and money stay frozen, so the read-only guard keys off this stamp rather than the
+  /// current status — a reopened card is `DEVELOPMENT` again and would otherwise become editable.
+  scopeLockedAt        DateTime?                      @map("scope_locked_at")
   draftVersion         Int                            @default(1) @map("draft_version")
   createdAt            DateTime                       @default(now()) @map("created_at")
   updatedAt            DateTime                       @updatedAt @map("updated_at")

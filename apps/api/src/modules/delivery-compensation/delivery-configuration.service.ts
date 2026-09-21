@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
@@ -19,7 +18,7 @@ import {
 } from '@nbos/shared';
 import type { ReplacementShareInput } from './apply-employee-replacement';
 import { attachConfigurationReadiness } from './attach-configuration-readiness';
-import { isPrismaUniqueConstraint } from './prisma-unique';
+import { insertDeliveryEnrollment } from './insert-delivery-enrollment';
 import { syncProductBonusPoolForOrder } from '../bonus/product-bonus-pool-sync';
 import { NotificationService } from '../notifications/notification.service';
 import type { AcceptedAmountInput } from './reduce-removed-feature-allocations';
@@ -31,9 +30,11 @@ import type { ReplacementPlanDto } from './serialize-replacement-plan';
 import { loadReplacementPlan } from './load-replacement-plan';
 import {
   assertEnrollmentEnabled,
+  assertExtensionNeverClosed,
   assertOrderBelongsToExtension,
   assertOrderBelongsToProduct,
   assertOrderHasNoBonusEntries,
+  assertProductNeverClosed,
 } from './enrollment-guards';
 import { writeExtensionRoleAssignments } from './write-extension-role-assignments';
 import {
@@ -75,9 +76,10 @@ export class DeliveryConfigurationService {
     if (existing) {
       return this.getRequired(existing.id);
     }
+    await assertProductNeverClosed(this.prisma, productId);
     await assertOrderBelongsToProduct(this.prisma, productId, orderId);
     await assertOrderHasNoBonusEntries(this.prisma, orderId);
-    return this.insertProductEnrollment(productId, orderId);
+    return this.getRequired(await insertDeliveryEnrollment(this.prisma, { productId }, orderId));
   }
 
   async getByExtension(
@@ -106,9 +108,10 @@ export class DeliveryConfigurationService {
     if (existing) {
       return this.getRequired(existing.id);
     }
+    await assertExtensionNeverClosed(this.prisma, extensionId);
     await assertOrderBelongsToExtension(this.prisma, extensionId, orderId);
     await assertOrderHasNoBonusEntries(this.prisma, orderId);
-    return this.insertExtensionEnrollment(extensionId, orderId);
+    return this.getRequired(await insertDeliveryEnrollment(this.prisma, { extensionId }, orderId));
   }
 
   /**
@@ -233,52 +236,6 @@ export class DeliveryConfigurationService {
     );
     await syncProductBonusPoolForOrder(this.prisma, written.orderId, this.notifications);
     return this.getRequired(configurationId);
-  }
-
-  private async insertProductEnrollment(
-    productId: string,
-    orderId: string,
-  ): Promise<OperationalConfigurationDto> {
-    try {
-      const created = await this.prisma.deliveryConfiguration.create({
-        data: { orderId, productId, entityKind: 'PRODUCT', mode: 'V2' },
-        include: CONFIG_INCLUDE,
-      });
-      return this.toOperational(created);
-    } catch (error) {
-      if (!isPrismaUniqueConstraint(error)) {
-        throw error;
-      }
-      const existing = await this.prisma.deliveryConfiguration.findFirst({ where: { productId } });
-      if (existing) {
-        return this.getRequired(existing.id);
-      }
-      throw new ConflictException('CONFIGURATION_CONFLICT');
-    }
-  }
-
-  private async insertExtensionEnrollment(
-    extensionId: string,
-    orderId: string,
-  ): Promise<OperationalConfigurationDto> {
-    try {
-      const created = await this.prisma.deliveryConfiguration.create({
-        data: { orderId, extensionId, entityKind: 'EXTENSION', mode: 'V2' },
-        include: CONFIG_INCLUDE,
-      });
-      return this.toOperational(created);
-    } catch (error) {
-      if (!isPrismaUniqueConstraint(error)) {
-        throw error;
-      }
-      const existing = await this.prisma.deliveryConfiguration.findFirst({
-        where: { extensionId },
-      });
-      if (existing) {
-        return this.getRequired(existing.id);
-      }
-      throw new ConflictException('CONFIGURATION_CONFLICT');
-    }
   }
 
   private async getRequired(id: string): Promise<OperationalConfigurationDto> {

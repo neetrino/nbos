@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { PrismaClient, type ProductStatusEnum, type TransactionClient } from '@nbos/database';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { stampDeliveryEarnedPeriodForProduct } from '../../delivery-compensation/stamp-delivery-earned-period';
+import { stampDeliveryScopeLockForProduct } from '../../delivery-compensation/stamp-delivery-scope-lock';
 import { lockDeliveryConfigurationForProduct } from '../../delivery-compensation/lock-delivery-configuration';
 import { materializeInitialDeliveryPlanIfNeeded } from '../../delivery-compensation/materialize-initial-delivery-plan';
 import type { NotificationService } from '../../notifications/notification.service';
@@ -28,6 +29,7 @@ export async function writeTerminalProductClose<T>(
   return prisma.$transaction(async (tx) => {
     await lockDeliveryConfigurationForProduct(tx, id);
     const row = await write(tx);
+    await stampDeliveryScopeLockForProduct(tx, id);
     if (target === 'DONE') {
       await stampDeliveryEarnedPeriodForProduct(tx, id);
     }
@@ -99,6 +101,9 @@ export async function writeProductLifecycle(
       data: { status: target, ...buildDeliveryLifecycleWrite(target, product) },
       include: { project: { select: { id: true, code: true, name: true } } },
     });
+    if (target === 'DONE' || target === 'LOST') {
+      await stampDeliveryScopeLockForProduct(tx, id);
+    }
     if (target === 'DONE') {
       await stampDeliveryEarnedPeriodForProduct(tx, id);
     }

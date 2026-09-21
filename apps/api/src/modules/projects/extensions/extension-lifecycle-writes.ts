@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type ExtensionStatusEnum } from '@nbos/database';
 import { syncProductBonusPoolForOrder } from '../../bonus/product-bonus-pool-sync';
 import { stampDeliveryEarnedPeriodForExtension } from '../../delivery-compensation/stamp-delivery-earned-period';
+import { stampDeliveryScopeLockForExtension } from '../../delivery-compensation/stamp-delivery-scope-lock';
 import { lockDeliveryConfigurationForExtension } from '../../delivery-compensation/lock-delivery-configuration';
 import { materializeInitialDeliveryPlanIfNeeded } from '../../delivery-compensation/materialize-initial-delivery-plan';
 import type { NotificationService } from '../../notifications/notification.service';
@@ -56,6 +57,9 @@ export async function writeExtensionLifecycle(
         order: { select: { id: true, code: true, status: true } },
       },
     });
+    if (target === 'DONE' || target === 'LOST') {
+      await stampDeliveryScopeLockForExtension(tx, id);
+    }
     if (target === 'DONE') {
       await stampDeliveryEarnedPeriodForExtension(tx, id);
     }
@@ -87,7 +91,7 @@ export async function writeTerminalExtensionCancel(
 ) {
   return prisma.$transaction(async (tx) => {
     await lockDeliveryConfigurationForExtension(tx, id);
-    return tx.extension.update({
+    const row = await tx.extension.update({
       where: { id },
       data: {
         status: 'LOST',
@@ -103,6 +107,8 @@ export async function writeTerminalExtensionCancel(
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await stampDeliveryScopeLockForExtension(tx, id);
+    return row;
   });
 }
 
@@ -131,6 +137,7 @@ export async function writeTerminalExtensionComplete(
         closedBy: { select: { id: true, firstName: true, lastName: true } },
       },
     });
+    await stampDeliveryScopeLockForExtension(tx, id);
     await stampDeliveryEarnedPeriodForExtension(tx, id);
     return row;
   });

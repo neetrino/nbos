@@ -9,6 +9,7 @@ function buildDb(components: Array<Record<string, unknown>>) {
       findUnique: vi.fn().mockResolvedValue({
         id: 'cfg-1',
         mode: 'V2',
+        scopeLockedAt: null,
         initialRevisionId: 'rev-1',
         currentRevision: { sequence: 1 },
         orderId: 'order-1',

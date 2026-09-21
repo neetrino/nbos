@@ -20,6 +20,7 @@ function buildDb(overrides: Record<string, unknown> = {}) {
         findUnique: vi.fn().mockResolvedValue({
           id: 'cfg-1',
           mode: 'V2',
+          scopeLockedAt: null,
           initialRevisionId: null,
           entityKind: 'PRODUCT',
           product: { status: 'DEVELOPMENT', productType: 'ECOMMERCE', productCategory: 'CODE' },
@@ -113,6 +114,7 @@ describe('applyConfigurationParameters', () => {
         findUnique: vi.fn().mockResolvedValue({
           id: 'cfg-1',
           mode: 'V2',
+          scopeLockedAt: null,
           initialRevisionId: 'rev-1',
           entityKind: 'PRODUCT',
           product: { status: 'DEVELOPMENT', productType: 'ECOMMERCE', productCategory: 'CODE' },
@@ -136,6 +138,7 @@ describe('applyConfigurationParameters', () => {
         findUnique: vi.fn().mockResolvedValue({
           id: 'cfg-1',
           mode: 'LEGACY',
+          scopeLockedAt: null,
           initialRevisionId: null,
           entityKind: 'PRODUCT',
           product: { status: 'DEVELOPMENT', productType: 'ECOMMERCE', productCategory: 'CODE' },

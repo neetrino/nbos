@@ -30,6 +30,11 @@ describe('DeliveryConfigurationService', () => {
         findUnique: vi.fn().mockResolvedValue({ id: 'default', newEnrollmentEnabled: true }),
       },
       deliveryConfiguration: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn() },
+      product: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ status: 'DEVELOPMENT', deliveryResolution: null, closedAt: null }),
+      },
       order: {
         findUnique: vi
           .fn()
@@ -47,6 +52,11 @@ describe('DeliveryConfigurationService', () => {
         findUnique: vi.fn().mockResolvedValue({ id: 'default', newEnrollmentEnabled: true }),
       },
       deliveryConfiguration: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn() },
+      product: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ status: 'DEVELOPMENT', deliveryResolution: null, closedAt: null }),
+      },
       order: { findUnique: vi.fn().mockResolvedValue(null) },
     } as never);
     await expect(
@@ -60,6 +70,11 @@ describe('DeliveryConfigurationService', () => {
         findUnique: vi.fn().mockResolvedValue({ id: 'default', newEnrollmentEnabled: true }),
       },
       deliveryConfiguration: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn() },
+      product: {
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ status: 'DEVELOPMENT', deliveryResolution: null, closedAt: null }),
+      },
       order: {
         findUnique: vi
           .fn()
@@ -70,6 +85,28 @@ describe('DeliveryConfigurationService', () => {
     await expect(
       service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1'),
     ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('refuses to enrol a card that was already closed once', async () => {
+    const create = vi.fn();
+    const service = new DeliveryConfigurationService({
+      deliveryCompensationRuntimeSetting: {
+        findUnique: vi.fn().mockResolvedValue({ id: 'default', newEnrollmentEnabled: true }),
+      },
+      deliveryConfiguration: { findFirst: vi.fn().mockResolvedValue(null), create },
+      product: {
+        findUnique: vi.fn().mockResolvedValue({
+          status: 'DEVELOPMENT',
+          deliveryResolution: null,
+          closedAt: new Date('2026-09-01T00:00:00Z'),
+        }),
+      },
+    } as never);
+
+    await expect(
+      service.enrollProduct('11111111-1111-1111-1111-111111111111', 'order-1'),
+    ).rejects.toMatchObject({ response: { code: 'FINANCIAL_ALLOCATION_LOCKED' } });
+    expect(create).not.toHaveBeenCalled();
   });
 
   it('rejects draft catalog functions from the picker', async () => {

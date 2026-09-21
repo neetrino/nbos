@@ -10,6 +10,7 @@ describe('applyScopeAddFeature', () => {
         findUnique: vi.fn().mockResolvedValue({
           id: 'cfg-1',
           mode: 'V2',
+          scopeLockedAt: null,
           orderId: 'order-1',
           initialRevisionId: 'rev-1',
           draftVersion: 1,
@@ -48,6 +49,7 @@ describe('applyScopeAddFeature', () => {
         findUnique: vi.fn().mockResolvedValue({
           id: 'cfg-1',
           mode: 'V2',
+          scopeLockedAt: null,
           orderId: 'order-1',
           initialRevisionId: null,
           draftVersion: 1,
@@ -81,6 +83,7 @@ describe('applyScopeAddFeature', () => {
     const findUnique = vi.fn().mockResolvedValue({
       id: 'cfg-1',
       mode: 'V2',
+      scopeLockedAt: null,
       product: { status: 'DONE' },
       extension: null,
     });
@@ -102,6 +105,7 @@ describe('applyScopeAddFeature', () => {
         findUnique: vi.fn().mockResolvedValue({
           id: 'cfg-1',
           mode: 'V2',
+          scopeLockedAt: null,
           initialRevisionId: 'rev-1',
           draftVersion: 1,
           currentRevision: { sequence: 2 },
@@ -133,6 +137,7 @@ describe('applyScopeAddFeature gradations', () => {
           findUnique: vi.fn().mockResolvedValue({
             id: 'cfg-1',
             mode: 'V2',
+            scopeLockedAt: null,
             orderId: 'order-1',
             initialRevisionId: null,
             draftVersion: 1,
