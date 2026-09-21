@@ -106,9 +106,8 @@ export const EXTENSION_STATUSES = [
 ] as const;
 
 export const EXTENSION_SIZES = [
-  { value: 'MICRO', label: 'Micro', variant: 'gray' as StatusVariant },
   { value: 'SMALL', label: 'Small', variant: 'blue' as StatusVariant },
-  { value: 'MEDIUM', label: 'Medium', variant: 'purple' as StatusVariant },
+  { value: 'STANDARD', label: 'Standard', variant: 'purple' as StatusVariant },
   { value: 'LARGE', label: 'Large', variant: 'orange' as StatusVariant },
 ] as const;
 

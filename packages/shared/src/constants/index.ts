@@ -234,7 +234,7 @@ export const MARKETING_ATTRIBUTION_OPTION_TYPES = ['ACCOUNT', 'ACTIVITY', 'ORGAN
 
 export const DEAL_TYPES = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
 
-export const EXTENSION_SIZES = ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'] as const;
+export const EXTENSION_SIZES = ['SMALL', 'STANDARD', 'LARGE'] as const;
 
 export const EXTENSION_STATUSES = ['NEW', 'DEVELOPMENT', 'QA', 'TRANSFER', 'DONE', 'LOST'] as const;
 

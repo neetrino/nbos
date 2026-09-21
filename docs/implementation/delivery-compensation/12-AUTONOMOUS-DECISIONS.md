@@ -198,6 +198,11 @@ The constructor lives on the deal until Won, then extras copy onto the product c
 The public vitrine is stage 3: same catalog, sale price only, not in this wave. `Extension.size`
 is a different enum and stays.
 
+**1.19 Extension.size has three values — Owner decision of 2026-09-21.** The change-order enum
+is `SMALL` / `STANDARD` / `LARGE`. Existing `MICRO` rows map to `SMALL`; `MEDIUM` maps to
+`STANDARD`. Auto-created extensions from a Won deal default to `STANDARD`. The Change Control
+"Micro Extension" path (paid work under one hour) is a process, not a fourth size.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any

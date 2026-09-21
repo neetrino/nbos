@@ -566,6 +566,16 @@ constructor block; extras copy on V2 enroll.
 Prettier on touched TS/JSON; targeted vitest 19 files / 86 passed.
 **Not run:** live migrate, seed against a live DB, browser QA, production.
 
+### Extension.size three values (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+`ExtensionSizeEnum` is `SMALL` / `STANDARD` / `LARGE`. Migration remaps `MICRO→SMALL`,
+`MEDIUM→STANDARD` on `extensions` and checklist `filter_extension_size`. Demo seed and Won-deal
+auto-create use the new values. Catalog `configSize` axis stays gone.
+
+**Checks:** Prisma generate; migrate deploy on dev `ep-nameless-term` (`20260921200000_extension_three_sizes`);
+enum is SMALL/STANDARD/LARGE; demo rows remapped.
+**Not run:** production migrate; browser QA.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).

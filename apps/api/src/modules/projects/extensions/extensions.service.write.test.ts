@@ -55,14 +55,14 @@ describe('ExtensionsService', () => {
         projectId: 'proj-1',
         productId: 'prod-1',
         name: 'Feature',
-        size: 'MEDIUM',
+        size: 'STANDARD',
         assignedTo: 'dev-1',
       });
       expect(prisma.extension.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             productId: 'prod-1',
-            size: 'MEDIUM',
+            size: 'STANDARD',
             assignedTo: 'dev-1',
           }),
         }),

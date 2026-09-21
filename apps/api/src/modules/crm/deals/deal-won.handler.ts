@@ -550,7 +550,7 @@ export class DealWonHandler {
         projectId: product.projectId,
         productId: product.id,
         name: deal.name ?? `Extension from ${deal.code}`,
-        size: 'MEDIUM',
+        size: 'STANDARD',
       },
     });
 

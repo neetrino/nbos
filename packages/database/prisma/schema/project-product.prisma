@@ -268,9 +268,8 @@ model ProductAccessSlotBinding {
 }
 
 enum ExtensionSizeEnum {
-  MICRO
   SMALL
-  MEDIUM
+  STANDARD
   LARGE
 }
 
