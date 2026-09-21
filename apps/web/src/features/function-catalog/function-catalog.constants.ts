@@ -7,11 +7,6 @@ export const FUNCTION_CATALOG_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_
 export const FUNCTION_CATALOG_CARD_GRID_CLASS =
   'grid w-full content-start grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
-export const FUNCTION_CATALOG_PICKER_DIALOG_CLASS =
-  'flex max-h-[90vh] flex-col gap-4 overflow-hidden sm:max-w-5xl';
-
-export const FUNCTION_CATALOG_PICKER_BODY_CLASS = 'min-h-0 flex-1 overflow-y-auto';
-
 export const CATALOG_ICON_SIZE_PX = 16;
 
 export const CATALOG_ICON_COMPACT_SIZE_PX = 14;
@@ -23,6 +18,8 @@ export const ACTIVE_FUNCTION_STATUS = 'ACTIVE' as const;
 export const MATERIALIZED_PLAN_STATE = 'MATERIALIZED' as const;
 
 export const REASON_FIELD_ID = 'catalog-picker-reason';
+
+export const REMOVE_REASON_FIELD_ID = 'catalog-remove-reason';
 
 export const PUBLISHED_PRICE_STATUS = 'PUBLISHED' as const;
 

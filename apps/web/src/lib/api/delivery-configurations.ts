@@ -32,6 +32,27 @@ export const deliveryConfigurationsApi = {
     return resp.data;
   },
 
+  async getByExtension(
+    extensionId: string,
+  ): Promise<OperationalConfigurationDto | { mode: 'LEGACY' }> {
+    const resp = await api.get<OperationalConfigurationDto | { mode: 'LEGACY' }>(
+      `/api/delivery-configurations/by-extension/${extensionId}`,
+    );
+    return resp.data;
+  },
+
+  async removeFeature(
+    configurationId: string,
+    featureId: string,
+    options: { reason?: string; expectedRevision?: number } = {},
+  ): Promise<OperationalConfigurationDto> {
+    const resp = await api.delete<OperationalConfigurationDto>(
+      `/api/delivery-configurations/${configurationId}/features/${featureId}`,
+      { data: options },
+    );
+    return resp.data;
+  },
+
   async addFeature(
     configurationId: string,
     functionId: string,

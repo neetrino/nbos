@@ -497,6 +497,7 @@ export function DeliveryItemDetailSheet({
                       projectHubHref={projectHubHref}
                       workSpaceHref={headerProps.workSpaceHref}
                       productId={headerProps.productId}
+                      extensionId={renderItem.kind === 'EXTENSION' ? renderItem.extension.id : null}
                       onTaskCreateOpenChange={setTaskCreateOpen}
                       tasksRefreshSignal={taskListRefreshSignal}
                       bonusOrderId={

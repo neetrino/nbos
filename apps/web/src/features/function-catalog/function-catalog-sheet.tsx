@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { EntityDetailSheetContent } from '@/components/shared';
 import { Sheet } from '@/components/ui/sheet';
@@ -21,6 +21,7 @@ export function FunctionCatalogSheet({
   unitsByFunctionId,
   salePriceByFunctionId,
   mode,
+  footer,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,6 +32,7 @@ export function FunctionCatalogSheet({
   unitsByFunctionId: Map<string, number> | undefined;
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
   mode: FunctionCatalogBrowserMode;
+  footer?: ReactNode;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   const [search, setSearch] = useState('');
@@ -56,6 +58,7 @@ export function FunctionCatalogSheet({
             salePriceByFunctionId={salePriceByFunctionId}
             mode={mode}
           />
+          {footer}
         </div>
       </EntityDetailSheetContent>
     </Sheet>
