@@ -6,23 +6,23 @@
 
 Пути ниже относятся к корню репозитория и проверены при подготовке 2026-09-18. Перед правками перечитать текущую ветку.
 
-| Область | Реализация и значение |
-| --- | --- |
+| Область           | Реализация и значение                                                                                                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Product/Extension | `packages/database/prisma/schema/project-product.prisma`: Product имеет 6 delivery slots + seller, Extension только `assignedTo`; оба имеют `deliveryStage`, work status и resolution |
-| Development | `apps/api/src/modules/projects/products/products.service.ts`: `updateStatus` и `moveStage`, development gate; аналогичный сервис Extensions |
-| Developer slots | `product-developer-slots.ts`, `product-developer-slot-lock.ts`: есть проверка Frontend requires Backend и row lock |
-| Старый split | `packages/shared/src/constants/developer-pool-split.ts`: helper 70/30; его наличие не доказывает, что все delivery-entry уже создаются автоматически |
-| Finance schema | `packages/database/prisma/schema/finance.prisma`: BonusEntry, BonusRelease, pool, SalaryLine, PayrollRun, Expenses |
-| Compensation | `packages/database/prisma/schema/compensation.prisma`: base salary, KPI policy; не превращать этот профиль в каталог функций |
-| Pool | `apps/api/src/modules/bonus/product-bonus-pool-sync.ts`, `product-bonus-pool-auto-release.ts`: Done + полученные деньги, пропорциональный release |
-| Bonus types | `product-bonus-pool.constants.ts`: auto-release для DELIVERY, PM, DESIGN; отдельного типа TECH/QA сейчас нет |
-| Payroll attach | `apps/api/src/modules/payroll-runs/payroll-bonus-release-attach.ts`: cap и carry применяются также к non-sales; нельзя утверждать, что cap существует только для Seller |
-| Earned month | `payroll-bonus-release-base.ts`: сейчас требует `earnedPeriod = payrollMonth − 1` для всех типов; null не виден в матрице |
-| Wallet | `apps/api/src/modules/employees/employee-wallet.service.ts` и helpers: read-only projection существующих начислений/выплат |
-| Delivery UI | `apps/web/src/features/projects/components/delivery-board/DeliveryItemDetailSheet.tsx`, `build-delivery-detail-sheet-tabs.ts`, `DeliveryItemDetailBonusPanel.tsx` |
-| Product UI | `apps/web/src/app/(app)/projects/[id]/products/[productId]/page.tsx` |
-| CRM source | `crm.prisma`, `packages/shared/src/constants/index.ts`, `apps/web/src/features/crm/constants/leadPipeline.ts`: четыре From; NETWORKING уже есть как Sales channel |
-| Rates Sales | `apps/api/src/modules/bonus/sales-bonus-policy.service.ts`, `sales-bonus-accrual.service.ts`; таблица `SalesBonusPolicy` |
+| Development       | `apps/api/src/modules/projects/products/products.service.ts`: `updateStatus` и `moveStage`, development gate; аналогичный сервис Extensions                                           |
+| Developer slots   | `product-developer-slots.ts`, `product-developer-slot-lock.ts`: есть проверка Frontend requires Backend и row lock                                                                    |
+| Старый split      | `packages/shared/src/constants/developer-pool-split.ts`: helper 70/30; его наличие не доказывает, что все delivery-entry уже создаются автоматически                                  |
+| Finance schema    | `packages/database/prisma/schema/finance.prisma`: BonusEntry, BonusRelease, pool, SalaryLine, PayrollRun, Expenses                                                                    |
+| Compensation      | `packages/database/prisma/schema/compensation.prisma`: base salary, KPI policy; не превращать этот профиль в каталог функций                                                          |
+| Pool              | `apps/api/src/modules/bonus/product-bonus-pool-sync.ts`, `product-bonus-pool-auto-release.ts`: Done + полученные деньги, пропорциональный release                                     |
+| Bonus types       | `product-bonus-pool.constants.ts`: auto-release для DELIVERY, PM, DESIGN; отдельного типа TECH/QA сейчас нет                                                                          |
+| Payroll attach    | `apps/api/src/modules/payroll-runs/payroll-bonus-release-attach.ts`: cap и carry применяются также к non-sales; нельзя утверждать, что cap существует только для Seller               |
+| Earned month      | `payroll-bonus-release-base.ts`: сейчас требует `earnedPeriod = payrollMonth − 1` для всех типов; null не виден в матрице                                                             |
+| Wallet            | `apps/api/src/modules/employees/employee-wallet.service.ts` и helpers: read-only projection существующих начислений/выплат                                                            |
+| Delivery UI       | `apps/web/src/features/projects/components/delivery-board/DeliveryItemDetailSheet.tsx`, `build-delivery-detail-sheet-tabs.ts`, `DeliveryItemDetailBonusPanel.tsx`                     |
+| Product UI        | `apps/web/src/app/(app)/projects/[id]/products/[productId]/page.tsx`                                                                                                                  |
+| CRM source        | `crm.prisma`, `packages/shared/src/constants/index.ts`, `apps/web/src/features/crm/constants/leadPipeline.ts`: четыре From; NETWORKING уже есть как Sales channel                     |
+| Rates Sales       | `apps/api/src/modules/bonus/sales-bonus-policy.service.ts`, `sales-bonus-accrual.service.ts`; таблица `SalesBonusPolicy`                                                              |
 
 Документы 2026-05 описывают более раннюю модель и не заменяют анализ кода. Особое внимание: optimistic UI и несколько endpoint смены lifecycle/состава команды.
 
@@ -39,21 +39,21 @@
 
 Имена новых таблиц можно адаптировать к соглашениям репозитория; инварианты обязательны. Финансовые версии immutable после публикации. Базовые scalar связи/unique keys не прятать в непрозрачный JSON.
 
-| Сущность | Минимальные поля / ограничения |
-| --- | --- |
-| DeliveryFunction | id, stable unique code, category, iconKey из allowlist, status, author, timestamps; archive вместо удаления используемой функции |
-| DeliveryFunctionContentVersion | functionId, version, title, summary, scope boundaries, instructions rich text, acceptance criteria, author, publishedAt; unique(functionId, version) |
-| DeliveryFunctionAttachment | contentVersionId, existing FileAsset id, caption/order; FK + существующий file ACL |
-| DeliveryFunctionPriceVersion | functionId, version, role-unit rows, effectiveFrom, status, publishedBy; единая complete matrix ролей, null запрещён при publish |
-| DeliveryBaseProfileVersion | stable profile key, version, entityKind, productType/category, configSize, implementationBase, designMode, aiDesignerReview, role-unit rows, description, effectiveFrom/status |
-| DeliveryBaseIncludedFunction | baseProfileVersionId, functionId; unique пары; включённость snapshot-ится, не является формулой baseUnits |
-| DeliveryRoleRateVersion | roleKey, currency=AMD, Decimal rate, effectiveFrom, version/status; единственная опубликованная действующая ставка роли на дату, без employeeId |
-| DeliveryConfiguration | unique orderId, derived Product/Extension owner, modelVersion/mode, current revision, classification, checkedBy/At, draftVersion; CHECK на корректный owner |
-| DeliveryConfigurationFeature | configurationId, functionId, selected price version для extra, origin INCLUDED/EXTRA, local note, work state; stable identity, архивирование вместо потери истории |
-| DeliveryConfigurationRevision | configurationId, sequence, reason, actor, immutable scope/team/source snapshots, financial effectiveAt; unique(configurationId, sequence) |
-| DeliveryBonusComponent | stable component key BASE или feature instance + roleKey; normative/rate snapshot, exact amount, originating revision; отдельная роль даже при одном employee |
-| DeliveryBonusAllocation | componentId, employeeId, share, retained/accepted amount, current planned amount, history refs; stable anchor для BonusEntry |
-| ExtensionDeliveryRoleAssignment | extensionId, roleKey, employeeId; unique(extensionId, roleKey), draft/live API с теми же правилами замены |
+| Сущность                        | Минимальные поля / ограничения                                                                                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DeliveryFunction                | id, stable unique code, category, iconKey из allowlist, status, author, timestamps; archive вместо удаления используемой функции                                               |
+| DeliveryFunctionContentVersion  | functionId, version, title, summary, scope boundaries, instructions rich text, acceptance criteria, author, publishedAt; unique(functionId, version)                           |
+| DeliveryFunctionAttachment      | contentVersionId, existing FileAsset id, caption/order; FK + существующий file ACL                                                                                             |
+| DeliveryFunctionPriceVersion    | functionId, version, role-unit rows, effectiveFrom, status, publishedBy; единая complete matrix ролей, null запрещён при publish                                               |
+| DeliveryBaseProfileVersion      | stable profile key, version, entityKind, productType/category, configSize, implementationBase, designMode, aiDesignerReview, role-unit rows, description, effectiveFrom/status |
+| DeliveryBaseIncludedFunction    | baseProfileVersionId, functionId; unique пары; включённость snapshot-ится, не является формулой baseUnits                                                                      |
+| DeliveryRoleRateVersion         | roleKey, currency=AMD, Decimal rate, effectiveFrom, version/status; единственная опубликованная действующая ставка роли на дату, без employeeId                                |
+| DeliveryConfiguration           | unique orderId, derived Product/Extension owner, modelVersion/mode, current revision, classification, checkedBy/At, draftVersion; CHECK на корректный owner                    |
+| DeliveryConfigurationFeature    | configurationId, functionId, selected price version для extra, origin INCLUDED/EXTRA, local note, work state; stable identity, архивирование вместо потери истории             |
+| DeliveryConfigurationRevision   | configurationId, sequence, reason, actor, immutable scope/team/source snapshots, financial effectiveAt; unique(configurationId, sequence)                                      |
+| DeliveryBonusComponent          | stable component key BASE или feature instance + roleKey; normative/rate snapshot, exact amount, originating revision; отдельная роль даже при одном employee                  |
+| DeliveryBonusAllocation         | componentId, employeeId, share, retained/accepted amount, current planned amount, history refs; stable anchor для BonusEntry                                                   |
+| ExtensionDeliveryRoleAssignment | extensionId, roleKey, employeeId; unique(extensionId, roleKey), draft/live API с теми же правилами замены                                                                      |
 
 Role keys: BACKEND, FRONTEND, PM, DESIGNER, QA, TECHNICAL_SPECIALIST. Product slots остаются source of truth: `developerId`, `frontendDeveloperId`, `pmId`, `designerId`, `qaLeadId`, `technicalSpecialistId`. Не создавать второй независимо редактируемый live-team Product. Snapshot хранит назначения на момент расчёта.
 
@@ -148,22 +148,22 @@ Payload распределения относится к конкретной т
 
 Ниже целевые routes относительно действующего API prefix (`/api/v1` или BFF `/api` — использовать repo convention). Не менять старые URL ради консистентности с этими примерами.
 
-| Route family | Назначение / контракт |
-| --- | --- |
-| `GET /delivery-functions`, `GET /delivery-functions/:id` | Operational DTO: code/title/content/attachments/safe status; без financial fields |
-| `POST /delivery-functions`, `PATCH /delivery-functions/:id/content`, content history | Content editor; не принимать prices/status finance в mass assignment |
-| `GET/POST /delivery-functions/:id/pricing-versions`, publish/archive | Owner/CEO-only financial DTO/command |
-| `/delivery-base-profiles`, versions/publish | Owner/CEO; отдельный operational selector возвращает labels/availability, не units |
-| `/delivery-role-rates`, versions/publish | Owner/CEO, effective dates, audit |
-| `GET/PUT /projects/products/:id/configuration` | Scoped draft/work configuration, expectedRevision, без денег |
-| `GET/PUT /projects/extensions/:id/configuration` | Тот же контракт, независимый owner/order |
-| configuration features add/remove, scope preview/commit | Working diff без денег; changes после старта с reason; atomic commit |
-| configuration `copy-from` | Authorize source+target, копировать только разрешённый scope; current pricing, no employee/client secret copy |
-| configuration `reassign` | Slot + required distribution + expectedRevision, idempotent |
-| configuration `adopt` | Owner-only legacy adoption, explicit preview и проверка дублей |
-| existing lifecycle endpoints | Общий Development hook; не отдельная клиентская команда создания бонусов |
-| existing `/me/wallet` и details | Own money projection; серверный employee context, не employeeId из body |
-| existing Finance endpoints | Денежные результаты по текущим правам, private normative detail отдельным Owner endpoint |
+| Route family                                                                         | Назначение / контракт                                                                                         |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `GET /delivery-functions`, `GET /delivery-functions/:id`                             | Operational DTO: code/title/content/attachments/safe status; без financial fields                             |
+| `POST /delivery-functions`, `PATCH /delivery-functions/:id/content`, content history | Content editor; не принимать prices/status finance в mass assignment                                          |
+| `GET/POST /delivery-functions/:id/pricing-versions`, publish/archive                 | Owner/CEO-only financial DTO/command                                                                          |
+| `/delivery-base-profiles`, versions/publish                                          | Owner/CEO; отдельный operational selector возвращает labels/availability, не units                            |
+| `/delivery-role-rates`, versions/publish                                             | Owner/CEO, effective dates, audit                                                                             |
+| `GET/PUT /projects/products/:id/configuration`                                       | Scoped draft/work configuration, expectedRevision, без денег                                                  |
+| `GET/PUT /projects/extensions/:id/configuration`                                     | Тот же контракт, независимый owner/order                                                                      |
+| configuration features add/remove, scope preview/commit                              | Working diff без денег; changes после старта с reason; atomic commit                                          |
+| configuration `copy-from`                                                            | Authorize source+target, копировать только разрешённый scope; current pricing, no employee/client secret copy |
+| configuration `reassign`                                                             | Slot + required distribution + expectedRevision, idempotent                                                   |
+| configuration `adopt`                                                                | Owner-only legacy adoption, explicit preview и проверка дублей                                                |
+| existing lifecycle endpoints                                                         | Общий Development hook; не отдельная клиентская команда создания бонусов                                      |
+| existing `/me/wallet` и details                                                      | Own money projection; серверный employee context, не employeeId из body                                       |
+| existing Finance endpoints                                                           | Денежные результаты по текущим правам, private normative detail отдельным Owner endpoint                      |
 
 Commands должны выдавать structured codes: `CONFIGURATION_INCOMPLETE`, `ROLE_ASSIGNMENT_REQUIRED`, `NORMATIVE_NOT_CONFIGURED`, `CONFIGURATION_CONFLICT`, `REDISTRIBUTION_REQUIRED`, `FINANCIAL_ALLOCATION_LOCKED`, `FUNCTION_ALREADY_SELECTED`, `LEGACY_ADOPTION_REQUIRED`. Не включать hidden units/rates/чужие суммы в message/details для PM.
 

@@ -16,67 +16,67 @@ Bank с собственными положительными units включё
 
 ## 2. Calculator
 
-| ID | Сценарий | Ожидаемый результат |
-| --- | --- | --- |
-| C01 | Только база | 187 500, сумма по 6 ролям; не считать цену заказа |
-| C02 | Bank included | 187 500; функция видима, добавка 0 |
-| C03 | Extra Warehouse | 202 700, изменились только 3 роли |
-| C04 | Bank extra для B | Добавляется по price vector ровно один раз |
-| C05 | Один сотрудник Backend+Frontend | Свои 140 000 по базе, нет 70/30 и нет потери роли |
-| C06 | null vs zero | null блокирует publish/Development; явный zero допустим, не создаёт положительное денежное обязательство |
-| C07 | Backend тариф стал 1 200, add 10 units | +12 000; старый base остаётся 100 000 |
-| C08 | AI/Concept/Full/AI Reviewer | Разные утверждённые base vectors; назначение Designer без выбора Reviewer/режима отклоняется |
-| C09 | Decimal 10.01 разделить вручную 33/67 | Сумма сохранена 10.01; детерминированное округление, не float drift |
-| C10 | Прежняя функция 50 → новая 5 units | Новый продукт получает 5; старый 50; дополнительный maturity multiplier отсутствует |
+| ID  | Сценарий                               | Ожидаемый результат                                                                                      |
+| --- | -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| C01 | Только база                            | 187 500, сумма по 6 ролям; не считать цену заказа                                                        |
+| C02 | Bank included                          | 187 500; функция видима, добавка 0                                                                       |
+| C03 | Extra Warehouse                        | 202 700, изменились только 3 роли                                                                        |
+| C04 | Bank extra для B                       | Добавляется по price vector ровно один раз                                                               |
+| C05 | Один сотрудник Backend+Frontend        | Свои 140 000 по базе, нет 70/30 и нет потери роли                                                        |
+| C06 | null vs zero                           | null блокирует publish/Development; явный zero допустим, не создаёт положительное денежное обязательство |
+| C07 | Backend тариф стал 1 200, add 10 units | +12 000; старый base остаётся 100 000                                                                    |
+| C08 | AI/Concept/Full/AI Reviewer            | Разные утверждённые base vectors; назначение Designer без выбора Reviewer/режима отклоняется             |
+| C09 | Decimal 10.01 разделить вручную 33/67  | Сумма сохранена 10.01; детерминированное округление, не float drift                                      |
+| C10 | Прежняя функция 50 → новая 5 units     | Новый продукт получает 5; старый 50; дополнительный maturity multiplier отсутствует                      |
 
 ## 3. Lifecycle и scope
 
-| ID | Сценарий | Ожидаемый результат |
-| --- | --- | --- |
-| L01 | Save Starting draft | Нет BonusEntry/кошелька/release |
-| L02 | Первый Development | Один snapshot и один набор плановых allocations/entries; Wallet показывает прогноз |
-| L03 | Два параллельных перехода / retry | Один initial plan, нет дублей; DB integration test |
-| L04 | Fail между plan write и stage write | Полный rollback; ни частичной стадии, ни частичного бонуса |
-| L05 | Back to Starting → Development; pause/resume | Исходный план не повторяется, financial dates не сбрасываются |
-| L06 | Нет required employee/rate/profile/checked scope | Переход заблокирован безопасным сообщением, без hidden amounts |
-| L07 | Legacy status PATCH / automation / Extension | Нельзя обойти те же gates или создать второй бонус |
-| L08 | Добавить опубликованную функцию после выполнения работы в ACTIVE | Новая revision, бонус только затронутым получателям, без CEO запроса units |
-| L09 | Два scope edits на одной версии | Один commit, второй 409; никакого lost update |
-| L10 | Удалить невыполненную extra; затем повторно добавить | Без двойной оплаты принятого/сохранённого, история доступна |
-| L11 | Отмена при частично принятой работе | Принятая часть сохранена, невыполненное убрано; не auto Done release |
-| L12 | Done/Cancelled, archive function/profile | Scope read-only, historical content/snapshots существуют; денег не теряет |
-| L13 | Reference product copy | Копируются scope parameters, используются текущие norms; нет копии денег, людей, notes/credentials |
-| L14 | Небольшая уникальная Task вне каталога | Никакого обязательного units placeholder, бонус не создаётся автоматически |
+| ID  | Сценарий                                                         | Ожидаемый результат                                                                                |
+| --- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| L01 | Save Starting draft                                              | Нет BonusEntry/кошелька/release                                                                    |
+| L02 | Первый Development                                               | Один snapshot и один набор плановых allocations/entries; Wallet показывает прогноз                 |
+| L03 | Два параллельных перехода / retry                                | Один initial plan, нет дублей; DB integration test                                                 |
+| L04 | Fail между plan write и stage write                              | Полный rollback; ни частичной стадии, ни частичного бонуса                                         |
+| L05 | Back to Starting → Development; pause/resume                     | Исходный план не повторяется, financial dates не сбрасываются                                      |
+| L06 | Нет required employee/rate/profile/checked scope                 | Переход заблокирован безопасным сообщением, без hidden amounts                                     |
+| L07 | Legacy status PATCH / automation / Extension                     | Нельзя обойти те же gates или создать второй бонус                                                 |
+| L08 | Добавить опубликованную функцию после выполнения работы в ACTIVE | Новая revision, бонус только затронутым получателям, без CEO запроса units                         |
+| L09 | Два scope edits на одной версии                                  | Один commit, второй 409; никакого lost update                                                      |
+| L10 | Удалить невыполненную extra; затем повторно добавить             | Без двойной оплаты принятого/сохранённого, история доступна                                        |
+| L11 | Отмена при частично принятой работе                              | Принятая часть сохранена, невыполненное убрано; не auto Done release                               |
+| L12 | Done/Cancelled, archive function/profile                         | Scope read-only, historical content/snapshots существуют; денег не теряет                          |
+| L13 | Reference product copy                                           | Копируются scope parameters, используются текущие norms; нет копии денег, людей, notes/credentials |
+| L14 | Небольшая уникальная Task вне каталога                           | Никакого обязательного units placeholder, бонус не создаётся автоматически                         |
 
 ## 4. Перераспределение
 
-| ID | Сценарий | Ожидаемый результат |
-| --- | --- | --- |
-| H01 | Замена в Starting до плана | Обычный team update |
-| H02 | Замена после плана из Delivery | Modal с пустыми обязательными долями по базе и extras |
-| H03 | Та же замена из Product/Extension или direct PATCH | Один контракт; direct bypass отклонён |
-| H04 | Empty/negative/>100/NaN/sum≠100 | 400/validation; ничего не записано |
-| H05 | Вручную 40/60 у Backend базы 100 000 | 40 000 прежнему, 60 000 новому; общий итог тот же |
-| H06 | Второй handover 50/50 от доли 60 000 | Первый сохраняет 40 000; второй 30 000, третий 30 000 |
-| H07 | Уже оплачено/в payroll/carry зарезервировано | Нельзя передать protected amount, нет deletion/negative fake payment; безопасный error |
-| H08 | Cancel modal/concurrent scope change | Old assignee не меняется; stale revision 409, без частичной смены |
+| ID  | Сценарий                                           | Ожидаемый результат                                                                    |
+| --- | -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| H01 | Замена в Starting до плана                         | Обычный team update                                                                    |
+| H02 | Замена после плана из Delivery                     | Modal с пустыми обязательными долями по базе и extras                                  |
+| H03 | Та же замена из Product/Extension или direct PATCH | Один контракт; direct bypass отклонён                                                  |
+| H04 | Empty/negative/>100/NaN/sum≠100                    | 400/validation; ничего не записано                                                     |
+| H05 | Вручную 40/60 у Backend базы 100 000               | 40 000 прежнему, 60 000 новому; общий итог тот же                                      |
+| H06 | Второй handover 50/50 от доли 60 000               | Первый сохраняет 40 000; второй 30 000, третий 30 000                                  |
+| H07 | Уже оплачено/в payroll/carry зарезервировано       | Нельзя передать protected amount, нет deletion/negative fake payment; безопасный error |
+| H08 | Cancel modal/concurrent scope change               | Old assignee не меняется; stale revision 409, без частичной смены                      |
 
 ## 5. Finance и Wallet
 
-| ID | Сценарий | Ожидаемый результат |
-| --- | --- | --- |
-| F01 | Plan → pool → wallet | План посчитан один раз, не plan+entry вдвойне |
-| F02 | Done funded | Existing proportional release и статусы, без выплаты напрямую |
-| F03 | Done M, first funding M+1, rest M+2 | Остаток не теряется и не оплачивается дважды; earnedPeriod не переписан сегодняшней датой |
-| F04 | Early/extra/over-funding | Сохраняются существующие actor/reason/funding checks |
-| F05 | Cap и FIFO carry | Граница применяется существующим способом ко всему salary-line bonus; carry не сгорает |
-| F06 | Approve payroll → Expense → partial/full ExpensePayment | paid/remaining и release paid marks соответствуют ledger |
-| F07 | QA и Tech | Есть в pool, matrix linking, employee history, Wallet и reports; корректный role label |
-| F08 | Generated entry + manual adjustment + scope change | Причина и исходный snapshot сохранены, adjustment не затёрт, дублей нет |
-| F09 | Existing SALES + legacy/manual DELIVERY | Старые расчёты и KPI поведение неизменны, включая shared employee cap |
-| F10 | Валюта профиля несовместима с AMD пути | Нет silent currency mixing; явная readiness error |
-| F11 | Уже выдан manual bonus за ту же связанную работу | Нет автоматической повторной выплаты при добавлении каталожной функции; Finance разрешает overlap |
-| F12 | Большая история / pagination / export | Итог Wallet не равен случайно только первой странице, приватные snapshots не экспортируются |
+| ID  | Сценарий                                                | Ожидаемый результат                                                                               |
+| --- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| F01 | Plan → pool → wallet                                    | План посчитан один раз, не plan+entry вдвойне                                                     |
+| F02 | Done funded                                             | Existing proportional release и статусы, без выплаты напрямую                                     |
+| F03 | Done M, first funding M+1, rest M+2                     | Остаток не теряется и не оплачивается дважды; earnedPeriod не переписан сегодняшней датой         |
+| F04 | Early/extra/over-funding                                | Сохраняются существующие actor/reason/funding checks                                              |
+| F05 | Cap и FIFO carry                                        | Граница применяется существующим способом ко всему salary-line bonus; carry не сгорает            |
+| F06 | Approve payroll → Expense → partial/full ExpensePayment | paid/remaining и release paid marks соответствуют ledger                                          |
+| F07 | QA и Tech                                               | Есть в pool, matrix linking, employee history, Wallet и reports; корректный role label            |
+| F08 | Generated entry + manual adjustment + scope change      | Причина и исходный snapshot сохранены, adjustment не затёрт, дублей нет                           |
+| F09 | Existing SALES + legacy/manual DELIVERY                 | Старые расчёты и KPI поведение неизменны, включая shared employee cap                             |
+| F10 | Валюта профиля несовместима с AMD пути                  | Нет silent currency mixing; явная readiness error                                                 |
+| F11 | Уже выдан manual bonus за ту же связанную работу        | Нет автоматической повторной выплаты при добавлении каталожной функции; Finance разрешает overlap |
+| F12 | Большая история / pagination / export                   | Итог Wallet не равен случайно только первой странице, приватные snapshots не экспортируются       |
 
 ## 6. Security и UI
 
