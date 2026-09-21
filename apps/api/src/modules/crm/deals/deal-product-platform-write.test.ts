@@ -38,4 +38,10 @@ describe('dealProductPlatformWrite', () => {
       productPlatform: null,
     });
   });
+
+  it('clears platform when the category becomes marketing', () => {
+    expect(dealProductPlatformWrite({ productCategory: 'MARKETING' }, codeShop)).toEqual({
+      productPlatform: null,
+    });
+  });
 });

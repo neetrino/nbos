@@ -621,6 +621,7 @@ async function createRichProjectBundle(
       name: engagement.product,
       productCategory: engagement.category,
       productType: engagement.type,
+      productPlatform: engagement.type === 'MOBILE_APP' ? 'APP' : 'WEB',
       status: productStatuses[suffix % productStatuses.length]!,
       pmId: suffix % 2 === 0 ? ctx.pm.id : ctx.pm2.id,
       deadline: new Date('2026-09-30'),

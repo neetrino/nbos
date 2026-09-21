@@ -10,7 +10,12 @@ import { DOMAIN_PREP_MARKERS } from '../../client-services/domain-purchase/domai
 
 export async function loadMissingRequiredAccessSlotKeys(
   prisma: InstanceType<typeof PrismaClient>,
-  product: { id: string; productCategory: string; productType: string },
+  product: {
+    id: string;
+    productCategory: string;
+    productType: string;
+    productPlatform?: string | null;
+  },
 ): Promise<string[]> {
   const bindings = await prisma.productAccessSlotBinding.findMany({
     where: { productId: product.id },
@@ -19,6 +24,7 @@ export async function loadMissingRequiredAccessSlotKeys(
   const missing = getMissingRequiredAccessSlotsForDone({
     productCategory: product.productCategory,
     productType: product.productType,
+    productPlatform: product.productPlatform,
     boundSlotKeys: [...new Set(bindings.map((row) => row.slotKey))],
   });
   if (!missing.includes('DOMAIN')) return missing;

@@ -1,7 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { allowedProductPlatforms, coerceProductPlatform } from '@nbos/shared';
+import {
+  allowedProductPlatforms,
+  coerceOptionalProductPlatform,
+  productPlatformApplies,
+} from '@nbos/shared';
 import { FormFieldRow, InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 
@@ -97,7 +101,7 @@ function CreateProductTaxonomyFields({
           />
         ) : null}
       </FormFieldRow>
-      {form.productCategory ? (
+      {productPlatformApplies(form.productCategory) ? (
         <InlineField
           variant="controlled"
           label={t('product.fields.platform')}
@@ -119,9 +123,7 @@ function categoryChange(productCategory: string): Partial<CreateProductFormState
   return {
     productCategory,
     productType: '',
-    productPlatform: productCategory
-      ? coerceProductPlatform({ productCategory, productType: '', requested: null })
-      : '',
+    productPlatform: formPlatform({ productCategory, productType: '', requested: null }),
   };
 }
 
@@ -131,7 +133,7 @@ function typeChange(
 ): Partial<CreateProductFormState> {
   return {
     productType,
-    productPlatform: coerceProductPlatform({
+    productPlatform: formPlatform({
       productCategory: form.productCategory,
       productType,
       requested: productType === 'MOBILE_APP' ? 'APP' : form.productPlatform,
@@ -144,12 +146,20 @@ function platformChange(
   productPlatform: string,
 ): Partial<CreateProductFormState> {
   return {
-    productPlatform: coerceProductPlatform({
+    productPlatform: formPlatform({
       productCategory: form.productCategory,
       productType: form.productType,
       requested: productPlatform,
     }),
   };
+}
+
+function formPlatform(input: {
+  productCategory?: string | null;
+  productType?: string | null;
+  requested?: string | null;
+}): string {
+  return coerceOptionalProductPlatform(input) ?? '';
 }
 
 function platformOptions(

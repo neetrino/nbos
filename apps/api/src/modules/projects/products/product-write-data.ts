@@ -93,7 +93,7 @@ export function buildProductUpdateData(data: UpdateProductDto): Prisma.ProductUp
 
 export function buildProductTaxonomyPatch(
   data: UpdateProductDto,
-  current: { productCategory: string; productType: string; productPlatform: string },
+  current: { productCategory: string; productType: string; productPlatform: string | null },
 ): Prisma.ProductUpdateInput {
   if (
     data.productCategory === undefined &&

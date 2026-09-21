@@ -77,6 +77,28 @@ describe('DealWonHandler', () => {
     );
   });
 
+  it('creates a marketing product without stamping WEB', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(
+      productDeal({
+        productCategory: 'MARKETING',
+        productType: 'SEO',
+        productPlatform: 'WEB',
+      }),
+    );
+
+    expect(prisma.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          productCategory: 'MARKETING',
+          productType: 'SEO',
+          productPlatform: null,
+        }),
+      }),
+    );
+  });
+
   it('copies deal additional contacts onto auto-created project', async () => {
     prisma.project.findFirst.mockResolvedValue(null);
     prisma.project.create.mockResolvedValue({ id: 'proj-1', code: 'P-2026-0001' });

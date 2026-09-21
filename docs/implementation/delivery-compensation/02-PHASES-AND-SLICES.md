@@ -512,8 +512,9 @@ resulting grants read back; guard metadata asserted on all eleven routes, not a 
 
 `productType` mixed kind with where the product runs, so a deal could not say "online shop + app".
 `productPlatform` is a new field on Deal and Product: WEB, APP, DESKTOP. The Owner named it APP, not
-MOBILE_APP. It does not enter the base-profile key and does not change units. WordPress, Shopify and
-marketing are WEB-only; Code and Other may be any of the three.
+MOBILE_APP. It does not enter the base-profile key and does not change units. WordPress and Shopify
+are WEB-only. Marketing later stores NULL (see 2026-09-21 platform-applies slice). Code may be any
+of the three.
 
 Migration `20260921163000_product_platform` adds the enum and columns, backfills legacy
 `product_type = MOBILE_APP` to APP, and leaves other **typed** rows on WEB. Deals with no
@@ -588,6 +589,24 @@ auto-create use the new values. Catalog `configSize` axis stays gone.
 **Checks:** Prisma generate; migrate deploy on dev `ep-nameless-term` (`20260921200000_extension_three_sizes`);
 enum is SMALL/STANDARD/LARGE; demo rows remapped.
 **Not run:** production migrate; browser QA.
+
+### Platform applies + hide Mobile App type (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Platform field only for Code (WEB/APP/DESKTOP) and WordPress/Shopify (WEB). Marketing and Other store
+`NULL`; the UI hides the field; SEND_OFFER does not require it. Product.productPlatform is optional.
+`MOBILE_APP` remains in `ProductTypeEnum` and in labels, but is not offered on new Code picks
+(legacy current value still appears). App Store slot is added when `productPlatform === APP` (legacy
+`MOBILE_APP` type still qualifies). Won copies null onto a marketing product instead of WEB.
+
+Migration `20260921210000_product_platform_nullable_marketing` applied to **dev**
+`ep-nameless-term` (2026-09-21). Column `products.product_platform` is nullable, default stays WEB.
+Read-back: 9 MARKETING + 94 OTHER products `NULL`; CODE 30 WEB; WordPress 44 WEB; Shopify 2 WEB.
+Marketing deals with a platform: 0.
+
+**Checks:** vitest 14 files / 140 passed (shared coerce/gate/slots, migration SQL, product write,
+Won, deal write, product create, SEND_OFFER); Prettier; `pnpm --filter @nbos/database generate`;
+shared + database + API + web `tsc --noEmit` (API/web 8GB); migrate deploy on dev.
+**Not run:** browser QA of deal sheet / create product / planning; production migrate.
 
 ### Production launch
 

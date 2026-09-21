@@ -38,8 +38,14 @@ describe('resolveDealProductPlatform', () => {
     expect(resolveDealProductPlatform({})).toBeNull();
   });
 
-  it('fills WEB once a category is chosen', () => {
+  it('fills WEB once a code category is chosen', () => {
     expect(resolveDealProductPlatform({ productCategory: 'CODE' })).toBe('WEB');
+  });
+
+  it('leaves marketing without a platform', () => {
+    expect(
+      resolveDealProductPlatform({ productCategory: 'MARKETING', productType: 'SEO' }),
+    ).toBeNull();
   });
 
   it('does not keep APP after the category is cleared', () => {

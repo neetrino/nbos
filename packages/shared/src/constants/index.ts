@@ -180,7 +180,6 @@ export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
   CODE: [
     'BUSINESS_CARD_WEBSITE',
     'COMPANY_WEBSITE',
-    'MOBILE_APP',
     'WEB_APP',
     'CRM',
     'ECOMMERCE',
@@ -193,6 +192,32 @@ export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
   MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
   OTHER: [],
 } as const;
+
+const HIDDEN_FROM_NEW_PRODUCT_TYPE_PICK = new Set(['MOBILE_APP']);
+
+/**
+ * Types shown when creating/editing. `MOBILE_APP` stays in the enum for legacy cards
+ * and is appended only when it is the current value.
+ */
+export function listedProductTypesForPicker(
+  category: string | null | undefined,
+  currentType?: string | null,
+): string[] {
+  if (!category) return [];
+  const mapped = PRODUCT_TYPES_BY_CATEGORY[category];
+  const listed =
+    mapped && mapped.length > 0
+      ? [...mapped]
+      : PRODUCT_TYPES.filter((type) => !HIDDEN_FROM_NEW_PRODUCT_TYPE_PICK.has(type));
+  if (
+    currentType &&
+    !listed.includes(currentType) &&
+    (PRODUCT_TYPES as readonly string[]).includes(currentType)
+  ) {
+    listed.push(currentType);
+  }
+  return listed;
+}
 
 export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT', 'NETWORK'] as const;
 

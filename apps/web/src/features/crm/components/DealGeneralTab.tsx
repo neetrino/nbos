@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { PRODUCT_TYPES, PRODUCT_TYPES_BY_CATEGORY } from '../constants/dealPipeline';
+import { listedProductTypesForPicker } from '@nbos/shared';
+import { PRODUCT_TYPES } from '../constants/dealPipeline';
 import type { Deal } from '@/lib/api/deals';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
 import { marketingApi } from '@/lib/api/marketing';
@@ -206,10 +207,10 @@ function getFilteredProductTypeOptions(
 ) {
   const category = draft.productCategory;
   if (!category) return productTypeOptions;
-  const allowed = PRODUCT_TYPES_BY_CATEGORY[category] ?? [];
-  if (allowed.length === 0) return productTypeOptions;
+  const listed = listedProductTypesForPicker(category, draft.productType);
+  if (listed.length === 0) return productTypeOptions;
   return productTypeOptions.filter(
-    (option) => allowed.includes(option.value) || option.value === 'OTHER',
+    (option) => listed.includes(option.value) || option.value === 'OTHER',
   );
 }
 

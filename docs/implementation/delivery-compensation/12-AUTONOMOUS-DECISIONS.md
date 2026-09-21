@@ -179,9 +179,9 @@ deleted so the norm is ready if a client asks; it costs nothing while it stays d
 **1.17 Platform is WEB / APP / DESKTOP, never MOBILE_APP — Owner confirmation of 2026-09-21.** Kind
 and platform are separate fields. `ProductTypeEnum.MOBILE_APP` stays as a legacy kind until the type
 list is revised; the new axis is `productPlatform` with values WEB, APP and DESKTOP. Same function,
-same units on every platform, so platform is not part of the base-profile key. WordPress, Shopify and
-marketing stay WEB-only. Legacy `MOBILE_APP` kinds backfill to APP; the Owner still assigns a real
-kind by hand.
+same units on every platform, so platform is not part of the base-profile key. WordPress and Shopify
+stay WEB-only. **Marketing has no platform** (decision 1.20). Legacy `MOBILE_APP` kinds backfill to
+APP; the Owner still assigns a real kind by hand.
 
 **1.18 Size is gone; named collections are a replace-helper — Owner decision of 2026-09-21.**
 `configSize` is not a product, not a core price and not a calculation axis. One kind has one core
@@ -202,6 +202,13 @@ is a different enum and stays.
 is `SMALL` / `STANDARD` / `LARGE`. Existing `MICRO` rows map to `SMALL`; `MEDIUM` maps to
 `STANDARD`. Auto-created extensions from a Won deal default to `STANDARD`. The Change Control
 "Micro Extension" path (paid work under one hour) is a process, not a fourth size.
+
+**1.20 Marketing has no platform; Mobile App is not a new type — Owner confirmation of 2026-09-21.**
+The earlier WEB-only shortcut for Marketing was a form gate, not a business meaning. Marketing
+stores `productPlatform = NULL` and the field is hidden. Code keeps WEB / APP / DESKTOP;
+WordPress and Shopify stay WEB. `MOBILE_APP` stays in the enum for legacy cards and is hidden from
+new type pickers (current value still shows). App Store access slots follow platform APP (legacy
+`MOBILE_APP` type still qualifies). `WEB_APP` remains a real kind (web application), not a platform.
 
 ## 2. Open points that need the Owner
 

@@ -129,6 +129,14 @@ describe('buildDealTaxonomyPatch', () => {
     });
   });
 
+  it('does not stamp WEB onto a marketing deal', () => {
+    expect(buildDealTaxonomyPatch('MARKETING', 'SEO', 'WEB')).toEqual({
+      productCategory: 'MARKETING',
+      productType: 'SEO',
+      productPlatform: null,
+    });
+  });
+
   it('clears platform with the rest of the taxonomy', () => {
     expect(buildDealTaxonomyPatch(null, 'ECOMMERCE', 'APP')).toEqual({
       productCategory: null,

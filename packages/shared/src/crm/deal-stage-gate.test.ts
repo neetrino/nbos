@@ -189,6 +189,20 @@ describe('getDealStageGateErrors', () => {
     ).toContain('productPlatform');
   });
 
+  it('does not require productPlatform for a marketing deal at SEND_OFFER', () => {
+    const deal = {
+      ...baseDeal,
+      amount: 5000,
+      paymentType: 'CLASSIC',
+      productCategory: 'MARKETING',
+      productType: 'SEO',
+      offerLink: 'https://example.com/offer',
+    };
+    expect(getDealStageGateErrors(deal, 'SEND_OFFER').map((error) => error.field)).not.toContain(
+      'productPlatform',
+    );
+  });
+
   it('requires existingProductId for EXTENSION and MAINTENANCE at DEPOSIT_AND_CONTRACT', () => {
     const extension = {
       ...baseDeal,

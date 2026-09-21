@@ -14,4 +14,17 @@ describe('buildProductTaxonomyPatch', () => {
       productPlatform: 'WEB',
     });
   });
+
+  it('clears platform when the category becomes marketing', () => {
+    expect(
+      buildProductTaxonomyPatch(
+        { productCategory: 'MARKETING', productType: 'SEO' },
+        { productCategory: 'CODE', productType: 'ECOMMERCE', productPlatform: 'APP' },
+      ),
+    ).toEqual({
+      productCategory: 'MARKETING',
+      productType: 'SEO',
+      productPlatform: null,
+    });
+  });
 });

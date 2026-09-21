@@ -41,7 +41,7 @@ export interface Product {
   name: string;
   productCategory: string;
   productType: string;
-  productPlatform: string;
+  productPlatform: string | null;
   status: string;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;

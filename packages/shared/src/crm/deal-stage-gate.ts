@@ -1,5 +1,6 @@
 import { DEAL_STAGE_GATE_ORDER } from '../constants/crm-attribution';
 import { getAttributionValidationErrors, type AttributionForValidation } from './attribution-gate';
+import { productPlatformApplies } from '../constants/product-platform';
 
 export type { StageGateError } from './attribution-gate';
 
@@ -114,7 +115,7 @@ export function getDealStageGateErrors(
         message: 'Product type is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',
       });
     }
-    if (isProductLike && !deal.productPlatform) {
+    if (isProductLike && productPlatformApplies(deal.productCategory) && !deal.productPlatform) {
       errors.push({
         field: 'productPlatform',
         message: 'Product platform is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',

@@ -30,6 +30,15 @@ describe('getAccessSlotsForProduct', () => {
     expect(slots.some((s) => s.slotKey === 'APP_STORE')).toBe(true);
   });
 
+  it('adds app store slot when platform is APP even if the kind is a shop', () => {
+    expect(
+      getAccessSlotsForProduct('CODE', 'ECOMMERCE', 'APP').some((s) => s.slotKey === 'APP_STORE'),
+    ).toBe(true);
+    expect(
+      getAccessSlotsForProduct('CODE', 'ECOMMERCE', 'WEB').some((s) => s.slotKey === 'APP_STORE'),
+    ).toBe(false);
+  });
+
   it('returns empty for unknown category', () => {
     expect(getAccessSlotsForProduct('UNKNOWN', 'OTHER')).toEqual([]);
   });

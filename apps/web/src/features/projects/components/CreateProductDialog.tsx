@@ -2,12 +2,9 @@
 
 import { useMemo, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { listedProductTypesForPicker, productPlatformApplies } from '@nbos/shared';
 import { CreateFormDialog } from '@/components/shared';
-import {
-  PRODUCT_CATEGORIES,
-  PRODUCT_TYPES,
-  PRODUCT_TYPES_BY_CATEGORY,
-} from '@/features/projects/constants/projects';
+import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import { productsApi, type CreateProductData, type Product } from '@/lib/api/products';
 import {
   CreateProductDialogFields,
@@ -62,20 +59,19 @@ function CreateProductDialogSession({
   );
   const typeOptions = useMemo(() => {
     if (!form.productCategory) return [];
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[form.productCategory] ?? [];
-    const types =
-      allowed.length === 0
-        ? PRODUCT_TYPES
-        : PRODUCT_TYPES.filter(
-            (productType) => allowed.includes(productType.value) || productType.value === 'OTHER',
-          );
-    return types.map((productType) => ({
+    const listed = listedProductTypesForPicker(form.productCategory, form.productType);
+    return PRODUCT_TYPES.filter(
+      (productType) => listed.includes(productType.value) || productType.value === 'OTHER',
+    ).map((productType) => ({
       value: productType.value,
       label: t(`product.types.${productType.value}` as never),
     }));
-  }, [form.productCategory, t]);
+  }, [form.productCategory, form.productType, t]);
   const canSubmit = Boolean(
-    form.name.trim() && form.productCategory && form.productType && form.productPlatform,
+    form.name.trim() &&
+    form.productCategory &&
+    form.productType &&
+    (!productPlatformApplies(form.productCategory) || form.productPlatform),
   );
 
   return (
@@ -129,7 +125,7 @@ async function submitProduct(options: {
       name: options.form.name.trim(),
       productCategory: options.form.productCategory,
       productType: options.form.productType,
-      productPlatform: options.form.productPlatform,
+      productPlatform: options.form.productPlatform || null,
       description: options.form.description || undefined,
       deadline: options.form.deadline || undefined,
     };

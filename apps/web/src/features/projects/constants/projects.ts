@@ -1,4 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
+import { listedProductTypesForPicker } from '@nbos/shared';
 
 export const PROJECT_HUB_TABS = [
   { value: 'all', label: 'All' },
@@ -46,7 +47,6 @@ export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
   CODE: [
     'BUSINESS_CARD_WEBSITE',
     'COMPANY_WEBSITE',
-    'MOBILE_APP',
     'WEB_APP',
     'CRM',
     'ECOMMERCE',
@@ -123,10 +123,9 @@ export function getProductType(value: string) {
  * Возвращает отфильтрованный список ProductType по категории.
  * OTHER всегда добавляется в конец.
  */
-export function getProductTypesForCategory(category: string) {
-  const allowed = PRODUCT_TYPES_BY_CATEGORY[category] ?? [];
-  const filtered = PRODUCT_TYPES.filter((t) => allowed.includes(t.value) || t.value === 'OTHER');
-  return filtered;
+export function getProductTypesForCategory(category: string, currentType?: string) {
+  const listed = listedProductTypesForPicker(category, currentType);
+  return PRODUCT_TYPES.filter((t) => listed.includes(t.value) || t.value === 'OTHER');
 }
 
 export function getProductStatus(value: string) {

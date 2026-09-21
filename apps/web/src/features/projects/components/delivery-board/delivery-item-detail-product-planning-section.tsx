@@ -10,12 +10,13 @@ import {
   EntityNotesField,
   InlineField,
 } from '@/components/shared';
+import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import {
-  PRODUCT_CATEGORIES,
-  PRODUCT_TYPES,
-  PRODUCT_TYPES_BY_CATEGORY,
-} from '@/features/projects/constants/projects';
-import { allowedProductPlatforms, coerceProductPlatform } from '@nbos/shared';
+  allowedProductPlatforms,
+  coerceOptionalProductPlatform,
+  listedProductTypesForPicker,
+  productPlatformApplies,
+} from '@nbos/shared';
 import { cn } from '@/lib/utils';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
@@ -45,13 +46,13 @@ export function ProductPlanningSection({
   const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
   const typeOptions = useMemo(() => {
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
-    const set = new Set(allowed);
-    return PRODUCT_TYPES.filter((t) => set.size === 0 || set.has(t.value)).map((t) => ({
-      value: t.value,
-      label: t.label,
+    const listed = listedProductTypesForPicker(draft.productCategory, draft.productType);
+    const set = new Set(listed);
+    return PRODUCT_TYPES.filter((item) => set.size === 0 || set.has(item.value)).map((item) => ({
+      value: item.value,
+      label: item.label,
     }));
-  }, [draft.productCategory]);
+  }, [draft.productCategory, draft.productType]);
 
   const patchDraft = (partial: Partial<ProductPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
@@ -102,7 +103,7 @@ export function ProductPlanningSection({
             disabled={disabled}
             onValueChange={(v) => {
               if (!v) return;
-              const allowed = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
+              const allowed = listedProductTypesForPicker(v);
               const nextType = allowed.includes(draft.productType)
                 ? draft.productType
                 : (allowed[0] ?? draft.productType);
@@ -110,11 +111,12 @@ export function ProductPlanningSection({
                 ...draft,
                 productCategory: v,
                 productType: nextType,
-                productPlatform: coerceProductPlatform({
-                  productCategory: v,
-                  productType: nextType,
-                  requested: draft.productPlatform,
-                }),
+                productPlatform:
+                  coerceOptionalProductPlatform({
+                    productCategory: v,
+                    productType: nextType,
+                    requested: draft.productPlatform,
+                  }) ?? '',
               });
             }}
           />
@@ -131,36 +133,40 @@ export function ProductPlanningSection({
               if (!v) return;
               patchDraft({
                 productType: v,
-                productPlatform: coerceProductPlatform({
-                  productCategory: draft.productCategory,
-                  productType: v,
-                  requested: v === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
-                }),
+                productPlatform:
+                  coerceOptionalProductPlatform({
+                    productCategory: draft.productCategory,
+                    productType: v,
+                    requested: v === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
+                  }) ?? '',
               });
             }}
           />
-          <InlineField
-            variant="controlled"
-            label={t('plan.productPlatform')}
-            type="select"
-            value={draft.productPlatform}
-            options={allowedProductPlatforms(draft.productCategory).map((value) => ({
-              value,
-              label: t(`plan.platforms.${value}`),
-            }))}
-            icon={<AppWindow size={12} />}
-            disabled={disabled}
-            onValueChange={(v) => {
-              if (!v) return;
-              patchDraft({
-                productPlatform: coerceProductPlatform({
-                  productCategory: draft.productCategory,
-                  productType: draft.productType,
-                  requested: v,
-                }),
-              });
-            }}
-          />
+          {productPlatformApplies(draft.productCategory) ? (
+            <InlineField
+              variant="controlled"
+              label={t('plan.productPlatform')}
+              type="select"
+              value={draft.productPlatform}
+              options={allowedProductPlatforms(draft.productCategory).map((value) => ({
+                value,
+                label: t(`plan.platforms.${value}`),
+              }))}
+              icon={<AppWindow size={12} />}
+              disabled={disabled}
+              onValueChange={(v) => {
+                if (!v) return;
+                patchDraft({
+                  productPlatform:
+                    coerceOptionalProductPlatform({
+                      productCategory: draft.productCategory,
+                      productType: draft.productType,
+                      requested: v,
+                    }) ?? '',
+                });
+              }}
+            />
+          ) : null}
         </DetailSheetCollapsibleSubsection>
       </div>
       <div

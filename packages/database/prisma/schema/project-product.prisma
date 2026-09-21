@@ -148,7 +148,8 @@ model Product {
   name                 String
   productCategory      ProductCategoryEnum     @map("product_category")
   productType          ProductTypeEnum         @map("product_type")
-  productPlatform      ProductPlatformEnum     @default(WEB) @map("product_platform")
+  /// WEB / APP / DESKTOP for Code, WordPress, Shopify. Null for Marketing (no platform).
+  productPlatform      ProductPlatformEnum?    @default(WEB) @map("product_platform")
   status               ProductStatusEnum       @default(NEW)
   deliveryStage        DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
   deliveryWorkStatus   DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")

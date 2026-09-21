@@ -112,7 +112,6 @@ export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
   CODE: [
     'BUSINESS_CARD_WEBSITE',
     'COMPANY_WEBSITE',
-    'MOBILE_APP',
     'WEB_APP',
     'CRM',
     'ECOMMERCE',

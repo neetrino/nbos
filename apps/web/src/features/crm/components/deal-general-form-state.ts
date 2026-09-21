@@ -1,8 +1,4 @@
-import {
-  contactIdListsEqual,
-  coerceOptionalProductPlatform,
-  coerceProductPlatform,
-} from '@nbos/shared';
+import { contactIdListsEqual, coerceOptionalProductPlatform } from '@nbos/shared';
 import type { Deal } from '@/lib/api/deals';
 import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
@@ -262,7 +258,7 @@ export function buildDealTaxonomyPatch(
   return {
     productCategory,
     productType,
-    productPlatform: coerceProductPlatform({
+    productPlatform: coerceOptionalProductPlatform({
       productCategory,
       productType,
       requested,

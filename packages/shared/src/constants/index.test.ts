@@ -14,6 +14,8 @@ import {
   LEAD_SOURCES,
   DEAL_TYPES,
   PRODUCT_TYPES,
+  PRODUCT_TYPES_BY_CATEGORY,
+  listedProductTypesForPicker,
   PAYMENT_TYPES,
   SUBSCRIPTION_STATUSES,
   CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES,
@@ -110,6 +112,12 @@ describe('Constants', () => {
     expect(PRODUCT_TYPES).toContain('DESIGN');
     expect(PRODUCT_TYPES).toContain('PPC');
     expect(PRODUCT_TYPES).toContain('OTHER');
+  });
+
+  it('hides MOBILE_APP from new Code picks and keeps it for a legacy current value', () => {
+    expect(PRODUCT_TYPES_BY_CATEGORY.CODE).not.toContain('MOBILE_APP');
+    expect(listedProductTypesForPicker('CODE')).not.toContain('MOBILE_APP');
+    expect(listedProductTypesForPicker('CODE', 'MOBILE_APP')).toContain('MOBILE_APP');
   });
 
   it('PAYMENT_TYPES are valid', () => {

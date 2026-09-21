@@ -1,8 +1,7 @@
-import { coerceProductPlatform } from '@nbos/shared';
+import { coerceOptionalProductPlatform, listedProductTypesForPicker } from '@nbos/shared';
 import type { FullExtension, UpdateExtensionData } from '@/lib/api/extensions';
 import type { FullProduct, UpdateProductData } from '@/lib/api/products';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
-import { PRODUCT_TYPES_BY_CATEGORY } from '@/features/projects/constants/projects';
 
 function employeeLabel(e: { firstName: string; lastName: string } | null | undefined): string {
   if (!e) return '';
@@ -76,7 +75,7 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     qaLeadAvatar: employeeAvatarUrl(p.qaLead),
     productCategory: p.productCategory,
     productType: p.productType,
-    productPlatform: p.productPlatform,
+    productPlatform: p.productPlatform ?? '',
     description: p.description ?? '',
     languages: [...(p.languages ?? [])],
   };
@@ -154,14 +153,14 @@ function productPlanTaxonomyPatch(
   draft: ProductPlanSnapshot,
 ): UpdateProductData {
   if (draft.productCategory !== snap.productCategory) {
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
+    const allowed = listedProductTypesForPicker(draft.productCategory);
     const productType = allowed.includes(draft.productType)
       ? draft.productType
       : (allowed[0] ?? draft.productType);
     return {
       productCategory: draft.productCategory,
       productType,
-      productPlatform: coerceProductPlatform({
+      productPlatform: coerceOptionalProductPlatform({
         productCategory: draft.productCategory,
         productType,
         requested: draft.productPlatform,
@@ -171,7 +170,7 @@ function productPlanTaxonomyPatch(
   if (draft.productType !== snap.productType) {
     return {
       productType: draft.productType,
-      productPlatform: coerceProductPlatform({
+      productPlatform: coerceOptionalProductPlatform({
         productCategory: draft.productCategory,
         productType: draft.productType,
         requested: draft.productType === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
@@ -180,7 +179,7 @@ function productPlanTaxonomyPatch(
   }
   if (draft.productPlatform !== snap.productPlatform) {
     return {
-      productPlatform: coerceProductPlatform({
+      productPlatform: coerceOptionalProductPlatform({
         productCategory: draft.productCategory,
         productType: draft.productType,
         requested: draft.productPlatform,

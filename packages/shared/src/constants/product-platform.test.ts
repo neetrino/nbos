@@ -5,6 +5,7 @@ import {
   coerceProductPlatform,
   defaultProductPlatform,
   isProductPlatform,
+  productPlatformApplies,
   PRODUCT_PLATFORMS,
 } from './product-platform';
 
@@ -15,10 +16,13 @@ describe('product platform', () => {
     expect(isProductPlatform('MOBILE_APP')).toBe(false);
   });
 
-  it('keeps WordPress, Shopify and marketing on WEB', () => {
+  it('keeps WordPress and Shopify on WEB and leaves marketing without a platform', () => {
+    expect(productPlatformApplies('CODE')).toBe(true);
+    expect(productPlatformApplies('WORDPRESS')).toBe(true);
+    expect(productPlatformApplies('MARKETING')).toBe(false);
     expect(allowedProductPlatforms('WORDPRESS')).toEqual(['WEB']);
     expect(allowedProductPlatforms('SHOPIFY')).toEqual(['WEB']);
-    expect(allowedProductPlatforms('MARKETING')).toEqual(['WEB']);
+    expect(allowedProductPlatforms('MARKETING')).toEqual([]);
     expect(allowedProductPlatforms('CODE')).toEqual(['WEB', 'APP', 'DESKTOP']);
   });
 
@@ -50,6 +54,16 @@ describe('product platform', () => {
 
   it('stays empty on a deal that has not picked a category yet', () => {
     expect(coerceOptionalProductPlatform({ requested: 'APP' })).toBeNull();
+  });
+
+  it('does not stamp WEB onto a marketing deal', () => {
+    expect(
+      coerceOptionalProductPlatform({
+        productCategory: 'MARKETING',
+        productType: 'SEO',
+        requested: 'WEB',
+      }),
+    ).toBeNull();
   });
 
   it('drops a leftover APP when the category is cleared', () => {

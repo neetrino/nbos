@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import {
   coerceOptionalProductPlatform,
-  coerceProductPlatform,
   isProductPlatform,
   type ProductPlatform,
 } from '@nbos/shared';
@@ -14,16 +13,12 @@ function assertRequestedPlatform(value: string | null | undefined): void {
 }
 
 export function resolveProductPlatform(input: {
-  productCategory: string;
-  productType: string;
+  productCategory?: string | null;
+  productType?: string | null;
   requested?: string | null;
-}): ProductPlatform {
+}): ProductPlatform | null {
   assertRequestedPlatform(input.requested);
-  return coerceProductPlatform({
-    productCategory: input.productCategory,
-    productType: input.productType,
-    requested: input.requested,
-  });
+  return coerceOptionalProductPlatform(input);
 }
 
 export function resolveDealProductPlatform(input: {
@@ -31,6 +26,5 @@ export function resolveDealProductPlatform(input: {
   productType?: string | null;
   requested?: string | null;
 }): ProductPlatform | null {
-  assertRequestedPlatform(input.requested);
-  return coerceOptionalProductPlatform(input);
+  return resolveProductPlatform(input);
 }
