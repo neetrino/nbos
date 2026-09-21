@@ -2,12 +2,19 @@
 
 import { useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { EntityDetailSheetContent } from '@/components/shared';
+import {
+  DETAIL_SHEET_CONTENT_WIDTH_62VW_CLASS,
+  DETAIL_SHEET_FLOATING_RAIL_ANCHOR_62VW_CLASS,
+  EntityDetailSheetContent,
+} from '@/components/shared';
 import { Sheet } from '@/components/ui/sheet';
 import { FunctionCatalogBrowser } from './function-catalog-browser';
 import { FunctionCatalogCollections } from './function-catalog-collections';
 import type { FunctionCatalogBrowserMode } from './function-catalog-blocks';
-import { FUNCTION_CATALOG_ALL_ID } from './function-catalog.constants';
+import {
+  FUNCTION_CATALOG_ALL_ID,
+  FUNCTION_CATALOG_SHEET_CARD_GRID_CLASS,
+} from './function-catalog.constants';
 import type { CatalogRailId } from './function-catalog-grouping';
 import type { VisibleSalePrice } from './function-catalog-sale-price';
 import type { FunctionCollectionDto } from '@/lib/api/delivery-catalog-structure';
@@ -55,7 +62,8 @@ export function FunctionCatalogSheet({
       <EntityDetailSheetContent
         open={open}
         layout="full"
-        width="wide"
+        contentClassName={DETAIL_SHEET_CONTENT_WIDTH_62VW_CLASS}
+        railAnchorClassName={DETAIL_SHEET_FLOATING_RAIL_ANCHOR_62VW_CLASS}
         forceNestedBackdrop
         stackAboveEntitySheet
       >
@@ -73,6 +81,7 @@ export function FunctionCatalogSheet({
               onSelectCategory={setCategory}
               unitsByFunctionId={unitsByFunctionId}
               salePriceByFunctionId={salePriceByFunctionId}
+              cardGridClassName={FUNCTION_CATALOG_SHEET_CARD_GRID_CLASS}
               mode={mode}
               belowSearch={
                 collections && onApplyCollection ? (

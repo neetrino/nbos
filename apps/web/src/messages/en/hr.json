@@ -306,6 +306,7 @@
     "addFunctionConfirm": "Add selected",
     "addFunctionConfirming": "Adding…",
     "alreadyAdded": "Already added",
+    "selected": "Selected",
     "selectedCount": "{count, plural, one {# selected} other {# selected}}",
     "alreadySelected": "This function is already on the product.",
     "closedReadOnly": "This delivery is closed. Functions cannot be changed.",

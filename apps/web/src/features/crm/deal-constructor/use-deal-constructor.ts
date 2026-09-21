@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { DELIVERY_COMPENSATION_RULES_MODULE } from '@nbos/shared';
@@ -14,7 +14,7 @@ import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { usePermission } from '@/lib/permissions';
 import { profileUnitsTotal } from './published-core-for-type';
 import { quoteWithGradation, quoteWithToggledFunction } from './quote-from-selection';
-import { quoteSaleTotal, quoteUnitsTotal } from './quote-totals';
+import { useDealConstructorMoney } from './use-deal-constructor-money';
 
 export function useDealConstructor(dealId: string, productType: string) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
@@ -23,6 +23,13 @@ export function useDealConstructor(dealId: string, productType: string) {
   const catalog = useFunctionCatalogQuery({ search: '', status: ACTIVE_FUNCTION_STATUS });
   const loaded = useDealConstructorQuery(dealId, productType, canSeeUnits, t('loadFailed'));
   const writes = useDealConstructorWrites(dealId, loaded.setQuote, loaded.setError, t);
+  const money = useDealConstructorMoney({
+    quote: loaded.quote,
+    saleVersions: loaded.saleVersions,
+    coreUnits: loaded.coreUnits,
+    extraUnitsByFunctionId: catalog.unitsByFunctionId,
+    canSeeUnits,
+  });
 
   return {
     catalog,
@@ -32,28 +39,7 @@ export function useDealConstructor(dealId: string, productType: string) {
     error: loaded.error,
     saving: writes.saving,
     canSeeUnits,
-    saleTotal: useMemo(
-      () =>
-        quoteSaleTotal({
-          coreVersionId: loaded.quote?.coreProfileVersionId ?? null,
-          items: loaded.quote?.items ?? [],
-          versions: loaded.saleVersions,
-          canViewDraft: canSeeUnits,
-        }),
-      [canSeeUnits, loaded.quote, loaded.saleVersions],
-    ),
-    unitsTotal: useMemo(
-      () =>
-        canSeeUnits
-          ? quoteUnitsTotal({
-              coreUnits: loaded.coreUnits,
-              extraUnits: (loaded.quote?.items ?? []).map((item) =>
-                catalog.unitsByFunctionId?.get(item.functionId),
-              ),
-            })
-          : undefined,
-      [canSeeUnits, catalog.unitsByFunctionId, loaded.coreUnits, loaded.quote?.items],
-    ),
+    ...money,
     toggle: (functionId: string) => {
       if (loaded.quote) void writes.persist(quoteWithToggledFunction(loaded.quote, functionId));
     },

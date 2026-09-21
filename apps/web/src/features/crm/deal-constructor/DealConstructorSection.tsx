@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { FunctionCatalogSheet } from '@/features/function-catalog/function-catalog-sheet';
+import { formatMoneyDram } from '@/lib/format/money';
 import { translateProductPlatformLabel, translateProductTypeLabel } from '../i18n/crm-copy';
 import { canShowDealConstructor, isDealCompositionReady } from './can-show-deal-constructor';
 import { DealCompositionCard } from './deal-composition-card';
@@ -29,7 +30,6 @@ export function DealConstructorSection({
       <DealCompositionCard
         typeLabel=""
         platformLabel={null}
-        coreTitle={null}
         extraCount={0}
         saleTotal={null}
         unitsTotal={undefined}
@@ -72,7 +72,6 @@ function ReadyDealComposition({
       <DealCompositionCard
         typeLabel={translateProductTypeLabel(t, productType)}
         platformLabel={productPlatform ? translateProductPlatformLabel(t, productPlatform) : null}
-        coreTitle={model.coreTitle}
         extraCount={extras.length}
         saleTotal={model.saleTotal}
         unitsTotal={model.unitsTotal}
@@ -91,8 +90,12 @@ function ReadyDealComposition({
         unitsTotal={model.unitsTotal}
         canSeeUnits={model.canSeeUnits}
         showSalePrice
-        salePriceByFunctionId={model.catalog.salePriceByFunctionId}
+        salePriceByFunctionId={model.extraSalePrices}
         unitsByFunctionId={model.canSeeUnits ? model.catalog.unitsByFunctionId : undefined}
+        coreSalePriceLabel={
+          model.coreSalePrice ? formatMoneyDram(Number(model.coreSalePrice.amount)) : undefined
+        }
+        saleMissing={model.saleMissing}
         disabled={disabled || model.saving}
         error={model.error}
         canAdd
@@ -126,7 +129,7 @@ function dealCatalogPickerMode(
   return {
     kind: 'pick' as const,
     selectedIds,
-    alreadyAddedIds: new Set<string>(),
+    alreadyAddedIds: selectedIds,
     onToggle: disabled ? () => undefined : model.toggle,
     gradationByFunctionId: Object.fromEntries(
       (model.quote?.items ?? [])

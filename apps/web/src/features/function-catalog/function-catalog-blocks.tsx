@@ -33,6 +33,7 @@ export function FunctionCatalogCategoryBlocks({
   mode,
   unitsByFunctionId,
   salePriceByFunctionId,
+  cardGridClassName,
   formatUnits,
   formatSalePrice,
 }: {
@@ -40,6 +41,7 @@ export function FunctionCatalogCategoryBlocks({
   mode: FunctionCatalogBrowserMode;
   unitsByFunctionId: Map<string, number> | undefined;
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
+  cardGridClassName?: string;
   formatUnits: (total: number) => string;
   formatSalePrice: (amount: string) => string;
 }) {
@@ -49,7 +51,7 @@ export function FunctionCatalogCategoryBlocks({
       {blocks.map((block) => (
         <section key={block.id} className="space-y-3">
           <CategoryHeading label={t(FUNCTION_CATALOG_CATEGORY_MESSAGE_KEYS[block.id])} />
-          <div className={FUNCTION_CATALOG_CARD_GRID_CLASS}>
+          <div className={cardGridClassName ?? FUNCTION_CATALOG_CARD_GRID_CLASS}>
             {block.items.map((item) => (
               <FunctionCatalogCard
                 key={item.id}
@@ -119,11 +121,12 @@ function cardModeProps(
     };
   }
   const alreadyAdded = mode.alreadyAddedIds.has(item.id);
+  const selected = mode.selectedIds.has(item.id);
   return {
-    selected: mode.selectedIds.has(item.id),
+    selected,
     selectable: isCatalogFunctionSelectable(item, mode.alreadyAddedIds),
     alreadyAdded,
-    alreadyAddedLabel: alreadyAdded ? t('alreadyAdded') : undefined,
+    alreadyAddedLabel: alreadyAdded ? (selected ? t('selected') : t('alreadyAdded')) : undefined,
     onToggle: mode.onToggle,
     gradations: catalogFunctionGradations(item),
     selectedTierId: mode.gradationByFunctionId[item.id],

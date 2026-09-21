@@ -4,14 +4,19 @@ import { useTranslations } from 'next-intl';
 import { Layers } from 'lucide-react';
 import { formatMoneyDram } from '@/lib/format/money';
 import { cn } from '@/lib/utils';
-
-const CARD_CLASS =
-  'border-border bg-card flex w-full flex-col gap-2 rounded-2xl border p-4 text-left';
+import {
+  COMPOSITION_DEAL_CARD_CLASS,
+  COMPOSITION_DEAL_CHIP_CLASS,
+  COMPOSITION_DEAL_METRIC_EXTRA_CLASS,
+  COMPOSITION_DEAL_METRIC_LABEL_CLASS,
+  COMPOSITION_DEAL_METRIC_PRICE_CLASS,
+  COMPOSITION_DEAL_METRIC_PRICE_EMPTY_CLASS,
+  COMPOSITION_DEAL_METRIC_UNITS_CLASS,
+} from './composition.constants';
 
 export function DealCompositionCard({
   typeLabel,
   platformLabel,
-  coreTitle,
   extraCount,
   saleTotal,
   unitsTotal,
@@ -22,7 +27,6 @@ export function DealCompositionCard({
 }: {
   typeLabel: string;
   platformLabel: string | null;
-  coreTitle: string | null;
   extraCount: number;
   saleTotal: string | null;
   unitsTotal: number | undefined;
@@ -37,7 +41,10 @@ export function DealCompositionCard({
       type="button"
       disabled={!ready}
       onClick={onOpen}
-      className={cn(CARD_CLASS, ready ? 'hover:bg-muted/40' : 'cursor-not-allowed opacity-70')}
+      className={cn(
+        COMPOSITION_DEAL_CARD_CLASS,
+        ready ? 'hover:bg-muted/40' : 'cursor-not-allowed opacity-70',
+      )}
     >
       <span className="text-foreground flex items-center gap-2 text-sm font-semibold">
         <Layers size={14} />
@@ -47,7 +54,6 @@ export function DealCompositionCard({
         <ReadyCardBody
           typeLabel={typeLabel}
           platformLabel={platformLabel}
-          coreTitle={coreTitle}
           extraCount={extraCount}
           saleTotal={saleTotal}
           unitsTotal={unitsTotal}
@@ -64,7 +70,6 @@ export function DealCompositionCard({
 function ReadyCardBody({
   typeLabel,
   platformLabel,
-  coreTitle,
   extraCount,
   saleTotal,
   unitsTotal,
@@ -72,7 +77,6 @@ function ReadyCardBody({
 }: {
   typeLabel: string;
   platformLabel: string | null;
-  coreTitle: string | null;
   extraCount: number;
   saleTotal: string | null;
   unitsTotal: number | undefined;
@@ -80,22 +84,53 @@ function ReadyCardBody({
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
-    <span className="space-y-1">
-      <span className="text-foreground block text-xs font-medium">
-        {[typeLabel, platformLabel].filter(Boolean).join(' · ')}
+    <span className="flex flex-col gap-3">
+      <span className="flex flex-wrap gap-1.5">
+        {typeLabel ? <span className={COMPOSITION_DEAL_CHIP_CLASS}>{typeLabel}</span> : null}
+        {platformLabel ? (
+          <span className={COMPOSITION_DEAL_CHIP_CLASS}>{platformLabel}</span>
+        ) : null}
       </span>
-      {coreTitle ? <span className="text-muted-foreground block text-xs">{coreTitle}</span> : null}
-      <span className="text-muted-foreground block text-xs">
-        {t('extraCount', { count: extraCount })}
+      <span className={cn('grid gap-3', canSeeUnits ? 'grid-cols-3' : 'grid-cols-2')}>
+        <MetricTile
+          label={t('extraMetric')}
+          value={String(extraCount)}
+          valueClass={COMPOSITION_DEAL_METRIC_EXTRA_CLASS}
+        />
+        {canSeeUnits && unitsTotal !== undefined ? (
+          <MetricTile
+            label={t('unitsMetric')}
+            value={String(unitsTotal)}
+            valueClass={COMPOSITION_DEAL_METRIC_UNITS_CLASS}
+          />
+        ) : null}
+        <MetricTile
+          label={t('priceMetric')}
+          value={saleTotal ? formatMoneyDram(Number(saleTotal)) : '—'}
+          valueClass={
+            saleTotal
+              ? COMPOSITION_DEAL_METRIC_PRICE_CLASS
+              : COMPOSITION_DEAL_METRIC_PRICE_EMPTY_CLASS
+          }
+        />
       </span>
-      <span className="text-foreground block text-xs font-medium tabular-nums">
-        {saleTotal ? formatMoneyDram(Number(saleTotal)) : t('saleUnknown')}
-      </span>
-      {canSeeUnits && unitsTotal !== undefined ? (
-        <span className="text-muted-foreground block text-xs">
-          {t('unitsTotal', { count: unitsTotal })}
-        </span>
-      ) : null}
+    </span>
+  );
+}
+
+function MetricTile({
+  label,
+  value,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  valueClass: string;
+}) {
+  return (
+    <span className="min-w-0 text-left">
+      <span className={cn(COMPOSITION_DEAL_METRIC_LABEL_CLASS, 'block')}>{label}</span>
+      <span className={cn(valueClass, 'block truncate')}>{value}</span>
     </span>
   );
 }

@@ -7,6 +7,12 @@ export const FUNCTION_CATALOG_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_
 export const FUNCTION_CATALOG_CARD_GRID_CLASS =
   'grid w-full content-start grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
+export const FUNCTION_CATALOG_SHEET_CARD_GRID_CLASS =
+  'grid w-full auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
+
+export const FUNCTION_CATALOG_SELECTED_CARD_CLASS =
+  'border-emerald-500/45 bg-emerald-500/10 dark:border-emerald-400/40 dark:bg-emerald-500/15';
+
 export const FUNCTION_CATALOG_COLLECTION_CHIP_CLASS = 'h-7 shrink-0 rounded-full px-3 text-xs';
 
 export const CATALOG_ICON_SIZE_PX = 16;

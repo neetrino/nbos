@@ -37,6 +37,7 @@ type FunctionCatalogBrowserProps = {
   unitsByFunctionId: Map<string, number> | undefined;
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
   mode: FunctionCatalogBrowserMode;
+  cardGridClassName?: string;
   headerAction?: ReactNode;
   belowSearch?: ReactNode;
 };
@@ -74,6 +75,7 @@ export function FunctionCatalogBrowser(props: FunctionCatalogBrowserProps) {
           mode={props.mode}
           unitsByFunctionId={props.unitsByFunctionId}
           salePriceByFunctionId={props.salePriceByFunctionId}
+          cardGridClassName={props.cardGridClassName}
         />
       </div>
     </div>
@@ -92,6 +94,7 @@ type CatalogBrowserDataProps = {
   mode: FunctionCatalogBrowserMode;
   unitsByFunctionId: Map<string, number> | undefined;
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
+  cardGridClassName?: string;
 };
 
 function CatalogBrowserData(props: CatalogBrowserDataProps) {
@@ -114,6 +117,7 @@ function CatalogBrowserData(props: CatalogBrowserDataProps) {
           mode={props.mode}
           unitsByFunctionId={props.unitsByFunctionId}
           salePriceByFunctionId={props.salePriceByFunctionId}
+          cardGridClassName={props.cardGridClassName}
           formatUnits={(total) => t('unitsCount', { count: total })}
           formatSalePrice={(amount) => formatMoneyDram(Number(amount))}
         />

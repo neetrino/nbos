@@ -161,6 +161,7 @@ function WorkspaceComposition({
         config={config}
         extras={extras}
         canAdd={canAdd}
+        confirmRemove={!requireReason}
         onAdd={() => setCatalogOpen(true)}
         onRemoveExtra={(functionId) => {
           if (requireReason) {
@@ -200,12 +201,14 @@ function MoneyHiddenComposition({
   config,
   extras,
   canAdd,
+  confirmRemove,
   onAdd,
   onRemoveExtra,
 }: {
   config: V2Config;
   extras: DeliveryFunctionOperationalDto[];
   canAdd: boolean;
+  confirmRemove: boolean;
   onAdd: () => void;
   onRemoveExtra: (functionId: string) => void;
 }) {
@@ -222,6 +225,7 @@ function MoneyHiddenComposition({
       unitsByFunctionId={undefined}
       disabled={false}
       canAdd={canAdd}
+      confirmRemove={confirmRemove}
       onAdd={onAdd}
       onRemoveExtra={onRemoveExtra}
     />

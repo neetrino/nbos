@@ -8,10 +8,12 @@ export function DealConstructorTotals({
   saleTotal,
   unitsTotal,
   canSeeUnits,
+  saleMissing,
 }: {
   saleTotal: string | null;
   unitsTotal: number | undefined;
   canSeeUnits: boolean;
+  saleMissing?: 'core' | 'extra' | null;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
@@ -26,7 +28,7 @@ export function DealConstructorTotals({
               : 'text-muted-foreground text-sm',
           )}
         >
-          {saleTotal ? formatMoneyDram(Number(saleTotal)) : t('saleUnknown')}
+          {saleTotal ? formatMoneyDram(Number(saleTotal)) : t(saleUnknownKey(saleMissing))}
         </p>
         {canSeeUnits && unitsTotal !== undefined ? (
           <p className="text-muted-foreground text-xs">{t('unitsTotal', { count: unitsTotal })}</p>
@@ -34,4 +36,12 @@ export function DealConstructorTotals({
       </div>
     </div>
   );
+}
+
+function saleUnknownKey(
+  missing: 'core' | 'extra' | null | undefined,
+): 'saleUnknownCore' | 'saleUnknownExtra' | 'saleUnknown' {
+  if (missing === 'core') return 'saleUnknownCore';
+  if (missing === 'extra') return 'saleUnknownExtra';
+  return 'saleUnknown';
 }

@@ -306,6 +306,7 @@
     "addFunctionConfirm": "Добавить выбранные",
     "addFunctionConfirming": "Добавляем…",
     "alreadyAdded": "Уже добавлена",
+    "selected": "Выбрана",
     "selectedCount": "{count, plural, one {# выбрана} few {# выбраны} many {# выбрано} other {# выбрано}}",
     "alreadySelected": "Эта функция уже есть в продукте.",
     "closedReadOnly": "Поставка закрыта. Функции нельзя изменить.",
