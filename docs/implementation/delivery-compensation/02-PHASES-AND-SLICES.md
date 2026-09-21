@@ -376,6 +376,35 @@ nothing ACTIVE and nothing PUBLISHED**, author = Owner employee id.
 `scripts/` is not a workspace package. Fixed by linking the two workspace packages into the root
 dev dependencies.
 
+### Scope freeze at first close (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.11. A closed card may be reopened for work, but its scope and money stay frozen; paid
+follow-up work goes through an Extension. The guard could not key off the current status, because a
+reopened card is `DEVELOPMENT` again and would hand its money back to editing.
+
+- `DeliveryConfiguration.scopeLockedAt`, stamped once on every product and extension close path
+  (stage move, status write, `complete`, `cancel`) and never moved, so a second close cannot re-date
+  the freeze. Migration `20260921100000_delivery_configuration_scope_lock` backfills cards that were
+  already `DONE` or `LOST`, applied to **dev** (`ep-nameless-term`).
+- `assertDeliveryOpenForConfiguration` and `assertDeliveryOpenForExtension` read the stamp, falling
+  back to status only for an extension that is not enrolled and therefore has no configuration row.
+- Enrollment now refuses a card that was ever closed. A card closed **before** it was enrolled has
+  no configuration row to stamp, so the card's own closure markers are the only evidence — and no
+  single marker survives every path: status and `deliveryResolution` are cleared by a reopen, while
+  `closedAt` is written only by `complete` and `cancel`. All three are checked together. This also
+  covers the off-board product `deal-won.handler.ts` creates already `DONE`.
+
+Review by a second model found both gaps above before commit; the enrollment refusal is the fix.
+
+**Known follow-up:** a future reopen path must preserve a permanent closure marker on the card. The
+three-marker check is complete for every close this codebase performs today, but a close reached by
+stage move alone writes no `closedAt`, so a reopen from that state would clear the only evidence.
+
+**Checks:** vitest `apps/api/src/modules/{delivery-compensation,projects}` + `scripts/delivery-profiles`
+(345 passed); API `tsc --noEmit` (8GB); Prettier on touched files; every file back under 300 lines
+(`delivery-configuration.service.ts` was already at 304 before this slice — enrollment inserts moved
+to `insert-delivery-enrollment.ts`). **Not run:** browser QA, live end-to-end close/reopen on dev.
+
 ### Production launch
 
 **Not performed.** Enrollment default remains OFF. Owner must publish real units/rates in `/my-company/function-catalog` and Compensation after a confirmed disposable/local migrate. Runbook: [03-ACCEPTANCE-AND-ROLLOUT.md](./03-ACCEPTANCE-AND-ROLLOUT.md).
