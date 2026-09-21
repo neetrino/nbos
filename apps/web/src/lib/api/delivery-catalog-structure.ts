@@ -6,7 +6,13 @@ export type CoreItemDto = { id: string; position: number; label: string; note: s
 
 export type CoreItemInput = { label: string; note?: string | null };
 
-export type SizePresetDto = { profileKey: string; configSize: string; functionIds: string[] };
+export type FunctionCollectionDto = {
+  id: string;
+  productType: string;
+  name: string;
+  position: number;
+  functionIds: string[];
+};
 
 export type SalePriceVersionDto = {
   id: string;
@@ -28,8 +34,8 @@ export type SalePriceDraftInput = {
 };
 
 /**
- * Core composition, size presets and sale prices. None of these expose cost: a core item is a list of
- * work, a preset is a list of modules, and a sale price is what the client pays.
+ * Core composition, named collections and sale prices. None of these expose cost: a core item is a
+ * list of work, a collection is a replace-helper kit, and a sale price is what the client pays.
  */
 export const deliveryCatalogStructureApi = {
   async listCoreItems(profileVersionId: string): Promise<CoreItemDto[]> {
@@ -47,13 +53,27 @@ export const deliveryCatalogStructureApi = {
     return resp.data;
   },
 
-  async listSizePresets(profileKey: string): Promise<SizePresetDto[]> {
-    const resp = await api.get<SizePresetDto[]>(`${BASE}/size-presets`, { params: { profileKey } });
+  async listCollections(productType?: string): Promise<FunctionCollectionDto[]> {
+    const resp = await api.get<FunctionCollectionDto[]>(`${BASE}/collections`, {
+      params: productType ? { productType } : undefined,
+    });
     return resp.data;
   },
 
-  async replaceSizePreset(input: SizePresetDto): Promise<SizePresetDto> {
-    const resp = await api.put<SizePresetDto>(`${BASE}/size-presets`, input);
+  async createCollection(input: {
+    productType: string;
+    name: string;
+    functionIds: string[];
+  }): Promise<FunctionCollectionDto> {
+    const resp = await api.post<FunctionCollectionDto>(`${BASE}/collections`, input);
+    return resp.data;
+  },
+
+  async replaceCollection(
+    id: string,
+    input: { productType: string; name: string; functionIds: string[] },
+  ): Promise<FunctionCollectionDto> {
+    const resp = await api.put<FunctionCollectionDto>(`${BASE}/collections/${id}`, input);
     return resp.data;
   },
 

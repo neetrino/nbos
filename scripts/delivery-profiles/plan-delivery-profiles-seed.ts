@@ -1,10 +1,10 @@
 import {
   buildProfileSeedVersions,
   referencedFunctionCodes,
+  retiredSizedProfileKeys,
   type ProfileSeedVersion,
 } from './delivery-profiles-seed-data';
 
-/** What the database already holds for a profile key the seed owns. */
 export type ExistingProfile = {
   profileKey: string;
   status: string;
@@ -16,12 +16,17 @@ export type ProfilePlanEntry =
   | { action: 'REPLACE'; version: ProfileSeedVersion }
   | { action: 'KEEP'; version: ProfileSeedVersion; reason: string };
 
+export type RetiredPlanEntry =
+  | { action: 'RETIRE'; profileKey: string }
+  | { action: 'KEEP_RETIRED'; profileKey: string; reason: string };
+
 export type ProfileSeedPlan = {
   entries: ProfilePlanEntry[];
+  retired: RetiredPlanEntry[];
   createCount: number;
   replaceCount: number;
   keepCount: number;
-  /** Catalog codes a profile references but the database does not have. */
+  retireCount: number;
   missingFunctionCodes: string[];
 };
 
@@ -29,14 +34,6 @@ const KEPT_BY_DEFAULT = 'already present';
 const KEPT_PUBLISHED = 'not a draft';
 const KEPT_IN_USE = 'a configuration froze it';
 
-/**
- * Decides what the seed would write. By default an existing profile key is never touched, because
- * the Owner may have corrected its units or published it and a re-run must not undo that.
- *
- * `replaceDrafts` is for correcting seeded content that is still a proposal. It only applies to a
- * key that is still `DRAFT` and that no configuration has frozen; anything else stays `KEEP`, so
- * the flag cannot reach a published norm or a plan somebody is already being paid against.
- */
 export function planDeliveryProfilesSeed(
   existing: readonly ExistingProfile[],
   existingFunctionCodes: readonly string[],
@@ -51,11 +48,21 @@ export function planDeliveryProfilesSeed(
     if (!options.replaceDrafts) return { action: 'KEEP', version, reason: KEPT_BY_DEFAULT };
     return planExisting(version, row);
   });
+  const retired = retiredSizedProfileKeys().map<RetiredPlanEntry>((profileKey) => {
+    const row = known.get(profileKey);
+    if (!row) return { action: 'KEEP_RETIRED', profileKey, reason: 'absent' };
+    if (row.status !== 'DRAFT' || row.configurationCount > 0) {
+      return { action: 'KEEP_RETIRED', profileKey, reason: KEPT_IN_USE };
+    }
+    return { action: 'RETIRE', profileKey };
+  });
   return {
     entries,
+    retired,
     createCount: countOf(entries, 'CREATE'),
     replaceCount: countOf(entries, 'REPLACE'),
     keepCount: countOf(entries, 'KEEP'),
+    retireCount: retired.filter((row) => row.action === 'RETIRE').length,
     missingFunctionCodes: referencedFunctionCodes().filter((code) => !catalog.has(code)),
   };
 }
@@ -71,15 +78,22 @@ function countOf(entries: readonly ProfilePlanEntry[], action: ProfilePlanEntry[
 }
 
 export function formatProfileSeedPlan(plan: ProfileSeedPlan, apply: boolean): string {
-  const counts = `${plan.createCount} to create, ${plan.replaceCount} to replace, ${plan.keepCount} kept`;
+  const counts = `${plan.createCount} to create, ${plan.replaceCount} to replace, ${plan.keepCount} kept, ${plan.retireCount} sized drafts to drop`;
   const header = apply
     ? `Applying delivery profile seed: ${counts}.`
     : `Dry run. ${counts}. Nothing is written.`;
-  return [header, ...plan.entries.map(formatEntry), ...formatMissing(plan)].join('\n');
+  return [
+    header,
+    ...plan.entries.map(formatEntry),
+    ...plan.retired
+      .filter((row) => row.action === 'RETIRE')
+      .map((row) => `  RETIRE  ${row.profileKey}`),
+    ...formatMissing(plan),
+  ].join('\n');
 }
 
 function formatEntry(entry: ProfilePlanEntry): string {
-  const shape = `core ${entry.version.kind.coreItems.length} items, preset ${entry.version.presetFunctionCodes.length} modules`;
+  const shape = `core ${entry.version.kind.coreItems.length} items`;
   if (entry.action === 'KEEP') return `  KEEP    ${entry.version.profileKey} — ${entry.reason}`;
   const verb = entry.action === 'CREATE' ? 'CREATE ' : 'REPLACE';
   return `  ${verb} ${entry.version.profileKey} (${shape})`;

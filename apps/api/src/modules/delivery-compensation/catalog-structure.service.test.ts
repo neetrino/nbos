@@ -4,7 +4,6 @@ import { CatalogStructureService } from './catalog-structure.service';
 function buildPrisma(overrides: Record<string, unknown> = {}) {
   const tx = {
     deliveryBaseProfileCoreItem: { deleteMany: vi.fn(), createMany: vi.fn() },
-    deliveryConfigSizePreset: { deleteMany: vi.fn(), createMany: vi.fn() },
   };
   return {
     tx,
@@ -15,10 +14,6 @@ function buildPrisma(overrides: Record<string, unknown> = {}) {
       deliveryBaseProfileCoreItem: {
         findMany: vi.fn().mockResolvedValue([]),
         ...tx.deliveryBaseProfileCoreItem,
-      },
-      deliveryConfigSizePreset: {
-        findMany: vi.fn().mockResolvedValue([]),
-        ...tx.deliveryConfigSizePreset,
       },
       deliveryFunction: { count: vi.fn().mockResolvedValue(2) },
       $transaction: vi.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
@@ -68,56 +63,5 @@ describe('CatalogStructureService core items', () => {
     const service = new CatalogStructureService(prisma as never);
 
     await expect(service.listCoreItems('ver-404')).rejects.toThrow(/not found/);
-  });
-});
-
-describe('CatalogStructureService size presets', () => {
-  it('replaces one size level of one profile', async () => {
-    const { prisma, tx } = buildPrisma();
-    const service = new CatalogStructureService(prisma as never);
-
-    const result = await service.replaceSizePreset({
-      profileKey: 'SHOP_CODE',
-      configSize: 'CLASSIC',
-      functionIds: [FUNCTION_A, FUNCTION_B],
-    });
-
-    expect(tx.deliveryConfigSizePreset.deleteMany).toHaveBeenCalledWith({
-      where: { profileKey: 'SHOP_CODE', configSize: 'CLASSIC' },
-    });
-    expect(result.functionIds).toEqual([FUNCTION_A, FUNCTION_B]);
-  });
-
-  it('refuses a preset that points at a function which does not exist', async () => {
-    const { prisma } = buildPrisma({ deliveryFunction: { count: vi.fn().mockResolvedValue(1) } });
-    const service = new CatalogStructureService(prisma as never);
-
-    await expect(
-      service.replaceSizePreset({
-        profileKey: 'SHOP_CODE',
-        configSize: 'SMALL',
-        functionIds: [FUNCTION_A, FUNCTION_B],
-      }),
-    ).rejects.toThrow(/does not exist/);
-  });
-
-  it('groups stored presets by size', async () => {
-    const { prisma } = buildPrisma({
-      deliveryConfigSizePreset: {
-        findMany: vi.fn().mockResolvedValue([
-          { configSize: 'SMALL', functionId: FUNCTION_A },
-          { configSize: 'CLASSIC', functionId: FUNCTION_A },
-          { configSize: 'CLASSIC', functionId: FUNCTION_B },
-        ]),
-        deleteMany: vi.fn(),
-        createMany: vi.fn(),
-      },
-    });
-    const service = new CatalogStructureService(prisma as never);
-
-    await expect(service.listSizePresets('SHOP_CODE')).resolves.toEqual([
-      { profileKey: 'SHOP_CODE', configSize: 'SMALL', functionIds: [FUNCTION_A] },
-      { profileKey: 'SHOP_CODE', configSize: 'CLASSIC', functionIds: [FUNCTION_A, FUNCTION_B] },
-    ]);
   });
 });

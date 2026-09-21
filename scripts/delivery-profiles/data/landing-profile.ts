@@ -67,10 +67,8 @@ export const LANDING_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    SMALL,
     CLASSIC,
     LARGE,
-    VERY_LARGE,
     ENTERPRISE,
   },
 };

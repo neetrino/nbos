@@ -33,14 +33,6 @@ enum DeliveryEntityKindEnum {
   EXTENSION
 }
 
-enum DeliveryConfigSizeEnum {
-  SMALL
-  CLASSIC
-  LARGE
-  VERY_LARGE
-  ENTERPRISE
-}
-
 enum DeliveryImplementationBaseEnum {
   FROM_SCRATCH
   EXISTING_BASE
@@ -68,7 +60,8 @@ model DeliveryFunction {
   priceVersions          DeliveryFunctionPriceVersion[]
   includedInBaseProfiles DeliveryBaseIncludedFunction[]
   configurationFeatures  DeliveryConfigurationFeature[]
-  sizePresets            DeliveryConfigSizePreset[]
+  collectionItems        DeliveryFunctionCollectionItem[]
+  quoteItems             DeliveryDealQuoteItem[]
   tiers                  DeliveryFunctionTier[]
   salePrices             DeliverySalePriceVersion[]
 
@@ -131,6 +124,7 @@ model DeliveryFunctionTier {
   priceVersions DeliveryFunctionPriceVersion[]
   salePrices    DeliverySalePriceVersion[]
   selectedBy    DeliveryConfigurationFeature[]
+  quoteItems    DeliveryDealQuoteItem[]
 
   @@unique([functionId, code])
   @@unique([functionId, position])
@@ -197,7 +191,6 @@ model DeliveryBaseProfileVersion {
   entityKind         DeliveryEntityKindEnum         @map("entity_kind")
   productType        ProductTypeEnum?               @map("product_type")
   productCategory    ProductCategoryEnum?           @map("product_category")
-  configSize         DeliveryConfigSizeEnum         @map("config_size")
   implementationBase DeliveryImplementationBaseEnum @map("implementation_base")
   designMode         DeliveryDesignModeEnum         @map("design_mode")
   aiDesignerReview   Boolean                        @default(false) @map("ai_designer_review")
@@ -240,22 +233,73 @@ model DeliveryBaseProfileCoreItem {
   @@map("delivery_base_profile_core_items")
 }
 
-/// Modules pre-checked in the constructor for a size level. This is NOT `includedFunctions`:
-/// included-in-base means the work is already paid by the base units, a preset only means
-/// "usually sold at this size" and is charged as a normal extra. Mixing the two would make every
-/// module of the largest level free. Presets carry no money, so they are not versioned.
-model DeliveryConfigSizePreset {
-  id         String                 @id @default(uuid())
-  profileKey String                 @map("profile_key")
-  configSize DeliveryConfigSizeEnum @map("config_size")
-  functionId String                 @map("function_id")
-  createdAt  DateTime               @default(now()) @map("created_at")
+/// Named extra-function kit for one product kind. Not money and not included-in-base: a click in
+/// the deal constructor replaces the extra selection. The Owner authors kits; the seller only applies.
+model DeliveryFunctionCollection {
+  id          String          @id @default(uuid())
+  productType ProductTypeEnum @map("product_type")
+  name        String
+  position    Int
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
 
-  function DeliveryFunction @relation(fields: [functionId], references: [id], onDelete: Cascade)
+  items DeliveryFunctionCollectionItem[]
+  quotes DeliveryDealQuote[]
 
-  @@unique([profileKey, configSize, functionId])
-  @@index([profileKey, configSize])
-  @@map("delivery_config_size_presets")
+  @@unique([productType, name])
+  @@index([productType, position])
+  @@map("delivery_function_collections")
+}
+
+model DeliveryFunctionCollectionItem {
+  id           String @id @default(uuid())
+  collectionId String @map("collection_id")
+  functionId   String @map("function_id")
+  position     Int
+
+  collection DeliveryFunctionCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  function   DeliveryFunction           @relation(fields: [functionId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, functionId])
+  @@unique([collectionId, position])
+  @@index([functionId])
+  @@map("delivery_function_collection_items")
+}
+
+/// Draft composition on a deal until Won. Sale-price quote is computed live and does not overwrite
+/// the deal amount. `appliedCollectionId` is last-clicked UI state, not a norm.
+model DeliveryDealQuote {
+  id                   String                          @id @default(uuid())
+  dealId               String                          @unique @map("deal_id")
+  appliedCollectionId  String?                         @map("applied_collection_id")
+  implementationBase   DeliveryImplementationBaseEnum  @default(FROM_SCRATCH) @map("implementation_base")
+  designMode           DeliveryDesignModeEnum          @default(AI_DESIGN) @map("design_mode")
+  aiDesignerReview     Boolean                         @default(false) @map("ai_designer_review")
+  updatedAt            DateTime                        @updatedAt @map("updated_at")
+  createdAt            DateTime                        @default(now()) @map("created_at")
+
+  deal               Deal                          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  appliedCollection  DeliveryFunctionCollection?   @relation(fields: [appliedCollectionId], references: [id], onDelete: SetNull)
+  items              DeliveryDealQuoteItem[]
+
+  @@map("delivery_deal_quotes")
+}
+
+model DeliveryDealQuoteItem {
+  id         String  @id @default(uuid())
+  quoteId    String  @map("quote_id")
+  functionId String  @map("function_id")
+  tierId     String? @map("tier_id")
+  position   Int
+
+  quote    DeliveryDealQuote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  function DeliveryFunction      @relation(fields: [functionId], references: [id], onDelete: Restrict)
+  tier     DeliveryFunctionTier? @relation(fields: [tierId], references: [id], onDelete: Restrict)
+
+  @@unique([quoteId, functionId])
+  @@unique([quoteId, position])
+  @@index([functionId])
+  @@map("delivery_deal_quote_items")
 }
 
 /// Client sale rate of one catalog item, versioned like units so a later edit never re-prices a

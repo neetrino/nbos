@@ -2,7 +2,7 @@ export const DELIVERY_NORMS_TABS = ['overview', 'rates', 'profiles', 'functions'
 
 export type DeliveryNormsTab = (typeof DELIVERY_NORMS_TABS)[number];
 
-export const DELIVERY_NORMS_PROFILE_TABS = ['versions', 'core', 'presets'] as const;
+export const DELIVERY_NORMS_PROFILE_TABS = ['versions', 'core', 'collections'] as const;
 
 export type DeliveryNormsProfileTab = (typeof DELIVERY_NORMS_PROFILE_TABS)[number];
 
@@ -13,7 +13,7 @@ export const DELIVERY_NORMS_MAP_KEYS = [
   'profileUnits',
   'profileIncluded',
   'profileCore',
-  'profilePresets',
+  'profileCollections',
   'functions',
   'sale',
 ] as const;
@@ -36,7 +36,7 @@ const MAP_LOCATION: Record<DeliveryNormsMapKey, DeliveryNormsLocation> = {
   profileUnits: { tab: 'profiles', profileTab: DEFAULT_PROFILE_TAB },
   profileIncluded: { tab: 'profiles', profileTab: DEFAULT_PROFILE_TAB },
   profileCore: { tab: 'profiles', profileTab: 'core' },
-  profilePresets: { tab: 'profiles', profileTab: 'presets' },
+  profileCollections: { tab: 'profiles', profileTab: 'collections' },
   functions: { tab: 'functions', profileTab: DEFAULT_PROFILE_TAB },
   sale: { tab: 'sale', profileTab: DEFAULT_PROFILE_TAB },
 };

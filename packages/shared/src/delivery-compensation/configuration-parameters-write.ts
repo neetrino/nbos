@@ -1,15 +1,12 @@
 import { CatalogContentValidationError } from './catalog-write';
 import {
-  DELIVERY_CONFIG_SIZES,
   DELIVERY_DESIGN_MODES,
   DELIVERY_IMPLEMENTATION_BASES,
-  type DeliveryConfigSize,
   type DeliveryDesignMode,
   type DeliveryImplementationBase,
 } from './constants';
 
 export type ConfigurationParametersInput = {
-  configSize: DeliveryConfigSize;
   implementationBase: DeliveryImplementationBase;
   designMode: DeliveryDesignMode;
   aiDesignerReview: boolean;
@@ -26,7 +23,6 @@ export function parseConfigurationParametersBody(body: unknown): ConfigurationPa
   }
   const row = body as Record<string, unknown>;
   return {
-    configSize: requireOneOf(row.configSize, DELIVERY_CONFIG_SIZES, 'configSize'),
     implementationBase: requireOneOf(
       row.implementationBase,
       DELIVERY_IMPLEMENTATION_BASES,

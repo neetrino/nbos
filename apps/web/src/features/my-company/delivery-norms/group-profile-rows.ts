@@ -1,8 +1,4 @@
-import {
-  DELIVERY_CONFIG_SIZES,
-  type DeliveryBaseProfileFinancialDto,
-  type DeliveryConfigSize,
-} from '@nbos/shared';
+import type { DeliveryBaseProfileFinancialDto } from '@nbos/shared';
 import {
   formatBaseProfileLabel,
   parseProfileKey,
@@ -12,6 +8,7 @@ import {
 export type ProfileKindGroup = {
   kindId: string;
   title: string;
+  productType: string | null;
   rows: DeliveryBaseProfileFinancialDto[];
 };
 
@@ -36,53 +33,10 @@ export function groupProfileRows(
     return {
       kindId,
       title: titleForKind(kindId, kindRows, labels),
+      productType: parseProfileKey(kindRows[0]?.profileKey ?? kindId).productType,
       rows: kindRows,
     };
   });
-}
-
-export function profileRowMatchingSize(
-  group: ProfileKindGroup,
-  size: DeliveryConfigSize,
-): DeliveryBaseProfileFinancialDto | null {
-  const sized = group.rows.find((row) => parseProfileKey(row.profileKey).configSize === size);
-  if (sized) {
-    return sized;
-  }
-  const unsized = group.rows.filter((row) => parseProfileKey(row.profileKey).configSize === null);
-  return unsized.length === 1 ? (unsized[0] ?? null) : null;
-}
-
-export function sizesForKindGroup(group: ProfileKindGroup): DeliveryConfigSize[] {
-  const present = new Set(
-    group.rows.flatMap((row) => {
-      const size = parseProfileKey(row.profileKey).configSize;
-      return size ? [size] : [];
-    }),
-  );
-  if (present.size === 0) {
-    return [...DELIVERY_CONFIG_SIZES];
-  }
-  return DELIVERY_CONFIG_SIZES.filter((size) => present.has(size));
-}
-
-export function resolveSelectedSize(
-  group: ProfileKindGroup | null,
-  size: DeliveryConfigSize,
-): DeliveryConfigSize {
-  if (!group || profileRowMatchingSize(group, size)) {
-    return size;
-  }
-  return (
-    DELIVERY_CONFIG_SIZES.find((candidate) => profileRowMatchingSize(group, candidate) !== null) ??
-    size
-  );
-}
-
-export function availableSizesForGroup(group: ProfileKindGroup): Set<DeliveryConfigSize> {
-  return new Set(
-    DELIVERY_CONFIG_SIZES.filter((size) => profileRowMatchingSize(group, size) !== null),
-  );
 }
 
 function kindIdForProfile(row: DeliveryBaseProfileFinancialDto): string {

@@ -90,10 +90,8 @@ export const MOBILE_APP_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    SMALL,
     CLASSIC,
     LARGE,
-    VERY_LARGE,
     ENTERPRISE,
   },
 };

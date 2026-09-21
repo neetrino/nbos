@@ -1,6 +1,5 @@
 import type { useTranslations } from 'next-intl';
 import type {
-  DeliveryConfigSize,
   DeliveryDesignMode,
   DeliveryImplementationBase,
   ProductCategoryKey,
@@ -37,16 +36,6 @@ export function productCategoryLabels(t: DeliveryNormsT): Record<ProductCategory
     SHOPIFY: t('productCategories.SHOPIFY'),
     MARKETING: t('productCategories.MARKETING'),
     OTHER: t('productCategories.OTHER'),
-  };
-}
-
-export function configSizeLabels(t: DeliveryNormsT): Record<DeliveryConfigSize, string> {
-  return {
-    SMALL: t('configSizes.SMALL'),
-    CLASSIC: t('configSizes.CLASSIC'),
-    LARGE: t('configSizes.LARGE'),
-    VERY_LARGE: t('configSizes.VERY_LARGE'),
-    ENTERPRISE: t('configSizes.ENTERPRISE'),
   };
 }
 

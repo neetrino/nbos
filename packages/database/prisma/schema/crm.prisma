@@ -267,6 +267,7 @@ model Deal {
   whatsappGroupOperations   WhatsAppGroupOperation[]          @relation("WhatsAppGroupOperationContextDeal")
   productCommunicationBindingsCreatedFrom ProductCommunicationBinding[] @relation("ProductCommunicationBindingCreatedFromDeal")
   atsCallEvents             AtsCallEvent[]                @relation("AtsCallDeal")
+  deliveryQuote             DeliveryDealQuote?
 
   @@index([trashedAt])
   @@map("deals")

@@ -8,13 +8,14 @@ import {
 import { hasCallerPermission } from '../../common/authorization/caller-permission';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CatalogStructureService } from './catalog-structure.service';
+import { FunctionCollectionsService } from './function-collections.service';
 import { mapCatalogWriteError } from './map-catalog-write-error';
 import { SalePricesService } from './sale-prices.service';
 
 /**
- * Core composition, size presets and sale prices. Reading is open to whoever may browse the catalog,
- * because none of it exposes cost: a core item is a list of work, a preset is a list of modules and a
- * sale price is what the client pays. Writing stays with the Owner, like every other norm.
+ * Core composition, named collections and sale prices. Reading is open to whoever may browse the
+ * catalog, because none of it exposes cost: a core item is a list of work, a collection is a
+ * replace-helper kit and a sale price is what the client pays. Writing stays with the Owner.
  */
 @ApiTags('delivery-compensation')
 @ApiBearerAuth()
@@ -22,6 +23,7 @@ import { SalePricesService } from './sale-prices.service';
 export class CatalogStructureController {
   constructor(
     private readonly structure: CatalogStructureService,
+    private readonly collections: FunctionCollectionsService,
     private readonly salePrices: SalePricesService,
   ) {}
 
@@ -39,18 +41,33 @@ export class CatalogStructureController {
     return this.structure.replaceCoreItems(id, body);
   }
 
-  @Get('size-presets')
+  @Get('collections')
   @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Modules pre-checked per size. Charged as normal extras.' })
-  listSizePresets(@Query('profileKey') profileKey?: string) {
-    return this.structure.listSizePresets(profileKey ?? '');
+  @ApiOperation({ summary: 'Named extra-function kits. Apply replaces the deal quote selection.' })
+  listCollections(@Query('productType') productType?: string) {
+    return this.collections.list(productType);
   }
 
-  @Put('size-presets')
+  @Post('collections')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Replace one size level of one profile. An empty list clears it.' })
-  replaceSizePreset(@Body() body: unknown) {
-    return this.structure.replaceSizePreset(body);
+  @ApiOperation({ summary: 'Create a named extra-function kit for one product kind.' })
+  async createCollection(@Body() body: unknown) {
+    try {
+      return await this.collections.create(body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Put('collections/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Replace a named extra-function kit.' })
+  async replaceCollection(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.collections.replace(id, body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
   }
 
   @Get('sale-prices')

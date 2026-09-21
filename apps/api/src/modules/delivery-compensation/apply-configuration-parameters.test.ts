@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { applyConfigurationParameters } from './apply-configuration-parameters';
 
 const PARAMETERS = {
-  configSize: 'CLASSIC',
   implementationBase: 'FROM_SCRATCH',
   designMode: 'AI_DESIGN',
   aiDesignerReview: false,
@@ -34,9 +33,12 @@ function buildDb(overrides: Record<string, unknown> = {}) {
             id: 'profile-shop',
             productType: 'ECOMMERCE',
             productCategory: 'CODE',
-            includedFunctions: [{ functionId: 'fn-included' }],
           },
         ]),
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'profile-shop',
+          includedFunctions: [{ functionId: 'fn-included' }],
+        }),
       },
       deliveryConfigurationFeature: { findMany: vi.fn().mockResolvedValue([]), createMany },
       ...overrides,
@@ -55,7 +57,6 @@ describe('applyConfigurationParameters', () => {
     });
 
     expect(update.mock.calls[0]?.[0].data).toMatchObject({
-      configSize: 'CLASSIC',
       implementationBase: 'FROM_SCRATCH',
       designMode: 'AI_DESIGN',
       aiDesignerReview: false,

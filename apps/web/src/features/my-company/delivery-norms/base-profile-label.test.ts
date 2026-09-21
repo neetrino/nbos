@@ -20,52 +20,37 @@ const LABELS = {
     SMM: 'SMM',
     OTHER: 'Другое',
   },
-  sizes: {
-    SMALL: 'Small',
-    CLASSIC: 'Classic',
-    LARGE: 'Large',
-    VERY_LARGE: 'Very large',
-    ENTERPRISE: 'Enterprise',
-  },
 } as const;
 
 describe('parseProfileKey', () => {
-  it('reads seeded company-site, shop and very-large keys', () => {
-    expect(parseProfileKey('company-site-code-classic')).toEqual({
+  it('reads seeded company-site and shop keys without a size segment', () => {
+    expect(parseProfileKey('company-site-code')).toEqual({
       productType: 'COMPANY_WEBSITE',
       productCategory: 'CODE',
-      configSize: 'CLASSIC',
     });
-    expect(parseProfileKey('shop-code-enterprise')).toEqual({
+    expect(parseProfileKey('shop-code')).toEqual({
       productType: 'ECOMMERCE',
       productCategory: 'CODE',
-      configSize: 'ENTERPRISE',
     });
-    expect(parseProfileKey('crm-code-very-large')).toEqual({
+    expect(parseProfileKey('crm-code')).toEqual({
       productType: 'CRM',
       productCategory: 'CODE',
-      configSize: 'VERY_LARGE',
     });
   });
 
   it('accepts underscore keys without a category segment', () => {
-    expect(parseProfileKey('ECOMMERCE_CLASSIC')).toEqual({
+    expect(parseProfileKey('ECOMMERCE')).toEqual({
       productType: 'ECOMMERCE',
       productCategory: null,
-      configSize: 'CLASSIC',
     });
   });
 });
 
 describe('formatBaseProfileLabel', () => {
-  it('names a core as product, size and short version', () => {
-    expect(formatBaseProfileLabel('company-site-code-classic', 1, LABELS)).toBe(
-      'Корпоративный сайт · Classic · v1',
-    );
-    expect(formatBaseProfileLabel('landing-code-small', 2, LABELS)).toBe('Лендинг · Small · v2');
-    expect(formatBaseProfileLabel('mobile-app-code-large', null, LABELS)).toBe(
-      'Мобильное приложение · Large',
-    );
+  it('names a core as product type and short version', () => {
+    expect(formatBaseProfileLabel('company-site-code', 1, LABELS)).toBe('Корпоративный сайт · v1');
+    expect(formatBaseProfileLabel('landing-code', 2, LABELS)).toBe('Лендинг · v2');
+    expect(formatBaseProfileLabel('mobile-app-code', null, LABELS)).toBe('Мобильное приложение');
   });
 
   it('keeps an unknown key and still shortens the version', () => {

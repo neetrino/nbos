@@ -3,13 +3,13 @@ import { useTranslations } from 'next-intl';
 import {
   deliveryCatalogStructureApi,
   type CoreItemDto,
-  type SizePresetDto,
+  type FunctionCollectionDto,
 } from '@/lib/api/delivery-catalog-structure';
 import { isAccessRevokedApiError } from '@/lib/api-errors';
 import { messageFromCaught } from './message-from-caught';
 
 const EMPTY_CORE_ITEMS: CoreItemDto[] = [];
-const EMPTY_PRESETS: SizePresetDto[] = [];
+const EMPTY_COLLECTIONS: FunctionCollectionDto[] = [];
 
 export function useCoreItems(profileVersionId: string | null) {
   const t = useTranslations('hr.deliveryNorms');
@@ -46,37 +46,37 @@ export function useCoreItems(profileVersionId: string | null) {
   return { items, loading, error, load };
 }
 
-export function useSizePresets(profileKey: string | null) {
+export function useFunctionCollections(productType: string | null) {
   const t = useTranslations('hr.deliveryNorms');
-  const [presets, setPresets] = useState<SizePresetDto[]>(EMPTY_PRESETS);
-  const [loading, setLoading] = useState(profileKey !== null);
+  const [collections, setCollections] = useState<FunctionCollectionDto[]>(EMPTY_COLLECTIONS);
+  const [loading, setLoading] = useState(productType !== null);
   const [error, setError] = useState<string | null>(null);
   const fallback = t('errors.load');
 
   const load = useCallback(async () => {
-    if (profileKey === null) {
-      setPresets(EMPTY_PRESETS);
+    if (productType === null) {
+      setCollections(EMPTY_COLLECTIONS);
       setError(null);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      setPresets(await deliveryCatalogStructureApi.listSizePresets(profileKey));
+      setCollections(await deliveryCatalogStructureApi.listCollections(productType));
       setError(null);
     } catch (caught) {
       if (isAccessRevokedApiError(caught)) {
-        setPresets(EMPTY_PRESETS);
+        setCollections(EMPTY_COLLECTIONS);
       }
       setError(messageFromCaught(caught, fallback));
     } finally {
       setLoading(false);
     }
-  }, [fallback, profileKey]);
+  }, [fallback, productType]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  return { presets, setPresets, loading, error, load };
+  return { collections, loading, error, load };
 }

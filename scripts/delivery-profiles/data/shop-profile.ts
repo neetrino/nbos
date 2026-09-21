@@ -91,10 +91,8 @@ export const SHOP_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: ['ACC_CUSTOMER_PORTAL'],
   presets: {
-    SMALL,
     CLASSIC,
     LARGE,
-    VERY_LARGE,
     ENTERPRISE,
   },
 };

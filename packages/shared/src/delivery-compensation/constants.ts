@@ -30,15 +30,6 @@ export type DeliveryRoleUnitKind = (typeof DELIVERY_ROLE_UNIT_KINDS)[number];
 export const DELIVERY_ENTITY_KINDS = ['PRODUCT', 'EXTENSION'] as const;
 export type DeliveryEntityKind = (typeof DELIVERY_ENTITY_KINDS)[number];
 
-export const DELIVERY_CONFIG_SIZES = [
-  'SMALL',
-  'CLASSIC',
-  'LARGE',
-  'VERY_LARGE',
-  'ENTERPRISE',
-] as const;
-export type DeliveryConfigSize = (typeof DELIVERY_CONFIG_SIZES)[number];
-
 export const DELIVERY_IMPLEMENTATION_BASES = [
   'FROM_SCRATCH',
   'EXISTING_BASE',

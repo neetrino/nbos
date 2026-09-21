@@ -113,7 +113,6 @@ describe('createBaseProfileDraft', () => {
     entityKind: 'PRODUCT',
     productType: 'ECOMMERCE',
     productCategory: 'CODE',
-    configSize: 'CLASSIC',
     implementationBase: 'FROM_SCRATCH',
     designMode: 'FULL_DESIGN',
     effectiveFrom: '2026-10-01T00:00:00.000Z',

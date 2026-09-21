@@ -12,7 +12,6 @@ function configurationAtRevision(expectedRevision: number): OperationalConfigura
     enrolled: true,
     designMode: null,
     aiDesignerReview: false,
-    configSize: null,
     implementationBase: null,
     checkedAt: null,
     baseProfileVersionId: null,

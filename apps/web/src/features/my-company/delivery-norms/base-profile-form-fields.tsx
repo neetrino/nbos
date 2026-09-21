@@ -1,20 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import {
-  DELIVERY_CONFIG_SIZES,
-  DELIVERY_DESIGN_MODES,
-  DELIVERY_IMPLEMENTATION_BASES,
-} from '@nbos/shared';
+import { DELIVERY_DESIGN_MODES, DELIVERY_IMPLEMENTATION_BASES } from '@nbos/shared';
 import { CreateFormSwitchField, InlineField } from '@/components/shared';
 import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
 import { SHEET_STACK_CLASS } from './delivery-norms.constants';
 import type { ProfileDraft } from './base-profile-draft';
-import {
-  configSizeLabels,
-  designModeLabels,
-  implementationBaseLabels,
-} from './profile-enum-labels';
+import { designModeLabels, implementationBaseLabels } from './profile-enum-labels';
 import { selectOptionsFromRecord, applySelectValue } from './select-options-from-record';
 import { BaseProfileIdentityFields } from './base-profile-identity-fields';
 
@@ -32,20 +24,6 @@ export function BaseProfileConfigFields({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <div className={SHEET_STACK_CLASS}>
-      <InlineField
-        variant="controlled"
-        type="select"
-        className={FORM_FIELD_CELL_CLASS}
-        label={t('fields.configSize')}
-        value={draft.configSize}
-        disabled={disabled}
-        options={selectOptionsFromRecord(DELIVERY_CONFIG_SIZES, configSizeLabels(t))}
-        onValueChange={(value) =>
-          applySelectValue(DELIVERY_CONFIG_SIZES, value, (configSize) =>
-            onChange({ ...draft, configSize }),
-          )
-        }
-      />
       <InlineField
         variant="controlled"
         type="select"

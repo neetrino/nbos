@@ -1,22 +1,18 @@
 import type { useTranslations } from 'next-intl';
 import {
-  DELIVERY_CONFIG_SIZES,
   PRODUCT_CATEGORIES,
   PRODUCT_TYPES,
-  type DeliveryConfigSize,
   type ProductCategoryKey,
   type ProductTypeKey,
 } from '@nbos/shared';
 import { PROFILE_LABEL_SEPARATOR, PROFILE_VERSION_PREFIX } from './delivery-norms.constants';
-import { configSizeLabels, productTypeLabels } from './profile-enum-labels';
+import { productTypeLabels } from './profile-enum-labels';
 
-/** Seed stems that are not the kebab of `ProductTypeKey`. */
 const PRODUCT_TYPE_ALIASES: ReadonlyArray<readonly [string, ProductTypeKey]> = [
   ['company-site', 'COMPANY_WEBSITE'],
   ['shop', 'ECOMMERCE'],
 ];
 
-const SIZE_SLUGS = slugEntries(DELIVERY_CONFIG_SIZES);
 const CATEGORY_SLUGS = slugEntries(PRODUCT_CATEGORIES);
 const PRODUCT_TYPE_SLUGS: Array<[string, ProductTypeKey]> = [
   ...slugEntries(PRODUCT_TYPES),
@@ -26,33 +22,25 @@ const PRODUCT_TYPE_SLUGS: Array<[string, ProductTypeKey]> = [
 export type ParsedProfileKey = {
   productType: ProductTypeKey | null;
   productCategory: ProductCategoryKey | null;
-  configSize: DeliveryConfigSize | null;
 };
 
 export type BaseProfileLabelDictionaries = {
   productTypes: Record<ProductTypeKey, string>;
-  sizes: Record<DeliveryConfigSize, string>;
 };
 
 export function dictionariesForProfileLabel(
   t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
 ): BaseProfileLabelDictionaries {
-  return {
-    productTypes: productTypeLabels(t),
-    sizes: configSizeLabels(t),
-  };
+  return { productTypes: productTypeLabels(t) };
 }
 
 export function parseProfileKey(profileKey: string): ParsedProfileKey {
   let rest = normalizeProfileKey(profileKey);
-  const size = takeTrailingSlug(rest, SIZE_SLUGS);
-  rest = size.rest;
   const category = takeTrailingSlug(rest, CATEGORY_SLUGS);
   rest = category.rest;
   return {
     productType: PRODUCT_TYPE_SLUGS.find(([slug]) => slug === rest)?.[1] ?? null,
     productCategory: category.value,
-    configSize: size.value,
   };
 }
 
@@ -62,25 +50,11 @@ export function formatBaseProfileLabel(
   labels: BaseProfileLabelDictionaries,
 ): string {
   const parsed = parseProfileKey(profileKey);
-  const title = titleFromParsedKey(parsed, labels) ?? profileKey;
+  const title = parsed.productType ? labels.productTypes[parsed.productType] : profileKey;
   if (version === null) {
     return title;
   }
   return `${title}${PROFILE_LABEL_SEPARATOR}${PROFILE_VERSION_PREFIX}${version}`;
-}
-
-function titleFromParsedKey(
-  parsed: ParsedProfileKey,
-  labels: BaseProfileLabelDictionaries,
-): string | null {
-  const parts: string[] = [];
-  if (parsed.productType) {
-    parts.push(labels.productTypes[parsed.productType]);
-  }
-  if (parsed.configSize) {
-    parts.push(labels.sizes[parsed.configSize]);
-  }
-  return parts.length > 0 ? parts.join(PROFILE_LABEL_SEPARATOR) : null;
 }
 
 function normalizeProfileKey(profileKey: string): string {
@@ -96,8 +70,7 @@ function enumToKebab(value: string): string {
 }
 
 function slugEntries<T extends string>(values: readonly T[]): Array<[string, T]> {
-  const entries: Array<[string, T]> = values.map((value) => typedPair(enumToKebab(value), value));
-  return entries.sort(byLongerSlug);
+  return values.map((value) => typedPair(enumToKebab(value), value)).sort(byLongerSlug);
 }
 
 function takeTrailingSlug<T extends string>(

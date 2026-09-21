@@ -3,6 +3,7 @@ import type { ConfigurationParametersInput } from '@nbos/shared';
 import { assertDeliveryOpenForConfiguration } from './assert-delivery-open';
 import { throwDeliveryCompensationError } from './delivery-compensation-http-error';
 import { lockDeliveryConfigurationRow } from './lock-delivery-configuration';
+import { findPublishedCoreId } from './match-published-core';
 
 type ProductKindRow = { productType: ProductTypeEnum; productCategory: ProductCategoryEnum };
 
@@ -44,7 +45,6 @@ export async function applyConfigurationParameters(
   await db.deliveryConfiguration.update({
     where: { id: input.configurationId },
     data: {
-      configSize: input.parameters.configSize,
       implementationBase: input.parameters.implementationBase,
       designMode: input.parameters.designMode,
       aiDesignerReview: input.parameters.aiDesignerReview,
@@ -88,34 +88,25 @@ async function findPublishedProfile(
   parameters: ConfigurationParametersInput,
 ): Promise<{ id: string; includedFunctions: Array<{ functionId: string }> }> {
   const product = configuration.product ?? configuration.extension?.product ?? null;
-  const candidates = await db.deliveryBaseProfileVersion.findMany({
-    where: {
-      status: 'PUBLISHED',
-      entityKind: configuration.entityKind,
-      configSize: parameters.configSize,
-      implementationBase: parameters.implementationBase,
-      designMode: parameters.designMode,
-      aiDesignerReview: parameters.aiDesignerReview,
-      OR: [{ productType: null }, { productType: product?.productType ?? null }],
-    },
-    select: {
-      id: true,
-      productType: true,
-      productCategory: true,
-      includedFunctions: { select: { functionId: true } },
-    },
-    orderBy: { version: 'desc' },
+  const id = await findPublishedCoreId(db, {
+    entityKind: configuration.entityKind,
+    productType: product?.productType ?? null,
+    productCategory: product?.productCategory ?? null,
+    implementationBase: parameters.implementationBase,
+    designMode: parameters.designMode,
+    aiDesignerReview: parameters.aiDesignerReview,
   });
-  const matched = candidates.filter(
-    (candidate) =>
-      candidate.productCategory === null ||
-      candidate.productCategory === (product?.productCategory ?? null),
-  );
-  const exact = matched.find((candidate) => candidate.productType !== null) ?? matched[0];
-  if (!exact) {
+  if (!id) {
     throwDeliveryCompensationError('NORMATIVE_NOT_CONFIGURED');
   }
-  return exact;
+  const profile = await db.deliveryBaseProfileVersion.findUnique({
+    where: { id },
+    select: { id: true, includedFunctions: { select: { functionId: true } } },
+  });
+  if (!profile) {
+    throwDeliveryCompensationError('NORMATIVE_NOT_CONFIGURED');
+  }
+  return profile;
 }
 
 /**

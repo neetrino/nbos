@@ -2,6 +2,8 @@ import { createPrismaClient, type PrismaClient, type TransactionClient } from '@
 import { buildSeedRoleUnits } from '../delivery-catalog/build-seed-role-units';
 import {
   buildSeededProfileKeys,
+  retiredSizedProfileKeys,
+  seededCollections,
   SEED_DESIGN_MODE,
   SEED_ENTITY_KIND,
   SEED_IMPLEMENTATION_BASE,
@@ -14,22 +16,18 @@ const APPLY_FLAG = '--apply';
 const REPLACE_FLAG = '--replace-drafts';
 
 /**
- * Creates draft core profiles and their size presets. Dry run by default; `--apply` writes.
- * Everything is DRAFT: a draft profile pays nobody and cannot be selected, so the numbers stay a
- * proposal until the Owner publishes them himself in the norms screen.
- *
- * `--replace-drafts` rewrites content the seed itself put there while it is still a proposal. The
- * plan refuses to replace anything published or already frozen into a configuration, so correcting
- * a draft cannot reach a norm somebody is being paid against.
+ * Creates one draft core per product kind and named extra-function collections. Dry run by default.
+ * `--replace-drafts` rewrites still-proposal content and drops unused sized draft keys.
  */
 async function main(): Promise<void> {
   const apply = process.argv.includes(APPLY_FLAG);
   const replaceDrafts = process.argv.includes(REPLACE_FLAG);
   const prisma = createPrismaClient({ role: 'all', skipBudgetAssert: true });
   try {
+    const ownedKeys = [...buildSeededProfileKeys(), ...retiredSizedProfileKeys()];
     const [profiles, functions] = await Promise.all([
       prisma.deliveryBaseProfileVersion.findMany({
-        where: { profileKey: { in: buildSeededProfileKeys() } },
+        where: { profileKey: { in: ownedKeys } },
         select: {
           profileKey: true,
           status: true,
@@ -58,26 +56,24 @@ async function main(): Promise<void> {
       return;
     }
     const functionIdByCode = new Map(functions.map((row) => [row.code, row.id]));
+    for (const retired of plan.retired) {
+      if (retired.action === 'RETIRE') {
+        await dropDraftProfile(prisma, retired.profileKey);
+      }
+    }
     for (const entry of plan.entries) {
       if (entry.action === 'KEEP') continue;
       await writeDraftProfile(prisma, entry.version, functionIdByCode, entry.action === 'REPLACE');
     }
+    await seedCollections(prisma, functionIdByCode);
     process.stdout.write(
-      `Created ${plan.createCount} and replaced ${plan.replaceCount} draft core profiles.\n`,
+      `Created ${plan.createCount}, replaced ${plan.replaceCount}, retired ${plan.retireCount}.\n`,
     );
   } finally {
     await prisma.$disconnect();
   }
 }
 
-/**
- * One profile version carries the core composition, the per-role unit proposal and the list of
- * cards the core already pays for. Its size preset is a different model, because a preset is not
- * money: it only pre-checks a module in the constructor and is charged as an ordinary extra.
- *
- * Every write shares one transaction. A rerun matches on the profile key alone, so a profile left
- * behind without its preset would be reported as already present and never repaired.
- */
 async function writeDraftProfile(
   prisma: PrismaClient,
   version: ProfileSeedVersion,
@@ -89,18 +85,14 @@ async function writeDraftProfile(
       await dropDraftProfile(tx, version.profileKey);
     }
     await writeProfileVersion(tx, version, functionIdByCode);
-    await writeSizePreset(tx, version, functionIdByCode);
   });
 }
 
-/**
- * The plan has already established that this key is a draft no configuration froze. Core items,
- * role units and included functions cascade with the version row; the size preset is a separate
- * model keyed by profile and size, so it is removed explicitly.
- */
-async function dropDraftProfile(tx: TransactionClient, profileKey: string): Promise<void> {
-  await tx.deliveryConfigSizePreset.deleteMany({ where: { profileKey } });
-  const removed = await tx.deliveryBaseProfileVersion.deleteMany({
+async function dropDraftProfile(
+  db: PrismaClient | TransactionClient,
+  profileKey: string,
+): Promise<void> {
+  const removed = await db.deliveryBaseProfileVersion.deleteMany({
     where: { profileKey, status: 'DRAFT' },
   });
   if (removed.count === 0) {
@@ -121,7 +113,6 @@ async function writeProfileVersion(
       entityKind: SEED_ENTITY_KIND,
       productType: kind.productType,
       productCategory: kind.productCategory,
-      configSize: version.configSize,
       implementationBase: SEED_IMPLEMENTATION_BASE,
       designMode: SEED_DESIGN_MODE,
       description: kind.description,
@@ -144,19 +135,35 @@ async function writeProfileVersion(
   });
 }
 
-async function writeSizePreset(
-  tx: TransactionClient,
-  version: ProfileSeedVersion,
+async function seedCollections(
+  prisma: PrismaClient,
   functionIdByCode: ReadonlyMap<string, string>,
 ): Promise<void> {
-  await tx.deliveryConfigSizePreset.createMany({
-    data: version.presetFunctionCodes.map((code) => ({
-      profileKey: version.profileKey,
-      configSize: version.configSize,
-      functionId: requireFunctionId(functionIdByCode, code),
-    })),
-    skipDuplicates: true,
-  });
+  for (const { productType, collection } of seededCollections()) {
+    const existing = await prisma.deliveryFunctionCollection.findUnique({
+      where: { productType_name: { productType, name: collection.name } },
+      select: { id: true },
+    });
+    if (existing) continue;
+    const last = await prisma.deliveryFunctionCollection.findFirst({
+      where: { productType },
+      orderBy: { position: 'desc' },
+      select: { position: true },
+    });
+    await prisma.deliveryFunctionCollection.create({
+      data: {
+        productType,
+        name: collection.name,
+        position: (last?.position ?? 0) + 1,
+        items: {
+          create: collection.functionCodes.map((code, index) => ({
+            functionId: requireFunctionId(functionIdByCode, code),
+            position: index + 1,
+          })),
+        },
+      },
+    });
+  }
 }
 
 function requireFunctionId(byCode: ReadonlyMap<string, string>, code: string): string {

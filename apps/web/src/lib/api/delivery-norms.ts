@@ -28,7 +28,6 @@ export type CreateBaseProfileBody = {
   entityKind: 'PRODUCT' | 'EXTENSION';
   productType: string | null;
   productCategory: string | null;
-  configSize: string;
   implementationBase: string;
   designMode: string;
   aiDesignerReview?: boolean;

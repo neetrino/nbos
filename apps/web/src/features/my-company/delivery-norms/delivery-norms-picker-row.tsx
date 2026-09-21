@@ -1,10 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import {
-  SIZE_PRESET_LEVEL_ACTIVE_CLASS,
-  SIZE_PRESET_LEVEL_CLASS,
-} from './delivery-norms.constants';
+import { PICKER_CHIP_ACTIVE_CLASS, PICKER_CHIP_CLASS } from './delivery-norms.constants';
 
 export function DeliveryNormsPickerRow({
   title,
@@ -24,8 +21,8 @@ export function DeliveryNormsPickerRow({
       type="button"
       disabled={disabled}
       className={cn(
-        SIZE_PRESET_LEVEL_CLASS,
-        active ? SIZE_PRESET_LEVEL_ACTIVE_CLASS : null,
+        PICKER_CHIP_CLASS,
+        active ? PICKER_CHIP_ACTIVE_CLASS : null,
         disabled ? 'cursor-not-allowed opacity-50' : null,
       )}
       onClick={onSelect}

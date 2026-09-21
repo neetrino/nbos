@@ -49,7 +49,6 @@ model DeliveryConfiguration {
   baseProfileVersionId String?                        @map("base_profile_version_id")
   productType          ProductTypeEnum?               @map("product_type")
   productCategory      ProductCategoryEnum?           @map("product_category")
-  configSize           DeliveryConfigSizeEnum?        @map("config_size")
   implementationBase   DeliveryImplementationBaseEnum? @map("implementation_base")
   designMode           DeliveryDesignModeEnum?        @map("design_mode")
   aiDesignerReview     Boolean                        @default(false) @map("ai_designer_review")

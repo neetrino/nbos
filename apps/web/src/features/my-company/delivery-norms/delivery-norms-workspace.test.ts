@@ -19,7 +19,7 @@ describe('locationForMapKey', () => {
       ['profileUnits', 'versions'],
       ['profileIncluded', 'versions'],
       ['profileCore', 'core'],
-      ['profilePresets', 'presets'],
+      ['profileCollections', 'collections'],
     ];
     for (const [key, profileTab] of cases) {
       expect(locationForMapKey(key)).toEqual({ tab: 'profiles', profileTab });

@@ -24,6 +24,7 @@ import {
   assertProductConfigurable,
   type DeliveryConfigurationAccess,
 } from './delivery-configuration-access';
+import { copyDealQuoteExtras } from './copy-deal-quote-extras';
 import { insertDeliveryEnrollment } from './insert-delivery-enrollment';
 import { syncProductBonusPoolForOrder } from '../bonus/product-bonus-pool-sync';
 import { NotificationService } from '../notifications/notification.service';
@@ -94,7 +95,9 @@ export class DeliveryConfigurationService {
     await assertProductNeverClosed(this.prisma, productId);
     await assertOrderBelongsToProduct(this.prisma, productId, orderId);
     await assertOrderHasNoBonusEntries(this.prisma, orderId);
-    return this.getRequired(await insertDeliveryEnrollment(this.prisma, { productId }, orderId));
+    const configurationId = await insertDeliveryEnrollment(this.prisma, { productId }, orderId);
+    await copyDealQuoteExtras(this.prisma, productId, configurationId, orderId);
+    return this.getRequired(configurationId);
   }
 
   async getByExtension(

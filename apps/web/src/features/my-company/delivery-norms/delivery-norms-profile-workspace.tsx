@@ -8,7 +8,7 @@ import { BaseProfilesSection } from './base-profiles-section';
 import { CoreItemsSection } from './core-items-section';
 import { DeliveryNormsPanelHeader } from './delivery-norms-panel-header';
 import { type DeliveryNormsProfileTab } from './delivery-norms-workspace';
-import { SizePresetsSection } from './size-presets-section';
+import { FunctionCollectionsSection } from './function-collections-section';
 
 export function DeliveryNormsProfileWorkspace({
   data,
@@ -32,7 +32,7 @@ export function DeliveryNormsProfileWorkspace({
     (): PageHeroTabOption<DeliveryNormsProfileTab>[] => [
       { value: 'versions', label: t('workspace.profileTabs.versions') },
       { value: 'core', label: t('workspace.profileTabs.core') },
-      { value: 'presets', label: t('workspace.profileTabs.presets') },
+      { value: 'collections', label: t('workspace.profileTabs.collections') },
     ],
     [t],
   );
@@ -86,9 +86,9 @@ function ProfileTabPanel({
       <CoreItemsSection rows={data.profiles} canEdit={canPublish} onError={onError} embedded />
     );
   }
-  if (profileTab === 'presets') {
+  if (profileTab === 'collections') {
     return (
-      <SizePresetsSection
+      <FunctionCollectionsSection
         rows={data.profiles}
         catalog={data.catalog}
         canEdit={canPublish}
@@ -117,8 +117,8 @@ function profilePanelCopy(
   if (tab === 'core') {
     return { title: t('coreItems.title'), description: t('coreItems.subtitle') };
   }
-  if (tab === 'presets') {
-    return { title: t('sizePresets.title'), description: t('sizePresets.subtitle') };
+  if (tab === 'collections') {
+    return { title: t('collections.title'), description: t('collections.subtitle') };
   }
   return { title: t('profiles.title'), description: t('profiles.subtitle') };
 }

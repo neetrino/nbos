@@ -8,7 +8,6 @@ export type OperationalConfigurationDto = {
   enrolled: boolean;
   designMode: string | null;
   aiDesignerReview: boolean;
-  configSize: string | null;
   implementationBase: string | null;
   checkedAt: string | null;
   baseProfileVersionId: string | null;

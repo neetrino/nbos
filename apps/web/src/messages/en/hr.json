@@ -430,7 +430,7 @@
         "aria": "Base profile parts",
         "versions": "Versions and units",
         "core": "Core composition",
-        "presets": "Size presets"
+        "collections": "Collections"
       },
       "panel": {
         "open": "Open"
@@ -461,7 +461,7 @@
         "profiles": {
           "index": "03",
           "title": "Base profiles",
-          "body": "The core package for a product type, size, implementation base, and design mode."
+          "body": "The core package for a product type, implementation base, and design mode."
         },
         "profileUnits": {
           "title": "3.1 Role units",
@@ -475,9 +475,9 @@
           "title": "3.3 Core composition",
           "body": "The written list of what the core contains. Items have no units of their own."
         },
-        "profilePresets": {
-          "title": "3.4 Size presets",
-          "body": "Extra modules pre-checked for a size. They are still billed, unlike included-in-base."
+        "profileCollections": {
+          "title": "3.4 Collections",
+          "body": "Named extra kits. A click replaces the deal constructor selection. They are still billed, unlike included-in-base."
         },
         "functions": {
           "index": "04",
@@ -552,7 +552,7 @@
     "coreItems": {
       "title": "Core composition",
       "subtitle": "What the product core contains. Items have no units; the profile's role units price the core.",
-      "hint": "Composition is per size: Small and Classic can list different items.",
+      "hint": "One core composition per product kind. Items have no units of their own.",
       "pickVersion": "Select a base profile version",
       "pickKind": "Product type",
       "versionMeta": "{size} · {version}",
@@ -573,25 +573,22 @@
       "moveDown": "Move down",
       "noUnits": "No units — this list is composition only."
     },
-    "sizePresets": {
-      "title": "Size presets",
-      "subtitle": "Modules pre-checked for a product size. They are still charged as extras, unlike functions included in the base.",
-      "hint": "A preset only pre-selects modules. It does not make them free. The “included in base” list is the one that covers work at no extra charge.",
-      "pickProfile": "Select a profile key",
-      "pickKind": "Product type",
-      "pickSize": "Size",
-      "sizeCount": "{count, plural, one {# size} other {# sizes}}",
-      "noProfileForSize": "No profile exists for this size yet. Create it in Versions and units.",
-      "missingProfile": "No profile",
+    "collections": {
+      "title": "Collections",
+      "subtitle": "Named extra-function kits. A click on a deal replaces the whole extra set.",
+      "hint": "A collection is a helper, not a price and not included-in-base. The seller can still remove or add functions after applying it.",
       "emptyProfiles": "Create a base profile first.",
       "emptySearch": "No product types match this search.",
-      "emptyFunctions": "No catalog functions to pre-select yet.",
-      "pickerTitle": "Pre-selected modules (charged as extras)",
-      "pickerHint": "Ticked modules are pre-checked for this size and billed as normal extras. They are not included in the base.",
-      "save": "Save this size",
+      "emptyFunctions": "No catalog functions to add yet.",
+      "empty": "No collections for this kind yet.",
+      "unknownKind": "This profile is not tied to a product type.",
+      "pickerTitle": "Functions in this collection",
+      "pickerHint": "Applying the kit replaces extras on the deal. These functions are still billed.",
+      "name": "Collection name",
+      "create": "New collection",
+      "save": "Save collection",
       "saving": "Saving…",
-      "selectedCount": "{count, plural, one {# module} other {# modules}}",
-      "cleared": "None pre-selected"
+      "selectedCount": "{count, plural, one {# function} other {# functions}}"
     },
     "salePrices": {
       "title": "Sale prices",
@@ -664,7 +661,7 @@
       "enrollment": "Enrollment switch could not be changed.",
       "coreItems": "The core composition could not be saved.",
       "coreItemLabel": "Enter an item label.",
-      "sizePresets": "The size preset could not be saved.",
+      "collections": "The collection could not be saved.",
       "salePrices": "The sale price draft could not be created.",
       "salePriceRequired": "Set the sale price per unit.",
       "salePricePositive": "The sale price per unit must be greater than zero.",

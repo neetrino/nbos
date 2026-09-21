@@ -8,7 +8,6 @@ export type OperationalConfigurationDto = {
   enrolled: boolean;
   designMode: string | null;
   aiDesignerReview: boolean;
-  configSize: string | null;
   implementationBase: string | null;
   checkedAt: string | null;
   /** Frozen core of this card. Null until the parameters are confirmed. */
@@ -39,7 +38,6 @@ export function serializeOperationalConfiguration(input: {
   mode: string;
   designMode: string | null;
   aiDesignerReview: boolean;
-  configSize: string | null;
   implementationBase: string | null;
   checkedAt: Date | null;
   baseProfileVersionId?: string | null;
@@ -63,7 +61,6 @@ export function serializeOperationalConfiguration(input: {
     enrolled: input.mode === 'V2',
     designMode: input.designMode,
     aiDesignerReview: input.aiDesignerReview,
-    configSize: input.configSize,
     implementationBase: input.implementationBase,
     checkedAt: input.checkedAt?.toISOString() ?? null,
     baseProfileVersionId: input.baseProfileVersionId ?? null,

@@ -10,7 +10,6 @@ describe('serializeOperationalConfiguration', () => {
       mode: 'V2',
       designMode: 'FULL_DESIGN',
       aiDesignerReview: false,
-      configSize: 'CLASSIC',
       implementationBase: 'FROM_SCRATCH',
       checkedAt: null,
       draftVersion: 1,

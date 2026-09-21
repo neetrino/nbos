@@ -35,10 +35,10 @@ export const SALE_PRICE_TARGET_KINDS = ['FUNCTION', 'TIER', 'CORE'] as const;
 
 export type SalePriceTargetKind = (typeof SALE_PRICE_TARGET_KINDS)[number];
 
-export const SIZE_PRESET_LEVEL_CLASS =
+export const PICKER_CHIP_CLASS =
   'border-border/60 bg-muted/10 hover:bg-muted/30 flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition-colors';
 
-export const SIZE_PRESET_LEVEL_ACTIVE_CLASS = 'border-primary bg-primary/10 hover:bg-primary/15';
+export const PICKER_CHIP_ACTIVE_CLASS = 'border-primary bg-primary/10 hover:bg-primary/15';
 
 export const SEED_ROLE_RATE_AMD = '1000';
 
@@ -57,7 +57,7 @@ export const INCLUDED_FUNCTIONS_LIST_CLASS =
 
 export const CHECKBOX_ITEMS_GRID_CLASS = 'grid gap-2 lg:grid-cols-2';
 
-export const SIZE_LADDER_GRID_CLASS = 'grid grid-cols-2 gap-2 lg:grid-cols-5';
+export const COLLECTION_CHIPS_GRID_CLASS = 'grid gap-2 sm:grid-cols-2 lg:grid-cols-3';
 
 export const GROUP_HEADING_CLASS =
   'text-muted-foreground text-[11px] font-semibold tracking-wide uppercase';

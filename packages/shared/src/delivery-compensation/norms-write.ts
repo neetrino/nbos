@@ -5,12 +5,10 @@ import {
 } from './catalog-write';
 import {
   DELIVERY_COMPENSATION_ROLE_KEYS,
-  DELIVERY_CONFIG_SIZES,
   DELIVERY_DESIGN_MODES,
   DELIVERY_ENTITY_KINDS,
   DELIVERY_IMPLEMENTATION_BASES,
   DELIVERY_ROLE_UNIT_KINDS,
-  type DeliveryConfigSize,
   type DeliveryDesignMode,
   type DeliveryEntityKind,
   type DeliveryImplementationBase,
@@ -38,7 +36,6 @@ export type BaseProfileWriteInput = {
   entityKind: DeliveryEntityKind;
   productType: ProductTypeKey | null;
   productCategory: ProductCategoryKey | null;
-  configSize: DeliveryConfigSize;
   implementationBase: DeliveryImplementationBase;
   designMode: DeliveryDesignMode;
   aiDesignerReview: boolean;
@@ -73,7 +70,6 @@ export function parseBaseProfileWriteBody(body: unknown): BaseProfileWriteInput 
       PRODUCT_CATEGORIES,
       'productCategory',
     ),
-    configSize: readEnum(record.configSize, DELIVERY_CONFIG_SIZES, 'configSize'),
     implementationBase: readEnum(
       record.implementationBase,
       DELIVERY_IMPLEMENTATION_BASES,

@@ -11,7 +11,6 @@ import {
 import {
   NORMS_PROFILE_CARD_ACTIONS_CLASS,
   NORMS_PROFILE_CARD_CLASS,
-  PROFILE_LABEL_SEPARATOR,
   PROFILE_VERSION_PREFIX,
 } from './delivery-norms.constants';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
@@ -72,9 +71,8 @@ function profileCardCopy(
     ? dictionaries.productTypes[parsed.productType]
     : formatBaseProfileLabel(row.profileKey, null, dictionaries);
   const versionLabel = `${PROFILE_VERSION_PREFIX}${row.version}`;
-  const sizeLabel = parsed.configSize ? dictionaries.sizes[parsed.configSize] : null;
   return {
     title,
-    subtitle: sizeLabel ? `${sizeLabel}${PROFILE_LABEL_SEPARATOR}${versionLabel}` : versionLabel,
+    subtitle: versionLabel,
   };
 }

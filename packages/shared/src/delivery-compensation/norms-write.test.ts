@@ -23,7 +23,6 @@ function baseProfileBody(overrides: Record<string, unknown> = {}) {
     entityKind: 'PRODUCT',
     productType: 'ECOMMERCE',
     productCategory: 'CODE',
-    configSize: 'CLASSIC',
     implementationBase: 'FROM_SCRATCH',
     designMode: 'FULL_DESIGN',
     effectiveFrom: '2026-10-01T00:00:00.000Z',
@@ -164,12 +163,6 @@ describe('parseBaseProfileWriteBody', () => {
     expect(() =>
       parseBaseProfileWriteBody(baseProfileBody({ productType: 'MARKETPLACE' })),
     ).toThrow(/productType is invalid/);
-  });
-
-  it('rejects an unknown config size', () => {
-    expect(() => parseBaseProfileWriteBody(baseProfileBody({ configSize: 'HUGE' }))).toThrow(
-      /configSize is invalid/,
-    );
   });
 
   it('rejects a missing profileKey', () => {

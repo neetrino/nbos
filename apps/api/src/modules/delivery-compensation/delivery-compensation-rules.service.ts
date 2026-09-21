@@ -141,7 +141,6 @@ export class DeliveryCompensationRulesService {
         entityKind: input.entityKind,
         productType: input.productType,
         productCategory: input.productCategory,
-        configSize: input.configSize,
         implementationBase: input.implementationBase,
         designMode: input.designMode,
         aiDesignerReview: input.aiDesignerReview,

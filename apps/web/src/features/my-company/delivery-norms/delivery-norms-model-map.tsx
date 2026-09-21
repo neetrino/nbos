@@ -10,7 +10,7 @@ const PROFILE_CHILD_KEYS = [
   'profileUnits',
   'profileIncluded',
   'profileCore',
-  'profilePresets',
+  'profileCollections',
 ] as const;
 
 export function DeliveryNormsModelMap({ onOpen }: { onOpen: (key: DeliveryNormsMapKey) => void }) {
