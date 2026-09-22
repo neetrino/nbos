@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { PrismaClient } from '@nbos/database';
 import {
   parseSalePriceBody,
+  parseSalePricePatchBody,
   resolveSalePrice,
   salePriceTargetKey,
   type SalePriceTarget,
@@ -46,24 +47,55 @@ export class SalePricesService {
     const input = parseSalePriceBody(body, target);
     await this.assertTargetExists(target);
     const targetKey = salePriceTargetKey(target);
-    const last = await this.prisma.deliverySalePriceVersion.findFirst({
-      where: { targetKey },
-      orderBy: { version: 'desc' },
-      select: { version: true },
-    });
-    const created = await this.prisma.deliverySalePriceVersion.create({
-      data: {
-        targetKey,
-        functionId: target.kind === 'FUNCTION' ? target.functionId : null,
-        tierId: target.kind === 'TIER' ? target.tierId : null,
-        baseProfileVersionId: target.kind === 'CORE' ? target.baseProfileVersionId : null,
-        version: (last?.version ?? 0) + FIRST_VERSION,
-        status: 'DRAFT',
-        effectiveFrom: new Date(input.effectiveFrom),
-        amountPerUnit: input.amountPerUnit,
+    const created = await this.prisma.$transaction(
+      async (tx) => {
+        const open = await tx.deliverySalePriceVersion.findFirst({
+          where: { targetKey, status: 'DRAFT' },
+          select: { id: true },
+        });
+        if (open) {
+          return tx.deliverySalePriceVersion.update({
+            where: { id: open.id },
+            data: { amountPerUnit: input.amountPerUnit },
+          });
+        }
+        const last = await tx.deliverySalePriceVersion.findFirst({
+          where: { targetKey },
+          orderBy: { version: 'desc' },
+          select: { version: true },
+        });
+        return tx.deliverySalePriceVersion.create({
+          data: {
+            targetKey,
+            functionId: target.kind === 'FUNCTION' ? target.functionId : null,
+            tierId: target.kind === 'TIER' ? target.tierId : null,
+            baseProfileVersionId: target.kind === 'CORE' ? target.baseProfileVersionId : null,
+            version: (last?.version ?? 0) + FIRST_VERSION,
+            status: 'DRAFT',
+            effectiveFrom: new Date(input.effectiveFrom),
+            amountPerUnit: input.amountPerUnit,
+          },
+        });
       },
-    });
+      { isolationLevel: 'Serializable' },
+    );
     return requiredSerialized(await this.serializeMany([created], true));
+  }
+
+  async updateDraft(id: string, body: unknown): Promise<SalePriceVersionDto> {
+    const input = parseSalePricePatchBody(body);
+    const version = await this.prisma.deliverySalePriceVersion.findUnique({ where: { id } });
+    if (!version) {
+      throw new NotFoundException(`Sale price version ${id} not found`);
+    }
+    if (version.status !== 'DRAFT') {
+      throw new BadRequestException('Only a draft sale price can be updated.');
+    }
+    const updated = await this.prisma.deliverySalePriceVersion.update({
+      where: { id },
+      data: { amountPerUnit: input.amountPerUnit },
+    });
+    return requiredSerialized(await this.serializeMany([updated], true));
   }
 
   /** Publishing supersedes the previously published price of the same item. */

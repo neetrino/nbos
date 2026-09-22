@@ -2,14 +2,15 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { DELIVERY_COMPENSATION_CURRENCY, parseRoleRateWriteBody } from '@nbos/shared';
+import { parseFunctionPriceWriteBody } from '@nbos/shared';
 import {
-  EntityListAmount,
   ENTITY_LIST_CELL_CLASS,
   ENTITY_LIST_HEAD_CLASS,
   ENTITY_LIST_ROW_HOVER_CLASS,
   ENTITY_LIST_SHELL_CLASS,
 } from '@/components/shared';
+import { Button } from '@/components/ui/button';
+import { NormsRowActions } from './norms-row-actions';
 import {
   Table,
   TableBody,
@@ -21,35 +22,44 @@ import {
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { dateInputToIso, todayDateInputValue } from './effective-from';
 import { liveNormDisplayStatus } from './live-norm-pair';
-import { displayedRoleRate, type LiveRoleRate } from './live-role-rates';
+import type { LiveFunctionPrice } from './live-function-prices';
 import { messageFromCaught } from './message-from-caught';
-import { NormsInlineMoneyEdit } from './norms-inline-money-edit';
-import { NormsRowActions } from './norms-row-actions';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { PublishDraftButton } from './publish-draft-button';
-import { ROLE_MESSAGE_KEYS } from './delivery-norms.constants';
+import { RoleUnitsEditor } from './role-units-editor';
+import {
+  buildCompleteRoleUnitVector,
+  createEmptyRoleUnitDrafts,
+  roleUnitDraftsFromDto,
+  type RoleUnitDraftRow,
+} from './role-units-draft';
+import { summarizeRoleUnits } from './summarize-role-units';
 
-export function RoleRatesTable({
+export function FunctionPricesTable({
   pairs,
+  titles,
   canAdd,
   canPublish,
   onChanged,
   onError,
 }: {
-  pairs: LiveRoleRate[];
+  pairs: LiveFunctionPrice[];
+  titles: Map<string, string>;
   canAdd: boolean;
   canPublish: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
+  if (pairs.length === 0) {
+    return <p className="text-muted-foreground text-sm">{t('prices.empty')}</p>;
+  }
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.role')}</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.rate')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('fields.function')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.version')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.status')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.actions')}</TableHead>
@@ -57,9 +67,10 @@ export function RoleRatesTable({
         </TableHeader>
         <TableBody>
           {pairs.map((pair) => (
-            <RoleRateLiveRow
-              key={pair.roleKey}
+            <FunctionPriceLiveRow
+              key={pair.key}
               pair={pair}
+              title={titles.get(pair.key) ?? t('prices.unknownFunction')}
               canAdd={canAdd}
               canPublish={canPublish}
               onChanged={onChanged}
@@ -72,42 +83,46 @@ export function RoleRatesTable({
   );
 }
 
-function RoleRateLiveRow({
+function FunctionPriceLiveRow({
   pair,
+  title,
   canAdd,
   canPublish,
   onChanged,
   onError,
 }: {
-  pair: LiveRoleRate;
+  pair: LiveFunctionPrice;
+  title: string;
   canAdd: boolean;
   canPublish: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [nextRate, setNextRate] = useState('');
+  const [drafts, setDrafts] = useState<RoleUnitDraftRow[]>(createEmptyRoleUnitDrafts);
   const [saving, setSaving] = useState(false);
+  const current = pair.draft ?? pair.published;
   const canEdit = Boolean(pair.draft) ? canPublish : canAdd;
   return (
     <>
-      <RoleRateSummaryRow
+      <FunctionPriceSummaryRow
         pair={pair}
+        title={title}
         canEdit={canEdit}
         canPublish={canPublish}
         onToggleEdit={() => {
-          setNextRate(pair.draft?.rate ?? '');
-          setOpen((current) => !current);
+          setDrafts(roleUnitDraftsFromDto(current?.roleUnits ?? []));
+          setOpen((value) => !value);
         }}
         onChanged={onChanged}
         onError={onError}
       />
       {open ? (
-        <RoleRateDraftEditor
+        <FunctionPriceDraftEditor
           pair={pair}
-          nextRate={nextRate}
+          drafts={drafts}
           saving={saving}
-          onNextRateChange={setNextRate}
+          onDraftsChange={setDrafts}
           onError={onError}
           onChanged={() => {
             setOpen(false);
@@ -120,8 +135,9 @@ function RoleRateLiveRow({
   );
 }
 
-type RoleRateSummaryRowProps = {
-  pair: LiveRoleRate;
+type FunctionPriceSummaryRowProps = {
+  pair: LiveFunctionPrice;
+  title: string;
   canEdit: boolean;
   canPublish: boolean;
   onToggleEdit: () => void;
@@ -129,37 +145,33 @@ type RoleRateSummaryRowProps = {
   onError: (message: string) => void;
 };
 
-function RoleRateSummaryRow({
+function FunctionPriceSummaryRow({
   pair,
+  title,
   canEdit,
   canPublish,
   onToggleEdit,
   onChanged,
   onError,
-}: RoleRateSummaryRowProps) {
+}: FunctionPriceSummaryRowProps) {
   const t = useTranslations('hr.deliveryNorms');
-  const rate = displayedRoleRate(pair);
-  const version = pair.draft?.version ?? pair.published?.version;
+  const current = pair.draft ?? pair.published;
   const status = liveNormDisplayStatus(pair);
   return (
     <TableRow className={ENTITY_LIST_ROW_HOVER_CLASS}>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <span className="text-foreground text-sm font-medium">
-          {t(ROLE_MESSAGE_KEYS[pair.roleKey])}
-        </span>
+        <div className="space-y-1">
+          <p className="text-foreground text-sm font-medium">{title}</p>
+          {current ? (
+            <p className="text-muted-foreground text-xs">{summarizeRoleUnits(current.roleUnits)}</p>
+          ) : null}
+        </div>
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {rate ? (
-          <EntityListAmount amount={rate} currency={DELIVERY_COMPENSATION_CURRENCY} />
-        ) : (
-          <span className="text-muted-foreground">{t('none')}</span>
-        )}
+        <span className="text-muted-foreground tabular-nums">{current?.version ?? '—'}</span>
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <span className="text-muted-foreground tabular-nums">{version ?? '—'}</span>
-      </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {pair.published || pair.draft ? (
+        {current ? (
           <NormativeStatusBadge status={status} label={t(normativeStatusLabelKey(status))} />
         ) : (
           <span className="text-muted-foreground">{t('none')}</span>
@@ -173,8 +185,11 @@ function RoleRateSummaryRow({
           publish={
             pair.draft && canPublish ? (
               <PublishDraftButton
-                onPublish={async () => {
-                  await deliveryNormsApi.publishRoleRate(pair.draft?.id ?? '');
+                roleUnits={pair.draft.roleUnits}
+                onPublish={async (confirmZeroUnits) => {
+                  await deliveryNormsApi.publishFunctionPrice(pair.draft?.id ?? '', {
+                    confirmZeroUnits,
+                  });
                 }}
                 onError={onError}
                 onPublished={onChanged}
@@ -187,19 +202,19 @@ function RoleRateSummaryRow({
   );
 }
 
-function RoleRateDraftEditor({
+function FunctionPriceDraftEditor({
   pair,
-  nextRate,
+  drafts,
   saving,
-  onNextRateChange,
+  onDraftsChange,
   onError,
   onChanged,
   setSaving,
 }: {
-  pair: LiveRoleRate;
-  nextRate: string;
+  pair: LiveFunctionPrice;
+  drafts: RoleUnitDraftRow[];
   saving: boolean;
-  onNextRateChange: (value: string) => void;
+  onDraftsChange: (rows: RoleUnitDraftRow[]) => void;
   onError: (message: string) => void;
   onChanged: () => void;
   setSaving: (value: boolean) => void;
@@ -207,49 +222,60 @@ function RoleRateDraftEditor({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <TableRow>
-      <TableCell className={ENTITY_LIST_CELL_CLASS} colSpan={5}>
-        <NormsInlineMoneyEdit
-          currentAmount={pair.published?.rate ?? null}
-          nextAmount={nextRate}
-          saving={saving}
-          onNextAmountChange={onNextRateChange}
-          onSave={() => {
-            void saveRoleRateDraft({
-              pair,
-              nextRate,
-              fallback: t('errors.create'),
-              onError,
-              onChanged,
-              setSaving,
-            });
-          }}
-        />
+      <TableCell className={ENTITY_LIST_CELL_CLASS} colSpan={4}>
+        <div className="space-y-3">
+          <RoleUnitsEditor rows={drafts} disabled={saving} onChange={onDraftsChange} />
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              size="sm"
+              disabled={saving}
+              onClick={() => {
+                void saveFunctionPriceDraft({
+                  pair,
+                  drafts,
+                  fallback: t('errors.create'),
+                  invalidUnits: t('errors.roleUnits'),
+                  onError,
+                  onChanged,
+                  setSaving,
+                });
+              }}
+            >
+              {saving ? t('create.creating') : t('edit.save')}
+            </Button>
+          </div>
+        </div>
       </TableCell>
     </TableRow>
   );
 }
 
-async function saveRoleRateDraft(input: {
-  pair: LiveRoleRate;
-  nextRate: string;
+async function saveFunctionPriceDraft(input: {
+  pair: LiveFunctionPrice;
+  drafts: RoleUnitDraftRow[];
   fallback: string;
+  invalidUnits: string;
   onError: (message: string) => void;
   onChanged: () => void;
   setSaving: (value: boolean) => void;
 }): Promise<void> {
+  const roleUnits = buildCompleteRoleUnitVector(input.drafts);
+  if (roleUnits === null) {
+    input.onError(input.invalidUnits);
+    return;
+  }
   input.setSaving(true);
   try {
     if (input.pair.draft) {
-      await deliveryNormsApi.updateRoleRateDraft(input.pair.draft.id, {
-        rate: input.nextRate.trim(),
-      });
+      await deliveryNormsApi.updateFunctionPriceDraft(input.pair.draft.id, { roleUnits });
     } else {
-      await deliveryNormsApi.createRoleRate(
-        parseRoleRateWriteBody({
-          roleKey: input.pair.roleKey,
-          rate: input.nextRate.trim(),
+      await deliveryNormsApi.createFunctionPrice(
+        parseFunctionPriceWriteBody({
+          functionId: input.pair.functionId,
+          tierId: input.pair.tierId,
           effectiveFrom: dateInputToIso(todayDateInputValue()),
-          currency: DELIVERY_COMPENSATION_CURRENCY,
+          roleUnits,
         }),
       );
     }

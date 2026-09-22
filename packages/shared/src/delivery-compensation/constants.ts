@@ -24,7 +24,7 @@ export type DeliveryFunctionStatus = (typeof DELIVERY_FUNCTION_STATUSES)[number]
 export const DELIVERY_NORMATIVE_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export type DeliveryNormativeStatus = (typeof DELIVERY_NORMATIVE_STATUSES)[number];
 
-export const DELIVERY_ROLE_UNIT_KINDS = ['REQUIRED', 'NOT_REQUIRED'] as const;
+export const DELIVERY_ROLE_UNIT_KINDS = ['REQUIRED', 'OPTIONAL', 'NOT_REQUIRED'] as const;
 export type DeliveryRoleUnitKind = (typeof DELIVERY_ROLE_UNIT_KINDS)[number];
 
 export const DELIVERY_ENTITY_KINDS = ['PRODUCT', 'EXTENSION'] as const;

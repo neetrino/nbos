@@ -9,9 +9,20 @@ import type {
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
 import { FunctionPriceCreateSheet } from './function-price-create-sheet';
-import { FunctionPricesList } from './function-prices-list';
+import { FunctionPricesTable } from './function-prices-table';
 import { catalogFunctionSearchParts } from './group-catalog-functions';
+import { functionPriceTitleMap, liveFunctionPrices } from './live-function-prices';
 import { itemsMatchingSearch } from './matches-norm-search';
+
+type FunctionPricesSectionProps = {
+  rows: DeliveryFunctionPriceFinancialDto[];
+  catalog: DeliveryFunctionOperationalDto[];
+  canAdd: boolean;
+  canPublish: boolean;
+  onChanged: () => void;
+  onError: (message: string) => void;
+  embedded?: boolean;
+};
 
 export function FunctionPricesSection({
   rows,
@@ -21,64 +32,79 @@ export function FunctionPricesSection({
   onChanged,
   onError,
   embedded = false,
-}: {
-  rows: DeliveryFunctionPriceFinancialDto[];
-  catalog: DeliveryFunctionOperationalDto[];
-  canAdd: boolean;
-  canPublish: boolean;
-  onChanged: () => void;
-  onError: (message: string) => void;
-  embedded?: boolean;
-}) {
+}: FunctionPricesSectionProps) {
   const t = useTranslations('hr.deliveryNorms');
-  const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
-  const titles = useMemo(() => new Map(catalog.map((item) => [item.id, item] as const)), [catalog]);
-  const filtered = useMemo(
-    () =>
-      itemsMatchingSearch(rows, query, (row) => {
-        const item = titles.get(row.functionId);
-        return item
-          ? catalogFunctionSearchParts(item)
-          : [row.functionId, t('prices.unknownFunction')];
-      }),
-    [query, rows, t, titles],
-  );
-
+  const list = useFunctionPricesList(rows, catalog);
   return (
     <DeliveryNormsSectionCard
       title={embedded ? undefined : t('prices.title')}
       description={embedded ? undefined : t('prices.subtitle')}
     >
       <DeliveryNormsSectionToolbar
-        query={query}
-        onQueryChange={setQuery}
+        query={list.query}
+        onQueryChange={list.setQuery}
         searchLabel={t('search.label')}
         searchPlaceholder={t('search.placeholder')}
         addLabel={t('add')}
         canAdd={canAdd}
-        onAdd={() => setOpen(true)}
+        onAdd={() => list.setOpen(true)}
       />
       {canAdd ? (
         <FunctionPriceCreateSheet
-          open={open}
+          open={list.open}
           catalog={catalog}
-          onOpenChange={setOpen}
+          onOpenChange={list.setOpen}
           onCreated={onChanged}
           onError={onError}
         />
       ) : null}
-      {query.trim() !== '' && filtered.length === 0 ? (
+      {list.query.trim() !== '' && list.filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('search.empty')}</p>
       ) : (
-        <FunctionPricesList
-          rows={filtered}
-          catalog={catalog}
+        <FunctionPricesTable
+          pairs={list.filtered}
+          titles={list.titles}
+          canAdd={canAdd}
           canPublish={canPublish}
-          onPublished={onChanged}
+          onChanged={onChanged}
           onError={onError}
         />
       )}
     </DeliveryNormsSectionCard>
   );
+}
+
+function useFunctionPricesList(
+  rows: DeliveryFunctionPriceFinancialDto[],
+  catalog: DeliveryFunctionOperationalDto[],
+) {
+  const t = useTranslations('hr.deliveryNorms');
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const pairs = useMemo(() => liveFunctionPrices(rows), [rows]);
+  const titles = useMemo(
+    () => functionPriceTitleMap(catalog, pairs, t('prices.unknownFunction')),
+    [catalog, pairs, t],
+  );
+  const catalogById = useMemo(() => new Map(catalog.map((item) => [item.id, item])), [catalog]);
+  const filtered = useMemo(
+    () => matchingFunctionPrices(pairs, query, catalogById, titles, t('prices.unknownFunction')),
+    [catalogById, pairs, query, t, titles],
+  );
+  return { query, open, titles, filtered, setQuery, setOpen };
+}
+
+function matchingFunctionPrices(
+  pairs: ReturnType<typeof liveFunctionPrices>,
+  query: string,
+  catalogById: Map<string, DeliveryFunctionOperationalDto>,
+  titles: Map<string, string>,
+  unknownTitle: string,
+) {
+  return itemsMatchingSearch(pairs, query, (pair) => {
+    const item = catalogById.get(pair.functionId);
+    return item
+      ? [...catalogFunctionSearchParts(item), titles.get(pair.key) ?? '']
+      : [titles.get(pair.key) ?? unknownTitle];
+  });
 }

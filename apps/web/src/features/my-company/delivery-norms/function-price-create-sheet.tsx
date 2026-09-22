@@ -10,7 +10,7 @@ import { OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
 import { DeliveryNormsCreateSheet } from './delivery-norms-create-sheet';
 import { DeliveryNormsSearchSelect } from './delivery-norms-search-select';
 import { catalogFunctionOption } from './included-function-selection';
-import { dateInputToIso, isValidDateInput, todayDateInputValue } from './effective-from';
+import { dateInputToIso, todayDateInputValue } from './effective-from';
 import {
   defaultFunctionPriceTierId,
   functionPriceTierOptions,
@@ -26,55 +26,42 @@ import {
   type RoleUnitDraftRow,
 } from './role-units-draft';
 
+type FunctionPriceCreateSheetProps = {
+  open: boolean;
+  catalog: DeliveryFunctionOperationalDto[];
+  onOpenChange: (open: boolean) => void;
+  onCreated: () => void;
+  onError: (message: string) => void;
+};
+
 export function FunctionPriceCreateSheet({
   open,
   catalog,
   onOpenChange,
   onCreated,
   onError,
-}: {
-  open: boolean;
-  catalog: DeliveryFunctionOperationalDto[];
-  onOpenChange: (open: boolean) => void;
-  onCreated: () => void;
-  onError: (message: string) => void;
-}) {
+}: FunctionPriceCreateSheetProps) {
   const t = useTranslations('hr.deliveryNorms');
-  const [functionId, setFunctionId] = useState(OPTIONAL_SELECT_NONE);
-  const [tierId, setTierId] = useState(OPTIONAL_SELECT_NONE);
-  const [effectiveFrom, setEffectiveFrom] = useState(todayDateInputValue);
-  const [roleUnits, setRoleUnits] = useState<RoleUnitDraftRow[]>(createEmptyRoleUnitDrafts);
-  const [saving, setSaving] = useState(false);
-  const options = useMemo(() => catalog.map(catalogFunctionOption), [catalog]);
-  const selected = selectedCatalogFunction(catalog, functionId);
-  const tierOptions = functionPriceTierOptions(selected);
-
+  const form = useFunctionPriceCreateForm(catalog);
   return (
     <DeliveryNormsCreateSheet
       open={open}
       onOpenChange={(next) => {
-        if (!next) {
-          setFunctionId(OPTIONAL_SELECT_NONE);
-          setTierId(OPTIONAL_SELECT_NONE);
-          setEffectiveFrom(todayDateInputValue());
-          setRoleUnits(createEmptyRoleUnitDrafts());
-        }
+        if (!next) form.reset();
         onOpenChange(next);
       }}
       title={t('prices.createTitle')}
       description={t('prices.createHint')}
       dirty
-      saving={saving}
-      saveLabel={saving ? t('create.creating') : t('create.price')}
+      saving={form.saving}
+      saveLabel={form.saving ? t('create.creating') : t('create.price')}
       onSave={() => {
         void submitFunctionPrice({
           catalog,
-          functionId,
-          tierId,
-          effectiveFrom,
-          roleUnits,
+          functionId: form.functionId,
+          tierId: form.tierId,
+          roleUnits: form.roleUnits,
           fallback: t('errors.create'),
-          invalidDate: t('errors.effectiveFrom'),
           invalidUnits: t('errors.roleUnits'),
           missingFunction: t('errors.functionRequired'),
           missingTier: t('errors.tierRequired'),
@@ -83,50 +70,82 @@ export function FunctionPriceCreateSheet({
             onCreated();
             onOpenChange(false);
           },
-          setSaving,
+          setSaving: form.setSaving,
         });
       }}
     >
-      <>
-        <NormsSheetSection title={t('sheet.tabs.general')}>
-          <DeliveryNormsSearchSelect
-            label={t('fields.function')}
-            value={functionId === OPTIONAL_SELECT_NONE ? null : functionId}
-            placeholder={t('prices.pickFunction')}
-            disabled={saving}
-            options={options}
-            onChange={(value) => {
-              const next = value ?? OPTIONAL_SELECT_NONE;
-              setFunctionId(next);
-              setTierId(defaultFunctionPriceTierId(selectedCatalogFunction(catalog, next)));
-            }}
-          />
-          {tierOptions.length > 0 ? (
-            <InlineField
-              variant="controlled"
-              type="select"
-              className={FORM_FIELD_CELL_CLASS}
-              label={t('fields.tier')}
-              value={tierId === OPTIONAL_SELECT_NONE ? '' : tierId}
-              options={tierOptions}
-              placeholder={t('prices.pickTier')}
-              disabled={saving}
-              onValueChange={(value) => setTierId(value || OPTIONAL_SELECT_NONE)}
-            />
-          ) : null}
+      <FunctionPriceCreateFields catalog={catalog} form={form} />
+    </DeliveryNormsCreateSheet>
+  );
+}
+
+function useFunctionPriceCreateForm(catalog: DeliveryFunctionOperationalDto[]) {
+  const [functionId, setFunctionId] = useState(OPTIONAL_SELECT_NONE);
+  const [tierId, setTierId] = useState(OPTIONAL_SELECT_NONE);
+  const [roleUnits, setRoleUnits] = useState<RoleUnitDraftRow[]>(createEmptyRoleUnitDrafts);
+  const [saving, setSaving] = useState(false);
+  const options = useMemo(() => catalog.map(catalogFunctionOption), [catalog]);
+  const tierOptions = functionPriceTierOptions(selectedCatalogFunction(catalog, functionId));
+  return {
+    functionId,
+    tierId,
+    roleUnits,
+    saving,
+    options,
+    tierOptions,
+    setFunctionId,
+    setTierId,
+    setRoleUnits,
+    setSaving,
+    reset: () => {
+      setFunctionId(OPTIONAL_SELECT_NONE);
+      setTierId(OPTIONAL_SELECT_NONE);
+      setRoleUnits(createEmptyRoleUnitDrafts());
+    },
+  };
+}
+
+type FunctionPriceCreateForm = ReturnType<typeof useFunctionPriceCreateForm>;
+
+function FunctionPriceCreateFields({
+  catalog,
+  form,
+}: {
+  catalog: DeliveryFunctionOperationalDto[];
+  form: FunctionPriceCreateForm;
+}) {
+  const t = useTranslations('hr.deliveryNorms');
+  return (
+    <>
+      <NormsSheetSection title={t('sheet.tabs.general')}>
+        <DeliveryNormsSearchSelect
+          label={t('fields.function')}
+          value={form.functionId === OPTIONAL_SELECT_NONE ? null : form.functionId}
+          placeholder={t('prices.pickFunction')}
+          disabled={form.saving}
+          options={form.options}
+          onChange={(value) => {
+            const next = value ?? OPTIONAL_SELECT_NONE;
+            form.setFunctionId(next);
+            form.setTierId(defaultFunctionPriceTierId(selectedCatalogFunction(catalog, next)));
+          }}
+        />
+        {form.tierOptions.length > 0 ? (
           <InlineField
             variant="controlled"
-            type="date"
+            type="select"
             className={FORM_FIELD_CELL_CLASS}
-            label={t('fields.effectiveFrom')}
-            value={effectiveFrom}
-            disabled={saving}
-            onValueChange={setEffectiveFrom}
+            label={t('fields.tier')}
+            value={form.tierId === OPTIONAL_SELECT_NONE ? '' : form.tierId}
+            options={form.tierOptions}
+            placeholder={t('prices.pickTier')}
+            disabled={form.saving}
+            onValueChange={(value) => form.setTierId(value || OPTIONAL_SELECT_NONE)}
           />
-        </NormsSheetSection>
-        <RoleUnitsEditor rows={roleUnits} disabled={saving} onChange={setRoleUnits} />
-      </>
-    </DeliveryNormsCreateSheet>
+        ) : null}
+      </NormsSheetSection>
+      <RoleUnitsEditor rows={form.roleUnits} disabled={form.saving} onChange={form.setRoleUnits} />
+    </>
   );
 }
 
@@ -134,10 +153,8 @@ async function submitFunctionPrice(input: {
   catalog: readonly DeliveryFunctionOperationalDto[];
   functionId: string;
   tierId: string;
-  effectiveFrom: string;
   roleUnits: RoleUnitDraftRow[];
   fallback: string;
-  invalidDate: string;
   invalidUnits: string;
   missingFunction: string;
   missingTier: string;
@@ -155,10 +172,6 @@ async function submitFunctionPrice(input: {
     input.onError(input.missingTier);
     return;
   }
-  if (!isValidDateInput(input.effectiveFrom)) {
-    input.onError(input.invalidDate);
-    return;
-  }
   const roleUnits = buildCompleteRoleUnitVector(input.roleUnits);
   if (roleUnits === null) {
     input.onError(input.invalidUnits);
@@ -169,7 +182,7 @@ async function submitFunctionPrice(input: {
     const body = parseFunctionPriceWriteBody({
       functionId: input.functionId,
       tierId: resolvedTier.tierId,
-      effectiveFrom: dateInputToIso(input.effectiveFrom),
+      effectiveFrom: dateInputToIso(todayDateInputValue()),
       roleUnits,
     });
     await deliveryNormsApi.createFunctionPrice(body);

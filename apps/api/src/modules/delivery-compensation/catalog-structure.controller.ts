@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -119,6 +120,17 @@ export class CatalogStructureController {
   ) {
     try {
       return await this.salePrices.createDraft(readSalePriceTarget(body), body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Patch('sale-prices/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Update an open draft sale price. Published rows stay frozen.' })
+  async updateSalePriceDraft(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.salePrices.updateDraft(id, body);
     } catch (error) {
       mapCatalogWriteError(error);
     }

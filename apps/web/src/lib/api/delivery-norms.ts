@@ -98,6 +98,28 @@ export const deliveryNormsApi = {
     return resp.data;
   },
 
+  async updateRoleRateDraft(
+    id: string,
+    body: { rate: string },
+  ): Promise<DeliveryRoleRateFinancialDto> {
+    const resp = await api.patch<DeliveryRoleRateFinancialDto>(
+      `${RULES_BASE}/role-rates/${id}`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async updateFunctionPriceDraft(
+    id: string,
+    body: { roleUnits: DeliveryRoleUnitInput[] },
+  ): Promise<DeliveryFunctionPriceFinancialDto> {
+    const resp = await api.patch<DeliveryFunctionPriceFinancialDto>(
+      `${RULES_BASE}/function-prices/${id}`,
+      body,
+    );
+    return resp.data;
+  },
+
   async publishRoleRate(id: string): Promise<DeliveryRoleRateFinancialDto> {
     const resp = await api.post<DeliveryRoleRateFinancialDto>(
       `${RULES_BASE}/role-rates/${id}/publish`,

@@ -25,6 +25,7 @@ enum DeliveryCompensationRoleKeyEnum {
 
 enum DeliveryRoleUnitKindEnum {
   REQUIRED
+  OPTIONAL
   NOT_REQUIRED
 }
 

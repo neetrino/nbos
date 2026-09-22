@@ -11,16 +11,16 @@ export function DeliveryNormsSectionToolbar({
   searchLabel,
   searchPlaceholder,
   addLabel,
-  canAdd,
+  canAdd = false,
   onAdd,
 }: {
   query: string;
   onQueryChange: (value: string) => void;
   searchLabel: string;
   searchPlaceholder: string;
-  addLabel: string;
-  canAdd: boolean;
-  onAdd: () => void;
+  addLabel?: string;
+  canAdd?: boolean;
+  onAdd?: () => void;
 }) {
   return (
     <div className={TOOLBAR_ROW_CLASS}>
@@ -30,7 +30,7 @@ export function DeliveryNormsSectionToolbar({
         label={searchLabel}
         placeholder={searchPlaceholder}
       />
-      {canAdd ? (
+      {canAdd && addLabel && onAdd ? (
         <Button type="button" size="sm" onClick={onAdd}>
           <Plus className="size-4" aria-hidden />
           {addLabel}

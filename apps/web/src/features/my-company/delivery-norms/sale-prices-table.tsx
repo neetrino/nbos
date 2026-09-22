@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { DELIVERY_COMPENSATION_CURRENCY, parseRoleRateWriteBody } from '@nbos/shared';
+import { DELIVERY_COMPENSATION_CURRENCY } from '@nbos/shared';
 import {
   EntityListAmount,
   ENTITY_LIST_CELL_CLASS,
@@ -18,38 +18,43 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { deliveryNormsApi } from '@/lib/api/delivery-norms';
+import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
 import { dateInputToIso, todayDateInputValue } from './effective-from';
 import { liveNormDisplayStatus } from './live-norm-pair';
-import { displayedRoleRate, type LiveRoleRate } from './live-role-rates';
+import { displayedSaleAmount, type LiveSalePrice } from './live-sale-prices';
 import { messageFromCaught } from './message-from-caught';
 import { NormsInlineMoneyEdit } from './norms-inline-money-edit';
 import { NormsRowActions } from './norms-row-actions';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
+import { parseSalePriceTargetKey, salePriceDraftBody } from './sale-price-draft';
 import { PublishDraftButton } from './publish-draft-button';
-import { ROLE_MESSAGE_KEYS } from './delivery-norms.constants';
 
-export function RoleRatesTable({
+export function SalePricesTable({
   pairs,
-  canAdd,
+  labels,
   canPublish,
   onChanged,
   onError,
 }: {
-  pairs: LiveRoleRate[];
-  canAdd: boolean;
+  pairs: LiveSalePrice[];
+  labels: Map<string, string>;
   canPublish: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
+  if (pairs.length === 0) {
+    return <p className="text-muted-foreground text-sm">{t('salePrices.empty')}</p>;
+  }
   return (
     <div className={ENTITY_LIST_SHELL_CLASS}>
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-transparent">
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.role')}</TableHead>
-            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.rate')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('salePrices.pickTarget')}</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>
+              {t('salePrices.amountPerUnitShort')}
+            </TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.version')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.status')}</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>{t('columns.actions')}</TableHead>
@@ -57,10 +62,10 @@ export function RoleRatesTable({
         </TableHeader>
         <TableBody>
           {pairs.map((pair) => (
-            <RoleRateLiveRow
-              key={pair.roleKey}
+            <SalePriceLiveRow
+              key={pair.targetKey}
               pair={pair}
-              canAdd={canAdd}
+              title={labels.get(pair.targetKey) ?? t('salePrices.unknownTarget')}
               canPublish={canPublish}
               onChanged={onChanged}
               onError={onError}
@@ -72,42 +77,41 @@ export function RoleRatesTable({
   );
 }
 
-function RoleRateLiveRow({
+function SalePriceLiveRow({
   pair,
-  canAdd,
+  title,
   canPublish,
   onChanged,
   onError,
 }: {
-  pair: LiveRoleRate;
-  canAdd: boolean;
+  pair: LiveSalePrice;
+  title: string;
   canPublish: boolean;
   onChanged: () => void;
   onError: (message: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [nextRate, setNextRate] = useState('');
+  const [nextAmount, setNextAmount] = useState('');
   const [saving, setSaving] = useState(false);
-  const canEdit = Boolean(pair.draft) ? canPublish : canAdd;
   return (
     <>
-      <RoleRateSummaryRow
+      <SalePriceSummaryRow
         pair={pair}
-        canEdit={canEdit}
+        title={title}
         canPublish={canPublish}
         onToggleEdit={() => {
-          setNextRate(pair.draft?.rate ?? '');
+          setNextAmount(pair.draft?.amountPerUnit ?? '');
           setOpen((current) => !current);
         }}
         onChanged={onChanged}
         onError={onError}
       />
       {open ? (
-        <RoleRateDraftEditor
+        <SalePriceDraftEditor
           pair={pair}
-          nextRate={nextRate}
+          nextAmount={nextAmount}
           saving={saving}
-          onNextRateChange={setNextRate}
+          onNextAmountChange={setNextAmount}
           onError={onError}
           onChanged={() => {
             setOpen(false);
@@ -120,37 +124,35 @@ function RoleRateLiveRow({
   );
 }
 
-type RoleRateSummaryRowProps = {
-  pair: LiveRoleRate;
-  canEdit: boolean;
+type SalePriceSummaryRowProps = {
+  pair: LiveSalePrice;
+  title: string;
   canPublish: boolean;
   onToggleEdit: () => void;
   onChanged: () => void;
   onError: (message: string) => void;
 };
 
-function RoleRateSummaryRow({
+function SalePriceSummaryRow({
   pair,
-  canEdit,
+  title,
   canPublish,
   onToggleEdit,
   onChanged,
   onError,
-}: RoleRateSummaryRowProps) {
+}: SalePriceSummaryRowProps) {
   const t = useTranslations('hr.deliveryNorms');
-  const rate = displayedRoleRate(pair);
+  const amount = displayedSaleAmount(pair);
   const version = pair.draft?.version ?? pair.published?.version;
   const status = liveNormDisplayStatus(pair);
   return (
     <TableRow className={ENTITY_LIST_ROW_HOVER_CLASS}>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <span className="text-foreground text-sm font-medium">
-          {t(ROLE_MESSAGE_KEYS[pair.roleKey])}
-        </span>
+        <span className="text-foreground text-sm font-medium">{title}</span>
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        {rate ? (
-          <EntityListAmount amount={rate} currency={DELIVERY_COMPENSATION_CURRENCY} />
+        {amount ? (
+          <EntityListAmount amount={amount} currency={DELIVERY_COMPENSATION_CURRENCY} />
         ) : (
           <span className="text-muted-foreground">{t('none')}</span>
         )}
@@ -167,14 +169,14 @@ function RoleRateSummaryRow({
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <NormsRowActions
-          canEdit={canEdit}
+          canEdit={canPublish}
           editLabel={t('edit.action')}
           onToggleEdit={onToggleEdit}
           publish={
             pair.draft && canPublish ? (
               <PublishDraftButton
                 onPublish={async () => {
-                  await deliveryNormsApi.publishRoleRate(pair.draft?.id ?? '');
+                  await deliveryCatalogStructureApi.publishSalePrice(pair.draft?.id ?? '');
                 }}
                 onError={onError}
                 onPublished={onChanged}
@@ -187,19 +189,19 @@ function RoleRateSummaryRow({
   );
 }
 
-function RoleRateDraftEditor({
+function SalePriceDraftEditor({
   pair,
-  nextRate,
+  nextAmount,
   saving,
-  onNextRateChange,
+  onNextAmountChange,
   onError,
   onChanged,
   setSaving,
 }: {
-  pair: LiveRoleRate;
-  nextRate: string;
+  pair: LiveSalePrice;
+  nextAmount: string;
   saving: boolean;
-  onNextRateChange: (value: string) => void;
+  onNextAmountChange: (value: string) => void;
   onError: (message: string) => void;
   onChanged: () => void;
   setSaving: (value: boolean) => void;
@@ -209,15 +211,15 @@ function RoleRateDraftEditor({
     <TableRow>
       <TableCell className={ENTITY_LIST_CELL_CLASS} colSpan={5}>
         <NormsInlineMoneyEdit
-          currentAmount={pair.published?.rate ?? null}
-          nextAmount={nextRate}
+          currentAmount={pair.published?.amountPerUnit ?? null}
+          nextAmount={nextAmount}
           saving={saving}
-          onNextAmountChange={onNextRateChange}
+          onNextAmountChange={onNextAmountChange}
           onSave={() => {
-            void saveRoleRateDraft({
+            void saveSalePriceDraft({
               pair,
-              nextRate,
-              fallback: t('errors.create'),
+              nextAmount,
+              fallback: t('errors.salePrices'),
               onError,
               onChanged,
               setSaving,
@@ -229,9 +231,9 @@ function RoleRateDraftEditor({
   );
 }
 
-async function saveRoleRateDraft(input: {
-  pair: LiveRoleRate;
-  nextRate: string;
+async function saveSalePriceDraft(input: {
+  pair: LiveSalePrice;
+  nextAmount: string;
   fallback: string;
   onError: (message: string) => void;
   onChanged: () => void;
@@ -240,16 +242,19 @@ async function saveRoleRateDraft(input: {
   input.setSaving(true);
   try {
     if (input.pair.draft) {
-      await deliveryNormsApi.updateRoleRateDraft(input.pair.draft.id, {
-        rate: input.nextRate.trim(),
+      await deliveryCatalogStructureApi.updateSalePriceDraft(input.pair.draft.id, {
+        amountPerUnit: input.nextAmount.trim(),
       });
     } else {
-      await deliveryNormsApi.createRoleRate(
-        parseRoleRateWriteBody({
-          roleKey: input.pair.roleKey,
-          rate: input.nextRate.trim(),
+      const parsed = parseSalePriceTargetKey(input.pair.targetKey);
+      if (!parsed) {
+        input.onError(input.fallback);
+        return;
+      }
+      await deliveryCatalogStructureApi.createSalePriceDraft(
+        salePriceDraftBody(parsed.kind, parsed.id, {
+          amountPerUnit: input.nextAmount.trim(),
           effectiveFrom: dateInputToIso(todayDateInputValue()),
-          currency: DELIVERY_COMPENSATION_CURRENCY,
         }),
       );
     }

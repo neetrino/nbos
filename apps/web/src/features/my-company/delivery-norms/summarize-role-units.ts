@@ -1,11 +1,11 @@
-import type { DeliveryRoleUnitFinancialDto } from '@nbos/shared';
+import { roleKindPaysUnits, type DeliveryRoleUnitFinancialDto } from '@nbos/shared';
 
 export const ROLE_UNIT_EMPTY_DISPLAY = '—';
 
 export function summarizeRoleUnits(rows: readonly DeliveryRoleUnitFinancialDto[]): string {
   return rows
     .map((row) => {
-      if (row.unitKind === 'NOT_REQUIRED') {
+      if (!roleKindPaysUnits(row.unitKind)) {
         return `${row.roleKey}:${ROLE_UNIT_EMPTY_DISPLAY}`;
       }
       return `${row.roleKey}:${row.units ?? '∅'}`;
@@ -14,12 +14,12 @@ export function summarizeRoleUnits(rows: readonly DeliveryRoleUnitFinancialDto[]
 }
 
 export function formatRoleUnitDisplay(row: DeliveryRoleUnitFinancialDto | undefined): string {
-  if (!row || row.unitKind === 'NOT_REQUIRED' || row.units === null) {
+  if (!row || !roleKindPaysUnits(row.unitKind) || row.units === null) {
     return ROLE_UNIT_EMPTY_DISPLAY;
   }
   return row.units;
 }
 
 export function isConfiguredRoleUnit(row: DeliveryRoleUnitFinancialDto | undefined): boolean {
-  return Boolean(row && row.unitKind === 'REQUIRED' && row.units !== null);
+  return Boolean(row && roleKindPaysUnits(row.unitKind) && row.units !== null);
 }

@@ -5,7 +5,11 @@ import {
   type DeliveryFeatureOrigin,
 } from './constants';
 import { unitsTimesRate, sumMoney } from './decimal-scale';
-import { findUnconfiguredRequiredRoles, type DeliveryRoleUnitInput } from './role-units';
+import {
+  findUnconfiguredRequiredRoles,
+  roleKindPaysUnits,
+  type DeliveryRoleUnitInput,
+} from './role-units';
 
 export type DeliveryPlanRateInput = {
   roleKey: DeliveryCompensationRoleKey;
@@ -74,10 +78,7 @@ function collectConfigErrors(
     errors.push('UNITS_NOT_CONFIGURED');
   }
   for (const row of rows) {
-    if (row.unitKind === 'NOT_REQUIRED') {
-      continue;
-    }
-    if (row.units === null) {
+    if (!roleKindPaysUnits(row.unitKind) || row.units === null) {
       continue;
     }
     if (!rates.has(row.roleKey) || rates.get(row.roleKey) === null) {
@@ -95,7 +96,7 @@ function linesForVector(
 ): DeliveryPlanLine[] {
   const lines: DeliveryPlanLine[] = [];
   for (const row of rows) {
-    if (row.unitKind === 'NOT_REQUIRED' || row.units === null) {
+    if (!roleKindPaysUnits(row.unitKind) || row.units === null) {
       continue;
     }
     const rate = rates.get(row.roleKey);

@@ -39,5 +39,10 @@ describe('formatRoleUnitDisplay', () => {
     expect(isConfiguredRoleUnit({ roleKey: 'BACKEND', unitKind: 'REQUIRED', units: null })).toBe(
       false,
     );
+    expect(isConfiguredRoleUnit({ roleKey: 'PM', unitKind: 'OPTIONAL', units: '4' })).toBe(true);
+    expect(isConfiguredRoleUnit({ roleKey: 'PM', unitKind: 'OPTIONAL', units: null })).toBe(false);
+    expect(isConfiguredRoleUnit({ roleKey: 'PM', unitKind: 'NOT_REQUIRED', units: null })).toBe(
+      false,
+    );
   });
 });

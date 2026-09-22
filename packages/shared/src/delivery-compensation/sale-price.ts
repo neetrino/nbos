@@ -78,6 +78,14 @@ export function parseSalePriceBody(body: unknown, target: SalePriceTarget): Sale
   };
 }
 
+export function parseSalePricePatchBody(body: unknown): { amountPerUnit: string } {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    throw new CatalogContentValidationError('Body must be an object.');
+  }
+  const row = body as Record<string, unknown>;
+  return { amountPerUnit: requirePositiveAmount(row.amountPerUnit, 'amountPerUnit') };
+}
+
 function requirePositiveAmount(value: unknown, field: string): string {
   if (value === undefined || value === null || value === '') {
     throw new CatalogContentValidationError(`${field} is required.`);

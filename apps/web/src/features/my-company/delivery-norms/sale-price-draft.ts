@@ -65,6 +65,19 @@ export function targetKeyForKind(kind: SalePriceTargetKind, id: string): string 
   return salePriceTargetKey(salePriceTargetFromKind(kind, id));
 }
 
+export function salePriceDraftBody(
+  kind: SalePriceTargetKind,
+  targetId: string,
+  input: { amountPerUnit: string; effectiveFrom: string },
+): SalePriceDraftInput {
+  return {
+    ...(kind === 'FUNCTION' ? { functionId: targetId } : {}),
+    ...(kind === 'TIER' ? { tierId: targetId } : {}),
+    ...(kind === 'CORE' ? { baseProfileVersionId: targetId } : {}),
+    ...input,
+  };
+}
+
 export function parseSalePriceTargetKey(
   targetKey: string,
 ): { kind: SalePriceTargetKind; id: string } | null {

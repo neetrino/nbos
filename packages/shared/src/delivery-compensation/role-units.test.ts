@@ -7,6 +7,7 @@ import {
   isExplicitZeroUnits,
   isPublishedRoleVectorComplete,
   isRoleUnitsConfigured,
+  requiredAssigneeRoles,
   type DeliveryRoleUnitInput,
 } from './role-units';
 
@@ -39,6 +40,21 @@ describe('delivery role units', () => {
     );
   });
 
+  it('treats OPTIONAL like REQUIRED for configuration and like a paid slot', () => {
+    expect(isRoleUnitsConfigured({ roleKey: 'QA', unitKind: 'OPTIONAL', units: null })).toBe(false);
+    expect(isRoleUnitsConfigured({ roleKey: 'QA', unitKind: 'OPTIONAL', units: '4' })).toBe(true);
+    const missing = fullMatrix({
+      QA: { roleKey: 'QA', unitKind: 'OPTIONAL', units: null },
+    });
+    expect(findUnconfiguredRequiredRoles(missing)).toEqual(['QA']);
+    expect(isPublishedRoleVectorComplete(missing)).toBe(false);
+    expect(
+      hasExplicitZeroRequiredUnits(
+        fullMatrix({ QA: { roleKey: 'QA', unitKind: 'OPTIONAL', units: '0' } }),
+      ),
+    ).toBe(true);
+  });
+
   it('requires NOT_REQUIRED rows to keep units null', () => {
     expect(
       isRoleUnitsConfigured({
@@ -69,6 +85,17 @@ describe('delivery role units', () => {
     expect(isPublishedRoleVectorComplete(zero)).toBe(true);
     expect(hasExplicitZeroRequiredUnits(zero)).toBe(true);
     expect(hasExplicitZeroRequiredUnits(fullMatrix({}))).toBe(false);
+  });
+
+  it('asks for an assignee only on REQUIRED roles', () => {
+    expect(
+      requiredAssigneeRoles(
+        fullMatrix({
+          QA: { roleKey: 'QA', unitKind: 'OPTIONAL', units: '4' },
+          DESIGNER: { roleKey: 'DESIGNER', unitKind: 'NOT_REQUIRED', units: null },
+        }),
+      ),
+    ).toEqual(['BACKEND', 'FRONTEND', 'PM', 'TECHNICAL_SPECIALIST']);
   });
 
   it('requires all six roles in a published matrix', () => {

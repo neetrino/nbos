@@ -151,6 +151,28 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
     expect(assertShareSumMatchesTotal('10.01', shares)).toBe(true);
   });
 
+  it('OPTIONAL with units pays the same line as REQUIRED, empty OPTIONAL blocks publish', () => {
+    const paid = calculateDeliveryPlan({
+      baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
+        row.roleKey === 'QA' ? { ...row, unitKind: 'OPTIONAL', units: '10' } : row,
+      ),
+      rates: SYNTHETIC_TEST_RATES,
+      features: [],
+    });
+    expect(paid.ok).toBe(true);
+    expect(paid.totalsByRole.QA).toBe(SYNTHETIC_TEST_BASE_BY_ROLE.QA);
+
+    const empty = calculateDeliveryPlan({
+      baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
+        row.roleKey === 'QA' ? { ...row, unitKind: 'OPTIONAL', units: null } : row,
+      ),
+      rates: SYNTHETIC_TEST_RATES,
+      features: [],
+    });
+    expect(empty.ok).toBe(false);
+    expect(empty.errors).toContain('UNITS_NOT_CONFIGURED');
+  });
+
   it('C10: a later 5-unit vector does not multiply an older 50-unit snapshot', () => {
     const fresh = calculateDeliveryPlan({
       baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>

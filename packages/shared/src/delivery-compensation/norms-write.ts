@@ -143,6 +143,13 @@ function parseRoleUnitRow(entry: unknown): DeliveryRoleUnitInput {
   return { roleKey, unitKind, units };
 }
 
+export function parseFunctionPricePatchBody(body: unknown): {
+  roleUnits: DeliveryRoleUnitInput[];
+} {
+  const record = readNormRecord(body);
+  return { roleUnits: parseRoleUnitVector(record.roleUnits) };
+}
+
 function readNullableUnits(value: unknown, roleKey: string): string | null {
   if (value === null || value === undefined || value === '') {
     return null;

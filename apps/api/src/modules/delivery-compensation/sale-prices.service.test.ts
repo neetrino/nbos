@@ -20,10 +20,12 @@ function row(overrides: Record<string, unknown> = {}) {
 }
 
 function buildPrisma(overrides: Record<string, unknown> = {}) {
-  return {
+  const prisma: Record<string, unknown> = {
     deliverySalePriceVersion: {
       findMany: vi.fn().mockResolvedValue([row()]),
-      findFirst: vi.fn().mockResolvedValue({ version: 2 }),
+      findFirst: vi.fn(async ({ where }: { where?: { status?: string } }) =>
+        where?.status === 'DRAFT' ? null : { version: 2 },
+      ),
       findUnique: vi.fn().mockResolvedValue(row()),
       create: vi.fn().mockResolvedValue(row({ version: 3 })),
       update: vi.fn().mockResolvedValue(row({ status: 'PUBLISHED' })),
@@ -46,18 +48,10 @@ function buildPrisma(overrides: Record<string, unknown> = {}) {
         },
       ]),
     },
-    $transaction: vi.fn(async (fn: (client: unknown) => Promise<unknown>) => fn(buildTx())),
     ...overrides,
   };
-}
-
-function buildTx() {
-  return {
-    deliverySalePriceVersion: {
-      updateMany: vi.fn(),
-      update: vi.fn().mockResolvedValue(row({ status: 'PUBLISHED' })),
-    },
-  };
+  prisma.$transaction = vi.fn(async (fn: (client: unknown) => Promise<unknown>) => fn(prisma));
+  return prisma;
 }
 
 describe('SalePricesService', () => {
@@ -154,6 +148,43 @@ describe('SalePricesService', () => {
         { amountPerUnit: '10000', effectiveFrom: NOW },
       ),
     ).rejects.toThrow(/does not exist/);
+  });
+
+  it('updates an open draft instead of creating another version', async () => {
+    const updated = row({ amountPerUnit: { toString: () => '15000.0000' } });
+    const prisma = buildPrisma({
+      deliverySalePriceVersion: {
+        ...buildPrisma().deliverySalePriceVersion,
+        findFirst: vi.fn().mockResolvedValue({ id: 'sp-1' }),
+        findUnique: vi.fn().mockResolvedValue(row()),
+        update: vi.fn().mockResolvedValue(updated),
+      },
+    });
+    const service = new SalePricesService(prisma as never);
+    await service.createDraft(
+      { kind: 'FUNCTION', functionId: 'fn-1' },
+      { amountPerUnit: '15000', effectiveFrom: NOW },
+    );
+    expect(prisma.deliverySalePriceVersion.create).not.toHaveBeenCalled();
+    expect(prisma.deliverySalePriceVersion.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'sp-1' },
+        data: { amountPerUnit: '15000.0000' },
+      }),
+    );
+  });
+
+  it('refuses to update a published sale price', async () => {
+    const prisma = buildPrisma({
+      deliverySalePriceVersion: {
+        ...buildPrisma().deliverySalePriceVersion,
+        findUnique: vi.fn().mockResolvedValue(row({ status: 'PUBLISHED' })),
+      },
+    });
+    const service = new SalePricesService(prisma as never);
+    await expect(service.updateDraft('sp-1', { amountPerUnit: '15000' })).rejects.toThrow(
+      /draft sale price/,
+    );
   });
 
   it('publishes a draft and archives the previously published price of the same item', async () => {

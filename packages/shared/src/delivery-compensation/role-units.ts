@@ -11,8 +11,16 @@ export type DeliveryRoleUnitInput = {
   units: string | null;
 };
 
+export function roleKindPaysUnits(kind: DeliveryRoleUnitKind): boolean {
+  return kind !== 'NOT_REQUIRED';
+}
+
+export function roleKindRequiresAssignee(kind: DeliveryRoleUnitKind): boolean {
+  return kind === 'REQUIRED';
+}
+
 export function isRoleUnitsConfigured(input: DeliveryRoleUnitInput): boolean {
-  if (input.unitKind === 'NOT_REQUIRED') {
+  if (!roleKindPaysUnits(input.unitKind)) {
     return input.units === null;
   }
   return input.units !== null;
@@ -36,12 +44,18 @@ export function findUnconfiguredRequiredRoles(
   rows: readonly DeliveryRoleUnitInput[],
 ): DeliveryCompensationRoleKey[] {
   return rows
-    .filter((row) => row.unitKind === 'REQUIRED' && row.units === null)
+    .filter((row) => roleKindPaysUnits(row.unitKind) && row.units === null)
     .map((row) => row.roleKey);
 }
 
 export function hasExplicitZeroRequiredUnits(rows: readonly DeliveryRoleUnitInput[]): boolean {
-  return rows.some((row) => row.unitKind === 'REQUIRED' && isExplicitZeroUnits(row.units));
+  return rows.some((row) => roleKindPaysUnits(row.unitKind) && isExplicitZeroUnits(row.units));
+}
+
+export function requiredAssigneeRoles(
+  rows: readonly DeliveryRoleUnitInput[],
+): DeliveryCompensationRoleKey[] {
+  return rows.filter((row) => roleKindRequiresAssignee(row.unitKind)).map((row) => row.roleKey);
 }
 
 export function isPublishedRoleVectorComplete(rows: readonly DeliveryRoleUnitInput[]): boolean {
@@ -52,7 +66,7 @@ export function isPublishedRoleVectorComplete(rows: readonly DeliveryRoleUnitInp
     return false;
   }
   return rows.every((row) => {
-    if (row.unitKind === 'NOT_REQUIRED') {
+    if (!roleKindPaysUnits(row.unitKind)) {
       return row.units === null;
     }
     return row.units !== null && Number.isFinite(Number(row.units)) && Number(row.units) >= 0;

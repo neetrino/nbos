@@ -1,5 +1,5 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaClient, type TransactionClient } from '@nbos/database';
 import {
   CatalogContentValidationError,
   functionPriceTierTargetError,
@@ -7,6 +7,7 @@ import {
   type DeliveryBaseProfileFinancialDto,
   type DeliveryFunctionPriceFinancialDto,
   type DeliveryRoleRateFinancialDto,
+  type DeliveryRoleUnitInput,
   type FunctionPriceWriteInput,
   type RoleRateWriteInput,
 } from '@nbos/shared';
@@ -78,20 +79,20 @@ export class DeliveryCompensationRulesService {
   }
 
   async createRoleRateDraft(input: RoleRateWriteInput): Promise<DeliveryRoleRateFinancialDto> {
-    const latest = await this.prisma.deliveryRoleRateVersion.findFirst({
-      where: { roleKey: input.roleKey },
-      orderBy: { version: 'desc' },
-      select: { version: true },
+    const row = await this.prisma.$transaction((tx) => this.writeOpenRoleRateDraft(tx, input), {
+      isolationLevel: 'Serializable',
     });
-    const row = await this.prisma.deliveryRoleRateVersion.create({
-      data: {
-        roleKey: input.roleKey,
-        currency: input.currency,
-        rate: input.rate,
-        version: (latest?.version ?? 0) + 1,
-        status: 'DRAFT',
-        effectiveFrom: new Date(input.effectiveFrom),
-      },
+    return serializeRoleRate(row);
+  }
+
+  async updateRoleRateDraft(
+    id: string,
+    input: { rate: string },
+  ): Promise<DeliveryRoleRateFinancialDto> {
+    const draft = await this.requireDraftRoleRate(id);
+    const row = await this.prisma.deliveryRoleRateVersion.update({
+      where: { id: draft.id },
+      data: { rate: input.rate },
     });
     return serializeRoleRate(row);
   }
@@ -114,21 +115,25 @@ export class DeliveryCompensationRulesService {
     if (tierError) {
       throw new CatalogContentValidationError(tierError);
     }
-    const latest = await this.prisma.deliveryFunctionPriceVersion.findFirst({
-      where: { functionId: input.functionId },
-      orderBy: { version: 'desc' },
-      select: { version: true },
-    });
-    const row = await this.prisma.deliveryFunctionPriceVersion.create({
-      data: {
-        functionId: input.functionId,
-        tierId: input.tierId,
-        version: (latest?.version ?? 0) + 1,
-        status: 'DRAFT',
-        effectiveFrom: new Date(input.effectiveFrom),
-        roleUnits: { create: input.roleUnits },
-      },
-      include: { roleUnits: { orderBy: { roleKey: 'asc' } } },
+    const row = await this.prisma.$transaction(
+      (tx) => this.writeOpenFunctionPriceDraft(tx, input),
+      { isolationLevel: 'Serializable' },
+    );
+    return serializeFunctionPrice(row);
+  }
+
+  async updateFunctionPriceDraft(
+    id: string,
+    input: { roleUnits: DeliveryRoleUnitInput[] },
+  ): Promise<DeliveryFunctionPriceFinancialDto> {
+    const draft = await this.requireDraftFunctionPrice(id);
+    const row = await this.prisma.$transaction(async (tx) => {
+      await tx.deliveryFunctionPriceRoleUnit.deleteMany({ where: { priceVersionId: draft.id } });
+      return tx.deliveryFunctionPriceVersion.update({
+        where: { id: draft.id },
+        data: { roleUnits: { create: input.roleUnits } },
+        include: { roleUnits: { orderBy: { roleKey: 'asc' } } },
+      });
     });
     return serializeFunctionPrice(row);
   }
@@ -167,6 +172,87 @@ export class DeliveryCompensationRulesService {
       },
     });
     return serializeBaseProfile(row);
+  }
+
+  private async writeOpenRoleRateDraft(tx: TransactionClient, input: RoleRateWriteInput) {
+    const open = await tx.deliveryRoleRateVersion.findFirst({
+      where: { roleKey: input.roleKey, status: 'DRAFT' },
+      select: { id: true },
+    });
+    if (open) {
+      return tx.deliveryRoleRateVersion.update({
+        where: { id: open.id },
+        data: { rate: input.rate },
+      });
+    }
+    const latest = await tx.deliveryRoleRateVersion.findFirst({
+      where: { roleKey: input.roleKey },
+      orderBy: { version: 'desc' },
+      select: { version: true },
+    });
+    return tx.deliveryRoleRateVersion.create({
+      data: {
+        roleKey: input.roleKey,
+        currency: input.currency,
+        rate: input.rate,
+        version: (latest?.version ?? 0) + 1,
+        status: 'DRAFT',
+        effectiveFrom: new Date(input.effectiveFrom),
+      },
+    });
+  }
+
+  private async writeOpenFunctionPriceDraft(tx: TransactionClient, input: FunctionPriceWriteInput) {
+    const open = await tx.deliveryFunctionPriceVersion.findFirst({
+      where: { functionId: input.functionId, tierId: input.tierId, status: 'DRAFT' },
+      select: { id: true },
+    });
+    if (open) {
+      await tx.deliveryFunctionPriceRoleUnit.deleteMany({ where: { priceVersionId: open.id } });
+      return tx.deliveryFunctionPriceVersion.update({
+        where: { id: open.id },
+        data: { roleUnits: { create: input.roleUnits } },
+        include: { roleUnits: { orderBy: { roleKey: 'asc' } } },
+      });
+    }
+    const latest = await tx.deliveryFunctionPriceVersion.findFirst({
+      where: { functionId: input.functionId },
+      orderBy: { version: 'desc' },
+      select: { version: true },
+    });
+    return tx.deliveryFunctionPriceVersion.create({
+      data: {
+        functionId: input.functionId,
+        tierId: input.tierId,
+        version: (latest?.version ?? 0) + 1,
+        status: 'DRAFT',
+        effectiveFrom: new Date(input.effectiveFrom),
+        roleUnits: { create: input.roleUnits },
+      },
+      include: { roleUnits: { orderBy: { roleKey: 'asc' } } },
+    });
+  }
+
+  private async requireDraftRoleRate(id: string) {
+    const row = await this.prisma.deliveryRoleRateVersion.findUnique({ where: { id } });
+    if (!row) {
+      throw new NotFoundException('Role rate not found');
+    }
+    if (row.status !== 'DRAFT') {
+      throw new BadRequestException('Only a draft role rate can be updated.');
+    }
+    return row;
+  }
+
+  private async requireDraftFunctionPrice(id: string) {
+    const row = await this.prisma.deliveryFunctionPriceVersion.findUnique({ where: { id } });
+    if (!row) {
+      throw new NotFoundException('Function price not found');
+    }
+    if (row.status !== 'DRAFT') {
+      throw new BadRequestException('Only a draft function price can be updated.');
+    }
+    return row;
   }
 
   private async assertIncludedFunctionsExist(functionIds: readonly string[]): Promise<void> {

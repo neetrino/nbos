@@ -451,6 +451,9 @@
         "core": "Core composition",
         "collections": "Collections"
       },
+      "saleTabs": {
+        "aria": "Sale price targets"
+      },
       "panel": {
         "open": "Open"
       },
@@ -542,7 +545,7 @@
       "title": "Function prices",
       "subtitle": "Per-role unit vectors for catalog functions.",
       "createTitle": "New function price draft",
-      "createHint": "Pick a catalog card and, when it has volumes, the volume these units apply to. Leave a field empty when the role is not configured.",
+      "createHint": "Pick a catalog card and, when it has volumes, the volume these units apply to.",
       "empty": "No function prices yet.",
       "pickFunction": "Select a function",
       "pickTier": "Select a volume",
@@ -550,15 +553,15 @@
     },
     "roleUnits": {
       "title": "Role units",
-      "hint": "Leave a field empty to send null (not configured). Type 0 only when the role is explicitly unpaid.",
-      "placeholder": "empty = not configured",
-      "unitsLabel": "Units",
-      "required": "Required",
-      "notRequired": "Not required",
-      "notRequiredHint": "Not required — units are sent as null.",
-      "notConfigured": "Not configured (null)",
-      "explicitZero": "Explicit 0",
-      "configured": "Configured"
+      "placeholder": "",
+      "needed": "Needed",
+      "ifPresent": "If present",
+      "unused": "None",
+      "kindAria": "Role status"
+    },
+    "edit": {
+      "action": "Edit",
+      "save": "Save"
     },
     "includedFunctions": {
       "title": "Included in base",
@@ -668,7 +671,7 @@
     "publish": {
       "action": "Publish",
       "publishing": "Publishing…",
-      "confirmZeroUnits": "This vector has an explicit 0 on a required role. Publish it as a confirmed zero?"
+      "confirmZeroUnits": "This vector has an explicit 0 on a role that pays units. Publish it as a confirmed zero?"
     },
     "errors": {
       "load": "Delivery norms could not be loaded.",

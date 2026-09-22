@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   DELIVERY_COMPENSATION_RULES_MODULE,
   parseBaseProfileWriteBody,
+  parseFunctionPricePatchBody,
   parseFunctionPriceWriteBody,
+  parseRoleRatePatchBody,
   parseRoleRateWriteBody,
 } from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
@@ -66,12 +68,36 @@ export class DeliveryCompensationRulesController {
     }
   }
 
+  @Patch('role-rates/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Update an open draft same-role rate. Published rows stay frozen.' })
+  updateRoleRate(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return this.service.updateRoleRateDraft(id, parseRoleRatePatchBody(body));
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
   @Post('function-prices')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'ADD')
   @ApiOperation({ summary: 'Create a draft unit vector for a catalog function' })
   async createFunctionPrice(@Body() body: unknown) {
     try {
       return await this.service.createFunctionPriceDraft(parseFunctionPriceWriteBody(body));
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Patch('function-prices/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({
+    summary: 'Update an open draft function unit vector. Published rows stay frozen.',
+  })
+  async updateFunctionPrice(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.service.updateFunctionPriceDraft(id, parseFunctionPricePatchBody(body));
     } catch (error) {
       mapCatalogWriteError(error);
     }

@@ -93,6 +93,14 @@ export const deliveryCatalogStructureApi = {
     return resp.data;
   },
 
+  async updateSalePriceDraft(
+    id: string,
+    input: { amountPerUnit: string },
+  ): Promise<SalePriceVersionDto> {
+    const resp = await api.patch<SalePriceVersionDto>(`${BASE}/sale-prices/${id}`, input);
+    return resp.data;
+  },
+
   async publishSalePrice(id: string): Promise<SalePriceVersionDto> {
     const resp = await api.post<SalePriceVersionDto>(`${BASE}/sale-prices/${id}/publish`, {});
     return resp.data;

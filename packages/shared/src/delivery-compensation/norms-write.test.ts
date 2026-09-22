@@ -100,6 +100,24 @@ describe('parseFunctionPriceWriteBody', () => {
     ).toThrow(/greater or equal/);
   });
 
+  it('accepts OPTIONAL with units and rejects empty-kind leakage', () => {
+    const [firstRole, ...otherRoles] = DELIVERY_COMPENSATION_ROLE_KEYS;
+    const roleUnits = [
+      { roleKey: firstRole, unitKind: 'OPTIONAL', units: '5' },
+      ...otherRoles.map((roleKey) => ({ roleKey, unitKind: 'REQUIRED', units: '10' })),
+    ];
+    const parsed = parseFunctionPriceWriteBody({
+      functionId: FUNCTION_ID,
+      effectiveFrom: '2026-10-01T00:00:00.000Z',
+      roleUnits,
+    });
+    expect(parsed.roleUnits[0]).toEqual({
+      roleKey: firstRole,
+      unitKind: 'OPTIONAL',
+      units: '5',
+    });
+  });
+
   it('rejects units on a NOT_REQUIRED role', () => {
     const [firstRole, ...otherRoles] = DELIVERY_COMPENSATION_ROLE_KEYS;
     const roleUnits = [

@@ -97,7 +97,9 @@ export const ROLE_UNITS_BREAKDOWN_ROW_CLASS =
 export const SHEET_STACK_CLASS = 'flex flex-col gap-3';
 
 /** Current published rate + new draft amount, side by side in the rates sheet. */
-export const NORMS_SHEET_FIELD_PAIR_CLASS = 'grid grid-cols-2 gap-4';
+export const NORMS_SHEET_FIELD_PAIR_CLASS = 'grid min-w-0 flex-1 grid-cols-2 gap-4';
+
+export const NORMS_INLINE_MONEY_ROW_CLASS = 'flex items-end gap-3';
 
 export const NORMS_SHEET_ROLE_BLOCK_CLASS = 'flex flex-col gap-3 py-4 first:pt-0 last:pb-0';
 

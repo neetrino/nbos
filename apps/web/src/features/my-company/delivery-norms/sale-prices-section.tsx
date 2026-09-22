@@ -3,22 +3,28 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DeliveryBaseProfileFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
-import type { SearchOption } from '@/components/shared';
-import { OPTIONAL_SELECT_NONE } from './delivery-norms.constants';
+import { PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
+import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
+import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
+import { type SalePriceTargetKind } from './delivery-norms.constants';
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
-import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
+import { displayedSaleAmount, liveSalePrices } from './live-sale-prices';
 import { itemsMatchingSearch } from './matches-norm-search';
-import { SalePriceCreateSheet } from './sale-price-create-sheet';
-import {
-  gradationsFromCatalog,
-  groupSalePricesByKind,
-  targetKeyForKind,
-  type CatalogGradation,
-  type SalePriceTargetKind,
-} from './sale-price-draft';
-import { SalePricesList } from './sale-prices-list';
-import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
+import { gradationsFromCatalog, targetKeyForKind, type CatalogGradation } from './sale-price-draft';
+import { SalePricesTable } from './sale-prices-table';
+
+const SALE_TABS = ['FUNCTION', 'TIER', 'CORE'] as const;
+
+type SalePricesSectionProps = {
+  rows: SalePriceVersionDto[];
+  catalog: DeliveryFunctionOperationalDto[];
+  profiles: DeliveryBaseProfileFinancialDto[];
+  canEdit: boolean;
+  onChanged: () => void;
+  onError: (message: string) => void;
+  embedded?: boolean;
+};
 
 export function SalePricesSection({
   rows,
@@ -28,87 +34,23 @@ export function SalePricesSection({
   onChanged,
   onError,
   embedded = false,
-}: {
-  rows: SalePriceVersionDto[];
-  catalog: DeliveryFunctionOperationalDto[];
-  profiles: DeliveryBaseProfileFinancialDto[];
-  canEdit: boolean;
-  onChanged: () => void;
-  onError: (message: string) => void;
-  embedded?: boolean;
-}) {
+}: SalePricesSectionProps) {
   const t = useTranslations('hr.deliveryNorms');
-  const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<SalePriceTargetKind>('FUNCTION');
-  const [targetId, setTargetId] = useState(OPTIONAL_SELECT_NONE);
-  const labels = useMemo(
-    () => targetLabelMap(catalog, profiles, gradationsFromCatalog(catalog), t),
-    [catalog, profiles, t],
-  );
-  const kindLabels = {
-    FUNCTION: t('salePrices.targetKinds.FUNCTION'),
-    TIER: t('salePrices.targetKinds.TIER'),
-    CORE: t('salePrices.targetKinds.CORE'),
-  } as const;
-  const options = useMemo(
-    () => targetSearchOptions(kind, catalog, profiles, gradationsFromCatalog(catalog), labels),
-    [catalog, kind, labels, profiles],
-  );
-  const filtered = useMemo(
-    () =>
-      itemsMatchingSearch(rows, query, (row) => [
-        labels.get(row.targetKey) ?? row.targetKey,
-        row.status,
-        row.amountPerUnit ?? '',
-        row.resolvedAmount ?? '',
-      ]),
-    [labels, query, rows],
-  );
-  const groups = useMemo(() => groupSalePricesByKind(filtered), [filtered]);
-
+  const workspace = useSalePricesWorkspace(rows, catalog, profiles);
   return (
     <DeliveryNormsSectionCard
       title={embedded ? undefined : t('salePrices.title')}
       description={embedded ? undefined : t('salePrices.subtitle')}
     >
-      <DeliveryNormsSectionToolbar
-        query={query}
-        onQueryChange={setQuery}
-        searchLabel={t('search.label')}
-        searchPlaceholder={t('search.placeholder')}
-        addLabel={t('add')}
-        canAdd={canEdit}
-        onAdd={() => setOpen(true)}
-      />
-      {canEdit ? (
-        <SalePriceCreateSheet
-          open={open}
-          kind={kind}
-          targetId={targetId}
-          targetOptions={options}
-          kindLabels={kindLabels}
-          onOpenChange={setOpen}
-          onKindChange={(next) => {
-            setKind(next);
-            setTargetId(OPTIONAL_SELECT_NONE);
-          }}
-          onTargetIdChange={setTargetId}
-          onCreated={onChanged}
-          onError={onError}
-        />
-      ) : null}
-      {rows.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{t('salePrices.allEmpty')}</p>
-      ) : query.trim() !== '' && filtered.length === 0 ? (
+      <SalePricesChrome workspace={workspace} />
+      {workspace.query.trim() !== '' && workspace.filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('search.empty')}</p>
       ) : (
-        <SalePricesList
-          groups={groups}
-          labels={labels}
-          kindLabels={kindLabels}
+        <SalePricesTable
+          pairs={workspace.filtered}
+          labels={workspace.labels}
           canPublish={canEdit}
-          onPublished={onChanged}
+          onChanged={onChanged}
           onError={onError}
         />
       )}
@@ -116,30 +58,84 @@ export function SalePricesSection({
   );
 }
 
-function targetSearchOptions(
+function useSalePricesWorkspace(
+  rows: SalePriceVersionDto[],
+  catalog: DeliveryFunctionOperationalDto[],
+  profiles: DeliveryBaseProfileFinancialDto[],
+) {
+  const t = useTranslations('hr.deliveryNorms');
+  const [query, setQuery] = useState('');
+  const [kind, setKind] = useState<SalePriceTargetKind>('FUNCTION');
+  const labels = useMemo(
+    () => targetLabelMap(catalog, profiles, gradationsFromCatalog(catalog), t),
+    [catalog, profiles, t],
+  );
+  const knownKeys = useMemo(
+    () => knownSaleTargetKeys(kind, catalog, profiles, gradationsFromCatalog(catalog)),
+    [catalog, kind, profiles],
+  );
+  const tabs = useMemo(
+    (): PageHeroTabOption<SalePriceTargetKind>[] =>
+      SALE_TABS.map((value) => ({
+        value,
+        label: t(`salePrices.targetKinds.${value}`),
+      })),
+    [t],
+  );
+  const pairs = useMemo(() => liveSalePrices(rows, kind, knownKeys), [kind, knownKeys, rows]);
+  const filtered = useMemo(() => matchingSalePrices(pairs, query, labels), [labels, pairs, query]);
+  return { query, kind, labels, tabs, filtered, setQuery, setKind };
+}
+
+type SalePricesWorkspace = ReturnType<typeof useSalePricesWorkspace>;
+
+function matchingSalePrices(
+  pairs: ReturnType<typeof liveSalePrices>,
+  query: string,
+  labels: Map<string, string>,
+) {
+  return itemsMatchingSearch(pairs, query, (pair) => [
+    labels.get(pair.targetKey) ?? pair.targetKey,
+    displayedSaleAmount(pair) ?? '',
+    pair.draft?.status ?? pair.published?.status ?? '',
+  ]);
+}
+
+function SalePricesChrome({ workspace }: { workspace: SalePricesWorkspace }) {
+  const t = useTranslations('hr.deliveryNorms');
+  return (
+    <>
+      <PageHeroTabs
+        value={workspace.kind}
+        onChange={workspace.setKind}
+        options={workspace.tabs}
+        ariaLabel={t('workspace.saleTabs.aria')}
+        showOnMobile
+        registerMobileDock={false}
+      />
+      <DeliveryNormsSectionToolbar
+        query={workspace.query}
+        onQueryChange={workspace.setQuery}
+        searchLabel={t('search.label')}
+        searchPlaceholder={t('search.placeholder')}
+      />
+    </>
+  );
+}
+
+function knownSaleTargetKeys(
   kind: SalePriceTargetKind,
   catalog: DeliveryFunctionOperationalDto[],
   profiles: DeliveryBaseProfileFinancialDto[],
   gradations: CatalogGradation[],
-  labels: Map<string, string>,
-): SearchOption[] {
+): string[] {
   if (kind === 'FUNCTION') {
-    return catalog.map((item) => ({
-      value: item.id,
-      label: labels.get(targetKeyForKind('FUNCTION', item.id)) ?? item.title,
-      subtitle: item.code,
-    }));
+    return catalog.map((item) => targetKeyForKind('FUNCTION', item.id));
   }
   if (kind === 'CORE') {
-    return profiles.map((row) => ({
-      value: row.id,
-      label: labels.get(targetKeyForKind('CORE', row.id)) ?? row.profileKey,
-    }));
+    return profiles.map((row) => targetKeyForKind('CORE', row.id));
   }
-  return gradations.map((tier) => ({
-    value: tier.id,
-    label: labels.get(targetKeyForKind('TIER', tier.id)) ?? tier.label,
-  }));
+  return gradations.map((tier) => targetKeyForKind('TIER', tier.id));
 }
 
 function targetLabelMap(
@@ -149,7 +145,7 @@ function targetLabelMap(
   t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
 ): Map<string, string> {
   const dictionaries = dictionariesForProfileLabel(t);
-  const entries: Array<[string, string]> = [
+  return new Map([
     ...catalog.map(
       (item) => [targetKeyForKind('FUNCTION', item.id), item.title] as [string, string],
     ),
@@ -163,6 +159,5 @@ function targetLabelMap(
           formatBaseProfileLabel(row.profileKey, row.version, dictionaries),
         ] as [string, string],
     ),
-  ];
-  return new Map(entries);
+  ]);
 }

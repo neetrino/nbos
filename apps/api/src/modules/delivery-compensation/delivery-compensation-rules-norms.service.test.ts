@@ -8,6 +8,14 @@ import {
 } from '@nbos/shared';
 import { DeliveryCompensationRulesService } from './delivery-compensation-rules.service';
 
+function rulesClient(partial: Record<string, unknown>) {
+  const prisma = { ...partial };
+  return {
+    ...prisma,
+    $transaction: vi.fn(async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma)),
+  };
+}
+
 const FUNCTION_ID = '11111111-2222-3333-4444-555555555555';
 const OTHER_ID = '66666666-7777-8888-9999-aaaaaaaaaaaa';
 const TIER_ID = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
@@ -38,12 +46,14 @@ describe('createFunctionPriceDraft', () => {
       status: 'DRAFT',
       roleUnits: persistedRoleUnits(null),
     });
-    const service = new DeliveryCompensationRulesService({
-      deliveryFunction: {
-        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [] }),
-      },
-      deliveryFunctionPriceVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
-    } as never);
+    const service = new DeliveryCompensationRulesService(
+      rulesClient({
+        deliveryFunction: {
+          findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [] }),
+        },
+        deliveryFunctionPriceVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
+      }) as never,
+    );
 
     const dto = await service.createFunctionPriceDraft(
       parseFunctionPriceWriteBody({
@@ -72,15 +82,19 @@ describe('createFunctionPriceDraft', () => {
       status: 'DRAFT',
       roleUnits: persistedRoleUnits('10'),
     });
-    const service = new DeliveryCompensationRulesService({
-      deliveryFunction: {
-        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [] }),
-      },
-      deliveryFunctionPriceVersion: {
-        findFirst: vi.fn().mockResolvedValue({ version: 3 }),
-        create,
-      },
-    } as never);
+    const service = new DeliveryCompensationRulesService(
+      rulesClient({
+        deliveryFunction: {
+          findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [] }),
+        },
+        deliveryFunctionPriceVersion: {
+          findFirst: vi.fn(async ({ where }: { where?: { status?: string } }) =>
+            where?.status === 'DRAFT' ? null : { version: 3 },
+          ),
+          create,
+        },
+      }) as never,
+    );
 
     await service.createFunctionPriceDraft(
       parseFunctionPriceWriteBody({
@@ -97,10 +111,12 @@ describe('createFunctionPriceDraft', () => {
 
   it('refuses an unknown function', async () => {
     const create = vi.fn();
-    const service = new DeliveryCompensationRulesService({
-      deliveryFunction: { findUnique: vi.fn().mockResolvedValue(null) },
-      deliveryFunctionPriceVersion: { findFirst: vi.fn(), create },
-    } as never);
+    const service = new DeliveryCompensationRulesService(
+      rulesClient({
+        deliveryFunction: { findUnique: vi.fn().mockResolvedValue(null) },
+        deliveryFunctionPriceVersion: { findFirst: vi.fn(), create },
+      }) as never,
+    );
 
     await expect(
       service.createFunctionPriceDraft(
@@ -123,12 +139,14 @@ describe('createFunctionPriceDraft', () => {
       status: 'DRAFT',
       roleUnits: persistedRoleUnits('10'),
     });
-    const service = new DeliveryCompensationRulesService({
-      deliveryFunction: {
-        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [{ id: TIER_ID }] }),
-      },
-      deliveryFunctionPriceVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
-    } as never);
+    const service = new DeliveryCompensationRulesService(
+      rulesClient({
+        deliveryFunction: {
+          findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [{ id: TIER_ID }] }),
+        },
+        deliveryFunctionPriceVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
+      }) as never,
+    );
 
     const dto = await service.createFunctionPriceDraft(
       parseFunctionPriceWriteBody({
@@ -149,12 +167,14 @@ describe('createFunctionPriceDraft', () => {
 
   it('refuses a card-level draft when the function has volumes', async () => {
     const create = vi.fn();
-    const service = new DeliveryCompensationRulesService({
-      deliveryFunction: {
-        findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [{ id: TIER_ID }] }),
-      },
-      deliveryFunctionPriceVersion: { findFirst: vi.fn(), create },
-    } as never);
+    const service = new DeliveryCompensationRulesService(
+      rulesClient({
+        deliveryFunction: {
+          findUnique: vi.fn().mockResolvedValue({ id: FUNCTION_ID, tiers: [{ id: TIER_ID }] }),
+        },
+        deliveryFunctionPriceVersion: { findFirst: vi.fn(), create },
+      }) as never,
+    );
 
     await expect(
       service.createFunctionPriceDraft(
@@ -190,10 +210,12 @@ describe('createBaseProfileDraft', () => {
       roleUnits: persistedRoleUnits('100'),
       includedFunctions: [{ functionId: FUNCTION_ID }, { functionId: OTHER_ID }],
     });
-    const service = new DeliveryCompensationRulesService({
-      deliveryFunction: { count: vi.fn().mockResolvedValue(2) },
-      deliveryBaseProfileVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
-    } as never);
+    const service = new DeliveryCompensationRulesService(
+      rulesClient({
+        deliveryFunction: { count: vi.fn().mockResolvedValue(2) },
+        deliveryBaseProfileVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
+      }) as never,
+    );
 
     const dto = await service.createBaseProfileDraft(
       parseBaseProfileWriteBody({ ...body, includedFunctionIds: [FUNCTION_ID, OTHER_ID] }),
@@ -209,10 +231,12 @@ describe('createBaseProfileDraft', () => {
 
   it('refuses unknown included functions', async () => {
     const create = vi.fn();
-    const service = new DeliveryCompensationRulesService({
-      deliveryFunction: { count: vi.fn().mockResolvedValue(1) },
-      deliveryBaseProfileVersion: { findFirst: vi.fn(), create },
-    } as never);
+    const service = new DeliveryCompensationRulesService(
+      rulesClient({
+        deliveryFunction: { count: vi.fn().mockResolvedValue(1) },
+        deliveryBaseProfileVersion: { findFirst: vi.fn(), create },
+      }) as never,
+    );
 
     await expect(
       service.createBaseProfileDraft(
