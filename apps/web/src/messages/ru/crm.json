@@ -741,6 +741,7 @@
       "extraCount": "{count, plural, one {# extra} few {# extra} many {# extra} other {# extra}}",
       "addFunctions": "Добавить функции",
       "coreLabel": "Ядро",
+      "coreNamed": "Ядро {name}",
       "coreLoading": "Загружаем состав ядра…",
       "corePriceUnknown": "Цена не опубликована",
       "noExtras": "Дополнительных функций пока нет.",

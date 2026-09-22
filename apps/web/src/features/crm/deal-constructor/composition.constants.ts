@@ -2,6 +2,8 @@ export const COMPOSITION_ADD_ICON_SIZE_PX = 16;
 
 export const COMPOSITION_CORE_CHECK_SIZE_PX = 14;
 
+export const COMPOSITION_CORE_MARK_SIZE_PX = 16;
+
 export const COMPOSITION_REMOVE_ICON_SIZE_PX = 16;
 
 export const COMPOSITION_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]';
@@ -11,6 +13,9 @@ export const COMPOSITION_EXTRA_GRID_CLASS =
 
 export const COMPOSITION_CORE_ROW_CLASS =
   'flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left';
+
+export const COMPOSITION_CORE_IDENTITY_CLASS =
+  'bg-muted/50 border-border mb-3 flex items-center gap-3 rounded-xl border px-3 py-3';
 
 export const COMPOSITION_DEAL_CARD_CLASS =
   'border-border bg-card flex w-full flex-col gap-3 rounded-2xl border p-4 text-left';

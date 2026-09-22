@@ -783,6 +783,7 @@
       "extraCount": "{count, plural, one {# extra} other {# extras}}",
       "addFunctions": "Ավելացնել ֆունկցիաներ",
       "coreLabel": "Միջուկ",
+      "coreNamed": "Միջուկ {name}",
       "coreLoading": "Միջուկի կազմը բեռնվում է…",
       "corePriceUnknown": "Գինը հրապարակված չէ",
       "noExtras": "Լրացուցիչ ֆունկցիաներ դեռ չկան։",

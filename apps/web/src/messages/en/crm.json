@@ -741,6 +741,7 @@
       "extraCount": "{count, plural, one {# extra} other {# extras}}",
       "addFunctions": "Add functions",
       "coreLabel": "Core",
+      "coreNamed": "Core {name}",
       "coreLoading": "Loading core scope…",
       "corePriceUnknown": "Price not published",
       "noExtras": "No extra functions yet.",

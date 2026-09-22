@@ -110,6 +110,7 @@ function ReadyDealComposition({
         setCatalogOpen={setCatalogOpen}
         disabled={disabled}
         needsSave={needsSave}
+        coreName={translateProductTypeLabel(t, productType)}
       />
     </>
   );
@@ -125,6 +126,7 @@ type OpenedCompositionProps = {
   setCatalogOpen: (open: boolean) => void;
   disabled: boolean;
   needsSave: boolean;
+  coreName: string;
 };
 
 function OpenedDealComposition(props: OpenedCompositionProps) {
@@ -137,7 +139,7 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         open={props.compositionOpen}
         onOpenChange={props.setCompositionOpen}
         coreProfileVersionId={model.quote?.coreProfileVersionId ?? null}
-        coreTitle={model.coreTitle}
+        coreTitle={props.coreName}
         included={parts.base.map((item) => ({ id: item.id, title: item.title }))}
         extras={parts.extras}
         blockedHint={props.needsSave ? t('saveTypeBeforeEdit') : null}
