@@ -14,6 +14,7 @@ export type ExistingProfile = {
 export type ProfilePlanEntry =
   | { action: 'CREATE'; version: ProfileSeedVersion }
   | { action: 'REPLACE'; version: ProfileSeedVersion }
+  | { action: 'UPDATE_COPY'; version: ProfileSeedVersion }
   | { action: 'KEEP'; version: ProfileSeedVersion; reason: string };
 
 export type RetiredPlanEntry =
@@ -25,6 +26,7 @@ export type ProfileSeedPlan = {
   retired: RetiredPlanEntry[];
   createCount: number;
   replaceCount: number;
+  updateCopyCount: number;
   keepCount: number;
   retireCount: number;
   missingFunctionCodes: string[];
@@ -37,7 +39,7 @@ const KEPT_IN_USE = 'a configuration froze it';
 export function planDeliveryProfilesSeed(
   existing: readonly ExistingProfile[],
   existingFunctionCodes: readonly string[],
-  options: { replaceDrafts?: boolean } = {},
+  options: { replaceDrafts?: boolean; updateCopy?: boolean } = {},
   versions: readonly ProfileSeedVersion[] = buildProfileSeedVersions(),
 ): ProfileSeedPlan {
   const known = new Map(existing.map((row) => [row.profileKey, row]));
@@ -45,6 +47,7 @@ export function planDeliveryProfilesSeed(
   const entries = versions.map<ProfilePlanEntry>((version) => {
     const row = known.get(version.profileKey);
     if (!row) return { action: 'CREATE', version };
+    if (options.updateCopy) return { action: 'UPDATE_COPY', version };
     if (!options.replaceDrafts) return { action: 'KEEP', version, reason: KEPT_BY_DEFAULT };
     return planExisting(version, row);
   });
@@ -61,6 +64,7 @@ export function planDeliveryProfilesSeed(
     retired,
     createCount: countOf(entries, 'CREATE'),
     replaceCount: countOf(entries, 'REPLACE'),
+    updateCopyCount: countOf(entries, 'UPDATE_COPY'),
     keepCount: countOf(entries, 'KEEP'),
     retireCount: retired.filter((row) => row.action === 'RETIRE').length,
     missingFunctionCodes: referencedFunctionCodes().filter((code) => !catalog.has(code)),
@@ -78,7 +82,7 @@ function countOf(entries: readonly ProfilePlanEntry[], action: ProfilePlanEntry[
 }
 
 export function formatProfileSeedPlan(plan: ProfileSeedPlan, apply: boolean): string {
-  const counts = `${plan.createCount} to create, ${plan.replaceCount} to replace, ${plan.keepCount} kept, ${plan.retireCount} sized drafts to drop`;
+  const counts = `${plan.createCount} to create, ${plan.replaceCount} to replace, ${plan.updateCopyCount} copy updates, ${plan.keepCount} kept, ${plan.retireCount} sized drafts to drop`;
   const header = apply
     ? `Applying delivery profile seed: ${counts}.`
     : `Dry run. ${counts}. Nothing is written.`;
@@ -95,7 +99,12 @@ export function formatProfileSeedPlan(plan: ProfileSeedPlan, apply: boolean): st
 function formatEntry(entry: ProfilePlanEntry): string {
   const shape = `core ${entry.version.kind.coreItems.length} items`;
   if (entry.action === 'KEEP') return `  KEEP    ${entry.version.profileKey} — ${entry.reason}`;
-  const verb = entry.action === 'CREATE' ? 'CREATE ' : 'REPLACE';
+  const verb =
+    entry.action === 'CREATE'
+      ? 'CREATE '
+      : entry.action === 'UPDATE_COPY'
+        ? 'UPDATE_COPY'
+        : 'REPLACE';
   return `  ${verb} ${entry.version.profileKey} (${shape})`;
 }
 

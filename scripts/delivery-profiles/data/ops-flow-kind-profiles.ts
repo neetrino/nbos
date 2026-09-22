@@ -4,12 +4,12 @@ import type { ProfileSeedKind } from './profile-seed-types';
 export const REGISTRATION_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'registration-system-code',
   productType: 'REGISTRATION_SYSTEM',
-  description: 'Ядро системы регистрации: формы, статусы и допуск. Один вид — одно ядро.',
+  description: 'Registration-system core: forms, statuses, and admission. One kind is one core.',
   coreItems: [
-    { label: 'Форма регистрации' },
-    { label: 'Статусы заявок' },
-    { label: 'Проверка и допуск' },
-    { label: 'Админка регистраций' },
+    { label: 'Registration form' },
+    { label: 'Application statuses' },
+    { label: 'Review and admission' },
+    { label: 'Registration admin' },
   ],
   units: { BACKEND: 38, FRONTEND: 36, PM: 10, DESIGNER: 12, QA: 9, TECHNICAL_SPECIALIST: 4 },
   presets: growPresets(
@@ -23,12 +23,12 @@ export const EVENT_MANAGEMENT_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'event-management-system-code',
   productType: 'EVENT_MANAGEMENT_SYSTEM',
   description:
-    'Ядро операционки мероприятия: участники, программа и роли. Сайт события — отдельный вид.',
+    'Event-operations core: participants, program, and roles. The event website is a separate kind.',
   coreItems: [
-    { label: 'Участники и роли' },
-    { label: 'Программа и зоны' },
-    { label: 'Операционный контур' },
-    { label: 'Админка события' },
+    { label: 'Participants and roles' },
+    { label: 'Program and zones' },
+    { label: 'Operations loop' },
+    { label: 'Event admin' },
   ],
   units: { BACKEND: 62, FRONTEND: 52, PM: 15, DESIGNER: 16, QA: 12, TECHNICAL_SPECIALIST: 6 },
   presets: growPresets(
@@ -41,12 +41,13 @@ export const EVENT_MANAGEMENT_PROFILE: ProfileSeedKind = codeKindProfile({
 export const DOCUMENT_MANAGEMENT_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'document-management-system-code',
   productType: 'DOCUMENT_MANAGEMENT_SYSTEM',
-  description: 'Ядро СЭД: жизненный цикл документов, версии и маршруты. Один вид — одно ядро.',
+  description:
+    'Document-management core: document lifecycle, versions, and routes. One kind is one core.',
   coreItems: [
-    { label: 'Карточка документа' },
-    { label: 'Версии' },
-    { label: 'Маршрут согласования' },
-    { label: 'Права и архив' },
+    { label: 'Document card' },
+    { label: 'Versions' },
+    { label: 'Approval route' },
+    { label: 'Permissions and archive' },
   ],
   units: { BACKEND: 68, FRONTEND: 52, PM: 16, DESIGNER: 14, QA: 14, TECHNICAL_SPECIALIST: 6 },
   presets: growPresets(
@@ -59,12 +60,12 @@ export const DOCUMENT_MANAGEMENT_PROFILE: ProfileSeedKind = codeKindProfile({
 export const INVENTORY_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'inventory-system-code',
   productType: 'INVENTORY_SYSTEM',
-  description: 'Ядро склада и учёта: остатки, движения и история. Один вид — одно ядро.',
+  description: 'Inventory core: stock, movements, and history. One kind is one core.',
   coreItems: [
-    { label: 'Номенклатура' },
-    { label: 'Остатки' },
-    { label: 'Движения' },
-    { label: 'История и отчёты' },
+    { label: 'Items' },
+    { label: 'Stock' },
+    { label: 'Movements' },
+    { label: 'History and reports' },
   ],
   units: { BACKEND: 64, FRONTEND: 48, PM: 14, DESIGNER: 12, QA: 12, TECHNICAL_SPECIALIST: 6 },
   presets: growPresets(

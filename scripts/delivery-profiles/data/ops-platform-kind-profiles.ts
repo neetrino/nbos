@@ -4,12 +4,12 @@ import type { ProfileSeedKind } from './profile-seed-types';
 export const KNOWLEDGE_BASE_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'knowledge-base-code',
   productType: 'KNOWLEDGE_BASE',
-  description: 'Ядро базы знаний как продукта: статьи, поиск и доступ. Один вид — одно ядро.',
+  description: 'Knowledge-base product core: articles, search, and access. One kind is one core.',
   coreItems: [
-    { label: 'Разделы и статьи' },
-    { label: 'Поиск' },
-    { label: 'Права на чтение' },
-    { label: 'Редактор' },
+    { label: 'Sections and articles' },
+    { label: 'Search' },
+    { label: 'Read permissions' },
+    { label: 'Editor' },
   ],
   units: { BACKEND: 32, FRONTEND: 34, PM: 9, DESIGNER: 12, QA: 8, TECHNICAL_SPECIALIST: 3 },
   presets: growPresets(
@@ -23,12 +23,12 @@ export const INDUSTRY_OPS_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'industry-operations-system-code',
   productType: 'INDUSTRY_OPERATIONS_SYSTEM',
   description:
-    'Ядро отраслевой операционки: узкий процесс клиники, цеха или сервиса. Не путать с BOS.',
+    'Industry-operations core: a narrow clinic, shop-floor, or service process. Not a BOS.',
   coreItems: [
-    { label: 'Отраслевые сущности' },
-    { label: 'Операционный контур' },
-    { label: 'Роли площадки' },
-    { label: 'Базовые отчёты' },
+    { label: 'Industry entities' },
+    { label: 'Operations loop' },
+    { label: 'Site roles' },
+    { label: 'Basic reports' },
   ],
   units: { BACKEND: 95, FRONTEND: 72, PM: 20, DESIGNER: 20, QA: 18, TECHNICAL_SPECIALIST: 8 },
   presets: growPresets(
@@ -41,13 +41,14 @@ export const INDUSTRY_OPS_PROFILE: ProfileSeedKind = codeKindProfile({
 export const BOS_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'bos-code',
   productType: 'BOS',
-  description: 'Ядро Business Operation System: CRM, задачи, коммуникации и учёт в одном продукте.',
+  description:
+    'Business Operation System core: CRM, tasks, communications, and accounting in one product.',
   coreItems: [
-    { label: 'Клиенты и сделки' },
-    { label: 'Задачи команды' },
-    { label: 'Внутренние коммуникации' },
-    { label: 'Склад и учёт' },
-    { label: 'Единый кабинет компании' },
+    { label: 'Customers and deals' },
+    { label: 'Team tasks' },
+    { label: 'Internal communications' },
+    { label: 'Stock and accounting' },
+    { label: 'Single company cabinet' },
   ],
   units: { BACKEND: 120, FRONTEND: 95, PM: 24, DESIGNER: 26, QA: 22, TECHNICAL_SPECIALIST: 10 },
   presets: growPresets(

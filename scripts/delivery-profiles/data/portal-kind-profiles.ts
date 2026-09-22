@@ -4,13 +4,12 @@ import type { ProfileSeedKind } from './profile-seed-types';
 export const CUSTOMER_PORTAL_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'customer-portal-code',
   productType: 'CUSTOMER_PORTAL',
-  description:
-    'Ядро клиентского кабинета как самостоятельного продукта. Кабинет магазина остаётся extra.',
+  description: 'Standalone customer-cabinet core. A shop cabinet stays an extra.',
   coreItems: [
-    { label: 'Профиль клиента' },
-    { label: 'Заказы или заявки' },
-    { label: 'Документы клиента' },
-    { label: 'Обращения' },
+    { label: 'Customer profile' },
+    { label: 'Orders or requests' },
+    { label: 'Customer documents' },
+    { label: 'Support requests' },
   ],
   units: { BACKEND: 44, FRONTEND: 42, PM: 12, DESIGNER: 16, QA: 10, TECHNICAL_SPECIALIST: 4 },
   presets: growPresets(
@@ -24,12 +23,12 @@ export const PARTNER_PORTAL_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'partner-portal-code',
   productType: 'PARTNER_PORTAL',
   description:
-    'Ядро партнёрского кабинета: материалы, условия и совместные процессы. Один вид — одно ядро.',
+    'Partner-cabinet core: materials, terms, and shared processes. One kind is one core.',
   coreItems: [
-    { label: 'Кабинет партнёра' },
-    { label: 'Материалы и условия' },
-    { label: 'Заявки или лиды' },
-    { label: 'Документы' },
+    { label: 'Partner cabinet' },
+    { label: 'Materials and terms' },
+    { label: 'Requests or leads' },
+    { label: 'Documents' },
   ],
   units: { BACKEND: 46, FRONTEND: 42, PM: 12, DESIGNER: 16, QA: 10, TECHNICAL_SPECIALIST: 4 },
   presets: growPresets(

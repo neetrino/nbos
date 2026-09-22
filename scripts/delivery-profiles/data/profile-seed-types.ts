@@ -29,6 +29,13 @@ export type ProfileSeedKind = {
 };
 
 export const SEEDED_COLLECTION_NAMES = {
+  BASE: 'Basic',
+  EXTENDED: 'Extended',
+  FULL: 'Full',
+} as const;
+
+/** Previous Russian kit names. Seed remaps these in place so kits stay the same rows. */
+export const LEGACY_SEEDED_COLLECTION_NAMES = {
   BASE: 'Базовый',
   EXTENDED: 'Расширенный',
   FULL: 'Полный',

@@ -5,14 +5,14 @@ export const PRODUCT_CATALOG_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'product-catalog-code',
   productType: 'PRODUCT_CATALOG',
   description:
-    'Ядро сайта-каталога без корзины. Один вид — одно ядро; комплекты меняют только extra-модули.',
+    'Catalog website core without a cart. One kind is one core; kits only change extra modules.',
   coreItems: [
-    { label: 'Каталог с категориями' },
-    { label: 'Карточка позиции' },
-    { label: 'Поиск и фильтры' },
-    { label: 'Админка каталога' },
-    { label: 'Адаптивность' },
-    { label: 'Базовое SEO', note: 'Метаданные, sitemap, robots.' },
+    { label: 'Catalog with categories' },
+    { label: 'Item card' },
+    { label: 'Search and filters' },
+    { label: 'Catalog admin' },
+    { label: 'Responsive layout' },
+    { label: 'Basic SEO', note: 'Metadata, sitemap, robots.' },
   ],
   units: { BACKEND: 28, FRONTEND: 32, PM: 10, DESIGNER: 16, QA: 8, TECHNICAL_SPECIALIST: 3 },
   presets: growPresets(
@@ -25,15 +25,14 @@ export const PRODUCT_CATALOG_PROFILE: ProfileSeedKind = codeKindProfile({
 export const BLOG_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'blog-code',
   productType: 'BLOG',
-  description:
-    'Ядро блог-платформы как самостоятельного продукта. Блог у магазина остаётся extra-карточкой.',
+  description: 'Standalone blog-platform core. A shop blog stays an extra card.',
   coreItems: [
-    { label: 'Статьи, рубрики и авторы' },
-    { label: 'Страница записи и лента' },
-    { label: 'Редактор контента' },
-    { label: 'Поиск по материалам' },
-    { label: 'Адаптивность' },
-    { label: 'Базовое SEO' },
+    { label: 'Posts, sections, and authors' },
+    { label: 'Post page and feed' },
+    { label: 'Content editor' },
+    { label: 'Content search' },
+    { label: 'Responsive layout' },
+    { label: 'Basic SEO' },
   ],
   units: { BACKEND: 24, FRONTEND: 30, PM: 9, DESIGNER: 16, QA: 7, TECHNICAL_SPECIALIST: 3 },
   presets: growPresets(
@@ -47,13 +46,13 @@ export const NEWS_MEDIA_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'news-media-portal-code',
   productType: 'NEWS_MEDIA_PORTAL',
   description:
-    'Ядро медиа-портала: интенсивная публикация, рубрики и редакционный контур. Один вид — одно ядро.',
+    'Media-portal core: high-volume publishing, sections, and an editorial loop. One kind is one core.',
   coreItems: [
-    { label: 'Лента и рубрики' },
-    { label: 'Карточка материала' },
-    { label: 'Редакция и авторы' },
-    { label: 'Поиск и архив' },
-    { label: 'Адаптивность' },
+    { label: 'Feed and sections' },
+    { label: 'Story card' },
+    { label: 'Editorial team and authors' },
+    { label: 'Search and archive' },
+    { label: 'Responsive layout' },
   ],
   units: { BACKEND: 40, FRONTEND: 42, PM: 12, DESIGNER: 18, QA: 10, TECHNICAL_SPECIALIST: 4 },
   presets: growPresets(
@@ -67,13 +66,13 @@ export const EVENT_WEBSITE_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'event-website-code',
   productType: 'EVENT_WEBSITE',
   description:
-    'Ядро сайта мероприятия: программа и контент события. Регистрация и билеты — отдельные виды или extra.',
+    'Event website core: program and event content. Registration and tickets are separate kinds or extras.',
   coreItems: [
-    { label: 'Главная события' },
-    { label: 'Программа и спикеры' },
-    { label: 'Локация и контакты' },
-    { label: 'Адаптивность' },
-    { label: 'Базовое SEO' },
+    { label: 'Event home' },
+    { label: 'Program and speakers' },
+    { label: 'Venue and contacts' },
+    { label: 'Responsive layout' },
+    { label: 'Basic SEO' },
   ],
   units: { BACKEND: 16, FRONTEND: 24, PM: 7, DESIGNER: 14, QA: 5, TECHNICAL_SPECIALIST: 2 },
   presets: growPresets(

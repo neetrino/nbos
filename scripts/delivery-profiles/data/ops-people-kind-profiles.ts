@@ -4,12 +4,12 @@ import type { ProfileSeedKind } from './profile-seed-types';
 export const HRM_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'hrm-code',
   productType: 'HRM',
-  description: 'Ядро HRM: сотрудники, кадры и кадровые процессы. Один вид — одно ядро.',
+  description: 'HRM core: employees, HR records, and HR processes. One kind is one core.',
   coreItems: [
-    { label: 'Карточка сотрудника' },
-    { label: 'Оргструктура' },
-    { label: 'Статусы занятости' },
-    { label: 'Роли кадровика' },
+    { label: 'Employee card' },
+    { label: 'Org structure' },
+    { label: 'Employment statuses' },
+    { label: 'HR roles' },
   ],
   units: { BACKEND: 72, FRONTEND: 58, PM: 16, DESIGNER: 16, QA: 14, TECHNICAL_SPECIALIST: 6 },
   presets: growPresets(
@@ -22,12 +22,12 @@ export const HRM_PROFILE: ProfileSeedKind = codeKindProfile({
 export const LMS_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'lms-code',
   productType: 'LMS',
-  description: 'Ядро LMS: курсы, уроки, запись и прогресс. Один вид — одно ядро.',
+  description: 'LMS core: courses, lessons, enrollment, and progress. One kind is one core.',
   coreItems: [
-    { label: 'Курсы и программы' },
-    { label: 'Уроки и материалы' },
-    { label: 'Запись слушателя' },
-    { label: 'Прогресс обучения' },
+    { label: 'Courses and programs' },
+    { label: 'Lessons and materials' },
+    { label: 'Learner enrollment' },
+    { label: 'Learning progress' },
   ],
   units: { BACKEND: 60, FRONTEND: 55, PM: 14, DESIGNER: 18, QA: 12, TECHNICAL_SPECIALIST: 5 },
   presets: growPresets(
@@ -40,12 +40,12 @@ export const LMS_PROFILE: ProfileSeedKind = codeKindProfile({
 export const TASK_MANAGEMENT_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'task-management-system-code',
   productType: 'TASK_MANAGEMENT_SYSTEM',
-  description: 'Ядро системы задач: постановка, статусы и контроль. Один вид — одно ядро.',
+  description: 'Task-system core: assignment, statuses, and control. One kind is one core.',
   coreItems: [
-    { label: 'Задачи и исполнители' },
-    { label: 'Статусы и сроки' },
-    { label: 'Комментарии' },
-    { label: 'Список и фильтры' },
+    { label: 'Tasks and assignees' },
+    { label: 'Statuses and due dates' },
+    { label: 'Comments' },
+    { label: 'List and filters' },
   ],
   units: { BACKEND: 42, FRONTEND: 40, PM: 12, DESIGNER: 14, QA: 10, TECHNICAL_SPECIALIST: 4 },
   presets: growPresets(
@@ -58,12 +58,12 @@ export const TASK_MANAGEMENT_PROFILE: ProfileSeedKind = codeKindProfile({
 export const HELP_DESK_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'help-desk-system-code',
   productType: 'HELP_DESK_SYSTEM',
-  description: 'Ядро help desk: заявки, очереди и переписка. Один вид — одно ядро.',
+  description: 'Help-desk core: tickets, queues, and conversation. One kind is one core.',
   coreItems: [
-    { label: 'Заявки и очереди' },
-    { label: 'Ответственные и статусы' },
-    { label: 'Переписка по заявке' },
-    { label: 'История решения' },
+    { label: 'Tickets and queues' },
+    { label: 'Owners and statuses' },
+    { label: 'Ticket conversation' },
+    { label: 'Resolution history' },
   ],
   units: { BACKEND: 50, FRONTEND: 44, PM: 13, DESIGNER: 14, QA: 11, TECHNICAL_SPECIALIST: 5 },
   presets: growPresets(

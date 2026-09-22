@@ -55,22 +55,22 @@ export const MOBILE_APP_PROFILE: ProfileSeedKind = {
   productType: 'MOBILE_APP',
   productCategory: 'CODE',
   description:
-    'Ядро мобильного приложения на собственной разработке. Одинаковый функционал в вебе и в приложении стоит одинаково; ось платформы на units не влияет.',
+    'Custom-built mobile-app core. The same functionality costs the same on web and in the app; the platform axis does not change units.',
   coreItems: [
-    { label: 'Каркас приложения' },
-    { label: 'Навигация' },
-    { label: 'Авторизация' },
-    { label: 'Экраны списка и детали' },
-    { label: 'Профиль пользователя' },
+    { label: 'Application shell' },
+    { label: 'Navigation' },
+    { label: 'Sign-in' },
+    { label: 'List and detail screens' },
+    { label: 'User profile' },
     {
-      label: 'Инфраструктура push на уровне каркаса',
-      note: 'Сценарии отправки — отдельный модуль.',
+      label: 'Push infrastructure in the shell',
+      note: 'Send scenarios are a separate module.',
     },
     {
-      label: 'Сборка релизной версии',
-      note: 'Публикация в магазины — отдельный модуль.',
+      label: 'Release build',
+      note: 'Store publishing is a separate module.',
     },
-    { label: 'Адаптивность под размеры телефонов' },
+    { label: 'Phone-size responsive layout' },
   ],
   units: {
     BACKEND: 45,

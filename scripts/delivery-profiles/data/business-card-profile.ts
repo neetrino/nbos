@@ -28,12 +28,12 @@ export const BUSINESS_CARD_PROFILE: ProfileSeedKind = {
   productType: 'BUSINESS_CARD_WEBSITE',
   productCategory: 'CODE',
   description:
-    'Ядро сайта-визитки на собственной разработке. Один вид — одно ядро; комплекты меняют только набор extra-модулей.',
+    'Custom-built business-card site core. One kind is one core; kits only change the extra-module set.',
   coreItems: [
-    { label: 'Главная страница' },
-    { label: 'Контакты' },
-    { label: 'Адаптивность' },
-    { label: 'Базовое SEO', note: 'Метаданные, sitemap, robots.' },
+    { label: 'Home page' },
+    { label: 'Contacts' },
+    { label: 'Responsive layout' },
+    { label: 'Basic SEO', note: 'Metadata, sitemap, robots.' },
   ],
   units: {
     BACKEND: 8,

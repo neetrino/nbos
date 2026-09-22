@@ -37,14 +37,14 @@ export const SAAS_PROFILE: ProfileSeedKind = {
   productType: 'SAAS',
   productCategory: 'CODE',
   description:
-    'Ядро SaaS-продукта на собственной разработке. Один вид — одно ядро; комплекты меняют только набор extra-модулей.',
+    'Custom-built SaaS product core. One kind is one core; kits only change the extra-module set.',
   coreItems: [
-    { label: 'Каркас продукта' },
-    { label: 'Авторизация сотрудников' },
-    { label: 'Рабочие экраны', note: 'Список и карточка основной сущности продукта.' },
-    { label: 'Простая админка' },
-    { label: 'Профиль пользователя' },
-    { label: 'Адаптивность' },
+    { label: 'Product shell' },
+    { label: 'Staff sign-in' },
+    { label: 'Work screens', note: 'List and card of the product’s main entity.' },
+    { label: 'Simple admin' },
+    { label: 'User profile' },
+    { label: 'Responsive layout' },
   ],
   units: {
     BACKEND: 70,

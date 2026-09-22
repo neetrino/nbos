@@ -4,13 +4,13 @@ import type { ProfileSeedKind } from './profile-seed-types';
 export const MARKETPLACE_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'marketplace-code',
   productType: 'MARKETPLACE',
-  description: 'Ядро маркетплейса: продавцы, покупатели, листинги и заказы. Один вид — одно ядро.',
+  description: 'Marketplace core: sellers, buyers, listings, and orders. One kind is one core.',
   coreItems: [
-    { label: 'Кабинеты продавца и покупателя' },
-    { label: 'Листинги и модерация' },
-    { label: 'Заказы между сторонами' },
-    { label: 'Комиссия площадки' },
-    { label: 'Админка площадки' },
+    { label: 'Seller and buyer cabinets' },
+    { label: 'Listings and moderation' },
+    { label: 'Orders between parties' },
+    { label: 'Platform commission' },
+    { label: 'Platform admin' },
   ],
   units: { BACKEND: 90, FRONTEND: 75, PM: 20, DESIGNER: 24, QA: 18, TECHNICAL_SPECIALIST: 8 },
   presets: growPresets(
@@ -30,13 +30,13 @@ export const B2B_COMMERCE_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'b2b-commerce-portal-code',
   productType: 'B2B_COMMERCE_PORTAL',
   description:
-    'Ядро B2B-портала: персональные условия, заказы и документы для дилеров. Один вид — одно ядро.',
+    'B2B portal core: personal terms, orders, and dealer documents. One kind is one core.',
   coreItems: [
-    { label: 'Закрытый каталог' },
-    { label: 'Персональные цены' },
-    { label: 'Повторные заказы' },
-    { label: 'Кабинет дилера' },
-    { label: 'Документы по заказам' },
+    { label: 'Closed catalog' },
+    { label: 'Personal prices' },
+    { label: 'Repeat orders' },
+    { label: 'Dealer cabinet' },
+    { label: 'Order documents' },
   ],
   units: { BACKEND: 70, FRONTEND: 58, PM: 16, DESIGNER: 18, QA: 14, TECHNICAL_SPECIALIST: 6 },
   presets: growPresets(
@@ -49,13 +49,14 @@ export const B2B_COMMERCE_PROFILE: ProfileSeedKind = codeKindProfile({
 export const BOOKING_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'booking-system-code',
   productType: 'BOOKING_SYSTEM',
-  description: 'Ядро системы записи: слоты, ресурсы, бронь и подтверждение. Один вид — одно ядро.',
+  description:
+    'Booking-system core: slots, resources, reservations, and confirmation. One kind is one core.',
   coreItems: [
-    { label: 'Ресурсы и расписание' },
-    { label: 'Слоты и бронь' },
-    { label: 'Перенос и отмена' },
-    { label: 'Кабинет администратора' },
-    { label: 'Уведомление о записи' },
+    { label: 'Resources and schedule' },
+    { label: 'Slots and reservations' },
+    { label: 'Reschedule and cancel' },
+    { label: 'Administrator cabinet' },
+    { label: 'Booking notification' },
   ],
   units: { BACKEND: 55, FRONTEND: 48, PM: 14, DESIGNER: 16, QA: 12, TECHNICAL_SPECIALIST: 5 },
   presets: growPresets(
@@ -68,12 +69,12 @@ export const BOOKING_PROFILE: ProfileSeedKind = codeKindProfile({
 export const TICKETING_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'ticketing-system-code',
   productType: 'TICKETING_SYSTEM',
-  description: 'Ядро билетной системы: типы билетов, продажа и проверка. Один вид — одно ядро.',
+  description: 'Ticketing-system core: ticket types, sales, and check-in. One kind is one core.',
   coreItems: [
-    { label: 'Типы билетов' },
-    { label: 'Продажа и оплата' },
-    { label: 'QR и проверка' },
-    { label: 'Кабинет кассира' },
+    { label: 'Ticket types' },
+    { label: 'Sale and payment' },
+    { label: 'QR and check-in' },
+    { label: 'Cashier cabinet' },
   ],
   units: { BACKEND: 48, FRONTEND: 42, PM: 12, DESIGNER: 14, QA: 10, TECHNICAL_SPECIALIST: 5 },
   presets: growPresets(
@@ -87,12 +88,12 @@ export const POS_PROFILE: ProfileSeedKind = codeKindProfile({
   keyStem: 'pos-code',
   productType: 'POS',
   description:
-    'Ядро кассы: продажа на точке, чек и смена. Один вид — одно ядро; Desktop extras отдельно.',
+    'POS core: in-store sale, receipt, and shift. One kind is one core; Desktop extras are separate.',
   coreItems: [
-    { label: 'Экран продажи' },
-    { label: 'Чек' },
-    { label: 'Кассовая смена' },
-    { label: 'Каталог на точке' },
+    { label: 'Sale screen' },
+    { label: 'Receipt' },
+    { label: 'Cash shift' },
+    { label: 'In-store catalog' },
   ],
   units: { BACKEND: 50, FRONTEND: 52, PM: 12, DESIGNER: 14, QA: 12, TECHNICAL_SPECIALIST: 8 },
   presets: growPresets(

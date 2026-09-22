@@ -91,6 +91,14 @@ describe('planDeliveryProfilesSeed', () => {
     expect(plan.replaceCount).toBe(0);
   });
 
+  it('updates copy of an existing core when asked', () => {
+    const plan = planDeliveryProfilesSeed([draft('shop-code')], ALL_CODES, { updateCopy: true });
+
+    expect(plan.updateCopyCount).toBe(1);
+    expect(plan.replaceCount).toBe(0);
+    expect(plan.keepCount).toBe(0);
+  });
+
   it('replaces an untouched draft only when asked to', () => {
     const existing = [draft('shop-code')];
 

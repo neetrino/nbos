@@ -36,14 +36,17 @@ export const WEB_APP_PROFILE: ProfileSeedKind = {
   productType: 'WEB_APP',
   productCategory: 'CODE',
   description:
-    'Ядро сервиса на заказ на собственной разработке. Один вид — одно ядро; комплекты меняют только набор extra-модулей.',
+    'Custom-built made-to-order service core. One kind is one core; kits only change the extra-module set.',
   coreItems: [
-    { label: 'Каркас приложения' },
-    { label: 'Авторизация сотрудников' },
-    { label: 'Экраны списка и карточки' },
-    { label: 'Простая админка' },
-    { label: 'Роли и доступ', note: 'Простые роли; матрица прав на данные — отдельный модуль.' },
-    { label: 'Адаптивность' },
+    { label: 'Application shell' },
+    { label: 'Staff sign-in' },
+    { label: 'List and record screens' },
+    { label: 'Simple admin' },
+    {
+      label: 'Roles and access',
+      note: 'Simple roles; a data-permission matrix is a separate module.',
+    },
+    { label: 'Responsive layout' },
   ],
   units: {
     BACKEND: 40,

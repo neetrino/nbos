@@ -11,20 +11,24 @@ import {
   type ProfileSeedVersion,
 } from './delivery-profiles-seed-data';
 import { formatProfileSeedPlan, planDeliveryProfilesSeed } from './plan-delivery-profiles-seed';
+import { renameLegacySeededCollections, updateProfileCopy } from './update-profile-copy';
 
 loadDevDeliveryEnv();
 
 const FIRST_PROFILE_VERSION = 1;
 const APPLY_FLAG = '--apply';
 const REPLACE_FLAG = '--replace-drafts';
+const UPDATE_COPY_FLAG = '--update-copy';
 
 /**
  * Creates one draft core per product kind and named extra-function collections. Dry run by default.
  * `--replace-drafts` rewrites still-proposal content and drops unused sized draft keys.
+ * `--update-copy` rewrites description, core-item labels, and kit names on existing cores.
  */
 async function main(): Promise<void> {
   const apply = process.argv.includes(APPLY_FLAG);
   const replaceDrafts = process.argv.includes(REPLACE_FLAG);
+  const updateCopy = process.argv.includes(UPDATE_COPY_FLAG);
   const prisma = createPrismaClient({ role: 'all', skipBudgetAssert: true });
   try {
     const ownedKeys = [...buildSeededProfileKeys(), ...retiredSizedProfileKeys()];
@@ -46,7 +50,7 @@ async function main(): Promise<void> {
         configurationCount: row._count.configurations,
       })),
       functions.map((row) => row.code),
-      { replaceDrafts },
+      { replaceDrafts, updateCopy },
     );
     process.stdout.write(`${formatProfileSeedPlan(plan, apply)}\n`);
     if (plan.missingFunctionCodes.length > 0) {
@@ -66,11 +70,16 @@ async function main(): Promise<void> {
     }
     for (const entry of plan.entries) {
       if (entry.action === 'KEEP') continue;
+      if (entry.action === 'UPDATE_COPY') {
+        await updateProfileCopy(prisma, entry.version);
+        continue;
+      }
       await writeDraftProfile(prisma, entry.version, functionIdByCode, entry.action === 'REPLACE');
     }
+    const renamedCollections = await renameLegacySeededCollections(prisma);
     await seedCollections(prisma, functionIdByCode);
     process.stdout.write(
-      `Created ${plan.createCount}, replaced ${plan.replaceCount}, retired ${plan.retireCount}.\n`,
+      `Created ${plan.createCount}, replaced ${plan.replaceCount}, updated copy for ${plan.updateCopyCount}, retired ${plan.retireCount}, renamed ${renamedCollections} kits.\n`,
     );
   } finally {
     await prisma.$disconnect();
