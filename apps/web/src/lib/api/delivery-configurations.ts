@@ -15,10 +15,14 @@ export type OperationalConfigurationDto = {
   /** Send back as `expectedRevision` on a scope change; the server refuses changes without it. */
   expectedRevision: number;
   readiness?: { planState: string; errors: string[] };
+  coreVolumeFactor: string;
+  coreVolumeReason: string | null;
   features: Array<{
     id: string;
     functionId: string;
     origin: string;
+    volumeFactor: string;
+    volumeReason: string | null;
     localNote: string | null;
     workState: string;
   }>;
@@ -49,6 +53,23 @@ export const deliveryConfigurationsApi = {
     const resp = await api.delete<OperationalConfigurationDto>(
       `/api/delivery-configurations/${configurationId}/features/${featureId}`,
       { data: options },
+    );
+    return resp.data;
+  },
+
+  async setVolume(
+    configurationId: string,
+    body: {
+      target: 'core' | 'feature' | 'extras';
+      featureId?: string;
+      volumeFactor: string;
+      volumeReason: string | null;
+      expectedRevision?: number;
+    },
+  ): Promise<OperationalConfigurationDto> {
+    const resp = await api.put<OperationalConfigurationDto>(
+      `/api/delivery-configurations/${configurationId}/volume`,
+      body,
     );
     return resp.data;
   },

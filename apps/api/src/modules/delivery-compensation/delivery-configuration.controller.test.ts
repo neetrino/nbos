@@ -16,6 +16,7 @@ const ROUTES: Array<[keyof DeliveryConfigurationController, 'VIEW' | 'EDIT']> = 
   ['listExtensionRoleAssignments', 'VIEW'],
   ['setExtensionRoleAssignments', 'EDIT'],
   ['setParameters', 'EDIT'],
+  ['setVolume', 'EDIT'],
   ['addFeature', 'EDIT'],
   ['removeFeature', 'EDIT'],
   ['getReplacementPlan', 'EDIT'],

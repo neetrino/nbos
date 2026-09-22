@@ -15,7 +15,9 @@ describe('parseDealQuoteBody', () => {
       designMode: 'AI_DESIGN',
       aiDesignerReview: false,
       appliedCollectionId: null,
-      items: [{ functionId: FUNCTION_A, tierId: null }],
+      volumeFactor: '1.0',
+      volumeReason: null,
+      items: [{ functionId: FUNCTION_A, tierId: null, volumeFactor: '1.0', volumeReason: null }],
     });
   });
 

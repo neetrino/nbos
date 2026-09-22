@@ -10,6 +10,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { applyEmployeeReplacement } from './apply-employee-replacement';
 import { applyConfigurationParameters } from './apply-configuration-parameters';
 import { isDeliveryCompensationCode } from './delivery-compensation-http-error';
+import { applyConfigurationVolume } from './apply-configuration-volume';
 import { applyScopeAddFeature } from './apply-scope-add-feature';
 import { applyScopeRemoveFeature } from './apply-scope-remove-feature';
 import {
@@ -170,6 +171,23 @@ export class DeliveryConfigurationService {
       },
     });
     return serializeExtensionRoleAssignments(rows);
+  }
+
+  async setVolume(
+    configurationId: string,
+    body: unknown,
+    access: DeliveryConfigurationAccess,
+    actorEmployeeId: string,
+    expectedRevision?: number,
+  ): Promise<OperationalConfigurationDto> {
+    await assertConfigurationAccessible(this.prisma, configurationId, access);
+    const orderId = await this.prisma.$transaction((tx) =>
+      applyConfigurationVolume(tx, { configurationId, body, actorEmployeeId, expectedRevision }),
+    );
+    if (orderId) {
+      await syncProductBonusPoolForOrder(this.prisma, orderId, this.notifications);
+    }
+    return this.getRequired(configurationId);
   }
 
   async addFeature(

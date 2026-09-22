@@ -14,6 +14,9 @@ import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { usePermission } from '@/lib/permissions';
 import { profileUnitsTotal } from './published-core-for-type';
 import {
+  quoteWithCoreVolume,
+  quoteWithExtrasVolume,
+  quoteWithFunctionVolume,
   quoteWithGradation,
   quoteWithoutAddedExtras,
   quoteWithToggledFunction,
@@ -77,6 +80,18 @@ function quoteEdits(
     clearExtras: () => {
       if (quote) void persist(quoteWithoutAddedExtras(quote, includedFunctionIds));
     },
+    setCoreVolume: (volumeFactor: string, volumeReason: string | null) => {
+      if (quote) void persist(quoteWithCoreVolume(quote, volumeFactor, volumeReason));
+    },
+    setFunctionVolume: (functionId: string, volumeFactor: string, volumeReason: string | null) => {
+      if (quote)
+        void persist(quoteWithFunctionVolume(quote, functionId, volumeFactor, volumeReason));
+    },
+    setExtrasVolume: (volumeFactor: string, volumeReason: string | null) => {
+      if (quote) {
+        void persist(quoteWithExtrasVolume(quote, includedFunctionIds, volumeFactor, volumeReason));
+      }
+    },
   };
 }
 
@@ -130,6 +145,8 @@ function useDealConstructorWrites(
         setQuote(
           await deliveryDealQuoteApi.replace(dealId, {
             appliedCollectionId: next.appliedCollectionId,
+            coreVolumeFactor: next.coreVolumeFactor,
+            coreVolumeReason: next.coreVolumeReason,
             items: next.items,
           }),
         );

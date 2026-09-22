@@ -108,6 +108,25 @@ export class DeliveryConfigurationController {
     return this.service.setParameters(id, body, access, user.id);
   }
 
+  @Put(':id/volume')
+  @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Set core or function volume. Requires a reason off ×1.0.' })
+  setVolume(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    const record = isRecord(body) ? body : {};
+    const expected = record.expectedRevision;
+    return this.service.setVolume(
+      id,
+      body,
+      configurationAccessFromUser(user, 'EDIT'),
+      user.id,
+      typeof expected === 'number' ? expected : undefined,
+    );
+  }
+
   @Post(':id/features')
   @RequirePermission(DELIVERY_CONFIGURATION_PERMISSION_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Add an ACTIVE function. Included-in-base stays unpaid.' })
@@ -209,4 +228,8 @@ export class DeliveryConfigurationController {
       expectedRevision: body.expectedRevision,
     });
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

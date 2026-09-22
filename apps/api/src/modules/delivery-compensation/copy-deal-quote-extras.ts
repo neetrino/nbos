@@ -2,7 +2,7 @@ import type { PrismaClient } from '@nbos/database';
 
 type Db = Pick<
   InstanceType<typeof PrismaClient>,
-  'order' | 'deliveryDealQuote' | 'deliveryConfigurationFeature'
+  'order' | 'deliveryDealQuote' | 'deliveryConfiguration' | 'deliveryConfigurationFeature'
 >;
 
 /**
@@ -26,7 +26,15 @@ export async function copyDealQuoteExtras(
     where: { dealId: order.dealId },
     include: { items: { orderBy: { position: 'asc' } } },
   });
-  if (!quote || quote.items.length === 0) return;
+  if (!quote) return;
+  await db.deliveryConfiguration.update({
+    where: { id: configurationId },
+    data: {
+      coreVolumeFactor: quote.coreVolumeFactor,
+      coreVolumeReason: quote.coreVolumeReason,
+    },
+  });
+  if (quote.items.length === 0) return;
   const existing = await db.deliveryConfigurationFeature.findMany({
     where: { configurationId, archivedAt: null },
     select: { functionId: true },
@@ -39,6 +47,8 @@ export async function copyDealQuoteExtras(
       configurationId,
       functionId: item.functionId,
       tierId: item.tierId,
+      volumeFactor: item.volumeFactor,
+      volumeReason: item.volumeReason,
       origin: 'EXTRA' as const,
     })),
   });

@@ -4,17 +4,20 @@ import { DeliveryCardReadinessPanel } from './DeliveryCardReadinessPanel';
 import { getDeliveryBoardCardChrome } from './delivery-board-card-chrome';
 import { DELIVERY_BOARD_CARD_ACCENT_BAR_CLASS } from './delivery-board-card-ui.constants';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 export function DeliveryBoardKanbanCardHeader({
   title,
   metaLabel,
   visual,
   lifecycle,
+  volumeAdjusted,
 }: {
   title: string;
   metaLabel: string | null;
   visual: DealTypePresentation;
   lifecycle: DeliveryLifecycleProjection | null;
+  volumeAdjusted?: boolean;
 }) {
   const chrome = getDeliveryBoardCardChrome(visual);
 
@@ -29,10 +32,16 @@ export function DeliveryBoardKanbanCardHeader({
         {metaLabel ? (
           <p className="text-muted-foreground mt-0.5 truncate text-xs">{metaLabel}</p>
         ) : null}
+        {volumeAdjusted ? <VolumeAdjustedLabel /> : null}
       </div>
       {lifecycle && !lifecycle.isTerminal && lifecycle.stage ? (
         <DeliveryCardReadinessPanel lifecycle={lifecycle} visual={visual} />
       ) : null}
     </div>
   );
+}
+
+function VolumeAdjustedLabel() {
+  const t = useTranslations('deliveryBoard');
+  return <p className="text-xs text-amber-700">{t('volumeAdjusted')}</p>;
 }

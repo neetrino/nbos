@@ -9,6 +9,7 @@ import {
   CompositionCoreTypeMenu,
   type CompositionProductTypeChange,
 } from './composition-core-type-menu';
+import { VolumeFactorControl } from './volume-factor-control';
 import {
   COMPOSITION_CORE_CHECK_SIZE_PX,
   COMPOSITION_CORE_IDENTITY_CLASS,
@@ -18,6 +19,19 @@ import {
   COMPOSITION_DEAL_METRIC_PRICE_EMPTY_CLASS,
 } from './composition.constants';
 
+type CompositionCoreRailProps = {
+  title: string | null;
+  items: Array<{ id: string; label: string; note: string | null }>;
+  included: Array<{ id: string; title: string }>;
+  loading: boolean;
+  salePriceLabel?: string;
+  showSalePrice: boolean;
+  productType?: CompositionProductTypeChange | null;
+  volumeFactor?: string;
+  volumeDisabled?: boolean;
+  onVolume?: (factor: string, reason: string | null) => void;
+};
+
 export function CompositionCoreRail({
   title,
   items,
@@ -26,15 +40,10 @@ export function CompositionCoreRail({
   salePriceLabel,
   showSalePrice,
   productType,
-}: {
-  title: string | null;
-  items: Array<{ id: string; label: string; note: string | null }>;
-  included: Array<{ id: string; title: string }>;
-  loading: boolean;
-  salePriceLabel?: string;
-  showSalePrice: boolean;
-  productType?: CompositionProductTypeChange | null;
-}) {
+  volumeFactor,
+  volumeDisabled,
+  onVolume,
+}: CompositionCoreRailProps) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   const identity = (
     <CoreIdentity
@@ -52,6 +61,9 @@ export function CompositionCoreRail({
       ) : (
         identity
       )}
+      {onVolume && volumeFactor ? (
+        <VolumeFactorControl factor={volumeFactor} disabled={volumeDisabled} onCommit={onVolume} />
+      ) : null}
       {loading ? <p className="text-muted-foreground px-2 text-xs">{t('coreLoading')}</p> : null}
       <div className="space-y-1">
         {items.map((item) => (

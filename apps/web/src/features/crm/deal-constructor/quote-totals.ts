@@ -1,4 +1,9 @@
-import { salePriceTargetKey, sumSalePrices } from '@nbos/shared';
+import {
+  salePriceTargetKey,
+  scaleMoney,
+  sumSalePrices,
+  VOLUME_FACTOR_STANDARD,
+} from '@nbos/shared';
 import {
   groupSalePriceVersions,
   visibleSalePrice,
@@ -9,6 +14,7 @@ import {
 export type QuoteTotalItem = {
   functionId: string;
   tierId: string | null;
+  volumeFactor?: string;
 };
 
 /**
@@ -17,6 +23,7 @@ export type QuoteTotalItem = {
  */
 export function quoteSaleTotal(input: {
   coreVersionId: string | null;
+  coreVolumeFactor?: string;
   items: readonly QuoteTotalItem[];
   versions: readonly CatalogSalePriceRow[];
   canViewDraft: boolean;
@@ -25,10 +32,13 @@ export function quoteSaleTotal(input: {
   const amounts: Array<string | null> = [];
   if (input.coreVersionId) {
     amounts.push(
-      amountForKey(
-        salePriceTargetKey({ kind: 'CORE', baseProfileVersionId: input.coreVersionId }),
-        grouped,
-        input.canViewDraft,
+      scaleAmount(
+        amountForKey(
+          salePriceTargetKey({ kind: 'CORE', baseProfileVersionId: input.coreVersionId }),
+          grouped,
+          input.canViewDraft,
+        ),
+        input.coreVolumeFactor,
       ),
     );
   }
@@ -36,7 +46,7 @@ export function quoteSaleTotal(input: {
     const key = item.tierId
       ? salePriceTargetKey({ kind: 'TIER', tierId: item.tierId })
       : salePriceTargetKey({ kind: 'FUNCTION', functionId: item.functionId });
-    amounts.push(amountForKey(key, grouped, input.canViewDraft));
+    amounts.push(scaleAmount(amountForKey(key, grouped, input.canViewDraft), item.volumeFactor));
   }
   return amounts.length === 0 ? null : sumSalePrices(amounts);
 }
@@ -62,18 +72,22 @@ export function quoteSaleMissing(input: {
 
 export function visibleCoreSalePrice(input: {
   coreVersionId: string | null;
+  coreVolumeFactor?: string;
   versions: readonly CatalogSalePriceRow[];
   canViewDraft: boolean;
 }): VisibleSalePrice | undefined {
   if (!input.coreVersionId) return undefined;
   const grouped = groupSalePriceVersions(input.versions);
-  return visibleSalePrice({
-    canViewRules: input.canViewDraft,
-    versions:
-      grouped.get(
-        salePriceTargetKey({ kind: 'CORE', baseProfileVersionId: input.coreVersionId }),
-      ) ?? [],
-  });
+  return scaleVisiblePrice(
+    visibleSalePrice({
+      canViewRules: input.canViewDraft,
+      versions:
+        grouped.get(
+          salePriceTargetKey({ kind: 'CORE', baseProfileVersionId: input.coreVersionId }),
+        ) ?? [],
+    }),
+    input.coreVolumeFactor,
+  );
 }
 
 export function visibleQuoteItemPrices(input: {
@@ -91,20 +105,48 @@ export function visibleQuoteItemPrices(input: {
       canViewRules: input.canViewDraft,
       versions: grouped.get(key) ?? [],
     });
-    if (price) result.set(item.functionId, price);
+    const scaled = scaleVisiblePrice(price, item.volumeFactor);
+    if (scaled) result.set(item.functionId, scaled);
   }
   return result;
 }
 
 export function quoteUnitsTotal(input: {
   coreUnits: number | undefined;
+  coreVolumeFactor?: string;
   extraUnits: ReadonlyArray<number | undefined>;
+  extraVolumeFactors?: ReadonlyArray<string | undefined>;
 }): number | undefined {
-  const parts = [input.coreUnits, ...input.extraUnits].filter(
-    (value): value is number => value !== undefined,
-  );
+  const parts = [
+    scaleCount(input.coreUnits, input.coreVolumeFactor),
+    ...input.extraUnits.map((units, index) => scaleCount(units, input.extraVolumeFactors?.[index])),
+  ].filter((value): value is number => value !== undefined);
   if (parts.length === 0) return undefined;
   return parts.reduce((sum, value) => sum + value, 0);
+}
+
+function scaleAmount(amount: string | null, factor: string | undefined): string | null {
+  if (amount === null) return null;
+  const applied = factor ?? VOLUME_FACTOR_STANDARD;
+  if (applied === VOLUME_FACTOR_STANDARD) return amount;
+  return scaleMoney(amount, applied);
+}
+
+function scaleVisiblePrice(
+  price: VisibleSalePrice | undefined,
+  factor: string | undefined,
+): VisibleSalePrice | undefined {
+  if (!price) return undefined;
+  const amount = scaleAmount(price.amount, factor);
+  if (amount === null || amount === price.amount) return price;
+  return { ...price, amount };
+}
+
+function scaleCount(units: number | undefined, factor: string | undefined): number | undefined {
+  if (units === undefined) return undefined;
+  const applied = factor ?? VOLUME_FACTOR_STANDARD;
+  if (applied === VOLUME_FACTOR_STANDARD) return units;
+  return Number(scaleMoney(units.toFixed(2), applied));
 }
 
 function amountForKey(

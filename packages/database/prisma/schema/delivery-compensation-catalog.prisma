@@ -278,6 +278,9 @@ model DeliveryDealQuote {
   implementationBase   DeliveryImplementationBaseEnum  @default(FROM_SCRATCH) @map("implementation_base")
   designMode           DeliveryDesignModeEnum          @default(AI_DESIGN) @map("design_mode")
   aiDesignerReview     Boolean                         @default(false) @map("ai_designer_review")
+  /// Instance effort on this deal's core. 1.0 is the published standard.
+  coreVolumeFactor     Decimal                         @default(1.0) @map("core_volume_factor") @db.Decimal(3, 1)
+  coreVolumeReason     String?                         @map("core_volume_reason")
   updatedAt            DateTime                        @updatedAt @map("updated_at")
   createdAt            DateTime                        @default(now()) @map("created_at")
 
@@ -292,8 +295,11 @@ model DeliveryDealQuoteItem {
   id         String  @id @default(uuid())
   quoteId    String  @map("quote_id")
   functionId String  @map("function_id")
-  tierId     String? @map("tier_id")
-  position   Int
+  tierId        String?  @map("tier_id")
+  /// Instance effort on this extra. 1.0 is the published card.
+  volumeFactor  Decimal  @default(1.0) @map("volume_factor") @db.Decimal(3, 1)
+  volumeReason  String?  @map("volume_reason")
+  position      Int
 
   quote    DeliveryDealQuote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   function DeliveryFunction      @relation(fields: [functionId], references: [id], onDelete: Restrict)

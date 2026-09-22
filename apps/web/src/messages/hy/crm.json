@@ -810,7 +810,15 @@
       "saleUnknownExtra": "Extra գինը բացակայում է",
       "unitsTotal": "{count, plural, one {# unit} other {# unit}}",
       "loadFailed": "Չհաջողվեց բեռնել կոնստրուկտորը։",
-      "saveFailed": "Չհաջողվեց պահել կոնստրուկտորը։"
+      "saveFailed": "Չհաջողվեց պահել կոնստրուկտորը։",
+      "volumeStandard": "Ստանդարտ",
+      "volumeFactorLabel": "×{factor}",
+      "volumeReasonTitle": "Ինչու՞ ծավալը ստանդարտ չէ (×{factor})",
+      "volumeReasonPlaceholder": "Ինչով է այս միջուկը կամ ֆունկցիան կատալոգից մեծ կամ փոքր",
+      "volumeReasonSave": "Պահել ծավալը",
+      "volumeReasonCancel": "Չեղարկել",
+      "volumeApplyAll": "Մեկ ծավալ բոլոր ֆունկցիաների համար",
+      "volumeAdjusted": "Ծավալը փոխված է"
     },
     "badges": {
       "earlyStart": "Վաղ մեկնարկ · Վճարումը սպասման մեջ է",

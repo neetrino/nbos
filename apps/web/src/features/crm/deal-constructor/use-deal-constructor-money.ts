@@ -35,18 +35,22 @@ export function computeDealConstructorMoney(
 ): DealConstructorMoney {
   const items = billableQuoteItems(input.quote?.items ?? [], input.includedFunctionIds ?? []);
   const coreVersionId = input.quote?.coreProfileVersionId ?? null;
+  const coreVolumeFactor = input.quote?.coreVolumeFactor;
   const priced = { items, versions: input.saleVersions, canViewDraft: input.canSeeUnits };
   return {
-    saleTotal: quoteSaleTotal({ ...priced, coreVersionId }),
+    saleTotal: quoteSaleTotal({ ...priced, coreVersionId, coreVolumeFactor }),
     unitsTotal: input.canSeeUnits
       ? quoteUnitsTotal({
           coreUnits: input.coreUnits,
+          coreVolumeFactor,
           extraUnits: items.map((item) => input.extraUnitsByFunctionId?.get(item.functionId)),
+          extraVolumeFactors: items.map((item) => item.volumeFactor),
         })
       : undefined,
     extraSalePrices: visibleQuoteItemPrices(priced),
     coreSalePrice: visibleCoreSalePrice({
       coreVersionId,
+      coreVolumeFactor,
       versions: input.saleVersions,
       canViewDraft: input.canSeeUnits,
     }),

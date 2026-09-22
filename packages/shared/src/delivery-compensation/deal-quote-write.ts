@@ -1,12 +1,17 @@
 import { CatalogContentValidationError } from './catalog-write';
 import { frozenDeliveryAxes } from './constants';
+import {
+  parseVolumeAdjustment,
+  VOLUME_FACTOR_STANDARD,
+  type VolumeAdjustment,
+} from './volume-factor';
 
-export type DealQuoteItemInput = {
+export type DealQuoteItemInput = VolumeAdjustment & {
   functionId: string;
   tierId: string | null;
 };
 
-export type DealQuoteWriteInput = {
+export type DealQuoteWriteInput = VolumeAdjustment & {
   appliedCollectionId: string | null;
   items: DealQuoteItemInput[];
 } & ReturnType<typeof frozenDeliveryAxes>;
@@ -28,6 +33,7 @@ export function parseDealQuoteBody(body: unknown): DealQuoteWriteInput {
   }
   return {
     ...frozenDeliveryAxes(),
+    ...coreVolume(body),
     appliedCollectionId: optionalUuid(body.appliedCollectionId, 'appliedCollectionId'),
     items: requireItems(body.items),
   };
@@ -67,7 +73,22 @@ function requireItem(entry: unknown, index: number): DealQuoteItemInput {
   return {
     functionId: requireUuid(entry.functionId, `items[${index}].functionId`),
     tierId: optionalUuid(entry.tierId, `items[${index}].tierId`),
+    ...lineVolume(entry),
   };
+}
+
+function coreVolume(body: Record<string, unknown>): VolumeAdjustment {
+  if (body.coreVolumeFactor === undefined) {
+    return { volumeFactor: VOLUME_FACTOR_STANDARD, volumeReason: null };
+  }
+  return parseVolumeAdjustment(body.coreVolumeFactor, body.coreVolumeReason);
+}
+
+function lineVolume(entry: Record<string, unknown>): VolumeAdjustment {
+  if (entry.volumeFactor === undefined) {
+    return { volumeFactor: VOLUME_FACTOR_STANDARD, volumeReason: null };
+  }
+  return parseVolumeAdjustment(entry.volumeFactor, entry.volumeReason);
 }
 
 function requireUuid(value: unknown, field: string): string {

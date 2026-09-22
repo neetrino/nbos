@@ -147,7 +147,9 @@ describe('computeDealConstructorMoney', () => {
         designMode: 'CLASSIC',
         aiDesignerReview: false,
         coreProfileVersionId: 'core-1',
-        items: [{ functionId: 'fn-1', tierId: null }],
+        coreVolumeFactor: '1.0',
+        coreVolumeReason: null,
+        items: [{ functionId: 'fn-1', tierId: null, volumeFactor: '1.0', volumeReason: null }],
       },
       saleVersions: [
         {
@@ -176,9 +178,11 @@ describe('computeDealConstructorMoney', () => {
         designMode: 'CLASSIC',
         aiDesignerReview: false,
         coreProfileVersionId: 'core-1',
+        coreVolumeFactor: '1.0',
+        coreVolumeReason: null,
         items: [
-          { functionId: 'base-fn', tierId: null },
-          { functionId: 'extra-fn', tierId: null },
+          { functionId: 'base-fn', tierId: null, volumeFactor: '1.0', volumeReason: null },
+          { functionId: 'extra-fn', tierId: null, volumeFactor: '1.0', volumeReason: null },
         ],
       },
       saleVersions: [

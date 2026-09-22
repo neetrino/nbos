@@ -17,3 +17,5 @@ export * from './sale-price';
 export * from './rules-write';
 export * from './validate-design-mode';
 export * from './validate-redistribution';
+export * from './configuration-volume-write';
+export * from './volume-factor';

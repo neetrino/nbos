@@ -16,6 +16,7 @@ import { mergeActiveParentProjectScope } from '../active-project-list-scope';
 import { attachProductDeliveryLifecycle } from '../delivery-lifecycle';
 import { batchProductOpenCounts } from './batch-product-open-counts';
 import { buildProductCurrentStageReadiness } from './product-current-stage-readiness';
+import { volumeAdjustedByOwner } from '../../delivery-compensation/volume-adjusted-flags';
 import { productBillingCompanyWhere } from './product-billing-company.where';
 import {
   applyProductHubAndSearch,
@@ -107,6 +108,11 @@ export async function findAllProducts(
   const lifecycleByProduct = new Map(
     items.map((product) => [product.id, attachProductDeliveryLifecycle(product)]),
   );
+  const volumeAdjusted = await volumeAdjustedByOwner(
+    prisma,
+    'productId',
+    items.map((product) => product.id),
+  );
   const checklistProgressMap = await loadStageChecklistProgressByOwner(
     prisma,
     items.map((product) => ({
@@ -149,6 +155,7 @@ export async function findAllProducts(
           ...(currentStageReadiness ? { currentStageReadiness } : {}),
         },
         checklistStageProgress,
+        volumeAdjusted: volumeAdjusted.get(product.id) ?? false,
       };
     }),
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },

@@ -768,7 +768,15 @@
       "saleUnknownExtra": "Нет цены extra",
       "unitsTotal": "{count, plural, one {# unit} few {# unit} many {# unit} other {# unit}}",
       "loadFailed": "Не удалось загрузить конструктор.",
-      "saveFailed": "Не удалось сохранить конструктор."
+      "saveFailed": "Не удалось сохранить конструктор.",
+      "volumeStandard": "Стандарт",
+      "volumeFactorLabel": "×{factor}",
+      "volumeReasonTitle": "Почему объём не стандартный (×{factor})?",
+      "volumeReasonPlaceholder": "Чем это ядро или функция больше или меньше каталога",
+      "volumeReasonSave": "Сохранить объём",
+      "volumeReasonCancel": "Отмена",
+      "volumeApplyAll": "Один объём на все функции",
+      "volumeAdjusted": "Объём изменён"
     },
     "badges": {
       "earlyStart": "Ранний старт · Ожидается платёж",

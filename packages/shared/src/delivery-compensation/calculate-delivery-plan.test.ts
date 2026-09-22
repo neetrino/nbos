@@ -184,6 +184,50 @@ describe('calculateDeliveryPlan C01–C10 (synthetic fixtures only)', () => {
     expect(fresh.totalsByRole.BACKEND).toBe('5000.00');
     expect(fresh.totalsByRole.BACKEND).not.toBe('250000.00');
   });
+
+  it('scales the core and an extra, and leaves included and frozen lines alone', () => {
+    const result = calculateDeliveryPlan({
+      baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS,
+      baseVolumeFactor: '0.5',
+      rates: SYNTHETIC_TEST_RATES,
+      features: [
+        {
+          functionId: 'bank',
+          origin: 'INCLUDED',
+          roleUnits: SYNTHETIC_TEST_BANK_UNITS,
+          volumeFactor: '2.0',
+        },
+        {
+          functionId: 'warehouse',
+          origin: 'EXTRA',
+          roleUnits: SYNTHETIC_TEST_WAREHOUSE_UNITS,
+          volumeFactor: '2.0',
+        },
+      ],
+      frozenComponents: [
+        {
+          componentKey: 'BASE',
+          roleKey: 'BACKEND',
+          units: '1.0000',
+          rate: '1000.0000',
+          amount: '1000.00',
+        },
+      ],
+    });
+    const coreBackend = result.lines.find(
+      (line) =>
+        line.componentKey === 'BASE' && line.roleKey === 'BACKEND' && line.units === '50.0000',
+    );
+    const warehouseBackend = result.lines.find(
+      (line) => line.componentKey === 'FEATURE:warehouse' && line.roleKey === 'BACKEND',
+    );
+    expect(coreBackend?.amount).toBe('50000.00');
+    expect(warehouseBackend?.units).toBe('20.0000');
+    expect(result.lines.some((line) => line.componentKey === 'FEATURE:bank')).toBe(false);
+    expect(result.lines.some((line) => line.units === '1.0000' && line.amount === '1000.00')).toBe(
+      true,
+    );
+  });
 });
 
 describe('pickPublishedAsOf', () => {

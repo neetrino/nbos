@@ -23,6 +23,13 @@ export const MATERIALIZE_CONFIG_INCLUDE = {
   baseProfileVersion: { include: { roleUnits: true } },
 } as const;
 
+function storedFactorText(
+  value: { toString(): string } | string | null | undefined,
+): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  return typeof value === 'string' ? value : value.toString();
+}
+
 export async function loadV2Assignees(
   db: DeliveryQueryClient,
   input: { entityKind: 'PRODUCT' | 'EXTENSION'; productId?: string; extensionId?: string },
@@ -53,12 +60,14 @@ type NormativeConfiguration = {
   designMode: string | null;
   aiDesignerReview: boolean;
   baseProfileVersion: { roleUnits: NormativeRoleUnitRow[] } | null;
+  coreVolumeFactor?: { toString(): string } | string | null;
   features: Array<{
     functionId: string;
     tierId: string | null;
     origin: 'INCLUDED' | 'EXTRA';
     selectedPriceVersionId: string | null;
     archivedAt: Date | null;
+    volumeFactor?: { toString(): string } | string | null;
   }>;
 };
 
@@ -103,11 +112,13 @@ async function loadConfiguredNormatives(
     designMode: (locked.designMode as DeliveryDesignMode | null) ?? 'AI_DESIGN',
     aiDesignerReview: locked.aiDesignerReview,
     baseRoleUnits: locked.baseProfileVersion?.roleUnits ?? [],
+    baseVolumeFactor: storedFactorText(locked.coreVolumeFactor),
     rates: await db.deliveryRoleRateVersion.findMany({ where: { status: 'PUBLISHED' } }),
     features: active.map((feature) => ({
       functionId: feature.functionId,
       origin: feature.origin,
       selectedPriceVersionId: feature.selectedPriceVersionId,
+      volumeFactor: storedFactorText(feature.volumeFactor),
     })),
     extraPriceVersions: await loadExtraPriceVersions(db, active),
   });

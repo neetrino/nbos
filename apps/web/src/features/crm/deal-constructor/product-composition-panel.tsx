@@ -9,7 +9,10 @@ import { DeleteConfirmDialog } from '@/components/shared';
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import type { VisibleSalePrice } from '@/features/function-catalog/function-catalog-sale-price';
-import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
+import {
+  deliveryCatalogStructureApi,
+  type CoreItemDto,
+} from '@/lib/api/delivery-catalog-structure';
 import { cn } from '@/lib/utils';
 import { DealConstructorTotals } from './DealConstructorTotals';
 import { CompositionCoreRail } from './composition-core-rail';
@@ -17,6 +20,8 @@ import { CompositionExtraList } from './composition-extra-list';
 import { CompositionRemoveDialog, useCompositionRemove } from './composition-remove-dialog';
 import type { CompositionProductTypeChange } from './composition-core-type-menu';
 import { COMPOSITION_ADD_ICON_SIZE_PX, COMPOSITION_RAIL_GRID_CLASS } from './composition.constants';
+import { VolumeFactorControl } from './volume-factor-control';
+import { VOLUME_FACTOR_STANDARD } from '@nbos/shared';
 
 type ProductCompositionPanelProps = {
   title?: string;
@@ -41,6 +46,11 @@ type ProductCompositionPanelProps = {
   onRemoveExtra: (functionId: string) => void;
   onClearExtras?: () => void;
   productType?: CompositionProductTypeChange | null;
+  coreVolumeFactor?: string;
+  volumeByFunctionId?: Map<string, string>;
+  onCoreVolume?: (factor: string, reason: string | null) => void;
+  onFunctionVolume?: (functionId: string, factor: string, reason: string | null) => void;
+  onExtrasVolume?: (factor: string, reason: string | null) => void;
 };
 
 export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
@@ -59,34 +69,62 @@ export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
         onAdd={props.onAdd}
       />
       {props.error ? <p className="text-destructive text-sm">{props.error}</p> : null}
-      <div className={cn(COMPOSITION_RAIL_GRID_CLASS, 'min-h-0 flex-1 overflow-y-auto')}>
-        <div className="order-2 lg:order-1">
-          <CompositionCoreRail
-            title={props.coreTitle}
-            items={coreItems.data ?? []}
-            included={props.included}
-            loading={coreItems.isLoading}
-            showSalePrice={props.showSalePrice}
-            salePriceLabel={props.coreSalePriceLabel}
-            productType={props.productType}
-          />
-        </div>
-        <CompositionExtrasColumn
-          extras={props.extras}
-          showSalePrice={props.showSalePrice}
-          salePriceByFunctionId={props.salePriceByFunctionId}
-          unitsByFunctionId={props.canSeeUnits ? props.unitsByFunctionId : undefined}
-          canRemove={!props.disabled && props.canAdd}
-          onRemoveExtra={remove.request}
-          onClearExtras={props.onClearExtras}
-        />
-      </div>
+      <CompositionRails
+        props={props}
+        coreItems={coreItems.data ?? []}
+        coreLoading={coreItems.isLoading}
+        onRemoveExtra={remove.request}
+      />
       <CompositionPanelFooter {...props} />
       <CompositionRemoveDialog
         title={remove.title}
         open={remove.open}
         onOpenChange={remove.onOpenChange}
         onConfirm={remove.onConfirm}
+      />
+    </div>
+  );
+}
+
+function CompositionRails({
+  props,
+  coreItems,
+  coreLoading,
+  onRemoveExtra,
+}: {
+  props: ProductCompositionPanelProps;
+  coreItems: CoreItemDto[];
+  coreLoading: boolean;
+  onRemoveExtra: (item: DeliveryFunctionOperationalDto) => void;
+}) {
+  return (
+    <div className={cn(COMPOSITION_RAIL_GRID_CLASS, 'min-h-0 flex-1 overflow-y-auto')}>
+      <div className="order-2 lg:order-1">
+        <CompositionCoreRail
+          title={props.coreTitle}
+          items={coreItems}
+          included={props.included}
+          loading={coreLoading}
+          showSalePrice={props.showSalePrice}
+          salePriceLabel={props.coreSalePriceLabel}
+          productType={props.productType}
+          volumeFactor={props.coreVolumeFactor}
+          volumeDisabled={props.disabled}
+          onVolume={props.onCoreVolume}
+        />
+      </div>
+      <CompositionExtrasColumn
+        extras={props.extras}
+        showSalePrice={props.showSalePrice}
+        salePriceByFunctionId={props.salePriceByFunctionId}
+        unitsByFunctionId={props.canSeeUnits ? props.unitsByFunctionId : undefined}
+        canRemove={!props.disabled && props.canAdd}
+        onRemoveExtra={onRemoveExtra}
+        onClearExtras={props.onClearExtras}
+        volumeByFunctionId={props.volumeByFunctionId}
+        volumeDisabled={props.disabled}
+        onVolume={props.onFunctionVolume}
+        onExtrasVolume={props.onExtrasVolume}
       />
     </div>
   );
@@ -104,8 +142,13 @@ function CompositionExtrasColumn({
   onClearExtras,
   canRemove,
   extras,
+  onExtrasVolume,
+  volumeDisabled,
   ...list
-}: ComponentProps<typeof CompositionExtraList> & { onClearExtras?: () => void }) {
+}: ComponentProps<typeof CompositionExtraList> & {
+  onClearExtras?: () => void;
+  onExtrasVolume?: (factor: string, reason: string | null) => void;
+}) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
     <div className="order-1 flex min-w-0 flex-col gap-3 lg:order-2">
@@ -120,7 +163,22 @@ function CompositionExtrasColumn({
           <ClearExtrasButton disabled={!canRemove || extras.length === 0} onClear={onClearExtras} />
         ) : null}
       </div>
-      <CompositionExtraList extras={extras} canRemove={canRemove} {...list} />
+      {onExtrasVolume && extras.length > 0 ? (
+        <div>
+          <p className="text-muted-foreground text-xs">{t('volumeApplyAll')}</p>
+          <VolumeFactorControl
+            factor={VOLUME_FACTOR_STANDARD}
+            disabled={volumeDisabled || !canRemove}
+            onCommit={onExtrasVolume}
+          />
+        </div>
+      ) : null}
+      <CompositionExtraList
+        extras={extras}
+        canRemove={canRemove}
+        volumeDisabled={volumeDisabled}
+        {...list}
+      />
     </div>
   );
 }

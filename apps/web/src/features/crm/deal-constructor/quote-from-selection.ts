@@ -4,6 +4,7 @@ import {
   setFunctionGradation,
 } from '@/features/function-catalog/function-catalog-gradation';
 import { toggleCatalogSelection } from '@/features/function-catalog/function-catalog-select';
+import { VOLUME_FACTOR_STANDARD } from '@nbos/shared';
 import type { DealQuoteDto, DealQuoteItemDto } from '@/lib/api/delivery-deal-quote';
 
 export function quoteWithToggledFunction(quote: DealQuoteDto, functionId: string): DealQuoteDto {
@@ -53,6 +54,54 @@ function gradationsFromQuote(quote: DealQuoteDto): Record<string, string> {
   return next;
 }
 
+function keptVolume(
+  quote: DealQuoteDto,
+  functionId: string,
+): Pick<DealQuoteItemDto, 'volumeFactor' | 'volumeReason'> {
+  const current = quote.items.find((item) => item.functionId === functionId);
+  return {
+    volumeFactor: current?.volumeFactor ?? VOLUME_FACTOR_STANDARD,
+    volumeReason: current?.volumeReason ?? null,
+  };
+}
+
+export function quoteWithCoreVolume(
+  quote: DealQuoteDto,
+  volumeFactor: string,
+  volumeReason: string | null,
+): DealQuoteDto {
+  return { ...quote, coreVolumeFactor: volumeFactor, coreVolumeReason: volumeReason };
+}
+
+export function quoteWithFunctionVolume(
+  quote: DealQuoteDto,
+  functionId: string,
+  volumeFactor: string,
+  volumeReason: string | null,
+): DealQuoteDto {
+  return {
+    ...quote,
+    items: quote.items.map((item) =>
+      item.functionId === functionId ? { ...item, volumeFactor, volumeReason } : item,
+    ),
+  };
+}
+
+export function quoteWithExtrasVolume(
+  quote: DealQuoteDto,
+  includedFunctionIds: readonly string[],
+  volumeFactor: string,
+  volumeReason: string | null,
+): DealQuoteDto {
+  const included = new Set(includedFunctionIds);
+  return {
+    ...quote,
+    items: quote.items.map((item) =>
+      included.has(item.functionId) ? item : { ...item, volumeFactor, volumeReason },
+    ),
+  };
+}
+
 function quoteFromSelection(
   quote: DealQuoteDto,
   selectedIds: readonly string[],
@@ -61,6 +110,7 @@ function quoteFromSelection(
   const items: DealQuoteItemDto[] = selectedIds.map((id) => ({
     functionId: id,
     tierId: gradations[id] ?? null,
+    ...keptVolume(quote, id),
   }));
   return { ...quote, appliedCollectionId: null, items };
 }

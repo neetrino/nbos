@@ -768,7 +768,15 @@
       "saleUnknownExtra": "An extra price is missing",
       "unitsTotal": "{count, plural, one {# unit} other {# units}}",
       "loadFailed": "The constructor could not be loaded.",
-      "saveFailed": "The constructor could not be saved."
+      "saveFailed": "The constructor could not be saved.",
+      "volumeStandard": "Standard",
+      "volumeFactorLabel": "×{factor}",
+      "volumeReasonTitle": "Why is ×{factor} not the standard?",
+      "volumeReasonPlaceholder": "What makes this core or function larger or smaller than the catalog",
+      "volumeReasonSave": "Save volume",
+      "volumeReasonCancel": "Cancel",
+      "volumeApplyAll": "One volume for every function",
+      "volumeAdjusted": "Volume changed"
     },
     "badges": {
       "earlyStart": "Early start · Payment pending",

@@ -40,6 +40,7 @@ export async function writeInitialDeliveryPlan(
 ): Promise<WrittenInitialPlan> {
   const plan = calculateDeliveryPlan({
     baseRoleUnits: input.normatives.baseRoleUnits,
+    baseVolumeFactor: input.normatives.baseVolumeFactor,
     rates: input.normatives.rates,
     features: input.normatives.features,
   });

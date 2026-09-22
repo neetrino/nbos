@@ -6,7 +6,6 @@ import {
   DELIVERY_CONFIGURATION_PERMISSION_MODULE,
   type DeliveryFunctionOperationalDto,
 } from '@nbos/shared';
-import { ProductCompositionPanel } from '@/features/crm/deal-constructor/product-composition-panel';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
@@ -19,16 +18,9 @@ import {
   type FunctionsWorkspaceTarget,
 } from './product-functions-workspace-data';
 import { ReplaceAssigneeTrigger } from './replace-assignee-trigger';
+import { MoneyHiddenComposition, type ProductFunctionsV2Config } from './product-functions-volume';
 
-type V2Config = {
-  id: string;
-  mode: 'V2';
-  enrolled: boolean;
-  expectedRevision: number;
-  baseProfileVersionId: string | null;
-  features: { id: string; functionId: string; origin: string }[];
-  readiness?: { planState: string; errors: string[] };
-};
+type V2Config = ProductFunctionsV2Config;
 
 type LegacyOrConfig = { mode: 'LEGACY' } | V2Config;
 
@@ -148,6 +140,8 @@ function WorkspaceComposition(props: WorkspaceCompositionProps) {
         included={props.included}
         canAdd={props.canAdd}
         confirmRemove={!requireReason}
+        hideCoreVolume={config.extensionId != null}
+        onReload={onReload}
         onAdd={() => props.setCatalogOpen(true)}
         onRemoveExtra={(functionId) => {
           if (requireReason) {
@@ -194,44 +188,6 @@ type WorkspaceCompositionProps = {
   onReload: () => void;
   removeFailed: string;
 };
-
-function MoneyHiddenComposition({
-  config,
-  extras,
-  included,
-  canAdd,
-  confirmRemove,
-  onAdd,
-  onRemoveExtra,
-}: {
-  config: V2Config;
-  extras: DeliveryFunctionOperationalDto[];
-  included: Array<{ id: string; title: string }>;
-  canAdd: boolean;
-  confirmRemove: boolean;
-  onAdd: () => void;
-  onRemoveExtra: (functionId: string) => void;
-}) {
-  return (
-    <ProductCompositionPanel
-      coreProfileVersionId={config.baseProfileVersionId}
-      coreTitle={null}
-      included={included}
-      extras={extras}
-      saleTotal={null}
-      unitsTotal={undefined}
-      canSeeUnits={false}
-      showSalePrice={false}
-      salePriceByFunctionId={new Map()}
-      unitsByFunctionId={undefined}
-      disabled={false}
-      canAdd={canAdd}
-      confirmRemove={confirmRemove}
-      onAdd={onAdd}
-      onRemoveExtra={onRemoveExtra}
-    />
-  );
-}
 
 function includedFromConfig(config: V2Config, catalog: DeliveryFunctionOperationalDto[]) {
   const ids = new Set(

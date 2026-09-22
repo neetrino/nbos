@@ -21,6 +21,7 @@ export interface Extension {
   productId: string;
   name: string;
   status: string;
+  volumeAdjusted?: boolean;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   assignedTo: string | null;
   description: string | null;

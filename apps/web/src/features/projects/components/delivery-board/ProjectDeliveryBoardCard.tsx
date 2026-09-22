@@ -165,6 +165,7 @@ export function ProjectDeliveryBoardCard({
             metaLabel={metaLabel}
             visual={dealTypeVisual}
             lifecycle={lifecycle ?? null}
+            volumeAdjusted={itemVolumeAdjusted(item)}
           />
           <div
             className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, 'border-border/50 mt-3')}
@@ -187,6 +188,7 @@ export function ProjectDeliveryBoardCard({
                 metaLabel={metaLabel}
                 visual={dealTypeVisual}
                 lifecycle={lifecycle ?? null}
+                volumeAdjusted={itemVolumeAdjusted(item)}
               />
               <div
                 className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, 'border-border/50 mt-3')}
@@ -205,6 +207,7 @@ export function ProjectDeliveryBoardCard({
                     {metaLabel && (
                       <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>
                     )}
+                    <VolumeAdjustedMark item={item} />
                     {!kanbanMinimal ? (
                       <StatusBadge
                         label={dealTypeVisual.label}
@@ -289,6 +292,18 @@ function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection 
       variant={getDeliveryLifecycleVariant(lifecycle)}
     />
   );
+}
+
+function VolumeAdjustedMark({ item }: { item: DeliveryBoardItem }) {
+  const t = useTranslations('deliveryBoard');
+  if (!itemVolumeAdjusted(item)) return null;
+  return <p className="text-xs text-amber-700">{t('volumeAdjusted')}</p>;
+}
+
+function itemVolumeAdjusted(item: DeliveryBoardItem): boolean {
+  return item.kind === 'EXTENSION'
+    ? Boolean(item.extension.volumeAdjusted)
+    : Boolean(item.product.volumeAdjusted);
 }
 
 function DeliveryKanbanCardHoverActions({

@@ -17,6 +17,8 @@ function configurationAtRevision(expectedRevision: number): OperationalConfigura
     baseProfileVersionId: null,
     draftVersion: 1,
     expectedRevision,
+    coreVolumeFactor: '1.0',
+    coreVolumeReason: null,
     features: [],
   };
 }

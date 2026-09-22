@@ -2,8 +2,10 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { PrismaClient } from '@nbos/database';
 import {
   frozenDeliveryAxes,
+  normalizeStoredVolumeFactor,
   parseDealQuoteApplyCollectionBody,
   parseDealQuoteBody,
+  VOLUME_FACTOR_STANDARD,
   type DealQuoteWriteInput,
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -18,7 +20,14 @@ export type DealQuoteDto = {
   designMode: string;
   aiDesignerReview: boolean;
   coreProfileVersionId: string | null;
-  items: Array<{ functionId: string; tierId: string | null }>;
+  coreVolumeFactor: string;
+  coreVolumeReason: string | null;
+  items: Array<{
+    functionId: string;
+    tierId: string | null;
+    volumeFactor: string;
+    volumeReason: string | null;
+  }>;
 };
 
 type DealRef = {
@@ -65,10 +74,22 @@ export class DealQuoteService {
     if (deal.productType && collection.productType !== deal.productType) {
       throw new BadRequestException('Collection does not match the deal product type.');
     }
+    const current = await this.prisma.deliveryDealQuote.findUnique({
+      where: { dealId },
+      include: { items: true },
+    });
+    const kept = new Map((current?.items ?? []).map((item) => [item.functionId, item]));
     return this.write(deal, {
       ...frozenDeliveryAxes(),
+      volumeFactor: storedFactor(current?.coreVolumeFactor),
+      volumeReason: current?.coreVolumeReason ?? null,
       appliedCollectionId: collection.id,
-      items: collection.items.map((item) => ({ functionId: item.functionId, tierId: null })),
+      items: collection.items.map((item) => ({
+        functionId: item.functionId,
+        tierId: null,
+        volumeFactor: storedFactor(kept.get(item.functionId)?.volumeFactor),
+        volumeReason: kept.get(item.functionId)?.volumeReason ?? null,
+      })),
     });
   }
 
@@ -87,10 +108,14 @@ export class DealQuoteService {
         create: {
           dealId: deal.id,
           appliedCollectionId: input.appliedCollectionId,
+          coreVolumeFactor: input.volumeFactor,
+          coreVolumeReason: input.volumeReason,
           ...frozenDeliveryAxes(),
         },
         update: {
           appliedCollectionId: input.appliedCollectionId,
+          coreVolumeFactor: input.volumeFactor,
+          coreVolumeReason: input.volumeReason,
           ...frozenDeliveryAxes(),
         },
       });
@@ -102,6 +127,8 @@ export class DealQuoteService {
             quoteId: quote.id,
             functionId: item.functionId,
             tierId: item.tierId,
+            volumeFactor: item.volumeFactor,
+            volumeReason: item.volumeReason,
             position: index + 1,
           })),
         });
@@ -187,6 +214,8 @@ function emptyQuote(dealId: string): DealQuoteDto {
     appliedCollectionId: null,
     ...frozenDeliveryAxes(),
     coreProfileVersionId: null,
+    coreVolumeFactor: VOLUME_FACTOR_STANDARD,
+    coreVolumeReason: null,
     items: [],
   };
 }
@@ -197,7 +226,14 @@ function toDto(row: {
   implementationBase: string;
   designMode: string;
   aiDesignerReview: boolean;
-  items: Array<{ functionId: string; tierId: string | null }>;
+  coreVolumeFactor: { toString(): string } | string;
+  coreVolumeReason: string | null;
+  items: Array<{
+    functionId: string;
+    tierId: string | null;
+    volumeFactor: { toString(): string } | string;
+    volumeReason: string | null;
+  }>;
 }): DealQuoteDto {
   return {
     dealId: row.dealId,
@@ -206,6 +242,19 @@ function toDto(row: {
     designMode: row.designMode,
     aiDesignerReview: row.aiDesignerReview,
     coreProfileVersionId: null,
-    items: row.items.map((item) => ({ functionId: item.functionId, tierId: item.tierId })),
+    coreVolumeFactor: storedFactor(row.coreVolumeFactor),
+    coreVolumeReason: row.coreVolumeReason,
+    items: row.items.map((item) => ({
+      functionId: item.functionId,
+      tierId: item.tierId,
+      volumeFactor: storedFactor(item.volumeFactor),
+      volumeReason: item.volumeReason,
+    })),
   };
+}
+
+function storedFactor(value: { toString(): string } | string | null | undefined): string {
+  if (value === null || value === undefined) return VOLUME_FACTOR_STANDARD;
+  const text = typeof value === 'string' ? value : value.toString();
+  return normalizeStoredVolumeFactor(text);
 }

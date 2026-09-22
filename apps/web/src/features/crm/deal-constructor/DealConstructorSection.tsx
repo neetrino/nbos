@@ -189,6 +189,11 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         onRemoveExtra={model.toggle}
         onClearExtras={model.clearExtras}
         productType={props.typeChange}
+        coreVolumeFactor={model.quote?.coreVolumeFactor ?? '1.0'}
+        volumeByFunctionId={volumeByFunction(model.quote?.items ?? [])}
+        onCoreVolume={busy ? undefined : model.setCoreVolume}
+        onFunctionVolume={busy ? undefined : model.setFunctionVolume}
+        onExtrasVolume={busy ? undefined : model.setExtrasVolume}
       />
       <FunctionCatalogSheet
         open={props.catalogOpen}
@@ -207,6 +212,12 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
       />
     </>
   );
+}
+
+function volumeByFunction(
+  items: ReadonlyArray<{ functionId: string; volumeFactor: string }>,
+): Map<string, string> {
+  return new Map(items.map((item) => [item.functionId, item.volumeFactor]));
 }
 
 function coreSaleLabel(amount: string | undefined): string | undefined {

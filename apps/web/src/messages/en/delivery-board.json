@@ -1,5 +1,6 @@
 {
   "title": "Delivery Board",
+  "volumeAdjusted": "Volume changed",
   "pipelineAria": "Delivery pipeline",
   "loading": "Loading board…",
   "loadError": "Could not load delivery board data.",

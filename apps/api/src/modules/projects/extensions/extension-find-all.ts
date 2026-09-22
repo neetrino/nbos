@@ -15,6 +15,7 @@ import { extensionBillingCompanyWhere } from '../products/product-billing-compan
 import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
 import { buildExtensionCurrentStageReadiness } from './extension-current-stage-readiness';
 import { attachExtensionReadiness } from './extension-stage-gates';
+import { volumeAdjustedByOwner } from '../../delivery-compensation/volume-adjusted-flags';
 import { EXTENSION_LIST_INCLUDE } from './extension-detail-select';
 
 export interface ExtensionQueryParams {
@@ -90,6 +91,11 @@ export async function findAllExtensions(
   const lifecycleByExtension = new Map(
     items.map((extension) => [extension.id, attachExtensionReadiness(extension)]),
   );
+  const volumeAdjusted = await volumeAdjustedByOwner(
+    prisma,
+    'extensionId',
+    items.map((extension) => extension.id),
+  );
   const checklistProgressMap = await loadStageChecklistProgressByOwner(
     prisma,
     items.map((extension) => ({
@@ -120,6 +126,7 @@ export async function findAllExtensions(
           ...(currentStageReadiness ? { currentStageReadiness } : {}),
         },
         checklistStageProgress,
+        volumeAdjusted: volumeAdjusted.get(extension.id) ?? false,
       };
     }),
     meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },

@@ -13,7 +13,9 @@ const QUOTE: DealQuoteDto = {
   designMode: 'AI_DESIGN',
   aiDesignerReview: false,
   coreProfileVersionId: 'core-1',
-  items: [{ functionId: 'fn-1', tierId: 'tier-1' }],
+  coreVolumeFactor: '1.0',
+  coreVolumeReason: null,
+  items: [{ functionId: 'fn-1', tierId: 'tier-1', volumeFactor: '1.0', volumeReason: null }],
 };
 
 describe('quoteFromSelection', () => {
@@ -30,22 +32,24 @@ describe('quoteFromSelection', () => {
       {
         ...QUOTE,
         items: [
-          { functionId: 'base', tierId: null },
-          { functionId: 'extra', tierId: null },
+          { functionId: 'base', tierId: null, volumeFactor: '1.0', volumeReason: null },
+          { functionId: 'extra', tierId: null, volumeFactor: '1.2', volumeReason: 'kept' },
         ],
       },
       ['base'],
     );
     expect(next.appliedCollectionId).toBeNull();
-    expect(next.items).toEqual([{ functionId: 'base', tierId: null }]);
+    expect(next.items).toEqual([
+      { functionId: 'base', tierId: null, volumeFactor: '1.0', volumeReason: null },
+    ]);
   });
 
   it('adds a function and stores the chosen gradation', () => {
     const next = quoteWithGradation(QUOTE, 'fn-2', 'tier-2');
     expect(next.appliedCollectionId).toBeNull();
     expect(next.items).toEqual([
-      { functionId: 'fn-1', tierId: 'tier-1' },
-      { functionId: 'fn-2', tierId: 'tier-2' },
+      { functionId: 'fn-1', tierId: 'tier-1', volumeFactor: '1.0', volumeReason: null },
+      { functionId: 'fn-2', tierId: 'tier-2', volumeFactor: '1.0', volumeReason: null },
     ]);
   });
 });

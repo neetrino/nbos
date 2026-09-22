@@ -5,6 +5,8 @@ const BASE = '/api/delivery-catalog/deals';
 export type DealQuoteItemDto = {
   functionId: string;
   tierId: string | null;
+  volumeFactor: string;
+  volumeReason: string | null;
 };
 
 export type DealQuoteDto = {
@@ -14,11 +16,15 @@ export type DealQuoteDto = {
   designMode: string;
   aiDesignerReview: boolean;
   coreProfileVersionId: string | null;
+  coreVolumeFactor: string;
+  coreVolumeReason: string | null;
   items: DealQuoteItemDto[];
 };
 
 export type DealQuoteWriteBody = {
   appliedCollectionId: string | null;
+  coreVolumeFactor?: string;
+  coreVolumeReason?: string | null;
   items: DealQuoteItemDto[];
 };
 

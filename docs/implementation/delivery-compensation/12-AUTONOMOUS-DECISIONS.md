@@ -247,6 +247,22 @@ WordPress adds catalog and blog. Function extras for LMS, marketplace, POS and t
 seeded alongside existing catalog cards. Code Deal / Product type pick uses a searchable
 card grid with a 10–15 word description per kind (2026-09-22).
 
+**1.24 Instance volume is one factor on the core and on each added function — Owner request of
+2026-09-22.** The catalog standard stays ×1.0. A seller or PM may set ×0.5…×2.0 in steps of 0.1 on
+the product core and on each extra function. The same number multiplies published role units and
+the calculated sale line. It is not `configSize`, not the withdrawn sale multiplier, and not a
+catalog axis. Tiers stay for non-proportional volume. Included-in-base functions have no slider.
+An extension has no core, so a core volume write is rejected.
+
+Leaving ×1.0 requires a written reason of at least 10 trimmed characters and is stored only with
+that reason. Returning to ×1.0 clears it. There is no approval queue. If the core or any added
+function is off standard, the delivery card shows that the standard changed. The quote keeps the
+factors and still does not overwrite `deal.amount`. Won copies them onto the configuration.
+Replacing a collection keeps the factor of a function that remains; a new line starts at ×1.0.
+Writes are refused after `scopeLockedAt` and after Won on the deal. On a materialized plan the
+change is a revision that rewrites existing unit snapshots from published units × the new factor.
+Frozen components are not rescaled. `Extension.size` stays removed; this factor does not restore it.
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** Decision 1.23 was applied on development
