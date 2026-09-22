@@ -14,21 +14,25 @@ import { dateInputToIso, todayDateInputValue } from './effective-from';
 import {
   defaultFunctionPriceTierId,
   functionPriceTierOptions,
-  resolvedFunctionPriceTierId,
+  resolveFunctionPriceWriteTarget,
   selectedCatalogFunction,
 } from './function-price-draft';
+import type { LiveFunctionPrice } from './live-function-prices';
 import { messageFromCaught } from './message-from-caught';
 import { NormsSheetSection } from './norms-sheet-section';
 import { RoleUnitsEditor } from './role-units-editor';
 import {
   buildCompleteRoleUnitVector,
   createEmptyRoleUnitDrafts,
+  roleUnitDraftsFromDto,
   type RoleUnitDraftRow,
 } from './role-units-draft';
 
 type FunctionPriceCreateSheetProps = {
   open: boolean;
   catalog: DeliveryFunctionOperationalDto[];
+  editing?: LiveFunctionPrice | null;
+  editingTitle?: string;
   onOpenChange: (open: boolean) => void;
   onCreated: () => void;
   onError: (message: string) => void;
@@ -37,12 +41,38 @@ type FunctionPriceCreateSheetProps = {
 export function FunctionPriceCreateSheet({
   open,
   catalog,
+  editing = null,
+  editingTitle,
+  onOpenChange,
+  onCreated,
+  onError,
+}: FunctionPriceCreateSheetProps) {
+  return (
+    <FunctionPriceSheetBody
+      key={editing?.key ?? 'create'}
+      open={open}
+      catalog={catalog}
+      editing={editing}
+      editingTitle={editingTitle}
+      onOpenChange={onOpenChange}
+      onCreated={onCreated}
+      onError={onError}
+    />
+  );
+}
+
+function FunctionPriceSheetBody({
+  open,
+  catalog,
+  editing,
+  editingTitle,
   onOpenChange,
   onCreated,
   onError,
 }: FunctionPriceCreateSheetProps) {
   const t = useTranslations('hr.deliveryNorms');
-  const form = useFunctionPriceCreateForm(catalog);
+  const form = useFunctionPriceForm(catalog, editing ?? null);
+  const locked = Boolean(editing);
   return (
     <DeliveryNormsCreateSheet
       open={open}
@@ -50,17 +80,16 @@ export function FunctionPriceCreateSheet({
         if (!next) form.reset();
         onOpenChange(next);
       }}
-      title={t('prices.createTitle')}
-      description={t('prices.createHint')}
+      title={locked ? t('prices.editTitle') : t('prices.createTitle')}
+      description={locked ? t('prices.editHint') : t('prices.createHint')}
       dirty
       saving={form.saving}
-      saveLabel={form.saving ? t('create.creating') : t('create.price')}
+      saveLabel={form.saving ? t('create.creating') : locked ? t('edit.save') : t('create.price')}
       onSave={() => {
         void submitFunctionPrice({
           catalog,
-          functionId: form.functionId,
-          tierId: form.tierId,
-          roleUnits: form.roleUnits,
+          form,
+          editing: editing ?? null,
           fallback: t('errors.create'),
           invalidUnits: t('errors.roleUnits'),
           missingFunction: t('errors.functionRequired'),
@@ -70,19 +99,29 @@ export function FunctionPriceCreateSheet({
             onCreated();
             onOpenChange(false);
           },
-          setSaving: form.setSaving,
         });
       }}
     >
-      <FunctionPriceCreateFields catalog={catalog} form={form} />
+      <FunctionPriceCreateFields
+        catalog={catalog}
+        form={form}
+        locked={locked}
+        lockedTitle={editingTitle}
+      />
     </DeliveryNormsCreateSheet>
   );
 }
 
-function useFunctionPriceCreateForm(catalog: DeliveryFunctionOperationalDto[]) {
-  const [functionId, setFunctionId] = useState(OPTIONAL_SELECT_NONE);
-  const [tierId, setTierId] = useState(OPTIONAL_SELECT_NONE);
-  const [roleUnits, setRoleUnits] = useState<RoleUnitDraftRow[]>(createEmptyRoleUnitDrafts);
+function useFunctionPriceForm(
+  catalog: DeliveryFunctionOperationalDto[],
+  editing: LiveFunctionPrice | null,
+) {
+  const current = editing ? (editing.draft ?? editing.published) : null;
+  const [functionId, setFunctionId] = useState(editing?.functionId ?? OPTIONAL_SELECT_NONE);
+  const [tierId, setTierId] = useState(editing?.tierId ?? OPTIONAL_SELECT_NONE);
+  const [roleUnits, setRoleUnits] = useState<RoleUnitDraftRow[]>(
+    current ? roleUnitDraftsFromDto(current.roleUnits) : createEmptyRoleUnitDrafts(),
+  );
   const [saving, setSaving] = useState(false);
   const options = useMemo(() => catalog.map(catalogFunctionOption), [catalog]);
   const tierOptions = functionPriceTierOptions(selectedCatalogFunction(catalog, functionId));
@@ -105,32 +144,42 @@ function useFunctionPriceCreateForm(catalog: DeliveryFunctionOperationalDto[]) {
   };
 }
 
-type FunctionPriceCreateForm = ReturnType<typeof useFunctionPriceCreateForm>;
+type FunctionPriceForm = ReturnType<typeof useFunctionPriceForm>;
 
 function FunctionPriceCreateFields({
   catalog,
   form,
+  locked,
+  lockedTitle,
 }: {
   catalog: DeliveryFunctionOperationalDto[];
-  form: FunctionPriceCreateForm;
+  form: FunctionPriceForm;
+  locked: boolean;
+  lockedTitle?: string;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
     <>
       <NormsSheetSection title={t('sheet.tabs.general')}>
-        <DeliveryNormsSearchSelect
-          label={t('fields.function')}
-          value={form.functionId === OPTIONAL_SELECT_NONE ? null : form.functionId}
-          placeholder={t('prices.pickFunction')}
-          disabled={form.saving}
-          options={form.options}
-          onChange={(value) => {
-            const next = value ?? OPTIONAL_SELECT_NONE;
-            form.setFunctionId(next);
-            form.setTierId(defaultFunctionPriceTierId(selectedCatalogFunction(catalog, next)));
-          }}
-        />
-        {form.tierOptions.length > 0 ? (
+        {locked ? (
+          <p className="text-foreground text-sm font-medium">
+            {lockedTitle ?? t('prices.unknownFunction')}
+          </p>
+        ) : (
+          <DeliveryNormsSearchSelect
+            label={t('fields.function')}
+            value={form.functionId === OPTIONAL_SELECT_NONE ? null : form.functionId}
+            placeholder={t('prices.pickFunction')}
+            disabled={form.saving}
+            options={form.options}
+            onChange={(value) => {
+              const next = value ?? OPTIONAL_SELECT_NONE;
+              form.setFunctionId(next);
+              form.setTierId(defaultFunctionPriceTierId(selectedCatalogFunction(catalog, next)));
+            }}
+          />
+        )}
+        {!locked && form.tierOptions.length > 0 ? (
           <InlineField
             variant="controlled"
             type="select"
@@ -151,45 +200,48 @@ function FunctionPriceCreateFields({
 
 async function submitFunctionPrice(input: {
   catalog: readonly DeliveryFunctionOperationalDto[];
-  functionId: string;
-  tierId: string;
-  roleUnits: RoleUnitDraftRow[];
+  form: FunctionPriceForm;
+  editing: LiveFunctionPrice | null;
   fallback: string;
   invalidUnits: string;
   missingFunction: string;
   missingTier: string;
   onError: (message: string) => void;
   onCreated: () => void;
-  setSaving: (value: boolean) => void;
 }): Promise<void> {
-  const selected = selectedCatalogFunction(input.catalog, input.functionId);
-  const resolvedTier = resolvedFunctionPriceTierId(selected, input.tierId);
-  if (!selected) {
-    input.onError(input.missingFunction);
-    return;
-  }
-  if (!resolvedTier.ok) {
-    input.onError(input.missingTier);
-    return;
-  }
-  const roleUnits = buildCompleteRoleUnitVector(input.roleUnits);
+  const roleUnits = buildCompleteRoleUnitVector(input.form.roleUnits);
   if (roleUnits === null) {
     input.onError(input.invalidUnits);
     return;
   }
-  input.setSaving(true);
+  const target = resolveFunctionPriceWriteTarget({
+    catalog: input.catalog,
+    functionId: input.form.functionId,
+    tierId: input.form.tierId,
+    locked: input.editing,
+  });
+  if (!target.ok) {
+    input.onError(target.error === 'function' ? input.missingFunction : input.missingTier);
+    return;
+  }
+  input.form.setSaving(true);
   try {
-    const body = parseFunctionPriceWriteBody({
-      functionId: input.functionId,
-      tierId: resolvedTier.tierId,
-      effectiveFrom: dateInputToIso(todayDateInputValue()),
-      roleUnits,
-    });
-    await deliveryNormsApi.createFunctionPrice(body);
+    if (input.editing?.draft) {
+      await deliveryNormsApi.updateFunctionPriceDraft(input.editing.draft.id, { roleUnits });
+    } else {
+      await deliveryNormsApi.createFunctionPrice(
+        parseFunctionPriceWriteBody({
+          functionId: target.functionId,
+          tierId: target.tierId,
+          effectiveFrom: dateInputToIso(todayDateInputValue()),
+          roleUnits,
+        }),
+      );
+    }
     input.onCreated();
   } catch (caught) {
     input.onError(messageFromCaught(caught, input.fallback));
   } finally {
-    input.setSaving(false);
+    input.form.setSaving(false);
   }
 }

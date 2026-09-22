@@ -11,7 +11,11 @@ import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
 import { FunctionPriceCreateSheet } from './function-price-create-sheet';
 import { FunctionPricesTable } from './function-prices-table';
 import { catalogFunctionSearchParts } from './group-catalog-functions';
-import { functionPriceTitleMap, liveFunctionPrices } from './live-function-prices';
+import {
+  functionPriceTitleMap,
+  liveFunctionPrices,
+  type LiveFunctionPrice,
+} from './live-function-prices';
 import { itemsMatchingSearch } from './matches-norm-search';
 
 type FunctionPricesSectionProps = {
@@ -47,12 +51,14 @@ export function FunctionPricesSection({
         searchPlaceholder={t('search.placeholder')}
         addLabel={t('add')}
         canAdd={canAdd}
-        onAdd={() => list.setOpen(true)}
+        onAdd={() => list.openCreate()}
       />
-      {canAdd ? (
+      {canAdd || canPublish ? (
         <FunctionPriceCreateSheet
           open={list.open}
           catalog={catalog}
+          editing={list.editing}
+          editingTitle={list.editingTitle}
           onOpenChange={list.setOpen}
           onCreated={onChanged}
           onError={onError}
@@ -66,6 +72,7 @@ export function FunctionPricesSection({
           titles={list.titles}
           canAdd={canAdd}
           canPublish={canPublish}
+          onEdit={list.openEdit}
           onChanged={onChanged}
           onError={onError}
         />
@@ -81,6 +88,7 @@ function useFunctionPricesList(
   const t = useTranslations('hr.deliveryNorms');
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<LiveFunctionPrice | null>(null);
   const pairs = useMemo(() => liveFunctionPrices(rows), [rows]);
   const titles = useMemo(
     () => functionPriceTitleMap(catalog, pairs, t('prices.unknownFunction')),
@@ -91,7 +99,27 @@ function useFunctionPricesList(
     () => matchingFunctionPrices(pairs, query, catalogById, titles, t('prices.unknownFunction')),
     [catalogById, pairs, query, t, titles],
   );
-  return { query, open, titles, filtered, setQuery, setOpen };
+  return {
+    query,
+    open,
+    editing,
+    editingTitle: editing ? (titles.get(editing.key) ?? t('prices.unknownFunction')) : undefined,
+    titles,
+    filtered,
+    setQuery,
+    setOpen: (next: boolean) => {
+      setOpen(next);
+      if (!next) setEditing(null);
+    },
+    openCreate: () => {
+      setEditing(null);
+      setOpen(true);
+    },
+    openEdit: (pair: LiveFunctionPrice) => {
+      setEditing(pair);
+      setOpen(true);
+    },
+  };
 }
 
 function matchingFunctionPrices(

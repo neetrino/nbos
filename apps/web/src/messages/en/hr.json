@@ -546,6 +546,8 @@
       "subtitle": "Per-role unit vectors for catalog functions.",
       "createTitle": "New function price draft",
       "createHint": "Pick a catalog card and, when it has volumes, the volume these units apply to.",
+      "editTitle": "Function price draft",
+      "editHint": "Set per-role units. Save writes a draft; publish stays a separate action.",
       "empty": "No function prices yet.",
       "pickFunction": "Select a function",
       "pickTier": "Select a volume",

@@ -5,6 +5,7 @@ import {
   defaultFunctionPriceTierId,
   functionPriceRowTitle,
   functionPriceTierOptions,
+  resolveFunctionPriceWriteTarget,
   resolvedFunctionPriceTierId,
   selectedCatalogFunction,
 } from './function-price-draft';
@@ -58,6 +59,17 @@ describe('function price draft helpers', () => {
       { value: 'tier-site', label: 'Site' },
       { value: 'tier-shop', label: 'Shop' },
     ]);
+  });
+
+  it('uses the locked row target instead of the catalog pickers', () => {
+    expect(
+      resolveFunctionPriceWriteTarget({
+        catalog: [CARD],
+        functionId: OPTIONAL_SELECT_NONE,
+        tierId: OPTIONAL_SELECT_NONE,
+        locked: { functionId: 'fn-1', tierId: 'tier-shop' },
+      }),
+    ).toEqual({ ok: true, functionId: 'fn-1', tierId: 'tier-shop' });
   });
 
   it('appends the volume label on a priced row', () => {

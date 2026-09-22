@@ -37,6 +37,28 @@ export function resolvedFunctionPriceTierId(
   return { ok: true, tierId };
 }
 
+export function resolveFunctionPriceWriteTarget(input: {
+  catalog: readonly DeliveryFunctionOperationalDto[];
+  functionId: string;
+  tierId: string;
+  locked?: { functionId: string; tierId: string | null } | null;
+}):
+  | { ok: true; functionId: string; tierId: string | null }
+  | { ok: false; error: 'function' | 'tier' } {
+  if (input.locked) {
+    return { ok: true, functionId: input.locked.functionId, tierId: input.locked.tierId };
+  }
+  const selected = selectedCatalogFunction(input.catalog, input.functionId);
+  if (!selected) {
+    return { ok: false, error: 'function' };
+  }
+  const resolvedTier = resolvedFunctionPriceTierId(selected, input.tierId);
+  if (!resolvedTier.ok) {
+    return { ok: false, error: 'tier' };
+  }
+  return { ok: true, functionId: input.functionId, tierId: resolvedTier.tierId };
+}
+
 export function functionPriceRowTitle(
   catalogTitle: string,
   tierId: string | null,
