@@ -18,6 +18,7 @@ import {
   CODE_PRODUCT_TYPE_CHEVRON_SIZE_PX,
   CODE_PRODUCT_TYPE_CLEAR_ICON_SIZE_PX,
   CODE_PRODUCT_TYPE_LIST_CLASS,
+  CODE_PRODUCT_TYPE_POPOVER_ALIGN,
   CODE_PRODUCT_TYPE_POPOVER_CLASS,
 } from './code-product-type-picker.constants';
 import type { CodeProductTypeOption } from './code-product-type-picker.types';
@@ -77,7 +78,10 @@ export function CodeProductTypePicker({
           disabled={disabled}
           onClear={picker.clear}
         />
-        <PopoverContent align="start" className={CODE_PRODUCT_TYPE_POPOVER_CLASS}>
+        <PopoverContent
+          align={CODE_PRODUCT_TYPE_POPOVER_ALIGN}
+          className={CODE_PRODUCT_TYPE_POPOVER_CLASS}
+        >
           <Input
             value={picker.query}
             placeholder={searchPlaceholder}

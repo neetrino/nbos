@@ -6,6 +6,9 @@ export const CODE_PRODUCT_TYPE_CARD_GRID_CLASS =
 export const CODE_PRODUCT_TYPE_POPOVER_CLASS =
   'w-[min(32rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] gap-2 p-3';
 
+/** Sit the card grid under the Type field, not flush to one edge. */
+export const CODE_PRODUCT_TYPE_POPOVER_ALIGN = 'center' as const;
+
 export const CODE_PRODUCT_TYPE_LIST_CLASS = 'max-h-[min(28rem,60vh)] overflow-y-auto pr-0.5';
 
 export const CODE_PRODUCT_TYPE_CHEVRON_SIZE_PX = 16;
