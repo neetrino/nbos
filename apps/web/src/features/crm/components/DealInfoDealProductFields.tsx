@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Calendar, Layers, Tag } from 'lucide-react';
+import { Calendar, Layers } from 'lucide-react';
 import { productTypeFieldReady } from '@nbos/shared';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -12,11 +12,7 @@ import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { DEAL_TYPES, PRODUCT_CATEGORIES } from '../constants/dealPipeline';
-import {
-  translateDealTypeLabel,
-  translateProductCategoryLabel,
-  translateProductTypeLabel,
-} from '../i18n/crm-copy';
+import { translateDealTypeLabel, translateProductCategoryLabel } from '../i18n/crm-copy';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 import { buildDealExistingProductSelectPatch } from './deal-existing-product-search';
 import {
@@ -28,6 +24,7 @@ import {
   type DealGeneralDraft,
 } from './deal-general-form-state';
 import { DealInfoProductPlatformField } from './DealInfoProductPlatformField';
+import { DealInfoProductTypeField } from './DealInfoProductTypeField';
 import type { SearchLoader } from './deal-general-tab.types';
 
 interface DealInfoDealProductFieldsProps {
@@ -147,25 +144,12 @@ function DealInfoProductTaxonomyFields({
       />
 
       {productTypeFieldReady(draft) ? (
-        <InlineField
-          variant="controlled"
-          label={t('dealSheet.productType')}
-          type="select"
-          value={draft.productType ?? ''}
-          options={filteredProductTypeOptions.map((option) => ({
-            value: option.value,
-            label: translateProductTypeLabel(t, option.value),
-          }))}
-          placeholder={t('dealSheet.selectProductType')}
-          icon={<Tag size={12} />}
-          clearable
+        <DealInfoProductTypeField
+          draft={draft}
+          patchDraft={patchDraft}
+          filteredProductTypeOptions={filteredProductTypeOptions}
           disabled={disabled}
-          className={dealStageGateFieldClass(gateRequiredFields, 'productType')}
-          onValueChange={(v) =>
-            patchDraft(
-              buildDealTaxonomyPatch(draft.productCategory, v || null, draft.productPlatform),
-            )
-          }
+          gateRequiredFields={gateRequiredFields}
         />
       ) : null}
 

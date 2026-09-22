@@ -130,6 +130,13 @@ export function translateProductTypeLabel(t: CrmTranslate, value: string): strin
   return value;
 }
 
+export function translateProductTypeDescription(t: CrmTranslate, value: string): string {
+  if (isOneOf(value, PRODUCT_TYPES)) {
+    return crmMessage(t, `catalogs.productTypeDescription.${value}`);
+  }
+  return value;
+}
+
 export function translateProductPlatformLabel(t: CrmTranslate, value: string): string {
   if (isOneOf(value, PRODUCT_PLATFORM_KEYS)) {
     return crmMessage(t, `catalogs.productPlatform.${value}`);

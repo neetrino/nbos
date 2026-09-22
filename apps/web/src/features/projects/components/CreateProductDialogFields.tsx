@@ -9,6 +9,7 @@ import {
   productTypeFieldReady,
 } from '@nbos/shared';
 import { InlineField } from '@/components/shared';
+import { CodeProductTypePicker } from '@/features/crm/components/code-product-type-picker/code-product-type-picker';
 
 export interface CreateProductFormState {
   name: string;
@@ -105,17 +106,46 @@ function CreateProductTaxonomyFields({
         productCategory: form.productCategory,
         productPlatform: form.productPlatform,
       }) ? (
-        <InlineField
-          variant="controlled"
-          label={t('product.fields.type')}
-          type="select"
-          value={form.productType}
-          options={typeOptions}
-          placeholder={t('product.placeholders.selectType')}
-          onValueChange={(productType) => onFormChange(typeChange(form, productType))}
-        />
+        <CreateProductTypeField form={form} typeOptions={typeOptions} onFormChange={onFormChange} />
       ) : null}
     </>
+  );
+}
+
+function CreateProductTypeField({
+  form,
+  typeOptions,
+  onFormChange,
+}: Omit<CreateProductDialogFieldsProps, 'categoryOptions'>) {
+  const t = useTranslations('forms');
+  const onTypeChange = (productType: string) => onFormChange(typeChange(form, productType));
+  if (form.productCategory !== 'CODE') {
+    return (
+      <InlineField
+        variant="controlled"
+        label={t('product.fields.type')}
+        type="select"
+        value={form.productType}
+        options={typeOptions}
+        placeholder={t('product.placeholders.selectType')}
+        onValueChange={onTypeChange}
+      />
+    );
+  }
+  return (
+    <CodeProductTypePicker
+      label={t('product.fields.type')}
+      value={form.productType}
+      options={typeOptions.map((option) => ({
+        value: option.value,
+        label: option.label,
+        description: t(`product.typeDescriptions.${option.value}` as never),
+      }))}
+      placeholder={t('product.placeholders.selectType')}
+      searchPlaceholder={t('product.placeholders.searchType')}
+      emptyLabel={t('product.emptyTypeSearch')}
+      onValueChange={onTypeChange}
+    />
   );
 }
 

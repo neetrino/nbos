@@ -245,7 +245,8 @@ kinds, one core each. English abbreviations with a helper word in en/ru/hy. `BOS
 company OS; `INDUSTRY_OPERATIONS_SYSTEM` is a vertical process. `MOBILE_APP` and `SAAS` stay hidden
 legacy values. Platform matrix: Web widest, App thinner, Desktop thinnest. POS is APP/DESKTOP only.
 WordPress adds catalog and blog. Function extras for LMS, marketplace, POS and ticketing were
-seeded alongside existing catalog cards. Hover-help on the Deal picker is a later slice.
+seeded alongside existing catalog cards. Code Deal / Product type pick uses a searchable
+card grid with a 10–15 word description per kind (2026-09-22).
 
 ## 2. Open points that need the Owner
 
