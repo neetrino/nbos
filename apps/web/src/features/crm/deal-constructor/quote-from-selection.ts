@@ -17,6 +17,19 @@ export function quoteWithToggledFunction(quote: DealQuoteDto, functionId: string
   );
 }
 
+/** Drops functions added on top of the base. Included-in-base lines stay on the quote. */
+export function quoteWithoutAddedExtras(
+  quote: DealQuoteDto,
+  includedFunctionIds: readonly string[],
+): DealQuoteDto {
+  const included = new Set(includedFunctionIds);
+  return {
+    ...quote,
+    appliedCollectionId: null,
+    items: quote.items.filter((item) => included.has(item.functionId)),
+  };
+}
+
 export function quoteWithGradation(
   quote: DealQuoteDto,
   functionId: string,

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { DealQuoteDto } from '@/lib/api/delivery-deal-quote';
-import { quoteWithGradation, quoteWithToggledFunction } from './quote-from-selection';
+import {
+  quoteWithGradation,
+  quoteWithToggledFunction,
+  quoteWithoutAddedExtras,
+} from './quote-from-selection';
 
 const QUOTE: DealQuoteDto = {
   dealId: 'deal-1',
@@ -19,6 +23,21 @@ describe('quoteFromSelection', () => {
       appliedCollectionId: null,
       items: [],
     });
+  });
+
+  it('clears extras and keeps functions that already belong to the base', () => {
+    const next = quoteWithoutAddedExtras(
+      {
+        ...QUOTE,
+        items: [
+          { functionId: 'base', tierId: null },
+          { functionId: 'extra', tierId: null },
+        ],
+      },
+      ['base'],
+    );
+    expect(next.appliedCollectionId).toBeNull();
+    expect(next.items).toEqual([{ functionId: 'base', tierId: null }]);
   });
 
   it('adds a function and stores the chosen gradation', () => {

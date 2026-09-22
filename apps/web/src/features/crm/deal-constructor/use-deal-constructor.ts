@@ -13,7 +13,11 @@ import { deliveryDealQuoteApi, type DealQuoteDto } from '@/lib/api/delivery-deal
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { usePermission } from '@/lib/permissions';
 import { profileUnitsTotal } from './published-core-for-type';
-import { quoteWithGradation, quoteWithToggledFunction } from './quote-from-selection';
+import {
+  quoteWithGradation,
+  quoteWithoutAddedExtras,
+  quoteWithToggledFunction,
+} from './quote-from-selection';
 import { useDealConstructorMoney } from './use-deal-constructor-money';
 
 export function useDealConstructor(
@@ -52,14 +56,27 @@ export function useDealConstructor(
     saving: writes.saving,
     canSeeUnits,
     ...money,
-    toggle: (functionId: string) => {
-      if (loaded.quote) void writes.persist(quoteWithToggledFunction(loaded.quote, functionId));
-    },
-    selectGradation: (functionId: string, tierId: string) => {
-      if (loaded.quote) void writes.persist(quoteWithGradation(loaded.quote, functionId, tierId));
-    },
+    ...quoteEdits(loaded.quote, loaded.includedFunctionIds, writes.persist),
     applyCollection: writes.applyCollection,
     reload: loaded.reload,
+  };
+}
+
+function quoteEdits(
+  quote: DealQuoteDto | null,
+  includedFunctionIds: readonly string[],
+  persist: (next: DealQuoteDto) => Promise<void>,
+) {
+  return {
+    toggle: (functionId: string) => {
+      if (quote) void persist(quoteWithToggledFunction(quote, functionId));
+    },
+    selectGradation: (functionId: string, tierId: string) => {
+      if (quote) void persist(quoteWithGradation(quote, functionId, tierId));
+    },
+    clearExtras: () => {
+      if (quote) void persist(quoteWithoutAddedExtras(quote, includedFunctionIds));
+    },
   };
 }
 

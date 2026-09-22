@@ -154,6 +154,7 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         canAdd
         onAdd={() => props.setCatalogOpen(true)}
         onRemoveExtra={model.toggle}
+        onClearExtras={model.clearExtras}
       />
       <FunctionCatalogSheet
         open={props.catalogOpen}

@@ -1,9 +1,11 @@
 'use client';
 
 import type { ComponentProps } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
+import { DeleteConfirmDialog } from '@/components/shared';
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import type { VisibleSalePrice } from '@/features/function-catalog/function-catalog-sale-price';
@@ -36,16 +38,13 @@ type ProductCompositionPanelProps = {
   confirmRemove?: boolean;
   onAdd: () => void;
   onRemoveExtra: (functionId: string) => void;
+  onClearExtras?: () => void;
 };
 
 export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   const remove = useCompositionRemove(props.confirmRemove !== false, props.onRemoveExtra);
-  const coreItems = useQuery({
-    queryKey: ['delivery-core-items', props.coreProfileVersionId],
-    queryFn: () => deliveryCatalogStructureApi.listCoreItems(props.coreProfileVersionId ?? ''),
-    enabled: Boolean(props.coreProfileVersionId),
-  });
+  const coreItems = useCoreChecklist(props.coreProfileVersionId);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
@@ -76,6 +75,7 @@ export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
           unitsByFunctionId={props.canSeeUnits ? props.unitsByFunctionId : undefined}
           canRemove={!props.disabled && props.canAdd}
           onRemoveExtra={remove.request}
+          onClearExtras={props.onClearExtras}
         />
       </div>
       <CompositionPanelFooter {...props} />
@@ -89,18 +89,70 @@ export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
   );
 }
 
-function CompositionExtrasColumn(props: ComponentProps<typeof CompositionExtraList>) {
+function useCoreChecklist(coreProfileVersionId: string | null) {
+  return useQuery({
+    queryKey: ['delivery-core-items', coreProfileVersionId],
+    queryFn: () => deliveryCatalogStructureApi.listCoreItems(coreProfileVersionId ?? ''),
+    enabled: Boolean(coreProfileVersionId),
+  });
+}
+
+function CompositionExtrasColumn({
+  onClearExtras,
+  canRemove,
+  extras,
+  ...list
+}: ComponentProps<typeof CompositionExtraList> & { onClearExtras?: () => void }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
     <div className="order-1 flex min-w-0 flex-col gap-3 lg:order-2">
-      <div>
-        <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-          {t('extrasHeading')}
-        </p>
-        <p className="text-muted-foreground text-xs">{t('extrasScope')}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+            {t('extrasHeading')}
+          </p>
+          <p className="text-muted-foreground text-xs">{t('extrasScope')}</p>
+        </div>
+        {onClearExtras ? (
+          <ClearExtrasButton disabled={!canRemove || extras.length === 0} onClear={onClearExtras} />
+        ) : null}
       </div>
-      <CompositionExtraList {...props} />
+      <CompositionExtraList extras={extras} canRemove={canRemove} {...list} />
     </div>
+  );
+}
+
+function ClearExtrasButton({ disabled, onClear }: { disabled: boolean; onClear: () => void }) {
+  const t = useTranslations('crm.dealSheet.dealConstructor');
+  const tCommon = useTranslations('common');
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+      >
+        {t('clearExtras')}
+      </Button>
+      <DeleteConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        level="simple"
+        itemName={t('extrasHeading')}
+        title={t('clearExtrasTitle')}
+        description={t('clearExtrasDescription')}
+        confirmLabel={t('clearExtras')}
+        dismissLabel={tCommon('cancel')}
+        forceNestedBackdrop
+        onConfirm={() => {
+          setOpen(false);
+          onClear();
+        }}
+      />
+    </>
   );
 }
 
