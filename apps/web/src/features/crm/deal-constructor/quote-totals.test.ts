@@ -166,6 +166,53 @@ describe('computeDealConstructorMoney', () => {
     expect(money.unitsTotal).toBe(46);
     expect(money.extraSalePrices.get('fn-1')?.amount).toBe('120000');
   });
+
+  it('does not add a base function on top of the core price', () => {
+    const money = computeDealConstructorMoney({
+      quote: {
+        dealId: 'deal-1',
+        appliedCollectionId: null,
+        implementationBase: 'CODE',
+        designMode: 'CLASSIC',
+        aiDesignerReview: false,
+        coreProfileVersionId: 'core-1',
+        items: [
+          { functionId: 'base-fn', tierId: null },
+          { functionId: 'extra-fn', tierId: null },
+        ],
+      },
+      saleVersions: [
+        {
+          targetKey: 'CORE:core-1',
+          version: 1,
+          status: 'PUBLISHED',
+          resolvedAmount: '800000',
+        },
+        {
+          targetKey: 'FUNCTION:base-fn',
+          version: 1,
+          status: 'PUBLISHED',
+          resolvedAmount: '50000',
+        },
+        {
+          targetKey: 'FUNCTION:extra-fn',
+          version: 1,
+          status: 'PUBLISHED',
+          resolvedAmount: '120000',
+        },
+      ],
+      coreUnits: 40,
+      extraUnitsByFunctionId: new Map([
+        ['base-fn', 8],
+        ['extra-fn', 6],
+      ]),
+      includedFunctionIds: ['base-fn'],
+      canSeeUnits: true,
+    });
+    expect(money.saleTotal).toBe('920000.00');
+    expect(money.unitsTotal).toBe(46);
+    expect(money.extraSalePrices.has('base-fn')).toBe(false);
+  });
 });
 
 describe('quoteUnitsTotal', () => {

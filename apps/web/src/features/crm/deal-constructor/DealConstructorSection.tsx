@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { FunctionCatalogSheet } from '@/features/function-catalog/function-catalog-sheet';
 import { formatMoneyDram } from '@/lib/format/money';
 import { translateProductPlatformLabel, translateProductTypeLabel } from '../i18n/crm-copy';
 import { canShowDealConstructor, isDealCompositionReady } from './can-show-deal-constructor';
 import { DealCompositionCard } from './deal-composition-card';
 import { ProductCompositionSheet } from './product-composition-sheet';
+import { splitDealFunctions } from './split-deal-composition';
 import { useDealConstructor } from './use-deal-constructor';
 
 export function DealConstructorSection({
@@ -50,6 +52,7 @@ export function DealConstructorSection({
       productCategory={productCategory}
       productPlatform={productPlatform}
       disabled={disabled || selectionDiffers(deal, productType, productCategory)}
+      needsSave={selectionDiffers(deal, productType, productCategory)}
     />
   );
 }
@@ -68,26 +71,28 @@ function ReadyDealComposition({
   productCategory,
   productPlatform,
   disabled,
+  needsSave,
 }: {
   dealId: string;
   productType: string;
   productCategory: string | null;
   productPlatform: string | null;
   disabled: boolean;
+  needsSave: boolean;
 }) {
   const t = useTranslations('crm');
   const model = useDealConstructor(dealId, productType, productCategory);
   const [compositionOpen, setCompositionOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const selectedIds = new Set(model.quote?.items.map((item) => item.functionId) ?? []);
-  const extras = model.catalog.items.filter((item) => selectedIds.has(item.id));
+  const parts = splitDealFunctions(model.catalog.items, selectedIds, model.includedFunctionIds);
 
   return (
     <>
       <DealCompositionCard
         typeLabel={translateProductTypeLabel(t, productType)}
         platformLabel={productPlatform ? translateProductPlatformLabel(t, productPlatform) : null}
-        extraCount={extras.length}
+        extraCount={parts.extras.length}
         saleTotal={model.saleTotal}
         unitsTotal={model.unitsTotal}
         canSeeUnits={model.canSeeUnits}
@@ -95,56 +100,95 @@ function ReadyDealComposition({
         error={model.error}
         onOpen={() => setCompositionOpen(true)}
       />
+      <OpenedDealComposition
+        model={model}
+        parts={parts}
+        selectedIds={selectedIds}
+        compositionOpen={compositionOpen}
+        catalogOpen={catalogOpen}
+        setCompositionOpen={setCompositionOpen}
+        setCatalogOpen={setCatalogOpen}
+        disabled={disabled}
+        needsSave={needsSave}
+      />
+    </>
+  );
+}
+
+type OpenedCompositionProps = {
+  model: ReturnType<typeof useDealConstructor>;
+  parts: { base: DeliveryFunctionOperationalDto[]; extras: DeliveryFunctionOperationalDto[] };
+  selectedIds: Set<string>;
+  compositionOpen: boolean;
+  catalogOpen: boolean;
+  setCompositionOpen: (open: boolean) => void;
+  setCatalogOpen: (open: boolean) => void;
+  disabled: boolean;
+  needsSave: boolean;
+};
+
+function OpenedDealComposition(props: OpenedCompositionProps) {
+  const t = useTranslations('crm.dealSheet.dealConstructor');
+  const { model, parts, disabled } = props;
+  const busy = disabled || model.saving;
+  return (
+    <>
       <ProductCompositionSheet
-        open={compositionOpen}
-        onOpenChange={setCompositionOpen}
+        open={props.compositionOpen}
+        onOpenChange={props.setCompositionOpen}
         coreProfileVersionId={model.quote?.coreProfileVersionId ?? null}
         coreTitle={model.coreTitle}
-        extras={extras}
+        included={parts.base.map((item) => ({ id: item.id, title: item.title }))}
+        extras={parts.extras}
+        blockedHint={props.needsSave ? t('saveTypeBeforeEdit') : null}
         saleTotal={model.saleTotal}
         unitsTotal={model.unitsTotal}
         canSeeUnits={model.canSeeUnits}
         showSalePrice
         salePriceByFunctionId={model.extraSalePrices}
         unitsByFunctionId={model.canSeeUnits ? model.catalog.unitsByFunctionId : undefined}
-        coreSalePriceLabel={
-          model.coreSalePrice ? formatMoneyDram(Number(model.coreSalePrice.amount)) : undefined
-        }
+        coreSalePriceLabel={coreSaleLabel(model.coreSalePrice?.amount)}
         saleMissing={model.saleMissing}
-        disabled={disabled || model.saving}
+        disabled={busy}
         error={model.error}
         canAdd
-        onAdd={() => setCatalogOpen(true)}
+        onAdd={() => props.setCatalogOpen(true)}
         onRemoveExtra={model.toggle}
       />
       <FunctionCatalogSheet
-        open={catalogOpen}
-        onOpenChange={setCatalogOpen}
+        open={props.catalogOpen}
+        onOpenChange={props.setCatalogOpen}
         items={model.catalog.items}
         loading={model.catalog.loading}
         error={model.catalog.error}
         onRetry={() => void model.catalog.reload()}
         unitsByFunctionId={model.canSeeUnits ? model.catalog.unitsByFunctionId : undefined}
         salePriceByFunctionId={model.catalog.salePriceByFunctionId}
-        mode={dealCatalogPickerMode(model, selectedIds, disabled)}
+        mode={dealCatalogPickerMode(model, props.selectedIds, model.includedFunctionIds, disabled)}
         collections={model.collections}
         appliedCollectionId={model.quote?.appliedCollectionId ?? null}
         onApplyCollection={(collectionId) => void model.applyCollection(collectionId)}
-        collectionsDisabled={disabled || model.saving}
+        collectionsDisabled={busy}
       />
     </>
   );
 }
 
+function coreSaleLabel(amount: string | undefined): string | undefined {
+  return amount ? formatMoneyDram(Number(amount)) : undefined;
+}
+
 function dealCatalogPickerMode(
   model: ReturnType<typeof useDealConstructor>,
   selectedIds: Set<string>,
+  includedFunctionIds: readonly string[],
   disabled: boolean,
 ) {
   return {
     kind: 'pick' as const,
     selectedIds,
     alreadyAddedIds: selectedIds,
+    includedIds: new Set(includedFunctionIds),
     onToggle: disabled ? () => undefined : model.toggle,
     gradationByFunctionId: Object.fromEntries(
       (model.quote?.items ?? [])

@@ -314,6 +314,7 @@
     "addFunctionConfirm": "Добавить выбранные",
     "addFunctionConfirming": "Добавляем…",
     "alreadyAdded": "Уже добавлена",
+    "inBase": "В базе",
     "selected": "Выбрана",
     "selectedCount": "{count, plural, one {# выбрана} few {# выбраны} many {# выбрано} other {# выбрано}}",
     "alreadySelected": "Эта функция уже есть в продукте.",

@@ -314,6 +314,7 @@
     "addFunctionConfirm": "Add selected",
     "addFunctionConfirming": "Adding…",
     "alreadyAdded": "Already added",
+    "inBase": "In the base",
     "selected": "Selected",
     "selectedCount": "{count, plural, one {# selected} other {# selected}}",
     "alreadySelected": "This function is already on the product.",

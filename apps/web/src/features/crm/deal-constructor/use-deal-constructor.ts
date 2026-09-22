@@ -38,6 +38,7 @@ export function useDealConstructor(
     saleVersions: loaded.saleVersions,
     coreUnits: loaded.coreUnits,
     extraUnitsByFunctionId: catalog.unitsByFunctionId,
+    includedFunctionIds: loaded.includedFunctionIds,
     canSeeUnits,
   });
 
@@ -46,6 +47,7 @@ export function useDealConstructor(
     quote: loaded.quote,
     collections: loaded.collections,
     coreTitle: loaded.coreTitle,
+    includedFunctionIds: loaded.includedFunctionIds,
     error: loaded.error,
     saving: writes.saving,
     canSeeUnits,
@@ -84,6 +86,7 @@ function useDealConstructorQuery(
     saleVersions: data?.saleVersions ?? [],
     coreUnits: data?.coreUnits,
     coreTitle: data?.coreTitle ?? null,
+    includedFunctionIds: data?.includedFunctionIds ?? [],
     error: writeError ?? (query.error ? getApiErrorMessage(query.error, loadFailed) : null),
     setQuote: (next: DealQuoteDto) => setOverride({ key: queryKey, quote: next }),
     setError: setWriteError,
@@ -152,6 +155,7 @@ async function loadDealConstructor(
   saleVersions: CatalogSalePriceRow[];
   coreUnits: number | undefined;
   coreTitle: string | null;
+  includedFunctionIds: string[];
 }> {
   const [quote, collections, saleVersions] = await Promise.all([
     deliveryDealQuoteApi.get(dealId, { productType, productCategory }),
@@ -165,22 +169,24 @@ async function loadDealConstructor(
     saleVersions,
     coreUnits: core.units,
     coreTitle: core.title,
+    includedFunctionIds: core.includedFunctionIds,
   };
 }
 
 async function loadPublishedCore(
   coreVersionId: string | null,
   canSeeUnits: boolean,
-): Promise<{ units: number | undefined; title: string | null }> {
-  if (!coreVersionId) return { units: undefined, title: null };
+): Promise<{ units: number | undefined; title: string | null; includedFunctionIds: string[] }> {
+  if (!coreVersionId) return { units: undefined, title: null, includedFunctionIds: [] };
   try {
     const rows = await deliveryNormsApi.listBaseProfiles();
     const profile = rows.find((row) => row.id === coreVersionId) ?? null;
     return {
       units: canSeeUnits ? profileUnitsTotal(profile) : undefined,
       title: profile?.profileKey ?? null,
+      includedFunctionIds: profile?.includedFunctionIds ?? [],
     };
   } catch {
-    return { units: undefined, title: null };
+    return { units: undefined, title: null, includedFunctionIds: [] };
   }
 }

@@ -314,6 +314,7 @@
     "addFunctionConfirm": "Ավելացնել ընտրվածները",
     "addFunctionConfirming": "Ավելացվում է…",
     "alreadyAdded": "Արդեն ավելացված է",
+    "inBase": "Բազայում",
     "selected": "Ընտրված",
     "selectedCount": "{count, plural, one {# ընտրված} other {# ընտրված}}",
     "alreadySelected": "Այս ֆունկցիան արդեն կա արտադրանքում։",

@@ -23,6 +23,7 @@ export type FunctionCatalogBrowserMode =
       kind: 'pick';
       selectedIds: ReadonlySet<string>;
       alreadyAddedIds: ReadonlySet<string>;
+      includedIds?: ReadonlySet<string>;
       onToggle: (id: string) => void;
       gradationByFunctionId: GradationSelectionState;
       onSelectGradation: (functionId: string, tierId: string) => void;
@@ -57,12 +58,18 @@ export function FunctionCatalogCategoryBlocks({
                 key={item.id}
                 item={item}
                 variant="compact"
-                unitsLabel={unitsLabelFor(item.id, unitsByFunctionId, formatUnits)}
-                {...salePriceCardLabels(
-                  salePriceByFunctionId.get(item.id),
-                  formatSalePrice,
-                  t('unpublishedPrice'),
-                )}
+                unitsLabel={
+                  includedInBase(mode, item.id)
+                    ? undefined
+                    : unitsLabelFor(item.id, unitsByFunctionId, formatUnits)
+                }
+                {...(includedInBase(mode, item.id)
+                  ? {}
+                  : salePriceCardLabels(
+                      salePriceByFunctionId.get(item.id),
+                      formatSalePrice,
+                      t('unpublishedPrice'),
+                    ))}
                 {...cardModeProps(item, mode, t)}
               />
             ))}
@@ -94,6 +101,21 @@ function unitsLabelFor(
   return total === undefined ? undefined : formatUnits(total);
 }
 
+function includedInBase(mode: FunctionCatalogBrowserMode, functionId: string): boolean {
+  return mode.kind === 'pick' && mode.includedIds?.has(functionId) === true;
+}
+
+function includedLabel(
+  included: boolean,
+  alreadyAdded: boolean,
+  selected: boolean,
+  t: CatalogCopy,
+): string | undefined {
+  if (included) return t('inBase');
+  if (!alreadyAdded) return undefined;
+  return selected ? t('selected') : t('alreadyAdded');
+}
+
 function cardModeProps(
   item: DeliveryFunctionOperationalDto,
   mode: FunctionCatalogBrowserMode,
@@ -120,13 +142,14 @@ function cardModeProps(
       onOpen: mode.onOpen,
     };
   }
-  const alreadyAdded = mode.alreadyAddedIds.has(item.id);
+  const included = mode.includedIds?.has(item.id) === true;
+  const alreadyAdded = included || mode.alreadyAddedIds.has(item.id);
   const selected = mode.selectedIds.has(item.id);
   return {
     selected,
-    selectable: isCatalogFunctionSelectable(item, mode.alreadyAddedIds),
+    selectable: isCatalogFunctionSelectable(item, mode.alreadyAddedIds) && !included,
     alreadyAdded,
-    alreadyAddedLabel: alreadyAdded ? (selected ? t('selected') : t('alreadyAdded')) : undefined,
+    alreadyAddedLabel: includedLabel(included, alreadyAdded, selected, t),
     onToggle: mode.onToggle,
     gradations: catalogFunctionGradations(item),
     selectedTierId: mode.gradationByFunctionId[item.id],

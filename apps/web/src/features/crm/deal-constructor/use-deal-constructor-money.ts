@@ -4,6 +4,7 @@ import type {
   VisibleSalePrice,
 } from '@/features/function-catalog/function-catalog-sale-price';
 import type { DealQuoteDto } from '@/lib/api/delivery-deal-quote';
+import { billableQuoteItems } from './split-deal-composition';
 import {
   quoteSaleMissing,
   quoteSaleTotal,
@@ -17,6 +18,7 @@ type DealConstructorMoneyInput = {
   saleVersions: readonly CatalogSalePriceRow[];
   coreUnits: number | undefined;
   extraUnitsByFunctionId: Map<string, number> | undefined;
+  includedFunctionIds?: readonly string[];
   canSeeUnits: boolean;
 };
 
@@ -31,7 +33,7 @@ export type DealConstructorMoney = {
 export function computeDealConstructorMoney(
   input: DealConstructorMoneyInput,
 ): DealConstructorMoney {
-  const items = input.quote?.items ?? [];
+  const items = billableQuoteItems(input.quote?.items ?? [], input.includedFunctionIds ?? []);
   const coreVersionId = input.quote?.coreProfileVersionId ?? null;
   const priced = { items, versions: input.saleVersions, canViewDraft: input.canSeeUnits };
   return {
@@ -53,7 +55,14 @@ export function computeDealConstructorMoney(
 }
 
 export function useDealConstructorMoney(input: DealConstructorMoneyInput): DealConstructorMoney {
-  const { quote, saleVersions, coreUnits, extraUnitsByFunctionId, canSeeUnits } = input;
+  const {
+    quote,
+    saleVersions,
+    coreUnits,
+    extraUnitsByFunctionId,
+    includedFunctionIds,
+    canSeeUnits,
+  } = input;
   return useMemo(
     () =>
       computeDealConstructorMoney({
@@ -61,8 +70,9 @@ export function useDealConstructorMoney(input: DealConstructorMoneyInput): DealC
         saleVersions,
         coreUnits,
         extraUnitsByFunctionId,
+        includedFunctionIds,
         canSeeUnits,
       }),
-    [canSeeUnits, coreUnits, extraUnitsByFunctionId, quote, saleVersions],
+    [canSeeUnits, coreUnits, extraUnitsByFunctionId, includedFunctionIds, quote, saleVersions],
   );
 }

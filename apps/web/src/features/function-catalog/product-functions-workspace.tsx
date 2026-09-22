@@ -109,6 +109,7 @@ function EnrolledFunctionsWorkspace({
 }) {
   const t = useTranslations('hr.functionCatalog');
   const extras = extrasFromConfig(config, catalog);
+  const included = includedFromConfig(config, catalog);
   const blockers = (config.readiness?.errors ?? []).filter(isReadinessMessageCode);
   const requireReason = isPlanMaterialized(config.readiness?.planState);
   return (
@@ -124,6 +125,7 @@ function EnrolledFunctionsWorkspace({
       <WorkspaceComposition
         config={config}
         extras={extras}
+        included={included}
         canAdd={canAdd}
         requireReason={requireReason}
         catalogOpen={catalogOpen}
@@ -135,34 +137,18 @@ function EnrolledFunctionsWorkspace({
   );
 }
 
-function WorkspaceComposition({
-  config,
-  extras,
-  canAdd,
-  requireReason,
-  catalogOpen,
-  setCatalogOpen,
-  onReload,
-  removeFailed,
-}: {
-  config: V2Config;
-  extras: DeliveryFunctionOperationalDto[];
-  canAdd: boolean;
-  requireReason: boolean;
-  catalogOpen: boolean;
-  setCatalogOpen: (open: boolean) => void;
-  onReload: () => void;
-  removeFailed: string;
-}) {
+function WorkspaceComposition(props: WorkspaceCompositionProps) {
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+  const { config, requireReason, onReload, removeFailed } = props;
   return (
     <>
       <MoneyHiddenComposition
         config={config}
-        extras={extras}
-        canAdd={canAdd}
+        extras={props.extras}
+        included={props.included}
+        canAdd={props.canAdd}
         confirmRemove={!requireReason}
-        onAdd={() => setCatalogOpen(true)}
+        onAdd={() => props.setCatalogOpen(true)}
         onRemoveExtra={(functionId) => {
           if (requireReason) {
             setPendingRemoveId(functionId);
@@ -182,10 +168,10 @@ function WorkspaceComposition({
             : Promise.resolve(false)
         }
       />
-      {canAdd ? (
+      {props.canAdd ? (
         <AddFunctionTrigger
-          open={catalogOpen}
-          onOpenChange={setCatalogOpen}
+          open={props.catalogOpen}
+          onOpenChange={props.setCatalogOpen}
           configurationId={config.id}
           alreadyAddedIds={new Set(config.features.map((feature) => feature.functionId))}
           onAdded={onReload}
@@ -197,9 +183,22 @@ function WorkspaceComposition({
   );
 }
 
+type WorkspaceCompositionProps = {
+  config: V2Config;
+  extras: DeliveryFunctionOperationalDto[];
+  included: Array<{ id: string; title: string }>;
+  canAdd: boolean;
+  requireReason: boolean;
+  catalogOpen: boolean;
+  setCatalogOpen: (open: boolean) => void;
+  onReload: () => void;
+  removeFailed: string;
+};
+
 function MoneyHiddenComposition({
   config,
   extras,
+  included,
   canAdd,
   confirmRemove,
   onAdd,
@@ -207,6 +206,7 @@ function MoneyHiddenComposition({
 }: {
   config: V2Config;
   extras: DeliveryFunctionOperationalDto[];
+  included: Array<{ id: string; title: string }>;
   canAdd: boolean;
   confirmRemove: boolean;
   onAdd: () => void;
@@ -216,6 +216,7 @@ function MoneyHiddenComposition({
     <ProductCompositionPanel
       coreProfileVersionId={config.baseProfileVersionId}
       coreTitle={null}
+      included={included}
       extras={extras}
       saleTotal={null}
       unitsTotal={undefined}
@@ -230,6 +231,17 @@ function MoneyHiddenComposition({
       onRemoveExtra={onRemoveExtra}
     />
   );
+}
+
+function includedFromConfig(config: V2Config, catalog: DeliveryFunctionOperationalDto[]) {
+  const ids = new Set(
+    config.features
+      .filter((feature) => feature.origin === 'INCLUDED')
+      .map((feature) => feature.functionId),
+  );
+  return catalog
+    .filter((item) => ids.has(item.id))
+    .map((item) => ({ id: item.id, title: item.title }));
 }
 
 function extrasFromConfig(config: V2Config, catalog: DeliveryFunctionOperationalDto[]) {
