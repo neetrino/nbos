@@ -17,6 +17,9 @@ export const COMPOSITION_CORE_ROW_CLASS =
 export const COMPOSITION_CORE_IDENTITY_CLASS =
   'bg-muted/50 border-border mb-3 flex items-center gap-3 rounded-xl border px-3 py-3';
 
+export const COMPOSITION_CORE_TYPE_TRIGGER_CLASS =
+  'w-full cursor-pointer border-0 bg-transparent p-0 text-left';
+
 export const COMPOSITION_DEAL_CARD_CLASS =
   'border-border bg-card flex w-full flex-col gap-3 rounded-2xl border p-4 text-left';
 

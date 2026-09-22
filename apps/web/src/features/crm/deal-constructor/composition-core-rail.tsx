@@ -1,9 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Check, Layers } from 'lucide-react';
+import { Check, ChevronDown, Layers } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { CODE_PRODUCT_TYPE_CHEVRON_SIZE_PX } from '../components/code-product-type-picker/code-product-type-picker.constants';
+import {
+  CompositionCoreTypeMenu,
+  type CompositionProductTypeChange,
+} from './composition-core-type-menu';
 import {
   COMPOSITION_CORE_CHECK_SIZE_PX,
   COMPOSITION_CORE_IDENTITY_CLASS,
@@ -20,6 +25,7 @@ export function CompositionCoreRail({
   loading,
   salePriceLabel,
   showSalePrice,
+  productType,
 }: {
   title: string | null;
   items: Array<{ id: string; label: string; note: string | null }>;
@@ -27,16 +33,25 @@ export function CompositionCoreRail({
   loading: boolean;
   salePriceLabel?: string;
   showSalePrice: boolean;
+  productType?: CompositionProductTypeChange | null;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
+  const identity = (
+    <CoreIdentity
+      name={title ? t('coreNamed', { name: title }) : t('coreLabel')}
+      priceLabel={salePriceLabel}
+      showPrice={showSalePrice}
+      unknownPrice={t('corePriceUnknown')}
+      interactive={Boolean(productType) && !productType?.disabled}
+    />
+  );
   return (
     <Card className="h-fit p-2">
-      <CoreIdentity
-        name={title ? t('coreNamed', { name: title }) : t('coreLabel')}
-        priceLabel={salePriceLabel}
-        showPrice={showSalePrice}
-        unknownPrice={t('corePriceUnknown')}
-      />
+      {productType && !productType.disabled ? (
+        <CompositionCoreTypeMenu change={productType}>{identity}</CompositionCoreTypeMenu>
+      ) : (
+        identity
+      )}
       {loading ? <p className="text-muted-foreground px-2 text-xs">{t('coreLoading')}</p> : null}
       <div className="space-y-1">
         {items.map((item) => (
@@ -53,22 +68,29 @@ function CoreIdentity({
   priceLabel,
   showPrice,
   unknownPrice,
+  interactive,
 }: {
   name: string;
   priceLabel?: string;
   showPrice: boolean;
   unknownPrice: string;
+  interactive: boolean;
 }) {
   return (
-    <div className={COMPOSITION_CORE_IDENTITY_CLASS}>
+    <span className={cn(COMPOSITION_CORE_IDENTITY_CLASS, interactive && 'hover:bg-muted')}>
       <span className="bg-background border-border flex size-9 shrink-0 items-center justify-center rounded-lg border">
         <Layers size={COMPOSITION_CORE_MARK_SIZE_PX} />
       </span>
-      <span className="min-w-0">
-        <span className="text-foreground block text-sm font-semibold tracking-tight">{name}</span>
+      <span className="min-w-0 flex-1">
+        <span className="text-foreground block truncate text-sm font-semibold tracking-tight">
+          {name}
+        </span>
         {showPrice ? <CoreIdentityPrice label={priceLabel} unknownPrice={unknownPrice} /> : null}
       </span>
-    </div>
+      {interactive ? (
+        <ChevronDown size={CODE_PRODUCT_TYPE_CHEVRON_SIZE_PX} className="shrink-0 opacity-70" />
+      ) : null}
+    </span>
   );
 }
 

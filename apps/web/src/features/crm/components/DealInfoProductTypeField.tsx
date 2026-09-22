@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 import { Tag } from 'lucide-react';
 import { InlineField } from '@/components/shared';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
-import { translateProductTypeDescription, translateProductTypeLabel } from '../i18n/crm-copy';
 import { CodeProductTypePicker } from './code-product-type-picker/code-product-type-picker';
+import { toCodeProductTypeOptions } from './code-product-type-picker/code-product-type-options';
 import { buildDealTaxonomyPatch, type DealGeneralDraft } from './deal-general-form-state';
 
 const PRODUCT_TYPE_ICON_SIZE_PX = 12;
@@ -66,15 +66,4 @@ export function DealInfoProductTypeField({
       onValueChange={onTypeChange}
     />
   );
-}
-
-function toCodeProductTypeOptions(
-  t: ReturnType<typeof useTranslations<'crm'>>,
-  filteredProductTypeOptions: Array<{ value: string; label: string }>,
-) {
-  return filteredProductTypeOptions.map((option) => ({
-    value: option.value,
-    label: translateProductTypeLabel(t, option.value),
-    description: translateProductTypeDescription(t, option.value),
-  }));
 }

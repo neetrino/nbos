@@ -205,6 +205,8 @@ export function DealGeneralTab({
             productCategory={draft.productCategory}
             productType={draft.productType}
             productPlatform={draft.productPlatform}
+            productTypeOptions={filteredProductTypeOptions}
+            onProductTypeChange={patchDraft}
             disabled={formDisabled}
           />
           <DealClientCommunicationPanel deal={deal} />

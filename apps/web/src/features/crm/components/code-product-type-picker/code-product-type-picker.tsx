@@ -101,7 +101,7 @@ export function CodeProductTypePicker({
   );
 }
 
-function useCodeProductTypePickerState(
+export function useCodeProductTypePickerState(
   options: readonly CodeProductTypeOption[],
   value: string,
   disabled: boolean,
@@ -179,7 +179,7 @@ function CodeProductTypeFieldTrigger({
   );
 }
 
-function CodeProductTypeOptionGrid({
+export function CodeProductTypeOptionGrid({
   options,
   selectedValue,
   emptyLabel,

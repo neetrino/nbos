@@ -6,19 +6,19 @@ import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { FunctionCatalogSheet } from '@/features/function-catalog/function-catalog-sheet';
 import { formatMoneyDram } from '@/lib/format/money';
 import { translateProductPlatformLabel, translateProductTypeLabel } from '../i18n/crm-copy';
+import {
+  buildDealTaxonomyPatch,
+  type DealGeneralDraft,
+} from '../components/deal-general-form-state';
+import { toCodeProductTypeOptions } from '../components/code-product-type-picker/code-product-type-options';
 import { canShowDealConstructor, isDealCompositionReady } from './can-show-deal-constructor';
+import type { CompositionProductTypeChange } from './composition-core-type-menu';
 import { DealCompositionCard } from './deal-composition-card';
 import { ProductCompositionSheet } from './product-composition-sheet';
 import { splitDealFunctions } from './split-deal-composition';
 import { useDealConstructor } from './use-deal-constructor';
 
-export function DealConstructorSection({
-  deal,
-  productCategory,
-  productType,
-  productPlatform,
-  disabled,
-}: {
+type DealConstructorSectionProps = {
   deal: Parameters<typeof canShowDealConstructor>[0] & {
     id: string;
     productType: string | null;
@@ -27,8 +27,20 @@ export function DealConstructorSection({
   productCategory: string | null;
   productType: string | null;
   productPlatform: string | null;
+  productTypeOptions: Array<{ value: string; label: string }>;
+  onProductTypeChange: (patch: Partial<DealGeneralDraft>) => void;
   disabled: boolean;
-}) {
+};
+
+export function DealConstructorSection({
+  deal,
+  productCategory,
+  productType,
+  productPlatform,
+  productTypeOptions,
+  onProductTypeChange,
+  disabled,
+}: DealConstructorSectionProps) {
   if (!canShowDealConstructor(deal)) return null;
   const ready = isDealCompositionReady({ productCategory, productType, productPlatform });
   if (!ready || !productType) {
@@ -52,7 +64,10 @@ export function DealConstructorSection({
       productCategory={productCategory}
       productPlatform={productPlatform}
       disabled={disabled || selectionDiffers(deal, productType, productCategory)}
+      typeLocked={disabled}
       needsSave={selectionDiffers(deal, productType, productCategory)}
+      productTypeOptions={productTypeOptions}
+      onProductTypeChange={onProductTypeChange}
     />
   );
 }
@@ -65,33 +80,32 @@ function selectionDiffers(
   return saved.productType !== productType || saved.productCategory !== productCategory;
 }
 
-function ReadyDealComposition({
-  dealId,
-  productType,
-  productCategory,
-  productPlatform,
-  disabled,
-  needsSave,
-}: {
+type ReadyCompositionProps = {
   dealId: string;
   productType: string;
   productCategory: string | null;
   productPlatform: string | null;
+  productTypeOptions: Array<{ value: string; label: string }>;
+  onProductTypeChange: (patch: Partial<DealGeneralDraft>) => void;
   disabled: boolean;
+  typeLocked: boolean;
   needsSave: boolean;
-}) {
+};
+
+function ReadyDealComposition(props: ReadyCompositionProps) {
   const t = useTranslations('crm');
-  const model = useDealConstructor(dealId, productType, productCategory);
+  const model = useDealConstructor(props.dealId, props.productType, props.productCategory);
   const [compositionOpen, setCompositionOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const selectedIds = new Set(model.quote?.items.map((item) => item.functionId) ?? []);
   const parts = splitDealFunctions(model.catalog.items, selectedIds, model.includedFunctionIds);
-
   return (
     <>
       <DealCompositionCard
-        typeLabel={translateProductTypeLabel(t, productType)}
-        platformLabel={productPlatform ? translateProductPlatformLabel(t, productPlatform) : null}
+        typeLabel={translateProductTypeLabel(t, props.productType)}
+        platformLabel={
+          props.productPlatform ? translateProductPlatformLabel(t, props.productPlatform) : null
+        }
         extraCount={parts.extras.length}
         saleTotal={model.saleTotal}
         unitsTotal={model.unitsTotal}
@@ -108,12 +122,28 @@ function ReadyDealComposition({
         catalogOpen={catalogOpen}
         setCompositionOpen={setCompositionOpen}
         setCatalogOpen={setCatalogOpen}
-        disabled={disabled}
-        needsSave={needsSave}
-        coreName={translateProductTypeLabel(t, productType)}
+        disabled={props.disabled}
+        needsSave={props.needsSave}
+        coreName={translateProductTypeLabel(t, props.productType)}
+        typeChange={compositionTypeChange(t, props)}
       />
     </>
   );
+}
+
+function compositionTypeChange(
+  t: ReturnType<typeof useTranslations<'crm'>>,
+  input: ReadyCompositionProps,
+): CompositionProductTypeChange {
+  return {
+    value: input.productType,
+    options: toCodeProductTypeOptions(t, input.productTypeOptions),
+    disabled: input.typeLocked,
+    onChange: (next) =>
+      input.onProductTypeChange(
+        buildDealTaxonomyPatch(input.productCategory, next || null, input.productPlatform),
+      ),
+  };
 }
 
 type OpenedCompositionProps = {
@@ -127,6 +157,7 @@ type OpenedCompositionProps = {
   disabled: boolean;
   needsSave: boolean;
   coreName: string;
+  typeChange: CompositionProductTypeChange;
 };
 
 function OpenedDealComposition(props: OpenedCompositionProps) {
@@ -157,6 +188,7 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         onAdd={() => props.setCatalogOpen(true)}
         onRemoveExtra={model.toggle}
         onClearExtras={model.clearExtras}
+        productType={props.typeChange}
       />
       <FunctionCatalogSheet
         open={props.catalogOpen}

@@ -15,6 +15,7 @@ import { DealConstructorTotals } from './DealConstructorTotals';
 import { CompositionCoreRail } from './composition-core-rail';
 import { CompositionExtraList } from './composition-extra-list';
 import { CompositionRemoveDialog, useCompositionRemove } from './composition-remove-dialog';
+import type { CompositionProductTypeChange } from './composition-core-type-menu';
 import { COMPOSITION_ADD_ICON_SIZE_PX, COMPOSITION_RAIL_GRID_CLASS } from './composition.constants';
 
 type ProductCompositionPanelProps = {
@@ -39,6 +40,7 @@ type ProductCompositionPanelProps = {
   onAdd: () => void;
   onRemoveExtra: (functionId: string) => void;
   onClearExtras?: () => void;
+  productType?: CompositionProductTypeChange | null;
 };
 
 export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
@@ -66,6 +68,7 @@ export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
             loading={coreItems.isLoading}
             showSalePrice={props.showSalePrice}
             salePriceLabel={props.coreSalePriceLabel}
+            productType={props.productType}
           />
         </div>
         <CompositionExtrasColumn
