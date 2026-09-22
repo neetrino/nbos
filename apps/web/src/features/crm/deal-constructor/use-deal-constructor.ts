@@ -16,12 +16,22 @@ import { profileUnitsTotal } from './published-core-for-type';
 import { quoteWithGradation, quoteWithToggledFunction } from './quote-from-selection';
 import { useDealConstructorMoney } from './use-deal-constructor-money';
 
-export function useDealConstructor(dealId: string, productType: string) {
+export function useDealConstructor(
+  dealId: string,
+  productType: string,
+  productCategory: string | null,
+) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   const { can } = usePermission();
   const canSeeUnits = can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE);
   const catalog = useFunctionCatalogQuery({ search: '', status: ACTIVE_FUNCTION_STATUS });
-  const loaded = useDealConstructorQuery(dealId, productType, canSeeUnits, t('loadFailed'));
+  const loaded = useDealConstructorQuery(
+    dealId,
+    productType,
+    productCategory,
+    canSeeUnits,
+    t('loadFailed'),
+  );
   const writes = useDealConstructorWrites(dealId, loaded.setQuote, loaded.setError, t);
   const money = useDealConstructorMoney({
     quote: loaded.quote,
@@ -54,13 +64,14 @@ export function useDealConstructor(dealId: string, productType: string) {
 function useDealConstructorQuery(
   dealId: string,
   productType: string,
+  productCategory: string | null,
   canSeeUnits: boolean,
   loadFailed: string,
 ) {
-  const queryKey = `${dealId}:${productType}:${canSeeUnits ? 'units' : 'sale'}`;
+  const queryKey = `${dealId}:${productType}:${productCategory ?? ''}:${canSeeUnits ? 'units' : 'sale'}`;
   const query = useQuery({
-    queryKey: ['deal-constructor', dealId, productType, canSeeUnits],
-    queryFn: () => loadDealConstructor(dealId, productType, canSeeUnits),
+    queryKey: ['deal-constructor', dealId, productType, productCategory, canSeeUnits],
+    queryFn: () => loadDealConstructor(dealId, productType, productCategory, canSeeUnits),
   });
   const [override, setOverride] = useState<{ key: string; quote: DealQuoteDto } | null>(null);
   const [writeError, setWriteError] = useState<string | null>(null);
@@ -133,6 +144,7 @@ function useDealConstructorWrites(
 async function loadDealConstructor(
   dealId: string,
   productType: string,
+  productCategory: string | null,
   canSeeUnits: boolean,
 ): Promise<{
   quote: DealQuoteDto;
@@ -142,7 +154,7 @@ async function loadDealConstructor(
   coreTitle: string | null;
 }> {
   const [quote, collections, saleVersions] = await Promise.all([
-    deliveryDealQuoteApi.get(dealId),
+    deliveryDealQuoteApi.get(dealId, { productType, productCategory }),
     deliveryCatalogStructureApi.listCollections(productType),
     deliveryCatalogStructureApi.listSalePrices(),
   ]);

@@ -17,7 +17,11 @@ export function DealConstructorSection({
   productPlatform,
   disabled,
 }: {
-  deal: Parameters<typeof canShowDealConstructor>[0] & { id: string };
+  deal: Parameters<typeof canShowDealConstructor>[0] & {
+    id: string;
+    productType: string | null;
+    productCategory: string | null;
+  };
   productCategory: string | null;
   productType: string | null;
   productPlatform: string | null;
@@ -43,25 +47,36 @@ export function DealConstructorSection({
     <ReadyDealComposition
       dealId={deal.id}
       productType={productType}
+      productCategory={productCategory}
       productPlatform={productPlatform}
-      disabled={disabled}
+      disabled={disabled || selectionDiffers(deal, productType, productCategory)}
     />
   );
+}
+
+function selectionDiffers(
+  saved: { productType: string | null; productCategory: string | null },
+  productType: string,
+  productCategory: string | null,
+): boolean {
+  return saved.productType !== productType || saved.productCategory !== productCategory;
 }
 
 function ReadyDealComposition({
   dealId,
   productType,
+  productCategory,
   productPlatform,
   disabled,
 }: {
   dealId: string;
   productType: string;
+  productCategory: string | null;
   productPlatform: string | null;
   disabled: boolean;
 }) {
   const t = useTranslations('crm');
-  const model = useDealConstructor(dealId, productType);
+  const model = useDealConstructor(dealId, productType, productCategory);
   const [compositionOpen, setCompositionOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const selectedIds = new Set(model.quote?.items.map((item) => item.functionId) ?? []);

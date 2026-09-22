@@ -22,9 +22,16 @@ export type DealQuoteWriteBody = {
   items: DealQuoteItemDto[];
 };
 
+export type DealQuotePreviewQuery = {
+  productType: string;
+  productCategory: string | null;
+};
+
 export const deliveryDealQuoteApi = {
-  async get(dealId: string): Promise<DealQuoteDto> {
-    const resp = await api.get<DealQuoteDto>(`${BASE}/${dealId}/quote`);
+  async get(dealId: string, preview?: DealQuotePreviewQuery): Promise<DealQuoteDto> {
+    const resp = await api.get<DealQuoteDto>(`${BASE}/${dealId}/quote`, {
+      params: previewParams(preview),
+    });
     return resp.data;
   },
 
@@ -40,3 +47,13 @@ export const deliveryDealQuoteApi = {
     return resp.data;
   },
 };
+
+function previewParams(
+  preview: DealQuotePreviewQuery | undefined,
+): { productType: string; productCategory?: string } | undefined {
+  if (!preview) return undefined;
+  return {
+    productType: preview.productType,
+    ...(preview.productCategory ? { productCategory: preview.productCategory } : {}),
+  };
+}

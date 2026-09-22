@@ -9,6 +9,7 @@ import {
 import { PRISMA_TOKEN } from '../../database.module';
 import { copyDealQuoteExtras } from './copy-deal-quote-extras';
 import { findPublishedCoreId } from './match-published-core';
+import { quoteAxesForPreview, type DealQuotePreview } from './quote-core-lookup';
 
 export type DealQuoteDto = {
   dealId: string;
@@ -35,13 +36,13 @@ type DealRef = {
 export class DealQuoteService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async get(dealId: string): Promise<DealQuoteDto> {
+  async get(dealId: string, preview: DealQuotePreview | null = null): Promise<DealQuoteDto> {
     const deal = await this.requireDeal(dealId);
     const row = await this.prisma.deliveryDealQuote.findUnique({
       where: { dealId },
       include: { items: { orderBy: { position: 'asc' } } },
     });
-    return this.toQuoteDto(deal, row ? toDto(row) : emptyQuote(dealId));
+    return this.toQuoteDto(deal, row ? toDto(row) : emptyQuote(dealId), preview);
   }
 
   async replace(dealId: string, body: unknown): Promise<DealQuoteDto> {
@@ -113,12 +114,19 @@ export class DealQuoteService {
     return this.toQuoteDto(deal, toDto(row));
   }
 
-  private async toQuoteDto(deal: DealRef, quote: DealQuoteDto): Promise<DealQuoteDto> {
+  private async toQuoteDto(
+    deal: DealRef,
+    quote: DealQuoteDto,
+    preview: DealQuotePreview | null = null,
+  ): Promise<DealQuoteDto> {
+    const axes = quoteAxesForPreview(deal, preview);
     return {
       ...quote,
+      appliedCollectionId: axes.hideSavedExtras ? null : quote.appliedCollectionId,
+      items: axes.hideSavedExtras ? [] : quote.items,
       coreProfileVersionId: await findPublishedCoreId(this.prisma, {
-        productType: deal.productType,
-        productCategory: deal.productCategory,
+        productType: axes.productType,
+        productCategory: axes.productCategory,
       }),
     };
   }

@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CRM_DEALS_MODULE } from '@nbos/shared';
 import { RequirePermission } from '../../common/decorators';
 import { DealQuoteService } from './deal-quote.service';
 import { mapCatalogWriteError } from './map-catalog-write-error';
+import { parseDealQuotePreview } from './quote-core-lookup';
 
 @ApiTags('delivery-compensation')
 @ApiBearerAuth()
@@ -14,8 +15,12 @@ export class DealQuoteController {
   @Get(':dealId/quote')
   @RequirePermission(CRM_DEALS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Draft function composition on a deal. Not a price write.' })
-  get(@Param('dealId', ParseUUIDPipe) dealId: string) {
-    return this.quotes.get(dealId);
+  get(
+    @Param('dealId', ParseUUIDPipe) dealId: string,
+    @Query('productType') productType?: string,
+    @Query('productCategory') productCategory?: string,
+  ) {
+    return this.quotes.get(dealId, parseDealQuotePreview({ productType, productCategory }));
   }
 
   @Put(':dealId/quote')
