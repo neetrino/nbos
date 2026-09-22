@@ -1,5 +1,5 @@
-import { IsString, MinLength, MaxLength, Matches } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsOptional, IsString, MinLength, MaxLength, Matches } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ACCOUNT_PASSWORD_COMPLEXITY,
   ACCOUNT_PASSWORD_COMPLEXITY_MESSAGE,
@@ -32,4 +32,10 @@ export class AcceptInviteDto {
     message: ACCOUNT_PASSWORD_COMPLEXITY_MESSAGE,
   })
   password!: string;
+
+  @ApiPropertyOptional({ description: 'Required when the invite link does not name an email' })
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(254)
+  email?: string;
 }

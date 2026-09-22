@@ -9,11 +9,18 @@ import { Eye, EyeOff, UserCheck } from 'lucide-react';
 import { AuthScene } from '@/components/auth/AuthScene';
 import { cn } from '@/lib/utils';
 
+const ACCOUNT_PASSWORD_MIN_LENGTH = 10;
+const ACCOUNT_PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d).+$/;
+
 const schema = z
   .object({
     firstName: z.string().min(1, 'Required').max(50),
     lastName: z.string().min(1, 'Required').max(50),
-    password: z.string().min(8, 'At least 8 characters'),
+    email: z.string().max(254),
+    password: z
+      .string()
+      .min(ACCOUNT_PASSWORD_MIN_LENGTH, 'At least 10 characters')
+      .regex(ACCOUNT_PASSWORD_PATTERN, 'Use at least one letter and one number'),
     confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -24,8 +31,11 @@ const schema = z
 type FormValues = z.infer<typeof schema>;
 
 interface InviteInfo {
-  email: string;
+  email: string | null;
   roleName: string;
+  requiresEmail: boolean;
+  firstName: string | null;
+  lastName: string | null;
 }
 
 function AcceptInviteContent() {
@@ -55,11 +65,23 @@ function AcceptInviteContent() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  } = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: { email: '' } });
+
+  useEffect(() => {
+    if (!inviteInfo) return;
+    if (inviteInfo.firstName) setValue('firstName', inviteInfo.firstName);
+    if (inviteInfo.lastName) setValue('lastName', inviteInfo.lastName);
+  }, [inviteInfo, setValue]);
 
   async function onSubmit(values: FormValues) {
     setSubmitError(null);
+    const email = values.email.trim();
+    if (inviteInfo?.requiresEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSubmitError('Enter a valid work email');
+      return;
+    }
 
     const res = await fetch('/api/v1/auth/accept-invite', {
       method: 'POST',
@@ -69,6 +91,7 @@ function AcceptInviteContent() {
         firstName: values.firstName,
         lastName: values.lastName,
         password: values.password,
+        ...(inviteInfo?.requiresEmail ? { email } : {}),
       }),
     });
 
@@ -111,7 +134,9 @@ function AcceptInviteContent() {
       title="Create your account"
       description={
         inviteInfo
-          ? `Invited as ${inviteInfo.roleName} · ${inviteInfo.email}`
+          ? inviteInfo.requiresEmail
+            ? `Invited as ${inviteInfo.roleName}. Enter your work email.`
+            : `Invited as ${inviteInfo.roleName} · ${inviteInfo.email ?? ''}`
           : 'Complete your profile to join the desk.'
       }
     >
@@ -154,6 +179,25 @@ function AcceptInviteContent() {
           </div>
         </div>
 
+        {inviteInfo?.requiresEmail ? (
+          <div>
+            <label htmlFor="email" className="text-foreground mb-1.5 block text-sm font-medium">
+              Work email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              {...register('email')}
+              className={cn(
+                'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 text-sm transition-colors outline-none focus-visible:ring-2',
+                errors.email && 'border-destructive',
+              )}
+              placeholder="name@company.com"
+            />
+          </div>
+        ) : null}
+
         <div>
           <label htmlFor="password" className="text-foreground mb-1.5 block text-sm font-medium">
             Password
@@ -167,7 +211,7 @@ function AcceptInviteContent() {
                 'border-input bg-background text-foreground placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-lg border px-3 py-2.5 pr-10 text-sm transition-colors outline-none focus-visible:ring-2',
                 errors.password && 'border-destructive',
               )}
-              placeholder="Min. 8 characters"
+              placeholder="Min. 10 characters, with a letter and a number"
             />
             <button
               type="button"

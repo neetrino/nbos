@@ -17,7 +17,8 @@ import type { AuthSessionClientKindApi } from '@nbos/shared';
 import { resolveAuthAccessTokenTtlSeconds } from './auth-session.flags';
 import { recordAuthMetric } from './auth-session.metrics';
 import { changeEmployeePassword } from './auth-change-password';
-import { assertInvitationRoleStillAssignable } from './auth-invite-role';
+import { acceptEmployeeInvite } from './accept-employee-invite';
+import { isOpenInviteEmail } from '../invitations/invitation-link';
 import type { V2AccessTokenClaims } from './auth-session.tokens';
 import { NBOS_FOUNDER_EMPLOYEE_ID_ENV } from '@nbos/shared';
 
@@ -216,67 +217,19 @@ export class AuthService {
     });
   }
 
-  async acceptInvite(token: string, firstName: string, lastName: string, password: string) {
-    const invitation = await this.prisma.invitation.findUnique({
-      where: { token },
-    });
-
-    if (!invitation) {
-      throw new BadRequestException('Invalid invitation token');
-    }
-    if (invitation.status !== 'PENDING') {
-      throw new BadRequestException('Invitation has already been used or cancelled');
-    }
-    if (invitation.expiresAt < new Date()) {
-      throw new BadRequestException('Invitation has expired');
-    }
-
-    await assertInvitationRoleStillAssignable(this.prisma, {
-      invitedById: invitation.invitedById,
-      roleId: invitation.roleId,
+  async acceptInvite(input: {
+    token: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    email?: string;
+  }) {
+    const employee = await acceptEmployeeInvite({
+      prisma: this.prisma,
       founderEmployeeIdEnv: this.config.get<string>(NBOS_FOUNDER_EMPLOYEE_ID_ENV)?.trim() || null,
+      ...input,
     });
-
-    const passwordHash = await argon2.hash(password, { type: argon2.argon2id });
-
-    const employee = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.employee.create({
-        data: {
-          email: invitation.email,
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          passwordHash,
-          roleId: invitation.roleId,
-        },
-      });
-      await tx.permissionRoleAssignment.create({
-        data: {
-          employeeId: created.id,
-          roleId: invitation.roleId,
-          source: 'LEGACY',
-          isPrimary: true,
-          assignedById: invitation.invitedById,
-          reason: 'Initial role from accepted invitation',
-        },
-      });
-      await tx.invitation.update({
-        where: { id: invitation.id },
-        data: { status: 'ACCEPTED', employeeId: created.id },
-      });
-      if (invitation.departmentId) {
-        await tx.employeeDepartment.create({
-          data: {
-            employeeId: created.id,
-            departmentId: invitation.departmentId,
-            isPrimary: true,
-          },
-        });
-      }
-      return created;
-    });
-
     this.logger.log(`Employee ${employee.id} registered via invitation (${employee.email})`);
-
     return { message: 'Account created successfully. You can now sign in.' };
   }
 
@@ -308,6 +261,7 @@ export class AuthService {
         status: true,
         expiresAt: true,
         role: { select: { name: true } },
+        employee: { select: { firstName: true, lastName: true } },
       },
     });
 
@@ -315,6 +269,13 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired invitation');
     }
 
-    return { email: invitation.email, roleName: invitation.role.name };
+    const open = isOpenInviteEmail(invitation.email);
+    return {
+      email: open ? null : invitation.email,
+      roleName: invitation.role.name,
+      requiresEmail: open,
+      firstName: invitation.employee?.firstName ?? null,
+      lastName: invitation.employee?.lastName ?? null,
+    };
   }
 }

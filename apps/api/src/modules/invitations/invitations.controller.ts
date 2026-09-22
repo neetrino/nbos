@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Body, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { InvitationsService } from './invitations.service';
+import { AccessLinkDto } from './dto/access-link.dto';
 import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
 import { RequirePermission } from '../../common/decorators';
 import { roleAssignmentAuthority } from '../platform-ownership/role-assignment-authority';
@@ -20,6 +21,27 @@ export class InvitationsController {
   ) {
     return this.invitationsService.create({
       ...body,
+      invitedById: user.id,
+      invitedByRoleSlug: roleAssignmentAuthority(user.role),
+    });
+  }
+
+  @Post('open')
+  @RequirePermission('COMPANY', 'ADD')
+  @ApiOperation({ summary: 'Create a one-time invite link with no email' })
+  open(@CurrentUser() user: CurrentUserPayload) {
+    return this.invitationsService.issueOpenLink({
+      invitedById: user.id,
+      invitedByRoleSlug: roleAssignmentAuthority(user.role),
+    });
+  }
+
+  @Post('access-link')
+  @RequirePermission('COMPANY', 'ADD')
+  @ApiOperation({ summary: 'Create a one-time password link for an employee' })
+  accessLink(@Body() body: AccessLinkDto, @CurrentUser() user: CurrentUserPayload) {
+    return this.invitationsService.issueAccessLink({
+      employeeId: body.employeeId,
       invitedById: user.id,
       invitedByRoleSlug: roleAssignmentAuthority(user.role),
     });
