@@ -80,7 +80,6 @@ function UnitTabBody({
         canPublish={canPublish}
         onChanged={onChanged}
         onError={onError}
-        embedded
       />
     );
   }

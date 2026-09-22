@@ -4,9 +4,9 @@ import { useTranslations } from 'next-intl';
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import type { SearchOption } from '@/components/shared';
-import { INCLUDED_FUNCTIONS_LIST_CLASS, RECORD_ROW_CLASS } from './delivery-norms.constants';
+import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
+import { INCLUDED_FUNCTIONS_LIST_CLASS } from './delivery-norms.constants';
 import { DeliveryNormsSearchSelect } from './delivery-norms-search-select';
-import { NormsSheetSection } from './norms-sheet-section';
 import {
   addableIncludedOptions,
   addIncludedFunctionId,
@@ -40,7 +40,8 @@ export function IncludedFunctionsPicker({
     );
   }
   return (
-    <NormsSheetSection title={title ?? t('includedFunctions.title')}>
+    <div className="space-y-3">
+      <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>{title ?? t('includedFunctions.title')}</h4>
       <fieldset className="contents" disabled={disabled}>
         <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
         <IncludedAddSearch
@@ -56,7 +57,7 @@ export function IncludedFunctionsPicker({
           onChange={onChange}
         />
       </fieldset>
-    </NormsSheetSection>
+    </div>
   );
 }
 
@@ -110,10 +111,7 @@ function SelectedIncludedList({
   return (
     <ul className={INCLUDED_FUNCTIONS_LIST_CLASS}>
       {items.map((item) => (
-        <li
-          key={item.id}
-          className={`${RECORD_ROW_CLASS} flex items-start justify-between gap-3 space-y-0`}
-        >
+        <li key={item.id} className="flex items-start justify-between gap-3 py-1">
           <span className="min-w-0 flex-1 space-y-0.5">
             <span className="text-foreground block truncate text-sm font-medium">{item.title}</span>
             <span className="text-muted-foreground block truncate text-xs">{item.code}</span>

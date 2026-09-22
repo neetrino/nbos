@@ -1,7 +1,4 @@
-import type {
-  DeliveryFunctionOperationalDto,
-  DeliveryFunctionPriceFinancialDto,
-} from '@nbos/shared';
+import type { DeliveryFunctionPriceFinancialDto } from '@nbos/shared';
 import { liveNormPair, type LiveNormPair } from './live-norm-pair';
 
 export type LiveFunctionPrice = LiveNormPair<DeliveryFunctionPriceFinancialDto> & {
@@ -44,20 +41,4 @@ function splitClusterKey(key: string): [string, string | null] {
   const functionId = key.slice(0, separator);
   const tierId = key.slice(separator + 1);
   return [functionId, tierId === '' ? null : tierId];
-}
-
-export function functionPriceTitleMap(
-  catalog: readonly DeliveryFunctionOperationalDto[],
-  pairs: readonly LiveFunctionPrice[],
-  unknownTitle: string,
-): Map<string, string> {
-  const byId = new Map(catalog.map((item) => [item.id, item]));
-  return new Map(
-    pairs.map((pair) => {
-      const item = byId.get(pair.functionId);
-      const title = item?.title ?? unknownTitle;
-      const tier = item?.tiers.find((row) => row.id === pair.tierId);
-      return [pair.key, tier ? `${title} · ${tier.label}` : title];
-    }),
-  );
 }

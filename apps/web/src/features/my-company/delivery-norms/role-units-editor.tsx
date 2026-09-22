@@ -17,13 +17,12 @@ export function RoleUnitsEditor({
     <fieldset className="contents" disabled={disabled}>
       <div className={ROLE_UNITS_BREAKDOWN_CLASS}>
         {rows.map((row) => (
-          <div key={row.roleKey} className="py-2 first:pt-0 last:pb-0">
-            <RoleUnitField
-              row={row}
-              disabled={disabled}
-              onChange={(patch) => onChange(replaceRoleUnitDraft(rows, row.roleKey, patch))}
-            />
-          </div>
+          <RoleUnitField
+            key={row.roleKey}
+            row={row}
+            disabled={disabled}
+            onChange={(patch) => onChange(replaceRoleUnitDraft(rows, row.roleKey, patch))}
+          />
         ))}
       </div>
     </fieldset>

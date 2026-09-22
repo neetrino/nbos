@@ -548,7 +548,17 @@
     "cores": {
       "title": "Core",
       "subtitle": "Every kind a new product can select. An empty card means the norm is not written yet. One core per kind.",
-      "editHint": "Set units by role. Save writes a draft. Publish stays a separate button."
+      "editHint": "Set units by role. Save writes a draft. Publish stays a separate button.",
+      "searchPlaceholder": "Search kinds",
+      "groups": {
+        "all": "All",
+        "sites": "Sites",
+        "commerce": "Commerce",
+        "operations": "Operations",
+        "portals": "Portals",
+        "marketing": "Marketing",
+        "other": "Other"
+      }
     },
     "prices": {
       "title": "Function prices",
