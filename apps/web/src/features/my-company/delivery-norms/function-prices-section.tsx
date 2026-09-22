@@ -9,7 +9,7 @@ import type {
 import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { DeliveryNormsSectionToolbar } from './delivery-norms-section-toolbar';
 import { FunctionPriceCreateSheet } from './function-price-create-sheet';
-import { FunctionPricesTable } from './function-prices-table';
+import { FunctionUnitCards } from './function-unit-cards';
 import { catalogFunctionSearchParts } from './group-catalog-functions';
 import {
   functionPriceTitleMap,
@@ -67,7 +67,7 @@ export function FunctionPricesSection({
       {list.query.trim() !== '' && list.filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('search.empty')}</p>
       ) : (
-        <FunctionPricesTable
+        <FunctionUnitCards
           pairs={list.filtered}
           titles={list.titles}
           canAdd={canAdd}

@@ -9,26 +9,37 @@ describe('locationForMapKey', () => {
   it('keeps enrollment on the overview map', () => {
     expect(locationForMapKey('enrollment')).toEqual({
       tab: 'overview',
-      profileTab: 'versions',
+      profileTab: 'core',
+      unitTab: 'core',
     });
   });
 
-  it('opens nested profile editors on the matching sub-tab', () => {
+  it('opens unit editors on the matching sub-tab', () => {
     const cases: Array<[DeliveryNormsMapKey, string]> = [
-      ['profiles', 'versions'],
-      ['profileUnits', 'versions'],
-      ['profileIncluded', 'versions'],
-      ['profileCore', 'core'],
-      ['profileCollections', 'collections'],
+      ['units', 'core'],
+      ['unitCore', 'core'],
+      ['unitFunction', 'function'],
     ];
-    for (const [key, profileTab] of cases) {
-      expect(locationForMapKey(key)).toEqual({ tab: 'profiles', profileTab });
+    for (const [key, unitTab] of cases) {
+      expect(locationForMapKey(key)).toEqual({ tab: 'units', profileTab: 'core', unitTab });
     }
+  });
+
+  it('opens composition and kits inside profiles', () => {
+    expect(locationForMapKey('profileCore')).toEqual({
+      tab: 'profiles',
+      profileTab: 'core',
+      unitTab: 'core',
+    });
+    expect(locationForMapKey('profileCollections')).toEqual({
+      tab: 'profiles',
+      profileTab: 'collections',
+      unitTab: 'core',
+    });
   });
 
   it('routes sibling domains to their own tabs', () => {
     expect(locationForMapKey('rates').tab).toBe('rates');
-    expect(locationForMapKey('functions').tab).toBe('functions');
     expect(locationForMapKey('sale').tab).toBe('sale');
   });
 });

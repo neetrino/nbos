@@ -9,7 +9,6 @@ export function projectExtensionToViewModel(
   return {
     id: extension.id,
     name: extension.name,
-    size: extension.size,
     status: extension.status,
     assignee: extension.assignee,
     productId: extension.productId,
@@ -27,7 +26,6 @@ export function productExtensionToViewModel(
   return {
     id: extension.id,
     name: extension.name,
-    size: extension.size,
     status: extension.status,
     assignee: extension.assignee,
     createdAt: extension.createdAt,

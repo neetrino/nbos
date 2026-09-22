@@ -592,6 +592,8 @@ auto-create use the new values. Catalog `configSize` axis stays gone.
 enum is SMALL/STANDARD/LARGE; demo rows remapped.
 **Not run:** production migrate; browser QA.
 
+**2026-09-22:** `Extension.size` и `filter_extension_size` сняты. Трёхзначный enum больше не актуален. Миграции `20260922210000_drop_base_profile_entity_kind` и `20260922220000_drop_extension_size` применены к dev (`ep-nameless-term`). Production не трогали.
+
 ### Platform applies + hide Mobile App type (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
 
 Platform field only for Code (WEB/APP/DESKTOP) and WordPress/Shopify (WEB). Marketing and Other store

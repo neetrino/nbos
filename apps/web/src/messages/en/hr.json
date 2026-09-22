@@ -434,22 +434,26 @@
         "units": "Role units",
         "included": "Included in base"
       },
-      "includedProductOnly": "Included-in-base is a product-core list: those catalog cards are already paid by the core units. An extension uses its own norms, not the parent product package, so this tab is hidden."
+      "includedProductOnly": "Included-in-base lists catalog functions already paid by this kind's core units."
     },
     "workspace": {
       "tabs": {
         "aria": "Delivery norms sections",
         "overview": "Model",
         "rates": "Role rates",
+        "units": "Units",
         "profiles": "Profiles",
-        "functions": "Functions",
         "sale": "Sale prices"
       },
       "profileTabs": {
         "aria": "Base profile parts",
-        "versions": "Versions and units",
         "core": "Core composition",
         "collections": "Collections"
+      },
+      "unitTabs": {
+        "aria": "Core and function units",
+        "core": "Core",
+        "function": "Function"
       },
       "saleTabs": {
         "aria": "Sale price targets"
@@ -460,11 +464,11 @@
       "overview": {
         "index": "00",
         "title": "How to manage this",
-        "lead": "Work top to bottom. Each point opens the editor that belongs to it, so the links between rates, profiles, and prices stay visible.",
+        "lead": "Work top to bottom. Each point opens the editor that belongs to it, so the links between rates, units, and prices stay visible.",
         "counts": {
           "published": "{published} published",
           "rates": "{count, plural, one {# rate} other {# rates}}",
-          "profiles": "{count, plural, one {# profile} other {# profiles}}",
+          "profiles": "{count, plural, one {# core} other {# cores}}",
           "functions": "{count, plural, one {# function price} other {# function prices}}",
           "sale": "{count, plural, one {# sale price} other {# sale prices}}"
         }
@@ -480,31 +484,31 @@
           "title": "Role rates",
           "body": "AMD price of one unit for each of the six roles. Employee salary is never used."
         },
-        "profiles": {
+        "units": {
           "index": "03",
-          "title": "Base profiles",
-          "body": "The core package for a product type, implementation base, and design mode."
+          "title": "Units",
+          "body": "The unit vector for a product core and for catalog functions."
         },
-        "profileUnits": {
-          "title": "3.1 Role units",
-          "body": "How many units the core pays each role."
+        "unitCore": {
+          "title": "3.1 Core",
+          "body": "One core for each kind a new product can select. An empty card means the norm is not written yet."
         },
-        "profileIncluded": {
-          "title": "3.2 Included in base",
-          "body": "Catalog functions already covered by the core — no extra charge."
+        "unitFunction": {
+          "title": "3.2 Function",
+          "body": "Units by role for catalog functions that are not already in the base."
+        },
+        "profiles": {
+          "index": "04",
+          "title": "Profiles",
+          "body": "Core composition and kits. These items have no unit vector."
         },
         "profileCore": {
-          "title": "3.3 Core composition",
+          "title": "4.1 Core composition",
           "body": "The written list of what the core contains. Items have no units of their own."
         },
         "profileCollections": {
-          "title": "3.4 Collections",
+          "title": "4.2 Collections",
           "body": "Named extra kits. A click replaces the deal constructor selection. They are still billed, unlike included-in-base."
-        },
-        "functions": {
-          "index": "04",
-          "title": "Function units",
-          "body": "Units by role for catalog functions that are not already in the base."
         },
         "sale": {
           "index": "05",
@@ -535,11 +539,16 @@
     },
     "profiles": {
       "title": "Base profiles",
-      "subtitle": "Per-role unit vectors for a product or extension size.",
+      "subtitle": "Core composition and kits. The unit vector lives under Units.",
       "createTitle": "New profile draft",
-      "createHint": "General is identity. Role units are the core volume. Included-in-base are catalog cards already paid by the core. Products only: an extension has its own norms.",
+      "createHint": "One core per product kind. Saving again updates the open draft or the next version of the same core.",
       "empty": "No base profiles yet.",
       "includedCount": "{count, plural, one {# included function} other {# included functions}}"
+    },
+    "cores": {
+      "title": "Core",
+      "subtitle": "Every kind a new product can select. An empty card means the norm is not written yet. One core per kind.",
+      "editHint": "Set units by role. Save writes a draft. Publish stays a separate button."
     },
     "prices": {
       "title": "Function prices",

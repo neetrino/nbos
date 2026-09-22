@@ -12,6 +12,7 @@ import {
   type DeliveryNormsMapKey,
   type DeliveryNormsProfileTab,
   type DeliveryNormsTab,
+  type DeliveryNormsUnitTab,
 } from './delivery-norms-workspace';
 import { useDeliveryNormsHeroSlots } from './use-delivery-norms-hero-slots';
 import {
@@ -25,7 +26,8 @@ export function DeliveryNormsPage() {
   const canPublish = can('EDIT', DELIVERY_COMPENSATION_RULES_MODULE);
   const { data, loading, error, setError, load } = useDeliveryNormsPageData();
   const [tab, setTab] = useState<DeliveryNormsTab>('overview');
-  const [profileTab, setProfileTab] = useState<DeliveryNormsProfileTab>('versions');
+  const [profileTab, setProfileTab] = useState<DeliveryNormsProfileTab>('core');
+  const [unitTab, setUnitTab] = useState<DeliveryNormsUnitTab>('core');
   useDeliveryNormsHeroSlots({
     tab,
     onTabChange: setTab,
@@ -34,13 +36,15 @@ export function DeliveryNormsPage() {
     <DeliveryNormsTabPanel
       tab={tab}
       profileTab={profileTab}
+      unitTab={unitTab}
       data={data}
       canAdd={canAdd}
       canPublish={canPublish}
       onChanged={() => void load()}
       onError={setError}
       onProfileTabChange={setProfileTab}
-      onOpen={(key) => openMapTarget(key, setTab, setProfileTab)}
+      onUnitTabChange={setUnitTab}
+      onOpen={(key) => openMapTarget(key, setTab, setProfileTab, setUnitTab)}
     />
   );
 
@@ -67,10 +71,12 @@ function openMapTarget(
   key: DeliveryNormsMapKey,
   setTab: (tab: DeliveryNormsTab) => void,
   setProfileTab: (tab: DeliveryNormsProfileTab) => void,
+  setUnitTab: (tab: DeliveryNormsUnitTab) => void,
 ): void {
   const location = locationForMapKey(key);
   setTab(location.tab);
   setProfileTab(location.profileTab);
+  setUnitTab(location.unitTab);
   if (location.tab !== 'overview') {
     return;
   }

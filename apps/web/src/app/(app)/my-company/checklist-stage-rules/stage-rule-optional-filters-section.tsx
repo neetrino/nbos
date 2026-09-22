@@ -9,11 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  EXTENSION_SIZES,
-  PRODUCT_CATEGORIES,
-  PRODUCT_TYPES,
-} from '@/features/projects/constants/projects';
+import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import type { DeliveryChecklistTarget } from '@/lib/api/checklist-templates';
 import { FILTER_ANY, SELECT_TRIGGER_FORM } from './delivery-stage-rule-options';
 import { selectOptionLabel } from './stage-rules-select-helpers';
@@ -24,9 +20,73 @@ type Props = {
   setFilterCategory: (v: string) => void;
   filterType: string;
   setFilterType: (v: string) => void;
-  filterSize: string;
-  setFilterSize: (v: string) => void;
 };
+
+function RuleFilterSelect({
+  label,
+  value,
+  onChange,
+  anyLabel,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+  anyLabel: string;
+  options: readonly { value: string; label: string }[];
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Select
+        value={value}
+        onValueChange={(next) => {
+          if (next) onChange(next);
+        }}
+      >
+        <SelectTrigger className={SELECT_TRIGGER_FORM}>
+          <SelectValue>
+            {(current: string | null) => selectOptionLabel(current, options, FILTER_ANY) ?? null}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={FILTER_ANY}>{anyLabel}</SelectItem>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function ProductOptionalFilters({
+  filterCategory,
+  setFilterCategory,
+  filterType,
+  setFilterType,
+}: Omit<Props, 'target'>) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <RuleFilterSelect
+        label="Product category"
+        value={filterCategory}
+        onChange={setFilterCategory}
+        anyLabel="Any category"
+        options={PRODUCT_CATEGORIES}
+      />
+      <RuleFilterSelect
+        label="Product type"
+        value={filterType}
+        onChange={setFilterType}
+        anyLabel="Any type"
+        options={PRODUCT_TYPES}
+      />
+    </div>
+  );
+}
 
 export function StageRuleOptionalFiltersSection({
   target,
@@ -34,8 +94,6 @@ export function StageRuleOptionalFiltersSection({
   setFilterCategory,
   filterType,
   setFilterType,
-  filterSize,
-  setFilterSize,
 }: Props) {
   return (
     <div className="space-y-3">
@@ -44,89 +102,23 @@ export function StageRuleOptionalFiltersSection({
         Optional filters
       </div>
       {target === 'PRODUCT' ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Product category</Label>
-            <Select
-              value={filterCategory}
-              onValueChange={(v) => {
-                if (v) setFilterCategory(v);
-              }}
-            >
-              <SelectTrigger className={SELECT_TRIGGER_FORM}>
-                <SelectValue>
-                  {(value: string | null) =>
-                    selectOptionLabel(value, PRODUCT_CATEGORIES, FILTER_ANY) ?? null
-                  }
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={FILTER_ANY}>Any category</SelectItem>
-                {PRODUCT_CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>
-                    {c.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Product type</Label>
-            <Select
-              value={filterType}
-              onValueChange={(v) => {
-                if (v) setFilterType(v);
-              }}
-            >
-              <SelectTrigger className={SELECT_TRIGGER_FORM}>
-                <SelectValue>
-                  {(value: string | null) =>
-                    selectOptionLabel(value, PRODUCT_TYPES, FILTER_ANY) ?? null
-                  }
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={FILTER_ANY}>Any type</SelectItem>
-                {PRODUCT_TYPES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>
-                    {c.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <ProductOptionalFilters
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          filterType={filterType}
+          setFilterType={setFilterType}
+        />
       ) : (
-        <div className="max-w-md space-y-2">
-          <Label>Extension size</Label>
-          <Select
-            value={filterSize}
-            onValueChange={(v) => {
-              if (v) setFilterSize(v);
-            }}
-          >
-            <SelectTrigger className={SELECT_TRIGGER_FORM}>
-              <SelectValue>
-                {(value: string | null) =>
-                  selectOptionLabel(value, EXTENSION_SIZES, FILTER_ANY) ?? null
-                }
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={FILTER_ANY}>Any size</SelectItem>
-              {EXTENSION_SIZES.map((c) => (
-                <SelectItem key={c.value} value={c.value}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <p className="text-muted-foreground text-sm">
+          This rule applies to every extension in the chosen stage.
+        </p>
       )}
-      <p className="text-muted-foreground text-xs">
-        Leave filters open to &quot;Any&quot; to apply this checklist to every matching target in
-        that stage.
-      </p>
+      {target === 'PRODUCT' ? (
+        <p className="text-muted-foreground text-xs">
+          Leave filters open to &quot;Any&quot; to apply this checklist to every matching product in
+          that stage.
+        </p>
+      ) : null}
     </div>
   );
 }

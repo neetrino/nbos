@@ -4,7 +4,6 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { ChecklistTemplatesService } from './checklist-templates.service';
 import {
   entityHasOpenDeliveryContext,
-  extensionRuleMatchesFilter,
   productRuleMatchesFilter,
 } from './delivery-stage-checklist-rule-match';
 
@@ -61,7 +60,6 @@ export class DeliveryStageChecklistSyncService {
         id: true,
         deliveryStage: true,
         deliveryResolution: true,
-        size: true,
       },
     });
     if (!extension || !entityHasOpenDeliveryContext(extension)) {
@@ -77,11 +75,8 @@ export class DeliveryStageChecklistSyncService {
       orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
     });
 
-    const matched = rules.filter((r) =>
-      extensionRuleMatchesFilter({ filterExtensionSize: r.filterExtensionSize }, extension),
-    );
-
-    await this.applyRulesForOwner('EXTENSION', extension.id, extension.deliveryStage, matched);
+    // Size is not a condition: every active rule for this stage applies to the extension.
+    await this.applyRulesForOwner('EXTENSION', extension.id, extension.deliveryStage, rules);
   }
 
   private async applyRulesForOwner(

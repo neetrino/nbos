@@ -17,6 +17,7 @@ import {
   serializeFunctionPrice,
   serializeRoleRate,
 } from './serialize-norm-version';
+import { replaceDraftVector, writeOpenBaseProfileDraft } from './write-base-profile-draft';
 
 export const DELIVERY_RUNTIME_SETTING_ID = 'default';
 
@@ -138,39 +139,24 @@ export class DeliveryCompensationRulesService {
     return serializeFunctionPrice(row);
   }
 
-  /** Draft base profile (product or extension core) with its own per-role unit vector. */
+  /** Draft core for one product kind. An open draft is updated; the profile key is not forked. */
   async createBaseProfileDraft(
     input: BaseProfileWriteInput,
   ): Promise<DeliveryBaseProfileFinancialDto> {
     await this.assertIncludedFunctionsExist(input.includedFunctionIds);
-    const latest = await this.prisma.deliveryBaseProfileVersion.findFirst({
-      where: { profileKey: input.profileKey },
-      orderBy: { version: 'desc' },
-      select: { version: true },
+    const row = await this.prisma.$transaction((tx) => writeOpenBaseProfileDraft(tx, input), {
+      isolationLevel: 'Serializable',
     });
-    const row = await this.prisma.deliveryBaseProfileVersion.create({
-      data: {
-        profileKey: input.profileKey,
-        version: (latest?.version ?? 0) + 1,
-        entityKind: input.entityKind,
-        productType: input.productType,
-        productCategory: input.productCategory,
-        implementationBase: input.implementationBase,
-        designMode: input.designMode,
-        aiDesignerReview: input.aiDesignerReview,
-        description: input.description,
-        status: 'DRAFT',
-        effectiveFrom: new Date(input.effectiveFrom),
-        roleUnits: { create: input.roleUnits },
-        includedFunctions: {
-          create: input.includedFunctionIds.map((functionId) => ({ functionId })),
-        },
-      },
-      include: {
-        roleUnits: { orderBy: { roleKey: 'asc' } },
-        includedFunctions: { select: { functionId: true } },
-      },
-    });
+    return serializeBaseProfile(row);
+  }
+
+  async updateBaseProfileDraft(
+    id: string,
+    input: Pick<BaseProfileWriteInput, 'roleUnits' | 'includedFunctionIds'>,
+  ): Promise<DeliveryBaseProfileFinancialDto> {
+    await this.assertIncludedFunctionsExist(input.includedFunctionIds);
+    const draft = await this.requireDraftBaseProfile(id);
+    const row = await this.prisma.$transaction((tx) => replaceDraftVector(tx, draft.id, input));
     return serializeBaseProfile(row);
   }
 
@@ -240,6 +226,17 @@ export class DeliveryCompensationRulesService {
     }
     if (row.status !== 'DRAFT') {
       throw new BadRequestException('Only a draft role rate can be updated.');
+    }
+    return row;
+  }
+
+  private async requireDraftBaseProfile(id: string) {
+    const row = await this.prisma.deliveryBaseProfileVersion.findUnique({ where: { id } });
+    if (!row) {
+      throw new NotFoundException('Base profile not found');
+    }
+    if (row.status !== 'DRAFT') {
+      throw new BadRequestException('Only a draft base profile can be updated.');
     }
     return row;
   }

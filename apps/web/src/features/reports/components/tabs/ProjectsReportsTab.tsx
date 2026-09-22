@@ -32,12 +32,6 @@ export function ProjectsReportsTab({ state }: ProjectsReportsTabProps) {
             <ChartCard title="Product type mix" description="Project portfolio composition.">
               <ReportBarChart data={productTypeChart(data)} />
             </ChartCard>
-            <ChartCard
-              title="Extension size mix"
-              description="Work volume shape by extension size."
-            >
-              <ReportBarChart data={extensionSizeChart(data)} />
-            </ChartCard>
           </div>
         </>
       ) : null}
@@ -82,10 +76,6 @@ function extensionStatusChart(data: ProjectsReportsTabData): ChartDatum[] {
 
 function productTypeChart(data: ProjectsReportsTabData): ChartDatum[] {
   return data.products.byType.map((row) => ({ name: row.productType, value: row._count }));
-}
-
-function extensionSizeChart(data: ProjectsReportsTabData): ChartDatum[] {
-  return data.extensions.bySize.map((row) => ({ name: row.size, value: row._count }));
 }
 
 function countStatus(rows: Array<{ status: string; _count: number }>, status: string): number {

@@ -44,7 +44,6 @@ export function extensionToDeliveryBoardItem(extension: Extension): DeliveryBoar
     id: extension.id,
     name: extension.name,
     status: extension.status,
-    size: extension.size,
     productId: extension.productId,
     description: extension.description,
     assignedTo: extension.assignedTo,

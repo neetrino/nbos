@@ -197,13 +197,12 @@ The collection is not included-in-base and is not stored on the deal as a norm (
 UI only). The quote does not overwrite the deal amount.
 
 The constructor lives on the deal until Won, then extras copy onto the product configuration.
-The public vitrine is stage 3: same catalog, sale price only, not in this wave. `Extension.size`
-is a different enum and stays.
+The public vitrine is stage 3: same catalog, sale price only, not in this wave.
 
-**1.19 Extension.size has three values — Owner decision of 2026-09-21.** The change-order enum
-is `SMALL` / `STANDARD` / `LARGE`. Existing `MICRO` rows map to `SMALL`; `MEDIUM` maps to
-`STANDARD`. Auto-created extensions from a Won deal default to `STANDARD`. The Change Control
-"Micro Extension" path (paid work under one hour) is a process, not a fourth size.
+**1.19 Extension.size had three values — Owner decision of 2026-09-21, removed 2026-09-22.**
+The change-order enum was `SMALL` / `STANDARD` / `LARGE`. That attribute, its default, and the
+checklist size filter are gone. An extension checklist rule applies to every extension in its
+stage. The Extension card in Delivery and the deal stays.
 
 **1.20 Marketing has no platform; Mobile App is not a new type — Owner confirmation of 2026-09-21.**
 The earlier WEB-only shortcut for Marketing was a form gate, not a business meaning. Marketing

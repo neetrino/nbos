@@ -6,7 +6,6 @@ import {
   retiredSizedProfileKeys,
   seededCollections,
   SEED_DESIGN_MODE,
-  SEED_ENTITY_KIND,
   SEED_IMPLEMENTATION_BASE,
   type ProfileSeedVersion,
 } from './delivery-profiles-seed-data';
@@ -122,7 +121,6 @@ async function writeProfileVersion(
     data: {
       profileKey: version.profileKey,
       version: FIRST_PROFILE_VERSION,
-      entityKind: SEED_ENTITY_KIND,
       productType: kind.productType,
       productCategory: kind.productCategory,
       implementationBase: SEED_IMPLEMENTATION_BASE,

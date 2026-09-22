@@ -84,15 +84,17 @@ export const NORMS_LIST_GRID_CLASS = 'grid gap-3 lg:grid-cols-2';
 export const NORMS_CARD_GRID_CLASS =
   'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))]';
 
-export const NORMS_PROFILE_CARD_CLASS =
-  'border-border/70 bg-background flex h-full min-w-0 flex-col gap-3 rounded-2xl border p-4 shadow-[var(--shadow-panel)]';
+export const NORMS_UNIT_CARD_CLASS =
+  'border-border/70 bg-background flex min-w-0 flex-col gap-2 rounded-2xl border p-3 shadow-[var(--shadow-panel)]';
 
-export const NORMS_PROFILE_CARD_ACTIONS_CLASS = 'mt-auto [&_button]:w-full';
+export const NORMS_UNIT_KIND_CLASS =
+  'text-muted-foreground text-[11px] font-medium tracking-wide uppercase';
+
+export const NORMS_UNIT_SUM_CLASS = 'text-lg font-semibold tabular-nums leading-none';
+
+export const NORMS_UNIT_CARD_ACTIONS_CLASS = '[&_button]:w-full';
 
 export const ROLE_UNITS_BREAKDOWN_CLASS = 'divide-border/50 divide-y';
-
-export const ROLE_UNITS_BREAKDOWN_ROW_CLASS =
-  'flex items-center justify-between gap-3 py-1.5 first:pt-0 last:pb-0';
 
 export const SHEET_STACK_CLASS = 'flex flex-col gap-3';
 

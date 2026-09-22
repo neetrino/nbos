@@ -136,7 +136,6 @@ Contact (человек)
 
 - `Product.productCategory`;
 - `Product.productType`;
-- `Extension.size`;
 - stage requirements configuration;
 - checklist template assignment.
 

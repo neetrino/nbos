@@ -25,14 +25,17 @@ export type CreateFunctionPriceBody = {
 };
 
 export type CreateBaseProfileBody = {
-  profileKey: string;
-  entityKind: 'PRODUCT' | 'EXTENSION';
-  productType: string | null;
-  productCategory: string | null;
+  productType: string;
+  productCategory?: string | null;
   description?: string | null;
   effectiveFrom: string;
   roleUnits: DeliveryRoleUnitInput[];
   includedFunctionIds?: string[];
+};
+
+export type UpdateBaseProfileDraftBody = {
+  roleUnits: DeliveryRoleUnitInput[];
+  includedFunctionIds: string[];
 };
 
 export type PublishVectorBody = {
@@ -83,6 +86,17 @@ export const deliveryNormsApi = {
   async createBaseProfile(body: CreateBaseProfileBody): Promise<DeliveryBaseProfileFinancialDto> {
     const resp = await api.post<DeliveryBaseProfileFinancialDto>(
       `${RULES_BASE}/base-profiles`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async updateBaseProfileDraft(
+    id: string,
+    body: UpdateBaseProfileDraftBody,
+  ): Promise<DeliveryBaseProfileFinancialDto> {
+    const resp = await api.patch<DeliveryBaseProfileFinancialDto>(
+      `${RULES_BASE}/base-profiles/${id}`,
       body,
     );
     return resp.data;

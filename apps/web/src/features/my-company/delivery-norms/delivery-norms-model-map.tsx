@@ -6,20 +6,16 @@ import { cn } from '@/lib/utils';
 import { MAP_STEP_CLASS } from './delivery-norms.constants';
 import { type DeliveryNormsMapKey, locationForMapKey } from './delivery-norms-workspace';
 
-const PROFILE_CHILD_KEYS = [
-  'profileUnits',
-  'profileIncluded',
-  'profileCore',
-  'profileCollections',
-] as const;
+const UNIT_CHILD_KEYS = ['unitCore', 'unitFunction'] as const;
+const PROFILE_CHILD_KEYS = ['profileCore', 'profileCollections'] as const;
 
 export function DeliveryNormsModelMap({ onOpen }: { onOpen: (key: DeliveryNormsMapKey) => void }) {
   return (
     <ol className="space-y-3">
       <TopLevelStep mapKey="enrollment" onOpen={onOpen} />
       <TopLevelStep mapKey="rates" onOpen={onOpen} />
-      <ProfilesStep onOpen={onOpen} />
-      <TopLevelStep mapKey="functions" onOpen={onOpen} />
+      <NestedStep mapKey="units" childKeys={UNIT_CHILD_KEYS} onOpen={onOpen} />
+      <NestedStep mapKey="profiles" childKeys={PROFILE_CHILD_KEYS} onOpen={onOpen} />
       <TopLevelStep mapKey="sale" onOpen={onOpen} />
     </ol>
   );
@@ -29,7 +25,7 @@ function TopLevelStep({
   mapKey,
   onOpen,
 }: {
-  mapKey: 'enrollment' | 'rates' | 'functions' | 'sale';
+  mapKey: 'enrollment' | 'rates' | 'sale';
   onOpen: (key: DeliveryNormsMapKey) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms.workspace.map');
@@ -46,19 +42,27 @@ function TopLevelStep({
   );
 }
 
-function ProfilesStep({ onOpen }: { onOpen: (key: DeliveryNormsMapKey) => void }) {
+function NestedStep({
+  mapKey,
+  childKeys,
+  onOpen,
+}: {
+  mapKey: 'units' | 'profiles';
+  childKeys: readonly DeliveryNormsMapKey[];
+  onOpen: (key: DeliveryNormsMapKey) => void;
+}) {
   const t = useTranslations('hr.deliveryNorms.workspace.map');
   return (
     <li className={MAP_STEP_CLASS}>
       <MapRow
-        mapKey="profiles"
-        index={t('profiles.index')}
-        title={t('profiles.title')}
-        body={t('profiles.body')}
+        mapKey={mapKey}
+        index={t(`${mapKey}.index`)}
+        title={t(`${mapKey}.title`)}
+        body={t(`${mapKey}.body`)}
         onOpen={onOpen}
       />
       <ol className="border-border space-y-2 border-l pl-4">
-        {PROFILE_CHILD_KEYS.map((key) => (
+        {childKeys.map((key) => (
           <MapSubstep
             key={key}
             mapKey={key}

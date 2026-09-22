@@ -344,7 +344,6 @@ describe('DealWonHandler', () => {
         projectId: 'proj-42',
         productId: 'prod-1',
         name: 'Extra module',
-        size: 'STANDARD',
       },
     });
     expect(prisma.deal.update).toHaveBeenCalledWith({

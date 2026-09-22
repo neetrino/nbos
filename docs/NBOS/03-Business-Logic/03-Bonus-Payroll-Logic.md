@@ -259,7 +259,7 @@ Delivery bonus не должен зависеть от старой project-leve
 Канон:
 
 - бонусная политика считается по Product/Extension;
-- базой служат product category/type, extension size, role, complexity и configured bonus policy;
+- базой служат product category/type, role, complexity и configured bonus policy;
 - конкретные проценты задаются в Compensation / Bonus rules, а не в Project entity.
 
 Пример стартовой логики:

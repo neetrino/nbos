@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   CatalogContentValidationError,
   DELIVERY_COMPENSATION_ROLE_KEYS,
-  parseBaseProfileWriteBody,
   parseFunctionPriceWriteBody,
 } from '@nbos/shared';
 import { DeliveryCompensationRulesService } from './delivery-compensation-rules.service';
@@ -183,64 +182,6 @@ describe('createFunctionPriceDraft', () => {
           effectiveFrom: '2026-10-01T00:00:00.000Z',
           roleUnits: vector(),
         }),
-      ),
-    ).rejects.toBeInstanceOf(CatalogContentValidationError);
-    expect(create).not.toHaveBeenCalled();
-  });
-});
-
-describe('createBaseProfileDraft', () => {
-  const body = {
-    profileKey: 'ecommerce-classic',
-    entityKind: 'PRODUCT',
-    productType: 'ECOMMERCE',
-    productCategory: 'CODE',
-    implementationBase: 'FROM_SCRATCH',
-    designMode: 'FULL_DESIGN',
-    effectiveFrom: '2026-10-01T00:00:00.000Z',
-    roleUnits: vector('100'),
-  };
-
-  it('persists the profile with its included functions', async () => {
-    const create = vi.fn().mockResolvedValue({
-      id: 'profile-1',
-      profileKey: 'ecommerce-classic',
-      version: 1,
-      status: 'DRAFT',
-      roleUnits: persistedRoleUnits('100'),
-      includedFunctions: [{ functionId: FUNCTION_ID }, { functionId: OTHER_ID }],
-    });
-    const service = new DeliveryCompensationRulesService(
-      rulesClient({
-        deliveryFunction: { count: vi.fn().mockResolvedValue(2) },
-        deliveryBaseProfileVersion: { findFirst: vi.fn().mockResolvedValue(null), create },
-      }) as never,
-    );
-
-    const dto = await service.createBaseProfileDraft(
-      parseBaseProfileWriteBody({ ...body, includedFunctionIds: [FUNCTION_ID, OTHER_ID] }),
-    );
-
-    expect(dto.includedFunctionIds).toEqual([FUNCTION_ID, OTHER_ID]);
-    expect(create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ status: 'DRAFT', productType: 'ECOMMERCE' }),
-      }),
-    );
-  });
-
-  it('refuses unknown included functions', async () => {
-    const create = vi.fn();
-    const service = new DeliveryCompensationRulesService(
-      rulesClient({
-        deliveryFunction: { count: vi.fn().mockResolvedValue(1) },
-        deliveryBaseProfileVersion: { findFirst: vi.fn(), create },
-      }) as never,
-    );
-
-    await expect(
-      service.createBaseProfileDraft(
-        parseBaseProfileWriteBody({ ...body, includedFunctionIds: [FUNCTION_ID, OTHER_ID] }),
       ),
     ).rejects.toBeInstanceOf(CatalogContentValidationError);
     expect(create).not.toHaveBeenCalled();

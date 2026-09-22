@@ -23,8 +23,6 @@ function fullVector(units: string | null = '10') {
 
 function baseProfileBody(overrides: Record<string, unknown> = {}) {
   return {
-    profileKey: 'ecommerce-classic',
-    entityKind: 'PRODUCT',
     productType: 'ECOMMERCE',
     productCategory: 'CODE',
     implementationBase: 'FROM_SCRATCH',
@@ -203,7 +201,6 @@ describe('parseBaseProfileWriteBody', () => {
       baseProfileBody({ includedFunctionIds: [FUNCTION_ID, OTHER_ID, FUNCTION_ID] }),
     );
 
-    expect(parsed.profileKey).toBe('ecommerce-classic');
     expect(parsed.productType).toBe('ECOMMERCE');
     expect(parsed.implementationBase).toBe('FROM_SCRATCH');
     expect(parsed.designMode).toBe('AI_DESIGN');
@@ -211,30 +208,27 @@ describe('parseBaseProfileWriteBody', () => {
     expect(parsed.includedFunctionIds).toEqual([FUNCTION_ID, OTHER_ID]);
   });
 
-  it('allows an extension profile without a product type', () => {
-    const parsed = parseBaseProfileWriteBody(
-      baseProfileBody({ entityKind: 'EXTENSION', productType: null }),
+  it('rejects an extension axis and a hidden product type', () => {
+    expect(() => parseBaseProfileWriteBody(baseProfileBody({ entityKind: 'EXTENSION' }))).toThrow(
+      /entityKind is not an axis/,
     );
-
-    expect(parsed.entityKind).toBe('EXTENSION');
-    expect(parsed.productType).toBeNull();
+    expect(() => parseBaseProfileWriteBody(baseProfileBody({ productType: 'MOBILE_APP' }))).toThrow(
+      /not offered/,
+    );
   });
 
-  it('requires a product type for product profiles', () => {
+  it('requires a product type and ignores a client profile key', () => {
     expect(() => parseBaseProfileWriteBody(baseProfileBody({ productType: null }))).toThrow(
       /productType is required/,
     );
+    const parsed = parseBaseProfileWriteBody(baseProfileBody({ profileKey: 'second-core' }));
+    expect(parsed.productType).toBe('ECOMMERCE');
+    expect('profileKey' in parsed).toBe(false);
   });
 
   it('rejects an unknown product type', () => {
     expect(() =>
       parseBaseProfileWriteBody(baseProfileBody({ productType: 'NOT_A_PRODUCT_TYPE' })),
     ).toThrow(/productType is invalid/);
-  });
-
-  it('rejects a missing profileKey', () => {
-    expect(() => parseBaseProfileWriteBody(baseProfileBody({ profileKey: '  ' }))).toThrow(
-      /profileKey is required/,
-    );
   });
 });

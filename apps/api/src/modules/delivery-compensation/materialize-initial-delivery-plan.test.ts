@@ -177,4 +177,51 @@ describe('materializeInitialDeliveryPlanIfNeeded', () => {
       JSON.stringify(db.deliveryConfigurationRevision.create.mock.calls[0]?.[0].data.scopeSnapshot),
     ).not.toMatch(/units|rate/);
   });
+
+  it('creates an extension plan without a product core', async () => {
+    const config = {
+      id: 'cfg-1',
+      mode: 'V2',
+      entityKind: 'EXTENSION' as const,
+      extensionId: 'ext-1',
+      orderId: 'order-1',
+      initialRevisionId: null,
+      checkedAt: null,
+      checkedById: null,
+      designMode: 'AI_DESIGN',
+      aiDesignerReview: false,
+      order: { id: 'order-1', projectId: 'proj-1' },
+      features: [],
+      baseProfileVersion: null,
+    };
+    const update = vi.fn().mockResolvedValue(config);
+    const db = extensionPlanDb(config, update);
+
+    const result = await materializeInitialDeliveryPlanIfNeeded(db as never, {
+      entityKind: 'EXTENSION',
+      extensionId: 'ext-1',
+      actorEmployeeId: 'actor-1',
+    });
+
+    expect(result).toMatchObject({ status: 'CREATED', orderId: 'order-1' });
+    expect(db.bonusEntry.create).not.toHaveBeenCalled();
+    expect(update.mock.calls[0]?.[0].data).toMatchObject({ baseProfileVersionId: null });
+    expect(db.deliveryConfigurationRevision.create).toHaveBeenCalledTimes(1);
+  });
 });
+
+function extensionPlanDb(config: { id: string }, update: ReturnType<typeof vi.fn>) {
+  return {
+    deliveryConfiguration: {
+      findFirst: vi.fn().mockResolvedValue(config),
+      findUnique: vi.fn().mockResolvedValue(config),
+      update,
+    },
+    $queryRaw: vi.fn().mockResolvedValue([{ id: config.id }]),
+    extensionDeliveryRoleAssignment: { findMany: vi.fn().mockResolvedValue([]) },
+    deliveryRoleRateVersion: { findMany: vi.fn().mockResolvedValue([]) },
+    deliveryFunctionPriceVersion: { findMany: vi.fn() },
+    deliveryConfigurationRevision: { create: vi.fn().mockResolvedValue({ id: 'rev-1' }) },
+    bonusEntry: { create: vi.fn() },
+  };
+}

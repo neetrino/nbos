@@ -42,7 +42,6 @@ describe('getDeliveryBoardItemTeamMembers', () => {
         id: 'ext-1',
         name: 'Feature',
         status: 'DEVELOPMENT',
-        size: 'SMALL',
         productId: 'prod-1',
         assignee: sharedPerson,
         product: { id: 'prod-1', name: 'Site', productType: 'OTHER', status: 'DEVELOPMENT' },

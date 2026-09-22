@@ -126,7 +126,6 @@ export class DealQuoteService {
       items: axes.hideSavedExtras ? [] : quote.items,
       coreProfileVersionId: await findPublishedCoreId(this.prisma, {
         productType: axes.productType,
-        productCategory: axes.productCategory,
       }),
     };
   }

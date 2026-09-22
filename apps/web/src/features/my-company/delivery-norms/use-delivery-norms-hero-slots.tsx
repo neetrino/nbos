@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Coins, Layers, ListTree, Puzzle, Tag } from 'lucide-react';
+import { Coins, Layers, ListTree, Package, Tag } from 'lucide-react';
 import { PageHeroTabs, type PageHeroTabOption, useModuleHeroSlots } from '@/components/shared';
 import type { DeliveryNormsTab } from './delivery-norms-workspace';
 
@@ -18,8 +18,8 @@ export function useDeliveryNormsHeroSlots({
     (): PageHeroTabOption<DeliveryNormsTab>[] => [
       { value: 'overview', label: t('workspace.tabs.overview'), icon: ListTree },
       { value: 'rates', label: t('workspace.tabs.rates'), icon: Coins },
-      { value: 'profiles', label: t('workspace.tabs.profiles'), icon: Layers },
-      { value: 'functions', label: t('workspace.tabs.functions'), icon: Puzzle },
+      { value: 'units', label: t('workspace.tabs.units'), icon: Layers },
+      { value: 'profiles', label: t('workspace.tabs.profiles'), icon: Package },
       { value: 'sale', label: t('workspace.tabs.sale'), icon: Tag },
     ],
     [t],

@@ -1,15 +1,13 @@
-import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../constants';
+import { isProductTypeOfferedForNewProduct, PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../constants';
 import {
   CatalogContentValidationError,
   CatalogFinancialMassAssignmentError,
 } from './catalog-write';
 import {
   DELIVERY_COMPENSATION_ROLE_KEYS,
-  DELIVERY_ENTITY_KINDS,
   DELIVERY_ROLE_UNIT_KINDS,
   frozenDeliveryAxes,
   type DeliveryDesignMode,
-  type DeliveryEntityKind,
   type DeliveryImplementationBase,
 } from './constants';
 import { DeliveryDecimalError, parseUnits } from './decimal-scale';
@@ -19,7 +17,6 @@ import type { DeliveryRoleUnitInput } from './role-units';
 const FORBIDDEN_NORM_KEYS = ['employeeId', 'employee_id', 'salary', 'baseSalary', 'grade'] as const;
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const PROFILE_KEY_MAX_LENGTH = 120;
 
 export type FunctionPriceWriteInput = {
   functionId: string;
@@ -33,9 +30,7 @@ export type ProductTypeKey = (typeof PRODUCT_TYPES)[number];
 export type ProductCategoryKey = (typeof PRODUCT_CATEGORIES)[number];
 
 export type BaseProfileWriteInput = {
-  profileKey: string;
-  entityKind: DeliveryEntityKind;
-  productType: ProductTypeKey | null;
+  productType: ProductTypeKey;
   productCategory: ProductCategoryKey | null;
   implementationBase: DeliveryImplementationBase;
   designMode: DeliveryDesignMode;
@@ -73,16 +68,16 @@ export function functionPriceTierTargetError(
   return null;
 }
 
+/** Stable key for a kind that has no core yet. Later saves reuse the key already stored. */
+export function coreProfileKeyForProductType(productType: string): string {
+  return productType.toLowerCase().replaceAll('_', '-');
+}
+
 export function parseBaseProfileWriteBody(body: unknown): BaseProfileWriteInput {
   const record = readNormRecord(body);
-  const entityKind = readEnum(record.entityKind, DELIVERY_ENTITY_KINDS, 'entityKind');
-  const productType = readOptionalEnum(record.productType, PRODUCT_TYPES, 'productType');
-  if (entityKind === 'PRODUCT' && productType === null) {
-    throw new CatalogContentValidationError('productType is required for PRODUCT profiles');
-  }
+  rejectRetiredCoreAxes(record);
+  const productType = readOfferedProductType(record.productType);
   return {
-    profileKey: readProfileKey(record.profileKey),
-    entityKind,
     productType,
     productCategory: readOptionalEnum(
       record.productCategory,
@@ -150,6 +145,35 @@ export function parseFunctionPricePatchBody(body: unknown): {
   return { roleUnits: parseRoleUnitVector(record.roleUnits) };
 }
 
+export function parseBaseProfilePatchBody(body: unknown): {
+  roleUnits: DeliveryRoleUnitInput[];
+  includedFunctionIds: string[];
+} {
+  const record = readNormRecord(body);
+  rejectRetiredCoreAxes(record);
+  return {
+    roleUnits: parseRoleUnitVector(record.roleUnits),
+    includedFunctionIds: readFunctionIdList(record.includedFunctionIds),
+  };
+}
+
+function rejectRetiredCoreAxes(record: Record<string, unknown>): void {
+  if (record.entityKind !== undefined) {
+    throw new CatalogContentValidationError('entityKind is not an axis of a product core');
+  }
+}
+
+function readOfferedProductType(value: unknown): ProductTypeKey {
+  if (value === null || value === undefined || value === '') {
+    throw new CatalogContentValidationError('productType is required');
+  }
+  const productType = readEnum(value, PRODUCT_TYPES, 'productType');
+  if (!isProductTypeOfferedForNewProduct(productType)) {
+    throw new CatalogContentValidationError('productType is not offered for a new product');
+  }
+  return productType;
+}
+
 function readNullableUnits(value: unknown, roleKey: string): string | null {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -209,17 +233,6 @@ function readEffectiveFrom(value: unknown): string {
     throw new CatalogContentValidationError('effectiveFrom is required');
   }
   return value;
-}
-
-function readProfileKey(value: unknown): string {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new CatalogContentValidationError('profileKey is required');
-  }
-  const text = value.trim();
-  if (text.length > PROFILE_KEY_MAX_LENGTH) {
-    throw new CatalogContentValidationError('profileKey is too long');
-  }
-  return text;
 }
 
 function readOptionalText(value: unknown): string | null {

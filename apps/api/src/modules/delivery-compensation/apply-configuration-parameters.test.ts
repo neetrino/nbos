@@ -22,13 +22,7 @@ function buildDb(overrides: Record<string, unknown> = {}) {
         update,
       },
       deliveryBaseProfileVersion: {
-        findMany: vi.fn().mockResolvedValue([
-          {
-            id: 'profile-shop',
-            productType: 'ECOMMERCE',
-            productCategory: 'CODE',
-          },
-        ]),
+        findFirst: vi.fn().mockResolvedValue({ id: 'profile-shop' }),
         findUnique: vi.fn().mockResolvedValue({
           id: 'profile-shop',
           includedFunctions: [{ functionId: 'fn-included' }],
@@ -89,12 +83,44 @@ describe('applyConfigurationParameters', () => {
 
   it('says the norm is not configured when no published profile matches', async () => {
     const { db } = buildDb({
-      deliveryBaseProfileVersion: { findMany: vi.fn().mockResolvedValue([]) },
+      deliveryBaseProfileVersion: { findFirst: vi.fn().mockResolvedValue(null) },
     });
 
     await expect(
       applyConfigurationParameters(db as never, { configurationId: 'cfg-1' }),
     ).rejects.toMatchObject({ response: { code: 'NORMATIVE_NOT_CONFIGURED' } });
+  });
+
+  it('confirms an extension without attaching a product core', async () => {
+    const findFirst = vi.fn();
+    const update = vi.fn();
+    const { db } = buildDb({
+      deliveryConfiguration: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'cfg-1',
+          mode: 'V2',
+          scopeLockedAt: null,
+          initialRevisionId: null,
+          entityKind: 'EXTENSION',
+          product: null,
+          extension: { product: { productType: 'ECOMMERCE', productCategory: 'CODE' } },
+        }),
+        update,
+      },
+      deliveryBaseProfileVersion: { findFirst },
+    });
+
+    await applyConfigurationParameters(db as never, {
+      configurationId: 'cfg-1',
+      actorEmployeeId: 'emp-1',
+    });
+
+    expect(findFirst).not.toHaveBeenCalled();
+    expect(update.mock.calls[0]?.[0].data).toMatchObject({
+      baseProfileVersionId: null,
+      checkedById: 'emp-1',
+      designMode: 'AI_DESIGN',
+    });
   });
 
   it('refuses to reclassify a card whose plan already exists', async () => {

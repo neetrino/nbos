@@ -123,6 +123,16 @@ export function isOfferedCodeProductType(value: string): value is OfferedCodePro
   return (OFFERED_CODE_PRODUCT_TYPES as readonly string[]).includes(value);
 }
 
+/** Kinds a new product can select. Legacy hidden kinds stay in the enum only. */
+export function productTypesOfferedForNewProduct(): readonly (typeof PRODUCT_TYPES)[number][] {
+  const hidden = new Set<string>(LEGACY_HIDDEN_PRODUCT_TYPES);
+  return PRODUCT_TYPES.filter((type) => !hidden.has(type));
+}
+
+export function isProductTypeOfferedForNewProduct(value: string): boolean {
+  return (productTypesOfferedForNewProduct() as readonly string[]).includes(value);
+}
+
 export function codeProductTypesForPlatform(platform: string): readonly OfferedCodeProductType[] {
   return OFFERED_CODE_PRODUCT_TYPES.filter((type) =>
     (CODE_KIND_PLATFORMS[type] as readonly string[]).includes(platform),

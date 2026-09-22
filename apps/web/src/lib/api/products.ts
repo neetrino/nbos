@@ -160,7 +160,6 @@ export interface ProductDoneReadinessItem {
 export interface ProductExtensionRef {
   id: string;
   name: string;
-  size: string;
   status: string;
   assignedTo: string | null;
   assignee: ProductEmployee | null;

@@ -28,6 +28,7 @@ export type BaseProfileRecord = {
   id: string;
   profileKey: string;
   version: number;
+  productType: string | null;
   status: string;
   roleUnits: readonly RoleUnitRecord[];
   includedFunctions: readonly { functionId: string }[];
@@ -68,6 +69,7 @@ export function serializeBaseProfile(row: BaseProfileRecord): DeliveryBaseProfil
     id: row.id,
     profileKey: row.profileKey,
     version: row.version,
+    productType: row.productType,
     status: row.status,
     roleUnits: serializeRoleUnits(row.roleUnits),
     includedFunctionIds: row.includedFunctions.map((link) => link.functionId),

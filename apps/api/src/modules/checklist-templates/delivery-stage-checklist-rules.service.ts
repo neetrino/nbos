@@ -20,9 +20,6 @@ export class DeliveryStageChecklistRulesService {
   }
 
   private assertFiltersMatchTarget(body: CreateDeliveryStageChecklistRuleDto) {
-    if (body.target === DeliveryChecklistTargetEnum.PRODUCT && body.filterExtensionSize != null) {
-      throw new BadRequestException('filterExtensionSize is only valid for EXTENSION rules');
-    }
     if (
       body.target === DeliveryChecklistTargetEnum.EXTENSION &&
       (body.filterProductCategory != null || body.filterProductType != null)
@@ -52,7 +49,6 @@ export class DeliveryStageChecklistRulesService {
         priority: body.priority ?? 0,
         filterProductCategory: body.filterProductCategory ?? null,
         filterProductType: body.filterProductType ?? null,
-        filterExtensionSize: body.filterExtensionSize ?? null,
         isActive: body.isActive ?? true,
       },
       include: {

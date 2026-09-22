@@ -71,9 +71,7 @@ describe('DeliveryCompensationRulesPublishService', () => {
             findUnique: vi.fn().mockResolvedValue({
               id: 'bp-2',
               profileKey: 'shop-v2',
-              entityKind: 'PRODUCT',
               productType: 'ECOMMERCE',
-              productCategory: 'CODE',
               status: 'DRAFT',
               roleUnits: [
                 { roleKey: 'BACKEND', unitKind: 'REQUIRED', units: '1' },
@@ -95,14 +93,7 @@ describe('DeliveryCompensationRulesPublishService', () => {
     expect(updateMany).toHaveBeenCalledWith({
       where: {
         status: 'PUBLISHED',
-        OR: [
-          { profileKey: 'shop-v2' },
-          {
-            entityKind: 'PRODUCT',
-            productType: 'ECOMMERCE',
-            productCategory: 'CODE',
-          },
-        ],
+        OR: [{ profileKey: 'shop-v2' }, { productType: 'ECOMMERCE' }],
       },
       data: { status: 'ARCHIVED' },
     });

@@ -104,7 +104,6 @@ export interface ProjectExtensionSummary {
   id: string;
   name: string;
   status: string;
-  size: string;
   productId: string;
   projectId?: string;
   description?: string | null;

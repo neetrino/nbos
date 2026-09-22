@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestj
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   DELIVERY_COMPENSATION_RULES_MODULE,
+  parseBaseProfilePatchBody,
   parseBaseProfileWriteBody,
   parseFunctionPricePatchBody,
   parseFunctionPriceWriteBody,
@@ -105,10 +106,23 @@ export class DeliveryCompensationRulesController {
 
   @Post('base-profiles')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'ADD')
-  @ApiOperation({ summary: 'Create a draft base profile with its per-role unit vector' })
+  @ApiOperation({
+    summary: 'Save the draft core for one product kind. Reuses the open draft and profile key.',
+  })
   async createBaseProfile(@Body() body: unknown) {
     try {
       return await this.service.createBaseProfileDraft(parseBaseProfileWriteBody(body));
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Patch('base-profiles/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Update the open draft core. Published rows stay frozen.' })
+  async updateBaseProfile(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.service.updateBaseProfileDraft(id, parseBaseProfilePatchBody(body));
     } catch (error) {
       mapCatalogWriteError(error);
     }

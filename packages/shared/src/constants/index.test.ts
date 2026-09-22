@@ -16,6 +16,7 @@ import {
   PRODUCT_TYPES,
   PRODUCT_TYPES_BY_CATEGORY,
   listedProductTypesForPicker,
+  productTypesOfferedForNewProduct,
   PAYMENT_TYPES,
   SUBSCRIPTION_STATUSES,
   CHECKLIST_TEMPLATE_ITEM_EVIDENCE_TYPES,
@@ -121,6 +122,11 @@ describe('Constants', () => {
     expect(listedProductTypesForPicker('WORDPRESS', null, 'WEB')).toContain('BLOG');
     expect(listedProductTypesForPicker('WORDPRESS', null, 'WEB')).toContain('PRODUCT_CATALOG');
     expect(listedProductTypesForPicker('OTHER')).toContain('OTHER');
+    expect(productTypesOfferedForNewProduct()).not.toContain('MOBILE_APP');
+    expect(productTypesOfferedForNewProduct()).not.toContain('SAAS');
+    expect(productTypesOfferedForNewProduct()).toContain('LOGO');
+    expect(productTypesOfferedForNewProduct()).toContain('ECOMMERCE');
+    expect(productTypesOfferedForNewProduct()).toContain('OTHER');
   });
 
   it('PAYMENT_TYPES are valid', () => {

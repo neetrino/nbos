@@ -4,7 +4,6 @@ import {
   type DeliveryResolutionEnum,
   type DeliveryStageEnum,
   type DeliveryWorkStatusEnum,
-  type ExtensionSizeEnum,
   type ExtensionStatusEnum,
 } from '@nbos/database';
 import {
@@ -29,7 +28,6 @@ export interface ExtensionQueryParams {
   deliveryStage?: string;
   deliveryWorkStatus?: string;
   deliveryResolution?: string;
-  size?: string;
   assignedTo?: string;
   search?: string;
 }
@@ -48,7 +46,6 @@ export async function findAllExtensions(
     deliveryStage,
     deliveryWorkStatus,
     deliveryResolution,
-    size,
     assignedTo,
     search,
   } = params;
@@ -67,7 +64,6 @@ export async function findAllExtensions(
   if (deliveryResolution) {
     where.deliveryResolution = deliveryResolution as DeliveryResolutionEnum;
   }
-  if (size) where.size = size as ExtensionSizeEnum;
   if (assignedTo) where.assignedTo = assignedTo;
   if (search) {
     where.name = { contains: search, mode: 'insensitive' };

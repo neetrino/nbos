@@ -15,6 +15,7 @@ function row(id: string, profileKey: string): DeliveryBaseProfileFinancialDto {
     id,
     profileKey,
     version: 1,
+    productType: null,
     status: 'DRAFT',
     roleUnits: [],
     includedFunctionIds: [],

@@ -28,7 +28,6 @@ export class ExtensionsController {
   @ApiQuery({ name: 'deliveryStage', required: false })
   @ApiQuery({ name: 'deliveryWorkStatus', required: false })
   @ApiQuery({ name: 'deliveryResolution', required: false })
-  @ApiQuery({ name: 'size', required: false })
   @ApiQuery({ name: 'assignedTo', required: false })
   @ApiQuery({ name: 'search', required: false })
   async findAll(
@@ -41,7 +40,6 @@ export class ExtensionsController {
     @Query('deliveryStage') deliveryStage?: string,
     @Query('deliveryWorkStatus') deliveryWorkStatus?: string,
     @Query('deliveryResolution') deliveryResolution?: string,
-    @Query('size') size?: string,
     @Query('assignedTo') assignedTo?: string,
     @Query('search') search?: string,
   ) {
@@ -55,7 +53,6 @@ export class ExtensionsController {
       deliveryStage,
       deliveryWorkStatus,
       deliveryResolution,
-      size,
       assignedTo,
       search,
     });
@@ -82,7 +79,6 @@ export class ExtensionsController {
       projectId: string;
       productId: string;
       name: string;
-      size?: string;
       assignedTo?: string;
       description?: string;
     },
@@ -98,7 +94,6 @@ export class ExtensionsController {
     body: {
       name?: string;
       productId?: string;
-      size?: string;
       assignedTo?: string | null;
       description?: string | null;
     },

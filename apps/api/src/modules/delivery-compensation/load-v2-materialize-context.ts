@@ -1,5 +1,10 @@
 import type { PrismaClient, TransactionClient } from '@nbos/database';
-import type { DeliveryCompensationRoleKey, DeliveryDesignMode } from '@nbos/shared';
+import {
+  DELIVERY_COMPENSATION_ROLE_KEYS,
+  type DeliveryCompensationRoleKey,
+  type DeliveryDesignMode,
+  type DeliveryRoleUnitInput,
+} from '@nbos/shared';
 
 export type DeliveryQueryClient = PrismaClient | TransactionClient;
 import {
@@ -42,45 +47,86 @@ export async function loadV2Assignees(
   return resolveExtensionRoleAssignees(rows);
 }
 
+type NormativeConfiguration = {
+  entityKind?: 'PRODUCT' | 'EXTENSION';
+  extensionId?: string | null;
+  designMode: string | null;
+  aiDesignerReview: boolean;
+  baseProfileVersion: { roleUnits: NormativeRoleUnitRow[] } | null;
+  features: Array<{
+    functionId: string;
+    tierId: string | null;
+    origin: 'INCLUDED' | 'EXTRA';
+    selectedPriceVersionId: string | null;
+    archivedAt: Date | null;
+  }>;
+};
+
 export async function loadV2Normatives(
   db: DeliveryQueryClient,
-  locked: {
-    designMode: string | null;
-    aiDesignerReview: boolean;
-    baseProfileVersion: { roleUnits: NormativeRoleUnitRow[] } | null;
-    features: Array<{
-      functionId: string;
-      tierId: string | null;
-      origin: 'INCLUDED' | 'EXTRA';
-      selectedPriceVersionId: string | null;
-      archivedAt: Date | null;
-    }>;
-  },
+  locked: NormativeConfiguration,
   asOf: Date,
 ): Promise<LoadedPublishedNormatives | null> {
-  if (!locked.baseProfileVersion) {
+  if (!locked.baseProfileVersion && !isExtensionWithoutCore(locked)) {
     return null;
   }
+  const loaded = await loadConfiguredNormatives(db, locked, asOf);
+  if (!isExtensionWithoutCore(locked)) {
+    return loaded;
+  }
+  return { ...loaded, baseRoleUnits: absentCoreUnits() };
+}
+
+function isExtensionWithoutCore(locked: NormativeConfiguration): boolean {
+  if (locked.baseProfileVersion) {
+    return false;
+  }
+  return locked.entityKind === 'EXTENSION' || Boolean(locked.extensionId);
+}
+
+function absentCoreUnits(): DeliveryRoleUnitInput[] {
+  return DELIVERY_COMPENSATION_ROLE_KEYS.map((roleKey) => ({
+    roleKey,
+    unitKind: 'NOT_REQUIRED',
+    units: null,
+  }));
+}
+
+async function loadConfiguredNormatives(
+  db: DeliveryQueryClient,
+  locked: NormativeConfiguration,
+  asOf: Date,
+): Promise<LoadedPublishedNormatives> {
   const active = locked.features.filter((feature) => feature.archivedAt === null);
   return loadPublishedDeliveryNormatives({
     asOf,
     designMode: (locked.designMode as DeliveryDesignMode | null) ?? 'AI_DESIGN',
     aiDesignerReview: locked.aiDesignerReview,
-    baseRoleUnits: locked.baseProfileVersion.roleUnits,
+    baseRoleUnits: locked.baseProfileVersion?.roleUnits ?? [],
     rates: await db.deliveryRoleRateVersion.findMany({ where: { status: 'PUBLISHED' } }),
     features: active.map((feature) => ({
       functionId: feature.functionId,
       origin: feature.origin,
       selectedPriceVersionId: feature.selectedPriceVersionId,
     })),
-    extraPriceVersions: await db.deliveryFunctionPriceVersion.findMany({
-      where: {
-        OR: active.map((feature) => ({
-          functionId: feature.functionId,
-          tierId: feature.tierId,
-        })),
-      },
-      include: { roleUnits: true },
-    }),
+    extraPriceVersions: await loadExtraPriceVersions(db, active),
+  });
+}
+
+async function loadExtraPriceVersions(
+  db: DeliveryQueryClient,
+  active: NormativeConfiguration['features'],
+) {
+  if (active.length === 0) {
+    return [];
+  }
+  return db.deliveryFunctionPriceVersion.findMany({
+    where: {
+      OR: active.map((feature) => ({
+        functionId: feature.functionId,
+        tierId: feature.tierId,
+      })),
+    },
+    include: { roleUnits: true },
   });
 }

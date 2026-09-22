@@ -52,7 +52,6 @@ function boardItemsForProduct(product: FullProduct): DeliveryBoardItem[] {
       id: extension.id,
       name: extension.name,
       status: extension.status,
-      size: extension.size,
       productId: product.id,
       projectId: product.projectId,
       assignee: extension.assignee,

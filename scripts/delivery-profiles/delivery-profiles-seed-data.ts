@@ -96,7 +96,6 @@ export type ProfileSeedVersion = {
 
 export const SEED_IMPLEMENTATION_BASE = 'FROM_SCRATCH';
 export const SEED_DESIGN_MODE = 'AI_DESIGN';
-export const SEED_ENTITY_KIND = 'PRODUCT';
 
 const RETIRED_SIZE_SLUGS = ['small', 'classic', 'large', 'very-large', 'enterprise'] as const;
 const RETIRED_KIND_STEMS = [MOBILE_APP_PROFILE.keyStem, SAAS_PROFILE.keyStem] as const;

@@ -80,12 +80,6 @@ export const EXTENSION_STATUSES = [
   { value: 'LOST', label: 'Lost', variant: 'red' as StatusVariant, color: 'bg-red-500' },
 ] as const;
 
-export const EXTENSION_SIZES = [
-  { value: 'SMALL', label: 'Small', variant: 'blue' as StatusVariant },
-  { value: 'STANDARD', label: 'Standard', variant: 'purple' as StatusVariant },
-  { value: 'LARGE', label: 'Large', variant: 'orange' as StatusVariant },
-] as const;
-
 export function getProductCategory(value: string) {
   return PRODUCT_CATEGORIES.find((c) => c.value === value);
 }
@@ -149,10 +143,6 @@ export function formatDeliveryHoldUntil(onHoldUntil: string | null) {
 
 export function getExtensionStatus(value: string) {
   return EXTENSION_STATUSES.find((s) => s.value === value);
-}
-
-export function getExtensionSize(value: string) {
-  return EXTENSION_SIZES.find((s) => s.value === value);
 }
 
 function toTitleCase(value: string) {

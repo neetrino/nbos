@@ -41,7 +41,6 @@ export type ProductPlanSnapshot = {
 
 export type ExtensionPlanSnapshot = {
   name: string;
-  size: string;
   assignedTo: string | null;
   assigneeLabel: string;
   assigneeAvatar: string | null;
@@ -84,7 +83,6 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
 export function snapshotExtensionPlan(e: FullExtension): ExtensionPlanSnapshot {
   return {
     name: e.name,
-    size: e.size,
     assignedTo: e.assignedTo,
     assigneeLabel: e.assignee ? `${e.assignee.firstName} ${e.assignee.lastName}` : '',
     assigneeAvatar: employeeAvatarUrl(e.assignee),
@@ -169,7 +167,7 @@ function productPlanTaxonomyPatch(
       productPlatform,
     };
   }
-    if (draft.productType !== snap.productType) {
+  if (draft.productType !== snap.productType) {
     if (!draft.productType) {
       return {};
     }
@@ -203,10 +201,6 @@ export function buildExtensionPlanPatch(
   const resolvedName = draft.name.trim() || snap.name;
   if (resolvedName !== snap.name) {
     patch.name = resolvedName;
-  }
-
-  if (draft.size !== snap.size) {
-    patch.size = draft.size;
   }
 
   if (draft.assignedTo !== snap.assignedTo) {

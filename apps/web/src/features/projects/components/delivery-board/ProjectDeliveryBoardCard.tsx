@@ -11,9 +11,8 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
-import type { DeliveryLifecycleProjection, ProjectExtensionSummary } from '@/lib/api/projects';
+import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
 import {
-  getExtensionSize,
   getDeliveryLifecycleVariant,
   formsProductTypeKey,
 } from '@/features/projects/constants/projects';
@@ -106,7 +105,7 @@ export function ProjectDeliveryBoardCard({
   const dealTypeVisual = getDealTypePresentation(isExtension ? 'EXTENSION' : 'PRODUCT');
   const title = isExtension ? item.extension.name : item.product.name;
   const metaLabel = isExtension
-    ? getExtensionMeta(item.extension)
+    ? null
     : tForms(formsProductTypeKey(item.product.productType) as never);
   const isClosedCompact = displayMode === 'closedCompact' && Boolean(lifecycle?.isTerminal);
   const stopKanbanPointerBubble = kanbanActionIsolation
@@ -290,10 +289,6 @@ function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection 
       variant={getDeliveryLifecycleVariant(lifecycle)}
     />
   );
-}
-
-function getExtensionMeta(extension: ProjectExtensionSummary) {
-  return getExtensionSize(extension.size)?.label ?? extension.size;
 }
 
 function DeliveryKanbanCardHoverActions({

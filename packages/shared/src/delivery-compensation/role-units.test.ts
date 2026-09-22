@@ -8,6 +8,7 @@ import {
   isPublishedRoleVectorComplete,
   isRoleUnitsConfigured,
   requiredAssigneeRoles,
+  sumPayableRoleUnits,
   type DeliveryRoleUnitInput,
 } from './role-units';
 
@@ -96,6 +97,20 @@ describe('delivery role units', () => {
         }),
       ),
     ).toEqual(['BACKEND', 'FRONTEND', 'PM', 'TECHNICAL_SPECIALIST']);
+  });
+
+  it('sums payable roles that have a number, including explicit zero', () => {
+    expect(
+      sumPayableRoleUnits([
+        { unitKind: 'REQUIRED', units: '10' },
+        { unitKind: 'OPTIONAL', units: '2.5' },
+        { unitKind: 'OPTIONAL', units: '0' },
+        { unitKind: 'NOT_REQUIRED', units: '8' },
+        { unitKind: 'REQUIRED', units: null },
+        { unitKind: 'OPTIONAL', units: '' },
+      ]),
+    ).toBe('12.5000');
+    expect(sumPayableRoleUnits([{ unitKind: 'REQUIRED', units: null }])).toBeNull();
   });
 
   it('requires all six roles in a published matrix', () => {

@@ -17,8 +17,8 @@ type ConfigurationRow = {
 };
 
 /**
- * Freezes the published base profile that prices the card's core. Matching is by product kind
- * only; implementation base, design mode and reviewer are written as frozen constants.
+ * Freezes the published core that prices a product card. Matching is by product kind only.
+ * An extension has no core, so this refuses to attach the parent product's norm to it.
  *
  * Refused once the plan is materialized: changing the core after money exists is a
  * reclassification, which canon routes through a separate corrective flow.
@@ -38,6 +38,10 @@ export async function applyConfigurationParameters(
   }
   if (configuration.initialRevisionId) {
     throwDeliveryCompensationError('REDISTRIBUTION_REQUIRED');
+  }
+  if (configuration.entityKind === 'EXTENSION') {
+    await confirmExtensionWithoutCore(db, input.configurationId, input.actorEmployeeId);
+    return;
   }
   const axes = frozenDeliveryAxes();
   const profile = await findPublishedProfile(db, configuration);
@@ -76,15 +80,35 @@ async function loadConfiguration(
   return row as ConfigurationRow;
 }
 
+/**
+ * An extension has no core. Confirmation still freezes the delivery axes and
+ * marks the card checked, without copying the parent product norm.
+ */
+export async function confirmExtensionWithoutCore(
+  db: TransactionClient,
+  configurationId: string,
+  actorEmployeeId?: string,
+): Promise<void> {
+  const axes = frozenDeliveryAxes();
+  await db.deliveryConfiguration.update({
+    where: { id: configurationId },
+    data: {
+      implementationBase: axes.implementationBase,
+      designMode: axes.designMode,
+      aiDesignerReview: axes.aiDesignerReview,
+      baseProfileVersionId: null,
+      checkedAt: new Date(),
+      checkedById: actorEmployeeId ?? null,
+    },
+  });
+}
+
 async function findPublishedProfile(
   db: TransactionClient,
   configuration: ConfigurationRow,
 ): Promise<{ id: string; includedFunctions: Array<{ functionId: string }> }> {
-  const product = configuration.product ?? configuration.extension?.product ?? null;
   const id = await findPublishedCoreId(db, {
-    entityKind: configuration.entityKind,
-    productType: product?.productType ?? null,
-    productCategory: product?.productCategory ?? null,
+    productType: configuration.product?.productType ?? null,
   });
   if (!id) {
     throwDeliveryCompensationError('NORMATIVE_NOT_CONFIGURED');

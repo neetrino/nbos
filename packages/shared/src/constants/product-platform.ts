@@ -33,6 +33,8 @@ export {
   WORDPRESS_PRODUCT_TYPES,
   codeProductTypesForPlatform,
   isOfferedCodeProductType,
+  isProductTypeOfferedForNewProduct,
+  productTypesOfferedForNewProduct,
 } from './product-types';
 
 export const PRODUCT_PLATFORMS = ['WEB', 'APP', 'DESKTOP'] as const;

@@ -60,12 +60,12 @@ function OverviewCounts({
       <CountCard
         label={t('profiles', { count: data.profiles.length })}
         published={countPublished(data.profiles)}
-        onOpen={() => onOpen('profiles')}
+        onOpen={() => onOpen('unitCore')}
       />
       <CountCard
         label={t('functions', { count: data.prices.length })}
         published={countPublished(data.prices)}
-        onOpen={() => onOpen('functions')}
+        onOpen={() => onOpen('unitFunction')}
       />
       <CountCard
         label={t('sale', { count: data.salePrices.length })}

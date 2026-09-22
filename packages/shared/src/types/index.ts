@@ -23,7 +23,6 @@ import type {
   PRODUCT_TYPES,
   LEAD_SOURCES,
   DEAL_TYPES,
-  EXTENSION_SIZES,
   PARTNER_TYPES,
   PARTNER_DIRECTIONS,
 } from '../constants';
@@ -52,7 +51,6 @@ export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
 export type ProductType = (typeof PRODUCT_TYPES)[number];
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 export type DealType = (typeof DEAL_TYPES)[number];
-export type ExtensionSize = (typeof EXTENSION_SIZES)[number];
 export type PartnerType = (typeof PARTNER_TYPES)[number];
 export type PartnerDirection = (typeof PARTNER_DIRECTIONS)[number];
 

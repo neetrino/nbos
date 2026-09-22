@@ -76,14 +76,7 @@ export class DeliveryCompensationRulesPublishService {
       await tx.deliveryBaseProfileVersion.updateMany({
         where: {
           status: 'PUBLISHED',
-          OR: [
-            { profileKey: draft.profileKey },
-            {
-              entityKind: draft.entityKind,
-              productType: draft.productType,
-              productCategory: draft.productCategory,
-            },
-          ],
+          OR: [{ profileKey: draft.profileKey }, { productType: draft.productType }],
         },
         data: { status: 'ARCHIVED' },
       });

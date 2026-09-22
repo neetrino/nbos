@@ -3,6 +3,7 @@ import {
   type DeliveryCompensationRoleKey,
   type DeliveryRoleUnitKind,
 } from './constants';
+import { addScaled, parseUnits, scaledToString, type ScaledDecimal } from './decimal-scale';
 
 export type DeliveryRoleUnitInput = {
   roleKey: DeliveryCompensationRoleKey;
@@ -56,6 +57,30 @@ export function requiredAssigneeRoles(
   rows: readonly DeliveryRoleUnitInput[],
 ): DeliveryCompensationRoleKey[] {
   return rows.filter((row) => roleKindRequiresAssignee(row.unitKind)).map((row) => row.roleKey);
+}
+
+/**
+ * Sum of roles marked needed or if-present when a number is set.
+ * "None" and a blank number do not enter the sum. Explicit zero does.
+ */
+export function sumPayableRoleUnits(
+  rows: readonly Pick<DeliveryRoleUnitInput, 'unitKind' | 'units'>[],
+): string | null {
+  let total: ScaledDecimal | null = null;
+  for (const row of rows) {
+    const units = payableUnits(row);
+    if (units === null) continue;
+    const next = parseUnits(units);
+    total = total === null ? next : addScaled(total, next);
+  }
+  return total === null ? null : scaledToString(total);
+}
+
+function payableUnits(row: Pick<DeliveryRoleUnitInput, 'unitKind' | 'units'>): string | null {
+  if (!roleKindPaysUnits(row.unitKind) || row.units === null || row.units.trim() === '') {
+    return null;
+  }
+  return row.units;
 }
 
 export function isPublishedRoleVectorComplete(rows: readonly DeliveryRoleUnitInput[]): boolean {

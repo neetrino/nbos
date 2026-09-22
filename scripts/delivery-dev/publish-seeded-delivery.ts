@@ -164,21 +164,14 @@ async function publishCore(
   }
   const current = await prisma.deliveryBaseProfileVersion.findUnique({
     where: { id: core.id },
-    select: { profileKey: true, entityKind: true, productType: true, productCategory: true },
+    select: { profileKey: true, productType: true },
   });
   if (!current) return 0;
   await prisma.$transaction(async (tx) => {
     await tx.deliveryBaseProfileVersion.updateMany({
       where: {
         status: 'PUBLISHED',
-        OR: [
-          { profileKey: current.profileKey },
-          {
-            entityKind: current.entityKind,
-            productType: current.productType,
-            productCategory: current.productCategory,
-          },
-        ],
+        OR: [{ profileKey: current.profileKey }, { productType: current.productType }],
       },
       data: { status: 'ARCHIVED' },
     });

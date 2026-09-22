@@ -186,11 +186,12 @@ model DeliveryFunctionPriceRoleUnit {
   @@map("delivery_function_price_role_units")
 }
 
+/// One core per product kind. An extension has no core of its own: `entity_kind` stays on the
+/// configuration and the delivery card, not on this norm.
 model DeliveryBaseProfileVersion {
   id                 String                         @id @default(uuid())
   profileKey         String                         @map("profile_key")
   version            Int
-  entityKind         DeliveryEntityKindEnum         @map("entity_kind")
   productType        ProductTypeEnum?               @map("product_type")
   productCategory    ProductCategoryEnum?           @map("product_category")
   implementationBase DeliveryImplementationBaseEnum @map("implementation_base")
@@ -212,7 +213,7 @@ model DeliveryBaseProfileVersion {
 
   @@unique([profileKey, version])
   @@index([profileKey, status])
-  @@index([entityKind, status])
+  @@index([productType, status])
   @@map("delivery_base_profile_versions")
 }
 

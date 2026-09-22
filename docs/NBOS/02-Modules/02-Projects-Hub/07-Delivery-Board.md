@@ -71,7 +71,6 @@ Delivery Board не использует старую project-level класси
 
 - `Product.productCategory`;
 - `Product.productType`;
-- `Extension.size`;
 - stage requirements;
 - checklist template assignment.
 
@@ -573,7 +572,6 @@ Stage gate requirements должны быть configuration-driven.
 
 - entity kind: `Product` / `Extension`;
 - product type: Website / Mobile App / CRM / Logo / Other;
-- extension size/scope;
 - payment model: Classic / Subscription;
 - current stage;
 - role ownership;
@@ -617,7 +615,7 @@ StageRequirement
   id
   entityKind
   stage
-  productType / extensionSize
+  productType
   title
   description
   required
@@ -672,7 +670,6 @@ Checklist можно завершить, если все `decisionRequired` item
 
 - `Product.productCategory`;
 - `Product.productType`;
-- `Extension.size`;
 - payment model;
 - technical profile;
 - selected stage requirement set.

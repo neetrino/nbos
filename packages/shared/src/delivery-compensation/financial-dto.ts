@@ -20,6 +20,7 @@ export type DeliveryBaseProfileFinancialDto = {
   id: string;
   profileKey: string;
   version: number;
+  productType: string | null;
   status: string;
   roleUnits: DeliveryRoleUnitFinancialDto[];
   includedFunctionIds: string[];

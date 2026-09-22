@@ -290,12 +290,6 @@ model ProductAccessSlotBinding {
   @@map("product_access_slot_bindings")
 }
 
-enum ExtensionSizeEnum {
-  SMALL
-  STANDARD
-  LARGE
-}
-
 enum ExtensionStatusEnum {
   NEW
   DEVELOPMENT
@@ -310,7 +304,6 @@ model Extension {
   projectId          String                  @map("project_id")
   productId          String                  @map("product_id")
   name               String
-  size               ExtensionSizeEnum       @default(SMALL)
   status             ExtensionStatusEnum     @default(NEW)
   deliveryStage      DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
   deliveryWorkStatus DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")

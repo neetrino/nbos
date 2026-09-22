@@ -3,10 +3,10 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ClipboardList, Layers, Package, Tag } from 'lucide-react';
+import { ClipboardList, Package, Tag } from 'lucide-react';
 import { DetailSheetCollapsibleSection, EntityNotesField, InlineField } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
-import { EXTENSION_SIZES, formsProductTypeKey } from '@/features/projects/constants/projects';
+import { formsProductTypeKey } from '@/features/projects/constants/projects';
 import { cn } from '@/lib/utils';
 import type { ExtensionPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
@@ -24,6 +24,106 @@ function ExtensionPlanProductLine({ extension }: { extension: FullExtension }) {
         <span className="text-foreground font-medium">{t('plan.productLine')} </span>
         {typeLabel}
       </span>
+    </div>
+  );
+}
+
+function ExtensionPlanFields({
+  extension,
+  draft,
+  disabled,
+  gateRequiredFields,
+  stageChecklist,
+  onDraftChange,
+}: {
+  extension: FullExtension;
+  draft: ExtensionPlanSnapshot;
+  disabled: boolean;
+  gateRequiredFields: ReadonlySet<string>;
+  stageChecklist?: ReactNode;
+  onDraftChange: (next: ExtensionPlanSnapshot) => void;
+}) {
+  const t = useTranslations('deliveryBoard');
+  const patchDraft = (partial: Partial<ExtensionPlanSnapshot>) => {
+    onDraftChange({ ...draft, ...partial });
+  };
+
+  return (
+    <div className="flex min-w-0 flex-col gap-3">
+      <InlineField
+        variant="controlled"
+        label={t('plan.extensionName')}
+        value={draft.name}
+        icon={<Package size={12} />}
+        placeholder={t('sheet.namePlaceholder')}
+        disabled={disabled}
+        onValueChange={(v) => patchDraft({ name: v })}
+      />
+      <ExtensionPlanProductLine extension={extension} />
+      <ExtensionPlanNotes
+        extensionId={extension.id}
+        description={draft.description}
+        disabled={disabled}
+        gateRequiredFields={gateRequiredFields}
+        placeholder={t('plan.extensionNotesPlaceholder')}
+        onDescriptionChange={(description) => patchDraft({ description })}
+      />
+      <ExtensionPlanLanguages
+        languages={extension.product.languages ?? []}
+        disabled={disabled}
+        stageChecklist={stageChecklist}
+      />
+    </div>
+  );
+}
+
+function ExtensionPlanNotes({
+  extensionId,
+  description,
+  disabled,
+  gateRequiredFields,
+  placeholder,
+  onDescriptionChange,
+}: {
+  extensionId: string;
+  description: string;
+  disabled: boolean;
+  gateRequiredFields: ReadonlySet<string>;
+  placeholder: string;
+  onDescriptionChange: (description: string) => void;
+}) {
+  return (
+    <div className={deliveryStageGateFieldClass(gateRequiredFields, 'description', '')}>
+      <EntityNotesField
+        entityType="generic"
+        entityId={extensionId}
+        value={description}
+        onChange={(next) => onDescriptionChange(next ?? '')}
+        placeholder={placeholder}
+        disabled={disabled}
+      />
+    </div>
+  );
+}
+
+function ExtensionPlanLanguages({
+  languages,
+  disabled,
+  stageChecklist,
+}: {
+  languages: string[];
+  disabled: boolean;
+  stageChecklist?: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        'grid grid-cols-1 gap-3',
+        stageChecklist ? 'sm:grid-cols-2 sm:items-start' : undefined,
+      )}
+    >
+      <DeliveryItemLanguagesMultiselect value={languages} readOnly disabled={disabled} />
+      {stageChecklist}
     </div>
   );
 }
@@ -46,9 +146,6 @@ export function ExtensionPlanningSection({
 }) {
   const t = useTranslations('deliveryBoard');
   const [sectionOpen, setSectionOpen] = useState(true);
-  const patchDraft = (partial: Partial<ExtensionPlanSnapshot>) => {
-    onDraftChange({ ...draft, ...partial });
-  };
 
   return (
     <DetailSheetCollapsibleSection
@@ -58,55 +155,14 @@ export function ExtensionPlanningSection({
       onOpenChange={setSectionOpen}
       className="shadow-sm"
     >
-      <div className="flex min-w-0 flex-col gap-3">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <InlineField
-            variant="controlled"
-            label={t('plan.extensionName')}
-            value={draft.name}
-            icon={<Package size={12} />}
-            placeholder={t('sheet.namePlaceholder')}
-            disabled={disabled}
-            onValueChange={(v) => patchDraft({ name: v })}
-          />
-          <InlineField
-            variant="controlled"
-            label={t('plan.size')}
-            type="select"
-            value={draft.size}
-            options={EXTENSION_SIZES.map((s) => ({ value: s.value, label: s.label }))}
-            icon={<Layers size={12} />}
-            disabled={disabled}
-            onValueChange={(v) => {
-              if (v) patchDraft({ size: v });
-            }}
-          />
-        </div>
-        <ExtensionPlanProductLine extension={extension} />
-        <div className={deliveryStageGateFieldClass(gateRequiredFields, 'description', '')}>
-          <EntityNotesField
-            entityType="generic"
-            entityId={extension.id}
-            value={draft.description}
-            onChange={(description) => patchDraft({ description: description ?? '' })}
-            placeholder={t('plan.extensionNotesPlaceholder')}
-            disabled={disabled}
-          />
-        </div>
-        <div
-          className={cn(
-            'grid grid-cols-1 gap-3',
-            stageChecklist ? 'sm:grid-cols-2 sm:items-start' : undefined,
-          )}
-        >
-          <DeliveryItemLanguagesMultiselect
-            value={extension.product.languages ?? []}
-            readOnly
-            disabled={disabled}
-          />
-          {stageChecklist}
-        </div>
-      </div>
+      <ExtensionPlanFields
+        extension={extension}
+        draft={draft}
+        disabled={disabled}
+        gateRequiredFields={gateRequiredFields}
+        stageChecklist={stageChecklist}
+        onDraftChange={onDraftChange}
+      />
     </DetailSheetCollapsibleSection>
   );
 }
