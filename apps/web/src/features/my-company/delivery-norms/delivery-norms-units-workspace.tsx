@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import { CoreUnitsSection } from './core-units-section';
-import { DeliveryNormsPanelHeader } from './delivery-norms-panel-header';
 import { type DeliveryNormsUnitTab } from './delivery-norms-workspace';
 import { FunctionPricesSection } from './function-prices-section';
 import type { DeliveryNormsPageData } from './use-delivery-norms-page-data';
@@ -28,14 +27,8 @@ export function DeliveryNormsUnitsWorkspace({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const options = useUnitTabOptions(t);
-  const copy = unitPanelCopy(unitTab, t);
   return (
     <div className="space-y-5">
-      <DeliveryNormsPanelHeader
-        index={t('workspace.map.units.index')}
-        title={copy.title}
-        description={copy.description}
-      />
       <PageHeroTabs
         value={unitTab}
         onChange={onUnitTabChange}
@@ -105,14 +98,4 @@ function useUnitTabOptions(
     ],
     [t],
   );
-}
-
-function unitPanelCopy(
-  tab: DeliveryNormsUnitTab,
-  t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
-): { title: string; description: string } {
-  if (tab === 'function') {
-    return { title: t('prices.title'), description: t('prices.subtitle') };
-  }
-  return { title: t('cores.title'), description: t('cores.subtitle') };
 }

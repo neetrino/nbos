@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/shared';
 import type { DeliveryNormsPageData } from './use-delivery-norms-page-data';
 import { DeliveryNormsModelMap } from './delivery-norms-model-map';
-import { DeliveryNormsPanelHeader } from './delivery-norms-panel-header';
 import { OVERVIEW_COUNT_CARD_CLASS } from './delivery-norms.constants';
 import { countPublished, type DeliveryNormsMapKey } from './delivery-norms-workspace';
 import { EnrollmentSwitchSection } from './enrollment-switch-section';
@@ -22,14 +21,8 @@ export function DeliveryNormsOverviewSection({
   onError: (message: string) => void;
   onOpen: (key: DeliveryNormsMapKey) => void;
 }) {
-  const t = useTranslations('hr.deliveryNorms.workspace');
   return (
     <div className="space-y-5">
-      <DeliveryNormsPanelHeader
-        index={t('overview.index')}
-        title={t('overview.title')}
-        description={t('overview.lead')}
-      />
       <EnrollmentSwitchSection
         setting={data.enrollment}
         canToggle={canToggle}

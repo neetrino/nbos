@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import type { DeliveryNormsPageData } from './use-delivery-norms-page-data';
 import { CoreItemsSection } from './core-items-section';
-import { DeliveryNormsPanelHeader } from './delivery-norms-panel-header';
 import { type DeliveryNormsProfileTab } from './delivery-norms-workspace';
 import { FunctionCollectionsSection } from './function-collections-section';
 
@@ -32,15 +31,9 @@ export function DeliveryNormsProfileWorkspace({
     ],
     [t],
   );
-  const copy = profilePanelCopy(profileTab, t);
 
   return (
     <div className="space-y-5">
-      <DeliveryNormsPanelHeader
-        index={t('workspace.map.profiles.index')}
-        title={copy.title}
-        description={copy.description}
-      />
       <PageHeroTabs
         value={profileTab}
         onChange={onProfileTabChange}
@@ -93,14 +86,4 @@ function ProfileTabBody({
       embedded
     />
   );
-}
-
-function profilePanelCopy(
-  tab: DeliveryNormsProfileTab,
-  t: ReturnType<typeof useTranslations<'hr.deliveryNorms'>>,
-): { title: string; description: string } {
-  if (tab === 'collections') {
-    return { title: t('collections.title'), description: t('collections.subtitle') };
-  }
-  return { title: t('coreItems.title'), description: t('coreItems.subtitle') };
 }

@@ -1,8 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { DeliveryNormsOverviewSection } from './delivery-norms-overview-section';
-import { DeliveryNormsPanelHeader } from './delivery-norms-panel-header';
 import { DeliveryNormsProfileWorkspace } from './delivery-norms-profile-workspace';
 import { DeliveryNormsUnitsWorkspace } from './delivery-norms-units-workspace';
 import type {
@@ -108,14 +106,6 @@ function SpecialNormsTab(props: DeliveryNormsTabPanelProps) {
   );
 }
 
-const DOMAIN_COPY = {
-  rates: {
-    index: 'workspace.map.rates.index',
-    title: 'rates.title',
-    subtitle: 'rates.subtitle',
-  },
-} as const;
-
 function DomainEditor({
   tab,
   data,
@@ -131,8 +121,7 @@ function DomainEditor({
   onChanged: () => void;
   onError: (message: string) => void;
 }) {
-  const t = useTranslations('hr.deliveryNorms');
-  const body = (
+  return (
     <DomainEditorBody
       tab={tab}
       data={data}
@@ -141,18 +130,6 @@ function DomainEditor({
       onChanged={onChanged}
       onError={onError}
     />
-  );
-  if (tab === 'sale') return body;
-  const copy = DOMAIN_COPY[tab];
-  return (
-    <div className="space-y-5">
-      <DeliveryNormsPanelHeader
-        index={t(copy.index)}
-        title={t(copy.title)}
-        description={t(copy.subtitle)}
-      />
-      {body}
-    </div>
   );
 }
 
