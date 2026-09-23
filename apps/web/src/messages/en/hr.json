@@ -433,9 +433,9 @@
       "tabs": {
         "general": "General",
         "units": "Units",
-        "price": "Sale price",
+        "price": "Sales",
         "composition": "Composition",
-        "included": "Included in base",
+        "included": "Included",
         "collections": "Collections"
       },
       "functionAria": "Function card sections",

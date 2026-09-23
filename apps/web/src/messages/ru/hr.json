@@ -433,9 +433,9 @@
       "tabs": {
         "general": "Основное",
         "units": "Units",
-        "price": "Цена продажи",
+        "price": "Sales",
         "composition": "Состав",
-        "included": "Входит в базу",
+        "included": "В базе",
         "collections": "Комплекты"
       },
       "functionAria": "Разделы карточки функции",

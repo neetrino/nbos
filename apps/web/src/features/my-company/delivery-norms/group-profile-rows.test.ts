@@ -19,6 +19,7 @@ function row(id: string, profileKey: string): DeliveryBaseProfileFinancialDto {
     status: 'DRAFT',
     roleUnits: [],
     includedFunctionIds: [],
+    coreItems: [],
   };
 }
 

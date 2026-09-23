@@ -5,7 +5,10 @@ import { useTranslations } from 'next-intl';
 import type { DeliveryRoleUnitFinancialDto } from '@nbos/shared';
 import { DataView, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
+import {
+  deliveryCatalogStructureApi,
+  type CoreItemDto,
+} from '@/lib/api/delivery-catalog-structure';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { CoreItemCreateForm } from './core-item-create-form';
 import {
@@ -25,6 +28,7 @@ export function CoreItemsEditor({
   versionId,
   status,
   roleUnits,
+  initialItems,
   editable,
   onError,
   onChanged,
@@ -32,11 +36,12 @@ export function CoreItemsEditor({
   versionId: string;
   status: string;
   roleUnits: DeliveryRoleUnitFinancialDto[];
+  initialItems?: readonly CoreItemDto[];
   editable: boolean;
   onError: (message: string) => void;
   onChanged: () => void;
 }) {
-  const editor = useCoreItemDrafts(versionId);
+  const editor = useCoreItemDrafts(versionId, initialItems);
   return (
     <div className="space-y-4">
       <CoreItemsNotice editable={editable} status={status} />
@@ -138,8 +143,8 @@ function CoreItemsSaveBar({
 
 type CoreItemEditorState = ReturnType<typeof useCoreItemDrafts>;
 
-function useCoreItemDrafts(versionId: string) {
-  const { items, loading, error, load } = useCoreItems(versionId);
+function useCoreItemDrafts(versionId: string, initialItems?: readonly CoreItemDto[]) {
+  const { items, loading, error, load } = useCoreItems(versionId, initialItems);
   const [drafts, setDrafts] = useState<CoreItemDraft[]>(() => coreItemDraftsFromDto(items));
   const [seenItems, setSeenItems] = useState(items);
   const [saving, setSaving] = useState(false);

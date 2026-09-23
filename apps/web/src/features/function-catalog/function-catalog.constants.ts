@@ -1,5 +1,8 @@
 export const FUNCTION_CATALOG_ALL_ID = 'all' as const;
 
+/** First paint for the Functions tab: card-visible rows only, not the full catalog. */
+export const CATALOG_FIRST_PAINT_PAGE_SIZE = 5;
+
 export const FUNCTION_CATALOG_OTHER_ID = 'other' as const;
 
 export const FUNCTION_CATALOG_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]';

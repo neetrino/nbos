@@ -8,12 +8,9 @@ import {
 } from '@nbos/shared';
 import { useRevalidationState } from '@/hooks/use-revalidation-state';
 import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
-import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
-import { deliveryFunctionsApi } from '@/lib/api/delivery-functions';
-import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { usePermission } from '@/lib/permissions';
-import { visibleSalePriceByFunctionId, type VisibleSalePrice } from './function-catalog-sale-price';
-import { loadCatalogUnitsIfPermitted } from './function-catalog-units';
+import { loadCatalogQuery, type CatalogQuerySnapshot } from './load-function-catalog-query';
+import type { VisibleSalePrice } from './function-catalog-sale-price';
 
 export function useFunctionCatalogQuery(params: { search: string; status?: string }) {
   const t = useTranslations('hr.functionCatalog');
@@ -29,61 +26,43 @@ export function useFunctionCatalogQuery(params: { search: string; status?: strin
   const itemsRef = useRef(items);
   itemsRef.current = items;
 
+  const apply = useCallback((snapshot: CatalogQuerySnapshot) => {
+    setItems(snapshot.items);
+    setUnitsByFunctionId(snapshot.unitsByFunctionId);
+    setSalePriceByFunctionId(snapshot.salePriceByFunctionId);
+  }, []);
+
   const load = useCallback(async () => {
-    begin(itemsRef.current.length > 0);
+    const hasVisibleItems = itemsRef.current.length > 0;
+    begin(hasVisibleItems);
     try {
-      const loaded = await loadCatalogQuery(
-        { search: params.search, status: params.status },
+      const loaded = await loadCatalogQuery({
+        search: params.search,
+        status: params.status,
         canSeeRules,
-      );
-      setItems(loaded.items);
-      setUnitsByFunctionId(loaded.unitsByFunctionId);
-      setSalePriceByFunctionId(loaded.salePriceByFunctionId);
+        hasVisibleItems,
+        onFirstPaint: hasVisibleItems
+          ? undefined
+          : (snapshot) => {
+              apply(snapshot);
+              end();
+            },
+      });
+      apply(loaded);
       setError(null);
     } catch (caught) {
       setError(getApiErrorMessage(caught, t('loadFailed')));
       if (isAccessRevokedApiError(caught)) {
-        setItems([]);
-        setUnitsByFunctionId(undefined);
-        setSalePriceByFunctionId(new Map());
+        apply({ items: [], unitsByFunctionId: undefined, salePriceByFunctionId: new Map() });
       }
     } finally {
       end();
     }
-  }, [begin, canSeeRules, end, params.search, params.status, t]);
+  }, [apply, begin, canSeeRules, end, params.search, params.status, t]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   return { items, unitsByFunctionId, salePriceByFunctionId, loading, error, reload: load };
-}
-
-async function loadCatalogQuery(
-  params: { search: string; status?: string },
-  canSeeRules: boolean,
-): Promise<{
-  items: DeliveryFunctionOperationalDto[];
-  unitsByFunctionId: Map<string, number> | undefined;
-  salePriceByFunctionId: Map<string, VisibleSalePrice>;
-}> {
-  const [nextItems, saleVersions] = await Promise.all([
-    deliveryFunctionsApi.listAll({
-      search: params.search || undefined,
-      status: params.status,
-    }),
-    deliveryCatalogStructureApi.listSalePrices(),
-  ]);
-  const unitsByFunctionId = await loadCatalogUnitsIfPermitted(canSeeRules, () =>
-    deliveryNormsApi.listFunctionPrices(),
-  );
-  return {
-    items: nextItems,
-    unitsByFunctionId,
-    salePriceByFunctionId: visibleSalePriceByFunctionId(
-      nextItems.map((item) => item.id),
-      saleVersions,
-      canSeeRules,
-    ),
-  };
 }

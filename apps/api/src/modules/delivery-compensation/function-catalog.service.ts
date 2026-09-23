@@ -12,13 +12,32 @@ import {
   type CatalogListQuery,
 } from './catalog-list-query';
 import { isPrismaUniqueConstraint } from './prisma-unique';
-import { serializeOperationalFunction } from './serialize-operational-function';
+import {
+  serializeCardFunction,
+  serializeOperationalFunction,
+} from './serialize-operational-function';
 
 const CONTENT_INCLUDE = {
   contentVersions: {
     orderBy: { version: 'desc' as const },
     include: {
       attachments: { orderBy: { sortOrder: 'asc' as const } },
+    },
+  },
+  tiers: {
+    orderBy: { position: 'asc' as const },
+    select: { id: true, code: true, label: true, position: true },
+  },
+} as const;
+
+const CARD_INCLUDE = {
+  contentVersions: {
+    orderBy: { version: 'desc' as const },
+    select: {
+      version: true,
+      title: true,
+      summary: true,
+      publishedAt: true,
     },
   },
   tiers: {
@@ -174,11 +193,11 @@ export class FunctionCatalogService {
         orderBy: { code: 'asc' },
         skip: query.skip,
         take: query.pageSize,
-        include: CONTENT_INCLUDE,
+        include: CARD_INCLUDE,
       }),
     ]);
     return {
-      items: rows.map(serializeOperationalFunction),
+      items: rows.map(serializeCardFunction),
       meta: { total, page: query.page, pageSize: query.pageSize },
     };
   }

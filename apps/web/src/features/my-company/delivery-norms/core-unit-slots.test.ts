@@ -16,6 +16,7 @@ function row(
     status,
     roleUnits: [],
     includedFunctionIds: [],
+    coreItems: [],
   };
 }
 

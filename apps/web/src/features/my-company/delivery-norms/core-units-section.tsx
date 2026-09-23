@@ -40,6 +40,7 @@ export function CoreUnitsSection(props: CoreUnitsSectionProps) {
       <CoreUnitsBrowser
         slots={slots}
         labels={labels}
+        salePrices={props.salePrices}
         canAdd={props.canAdd}
         canPublish={props.canPublish}
         onOpen={setOpenType}

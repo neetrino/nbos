@@ -32,6 +32,7 @@ export type BaseProfileRecord = {
   status: string;
   roleUnits: readonly RoleUnitRecord[];
   includedFunctions: readonly { functionId: string }[];
+  coreItems?: readonly { id: string; position: number; label: string; note: string | null }[];
 };
 
 export type RoleRateRecord = {
@@ -73,6 +74,12 @@ export function serializeBaseProfile(row: BaseProfileRecord): DeliveryBaseProfil
     status: row.status,
     roleUnits: serializeRoleUnits(row.roleUnits),
     includedFunctionIds: row.includedFunctions.map((link) => link.functionId),
+    coreItems: (row.coreItems ?? []).map((item) => ({
+      id: item.id,
+      position: item.position,
+      label: item.label,
+      note: item.note,
+    })),
   };
 }
 

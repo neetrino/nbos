@@ -433,9 +433,9 @@
       "tabs": {
         "general": "Հիմնական",
         "units": "Units",
-        "price": "Վաճառքի գին",
+        "price": "Sales",
         "composition": "Կազմ",
-        "included": "Ներառված է բազայում",
+        "included": "Բազա",
         "collections": "Հավաքածուներ"
       },
       "functionAria": "Ֆունկցիայի քարտի բաժիններ",

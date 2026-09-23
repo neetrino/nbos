@@ -67,6 +67,10 @@ export class DeliveryCompensationRulesService {
       include: {
         roleUnits: { orderBy: { roleKey: 'asc' } },
         includedFunctions: { select: { functionId: true } },
+        coreItems: {
+          orderBy: { position: 'asc' },
+          select: { id: true, position: true, label: true, note: true },
+        },
       },
     });
     return rows.map(serializeBaseProfile);

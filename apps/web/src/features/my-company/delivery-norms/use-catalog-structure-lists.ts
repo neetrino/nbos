@@ -11,12 +11,24 @@ import { messageFromCaught } from './message-from-caught';
 const EMPTY_CORE_ITEMS: CoreItemDto[] = [];
 const EMPTY_COLLECTIONS: FunctionCollectionDto[] = [];
 
-export function useCoreItems(profileVersionId: string | null) {
+export function useCoreItems(
+  profileVersionId: string | null,
+  seededItems?: readonly CoreItemDto[],
+) {
   const t = useTranslations('hr.deliveryNorms');
-  const [items, setItems] = useState<CoreItemDto[]>(EMPTY_CORE_ITEMS);
-  const [loading, setLoading] = useState(profileVersionId !== null);
+  const hasSeed = seededItems !== undefined;
+  const [items, setItems] = useState<CoreItemDto[]>(
+    seededItems ? [...seededItems] : EMPTY_CORE_ITEMS,
+  );
+  const [loading, setLoading] = useState(!hasSeed && profileVersionId !== null);
   const [error, setError] = useState<string | null>(null);
+  const [seenSeed, setSeenSeed] = useState(seededItems);
   const fallback = t('errors.load');
+  if (hasSeed && seededItems !== seenSeed) {
+    setSeenSeed(seededItems);
+    setItems([...seededItems]);
+    setLoading(false);
+  }
 
   const load = useCallback(async () => {
     if (profileVersionId === null) {
@@ -25,7 +37,7 @@ export function useCoreItems(profileVersionId: string | null) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!hasSeed) setLoading(true);
     try {
       setItems(await deliveryCatalogStructureApi.listCoreItems(profileVersionId));
       setError(null);
@@ -37,11 +49,12 @@ export function useCoreItems(profileVersionId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [fallback, profileVersionId]);
+  }, [fallback, hasSeed, profileVersionId]);
 
   useEffect(() => {
+    if (hasSeed) return;
     void load();
-  }, [load]);
+  }, [hasSeed, load]);
 
   return { items, loading, error, load };
 }

@@ -16,6 +16,13 @@ export type DeliveryFunctionPriceFinancialDto = {
   roleUnits: DeliveryRoleUnitFinancialDto[];
 };
 
+export type DeliveryCoreItemFinancialDto = {
+  id: string;
+  position: number;
+  label: string;
+  note: string | null;
+};
+
 export type DeliveryBaseProfileFinancialDto = {
   id: string;
   profileKey: string;
@@ -24,6 +31,7 @@ export type DeliveryBaseProfileFinancialDto = {
   status: string;
   roleUnits: DeliveryRoleUnitFinancialDto[];
   includedFunctionIds: string[];
+  coreItems: DeliveryCoreItemFinancialDto[];
 };
 
 export type DeliveryRoleRateFinancialDto = {

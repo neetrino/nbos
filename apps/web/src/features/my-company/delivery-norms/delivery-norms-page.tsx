@@ -58,7 +58,7 @@ export function DeliveryNormsPage() {
         />
       ) : null}
       <DataView
-        loading={loading}
+        loading={loading && section !== 'functions'}
         error={error}
         hasData={canSeeCatalog || hasDeliveryNormsData(data)}
         loadingFallback={<LoadingState variant="cards" count={LOADING_CARD_COUNT} />}

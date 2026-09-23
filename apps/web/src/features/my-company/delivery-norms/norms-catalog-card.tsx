@@ -13,6 +13,8 @@ const CARD_CLASS =
 export function NormsCatalogCard({
   title,
   unitsLabel,
+  salePriceLabel,
+  includedLabel,
   status,
   statusLabel,
   iconKey,
@@ -22,6 +24,8 @@ export function NormsCatalogCard({
 }: {
   title: string;
   unitsLabel: string;
+  salePriceLabel?: string | null;
+  includedLabel?: string | null;
   status: string | null;
   statusLabel: string | null;
   iconKey?: string;
@@ -38,7 +42,14 @@ export function NormsCatalogCard({
         onClick={onOpen}
       >
         {iconKey ? <CardIcon iconKey={iconKey} /> : null}
-        <CardBody title={title} unitsLabel={unitsLabel} status={status} statusLabel={statusLabel} />
+        <CardBody
+          title={title}
+          unitsLabel={unitsLabel}
+          salePriceLabel={salePriceLabel}
+          includedLabel={includedLabel}
+          status={status}
+          statusLabel={statusLabel}
+        />
       </button>
       {publish}
     </div>
@@ -56,11 +67,15 @@ function CardIcon({ iconKey }: { iconKey: string }) {
 function CardBody({
   title,
   unitsLabel,
+  salePriceLabel,
+  includedLabel,
   status,
   statusLabel,
 }: {
   title: string;
   unitsLabel: string;
+  salePriceLabel?: string | null;
+  includedLabel?: string | null;
   status: string | null;
   statusLabel: string | null;
 }) {
@@ -72,6 +87,9 @@ function CardBody({
         {status && statusLabel ? (
           <NormativeStatusBadge status={status} label={statusLabel} />
         ) : null}
+        {salePriceLabel ? (
+          <span className="text-foreground text-xs font-medium tabular-nums">{salePriceLabel}</span>
+        ) : null}
         <span
           className={cn(
             'text-xs tabular-nums',
@@ -80,6 +98,9 @@ function CardBody({
         >
           {unitsLabel}
         </span>
+        {includedLabel ? (
+          <span className="text-muted-foreground text-xs">{includedLabel}</span>
+        ) : null}
       </span>
     </span>
   );

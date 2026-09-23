@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { useTranslations } from 'next-intl';
 import type {
   DeliveryBaseProfileFinancialDto,
@@ -48,8 +48,10 @@ export function useDeliveryNormsPageData(enabled: boolean) {
     }
     setLoading(true);
     try {
-      setData(await fetchDeliveryNorms());
+      const next = await fetchDeliveryNorms();
+      setData((prev) => ({ ...next, catalog: prev.catalog }));
       setError(null);
+      fillFunctionCatalog(setData);
     } catch (caught) {
       // Rates and units must not stay on screen once the server refuses the read.
       if (isAccessRevokedApiError(caught)) {
@@ -68,21 +70,22 @@ export function useDeliveryNormsPageData(enabled: boolean) {
   return { data, loading, error, setError, load };
 }
 
-async function fetchDeliveryNorms(): Promise<DeliveryNormsPageData> {
-  const [rates, profiles, prices, catalog, enrollment, salePrices] = await Promise.all([
+async function fetchDeliveryNorms(): Promise<Omit<DeliveryNormsPageData, 'catalog'>> {
+  const [rates, profiles, prices, enrollment, salePrices] = await Promise.all([
     deliveryNormsApi.listRoleRates(),
     deliveryNormsApi.listBaseProfiles(),
     deliveryNormsApi.listFunctionPrices(),
-    deliveryFunctionsApi.listAll(),
     deliveryNormsApi.getEnrollment(),
     deliveryCatalogStructureApi.listSalePrices(),
   ]);
-  return {
-    rates,
-    profiles,
-    prices,
-    catalog,
-    enrollment,
-    salePrices,
-  };
+  return { rates, profiles, prices, enrollment, salePrices };
+}
+
+function fillFunctionCatalog(setData: Dispatch<SetStateAction<DeliveryNormsPageData>>): void {
+  void deliveryFunctionsApi.listAll().then(
+    (catalog) => {
+      setData((prev) => ({ ...prev, catalog }));
+    },
+    () => undefined,
+  );
 }

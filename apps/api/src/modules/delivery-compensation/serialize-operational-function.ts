@@ -1,8 +1,4 @@
-import {
-  assertNoFinancialLeak,
-  type DeliveryFunctionAttachmentOperationalDto,
-  type DeliveryFunctionOperationalDto,
-} from '@nbos/shared';
+import { assertNoFinancialLeak, type DeliveryFunctionOperationalDto } from '@nbos/shared';
 
 export type CatalogFunctionRecord = {
   id: string;
@@ -33,20 +29,70 @@ function pickContent(record: CatalogFunctionRecord) {
   return published ?? record.contentVersions[0] ?? null;
 }
 
+export type CatalogCardRecord = {
+  id: string;
+  code: string;
+  category: string;
+  iconKey: string;
+  status: string;
+  contentVersions: Array<{
+    version: number;
+    title: string;
+    summary: string;
+    publishedAt: Date | null;
+  }>;
+  tiers?: Array<{ id: string; code: string; label: string; position: number }>;
+};
+
 export function serializeOperationalFunction(
   record: CatalogFunctionRecord,
 ): DeliveryFunctionOperationalDto {
   const content = pickContent(record);
-  const attachments: DeliveryFunctionAttachmentOperationalDto[] = (content?.attachments ?? []).map(
-    (row) => ({
+  return sealOperationalDto({
+    ...cardFields(record, content),
+    scopeBoundaries: content?.scopeBoundaries ?? '',
+    instructions: content?.instructions ?? '',
+    acceptanceCriteria: content?.acceptanceCriteria ?? '',
+    attachments: (content?.attachments ?? []).map((row) => ({
       id: row.id,
       fileAssetId: row.fileAssetId,
       caption: row.caption,
       sortOrder: row.sortOrder,
-    }),
-  );
+    })),
+  });
+}
 
-  const dto: DeliveryFunctionOperationalDto = {
+/** List/browse payload: card-visible fields only. Open `get(id)` for full copy. */
+export function serializeCardFunction(record: CatalogCardRecord): DeliveryFunctionOperationalDto {
+  const content =
+    record.contentVersions.find((row) => row.publishedAt !== null) ??
+    record.contentVersions[0] ??
+    null;
+  return sealOperationalDto({
+    ...cardFields(record, content),
+    scopeBoundaries: '',
+    instructions: '',
+    acceptanceCriteria: '',
+    attachments: [],
+  });
+}
+
+function cardFields(
+  record: CatalogCardRecord,
+  content: { title: string; summary: string; version: number } | null,
+): Pick<
+  DeliveryFunctionOperationalDto,
+  | 'id'
+  | 'code'
+  | 'category'
+  | 'iconKey'
+  | 'status'
+  | 'title'
+  | 'summary'
+  | 'contentVersion'
+  | 'tiers'
+> {
+  return {
     id: record.id,
     code: record.code,
     category: record.category,
@@ -54,9 +100,6 @@ export function serializeOperationalFunction(
     status: record.status,
     title: content?.title ?? record.code,
     summary: content?.summary ?? '',
-    scopeBoundaries: content?.scopeBoundaries ?? '',
-    instructions: content?.instructions ?? '',
-    acceptanceCriteria: content?.acceptanceCriteria ?? '',
     contentVersion: content?.version ?? null,
     tiers: [...(record.tiers ?? [])]
       .sort((left, right) => left.position - right.position)
@@ -66,9 +109,10 @@ export function serializeOperationalFunction(
         label: tier.label,
         position: tier.position,
       })),
-    attachments,
   };
+}
 
+function sealOperationalDto(dto: DeliveryFunctionOperationalDto): DeliveryFunctionOperationalDto {
   const leaks = assertNoFinancialLeak(dto);
   if (leaks.length > 0) {
     throw new Error(`Operational catalog DTO leaked financial keys: ${leaks.join(', ')}`);

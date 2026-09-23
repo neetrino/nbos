@@ -14,6 +14,7 @@ import {
   type CatalogRailId,
 } from '@/features/function-catalog/function-catalog-grouping';
 import { useFunctionCatalogQuery } from '@/features/function-catalog/use-function-catalog-query';
+import { useFunctionSheetDetail } from '@/features/function-catalog/use-function-sheet-detail';
 import { usePermission } from '@/lib/permissions';
 import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
 
@@ -45,10 +46,11 @@ export function DeliveryNormsFunctionsSection({
   const [selectedCategory, setSelectedCategory] = useState<CatalogRailId>(FUNCTION_CATALOG_ALL_ID);
   const [openId, setOpenId] = useState<string | null>(null);
   const catalog = useFunctionCatalogQuery({ search: debouncedSearch });
-  const selected = useMemo(
+  const selectedCard = useMemo(
     () => catalog.items.find((item) => item.id === openId) ?? null,
     [catalog.items, openId],
   );
+  const selected = useFunctionSheetDetail(openId, selectedCard);
 
   if (!canSeeCatalog && !canSeeRules) {
     return <p className="text-muted-foreground text-sm">{t('empty')}</p>;

@@ -1,7 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { DeliveryFunctionOperationalDto, DeliveryRoleUnitFinancialDto } from '@nbos/shared';
+import type {
+  DeliveryCoreItemFinancialDto,
+  DeliveryFunctionOperationalDto,
+  DeliveryRoleUnitFinancialDto,
+} from '@nbos/shared';
 import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS, DetailSheetSection } from '@/components/shared';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { CoreItemsEditor } from './core-items-editor';
@@ -15,6 +19,7 @@ export function CoreCompositionTab({
   versionId,
   status,
   roleUnits,
+  coreItems,
   canEdit,
   onError,
   onChanged,
@@ -22,6 +27,7 @@ export function CoreCompositionTab({
   versionId: string | null;
   status: string;
   roleUnits: DeliveryRoleUnitFinancialDto[];
+  coreItems?: readonly DeliveryCoreItemFinancialDto[];
   canEdit: boolean;
   onError: (message: string) => void;
   onChanged: () => void;
@@ -37,6 +43,7 @@ export function CoreCompositionTab({
           versionId={versionId}
           status={status}
           roleUnits={roleUnits}
+          initialItems={coreItems}
           editable={canEdit && (status === 'DRAFT' || status === 'PUBLISHED')}
           onError={onError}
           onChanged={onChanged}

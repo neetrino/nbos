@@ -117,6 +117,7 @@ export function CoreProductSheet({
             versionId={source?.id ?? null}
             status={source?.status ?? 'DRAFT'}
             roleUnits={source?.roleUnits ?? []}
+            coreItems={source?.coreItems}
             canEdit={canPublish}
             onError={onError}
             onChanged={onChanged}

@@ -2,8 +2,15 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { sumPayableRoleUnits, type ProductTypeKey } from '@nbos/shared';
+import {
+  sumPayableRoleUnits,
+  type DeliveryBaseProfileFinancialDto,
+  type ProductTypeKey,
+} from '@nbos/shared';
+import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
+import { formatMoneyDram } from '@/lib/format/money';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
+import { coreCardIncludedCount, coreCardSaleAmount, coreCardSource } from './core-card-meta';
 import {
   CORE_RAIL_ALL_ID,
   buildCoreRailEntries,
@@ -34,6 +41,7 @@ const GROUP_MESSAGE_KEYS = {
 export function CoreUnitsBrowser({
   slots,
   labels,
+  salePrices,
   canAdd,
   canPublish,
   onOpen,
@@ -42,6 +50,7 @@ export function CoreUnitsBrowser({
 }: {
   slots: CoreUnitSlot[];
   labels: Record<ProductTypeKey, string>;
+  salePrices: readonly SalePriceVersionDto[];
   canAdd: boolean;
   canPublish: boolean;
   onOpen: (productType: string) => void;
@@ -65,6 +74,7 @@ export function CoreUnitsBrowser({
         <CoreKindCard
           slot={slot}
           title={kindTitle(labels, slot.productType)}
+          salePrices={salePrices}
           canAdd={canAdd}
           canPublish={canPublish}
           unitsLabel={view.unitsLabel(slot)}
@@ -143,6 +153,7 @@ function coreUnitsLabel(slot: CoreUnitSlot, formatCount: (count: number) => stri
 function CoreKindCard({
   slot,
   title,
+  salePrices,
   canAdd,
   canPublish,
   unitsLabel,
@@ -152,6 +163,7 @@ function CoreKindCard({
 }: {
   slot: CoreUnitSlot;
   title: string;
+  salePrices: readonly SalePriceVersionDto[];
   canAdd: boolean;
   canPublish: boolean;
   unitsLabel: string;
@@ -161,28 +173,42 @@ function CoreKindCard({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const pair = liveNormPair(slot.productType, slot.rows);
-  const current = pair.draft ?? pair.published;
+  const current = coreCardSource(slot);
   const status = current ? liveNormDisplayStatus(pair) : null;
+  const saleAmount = coreCardSaleAmount(slot, salePrices);
+  const includedCount = current ? coreCardIncludedCount(slot) : null;
   return (
     <NormsCatalogCard
       title={title}
       unitsLabel={unitsLabel}
+      salePriceLabel={saleAmount ? formatMoneyDram(Number(saleAmount)) : null}
+      includedLabel={
+        includedCount === null ? null : t('profiles.includedCount', { count: includedCount })
+      }
       status={status}
       statusLabel={status ? t(normativeStatusLabelKey(status)) : null}
       canOpen={pair.draft ? canPublish : canAdd}
       onOpen={onOpen}
-      publish={
-        pair.draft && canPublish ? (
-          <PublishDraftButton
-            roleUnits={pair.draft.roleUnits}
-            onPublish={async (confirmZeroUnits) => {
-              await deliveryNormsApi.publishBaseProfile(pair.draft?.id ?? '', { confirmZeroUnits });
-            }}
-            onError={onError}
-            onPublished={onChanged}
-          />
-        ) : null
-      }
+      publish={corePublishAction(pair.draft, canPublish, onChanged, onError)}
+    />
+  );
+}
+
+function corePublishAction(
+  draft: DeliveryBaseProfileFinancialDto | null,
+  canPublish: boolean,
+  onChanged: () => void,
+  onError: (message: string) => void,
+) {
+  if (!draft || !canPublish) return null;
+  return (
+    <PublishDraftButton
+      roleUnits={draft.roleUnits}
+      onPublish={async (confirmZeroUnits) => {
+        await deliveryNormsApi.publishBaseProfile(draft.id, { confirmZeroUnits });
+      }}
+      onError={onError}
+      onPublished={onChanged}
     />
   );
 }
