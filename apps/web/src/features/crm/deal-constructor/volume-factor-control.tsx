@@ -109,7 +109,7 @@ function VolumeTrack({
   return (
     <div className={cn('px-7', disabled && 'opacity-50')}>
       <div className="relative h-8">
-        <div className="bg-foreground/10 absolute inset-x-0 top-1/2 h-3.5 -translate-y-1/2 rounded-full">
+        <div className="bg-foreground/10 absolute inset-x-0 top-1/2 h-6 -translate-y-1/2 rounded-full">
           <div className={cn('bg-primary absolute inset-y-0 left-0 rounded-full', stop.fill)} />
           <VolumeTicks shown={shown} />
           <span
