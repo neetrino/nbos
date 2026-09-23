@@ -16,22 +16,15 @@ describe('salePriceTargetKey', () => {
 });
 
 describe('resolveSalePrice', () => {
-  it('sells a blog core of 100 units at 5 000 AMD each for 500 000', () => {
-    expect(resolveSalePrice({ units: '100', amountPerUnit: '5000' })).toEqual({
+  it('keeps the stored amount for a function, a gradation, or a core', () => {
+    expect(resolveSalePrice({ amount: '500000' })).toEqual({
       amount: '500000.00',
       source: 'CARD',
     });
   });
 
-  it('does not invent a price when the card has no stored rate', () => {
-    expect(resolveSalePrice({ units: '30', amountPerUnit: null })).toEqual({
-      amount: null,
-      source: 'UNKNOWN',
-    });
-  });
-
-  it('reports an unknown price rather than inventing one without units', () => {
-    expect(resolveSalePrice({ units: null, amountPerUnit: '5000' })).toEqual({
+  it('does not invent a price when the card has no stored amount', () => {
+    expect(resolveSalePrice({ amount: null })).toEqual({
       amount: null,
       source: 'UNKNOWN',
     });

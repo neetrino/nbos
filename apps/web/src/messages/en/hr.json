@@ -640,9 +640,9 @@
     },
     "salePrices": {
       "title": "Sale prices",
-      "subtitle": "What the client pays for a function, a gradation, or a product core: units × this AMD-per-unit rate.",
+      "subtitle": "The amount the client pays for a function, a gradation, or a product core. Units do not change this price.",
       "createTitle": "New sale price draft",
-      "createHint": "Set the AMD the client pays per unit of a function, a gradation, or a core.",
+      "createHint": "Set the AMD total the client pays for a function, a gradation, or a core.",
       "targetHint": "Function is a catalog card price. Gradation is a volume price for one function. Core is the selected profile composition price.",
       "empty": "No sale prices for this target yet.",
       "allEmpty": "No sale prices yet.",
@@ -657,8 +657,9 @@
       "pickTier": "Select a gradation",
       "pickCore": "Select a base profile version",
       "noTiers": "No gradations with a sale price yet. Price functions and cores from the lists above.",
-      "amountPerUnit": "Sale price per unit ({currency})",
-      "amountPerUnitShort": "Per unit",
+      "amountPerUnit": "Sale price ({currency})",
+      "amountPerUnitShort": "Price",
+      "pending": "New price",
       "unknownTarget": "Unknown target"
     },
     "fields": {
@@ -709,8 +710,8 @@
       "collections": "The collection could not be saved.",
       "collectionsDelete": "The collection could not be deleted.",
       "salePrices": "The sale price draft could not be created.",
-      "salePriceRequired": "Set the sale price per unit.",
-      "salePricePositive": "The sale price per unit must be greater than zero.",
+      "salePriceRequired": "Set the sale price.",
+      "salePricePositive": "The sale price must be greater than zero.",
       "targetRequired": "Pick what this sale price applies to."
     },
     "status": {

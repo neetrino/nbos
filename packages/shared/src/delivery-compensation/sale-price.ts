@@ -1,13 +1,14 @@
 import { CatalogContentValidationError } from './catalog-write';
+import { DELIVERY_MONEY_SCALE, DELIVERY_UNITS_SCALE } from './constants';
 import {
   addScaled,
+  parseRate,
   parseScaledDecimal,
   parseUnits,
+  quantizeScaled,
   scaledToString,
   sumMoney,
-  unitsTimesRate,
 } from './decimal-scale';
-import { DELIVERY_UNITS_SCALE } from './constants';
 
 export type SalePriceTarget =
   | { kind: 'FUNCTION'; functionId: string }
@@ -34,17 +35,18 @@ export function salePriceTargetKey(target: SalePriceTarget): string {
 }
 
 /**
- * Client line amount: units × the card's stored AMD-per-unit rate. No stored rate means no price.
- * Cost and the developer rate are not part of this.
+ * Client line amount for a function, a gradation, or a core. The stored figure is the whole
+ * price of that card. Units do not scale it. No stored amount means no price.
  */
-export function resolveSalePrice(input: { units: string | null; amountPerUnit: string | null }): {
+export function resolveSalePrice(input: { amount: string | null }): {
   amount: string | null;
   source: SalePriceSource;
 } {
-  if (input.units === null || input.amountPerUnit === null) {
-    return { amount: null, source: 'UNKNOWN' };
-  }
-  return { amount: unitsTimesRate(input.units, input.amountPerUnit), source: 'CARD' };
+  if (input.amount === null) return { amount: null, source: 'UNKNOWN' };
+  return {
+    amount: scaledToString(quantizeScaled(parseRate(input.amount), DELIVERY_MONEY_SCALE)),
+    source: 'CARD',
+  };
 }
 
 /** Total units of a priced item. Unconfigured roles do not count as zero. */

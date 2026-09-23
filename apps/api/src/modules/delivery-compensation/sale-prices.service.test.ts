@@ -89,7 +89,7 @@ describe('SalePricesService', () => {
     });
   });
 
-  it('resolves the client line from published units without exposing the rate to catalog viewers', async () => {
+  it('resolves the client line from the stored amount without exposing it to catalog viewers', async () => {
     const prisma = buildPrisma({
       deliverySalePriceVersion: {
         ...buildPrisma().deliverySalePriceVersion,
@@ -100,14 +100,15 @@ describe('SalePricesService', () => {
     const [first] = await service.list();
     expect(first).toMatchObject({
       amountPerUnit: null,
-      resolvedAmount: '300000.00',
+      resolvedAmount: '10000.00',
     });
+    expect(prisma.deliveryFunctionPriceVersion.findMany).not.toHaveBeenCalled();
     expect(prisma.deliverySalePriceVersion.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { status: 'PUBLISHED' } }),
     );
   });
 
-  it('asks only for published core units', async () => {
+  it('prices a core from the stored amount and does not read its units', async () => {
     const prisma = buildPrisma({
       deliverySalePriceVersion: {
         ...buildPrisma().deliverySalePriceVersion,
@@ -121,20 +122,17 @@ describe('SalePricesService', () => {
         ]),
       },
     });
-    await new SalePricesService(prisma as never).list(undefined, true);
-    expect(prisma.deliveryBaseProfileVersion.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ status: 'PUBLISHED' }),
-      }),
-    );
+    const [first] = await new SalePricesService(prisma as never).list(undefined, true);
+    expect(first?.resolvedAmount).toBe('10000.00');
+    expect(prisma.deliveryBaseProfileVersion.findMany).not.toHaveBeenCalled();
   });
 
-  it('returns the AMD-per-unit rate only when rules permission is granted', async () => {
+  it('returns the stored card amount only when rules permission is granted', async () => {
     const service = new SalePricesService(buildPrisma() as never);
     const [first] = await service.list(undefined, true);
     expect(first).toMatchObject({
       amountPerUnit: '10000.0000',
-      resolvedAmount: '300000.00',
+      resolvedAmount: '10000.00',
     });
   });
 
@@ -207,7 +205,7 @@ describe('SalePricesService', () => {
     await expect(service.publish('sp-1', 'emp-1')).rejects.toThrow(/draft sale price/);
   });
 
-  it('does not resolve a client line from unpublished units', async () => {
+  it('keeps the client line when the card units are still a draft', async () => {
     const prisma = buildPrisma({
       deliveryFunctionPriceVersion: {
         findMany: vi.fn().mockResolvedValue([
@@ -223,7 +221,8 @@ describe('SalePricesService', () => {
     });
     const service = new SalePricesService(prisma as never);
     const [first] = await service.list(undefined, true);
-    expect(first).toMatchObject({ amountPerUnit: '10000.0000', resolvedAmount: null });
+    expect(first).toMatchObject({ amountPerUnit: '10000.0000', resolvedAmount: '10000.00' });
+    expect(prisma.deliveryFunctionPriceVersion.findMany).not.toHaveBeenCalled();
   });
 
   it('does not invent a fallback rate when the card has none', () => {

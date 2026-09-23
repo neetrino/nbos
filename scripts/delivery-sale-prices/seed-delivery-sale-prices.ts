@@ -14,9 +14,9 @@ const APPLY_FLAG = '--apply';
 const AUTHOR_FLAG = '--author=';
 
 /**
- * Publishes one sale rate per catalog function. Dry run by default; `--apply` writes.
- * AI cards get 20 000 AMD per unit, everything else 10 000. Existing sale versions are never
- * overwritten. This does not publish units — catalog AMD stays unknown until units are published.
+ * Publishes one sale amount per catalog function. Dry run by default; `--apply` writes.
+ * AI cards get 20 000 AMD, everything else 10 000. That number is the whole card price.
+ * Existing sale versions are never overwritten. Units are not part of this price.
  */
 async function main(): Promise<void> {
   const apply = process.argv.includes(APPLY_FLAG);

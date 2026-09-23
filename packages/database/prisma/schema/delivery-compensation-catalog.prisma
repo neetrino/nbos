@@ -311,11 +311,11 @@ model DeliveryDealQuoteItem {
   @@map("delivery_deal_quote_items")
 }
 
-/// Client sale rate of one catalog item, versioned like units so a later edit never re-prices a
-/// deal that was already assembled. `amountPerUnit` is AMD the client pays per unit; no version
-/// means no client amount. The line is units × that rate. Cost and the developer rate are not
-/// part of this. `targetKey` spells out what the version prices, because a nullable foreign key
-/// cannot carry a unique version number on its own.
+/// Client sale amount of one catalog item, versioned so a later edit never re-prices a deal that
+/// was already assembled. `amountPerUnit` stores the whole AMD price of a function, a gradation,
+/// or a core. The column name is historical: units do not scale it. No version means no client
+/// amount. Cost and the developer rate are not part of this. `targetKey` spells out what the
+/// version prices, because a nullable foreign key cannot carry a unique version number on its own.
 model DeliverySalePriceVersion {
   id                   String                      @id @default(uuid())
   targetKey            String                      @map("target_key")

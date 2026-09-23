@@ -622,6 +622,9 @@ API and the norms form are gone. New drafts still require a number. Seed
 exists. Catalog still shows AMD only from `resolvedAmount` after **units** are published — this slice
 does not publish units.
 
+**2026-09-23:** the stored amount is the whole price of a function, a gradation, or a core. Units no
+longer scale it. `resolvedAmount` follows the stored amount even when units are unpublished.
+
 **Checks:** vitest 6 files / 28 passed (shared resolver, drop-migration SQL, sale-prices service,
 default-endpoint removed, seed plan); Prettier; prisma generate + migrate deploy on **dev**;
 shared + API + web `tsc --noEmit` (API/web 8GB). Review: no confirmed defects. Browser: Sale

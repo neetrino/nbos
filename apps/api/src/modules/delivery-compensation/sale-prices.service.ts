@@ -8,8 +8,6 @@ import {
   type SalePriceTarget,
 } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
-import { loadUnitsBySaleTarget } from './sale-price-target-units';
-
 export type SalePriceVersionDto = {
   id: string;
   targetKey: string;
@@ -24,9 +22,9 @@ export type SalePriceVersionDto = {
 const FIRST_VERSION = 1;
 
 /**
- * Sale rates of catalog items. This is what a client pays per unit, not what a team is paid:
- * publishing a sale rate cannot change anybody's bonus. Versioned all the same, so a later edit
- * never re-prices a deal that was already assembled.
+ * Sale amount of a function, a gradation, or a core. This is the whole price the client pays for
+ * that card, not a rate per unit and not what a team is paid. Publishing it cannot change a bonus.
+ * Versioned all the same, so a later edit never re-prices a deal that was already assembled.
  */
 @Injectable()
 export class SalePricesService {
@@ -79,7 +77,7 @@ export class SalePricesService {
       },
       { isolationLevel: 'Serializable' },
     );
-    return requiredSerialized(await this.serializeMany([created], true));
+    return requiredSerialized(this.serializeMany([created], true));
   }
 
   async updateDraft(id: string, body: unknown): Promise<SalePriceVersionDto> {
@@ -95,7 +93,7 @@ export class SalePricesService {
       where: { id },
       data: { amountPerUnit: input.amountPerUnit },
     });
-    return requiredSerialized(await this.serializeMany([updated], true));
+    return requiredSerialized(this.serializeMany([updated], true));
   }
 
   /** Publishing supersedes the previously published price of the same item. */
@@ -117,18 +115,14 @@ export class SalePricesService {
         data: { status: 'PUBLISHED', publishedById, publishedAt: new Date() },
       });
     });
-    return requiredSerialized(await this.serializeMany([published], true));
+    return requiredSerialized(this.serializeMany([published], true));
   }
 
-  private async serializeMany(
+  private serializeMany(
     rows: readonly SalePriceRecord[],
     includeRate: boolean,
-  ): Promise<SalePriceVersionDto[]> {
-    if (rows.length === 0) return [];
-    const unitsByTarget = await loadUnitsBySaleTarget(this.prisma, rows);
-    return rows.map((row) =>
-      serializeWithoutUnits(row, unitsByTarget.get(row.targetKey) ?? null, includeRate),
-    );
+  ): SalePriceVersionDto[] {
+    return rows.map((row) => serializeSalePrice(row, includeRate));
   }
 
   private async assertTargetExists(target: SalePriceTarget): Promise<void> {
@@ -164,11 +158,7 @@ type SalePriceRecord = {
   currency: string;
 };
 
-function serializeWithoutUnits(
-  row: SalePriceRecord,
-  units: string | null,
-  includeRate: boolean,
-): SalePriceVersionDto {
+function serializeSalePrice(row: SalePriceRecord, includeRate: boolean): SalePriceVersionDto {
   const amountPerUnit = row.amountPerUnit.toString();
   return {
     id: row.id,
@@ -177,7 +167,7 @@ function serializeWithoutUnits(
     status: row.status,
     effectiveFrom: row.effectiveFrom.toISOString(),
     amountPerUnit: includeRate ? amountPerUnit : null,
-    resolvedAmount: resolveSalePrice({ units, amountPerUnit }).amount,
+    resolvedAmount: resolveSalePrice({ amount: amountPerUnit }).amount,
     currency: row.currency,
   };
 }
