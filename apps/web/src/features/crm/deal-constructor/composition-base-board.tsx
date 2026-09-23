@@ -14,9 +14,9 @@ import {
   COMPOSITION_BASE_BADGE_VARIANT,
   COMPOSITION_CARD_GRID_CLASS,
   COMPOSITION_CORE_BADGE_VARIANT,
+  COMPOSITION_CONTROL_ROW_CLASS,
   COMPOSITION_CORE_IDENTITY_CLASS,
   COMPOSITION_CORE_MARK_SIZE_PX,
-  COMPOSITION_CORE_VOLUME_CLASS,
   COMPOSITION_DEAL_METRIC_PRICE_CLASS,
   COMPOSITION_DEAL_METRIC_PRICE_EMPTY_CLASS,
 } from './composition.constants';
@@ -91,20 +91,14 @@ function BaseIdentityRow({
     />
   );
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className={COMPOSITION_CONTROL_ROW_CLASS}>
       {productType && !productType.disabled ? (
         <CompositionCoreTypeMenu change={productType}>{identity}</CompositionCoreTypeMenu>
       ) : (
         identity
       )}
       {onVolume && volumeFactor ? (
-        <div className={COMPOSITION_CORE_VOLUME_CLASS}>
-          <VolumeFactorControl
-            factor={volumeFactor}
-            disabled={volumeDisabled}
-            onCommit={onVolume}
-          />
-        </div>
+        <VolumeFactorControl factor={volumeFactor} disabled={volumeDisabled} onCommit={onVolume} />
       ) : null}
     </div>
   );

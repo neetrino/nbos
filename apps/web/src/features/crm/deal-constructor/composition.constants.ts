@@ -7,16 +7,17 @@ export const COMPOSITION_REMOVE_ICON_SIZE_PX = 16;
 export const COMPOSITION_CARD_GRID_CLASS =
   'grid w-full auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3';
 
+export const COMPOSITION_CONTROL_ROW_CLASS =
+  'grid w-full items-center grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3';
+
 export const COMPOSITION_LEVEL_CARD_CLASS =
   'border-border bg-card flex h-full items-start gap-2 rounded-xl border p-2.5 text-left';
 
 export const COMPOSITION_CORE_IDENTITY_CLASS =
-  'bg-muted/50 border-border flex w-72 max-w-full items-center gap-3 rounded-xl border px-3 py-3';
-
-export const COMPOSITION_CORE_VOLUME_CLASS = 'w-full max-w-sm';
+  'bg-muted/50 border-border flex w-full items-center gap-3 rounded-xl border px-3 py-3';
 
 export const COMPOSITION_CORE_TYPE_TRIGGER_CLASS =
-  'inline-flex max-w-full cursor-pointer border-0 bg-transparent p-0 text-left';
+  'flex w-full cursor-pointer border-0 bg-transparent p-0 text-left';
 
 export const COMPOSITION_CORE_BADGE_VARIANT = 'indigo' as const;
 

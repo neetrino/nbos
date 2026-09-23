@@ -18,7 +18,10 @@ import { CompositionBaseBoard, CompositionBaseRule } from './composition-base-bo
 import { CompositionExtraList } from './composition-extra-list';
 import { CompositionRemoveDialog, useCompositionRemove } from './composition-remove-dialog';
 import type { CompositionProductTypeChange } from './composition-core-type-menu';
-import { COMPOSITION_ADD_ICON_SIZE_PX } from './composition.constants';
+import {
+  COMPOSITION_ADD_ICON_SIZE_PX,
+  COMPOSITION_CONTROL_ROW_CLASS,
+} from './composition.constants';
 import { VolumeFactorControl } from './volume-factor-control';
 import { VOLUME_FACTOR_STANDARD } from '@nbos/shared';
 
@@ -66,6 +69,9 @@ export function ProductCompositionPanel(props: ProductCompositionPanelProps) {
         blockedHint={props.blockedHint}
         addLabel={t('addFunctions')}
         onAdd={props.onAdd}
+        canReset={Boolean(props.onClearExtras) && props.extras.length > 0}
+        resetDisabled={props.disabled || !props.canAdd}
+        onReset={props.onClearExtras}
       />
       {props.error ? <p className="text-destructive text-sm">{props.error}</p> : null}
       <CompositionRails
@@ -100,6 +106,7 @@ function CompositionRails({
   const hasExtras = props.extras.length > 0;
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
+      {hasExtras ? <CompositionBaseRule label={t('extraBadge')} /> : null}
       {hasExtras ? (
         <CompositionExtrasColumn
           extras={props.extras}
@@ -108,7 +115,6 @@ function CompositionRails({
           unitsByFunctionId={props.canSeeUnits ? props.unitsByFunctionId : undefined}
           canRemove={!props.disabled && props.canAdd}
           onRemoveExtra={onRemoveExtra}
-          onClearExtras={props.onClearExtras}
           volumeByFunctionId={props.volumeByFunctionId}
           volumeDisabled={props.disabled}
           onVolume={props.onFunctionVolume}
@@ -141,35 +147,19 @@ function useCoreChecklist(coreProfileVersionId: string | null) {
 }
 
 function CompositionExtrasColumn({
-  onClearExtras,
   canRemove,
   extras,
   onExtrasVolume,
   volumeDisabled,
   ...list
 }: ComponentProps<typeof CompositionExtraList> & {
-  onClearExtras?: () => void;
   onExtrasVolume?: (factor: string, reason: string | null) => void;
 }) {
-  const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
     <div className="flex min-w-0 flex-col gap-3">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            {t('extrasHeading')}
-          </p>
-          <p className="text-muted-foreground text-xs">{t('extrasScope')}</p>
-        </div>
-        {onClearExtras ? (
-          <ClearExtrasButton disabled={!canRemove || extras.length === 0} onClear={onClearExtras} />
-        ) : null}
-      </div>
       {onExtrasVolume && extras.length > 0 ? (
-        <div className="group/volume">
-          <p className="text-muted-foreground text-xs">{t('volumeApplyAll')}</p>
+        <div className={COMPOSITION_CONTROL_ROW_CLASS}>
           <VolumeFactorControl
-            quiet
             factor={VOLUME_FACTOR_STANDARD}
             disabled={volumeDisabled || !canRemove}
             onCommit={onExtrasVolume}
@@ -227,6 +217,9 @@ function CompositionPanelHeader({
   blockedHint,
   addLabel,
   onAdd,
+  canReset,
+  resetDisabled,
+  onReset,
 }: {
   title?: string;
   canAdd: boolean;
@@ -234,17 +227,29 @@ function CompositionPanelHeader({
   blockedHint?: string | null;
   addLabel: string;
   onAdd: () => void;
+  canReset: boolean;
+  resetDisabled: boolean;
+  onReset?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
-        {title ? <h2 className="text-foreground text-lg font-semibold">{title}</h2> : <span />}
-        {canAdd ? (
-          <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onAdd}>
-            <Plus size={COMPOSITION_ADD_ICON_SIZE_PX} />
-            {addLabel}
-          </Button>
-        ) : null}
+        {title ? (
+          <h2 className="text-foreground min-w-0 text-lg font-semibold">{title}</h2>
+        ) : (
+          <span />
+        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {canReset && onReset ? (
+            <ClearExtrasButton disabled={resetDisabled} onClear={onReset} />
+          ) : null}
+          {canAdd ? (
+            <Button type="button" size="sm" variant="outline" disabled={disabled} onClick={onAdd}>
+              <Plus size={COMPOSITION_ADD_ICON_SIZE_PX} />
+              {addLabel}
+            </Button>
+          ) : null}
+        </div>
       </div>
       {blockedHint ? <p className="text-muted-foreground text-sm">{blockedHint}</p> : null}
     </div>
