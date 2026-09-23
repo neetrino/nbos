@@ -171,7 +171,11 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         onOpenChange={props.setCompositionOpen}
         coreProfileVersionId={model.quote?.coreProfileVersionId ?? null}
         coreTitle={props.coreName}
-        included={parts.base.map((item) => ({ id: item.id, title: item.title }))}
+        included={parts.base.map((item) => ({
+          id: item.id,
+          title: item.title,
+          iconKey: item.iconKey,
+        }))}
         extras={parts.extras}
         blockedHint={props.needsSave ? t('saveTypeBeforeEdit') : null}
         saleTotal={model.saleTotal}

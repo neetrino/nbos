@@ -34,7 +34,7 @@ export function MoneyHiddenComposition({
 }: {
   config: ProductFunctionsV2Config;
   extras: DeliveryFunctionOperationalDto[];
-  included: Array<{ id: string; title: string }>;
+  included: Array<{ id: string; title: string; iconKey?: string }>;
   canAdd: boolean;
   confirmRemove: boolean;
   hideCoreVolume: boolean;

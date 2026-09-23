@@ -751,6 +751,7 @@
       "clearExtrasTitle": "Reset what was added?",
       "clearExtrasDescription": "Functions added on top of the base will be removed for this client only. The company core will not change.",
       "extrasScope": "This client only. The company core does not change from here.",
+      "baseHeading": "Base",
       "inBaseBadge": "In the base",
       "inBaseNote": "Already inside the core price and not charged again.",
       "saveTypeBeforeEdit": "Save the product type first. After that, the composition changes only for this client.",

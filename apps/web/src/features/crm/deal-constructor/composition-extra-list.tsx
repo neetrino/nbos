@@ -5,7 +5,7 @@ import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { FunctionCatalogCard } from '@/features/function-catalog/function-catalog-card';
 import { formatMoneyDram } from '@/lib/format/money';
 import type { VisibleSalePrice } from '@/features/function-catalog/function-catalog-sale-price';
-import { COMPOSITION_EXTRA_GRID_CLASS } from './composition.constants';
+import { COMPOSITION_CARD_GRID_CLASS } from './composition.constants';
 import { VolumeFactorControl } from './volume-factor-control';
 
 type CompositionExtraListProps = {
@@ -31,12 +31,9 @@ export function CompositionExtraList({
   volumeDisabled,
   onVolume,
 }: CompositionExtraListProps) {
-  const t = useTranslations('crm.dealSheet.dealConstructor');
-  if (extras.length === 0) {
-    return <p className="text-muted-foreground text-sm">{t('noExtras')}</p>;
-  }
+  if (extras.length === 0) return null;
   return (
-    <div className={COMPOSITION_EXTRA_GRID_CLASS}>
+    <div className={COMPOSITION_CARD_GRID_CLASS}>
       {extras.map((item) => (
         <ExtraVolumeCard
           key={item.id}

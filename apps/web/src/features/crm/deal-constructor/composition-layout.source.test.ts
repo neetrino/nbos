@@ -15,7 +15,9 @@ describe('composition and catalog layout', () => {
     expect(panel).not.toContain('FunctionCatalogCollections');
     expect(panel).not.toContain('onApplyCollection');
     expect(panel).toContain('justify-between');
-    expect(panel).toContain('COMPOSITION_RAIL_GRID_CLASS');
+    expect(panel).toContain('CompositionBaseBoard');
+    expect(panel).toContain('baseHeading');
+    expect(panel).not.toContain('COMPOSITION_RAIL_GRID_CLASS');
     expect(sheet).toContain('width="wide"');
     expect(totals).toContain('justify-end');
     expect(totals).not.toContain('amountHint');

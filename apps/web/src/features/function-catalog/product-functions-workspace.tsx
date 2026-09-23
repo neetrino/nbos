@@ -180,7 +180,7 @@ function WorkspaceComposition(props: WorkspaceCompositionProps) {
 type WorkspaceCompositionProps = {
   config: V2Config;
   extras: DeliveryFunctionOperationalDto[];
-  included: Array<{ id: string; title: string }>;
+  included: Array<{ id: string; title: string; iconKey?: string }>;
   canAdd: boolean;
   requireReason: boolean;
   catalogOpen: boolean;
@@ -197,7 +197,7 @@ function includedFromConfig(config: V2Config, catalog: DeliveryFunctionOperation
   );
   return catalog
     .filter((item) => ids.has(item.id))
-    .map((item) => ({ id: item.id, title: item.title }));
+    .map((item) => ({ id: item.id, title: item.title, iconKey: item.iconKey }));
 }
 
 function extrasFromConfig(config: V2Config, catalog: DeliveryFunctionOperationalDto[]) {

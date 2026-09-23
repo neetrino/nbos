@@ -13,13 +13,12 @@ import {
   deliveryCatalogStructureApi,
   type CoreItemDto,
 } from '@/lib/api/delivery-catalog-structure';
-import { cn } from '@/lib/utils';
 import { DealConstructorTotals } from './DealConstructorTotals';
-import { CompositionCoreRail } from './composition-core-rail';
+import { CompositionBaseBoard, CompositionBaseRule } from './composition-base-board';
 import { CompositionExtraList } from './composition-extra-list';
 import { CompositionRemoveDialog, useCompositionRemove } from './composition-remove-dialog';
 import type { CompositionProductTypeChange } from './composition-core-type-menu';
-import { COMPOSITION_ADD_ICON_SIZE_PX, COMPOSITION_RAIL_GRID_CLASS } from './composition.constants';
+import { COMPOSITION_ADD_ICON_SIZE_PX } from './composition.constants';
 import { VolumeFactorControl } from './volume-factor-control';
 import { VOLUME_FACTOR_STANDARD } from '@nbos/shared';
 
@@ -27,7 +26,7 @@ type ProductCompositionPanelProps = {
   title?: string;
   coreProfileVersionId: string | null;
   coreTitle: string | null;
-  included: Array<{ id: string; title: string }>;
+  included: Array<{ id: string; title: string; iconKey?: string }>;
   extras: DeliveryFunctionOperationalDto[];
   blockedHint?: string | null;
   saleTotal: string | null;
@@ -97,34 +96,37 @@ function CompositionRails({
   coreLoading: boolean;
   onRemoveExtra: (item: DeliveryFunctionOperationalDto) => void;
 }) {
+  const t = useTranslations('crm.dealSheet.dealConstructor');
+  const hasExtras = props.extras.length > 0;
   return (
-    <div className={cn(COMPOSITION_RAIL_GRID_CLASS, 'min-h-0 flex-1 overflow-y-auto')}>
-      <div className="order-2 lg:order-1">
-        <CompositionCoreRail
-          title={props.coreTitle}
-          items={coreItems}
-          included={props.included}
-          loading={coreLoading}
+    <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
+      {hasExtras ? (
+        <CompositionExtrasColumn
+          extras={props.extras}
           showSalePrice={props.showSalePrice}
-          salePriceLabel={props.coreSalePriceLabel}
-          productType={props.productType}
-          volumeFactor={props.coreVolumeFactor}
+          salePriceByFunctionId={props.salePriceByFunctionId}
+          unitsByFunctionId={props.canSeeUnits ? props.unitsByFunctionId : undefined}
+          canRemove={!props.disabled && props.canAdd}
+          onRemoveExtra={onRemoveExtra}
+          onClearExtras={props.onClearExtras}
+          volumeByFunctionId={props.volumeByFunctionId}
           volumeDisabled={props.disabled}
-          onVolume={props.onCoreVolume}
+          onVolume={props.onFunctionVolume}
+          onExtrasVolume={props.onExtrasVolume}
         />
-      </div>
-      <CompositionExtrasColumn
-        extras={props.extras}
+      ) : null}
+      {hasExtras ? <CompositionBaseRule label={t('baseHeading')} /> : null}
+      <CompositionBaseBoard
+        title={props.coreTitle}
+        items={coreItems}
+        included={props.included}
+        loading={coreLoading}
         showSalePrice={props.showSalePrice}
-        salePriceByFunctionId={props.salePriceByFunctionId}
-        unitsByFunctionId={props.canSeeUnits ? props.unitsByFunctionId : undefined}
-        canRemove={!props.disabled && props.canAdd}
-        onRemoveExtra={onRemoveExtra}
-        onClearExtras={props.onClearExtras}
-        volumeByFunctionId={props.volumeByFunctionId}
+        salePriceLabel={props.coreSalePriceLabel}
+        productType={props.productType}
+        volumeFactor={props.coreVolumeFactor}
         volumeDisabled={props.disabled}
-        onVolume={props.onFunctionVolume}
-        onExtrasVolume={props.onExtrasVolume}
+        onVolume={props.onCoreVolume}
       />
     </div>
   );
@@ -151,7 +153,7 @@ function CompositionExtrasColumn({
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
-    <div className="order-1 flex min-w-0 flex-col gap-3 lg:order-2">
+    <div className="flex min-w-0 flex-col gap-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
