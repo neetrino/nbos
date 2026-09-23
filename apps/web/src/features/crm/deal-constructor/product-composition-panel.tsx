@@ -164,9 +164,10 @@ function CompositionExtrasColumn({
         ) : null}
       </div>
       {onExtrasVolume && extras.length > 0 ? (
-        <div>
+        <div className="group/volume">
           <p className="text-muted-foreground text-xs">{t('volumeApplyAll')}</p>
           <VolumeFactorControl
+            quiet
             factor={VOLUME_FACTOR_STANDARD}
             disabled={volumeDisabled || !canRemove}
             onCommit={onExtrasVolume}

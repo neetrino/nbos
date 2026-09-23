@@ -51,6 +51,9 @@ const VOLUME_STOP_CLASS = [
 
 type VolumeDensity = 'default' | 'compact';
 
+const VOLUME_REVEAL_CLASS =
+  'origin-left scale-95 opacity-30 transition duration-150 ease-out group-hover/volume:scale-100 group-hover/volume:opacity-100 focus-within:scale-100 focus-within:opacity-100';
+
 const VOLUME_DENSITY_CLASS = {
   default: {
     frame: 'px-1 py-1',
@@ -61,8 +64,7 @@ const VOLUME_DENSITY_CLASS = {
     tick: 'size-1.5',
   },
   compact: {
-    frame:
-      'w-36 max-w-full origin-left scale-95 opacity-30 transition duration-150 ease-out group-hover/volume:scale-100 group-hover/volume:opacity-100 focus-within:scale-100 focus-within:opacity-100',
+    frame: `w-36 max-w-full ${VOLUME_REVEAL_CLASS}`,
     pad: 'px-5',
     row: 'h-5',
     bar: 'h-3.5',
@@ -75,11 +77,14 @@ export function VolumeFactorControl({
   factor,
   disabled,
   density = 'default',
+  quiet = false,
   onCommit,
 }: {
   factor: string;
   disabled?: boolean;
   density?: VolumeDensity;
+  /** Stays faint until the pointer is on the surrounding `group/volume`. */
+  quiet?: boolean;
   onCommit: (factor: string, reason: string | null) => void;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
@@ -90,7 +95,7 @@ export function VolumeFactorControl({
   const label = t('volumeFactorLabel', { factor: formatVolumeFactor(shown) });
   const metrics = VOLUME_DENSITY_CLASS[density];
   return (
-    <div className={metrics.frame}>
+    <div className={cn(metrics.frame, quiet && VOLUME_REVEAL_CLASS)}>
       <VolumeTrack
         shown={shown}
         disabled={disabled}
