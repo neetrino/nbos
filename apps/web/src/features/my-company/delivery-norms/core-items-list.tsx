@@ -1,8 +1,9 @@
 'use client';
 
+import type { ReactNode } from 'react';
+import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FormFieldRow, InlineField } from '@/components/shared';
-import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import { InlineField } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { DeliveryNormsRecordRow } from './delivery-norms-record-row';
 import {
@@ -60,24 +61,22 @@ function CoreItemRow({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <DeliveryNormsRecordRow>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('coreItems.label')}
-          value={row.label}
-          disabled={disabled}
-          onValueChange={(label) => onChange(replaceCoreItemDraft(drafts, row.key, { label }))}
-        />
-        <InlineField
-          variant="controlled"
-          className={FORM_FIELD_CELL_CLASS}
-          label={t('coreItems.note')}
-          value={row.note}
-          disabled={disabled}
-          onValueChange={(note) => onChange(replaceCoreItemDraft(drafts, row.key, { note }))}
-        />
-      </FormFieldRow>
+      <InlineField
+        variant="controlled"
+        className="min-w-0 flex-1"
+        label={t('coreItems.label')}
+        value={row.label}
+        disabled={disabled}
+        onValueChange={(label) => onChange(replaceCoreItemDraft(drafts, row.key, { label }))}
+      />
+      <InlineField
+        variant="controlled"
+        className="min-w-0 flex-1"
+        label={t('coreItems.note')}
+        value={row.note}
+        disabled={disabled}
+        onValueChange={(note) => onChange(replaceCoreItemDraft(drafts, row.key, { note }))}
+      />
       {disabled ? null : (
         <CoreItemRowActions
           index={index}
@@ -106,22 +105,52 @@ function CoreItemRowActions({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
-    <div className="flex flex-wrap justify-end gap-1">
-      <Button type="button" variant="outline" size="sm" disabled={index === 0} onClick={onMoveUp}>
-        {t('coreItems.moveUp')}
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
+    <div className="flex shrink-0 gap-1">
+      <CoreItemIconButton
+        label={t('coreItems.moveUp')}
+        disabled={index === 0}
+        onClick={onMoveUp}
+      >
+        <ChevronUp />
+      </CoreItemIconButton>
+      <CoreItemIconButton
+        label={t('coreItems.moveDown')}
         disabled={index === lastIndex}
         onClick={onMoveDown}
       >
-        {t('coreItems.moveDown')}
-      </Button>
-      <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-        {t('coreItems.remove')}
-      </Button>
+        <ChevronDown />
+      </CoreItemIconButton>
+      <CoreItemIconButton label={t('coreItems.remove')} destructive onClick={onRemove}>
+        <Trash2 />
+      </CoreItemIconButton>
     </div>
+  );
+}
+
+function CoreItemIconButton({
+  label,
+  disabled,
+  destructive,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  destructive?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Button
+      type="button"
+      variant={destructive ? 'destructive' : 'outline'}
+      size="icon-sm"
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
   );
 }

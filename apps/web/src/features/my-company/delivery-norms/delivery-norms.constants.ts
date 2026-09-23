@@ -8,7 +8,7 @@ export const FORM_BLOCK_CLASS =
   'border-border/60 bg-muted/10 space-y-4 rounded-2xl border p-4 max-md:p-3';
 
 export const RECORD_ROW_CLASS =
-  'border-border/60 bg-muted/10 space-y-2 rounded-2xl border px-4 py-3';
+  'border-border/60 bg-muted/10 flex items-end gap-2 rounded-2xl border px-3 py-2.5';
 
 export const CHECKBOX_ROW_CLASS =
   'border-border/50 bg-background/50 hover:bg-muted/40 flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 text-sm';
