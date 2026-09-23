@@ -17,7 +17,7 @@ import {
   COMPOSITION_CORE_BADGE_VARIANT,
   COMPOSITION_CORE_CARD_CLASS,
   COMPOSITION_CORE_IDENTITY_CLASS,
-  COMPOSITION_SUMMARY_WIDTH_CLASS,
+  COMPOSITION_SUMMARY_RULE_SPAN_CLASS,
   COMPOSITION_CORE_MARK_SIZE_PX,
   COMPOSITION_DEAL_METRIC_PRICE_CLASS,
   COMPOSITION_DEAL_METRIC_PRICE_EMPTY_CLASS,
@@ -70,10 +70,10 @@ export function CompositionSummaryRow({
   children: ReactNode;
 }) {
   return (
-    <div className="flex w-full items-center gap-4">
-      <div className={COMPOSITION_SUMMARY_WIDTH_CLASS}>{children}</div>
+    <div className={COMPOSITION_CARD_GRID_CLASS}>
+      {children}
       {label ? (
-        <div className="flex min-w-0 flex-1 items-center">
+        <div className={COMPOSITION_SUMMARY_RULE_SPAN_CLASS}>
           <CompositionBaseRule label={label} />
         </div>
       ) : null}

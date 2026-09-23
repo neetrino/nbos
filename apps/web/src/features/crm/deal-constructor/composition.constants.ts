@@ -7,7 +7,8 @@ export const COMPOSITION_REMOVE_ICON_SIZE_PX = 16;
 export const COMPOSITION_CARD_GRID_CLASS =
   'grid w-full auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3';
 
-export const COMPOSITION_SUMMARY_WIDTH_CLASS = 'w-80 max-w-full shrink-0';
+export const COMPOSITION_SUMMARY_RULE_SPAN_CLASS =
+  'flex min-w-0 items-center sm:col-span-1 xl:col-span-2';
 
 export const COMPOSITION_LEVEL_CARD_CLASS =
   'border-border bg-card flex h-full items-start gap-2 rounded-xl border p-2.5 text-left';
