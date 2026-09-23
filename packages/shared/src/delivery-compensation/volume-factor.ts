@@ -8,9 +8,9 @@ import {
   scaledToString,
 } from './decimal-scale';
 
-/** One decimal place: 0.5 … 2.0 in steps of 0.1. Stored and compared as tenths. */
+/** One decimal place: 0.0 … 2.0 in steps of 0.1. Stored and compared as tenths. */
 export const VOLUME_FACTOR_SCALE = 1;
-export const VOLUME_FACTOR_MIN_TENTHS = 5;
+export const VOLUME_FACTOR_MIN_TENTHS = 0;
 export const VOLUME_FACTOR_MAX_TENTHS = 20;
 export const VOLUME_FACTOR_STANDARD_TENTHS = 10;
 export const VOLUME_FACTOR_STANDARD = '1.0';
@@ -70,7 +70,7 @@ function parseVolumeTenths(value: unknown): number {
   const text = volumeText(value);
   const tenths = text === null ? null : volumeTenths(text);
   if (tenths === null || tenths < VOLUME_FACTOR_MIN_TENTHS || tenths > VOLUME_FACTOR_MAX_TENTHS) {
-    throw new CatalogContentValidationError('volumeFactor must be a step from 0.5 to 2.0.');
+    throw new CatalogContentValidationError('volumeFactor must be a step from 0.0 to 2.0.');
   }
   return tenths;
 }

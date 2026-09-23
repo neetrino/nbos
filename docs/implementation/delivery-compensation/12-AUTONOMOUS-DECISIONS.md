@@ -248,8 +248,9 @@ seeded alongside existing catalog cards. Code Deal / Product type pick uses a se
 card grid with a 10–15 word description per kind (2026-09-22).
 
 **1.24 Instance volume is one factor on the core and on each added function — Owner request of
-2026-09-22.** The catalog standard stays ×1.0. A seller or PM may set ×0.5…×2.0 in steps of 0.1 on
-the product core and on each extra function. The same number multiplies published role units and
+2026-09-22.** The catalog standard stays ×1.0. A seller or PM may set ×0.0…×2.0 in steps of 0.1 on
+the product core and on each extra function. The floor was ×0.5 until 2026-09-23, when the Owner
+lowered it to ×0.0. The same number multiplies published role units and
 the calculated sale line. It is not `configSize`, not the withdrawn sale multiplier, and not a
 catalog axis. Tiers stay for non-proportional volume. Included-in-base functions have no slider.
 An extension has no core, so a core volume write is rejected.

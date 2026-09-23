@@ -27,11 +27,20 @@ describe('parseVolumeAdjustment', () => {
       volumeFactor: '0.5',
       volumeReason: 'minimal shop, half the core',
     });
+    expect(parseVolumeAdjustment('0.0', 'this line is out of scope for now')).toEqual({
+      volumeFactor: '0.0',
+      volumeReason: 'this line is out of scope for now',
+    });
+    expect(parseVolumeAdjustment(0, 'zero volume, client dropped the block')).toEqual({
+      volumeFactor: '0.0',
+      volumeReason: 'zero volume, client dropped the block',
+    });
   });
 
-  it('rejects a value off the step or outside 0.5–2.0', () => {
+  it('rejects a value off the step or outside 0.0–2.0', () => {
     expect(() => parseVolumeAdjustment('1.15', 'not a step')).toThrow(/step/);
     expect(() => parseVolumeAdjustment('3', 'too large for a line')).toThrow(/step/);
+    expect(() => parseVolumeAdjustment('-0.1', 'below the floor')).toThrow(/step/);
     expect(() => parseVolumeAdjustment('1.5', 'short')).toThrow(/volumeReason/);
   });
 });
@@ -41,5 +50,7 @@ describe('scaleUnits and scaleMoney', () => {
     expect(scaleUnits('10.0000', '1.5')).toBe('15.0000');
     expect(scaleMoney('100.00', '0.5')).toBe('50.00');
     expect(scaleUnits('7.0000', '1.0')).toBe('7.0000');
+    expect(scaleUnits('10.0000', '0.0')).toBe('0.0000');
+    expect(scaleMoney('100.00', '0.0')).toBe('0.00');
   });
 });
