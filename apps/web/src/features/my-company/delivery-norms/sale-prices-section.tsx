@@ -19,7 +19,7 @@ import { gradationsFromCatalog, targetKeyForKind, type CatalogGradation } from '
 import { SalePricesTable } from './sale-prices-table';
 import { saleUnitTotals } from './sale-price-units';
 
-const SALE_TABS = ['FUNCTION', 'TIER', 'CORE'] as const;
+const SALE_TABS = ['CORE', 'FUNCTION', 'TIER'] as const;
 
 type SalePricesSectionProps = {
   rows: SalePriceVersionDto[];
@@ -74,7 +74,7 @@ function useSalePricesWorkspace(
 ) {
   const t = useTranslations('hr.deliveryNorms');
   const [query, setQuery] = useState('');
-  const [kind, setKind] = useState<SalePriceTargetKind>('FUNCTION');
+  const [kind, setKind] = useState<SalePriceTargetKind>('CORE');
   const labels = useMemo(
     () => targetLabelMap(catalog, profiles, gradationsFromCatalog(catalog), t),
     [catalog, profiles, t],

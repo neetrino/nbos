@@ -114,11 +114,6 @@ const DOMAIN_COPY = {
     title: 'rates.title',
     subtitle: 'rates.subtitle',
   },
-  sale: {
-    index: 'workspace.map.sale.index',
-    title: 'salePrices.title',
-    subtitle: 'salePrices.subtitle',
-  },
 } as const;
 
 function DomainEditor({
@@ -137,6 +132,17 @@ function DomainEditor({
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
+  const body = (
+    <DomainEditorBody
+      tab={tab}
+      data={data}
+      canAdd={canAdd}
+      canPublish={canPublish}
+      onChanged={onChanged}
+      onError={onError}
+    />
+  );
+  if (tab === 'sale') return body;
   const copy = DOMAIN_COPY[tab];
   return (
     <div className="space-y-5">
@@ -145,14 +151,7 @@ function DomainEditor({
         title={t(copy.title)}
         description={t(copy.subtitle)}
       />
-      <DomainEditorBody
-        tab={tab}
-        data={data}
-        canAdd={canAdd}
-        canPublish={canPublish}
-        onChanged={onChanged}
-        onError={onError}
-      />
+      {body}
     </div>
   );
 }

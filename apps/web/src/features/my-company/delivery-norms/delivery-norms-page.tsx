@@ -1,18 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { DELIVERY_COMPENSATION_RULES_MODULE } from '@nbos/shared';
 import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import { LOADING_CARD_COUNT } from './delivery-norms.constants';
 import { DeliveryNormsTabPanel } from './delivery-norms-tab-panel';
+import { useDeliveryNormsLocation } from './delivery-norms-tab-storage';
 import {
   DELIVERY_NORMS_ENROLLMENT_ELEMENT_ID,
   locationForMapKey,
+  type DeliveryNormsLocation,
   type DeliveryNormsMapKey,
-  type DeliveryNormsProfileTab,
-  type DeliveryNormsTab,
-  type DeliveryNormsUnitTab,
 } from './delivery-norms-workspace';
 import { useDeliveryNormsHeroSlots } from './use-delivery-norms-hero-slots';
 import {
@@ -25,26 +23,24 @@ export function DeliveryNormsPage() {
   const canAdd = can('ADD', DELIVERY_COMPENSATION_RULES_MODULE);
   const canPublish = can('EDIT', DELIVERY_COMPENSATION_RULES_MODULE);
   const { data, loading, error, setError, load } = useDeliveryNormsPageData();
-  const [tab, setTab] = useState<DeliveryNormsTab>('overview');
-  const [profileTab, setProfileTab] = useState<DeliveryNormsProfileTab>('core');
-  const [unitTab, setUnitTab] = useState<DeliveryNormsUnitTab>('core');
+  const [location, setLocation] = useDeliveryNormsLocation();
   useDeliveryNormsHeroSlots({
-    tab,
-    onTabChange: setTab,
+    tab: location.tab,
+    onTabChange: (tab) => setLocation({ tab }),
   });
   const panel = (
     <DeliveryNormsTabPanel
-      tab={tab}
-      profileTab={profileTab}
-      unitTab={unitTab}
+      tab={location.tab}
+      profileTab={location.profileTab}
+      unitTab={location.unitTab}
       data={data}
       canAdd={canAdd}
       canPublish={canPublish}
       onChanged={() => void load()}
       onError={setError}
-      onProfileTabChange={setProfileTab}
-      onUnitTabChange={setUnitTab}
-      onOpen={(key) => openMapTarget(key, setTab, setProfileTab, setUnitTab)}
+      onProfileTabChange={(profileTab) => setLocation({ profileTab })}
+      onUnitTabChange={(unitTab) => setLocation({ unitTab })}
+      onOpen={(key) => openMapTarget(key, setLocation)}
     />
   );
 
@@ -69,14 +65,10 @@ export function DeliveryNormsPage() {
 
 function openMapTarget(
   key: DeliveryNormsMapKey,
-  setTab: (tab: DeliveryNormsTab) => void,
-  setProfileTab: (tab: DeliveryNormsProfileTab) => void,
-  setUnitTab: (tab: DeliveryNormsUnitTab) => void,
+  setLocation: (partial: Partial<DeliveryNormsLocation>) => void,
 ): void {
   const location = locationForMapKey(key);
-  setTab(location.tab);
-  setProfileTab(location.profileTab);
-  setUnitTab(location.unitTab);
+  setLocation(location);
   if (location.tab !== 'overview') {
     return;
   }
