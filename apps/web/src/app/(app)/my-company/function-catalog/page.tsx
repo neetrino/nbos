@@ -1,5 +1,5 @@
-import { FunctionCatalogPage } from '@/features/function-catalog/function-catalog-page';
+import { redirect } from 'next/navigation';
 
 export default function FunctionCatalogRoutePage() {
-  return <FunctionCatalogPage />;
+  redirect('/my-company/delivery-norms?section=functions');
 }

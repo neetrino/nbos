@@ -33,13 +33,19 @@ const EMPTY_DATA: DeliveryNormsPageData = {
   salePrices: [],
 };
 
-export function useDeliveryNormsPageData() {
+export function useDeliveryNormsPageData(enabled: boolean) {
   const t = useTranslations('hr.deliveryNorms');
   const [data, setData] = useState<DeliveryNormsPageData>(EMPTY_DATA);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!enabled) {
+      setData(EMPTY_DATA);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setLoading(true);
     try {
       setData(await fetchDeliveryNorms());
@@ -53,7 +59,7 @@ export function useDeliveryNormsPageData() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [enabled, t]);
 
   useEffect(() => {
     void load();

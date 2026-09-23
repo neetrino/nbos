@@ -295,7 +295,8 @@
     "orgStructure": "Оргструктура",
     "team": "Команда",
     "departments": "Отделы",
-    "rolesSeats": "Роли и должности"
+    "rolesSeats": "Роли и должности",
+    "coreFunction": "Ядро и функции"
   },
   "functionCatalog": {
     "title": "Каталог функций",
@@ -431,19 +432,23 @@
     "sheet": {
       "tabs": {
         "general": "Основное",
-        "units": "Units ролей",
-        "included": "Входит в базу"
+        "units": "Units",
+        "price": "Цена продажи",
+        "composition": "Состав",
+        "included": "Входит в базу",
+        "collections": "Комплекты"
       },
+      "functionAria": "Разделы карточки функции",
+      "coreAria": "Разделы ядра продукта",
+      "needCore": "Сначала сохраните units ядра — тогда у вида появится версия для цены.",
       "includedProductOnly": "«Входит в базу» — функции каталога, уже оплаченные units ядра этого вида."
     },
     "workspace": {
       "tabs": {
-        "aria": "Разделы норм поставки",
-        "overview": "Модель",
-        "rates": "Ставки",
-        "units": "Units",
-        "profiles": "Профили",
-        "sale": "Продажа"
+        "aria": "Разделы ядра и функций",
+        "core": "Ядро",
+        "functions": "Функции",
+        "rates": "Ставки"
       },
       "profileTabs": {
         "aria": "Части базового профиля",

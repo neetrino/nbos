@@ -265,9 +265,9 @@ function CoreItemsActions({
         <PublishDraftButton
           disabled={saving}
           roleUnits={roleUnits}
-          onPublish={(confirmZeroUnits) =>
-            deliveryNormsApi.publishBaseProfile(versionId, { confirmZeroUnits })
-          }
+          onPublish={async (confirmZeroUnits) => {
+            await deliveryNormsApi.publishBaseProfile(versionId, { confirmZeroUnits });
+          }}
           onError={onError}
           onPublished={onChanged}
         />

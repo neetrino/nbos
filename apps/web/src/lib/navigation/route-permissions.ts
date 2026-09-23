@@ -13,6 +13,15 @@ import {
 } from './finance-nav-permissions';
 import type { PermissionRequirement } from './permission-requirement';
 
+const VIEW_ACTION = 'VIEW';
+
+export const CORE_FUNCTION_VIEW_REQUIREMENT: PermissionRequirement = {
+  anyOf: [
+    { module: FUNCTION_CATALOG_MODULE, action: VIEW_ACTION },
+    { module: DELIVERY_COMPENSATION_RULES_MODULE, action: VIEW_ACTION },
+  ],
+};
+
 export interface RoutePermissionEntry {
   href: string;
   permission: PermissionRequirement;
@@ -89,10 +98,10 @@ export const EXPLICIT_ROUTE_PERMISSIONS: RoutePermissionEntry[] = [
   },
   {
     href: '/my-company/function-catalog',
-    permission: { module: FUNCTION_CATALOG_MODULE, action: 'VIEW' },
+    permission: CORE_FUNCTION_VIEW_REQUIREMENT,
   },
   {
     href: '/my-company/delivery-norms',
-    permission: { module: DELIVERY_COMPENSATION_RULES_MODULE, action: 'VIEW' },
+    permission: CORE_FUNCTION_VIEW_REQUIREMENT,
   },
 ];

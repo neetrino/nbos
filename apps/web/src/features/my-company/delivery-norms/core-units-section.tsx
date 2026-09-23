@@ -7,9 +7,10 @@ import {
   type DeliveryBaseProfileFinancialDto,
   type DeliveryFunctionOperationalDto,
 } from '@nbos/shared';
+import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
 import { parseProfileKey } from './base-profile-label';
 import { coreUnitSlots } from './core-unit-slots';
-import { CoreUnitSheet } from './core-unit-sheet';
+import { CoreProductSheet } from './core-product-sheet';
 import { CoreUnitsBrowser } from './core-units-browser';
 import { liveNormPair } from './live-norm-pair';
 import { productTypeLabels } from './profile-enum-labels';
@@ -19,6 +20,7 @@ type ProductTypeLabelMap = ReturnType<typeof productTypeLabels>;
 type CoreUnitsSectionProps = {
   rows: DeliveryBaseProfileFinancialDto[];
   catalog: DeliveryFunctionOperationalDto[];
+  salePrices: SalePriceVersionDto[];
   canAdd: boolean;
   canPublish: boolean;
   onChanged: () => void;
@@ -49,6 +51,7 @@ export function CoreUnitsSection(props: CoreUnitsSectionProps) {
         slots={slots}
         labels={labels}
         catalog={props.catalog}
+        salePrices={props.salePrices}
         canAdd={props.canAdd}
         canPublish={props.canPublish}
         onClose={() => setOpenType(null)}
@@ -64,6 +67,7 @@ function CoreUnitSheetHost({
   slots,
   labels,
   catalog,
+  salePrices,
   canAdd,
   canPublish,
   onClose,
@@ -74,6 +78,7 @@ function CoreUnitSheetHost({
   slots: ReturnType<typeof coreUnitSlots>;
   labels: ProductTypeLabelMap;
   catalog: DeliveryFunctionOperationalDto[];
+  salePrices: SalePriceVersionDto[];
   canAdd: boolean;
   canPublish: boolean;
   onClose: () => void;
@@ -84,20 +89,19 @@ function CoreUnitSheetHost({
   const openSlot = slots.find((slot) => slot.productType === openType) ?? null;
   const openPair = openSlot ? liveNormPair(openSlot.productType, openSlot.rows) : null;
   return (
-    <CoreUnitSheet
+    <CoreProductSheet
       open
       productType={openType}
       title={labels[openType as keyof ProductTypeLabelMap] ?? openType}
       pair={openPair}
       catalog={catalog}
+      salePrices={salePrices}
       canSave={openPair?.draft ? canPublish : canAdd}
+      canPublish={canPublish}
       onOpenChange={(next) => {
         if (!next) onClose();
       }}
-      onSaved={() => {
-        onClose();
-        onChanged();
-      }}
+      onChanged={onChanged}
       onError={onError}
     />
   );

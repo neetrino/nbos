@@ -295,7 +295,8 @@
     "orgStructure": "Org Structure",
     "team": "Team",
     "departments": "Departments",
-    "rolesSeats": "Roles & Seats"
+    "rolesSeats": "Roles & Seats",
+    "coreFunction": "Core & Function"
   },
   "functionCatalog": {
     "title": "Function catalog",
@@ -431,19 +432,23 @@
     "sheet": {
       "tabs": {
         "general": "General",
-        "units": "Role units",
-        "included": "Included in base"
+        "units": "Units",
+        "price": "Sale price",
+        "composition": "Composition",
+        "included": "Included in base",
+        "collections": "Collections"
       },
+      "functionAria": "Function card sections",
+      "coreAria": "Product core sections",
+      "needCore": "Save core units first so this kind has a version to price.",
       "includedProductOnly": "Included-in-base lists catalog functions already paid by this kind's core units."
     },
     "workspace": {
       "tabs": {
-        "aria": "Delivery norms sections",
-        "overview": "Model",
-        "rates": "Role rates",
-        "units": "Units",
-        "profiles": "Profiles",
-        "sale": "Sale prices"
+        "aria": "Core and function sections",
+        "core": "Core",
+        "functions": "Functions",
+        "rates": "Role rates"
       },
       "profileTabs": {
         "aria": "Base profile parts",

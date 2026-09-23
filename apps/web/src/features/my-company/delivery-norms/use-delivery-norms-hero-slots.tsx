@@ -2,41 +2,46 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Coins, Layers, ListTree, Package, Tag } from 'lucide-react';
+import { Coins, Layers, Library } from 'lucide-react';
 import { PageHeroTabs, type PageHeroTabOption, useModuleHeroSlots } from '@/components/shared';
-import type { DeliveryNormsTab } from './delivery-norms-workspace';
+import type { DeliveryNormsSection } from './delivery-norms-workspace';
 
 export function useDeliveryNormsHeroSlots({
-  tab,
-  onTabChange,
+  section,
+  canSeeRules,
+  onSectionChange,
 }: {
-  tab: DeliveryNormsTab;
-  onTabChange: (tab: DeliveryNormsTab) => void;
+  section: DeliveryNormsSection;
+  canSeeRules: boolean;
+  onSectionChange: (section: DeliveryNormsSection) => void;
 }): void {
   const t = useTranslations('hr.deliveryNorms');
-  const options = useMemo(
-    (): PageHeroTabOption<DeliveryNormsTab>[] => [
-      { value: 'overview', label: t('workspace.tabs.overview'), icon: ListTree },
+  const options = useMemo((): PageHeroTabOption<DeliveryNormsSection>[] => {
+    const functionTab = {
+      value: 'functions' as const,
+      label: t('workspace.tabs.functions'),
+      icon: Library,
+    };
+    if (!canSeeRules) return [functionTab];
+    return [
+      { value: 'core', label: t('workspace.tabs.core'), icon: Layers },
+      functionTab,
       { value: 'rates', label: t('workspace.tabs.rates'), icon: Coins },
-      { value: 'units', label: t('workspace.tabs.units'), icon: Layers },
-      { value: 'profiles', label: t('workspace.tabs.profiles'), icon: Package },
-      { value: 'sale', label: t('workspace.tabs.sale'), icon: Tag },
-    ],
-    [t],
-  );
+    ];
+  }, [canSeeRules, t]);
 
   const secondaryTabs = useMemo(
     () => (
       <PageHeroTabs
-        value={tab}
-        onChange={onTabChange}
+        value={section}
+        onChange={onSectionChange}
         options={options}
         ariaLabel={t('workspace.tabs.aria')}
         showOnMobile
         registerMobileDock={false}
       />
     ),
-    [onTabChange, options, t, tab],
+    [onSectionChange, options, section, t],
   );
 
   const slots = useMemo(() => ({ secondaryTabs }), [secondaryTabs]);

@@ -26,6 +26,7 @@
   },
   "children": {
     "myCompany": {
+      "coreFunction": "Միջուկ և ֆունկցիաներ",
       "functionCatalog": "Ֆունկցիաների կատալոգ",
       "deliveryNorms": "Առաքման նորմեր",
       "compensation": "Փոխհատուցում",
