@@ -15,8 +15,7 @@ import { dateInputToIso, todayDateInputValue } from './effective-from';
 import { liveNormDisplayStatus } from './live-norm-pair';
 import type { LiveSalePrice } from './live-sale-prices';
 import { messageFromCaught } from './message-from-caught';
-import { NormsRowActions } from './norms-row-actions';
-import { SalePricePendingCell } from './sale-price-pending-cell';
+import { SALE_PRICE_PENDING_COLUMN_CLASS, SalePricePendingCell } from './sale-price-pending-cell';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
 import { parseSalePriceTargetKey, salePriceDraftBody } from './sale-price-draft';
 import { PublishDraftButton } from './publish-draft-button';
@@ -91,14 +90,17 @@ function SalePriceSummaryRow(props: SalePriceSummaryRowProps) {
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <SalePriceAmount amount={pair.published?.amountPerUnit ?? null} empty={t('none')} />
       </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
+      <TableCell className={`${ENTITY_LIST_CELL_CLASS} ${SALE_PRICE_PENDING_COLUMN_CLASS}`}>
         <SalePricePendingCell
           open={editing}
+          canEdit={canPublish}
           pendingAmount={pendingAmount}
           nextAmount={nextAmount}
           saving={saving}
+          publish={salePricePublish(pair, canPublish, props.onChanged, props.onError)}
           onNextAmountChange={props.onNextAmountChange}
           onSave={props.onSave}
+          onToggleEdit={props.onToggleEdit}
         />
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
@@ -106,15 +108,6 @@ function SalePriceSummaryRow(props: SalePriceSummaryRowProps) {
       </TableCell>
       <TableCell className={ENTITY_LIST_CELL_CLASS}>
         <SalePriceStatus pair={pair} />
-      </TableCell>
-      <TableCell className={ENTITY_LIST_CELL_CLASS}>
-        <SalePriceActions
-          pair={pair}
-          canPublish={canPublish}
-          onToggleEdit={props.onToggleEdit}
-          onChanged={props.onChanged}
-          onError={props.onError}
-        />
       </TableCell>
     </TableRow>
   );
@@ -134,36 +127,20 @@ function SalePriceAmount({ amount, empty }: { amount: string | null; empty: stri
   return <EntityListAmount amount={amount} currency={DELIVERY_COMPENSATION_CURRENCY} />;
 }
 
-function SalePriceActions({
-  pair,
-  canPublish,
-  onToggleEdit,
-  onChanged,
-  onError,
-}: {
-  pair: LiveSalePrice;
-  canPublish: boolean;
-  onToggleEdit: () => void;
-  onChanged: () => void;
-  onError: (message: string) => void;
-}) {
-  const t = useTranslations('hr.deliveryNorms');
+function salePricePublish(
+  pair: LiveSalePrice,
+  canPublish: boolean,
+  onChanged: () => void,
+  onError: (message: string) => void,
+) {
+  if (!pair.draft || !canPublish) return null;
   return (
-    <NormsRowActions
-      canEdit={canPublish}
-      editLabel={t('edit.action')}
-      onToggleEdit={onToggleEdit}
-      publish={
-        pair.draft && canPublish ? (
-          <PublishDraftButton
-            onPublish={async () => {
-              await deliveryCatalogStructureApi.publishSalePrice(pair.draft?.id ?? '');
-            }}
-            onError={onError}
-            onPublished={onChanged}
-          />
-        ) : null
-      }
+    <PublishDraftButton
+      onPublish={async () => {
+        await deliveryCatalogStructureApi.publishSalePrice(pair.draft?.id ?? '');
+      }}
+      onError={onError}
+      onPublished={onChanged}
     />
   );
 }

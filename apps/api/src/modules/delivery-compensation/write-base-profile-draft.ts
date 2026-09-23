@@ -89,6 +89,7 @@ async function createNextVersion(
   input: BaseProfileWriteInput,
 ): Promise<BaseProfileRecord> {
   const axes = frozenDeliveryAxes();
+  const coreItems = await copyCoreItemRows(tx, previous?.id ?? null);
   return tx.deliveryBaseProfileVersion.create({
     data: {
       profileKey: previous?.profileKey ?? coreProfileKeyForProductType(input.productType),
@@ -105,7 +106,17 @@ async function createNextVersion(
       includedFunctions: {
         create: input.includedFunctionIds.map((functionId) => ({ functionId })),
       },
+      ...(coreItems.length > 0 ? { coreItems: { create: coreItems } } : {}),
     },
     include: BASE_PROFILE_INCLUDE,
+  });
+}
+
+async function copyCoreItemRows(tx: TransactionClient, versionId: string | null) {
+  if (versionId === null) return [];
+  return tx.deliveryBaseProfileCoreItem.findMany({
+    where: { profileVersionId: versionId },
+    orderBy: { position: 'asc' },
+    select: { position: true, label: true, note: true },
   });
 }

@@ -47,9 +47,16 @@ export class CatalogStructureController {
 
   @Put('base-profiles/:id/core-items')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Replace the core composition of a draft base profile version.' })
-  replaceCoreItems(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
-    return this.structure.replaceCoreItems(id, body);
+  @ApiOperation({
+    summary:
+      'Replace core composition. A published core opens the next draft; the published list stays frozen.',
+  })
+  async replaceCoreItems(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.structure.replaceCoreItems(id, body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
   }
 
   @Get('collections')

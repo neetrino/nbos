@@ -14,12 +14,14 @@ export function DeliveryNormsProfileWorkspace({
   profileTab,
   canPublish,
   onProfileTabChange,
+  onChanged,
   onError,
 }: {
   data: DeliveryNormsPageData;
   profileTab: DeliveryNormsProfileTab;
   canPublish: boolean;
   onProfileTabChange: (tab: DeliveryNormsProfileTab) => void;
+  onChanged: () => void;
   onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
@@ -47,7 +49,13 @@ export function DeliveryNormsProfileWorkspace({
         showOnMobile
         registerMobileDock={false}
       />
-      <ProfileTabBody tab={profileTab} data={data} canPublish={canPublish} onError={onError} />
+      <ProfileTabBody
+        tab={profileTab}
+        data={data}
+        canPublish={canPublish}
+        onChanged={onChanged}
+        onError={onError}
+      />
     </div>
   );
 }
@@ -56,11 +64,13 @@ function ProfileTabBody({
   tab,
   data,
   canPublish,
+  onChanged,
   onError,
 }: {
   tab: DeliveryNormsProfileTab;
   data: DeliveryNormsPageData;
   canPublish: boolean;
+  onChanged: () => void;
   onError: (message: string) => void;
 }) {
   if (tab === 'collections') {
@@ -74,7 +84,15 @@ function ProfileTabBody({
       />
     );
   }
-  return <CoreItemsSection rows={data.profiles} canEdit={canPublish} onError={onError} embedded />;
+  return (
+    <CoreItemsSection
+      rows={data.profiles}
+      canEdit={canPublish}
+      onError={onError}
+      onChanged={onChanged}
+      embedded
+    />
+  );
 }
 
 function profilePanelCopy(

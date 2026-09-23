@@ -102,6 +102,7 @@ function SpecialNormsTab(props: DeliveryNormsTabPanelProps) {
       profileTab={props.profileTab}
       canPublish={props.canPublish}
       onProfileTabChange={props.onProfileTabChange}
+      onChanged={props.onChanged}
       onError={props.onError}
     />
   );

@@ -174,6 +174,7 @@ describe('createBaseProfileDraft', () => {
           ]),
           create,
         },
+        deliveryBaseProfileCoreItem: { findMany: vi.fn().mockResolvedValue([]) },
       }) as never,
     );
 

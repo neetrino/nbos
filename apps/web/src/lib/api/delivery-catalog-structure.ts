@@ -6,6 +6,8 @@ export type CoreItemDto = { id: string; position: number; label: string; note: s
 
 export type CoreItemInput = { label: string; note?: string | null };
 
+export type CoreItemsSaveResult = { profileVersionId: string; items: CoreItemDto[] };
+
 export type FunctionCollectionDto = {
   id: string;
   productType: string;
@@ -45,8 +47,11 @@ export const deliveryCatalogStructureApi = {
     return resp.data;
   },
 
-  async replaceCoreItems(profileVersionId: string, items: CoreItemInput[]): Promise<CoreItemDto[]> {
-    const resp = await api.put<CoreItemDto[]>(
+  async replaceCoreItems(
+    profileVersionId: string,
+    items: CoreItemInput[],
+  ): Promise<CoreItemsSaveResult> {
+    const resp = await api.put<CoreItemsSaveResult>(
       `${BASE}/base-profiles/${profileVersionId}/core-items`,
       { items },
     );

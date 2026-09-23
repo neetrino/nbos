@@ -3,6 +3,7 @@ import {
   type DeliveryBaseProfileFinancialDto,
 } from '@nbos/shared';
 import { parseProfileKey, type BaseProfileLabelDictionaries } from './base-profile-label';
+import { liveNormPair } from './live-norm-pair';
 
 export type ProfileKindGroup = {
   kindId: string;
@@ -38,6 +39,15 @@ export function groupProfileRows(
       rows: kindRows,
     };
   });
+}
+
+/** Draft wins. Otherwise the published core. An archived-only kind stays visible and read-only. */
+export function liveProfileRow(
+  group: ProfileKindGroup | null,
+): DeliveryBaseProfileFinancialDto | null {
+  if (!group) return null;
+  const pair = liveNormPair(group.kindId, group.rows);
+  return pair.draft ?? pair.published ?? group.rows[0] ?? null;
 }
 
 function productTypeOf(row: DeliveryBaseProfileFinancialDto): string | null {
