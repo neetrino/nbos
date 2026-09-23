@@ -27,8 +27,6 @@ export const LOADING_LIST_COUNT = 4;
 
 export const CORE_ITEM_INDEX_STEP = 1;
 
-export const SALE_PRICE_ZERO = 0;
-
 export const TARGET_KEY_SEPARATOR = ':';
 
 export const SALE_PRICE_TARGET_KINDS = ['FUNCTION', 'TIER', 'CORE'] as const;

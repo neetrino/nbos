@@ -1,55 +1,12 @@
 import { salePriceTargetKey, type SalePriceTarget } from '@nbos/shared';
-import type {
-  SalePriceDraftInput,
-  SalePriceVersionDto,
-} from '@/lib/api/delivery-catalog-structure';
+import type { SalePriceDraftInput } from '@/lib/api/delivery-catalog-structure';
 import {
   SALE_PRICE_TARGET_KINDS,
-  SALE_PRICE_ZERO,
   TARGET_KEY_SEPARATOR,
   type SalePriceTargetKind,
 } from './delivery-norms.constants';
-import { dateInputToIso, isValidDateInput } from './effective-from';
 
 export type { SalePriceTargetKind };
-
-export type SalePriceFormDraft = {
-  amountPerUnit: string;
-  effectiveFrom: string;
-};
-
-export type SalePriceFormResult =
-  | { ok: false; error: 'effectiveFrom' | 'priceRequired' | 'notPositive' }
-  | { ok: true; input: Pick<SalePriceDraftInput, 'amountPerUnit' | 'effectiveFrom'> };
-
-export function parsePositiveDecimal(raw: string): string | null {
-  const trimmed = raw.trim();
-  if (trimmed === '') {
-    return null;
-  }
-  const value = Number(trimmed);
-  if (!Number.isFinite(value) || value <= SALE_PRICE_ZERO) {
-    return null;
-  }
-  return trimmed;
-}
-
-export function buildSalePriceFormInput(draft: SalePriceFormDraft): SalePriceFormResult {
-  if (!isValidDateInput(draft.effectiveFrom)) {
-    return { ok: false, error: 'effectiveFrom' };
-  }
-  if (draft.amountPerUnit.trim() === '') {
-    return { ok: false, error: 'priceRequired' };
-  }
-  const amountPerUnit = parsePositiveDecimal(draft.amountPerUnit);
-  if (amountPerUnit === null) {
-    return { ok: false, error: 'notPositive' };
-  }
-  return {
-    ok: true,
-    input: { amountPerUnit, effectiveFrom: dateInputToIso(draft.effectiveFrom) },
-  };
-}
 
 export function salePriceTargetFromKind(kind: SalePriceTargetKind, id: string): SalePriceTarget {
   if (kind === 'FUNCTION') {
@@ -105,65 +62,6 @@ export function gradationsFromCatalog(
   return catalog.flatMap((item) =>
     (item.tiers ?? []).map((tier) => ({ id: tier.id, label: `${item.title} · ${tier.label}` })),
   );
-}
-
-export function tierIdsFromSalePrices(rows: readonly SalePriceVersionDto[]): string[] {
-  const ids: string[] = [];
-  for (const row of rows) {
-    const parsed = parseSalePriceTargetKey(row.targetKey);
-    if (parsed?.kind !== 'TIER' || ids.includes(parsed.id)) {
-      continue;
-    }
-    ids.push(parsed.id);
-  }
-  return ids;
-}
-
-export function salePricesForTarget(
-  rows: readonly SalePriceVersionDto[],
-  targetKey: string | null,
-): SalePriceVersionDto[] {
-  if (targetKey === null) {
-    return [];
-  }
-  return rows
-    .filter((row) => row.targetKey === targetKey)
-    .slice()
-    .sort((left, right) => right.version - left.version);
-}
-
-export function groupSalePrices(
-  rows: readonly SalePriceVersionDto[],
-): Array<{ targetKey: string; rows: SalePriceVersionDto[] }> {
-  const order: string[] = [];
-  const grouped = new Map<string, SalePriceVersionDto[]>();
-  for (const row of rows) {
-    const list = grouped.get(row.targetKey);
-    if (!list) {
-      grouped.set(row.targetKey, [row]);
-      order.push(row.targetKey);
-      continue;
-    }
-    list.push(row);
-  }
-  return order.map((targetKey) => ({
-    targetKey,
-    rows: [...(grouped.get(targetKey) ?? [])].sort((left, right) => right.version - left.version),
-  }));
-}
-
-export type SalePriceKindGroup = {
-  kind: SalePriceTargetKind;
-  groups: Array<{ targetKey: string; rows: SalePriceVersionDto[] }>;
-};
-
-export function groupSalePricesByKind(rows: readonly SalePriceVersionDto[]): SalePriceKindGroup[] {
-  return SALE_PRICE_TARGET_KINDS.flatMap((kind) => {
-    const groups = groupSalePrices(
-      rows.filter((row) => parseSalePriceTargetKey(row.targetKey)?.kind === kind),
-    );
-    return groups.length === 0 ? [] : [{ kind, groups }];
-  });
 }
 
 function isSalePriceTargetKind(value: string): value is SalePriceTargetKind {

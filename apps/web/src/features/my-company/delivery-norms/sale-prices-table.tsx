@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
+import { parseMoneyAmount } from '@/lib/format/money';
 import { dateInputToIso, todayDateInputValue } from './effective-from';
 import { liveNormDisplayStatus } from './live-norm-pair';
 import type { LiveSalePrice } from './live-sale-prices';
@@ -105,7 +106,7 @@ function SalePriceLiveRow({
       saving={saving}
       onNextAmountChange={setNextAmount}
       onToggleEdit={() => {
-        setNextAmount(pair.draft?.amountPerUnit ?? '');
+        setNextAmount(plainSaleAmount(pair.draft?.amountPerUnit));
         setOpen((current) => !current);
       }}
       onSave={() => {
@@ -228,6 +229,13 @@ function SalePriceActions({
       }
     />
   );
+}
+
+function plainSaleAmount(amount: string | null | undefined): string {
+  if (!amount) return '';
+  const value = parseMoneyAmount(amount);
+  if (!Number.isFinite(value) || value <= 0) return '';
+  return String(Math.trunc(value));
 }
 
 async function saveSalePriceDraft(input: {
