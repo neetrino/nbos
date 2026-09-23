@@ -186,6 +186,7 @@ function DomainEditorBody({
   return (
     <SalePricesSection
       rows={data.salePrices}
+      prices={data.prices}
       catalog={data.catalog}
       profiles={data.profiles}
       canEdit={canPublish}

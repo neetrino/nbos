@@ -659,6 +659,7 @@
       "noTiers": "No gradations with a sale price yet. Price functions and cores from the lists above.",
       "amountPerUnit": "Sale price ({currency})",
       "amountPerUnitShort": "Price",
+      "units": "Units",
       "pending": "New price",
       "unknownTarget": "Unknown target"
     },

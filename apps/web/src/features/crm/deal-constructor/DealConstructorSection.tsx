@@ -163,7 +163,6 @@ type OpenedCompositionProps = {
 function OpenedDealComposition(props: OpenedCompositionProps) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   const { model, parts, disabled } = props;
-  const busy = disabled || model.saving;
   return (
     <>
       <ProductCompositionSheet
@@ -186,7 +185,7 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         unitsByFunctionId={model.canSeeUnits ? model.catalog.unitsByFunctionId : undefined}
         coreSalePriceLabel={coreSaleLabel(model.coreSalePrice?.amount)}
         saleMissing={model.saleMissing}
-        disabled={busy}
+        disabled={disabled}
         error={model.error}
         canAdd
         onAdd={() => props.setCatalogOpen(true)}
@@ -195,9 +194,9 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         productType={props.typeChange}
         coreVolumeFactor={model.quote?.coreVolumeFactor ?? '1.0'}
         volumeByFunctionId={volumeByFunction(model.quote?.items ?? [])}
-        onCoreVolume={busy ? undefined : model.setCoreVolume}
-        onFunctionVolume={busy ? undefined : model.setFunctionVolume}
-        onExtrasVolume={busy ? undefined : model.setExtrasVolume}
+        onCoreVolume={disabled ? undefined : model.setCoreVolume}
+        onFunctionVolume={disabled ? undefined : model.setFunctionVolume}
+        onExtrasVolume={disabled ? undefined : model.setExtrasVolume}
       />
       <FunctionCatalogSheet
         open={props.catalogOpen}
@@ -212,7 +211,7 @@ function OpenedDealComposition(props: OpenedCompositionProps) {
         collections={model.collections}
         appliedCollectionId={model.quote?.appliedCollectionId ?? null}
         onApplyCollection={(collectionId) => void model.applyCollection(collectionId)}
-        collectionsDisabled={busy}
+        collectionsDisabled={disabled}
       />
     </>
   );

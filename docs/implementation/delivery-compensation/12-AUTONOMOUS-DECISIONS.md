@@ -88,17 +88,18 @@ the configuration, written at the first close, is the intended carrier. Today no
 all (`ensureNotTerminal` refuses any move once a resolution is set), so the guard is still correct;
 the stamp has to land together with the reopen action, not after it.
 
-**1.12 Sale price: AMD per unit always stored on the card version — Owner decision of 2026-09-20;
-multiplier withdrawn 2026-09-21; implicit default withdrawn 2026-09-21.** Each function, gradation
-and core carries its own client rate in AMD per unit. There is no fallback: no stored rate means no
-client amount. The line is `units × that rate`. Cost (`units × developer rate`) is not part of what
-the client pays and is not an input to this field.
+**1.12 Sale price: the stored number is the whole card price — Owner decision of 2026-09-23,
+replacing AMD per unit (2026-09-20).** Each function, gradation and core carries one AMD amount for
+the whole card. Units do not scale it. There is no fallback: no stored amount means no client
+amount. The client line is that amount times the deal volume factor only. Cost (`units × developer
+rate`) is not part of what the client pays and is not an input to this field. The column name
+`amountPerUnit` is historical and was not renamed. Existing stored numbers stay as entered.
 
 The 2026-09-20 implementation — a multiplier (default 10) plus an optional fixed amount that won —
 is withdrawn. The 2026-09-21 implicit “empty = 10 000” fallback is also withdrawn: a new draft cannot
 be saved without a number, and the seed publishes 10 000 (AI 20 000). The Owner's examples in
-[`08`](./08-CONSTRUCTOR-AND-SIZING.md) are different _rates_ (blog ~5 000, AI ~20 000, ordinary work
-10 000, services lower), not a factor on cost. One field covers them. The client amount is not a
+[`08`](./08-CONSTRUCTOR-AND-SIZING.md) are different whole prices (blog ~5 000, AI ~20 000, ordinary
+work 10 000, services lower), not a factor on cost. One field covers them. The client amount is not a
 secret: the catalog card shows the resolved AMD; units stay behind RULES VIEW.
 
 Sale prices are versioned like units, so a price change never re-prices deals that were already

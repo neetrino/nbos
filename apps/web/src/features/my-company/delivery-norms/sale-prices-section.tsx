@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import type { DeliveryBaseProfileFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
+import type {
+  DeliveryBaseProfileFinancialDto,
+  DeliveryFunctionOperationalDto,
+  DeliveryFunctionPriceFinancialDto,
+} from '@nbos/shared';
 import { PageHeroTabs, type PageHeroTabOption } from '@/components/shared';
 import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
 import { dictionariesForProfileLabel, formatBaseProfileLabel } from './base-profile-label';
@@ -13,11 +17,13 @@ import { displayedSaleAmount, liveSalePrices } from './live-sale-prices';
 import { itemsMatchingSearch } from './matches-norm-search';
 import { gradationsFromCatalog, targetKeyForKind, type CatalogGradation } from './sale-price-draft';
 import { SalePricesTable } from './sale-prices-table';
+import { saleUnitTotals } from './sale-price-units';
 
 const SALE_TABS = ['FUNCTION', 'TIER', 'CORE'] as const;
 
 type SalePricesSectionProps = {
   rows: SalePriceVersionDto[];
+  prices: DeliveryFunctionPriceFinancialDto[];
   catalog: DeliveryFunctionOperationalDto[];
   profiles: DeliveryBaseProfileFinancialDto[];
   canEdit: boolean;
@@ -28,6 +34,7 @@ type SalePricesSectionProps = {
 
 export function SalePricesSection({
   rows,
+  prices,
   catalog,
   profiles,
   canEdit,
@@ -36,7 +43,7 @@ export function SalePricesSection({
   embedded = false,
 }: SalePricesSectionProps) {
   const t = useTranslations('hr.deliveryNorms');
-  const workspace = useSalePricesWorkspace(rows, catalog, profiles);
+  const workspace = useSalePricesWorkspace(rows, prices, catalog, profiles);
   return (
     <DeliveryNormsSectionCard
       title={embedded ? undefined : t('salePrices.title')}
@@ -49,6 +56,7 @@ export function SalePricesSection({
         <SalePricesTable
           pairs={workspace.filtered}
           labels={workspace.labels}
+          unitTotals={workspace.unitTotals}
           canPublish={canEdit}
           onChanged={onChanged}
           onError={onError}
@@ -60,6 +68,7 @@ export function SalePricesSection({
 
 function useSalePricesWorkspace(
   rows: SalePriceVersionDto[],
+  prices: DeliveryFunctionPriceFinancialDto[],
   catalog: DeliveryFunctionOperationalDto[],
   profiles: DeliveryBaseProfileFinancialDto[],
 ) {
@@ -82,9 +91,13 @@ function useSalePricesWorkspace(
       })),
     [t],
   );
+  const unitTotals = useMemo(
+    () => saleUnitTotals(kind, prices, profiles),
+    [kind, prices, profiles],
+  );
   const pairs = useMemo(() => liveSalePrices(rows, kind, knownKeys), [kind, knownKeys, rows]);
   const filtered = useMemo(() => matchingSalePrices(pairs, query, labels), [labels, pairs, query]);
-  return { query, kind, labels, tabs, filtered, setQuery, setKind };
+  return { query, kind, labels, unitTotals, tabs, filtered, setQuery, setKind };
 }
 
 type SalePricesWorkspace = ReturnType<typeof useSalePricesWorkspace>;

@@ -659,6 +659,7 @@
       "noTiers": "Пока нет градаций с ценой продажи. Функции и ядра можно оценить из списков выше.",
       "amountPerUnit": "Цена продажи ({currency})",
       "amountPerUnitShort": "Цена",
+      "units": "Units",
       "pending": "Новая цена",
       "unknownTarget": "Неизвестная цель"
     },

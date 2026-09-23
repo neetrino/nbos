@@ -659,6 +659,7 @@
       "noTiers": "Վաճառքի գնով աստիճաններ դեռ չկան։ Ֆունկցիաներն ու միջուկները կարելի է գնագոյացնել վերևի ցանկերից։",
       "amountPerUnit": "Վաճառքի գին ({currency})",
       "amountPerUnitShort": "Գին",
+      "units": "Units",
       "pending": "Նոր գին",
       "unknownTarget": "Անհայտ նպատակ"
     },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { DELIVERY_COMPENSATION_RULES_MODULE } from '@nbos/shared';
@@ -9,7 +9,11 @@ import { ACTIVE_FUNCTION_STATUS } from '@/features/function-catalog/function-cat
 import { useFunctionCatalogQuery } from '@/features/function-catalog/use-function-catalog-query';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
-import { deliveryDealQuoteApi, type DealQuoteDto } from '@/lib/api/delivery-deal-quote';
+import {
+  deliveryDealQuoteApi,
+  type DealQuoteDto,
+  type DealQuoteWriteBody,
+} from '@/lib/api/delivery-deal-quote';
 import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { usePermission } from '@/lib/permissions';
 import { profileUnitsTotal } from './published-core-for-type';
@@ -39,7 +43,7 @@ export function useDealConstructor(
     canSeeUnits,
     t('loadFailed'),
   );
-  const writes = useDealConstructorWrites(dealId, loaded.setQuote, loaded.setError, t);
+  const writes = useDealConstructorWrites(dealId, loaded.quoteSync, loaded.setError, t);
   const money = useDealConstructorMoney({
     quote: loaded.quote,
     saleVersions: loaded.saleVersions,
@@ -107,75 +111,126 @@ function useDealConstructorQuery(
     queryKey: ['deal-constructor', dealId, productType, productCategory, canSeeUnits],
     queryFn: () => loadDealConstructor(dealId, productType, productCategory, canSeeUnits),
   });
-  const [override, setOverride] = useState<{ key: string; quote: DealQuoteDto } | null>(null);
   const [writeError, setWriteError] = useState<string | null>(null);
   const data = query.data;
-  const quote = override?.key === queryKey ? override.quote : (data?.quote ?? null);
+  const quoteSync = useQuoteSync(queryKey, data?.quote ?? null);
 
   return {
-    quote,
+    quote: quoteSync.quote,
     collections: data?.collections ?? [],
     saleVersions: data?.saleVersions ?? [],
     coreUnits: data?.coreUnits,
     coreTitle: data?.coreTitle ?? null,
     includedFunctionIds: data?.includedFunctionIds ?? [],
     error: writeError ?? (query.error ? getApiErrorMessage(query.error, loadFailed) : null),
-    setQuote: (next: DealQuoteDto) => setOverride({ key: queryKey, quote: next }),
+    quoteSync,
     setError: setWriteError,
     reload: () => {
-      setOverride(null);
+      quoteSync.clear();
       setWriteError(null);
       void query.refetch();
     },
   };
 }
 
+function useQuoteSync(queryKey: string, serverQuote: DealQuoteDto | null) {
+  const [override, setOverride] = useState<{ key: string; quote: DealQuoteDto } | null>(null);
+  const confirmed = useRef<DealQuoteDto | null>(null);
+  if (override?.key !== queryKey) confirmed.current = serverQuote;
+  const quote = override?.key === queryKey ? override.quote : serverQuote;
+  return {
+    quote,
+    preview: (next: DealQuoteDto) => setOverride({ key: queryKey, quote: next }),
+    remember: (saved: DealQuoteDto) => {
+      confirmed.current = saved;
+    },
+    revert: () => {
+      if (confirmed.current) setOverride({ key: queryKey, quote: confirmed.current });
+    },
+    clear: () => setOverride(null),
+  };
+}
+
+type QuoteSync = ReturnType<typeof useQuoteSync>;
+
 function useDealConstructorWrites(
   dealId: string,
-  setQuote: (quote: DealQuoteDto) => void,
+  quoteSync: QuoteSync,
   setError: (message: string | null) => void,
   t: ReturnType<typeof useTranslations<'crm.dealSheet.dealConstructor'>>,
 ) {
   const [saving, setSaving] = useState(false);
+  const generation = useRef(0);
+  const finish = useCallback(
+    (token: number, saved: DealQuoteDto) => {
+      quoteSync.remember(saved);
+      if (token !== generation.current) return;
+      quoteSync.preview(saved);
+      setError(null);
+      setSaving(false);
+    },
+    [quoteSync, setError],
+  );
 
   const persist = useCallback(
     async (next: DealQuoteDto) => {
+      const token = takeWrite(generation);
+      quoteSync.preview(next);
+      setError(null);
       setSaving(true);
       try {
-        setQuote(
-          await deliveryDealQuoteApi.replace(dealId, {
-            appliedCollectionId: next.appliedCollectionId,
-            coreVolumeFactor: next.coreVolumeFactor,
-            coreVolumeReason: next.coreVolumeReason,
-            items: next.items,
-          }),
-        );
-        setError(null);
+        finish(token, await deliveryDealQuoteApi.replace(dealId, quoteWriteBody(next)));
       } catch (caught) {
-        setError(getApiErrorMessage(caught, t('saveFailed')));
-      } finally {
-        setSaving(false);
+        failQuoteWrite(token, generation, quoteSync, setError, setSaving, caught, t('saveFailed'));
       }
     },
-    [dealId, setError, setQuote, t],
+    [dealId, finish, quoteSync, setError, t],
   );
 
   const applyCollection = useCallback(
     async (collectionId: string) => {
+      const token = takeWrite(generation);
       setSaving(true);
       try {
-        setQuote(await deliveryDealQuoteApi.applyCollection(dealId, collectionId));
-        setError(null);
+        finish(token, await deliveryDealQuoteApi.applyCollection(dealId, collectionId));
       } catch (caught) {
-        setError(getApiErrorMessage(caught, t('saveFailed')));
-      } finally {
-        setSaving(false);
+        failQuoteWrite(token, generation, quoteSync, setError, setSaving, caught, t('saveFailed'));
       }
     },
-    [dealId, setError, setQuote, t],
+    [dealId, finish, quoteSync, setError, t],
   );
 
   return { saving, persist, applyCollection };
+}
+
+function takeWrite(generation: { current: number }): number {
+  const token = generation.current + 1;
+  generation.current = token;
+  return token;
+}
+
+function quoteWriteBody(next: DealQuoteDto): DealQuoteWriteBody {
+  return {
+    appliedCollectionId: next.appliedCollectionId,
+    coreVolumeFactor: next.coreVolumeFactor,
+    coreVolumeReason: next.coreVolumeReason,
+    items: next.items,
+  };
+}
+
+function failQuoteWrite(
+  token: number,
+  generation: { current: number },
+  quoteSync: QuoteSync,
+  setError: (message: string | null) => void,
+  setSaving: (value: boolean) => void,
+  caught: unknown,
+  fallback: string,
+): void {
+  if (token !== generation.current) return;
+  quoteSync.revert();
+  setError(getApiErrorMessage(caught, fallback));
+  setSaving(false);
 }
 
 async function loadDealConstructor(
