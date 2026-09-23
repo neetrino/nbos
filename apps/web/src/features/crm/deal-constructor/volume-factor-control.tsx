@@ -49,7 +49,7 @@ const VOLUME_STOP_CLASS = [
   { fill: 'w-full', place: 'left-full' },
 ] as const;
 
-type VolumeDensity = 'default' | 'compact';
+type VolumeDensity = 'default' | 'compact' | 'summary';
 
 const VOLUME_REVEAL_CLASS =
   'origin-left scale-95 opacity-30 transition duration-150 ease-out group-hover/volume:scale-100 group-hover/volume:opacity-100 focus-within:scale-100 focus-within:opacity-100';
@@ -64,7 +64,15 @@ const VOLUME_DENSITY_CLASS = {
     tick: 'size-1.5',
   },
   compact: {
-    frame: `w-36 max-w-full ${VOLUME_REVEAL_CLASS}`,
+    frame: 'w-36 max-w-full',
+    pad: 'px-5',
+    row: 'h-5',
+    bar: 'h-3.5',
+    thumb: 'h-4 w-10 text-[10px] leading-none',
+    tick: 'size-1',
+  },
+  summary: {
+    frame: 'w-full',
     pad: 'px-5',
     row: 'h-5',
     bar: 'h-3.5',
@@ -95,7 +103,7 @@ export function VolumeFactorControl({
   const label = t('volumeFactorLabel', { factor: formatVolumeFactor(shown) });
   const metrics = VOLUME_DENSITY_CLASS[density];
   return (
-    <div className={cn(metrics.frame, quiet && VOLUME_REVEAL_CLASS)}>
+    <div className={volumeFrame(density, shown === VOLUME_FACTOR_STANDARD_TENTHS, quiet)}>
       <VolumeTrack
         shown={shown}
         disabled={disabled}
@@ -120,6 +128,11 @@ export function VolumeFactorControl({
       />
     </div>
   );
+}
+
+function volumeFrame(density: VolumeDensity, atStandard: boolean, quiet: boolean): string {
+  const restsQuiet = atStandard && (quiet || density === 'compact' || density === 'summary');
+  return cn(VOLUME_DENSITY_CLASS[density].frame, restsQuiet && VOLUME_REVEAL_CLASS);
 }
 
 type VolumeTrackProps = {

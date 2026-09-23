@@ -14,16 +14,11 @@ import {
   type CoreItemDto,
 } from '@/lib/api/delivery-catalog-structure';
 import { DealConstructorTotals } from './DealConstructorTotals';
-import { CompositionBaseBoard, CompositionBaseRule } from './composition-base-board';
-import { CompositionExtraList } from './composition-extra-list';
+import { CompositionBaseBoard } from './composition-base-board';
+import { CompositionExtraList, CompositionExtraSummary } from './composition-extra-list';
 import { CompositionRemoveDialog, useCompositionRemove } from './composition-remove-dialog';
 import type { CompositionProductTypeChange } from './composition-core-type-menu';
-import {
-  COMPOSITION_ADD_ICON_SIZE_PX,
-  COMPOSITION_CONTROL_ROW_CLASS,
-} from './composition.constants';
-import { VolumeFactorControl } from './volume-factor-control';
-import { VOLUME_FACTOR_STANDARD } from '@nbos/shared';
+import { COMPOSITION_ADD_ICON_SIZE_PX } from './composition.constants';
 
 type ProductCompositionPanelProps = {
   title?: string;
@@ -106,7 +101,6 @@ function CompositionRails({
   const hasExtras = props.extras.length > 0;
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
-      {hasExtras ? <CompositionBaseRule label={t('extraBadge')} /> : null}
       {hasExtras ? (
         <CompositionExtrasColumn
           extras={props.extras}
@@ -121,7 +115,6 @@ function CompositionRails({
           onExtrasVolume={props.onExtrasVolume}
         />
       ) : null}
-      {hasExtras ? <CompositionBaseRule label={t('baseHeading')} /> : null}
       <CompositionBaseBoard
         title={props.coreTitle}
         items={coreItems}
@@ -133,6 +126,7 @@ function CompositionRails({
         volumeFactor={props.coreVolumeFactor}
         volumeDisabled={props.disabled}
         onVolume={props.onCoreVolume}
+        baseLabel={hasExtras ? t('baseHeading') : null}
       />
     </div>
   );
@@ -155,17 +149,19 @@ function CompositionExtrasColumn({
 }: ComponentProps<typeof CompositionExtraList> & {
   onExtrasVolume?: (factor: string, reason: string | null) => void;
 }) {
+  const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
     <div className="flex min-w-0 flex-col gap-3">
-      {onExtrasVolume && extras.length > 0 ? (
-        <div className={COMPOSITION_CONTROL_ROW_CLASS}>
-          <VolumeFactorControl
-            factor={VOLUME_FACTOR_STANDARD}
-            disabled={volumeDisabled || !canRemove}
-            onCommit={onExtrasVolume}
-          />
-        </div>
-      ) : null}
+      <CompositionExtraSummary
+        count={extras.length}
+        showSalePrice={list.showSalePrice}
+        salePriceByFunctionId={list.salePriceByFunctionId}
+        extraIds={extras.map((item) => item.id)}
+        ruleLabel={t('extraBadge')}
+        volumeByFunctionId={list.volumeByFunctionId}
+        volumeDisabled={volumeDisabled || !canRemove}
+        onVolume={onExtrasVolume}
+      />
       <CompositionExtraList
         extras={extras}
         canRemove={canRemove}
