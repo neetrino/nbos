@@ -49,13 +49,37 @@ const VOLUME_STOP_CLASS = [
   { fill: 'w-full', place: 'left-full' },
 ] as const;
 
+type VolumeDensity = 'default' | 'compact';
+
+const VOLUME_DENSITY_CLASS = {
+  default: {
+    frame: 'px-1 py-1',
+    pad: 'px-7',
+    row: 'h-8',
+    bar: 'h-6',
+    thumb: 'h-7 w-12 text-xs',
+    tick: 'size-1.5',
+  },
+  compact: {
+    frame:
+      'w-36 max-w-full origin-left scale-95 opacity-30 transition duration-150 ease-out group-hover/volume:scale-100 group-hover/volume:opacity-100 focus-within:scale-100 focus-within:opacity-100',
+    pad: 'px-5',
+    row: 'h-5',
+    bar: 'h-3.5',
+    thumb: 'h-4 w-10 text-[10px] leading-none',
+    tick: 'size-1',
+  },
+} as const;
+
 export function VolumeFactorControl({
   factor,
   disabled,
+  density = 'default',
   onCommit,
 }: {
   factor: string;
   disabled?: boolean;
+  density?: VolumeDensity;
   onCommit: (factor: string, reason: string | null) => void;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
@@ -64,12 +88,14 @@ export function VolumeFactorControl({
   const [pending, setPending] = useState<number | null>(null);
   const shown = draft ?? saved;
   const label = t('volumeFactorLabel', { factor: formatVolumeFactor(shown) });
+  const metrics = VOLUME_DENSITY_CLASS[density];
   return (
-    <div className="px-1 py-1">
+    <div className={metrics.frame}>
       <VolumeTrack
         shown={shown}
         disabled={disabled}
         label={label}
+        metrics={metrics}
         onDraft={setDraft}
         onRelease={(value) => finishDraft(value, saved, setDraft, setPending, onCommit)}
       />
@@ -91,36 +117,34 @@ export function VolumeFactorControl({
   );
 }
 
-function VolumeTrack({
-  shown,
-  disabled,
-  label,
-  onDraft,
-  onRelease,
-}: {
+type VolumeTrackProps = {
   shown: number;
   disabled?: boolean;
   label: string;
+  metrics: (typeof VOLUME_DENSITY_CLASS)[VolumeDensity];
   onDraft: (value: number) => void;
   onRelease: (value: number) => void;
-}) {
+};
+
+function VolumeTrack({ shown, disabled, label, metrics, onDraft, onRelease }: VolumeTrackProps) {
   const stop = volumeStopClass(shown);
-  const adjusted = shown !== VOLUME_FACTOR_STANDARD_TENTHS;
   return (
-    <div className={cn('px-7', disabled && 'opacity-50')}>
-      <div className="relative h-8">
-        <div className="bg-foreground/10 absolute inset-x-0 top-1/2 h-6 -translate-y-1/2 rounded-full">
+    <div className={cn(metrics.pad, disabled && 'opacity-50')}>
+      <div className={cn('relative', metrics.row)}>
+        <div
+          className={cn(
+            'bg-foreground/10 absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full',
+            metrics.bar,
+          )}
+        >
           <div className={cn('bg-primary absolute inset-y-0 left-0 rounded-full', stop.fill)} />
-          <VolumeTicks shown={shown} />
-          <span
-            className={cn(
-              'pointer-events-none absolute top-1/2 flex h-7 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xs font-semibold tabular-nums shadow-[0_2px_6px_rgb(0_0_0/0.28),0_0_0_1px_rgb(0_0_0/0.08)]',
-              adjusted ? 'text-primary' : 'text-neutral-950',
-              stop.place,
-            )}
-          >
-            {label}
-          </span>
+          <VolumeTicks shown={shown} tickClass={metrics.tick} />
+          <VolumeThumb
+            label={label}
+            place={stop.place}
+            thumbClass={metrics.thumb}
+            adjusted={shown !== VOLUME_FACTOR_STANDARD_TENTHS}
+          />
         </div>
         <input
           type="range"
@@ -140,12 +164,38 @@ function VolumeTrack({
   );
 }
 
-function VolumeTicks({ shown }: { shown: number }) {
+function VolumeThumb({
+  label,
+  place,
+  thumbClass,
+  adjusted,
+}: {
+  label: string;
+  place: string;
+  thumbClass: string;
+  adjusted: boolean;
+}) {
+  return (
+    <span
+      className={cn(
+        'pointer-events-none absolute top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white font-semibold tabular-nums shadow-[0_2px_6px_rgb(0_0_0/0.28),0_0_0_1px_rgb(0_0_0/0.08)]',
+        thumbClass,
+        adjusted ? 'text-primary' : 'text-neutral-950',
+        place,
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+function VolumeTicks({ shown, tickClass }: { shown: number; tickClass: string }) {
   return VOLUME_TICKS.map((tick) => (
     <span
       key={tick}
       className={cn(
-        'absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full',
+        'absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full',
+        tickClass,
         tick <= shown ? 'bg-white/90' : 'bg-foreground/25',
         volumeStopClass(tick).place,
       )}

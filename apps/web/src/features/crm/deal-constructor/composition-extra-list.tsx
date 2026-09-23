@@ -78,23 +78,24 @@ function ExtraVolumeCard({
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
-    <div className="flex flex-col gap-1">
-      <FunctionCatalogCard
-        item={item}
-        variant="compact"
-        extraLabel={t('extraBadge')}
-        unitsLabel={units === undefined ? undefined : String(units)}
-        salePriceLabel={showSalePrice && sale ? formatMoneyDram(Number(sale.amount)) : undefined}
-        removeLabel={canRemove ? t('removeFunctionAria', { title: item.title }) : undefined}
-        onRemove={canRemove ? onRemove : undefined}
-      />
-      {onVolume ? (
-        <VolumeFactorControl
-          factor={volumeFactor}
-          disabled={volumeDisabled}
-          onCommit={(factor, reason) => onVolume(item.id, factor, reason)}
-        />
-      ) : null}
-    </div>
+    <FunctionCatalogCard
+      item={item}
+      variant="compact"
+      extraLabel={t('extraBadge')}
+      unitsLabel={units === undefined ? undefined : String(units)}
+      salePriceLabel={showSalePrice && sale ? formatMoneyDram(Number(sale.amount)) : undefined}
+      removeLabel={canRemove ? t('removeFunctionAria', { title: item.title }) : undefined}
+      onRemove={canRemove ? onRemove : undefined}
+      accessory={
+        onVolume ? (
+          <VolumeFactorControl
+            density="compact"
+            factor={volumeFactor}
+            disabled={volumeDisabled}
+            onCommit={(factor, reason) => onVolume(item.id, factor, reason)}
+          />
+        ) : undefined
+      }
+    />
   );
 }

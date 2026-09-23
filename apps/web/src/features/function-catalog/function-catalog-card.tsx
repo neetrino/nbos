@@ -33,6 +33,7 @@ type FunctionCatalogCardProps = {
   onToggle?: (id: string) => void;
   onRemove?: () => void;
   removeLabel?: string;
+  accessory?: ReactNode;
   gradations?: readonly CatalogFunctionGradation[];
   selectedTierId?: string;
   chooseVolumeLabel?: string;
@@ -46,7 +47,14 @@ export function catalogCardUsesSelectedSurface(selected: boolean): boolean {
 
 export function FunctionCatalogCard(props: FunctionCatalogCardProps) {
   const mode = catalogCardMode(props);
-  const body = <CardContents item={props.item} compact={mode.compact} {...cardCopy(props)} />;
+  const body = (
+    <CardContents
+      item={props.item}
+      compact={mode.compact}
+      accessory={props.accessory}
+      {...cardCopy(props)}
+    />
+  );
   return <CatalogCardSurface props={props} mode={mode} body={body} />;
 }
 
@@ -64,11 +72,14 @@ function catalogCardMode(props: FunctionCatalogCardProps) {
     selected,
     canToggle,
     canChangeVolume,
-    className: cardClassName(
-      compact,
-      canToggle || Boolean(props.onOpen) || Boolean(props.onRemove),
-      catalogCardUsesSelectedSurface(selected),
-      canChangeVolume,
+    className: cn(
+      cardClassName(
+        compact,
+        canToggle || Boolean(props.onOpen) || Boolean(props.onRemove),
+        catalogCardUsesSelectedSurface(selected),
+        canChangeVolume,
+      ),
+      props.accessory ? 'group/volume' : undefined,
     ),
   };
 }
@@ -241,8 +252,9 @@ function cardClassName(
 function CardContents({
   item,
   compact,
+  accessory,
   ...copy
-}: CardCopy & { item: DeliveryFunctionOperationalDto; compact: boolean }) {
+}: CardCopy & { item: DeliveryFunctionOperationalDto; compact: boolean; accessory?: ReactNode }) {
   return (
     <>
       <span
@@ -256,7 +268,7 @@ function CardContents({
           size={compact ? CATALOG_ICON_COMPACT_SIZE_PX : undefined}
         />
       </span>
-      <CardBody item={item} compact={compact} {...copy} />
+      <CardBody item={item} compact={compact} accessory={accessory} {...copy} />
     </>
   );
 }
@@ -264,14 +276,35 @@ function CardContents({
 function CardBody({
   item,
   compact,
+  accessory,
   ...copy
-}: CardCopy & { item: DeliveryFunctionOperationalDto; compact: boolean }) {
+}: CardCopy & {
+  item: DeliveryFunctionOperationalDto;
+  compact: boolean;
+  accessory?: ReactNode;
+}) {
   return (
     <div className={cn('min-w-0', compact ? 'flex-1' : 'contents')}>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-foreground line-clamp-2 min-h-10 text-sm font-semibold">{item.title}</p>
+        <FunctionTitle title={item.title} accessory={accessory} />
         <CardMeta {...copy} />
       </div>
+    </div>
+  );
+}
+
+function FunctionTitle({ title, accessory }: { title: string; accessory?: ReactNode }) {
+  return (
+    <div className="min-w-0 flex-1">
+      <p
+        className={cn(
+          'text-foreground line-clamp-2 text-sm font-semibold',
+          accessory ? undefined : 'min-h-10',
+        )}
+      >
+        {title}
+      </p>
+      {accessory ? <div className="mt-0.5">{accessory}</div> : null}
     </div>
   );
 }
