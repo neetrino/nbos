@@ -18,6 +18,8 @@ import {
 import { FunctionUnitsTab } from '@/features/my-company/delivery-norms/function-units-tab';
 import { liveFunctionPrices } from '@/features/my-company/delivery-norms/live-function-prices';
 import { NormsEntitySheet } from '@/features/my-company/delivery-norms/norms-entity-sheet';
+import { PublishDraftButton } from '@/features/my-company/delivery-norms/publish-draft-button';
+import { publishFunctionSheetDrafts } from '@/features/my-company/delivery-norms/publish-sheet-drafts';
 import { saveSalePriceDraft } from '@/features/my-company/delivery-norms/sale-price-save';
 import {
   SalePriceSheetEditor,
@@ -76,6 +78,22 @@ export function FunctionCatalogDetailSheet({
       icon={
         item ? <CatalogFunctionIcon iconKey={item.iconKey} size={CATALOG_ICON_SIZE_PX} /> : null
       }
+      headerAction={
+        canPublish && (drafts.selected?.draft || salePair?.draft) ? (
+          <PublishDraftButton
+            roleUnits={drafts.selected?.draft?.roleUnits ?? []}
+            onPublish={async (confirmZeroUnits) => {
+              await publishFunctionSheetDrafts({
+                priceDraftId: drafts.selected?.draft?.id ?? null,
+                saleDraftId: salePair?.draft?.id ?? null,
+                confirmZeroUnits,
+              });
+            }}
+            onError={onError}
+            onPublished={onChanged}
+          />
+        ) : null
+      }
       tabs={tabs}
       activeTab={tab}
       onTabChange={(value) => setTab(value as DeliveryNormsFunctionSheetTab)}
@@ -121,8 +139,6 @@ export function FunctionCatalogDetailSheet({
           drafts={drafts}
           salePair={salePair}
           price={price}
-          onChanged={onChanged}
-          onError={onError}
         />
       ) : null}
     </NormsEntitySheet>
@@ -139,8 +155,6 @@ function FunctionSheetBody({
   drafts,
   salePair,
   price,
-  onChanged,
-  onError,
 }: {
   item: DeliveryFunctionOperationalDto;
   tab: DeliveryNormsFunctionSheetTab;
@@ -151,8 +165,6 @@ function FunctionSheetBody({
   drafts: ReturnType<typeof useFunctionSheetDrafts>;
   salePair: ReturnType<typeof functionSalePair>;
   price: ReturnType<typeof useSalePriceAmount>;
-  onChanged: () => void;
-  onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
@@ -163,13 +175,9 @@ function FunctionSheetBody({
           tierOptions={drafts.tierOptions}
           tierId={drafts.tierId}
           roleUnits={drafts.roleUnits}
-          selected={drafts.selected}
-          canPublish={canPublish}
           disabled={saving || !canWrite}
           onTierChange={drafts.selectTier}
           onRoleUnits={drafts.setRoleUnits}
-          onChanged={onChanged}
-          onError={onError}
         />
       ) : null}
       {tab === 'price' && canSeeRules ? (
@@ -189,8 +197,6 @@ function FunctionSheetBody({
           canPublish={canPublish}
           amount={price.amount}
           onAmountChange={price.setAmount}
-          onChanged={onChanged}
-          onError={onError}
         />
       ) : null}
     </DetailSheetTabPanel>

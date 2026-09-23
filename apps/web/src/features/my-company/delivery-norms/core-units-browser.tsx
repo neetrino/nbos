@@ -2,14 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  sumPayableRoleUnits,
-  type DeliveryBaseProfileFinancialDto,
-  type ProductTypeKey,
-} from '@nbos/shared';
+import { sumPayableRoleUnits, type ProductTypeKey } from '@nbos/shared';
 import type { SalePriceVersionDto } from '@/lib/api/delivery-catalog-structure';
 import { formatMoneyDram } from '@/lib/format/money';
-import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { coreCardIncludedCount, coreCardSaleAmount, coreCardSource } from './core-card-meta';
 import {
   CORE_RAIL_ALL_ID,
@@ -26,7 +21,6 @@ import { liveNormDisplayStatus, liveNormPair } from './live-norm-pair';
 import { NormsCatalogCard } from './norms-catalog-card';
 import { NormsCategoryBrowser } from './norms-category-browser';
 import { normativeStatusLabelKey } from './normative-status-badge';
-import { PublishDraftButton } from './publish-draft-button';
 
 const GROUP_MESSAGE_KEYS = {
   all: 'cores.groups.all',
@@ -45,8 +39,6 @@ export function CoreUnitsBrowser({
   canAdd,
   canPublish,
   onOpen,
-  onChanged,
-  onError,
 }: {
   slots: CoreUnitSlot[];
   labels: Record<ProductTypeKey, string>;
@@ -54,8 +46,6 @@ export function CoreUnitsBrowser({
   canAdd: boolean;
   canPublish: boolean;
   onOpen: (productType: string) => void;
-  onChanged: () => void;
-  onError: (message: string) => void;
 }) {
   const view = useCoreUnitsView(slots, labels);
   return (
@@ -79,8 +69,6 @@ export function CoreUnitsBrowser({
           canPublish={canPublish}
           unitsLabel={view.unitsLabel(slot)}
           onOpen={() => onOpen(slot.productType)}
-          onChanged={onChanged}
-          onError={onError}
         />
       )}
     />
@@ -158,8 +146,6 @@ function CoreKindCard({
   canPublish,
   unitsLabel,
   onOpen,
-  onChanged,
-  onError,
 }: {
   slot: CoreUnitSlot;
   title: string;
@@ -168,8 +154,6 @@ function CoreKindCard({
   canPublish: boolean;
   unitsLabel: string;
   onOpen: () => void;
-  onChanged: () => void;
-  onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const pair = liveNormPair(slot.productType, slot.rows);
@@ -182,33 +166,14 @@ function CoreKindCard({
       title={title}
       unitsLabel={unitsLabel}
       salePriceLabel={saleAmount ? formatMoneyDram(Number(saleAmount)) : null}
-      includedLabel={
-        includedCount === null ? null : t('profiles.includedCount', { count: includedCount })
-      }
+      includedLabel={includedCount === null ? null : String(includedCount)}
+      salesCaption={t('cards.sales')}
+      unitsCaption={t('cards.units')}
+      includedCaption={t('cards.included')}
       status={status}
       statusLabel={status ? t(normativeStatusLabelKey(status)) : null}
       canOpen={pair.draft ? canPublish : canAdd}
       onOpen={onOpen}
-      publish={corePublishAction(pair.draft, canPublish, onChanged, onError)}
-    />
-  );
-}
-
-function corePublishAction(
-  draft: DeliveryBaseProfileFinancialDto | null,
-  canPublish: boolean,
-  onChanged: () => void,
-  onError: (message: string) => void,
-) {
-  if (!draft || !canPublish) return null;
-  return (
-    <PublishDraftButton
-      roleUnits={draft.roleUnits}
-      onPublish={async (confirmZeroUnits) => {
-        await deliveryNormsApi.publishBaseProfile(draft.id, { confirmZeroUnits });
-      }}
-      onError={onError}
-      onPublished={onChanged}
     />
   );
 }

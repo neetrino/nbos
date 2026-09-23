@@ -35,7 +35,11 @@ export function useDealConstructor(
   const t = useTranslations('crm.dealSheet.dealConstructor');
   const { can } = usePermission();
   const canSeeUnits = can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE);
-  const catalog = useFunctionCatalogQuery({ search: '', status: ACTIVE_FUNCTION_STATUS });
+  const catalog = useFunctionCatalogQuery({
+    search: '',
+    status: ACTIVE_FUNCTION_STATUS,
+    complete: true,
+  });
   const loaded = useDealConstructorQuery(
     dealId,
     productType,

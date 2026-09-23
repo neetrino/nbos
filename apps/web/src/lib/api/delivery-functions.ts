@@ -3,7 +3,12 @@ import { api } from '../api';
 
 export type FunctionCatalogListResponse = {
   items: DeliveryFunctionOperationalDto[];
-  meta: { total: number; page: number; pageSize: number };
+  meta: {
+    total: number;
+    page: number;
+    pageSize: number;
+    categoryCounts?: Record<string, number>;
+  };
 };
 
 export type DeliveryRoleRateRow = {

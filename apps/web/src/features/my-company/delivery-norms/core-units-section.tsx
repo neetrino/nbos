@@ -44,8 +44,6 @@ export function CoreUnitsSection(props: CoreUnitsSectionProps) {
         canAdd={props.canAdd}
         canPublish={props.canPublish}
         onOpen={setOpenType}
-        onChanged={props.onChanged}
-        onError={props.onError}
       />
       <CoreUnitSheetHost
         openType={openType}

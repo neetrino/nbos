@@ -11,6 +11,7 @@ import {
   LoadingState,
   PageHeroSearch,
 } from '@/components/shared';
+import { InfiniteScrollSentinel } from '@/components/shared/InfiniteScrollSentinel';
 import { formatMoneyDram } from '@/lib/format/money';
 import {
   FUNCTION_CATALOG_ALL_ID,
@@ -40,11 +41,23 @@ type FunctionCatalogBrowserProps = {
   cardGridClassName?: string;
   headerAction?: ReactNode;
   belowSearch?: ReactNode;
+  total?: number;
+  categoryCounts?: Record<string, number>;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
 };
 
 export function FunctionCatalogBrowser(props: FunctionCatalogBrowserProps) {
   const t = useTranslations('hr.functionCatalog');
-  const model = useCatalogBrowserModel(props.items, props.search, props.selectedCategory);
+  const model = useCatalogBrowserModel(
+    props.items,
+    props.search,
+    props.selectedCategory,
+    props.categoryCounts
+      ? { total: props.total ?? props.items.length, counts: props.categoryCounts }
+      : undefined,
+  );
   return (
     <div className={FUNCTION_CATALOG_RAIL_GRID_CLASS}>
       <FunctionCatalogRail
@@ -76,6 +89,9 @@ export function FunctionCatalogBrowser(props: FunctionCatalogBrowserProps) {
           unitsByFunctionId={props.unitsByFunctionId}
           salePriceByFunctionId={props.salePriceByFunctionId}
           cardGridClassName={props.cardGridClassName}
+          hasMore={props.hasMore}
+          loadingMore={props.loadingMore}
+          onLoadMore={props.onLoadMore}
         />
       </div>
     </div>
@@ -95,6 +111,9 @@ type CatalogBrowserDataProps = {
   unitsByFunctionId: Map<string, number> | undefined;
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
   cardGridClassName?: string;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
 };
 
 function CatalogBrowserData(props: CatalogBrowserDataProps) {
@@ -127,6 +146,12 @@ function CatalogBrowserData(props: CatalogBrowserDataProps) {
           title={props.selectedCategory === FUNCTION_CATALOG_ALL_ID ? emptyTitle : t('empty')}
         />
       )}
+      {props.onLoadMore ? (
+        <InfiniteScrollSentinel
+          onReach={props.onLoadMore}
+          disabled={props.loading || props.loadingMore === true || props.hasMore !== true}
+        />
+      ) : null}
     </DataView>
   );
 }

@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import type { DeliveryRoleUnitFinancialDto } from '@nbos/shared';
 import { DataView, LoadingState } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   deliveryCatalogStructureApi,
   type CoreItemDto,
 } from '@/lib/api/delivery-catalog-structure';
-import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { CoreItemCreateForm } from './core-item-create-form';
 import {
   addCoreItemDraft,
@@ -21,13 +19,11 @@ import { CoreItemsList } from './core-items-list';
 import { LOADING_LIST_COUNT } from './delivery-norms.constants';
 import { messageFromCaught } from './message-from-caught';
 import { NormsLoadError } from './norms-load-error';
-import { PublishDraftButton } from './publish-draft-button';
 import { useCoreItems } from './use-catalog-structure-lists';
 
 export function CoreItemsEditor({
   versionId,
   status,
-  roleUnits,
   initialItems,
   editable,
   onError,
@@ -35,7 +31,6 @@ export function CoreItemsEditor({
 }: {
   versionId: string;
   status: string;
-  roleUnits: DeliveryRoleUnitFinancialDto[];
   initialItems?: readonly CoreItemDto[];
   editable: boolean;
   onError: (message: string) => void;
@@ -49,8 +44,6 @@ export function CoreItemsEditor({
       {editable ? (
         <CoreItemsSaveBar
           versionId={versionId}
-          status={status}
-          roleUnits={roleUnits}
           editor={editor}
           onError={onError}
           onChanged={onChanged}
@@ -102,15 +95,11 @@ function CoreItemsForm({
 
 function CoreItemsSaveBar({
   versionId,
-  status,
-  roleUnits,
   editor,
   onError,
   onChanged,
 }: {
   versionId: string;
-  status: string;
-  roleUnits: DeliveryRoleUnitFinancialDto[];
   editor: CoreItemEditorState;
   onError: (message: string) => void;
   onChanged: () => void;
@@ -118,9 +107,6 @@ function CoreItemsSaveBar({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <CoreItemsActions
-      versionId={versionId}
-      status={status}
-      roleUnits={roleUnits}
       saving={editor.saving}
       saveLabel={editor.saving ? t('coreItems.saving') : t('coreItems.save')}
       onSave={() => {
@@ -135,8 +121,6 @@ function CoreItemsSaveBar({
           setSaving: editor.setSaving,
         });
       }}
-      onError={onError}
-      onChanged={onChanged}
     />
   );
 }
@@ -246,37 +230,16 @@ function CoreItemsLoaded({
 }
 
 function CoreItemsActions({
-  versionId,
-  status,
-  roleUnits,
   saving,
   saveLabel,
   onSave,
-  onError,
-  onChanged,
 }: {
-  versionId: string;
-  status: string;
-  roleUnits: DeliveryRoleUnitFinancialDto[];
   saving: boolean;
   saveLabel: string;
   onSave: () => void;
-  onError: (message: string) => void;
-  onChanged: () => void;
 }) {
   return (
     <div className="flex flex-wrap justify-end gap-2">
-      {status === 'DRAFT' ? (
-        <PublishDraftButton
-          disabled={saving}
-          roleUnits={roleUnits}
-          onPublish={async (confirmZeroUnits) => {
-            await deliveryNormsApi.publishBaseProfile(versionId, { confirmZeroUnits });
-          }}
-          onError={onError}
-          onPublished={onChanged}
-        />
-      ) : null}
       <Button type="button" size="sm" disabled={saving} onClick={onSave}>
         {saveLabel}
       </Button>

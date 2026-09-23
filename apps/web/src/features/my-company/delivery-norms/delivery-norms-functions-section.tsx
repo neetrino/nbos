@@ -45,7 +45,10 @@ export function DeliveryNormsFunctionsSection({
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS).trim();
   const [selectedCategory, setSelectedCategory] = useState<CatalogRailId>(FUNCTION_CATALOG_ALL_ID);
   const [openId, setOpenId] = useState<string | null>(null);
-  const catalog = useFunctionCatalogQuery({ search: debouncedSearch });
+  const catalog = useFunctionCatalogQuery({
+    search: debouncedSearch,
+    category: selectedCategory,
+  });
   const selectedCard = useMemo(
     () => catalog.items.find((item) => item.id === openId) ?? null,
     [catalog.items, openId],
@@ -81,6 +84,11 @@ export function DeliveryNormsFunctionsSection({
         }}
         unitsByFunctionId={catalog.unitsByFunctionId}
         salePriceByFunctionId={catalog.salePriceByFunctionId}
+        total={catalog.total}
+        categoryCounts={catalog.categoryCounts}
+        hasMore={catalog.hasMore}
+        loadingMore={catalog.loadingMore}
+        onLoadMore={() => void catalog.loadMore()}
         mode={{ kind: 'browse', showStatus: canEditCatalog, onOpen: setOpenId }}
       />
       <FunctionCatalogDetailSheet

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { DELIVERY_COMPENSATION_CURRENCY } from '@nbos/shared';
 import {
@@ -9,11 +9,9 @@ import {
   MoneyInput,
 } from '@/components/shared';
 import { formatGroupedNumber, parseMoneyAmount } from '@/lib/format/money';
-import { deliveryCatalogStructureApi } from '@/lib/api/delivery-catalog-structure';
 import { liveNormDisplayStatus } from './live-norm-pair';
 import type { LiveSalePrice } from './live-sale-prices';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
-import { PublishDraftButton } from './publish-draft-button';
 import { plainSaleAmount } from './sale-price-save';
 
 export function SalePriceSheetEditor({
@@ -23,17 +21,13 @@ export function SalePriceSheetEditor({
   canPublish,
   amount,
   onAmountChange,
-  onChanged,
-  onError,
 }: {
   pair: LiveSalePrice | null;
   hint: string;
-  extra?: React.ReactNode;
+  extra?: ReactNode;
   canPublish: boolean;
   amount: string;
   onAmountChange: (value: string) => void;
-  onChanged: () => void;
-  onError: (message: string) => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const published = pair?.published?.amountPerUnit ?? null;
@@ -61,15 +55,6 @@ export function SalePriceSheetEditor({
           </div>
           {status ? (
             <NormativeStatusBadge status={status} label={t(normativeStatusLabelKey(status))} />
-          ) : null}
-          {pair?.draft && canPublish ? (
-            <PublishDraftButton
-              onPublish={async () => {
-                await deliveryCatalogStructureApi.publishSalePrice(pair.draft?.id ?? '');
-              }}
-              onError={onError}
-              onPublished={onChanged}
-            />
           ) : null}
         </div>
       </DetailSheetSection>

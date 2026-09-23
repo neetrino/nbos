@@ -5,7 +5,11 @@ import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { Button } from '@/components/ui/button';
 import type { SearchOption } from '@/components/shared';
 import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared/detail-sheet-classes';
-import { INCLUDED_FUNCTIONS_LIST_CLASS } from './delivery-norms.constants';
+import {
+  INCLUDED_FUNCTIONS_LIST_CLASS,
+  INCLUDED_PICKER_STACK_CLASS,
+  INCLUDED_SELECTED_CARD_CLASS,
+} from './delivery-norms.constants';
 import { DeliveryNormsSearchSelect } from './delivery-norms-search-select';
 import {
   addableIncludedOptions,
@@ -19,6 +23,7 @@ export function IncludedFunctionsPicker({
   selectedIds,
   disabled,
   title,
+  hideTitle,
   hint,
   emptyLabel,
   onChange,
@@ -27,6 +32,7 @@ export function IncludedFunctionsPicker({
   selectedIds: string[];
   disabled?: boolean;
   title?: string;
+  hideTitle?: boolean;
   hint?: string;
   emptyLabel?: string;
   onChange: (next: string[]) => void;
@@ -40,8 +46,12 @@ export function IncludedFunctionsPicker({
     );
   }
   return (
-    <div className="space-y-3">
-      <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>{title ?? t('includedFunctions.title')}</h4>
+    <div className={INCLUDED_PICKER_STACK_CLASS}>
+      {hideTitle ? null : (
+        <h4 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
+          {title ?? t('includedFunctions.title')}
+        </h4>
+      )}
       <fieldset className="contents" disabled={disabled}>
         <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
         <IncludedAddSearch
@@ -109,25 +119,30 @@ function SelectedIncludedList({
     return <p className="text-muted-foreground text-sm">{t('includedFunctions.noneSelected')}</p>;
   }
   return (
-    <ul className={INCLUDED_FUNCTIONS_LIST_CLASS}>
-      {items.map((item) => (
-        <li key={item.id} className="flex items-start justify-between gap-3 py-1">
-          <span className="min-w-0 flex-1 space-y-0.5">
-            <span className="text-foreground block truncate text-sm font-medium">{item.title}</span>
-            <span className="text-muted-foreground block truncate text-xs">{item.code}</span>
-          </span>
-          {disabled ? null : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onChange(removeIncludedFunctionId(selectedIds, item.id))}
-            >
-              {t('includedFunctions.remove')}
-            </Button>
-          )}
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-3">
+      <p className={DETAIL_SHEET_SECTION_TITLE_CLASS}>{t('includedFunctions.selected')}</p>
+      <ul className={INCLUDED_FUNCTIONS_LIST_CLASS}>
+        {items.map((item) => (
+          <li key={item.id} className={INCLUDED_SELECTED_CARD_CLASS}>
+            <span className="min-w-0 flex-1 space-y-0.5">
+              <span className="text-foreground block truncate text-sm font-medium">
+                {item.title}
+              </span>
+              <span className="text-muted-foreground block truncate text-xs">{item.code}</span>
+            </span>
+            {disabled ? null : (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onChange(removeIncludedFunctionId(selectedIds, item.id))}
+              >
+                {t('includedFunctions.remove')}
+              </Button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

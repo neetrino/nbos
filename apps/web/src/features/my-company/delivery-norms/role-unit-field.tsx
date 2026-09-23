@@ -16,7 +16,12 @@ import {
   DETAIL_SHEET_OUTLINED_LABEL_CLASS,
 } from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
-import { ROLE_MESSAGE_KEYS } from './delivery-norms.constants';
+import {
+  ROLE_KIND_SHELL_CLASS,
+  ROLE_MESSAGE_KEYS,
+  ROLE_UNITS_INPUT_SHELL_CLASS,
+  ROLE_UNIT_ROW_CLASS,
+} from './delivery-norms.constants';
 import type { RoleUnitDraftRow } from './role-units-draft';
 
 const KIND_LABEL_KEYS = {
@@ -26,8 +31,8 @@ const KIND_LABEL_KEYS = {
 } as const;
 
 const KIND_TRIGGER_CLASS = [
-  'mb-1 h-7 w-auto max-w-[9.5rem] shrink-0 border-0 bg-transparent px-2 shadow-none',
-  'hover:bg-muted/40 data-[size=sm]:h-7 data-[size=sm]:min-h-7 data-[size=sm]:px-2',
+  'h-8 w-full border-0 bg-transparent px-2 shadow-none',
+  'hover:bg-transparent data-[size=sm]:h-8 data-[size=sm]:min-h-8',
 ].join(' ');
 
 export function RoleUnitField({
@@ -49,15 +54,19 @@ export function RoleUnitField({
       )}
     >
       <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t(ROLE_MESSAGE_KEYS[row.roleKey])}</span>
-      <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, 'gap-2 overflow-visible pr-1.5')}>
-        <RoleUnitsInput row={row} disabled={disabled || unused} onChange={onChange} />
-        <RoleKindSelect
-          value={row.unitKind}
-          disabled={disabled}
-          label={t('roleUnits.kindAria')}
-          labels={kindLabels(t)}
-          onChange={(unitKind) => onChange({ unitKind })}
-        />
+      <div className={ROLE_UNIT_ROW_CLASS}>
+        <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, ROLE_UNITS_INPUT_SHELL_CLASS)}>
+          <RoleUnitsInput row={row} disabled={disabled || unused} onChange={onChange} />
+        </div>
+        <div className={ROLE_KIND_SHELL_CLASS}>
+          <RoleKindSelect
+            value={row.unitKind}
+            disabled={disabled}
+            label={t('roleUnits.kindAria')}
+            labels={kindLabels(t)}
+            onChange={(unitKind) => onChange({ unitKind })}
+          />
+        </div>
       </div>
     </div>
   );
@@ -83,7 +92,7 @@ function RoleUnitsInput({
       placeholder={t('roleUnits.placeholder')}
       className={cn(
         DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
-        'min-w-0 truncate text-sm tabular-nums',
+        'min-w-0 text-center text-sm tabular-nums',
       )}
       onChange={(event) => onChange({ unitsInput: event.target.value })}
     />

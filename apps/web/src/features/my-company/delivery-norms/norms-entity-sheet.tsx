@@ -29,6 +29,7 @@ export function NormsEntitySheet({
   tabs,
   activeTab,
   onTabChange,
+  headerAction,
   footer,
   children,
 }: {
@@ -38,6 +39,7 @@ export function NormsEntitySheet({
   subtitle?: string;
   icon: ReactNode;
   badge?: ReactNode;
+  headerAction?: ReactNode;
   tabs: readonly DetailSheetTabItem[];
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -59,7 +61,13 @@ export function NormsEntitySheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} onOpenChangeComplete={onOpenChangeComplete}>
       <EntityDetailSheetContent open={open} layout="full" width="compact" showRailActions={false}>
-        <NormsEntitySheetHeader title={title} subtitle={subtitle} icon={icon} badge={badge} />
+        <NormsEntitySheetHeader
+          title={title}
+          subtitle={subtitle}
+          icon={icon}
+          badge={badge}
+          action={headerAction}
+        />
         <DetailSheetTabBar
           tabs={tabs}
           activeTab={activeTab}
@@ -90,31 +98,36 @@ function NormsEntitySheetHeader({
   subtitle,
   icon,
   badge,
+  action,
 }: {
   title: string;
   subtitle?: string;
   icon: ReactNode;
   badge?: ReactNode;
+  action?: ReactNode;
 }) {
   const isMobileViewport = useIsMobileViewport();
   return (
     <div
       className={isMobileViewport ? DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS : DESKTOP_HEADER_CLASS}
     >
-      <div
-        className={cn(
-          'inline-flex max-w-full min-w-0 flex-wrap items-center gap-2',
-          isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
-        )}
-      >
-        <span className="text-foreground shrink-0">{icon}</span>
-        <div className="min-w-0">
-          <h2 className="text-foreground truncate text-xl font-bold tracking-tight">{title}</h2>
-          {subtitle ? (
-            <p className="text-muted-foreground mt-0.5 truncate text-xs">{subtitle}</p>
-          ) : null}
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className={cn(
+            'inline-flex min-w-0 flex-1 flex-wrap items-center gap-2',
+            isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
+          )}
+        >
+          <span className="text-foreground shrink-0">{icon}</span>
+          <div className="min-w-0">
+            <h2 className="text-foreground truncate text-xl font-bold tracking-tight">{title}</h2>
+            {subtitle ? (
+              <p className="text-muted-foreground mt-0.5 truncate text-xs">{subtitle}</p>
+            ) : null}
+          </div>
+          {badge}
         </div>
-        {badge}
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
     </div>
   );

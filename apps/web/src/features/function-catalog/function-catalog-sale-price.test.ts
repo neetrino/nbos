@@ -134,7 +134,7 @@ describe('sale price confidential values stay off the card', () => {
     expect(card).toContain('salePriceLabel');
     expect(card).not.toContain('item.summary');
     expect(card).not.toContain('CATALOG_SUMMARY_CLAMP_CLASS');
-    expect(constants).toContain('xl:grid-cols-4');
+    expect(constants).toContain('xl:grid-cols-3');
     expect(constants).not.toContain('minmax(min(100%,16rem)');
   });
 });

@@ -8,8 +8,9 @@ describe('FunctionCatalogService visibility', () => {
   it('lists only ACTIVE functions for readers', async () => {
     const findMany = vi.fn().mockResolvedValue([]);
     const count = vi.fn().mockResolvedValue(0);
+    const groupBy = vi.fn().mockResolvedValue([]);
     const service = new FunctionCatalogService({
-      deliveryFunction: { findMany, count },
+      deliveryFunction: { findMany, count, groupBy },
     } as never);
     await service.listOperational(false, {});
     expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { status: 'ACTIVE' } }));
@@ -30,7 +31,11 @@ describe('FunctionCatalogService visibility', () => {
       },
     ]);
     const service = new FunctionCatalogService({
-      deliveryFunction: { findMany, count: vi.fn().mockResolvedValue(1) },
+      deliveryFunction: {
+        findMany,
+        count: vi.fn().mockResolvedValue(1),
+        groupBy: vi.fn().mockResolvedValue([]),
+      },
     } as never);
     const listed = await service.listOperational(false, {});
     expect(listed.items[0]?.title).toBe('Bank');

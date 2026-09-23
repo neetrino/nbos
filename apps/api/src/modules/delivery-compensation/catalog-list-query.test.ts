@@ -30,4 +30,11 @@ describe('buildCatalogListWhere', () => {
     const query = parseCatalogListQuery({ status: 'DRAFT' });
     expect(buildCatalogListWhere(query, true)).toEqual({ status: 'DRAFT' });
   });
+
+  it('pages unknown categories as Other without listing every known key', () => {
+    const query = parseCatalogListQuery({ category: 'other' });
+    expect(buildCatalogListWhere(query, true)).toEqual({
+      category: { notIn: expect.arrayContaining(['payments', 'commerce']) },
+    });
+  });
 });

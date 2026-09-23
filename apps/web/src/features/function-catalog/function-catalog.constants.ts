@@ -1,14 +1,14 @@
 export const FUNCTION_CATALOG_ALL_ID = 'all' as const;
 
-/** First paint for the Functions tab: card-visible rows only, not the full catalog. */
-export const CATALOG_FIRST_PAINT_PAGE_SIZE = 5;
+/** Visible first screen on the 3-column Functions grid; more pages load on scroll. */
+export const CATALOG_PAGE_SIZE = 12;
 
 export const FUNCTION_CATALOG_OTHER_ID = 'other' as const;
 
 export const FUNCTION_CATALOG_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]';
 
 export const FUNCTION_CATALOG_CARD_GRID_CLASS =
-  'grid w-full content-start grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+  'grid w-full content-start grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3';
 
 export const FUNCTION_CATALOG_SHEET_CARD_GRID_CLASS =
   'grid w-full auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';

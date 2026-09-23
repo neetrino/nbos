@@ -550,10 +550,15 @@
       "empty": "No base profiles yet.",
       "includedCount": "{count, plural, one {# included function} other {# included functions}}"
     },
+    "cards": {
+      "sales": "Sales",
+      "units": "Units",
+      "included": "In base"
+    },
     "cores": {
       "title": "Core",
       "subtitle": "Every kind a new product can select. An empty card means the norm is not written yet. One core per kind.",
-      "editHint": "Set units by role. Save writes a draft. Publish stays a separate button.",
+      "editHint": "Set units by role. Save writes a draft. Publish in the sheet header ships every saved draft.",
       "searchPlaceholder": "Search kinds",
       "groups": {
         "all": "All",
@@ -596,6 +601,7 @@
       "add": "Add to base",
       "addPlaceholder": "Find and add…",
       "noneSelected": "Nothing is included in the base yet.",
+      "selected": "In this core",
       "remove": "Remove"
     },
     "coreItems": {

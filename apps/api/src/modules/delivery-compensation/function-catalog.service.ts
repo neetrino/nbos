@@ -9,6 +9,7 @@ import { PRISMA_TOKEN } from '../../database.module';
 import {
   buildCatalogListWhere,
   parseCatalogListQuery,
+  whereWithoutCategory,
   type CatalogListQuery,
 } from './catalog-list-query';
 import { isPrismaUniqueConstraint } from './prisma-unique';
@@ -61,7 +62,12 @@ export class FunctionCatalogService {
     },
   ): Promise<{
     items: DeliveryFunctionOperationalDto[];
-    meta: { total: number; page: number; pageSize: number };
+    meta: {
+      total: number;
+      page: number;
+      pageSize: number;
+      categoryCounts: Record<string, number>;
+    };
   }> {
     const query = parseCatalogListQuery(rawQuery);
     const where = buildCatalogListWhere(query, includeNonActive);
@@ -186,7 +192,8 @@ export class FunctionCatalogService {
   }
 
   private async pageOperational(query: CatalogListQuery, where: Record<string, unknown>) {
-    const [total, rows] = await Promise.all([
+    const countsWhere = whereWithoutCategory(where);
+    const [total, rows, categoryRows] = await Promise.all([
       this.prisma.deliveryFunction.count({ where }),
       this.prisma.deliveryFunction.findMany({
         where,
@@ -195,10 +202,22 @@ export class FunctionCatalogService {
         take: query.pageSize,
         include: CARD_INCLUDE,
       }),
+      this.prisma.deliveryFunction.groupBy({
+        by: ['category'],
+        where: countsWhere,
+        _count: { _all: true },
+      }),
     ]);
     return {
       items: rows.map(serializeCardFunction),
-      meta: { total, page: query.page, pageSize: query.pageSize },
+      meta: {
+        total,
+        page: query.page,
+        pageSize: query.pageSize,
+        categoryCounts: Object.fromEntries(
+          categoryRows.map((row) => [row.category, row._count._all]),
+        ),
+      },
     };
   }
 

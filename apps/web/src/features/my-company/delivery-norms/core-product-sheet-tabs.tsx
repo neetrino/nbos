@@ -1,24 +1,17 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type {
-  DeliveryCoreItemFinancialDto,
-  DeliveryFunctionOperationalDto,
-  DeliveryRoleUnitFinancialDto,
-} from '@nbos/shared';
+import type { DeliveryCoreItemFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS, DetailSheetSection } from '@/components/shared';
-import { deliveryNormsApi } from '@/lib/api/delivery-norms';
 import { CoreItemsEditor } from './core-items-editor';
 import { FunctionCollectionKindEditor } from './function-collection-kind-editor';
 import { IncludedFunctionsPicker } from './included-functions-picker';
-import { PublishDraftButton } from './publish-draft-button';
 import { RoleUnitsEditor } from './role-units-editor';
 import type { RoleUnitDraftRow } from './role-units-draft';
 
 export function CoreCompositionTab({
   versionId,
   status,
-  roleUnits,
   coreItems,
   canEdit,
   onError,
@@ -26,7 +19,6 @@ export function CoreCompositionTab({
 }: {
   versionId: string | null;
   status: string;
-  roleUnits: DeliveryRoleUnitFinancialDto[];
   coreItems?: readonly DeliveryCoreItemFinancialDto[];
   canEdit: boolean;
   onError: (message: string) => void;
@@ -42,7 +34,6 @@ export function CoreCompositionTab({
         <CoreItemsEditor
           versionId={versionId}
           status={status}
-          roleUnits={roleUnits}
           initialItems={coreItems}
           editable={canEdit && (status === 'DRAFT' || status === 'PUBLISHED')}
           onError={onError}
@@ -55,40 +46,18 @@ export function CoreCompositionTab({
 
 export function CoreUnitsTab({
   roleUnits,
-  draftId,
-  draftRoleUnits,
-  canPublish,
   disabled,
   onChange,
-  onError,
-  onChanged,
 }: {
   roleUnits: RoleUnitDraftRow[];
-  draftId: string | null;
-  draftRoleUnits: DeliveryRoleUnitFinancialDto[] | null;
-  canPublish: boolean;
   disabled: boolean;
   onChange: (rows: RoleUnitDraftRow[]) => void;
-  onError: (message: string) => void;
-  onChanged: () => void;
 }) {
   const t = useTranslations('hr.deliveryNorms');
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} gap-4`}>
       <DetailSheetSection title={t('roleUnits.title')}>
-        <div className="space-y-4">
-          <RoleUnitsEditor rows={roleUnits} disabled={disabled} onChange={onChange} />
-          {draftId && canPublish ? (
-            <PublishDraftButton
-              roleUnits={draftRoleUnits ?? []}
-              onPublish={async (confirmZeroUnits) => {
-                await deliveryNormsApi.publishBaseProfile(draftId, { confirmZeroUnits });
-              }}
-              onError={onError}
-              onPublished={onChanged}
-            />
-          ) : null}
-        </div>
+        <RoleUnitsEditor rows={roleUnits} disabled={disabled} onChange={onChange} />
       </DetailSheetSection>
     </div>
   );
@@ -113,6 +82,7 @@ export function CoreIncludedTab({
           options={catalog}
           selectedIds={selectedIds}
           disabled={disabled}
+          hideTitle
           onChange={onChange}
         />
       </DetailSheetSection>

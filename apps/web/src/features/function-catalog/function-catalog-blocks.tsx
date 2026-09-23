@@ -2,6 +2,7 @@
 
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { useTranslations } from 'next-intl';
+import { BrowseFunctionCard } from './browse-function-card';
 import { FunctionCatalogCard } from './function-catalog-card';
 import {
   catalogFunctionGradations,
@@ -54,23 +55,25 @@ export function FunctionCatalogCategoryBlocks({
           <CategoryHeading label={t(FUNCTION_CATALOG_CATEGORY_MESSAGE_KEYS[block.id])} />
           <div className={cardGridClassName ?? FUNCTION_CATALOG_CARD_GRID_CLASS}>
             {block.items.map((item) => (
-              <FunctionCatalogCard
+              <CatalogBlockCard
                 key={item.id}
                 item={item}
-                variant="compact"
+                mode={mode}
                 unitsLabel={
                   includedInBase(mode, item.id)
                     ? undefined
                     : unitsLabelFor(item.id, unitsByFunctionId, formatUnits)
                 }
-                {...(includedInBase(mode, item.id)
-                  ? {}
-                  : salePriceCardLabels(
-                      salePriceByFunctionId.get(item.id),
-                      formatSalePrice,
-                      t('unpublishedPrice'),
-                    ))}
-                {...cardModeProps(item, mode, t)}
+                saleLabels={
+                  includedInBase(mode, item.id)
+                    ? {}
+                    : salePriceCardLabels(
+                        salePriceByFunctionId.get(item.id),
+                        formatSalePrice,
+                        t('unpublishedPrice'),
+                      )
+                }
+                t={t}
               />
             ))}
           </div>
@@ -114,6 +117,42 @@ function includedLabel(
   if (included) return t('inBase');
   if (!alreadyAdded) return undefined;
   return selected ? t('selected') : t('alreadyAdded');
+}
+
+function CatalogBlockCard({
+  item,
+  mode,
+  unitsLabel,
+  saleLabels,
+  t,
+}: {
+  item: DeliveryFunctionOperationalDto;
+  mode: FunctionCatalogBrowserMode;
+  unitsLabel?: string;
+  saleLabels: { salePriceLabel?: string; unpublishedLabel?: string };
+  t: CatalogCopy;
+}) {
+  if (mode.kind === 'browse') {
+    return (
+      <BrowseFunctionCard
+        item={item}
+        unitsLabel={unitsLabel}
+        salePriceLabel={saleLabels.salePriceLabel}
+        showStatus={mode.showStatus}
+        statusLabel={statusLabel(item.status, t)}
+        onOpen={mode.onOpen}
+      />
+    );
+  }
+  return (
+    <FunctionCatalogCard
+      item={item}
+      variant="compact"
+      unitsLabel={unitsLabel}
+      {...saleLabels}
+      {...cardModeProps(item, mode, t)}
+    />
+  );
 }
 
 function cardModeProps(

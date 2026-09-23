@@ -19,6 +19,8 @@ import { liveNormDisplayStatus, type LiveNormPair } from './live-norm-pair';
 import { liveSalePrices } from './live-sale-prices';
 import { NormsEntitySheet } from './norms-entity-sheet';
 import { NormativeStatusBadge, normativeStatusLabelKey } from './normative-status-badge';
+import { PublishDraftButton } from './publish-draft-button';
+import { publishCoreSheetDrafts } from './publish-sheet-drafts';
 import { targetKeyForKind } from './sale-price-draft';
 import { saveSalePriceDraft } from './sale-price-save';
 import { SalePriceSheetEditor, useSalePriceAmount } from './sale-price-sheet-editor';
@@ -77,6 +79,22 @@ export function CoreProductSheet({
           <NormativeStatusBadge status={status} label={t(normativeStatusLabelKey(status))} />
         ) : null
       }
+      headerAction={
+        canPublish && (pair?.draft || salePair?.draft) ? (
+          <PublishDraftButton
+            roleUnits={pair?.draft?.roleUnits ?? []}
+            onPublish={async (confirmZeroUnits) => {
+              await publishCoreSheetDrafts({
+                profileDraftId: pair?.draft?.id ?? null,
+                saleDraftId: salePair?.draft?.id ?? null,
+                confirmZeroUnits,
+              });
+            }}
+            onError={onError}
+            onPublished={onChanged}
+          />
+        ) : null
+      }
       tabs={tabs}
       activeTab={tab}
       onTabChange={(value) => setTab(value as DeliveryNormsCoreSheetTab)}
@@ -116,7 +134,6 @@ export function CoreProductSheet({
           <CoreCompositionTab
             versionId={source?.id ?? null}
             status={source?.status ?? 'DRAFT'}
-            roleUnits={source?.roleUnits ?? []}
             coreItems={source?.coreItems}
             canEdit={canPublish}
             onError={onError}
@@ -126,13 +143,8 @@ export function CoreProductSheet({
         {tab === 'units' ? (
           <CoreUnitsTab
             roleUnits={drafts.roleUnits}
-            draftId={pair?.draft?.id ?? null}
-            draftRoleUnits={pair?.draft?.roleUnits ?? null}
-            canPublish={canPublish}
             disabled={saving || !canSave}
             onChange={drafts.setRoleUnits}
-            onError={onError}
-            onChanged={onChanged}
           />
         ) : null}
         {tab === 'included' ? (
@@ -151,8 +163,6 @@ export function CoreProductSheet({
               canPublish={canPublish}
               amount={price.amount}
               onAmountChange={price.setAmount}
-              onChanged={onChanged}
-              onError={onError}
             />
           ) : (
             <p className="text-muted-foreground text-sm">{t('sheet.needCore')}</p>
