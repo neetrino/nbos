@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import { invoiceNotesPlainText } from '@nbos/shared';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 import { InvoiceLinkedEntitiesSection } from './InvoiceLinkedEntitiesSection';
 import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
@@ -9,6 +10,8 @@ import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetOptionalDescription,
 } from '@/components/shared';
+import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
 import { InvoiceOrderCommentField } from './InvoiceOrderCommentField';
 import { InvoiceMoneyCard } from './InvoiceMoneyCard';
@@ -33,6 +36,8 @@ export function InvoiceGeneralTab({
 }: InvoiceGeneralTabProps) {
   const t = useTranslations('invoices');
   const locale = useLocale();
+  const descriptionRequired =
+    invoice.type === 'MANUAL' && invoiceNotesPlainText(draft?.notes).length === 0;
   const billingFields =
     draft && onInvoiceUpdated ? (
       <>
@@ -67,7 +72,10 @@ export function InvoiceGeneralTab({
           value={draft.notes}
           onChange={(notes) => patchDraft({ notes: notes ?? '' })}
           disabled={formDisabled}
-          sectionClassName="mt-0"
+          sectionClassName={cn(
+            'mt-0',
+            descriptionRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
+          )}
         />
       ) : null}
 
