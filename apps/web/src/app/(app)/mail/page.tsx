@@ -73,6 +73,7 @@ import {
 } from '@/features/mail/mail-search-filters';
 import { useMailBulkThreadRead } from '@/features/mail/use-mail-bulk-thread-read';
 import { useMailMailboxListOverrides } from '@/features/mail/use-mail-mailbox-list-overrides';
+import { useMailProviderSync } from '@/features/mail/use-mail-provider-sync';
 
 function clearThreadSelection(setSelectedThreadIds: (ids: Set<string>) => void) {
   setSelectedThreadIds(new Set());
@@ -105,8 +106,6 @@ export default function MailInboxPage() {
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
-
-  const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
 
   const [threadSearchDraft, setThreadSearchDraft] = useState('');
 
@@ -245,25 +244,13 @@ export default function MailInboxPage() {
     threadPage,
   ]);
 
-  const runSync = useCallback(
-    async (accountId: string) => {
-      setSyncingAccountId(accountId);
-
-      try {
-        await mailApi.syncAccount(accountId);
-
-        toast.success('Sync started.');
-
-        await load();
-      } catch (syncError) {
-        toast.error(getApiErrorMessage(syncError, 'Sync could not be started.'));
-      } finally {
-        setSyncingAccountId(null);
-      }
-    },
-
-    [load],
-  );
+  const { providerSyncBusy, syncingAccountId, refreshFromProvider, syncAccount } =
+    useMailProviderSync({
+      canEdit,
+      accounts: accountHealth,
+      filterAccountId,
+      onListReload: load,
+    });
 
   const updateMailQuery = useCallback(
     (mutate: (params: URLSearchParams) => void, mode: 'push' | 'replace' = 'replace') => {
@@ -801,14 +788,15 @@ export default function MailInboxPage() {
         mailboxOverrides={mailboxOverrides}
         canEdit={canEdit}
         busy={loading}
+        gettingMail={providerSyncBusy}
         syncingAccountId={syncingAccountId}
         onSelectAccount={selectAccount}
         onSelectFolder={selectFolder}
         onSearchChange={setThreadSearchDraft}
         onFilterChange={handleMailFilterChange}
         onClearAll={handleClearMailSearch}
-        onRefresh={() => void load()}
-        onSyncAccount={(accountId) => void runSync(accountId)}
+        onRefresh={() => void refreshFromProvider()}
+        onSyncAccount={(accountId) => void syncAccount(accountId)}
         onShareAccount={(account) =>
           handleActivePanelChange({
             type: 'share',

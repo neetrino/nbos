@@ -31,6 +31,7 @@ export interface MailToolbarRowProps {
   mailboxOverrides: MailMailboxListOverrides;
   canEdit: boolean;
   busy: boolean;
+  gettingMail: boolean;
   syncingAccountId: string | null;
   onSelectAccount: (accountId: string | null) => void;
   onSelectFolder: (folder: MailFolderKey) => void;
@@ -56,6 +57,7 @@ export function MailToolbarRow({
   mailboxOverrides,
   canEdit,
   busy,
+  gettingMail,
   syncingAccountId,
   onSelectAccount,
   onSelectFolder,
@@ -74,7 +76,7 @@ export function MailToolbarRow({
     filterAccountId !== null
       ? accounts.find((account) => account.id === filterAccountId)
       : undefined;
-  const isSyncing = filterAccountId !== null && syncingAccountId === filterAccountId;
+  const isSyncing = selectedAccount !== undefined && syncingAccountId === selectedAccount.id;
   const activeFolderLabel =
     MAIL_FOLDERS.find((folder) => folder.key === activeFolder)?.label ?? 'Inbox';
 
@@ -94,11 +96,12 @@ export function MailToolbarRow({
         variant="outline"
         size="icon"
         className="size-9 shrink-0"
-        disabled={busy}
-        title="Refresh"
+        disabled={busy || gettingMail}
+        title="Get new mail"
+        aria-label="Get new mail"
         onClick={() => onRefresh()}
       >
-        <RefreshCcw size={16} aria-hidden />
+        <RefreshCcw size={16} aria-hidden className={gettingMail ? 'animate-spin' : undefined} />
       </Button>
 
       <DropdownMenu>
@@ -159,7 +162,7 @@ export function MailToolbarRow({
             <>
               <DropdownMenuItem
                 className="cursor-pointer"
-                disabled={busy || isSyncing}
+                disabled={busy || isSyncing || gettingMail}
                 onClick={() => onSyncAccount(selectedAccount.id)}
               >
                 <RefreshCcw className={isSyncing ? 'animate-spin' : ''} />
