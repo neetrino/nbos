@@ -97,6 +97,7 @@ export function useDepartmentsPage() {
     registerFind,
     submitSearch,
     openCreateDialog,
+    refreshDepartments: () => void fetchDepartments(),
     handleCreate: () =>
       void submitCreateDepartment(
         createState,

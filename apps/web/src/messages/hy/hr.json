@@ -287,7 +287,48 @@
     "membersSearch": "Որոնել անունով կամ պաշտոնով",
     "totalEmployees": "Բոլոր աշխատակիցները {count}",
     "aboutEmployees": "Աշխատակիցների մասին",
-    "closeDrawer": "Փակել բաժնի վահանակը"
+    "closeDrawer": "Փակել բաժնի վահանակը",
+    "memberActions": {
+      "menuAria": "Գործողություններ՝ {name}",
+      "openProfile": "Բացել պրոֆիլը",
+      "openProfileHint": "Աշխատակցի քարտ և հաշվի տվյալներ",
+      "assignHead": "Նշանակել ղեկավար",
+      "assignHeadHint": "Դարձնել աշխատակցին բաժնի ղեկավար",
+      "assignDeputy": "Նշանակել տեղակալ",
+      "assignDeputyHint": "Դարձնել աշխատակցին ղեկավարի տեղակալ",
+      "makeMember": "Դարձնել աշխատակից",
+      "makeMemberHint": "Հանել ղեկավար դերը, թողնել բաժնում",
+      "transfer": "Տեղափոխել այլ բաժին",
+      "transferHint": "Հանել այս բաժնից և տեղափոխել այլ բաժին",
+      "transferPlaceholder": "Ընտրեք բաժին",
+      "remove": "Հեռացնել բաժնից",
+      "removeHint": "Աշխատակիցը կդուրս գա այս բաժնից",
+      "cancel": "Չեղարկել",
+      "confirm": "Հաստատել",
+      "failed": "Չհաջողվեց թարմացնել բաժնի անդամակցությունը",
+      "seatMissing": "Սկզբում ստեղծեք Head կամ Deputy seat Roles & Seats-ում",
+      "removeSuccess": "Աշխատակիցը հեռացվեց բաժնից",
+      "transferSuccess": "Աշխատակիցը տեղափոխվեց",
+      "roleSuccess": {
+        "HEAD": "Աշխատակիցը նշանակվեց ղեկավար",
+        "DEPUTY": "Աշխատակիցը նշանակվեց տեղակալ",
+        "MEMBER": "Աշխատակիցը հիմա բաժնի անդամ է"
+      },
+      "roleConfirmTitle": {
+        "HEAD": "Նշանակե՞լ ղեկավար",
+        "DEPUTY": "Նշանակե՞լ տեղակալ",
+        "MEMBER": "Դարձնե՞լ աշխատակից"
+      },
+      "roleConfirmBody": {
+        "HEAD": "Հաստատեք դերը՝ {name}, բաժին՝ {department}",
+        "DEPUTY": "Հաստատեք դերը՝ {name}, բաժին՝ {department}",
+        "MEMBER": "Հանել ղեկավար դերը՝ {name}, բաժին՝ {department}"
+      },
+      "removeConfirmTitle": "Հեռացնե՞լ բաժնից",
+      "removeConfirmBody": "Հեռացնել {name}-ին {department} բաժնից",
+      "transferConfirmTitle": "Տեղափոխե՞լ աշխատակցին",
+      "transferConfirmBody": "Հանել {name}-ին {department}-ից և տեղափոխել այլ բաժին"
+    }
   },
   "companyNav": {
     "title": "Իմ ընկերությունը",

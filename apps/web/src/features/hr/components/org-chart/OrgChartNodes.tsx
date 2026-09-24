@@ -38,7 +38,7 @@ export function OrgChartNodes({
   const byId = new Map(departments.map((department) => [department.id, department]));
   return (
     <>
-      <OrgChartEdges layout={layout} />
+      <OrgChartEdges layout={layout} departments={departments} selectedId={selectedId} />
       {layout.nodes.map((node) => (
         <OrgChartNodeCard
           key={node.id}

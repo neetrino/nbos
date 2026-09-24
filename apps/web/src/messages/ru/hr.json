@@ -287,7 +287,48 @@
     "membersSearch": "Найти по имени или должности",
     "totalEmployees": "Всего сотрудников {count}",
     "aboutEmployees": "О сотрудниках",
-    "closeDrawer": "Закрыть панель отдела"
+    "closeDrawer": "Закрыть панель отдела",
+    "memberActions": {
+      "menuAria": "Действия для {name}",
+      "openProfile": "Открыть профиль",
+      "openProfileHint": "Карточка сотрудника и данные аккаунта",
+      "assignHead": "Назначить руководителем",
+      "assignHeadHint": "Сделать сотрудника руководителем отдела",
+      "assignDeputy": "Назначить заместителем",
+      "assignDeputyHint": "Сделать сотрудника заместителем руководителя",
+      "makeMember": "Сделать сотрудником",
+      "makeMemberHint": "Снять руководящую роль, оставить в отделе",
+      "transfer": "Перевести в другой отдел",
+      "transferHint": "Убрать из этого отдела и перевести в другой",
+      "transferPlaceholder": "Выберите отдел",
+      "remove": "Удалить из отдела",
+      "removeHint": "Сотрудник покинет этот отдел",
+      "cancel": "Отмена",
+      "confirm": "Подтвердить",
+      "failed": "Не удалось изменить участие в отделе",
+      "seatMissing": "Сначала создайте seat Head или Deputy в Roles & Seats",
+      "removeSuccess": "Сотрудник удалён из отдела",
+      "transferSuccess": "Сотрудник переведён",
+      "roleSuccess": {
+        "HEAD": "Сотрудник назначен руководителем",
+        "DEPUTY": "Сотрудник назначен заместителем",
+        "MEMBER": "Сотрудник теперь участник отдела"
+      },
+      "roleConfirmTitle": {
+        "HEAD": "Назначить руководителем?",
+        "DEPUTY": "Назначить заместителем?",
+        "MEMBER": "Сделать сотрудником?"
+      },
+      "roleConfirmBody": {
+        "HEAD": "Подтвердите роль для {name} в отделе {department}",
+        "DEPUTY": "Подтвердите роль для {name} в отделе {department}",
+        "MEMBER": "Снять руководящую роль у {name} в отделе {department}"
+      },
+      "removeConfirmTitle": "Удалить из отдела?",
+      "removeConfirmBody": "Удалить {name} из отдела {department}",
+      "transferConfirmTitle": "Перевести сотрудника?",
+      "transferConfirmBody": "Убрать {name} из отдела {department} и перевести в другой"
+    }
   },
   "companyNav": {
     "title": "Моя компания",

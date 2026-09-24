@@ -1,9 +1,16 @@
 'use client';
 
+import { cn } from '@/lib/utils';
+import type { DepartmentItem } from '@/lib/api/employees';
+import { ORG_COMPANY_NODE_ID } from './org-chart-constants';
 import type { OrgChartLayout, OrgChartLayoutNode } from './org-chart-layout';
+import { ancestorDepartmentIds } from './org-chart-tree';
 
-const EDGE_STROKE_CLASS = 'stroke-sky-400 fill-none';
-const EDGE_STROKE_WIDTH = 2;
+const EDGE_DEFAULT_STROKE_CLASS = 'stroke-sky-400 fill-none';
+const EDGE_IDLE_STROKE_CLASS = 'stroke-sky-200 dark:stroke-sky-800 fill-none';
+const EDGE_ACTIVE_STROKE_CLASS = 'stroke-sky-500 dark:stroke-sky-300 fill-none';
+const EDGE_DEFAULT_STROKE_WIDTH = 2;
+const EDGE_ACTIVE_STROKE_WIDTH = 3;
 const EDGE_CORNER_RADIUS_PX = 16;
 
 function nodeCenterX(node: OrgChartLayoutNode): number {
@@ -34,8 +41,27 @@ export function edgePath(parent: OrgChartLayoutNode, child: OrgChartLayoutNode):
   ].join(' ');
 }
 
-export function OrgChartEdges({ layout }: { layout: OrgChartLayout }) {
+/** Child endpoints of edges on the path from company root to the selected department. */
+export function highlightedEdgeChildIds(
+  departments: DepartmentItem[],
+  selectedId: string | null,
+): Set<string> {
+  if (!selectedId || selectedId === ORG_COMPANY_NODE_ID) return new Set();
+  return new Set([selectedId, ...ancestorDepartmentIds(departments, selectedId)]);
+}
+
+export function OrgChartEdges({
+  layout,
+  departments,
+  selectedId,
+}: {
+  layout: OrgChartLayout;
+  departments: DepartmentItem[];
+  selectedId: string | null;
+}) {
   const byId = new Map(layout.nodes.map((node) => [node.id, node]));
+  const activeChildIds = highlightedEdgeChildIds(departments, selectedId);
+  const hasSelection = activeChildIds.size > 0;
   return (
     <svg
       className="pointer-events-none absolute top-0 left-0 overflow-visible"
@@ -47,12 +73,19 @@ export function OrgChartEdges({ layout }: { layout: OrgChartLayout }) {
         const parent = byId.get(edge.fromId);
         const child = byId.get(edge.toId);
         if (!parent || !child) return null;
+        const active = activeChildIds.has(edge.toId);
         return (
           <path
             key={`${edge.fromId}-${edge.toId}`}
             d={edgePath(parent, child)}
-            className={EDGE_STROKE_CLASS}
-            strokeWidth={EDGE_STROKE_WIDTH}
+            className={cn(
+              active
+                ? EDGE_ACTIVE_STROKE_CLASS
+                : hasSelection
+                  ? EDGE_IDLE_STROKE_CLASS
+                  : EDGE_DEFAULT_STROKE_CLASS,
+            )}
+            strokeWidth={active ? EDGE_ACTIVE_STROKE_WIDTH : EDGE_DEFAULT_STROKE_WIDTH}
             strokeLinecap="round"
             strokeLinejoin="round"
           />

@@ -95,9 +95,11 @@ function DepartmentsPageBody({ page }: { page: ReturnType<typeof useDepartmentsP
       myDepartmentIds={page.myDepartmentIds}
       primaryDepartmentId={page.primaryDepartmentId}
       search={page.search}
+      canEdit={page.canEdit}
       onRegisterFind={page.registerFind}
       onAddDepartment={page.openCreateDialog}
       onOpenEmployee={(id) => void page.openEmployee(id)}
+      onDepartmentsChanged={page.refreshDepartments}
     />
   );
 }
