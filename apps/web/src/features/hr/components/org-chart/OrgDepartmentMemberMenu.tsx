@@ -107,9 +107,8 @@ export function OrgDepartmentMemberMenu({
             <Button
               {...props}
               type="button"
-              size="icon-sm"
               variant="ghost"
-              className="shrink-0"
+              className="text-muted-foreground hover:text-foreground size-7 shrink-0 rounded-md bg-transparent p-0 opacity-0 shadow-none group-hover:opacity-100 hover:bg-transparent focus-visible:opacity-100 data-popup-open:opacity-100"
               aria-label={t('orgChart.memberActions.menuAria', { name })}
             >
               <MoreHorizontal className="size-4" aria-hidden />

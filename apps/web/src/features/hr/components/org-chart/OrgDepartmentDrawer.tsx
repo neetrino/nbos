@@ -233,7 +233,7 @@ function DrawerMemberRow({
     ? t(`deptRole.${member.deptRole}`)
     : member.deptRole;
   return (
-    <div className="hover:bg-muted/40 flex items-center gap-1 rounded-xl px-1 py-1">
+    <div className="hover:bg-muted/40 group flex items-center gap-1 rounded-xl px-1 py-1">
       <div className="min-w-0 flex-1">
         <OrgChartPersonRow member={member} onOpen={onOpenEmployee} />
       </div>
