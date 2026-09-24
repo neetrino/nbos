@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DetailSheetTabBar, DetailSheetTabPanel } from '@/components/shared';
 import type { MailAccountRow } from '@/lib/api/mail';
 import { ConnectMailboxSheet } from './ConnectMailboxSheet';
@@ -28,10 +28,6 @@ export function MailboxSettingsSheet({
   onDelete,
 }: MailboxSettingsSheetProps) {
   const [tab, setTab] = useState<MailMailboxSettingsTab>(initialTab);
-
-  useEffect(() => {
-    setTab(initialTab);
-  }, [account.id, initialTab]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">

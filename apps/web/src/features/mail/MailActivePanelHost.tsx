@@ -154,6 +154,7 @@ export function MailActivePanelHost({
 
           {settingsAccount ? (
             <MailboxSettingsSheet
+              key={`${settingsAccount.id}:${settingsTab}`}
               account={settingsAccount}
               initialTab={settingsTab}
               onConnected={onMailboxConnected}
