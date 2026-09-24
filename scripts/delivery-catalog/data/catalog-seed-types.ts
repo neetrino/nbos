@@ -10,9 +10,8 @@ import type {
  * a different statement from `0`. Every number here is a draft for the Owner to review: the seed
  * writes them as DRAFT price versions and publishes nothing.
  *
- * Scale used across the whole catalog: 1 unit is one thousand AMD of developer cost, and a unit is
- * sold at ten thousand AMD by default. A small online shop therefore lands around 300 units in
- * total, and a ten-million-AMD platform around 1000.
+ * Scale used across the whole catalog: 1 unit is one thousand AMD of developer cost.
+ * The card sale price is 5 000 AMD per seeded unit (10 units → 50 000, 20 → 100 000).
  */
 export type CatalogSeedUnits = Partial<Record<DeliveryCompensationRoleKey, number>>;
 

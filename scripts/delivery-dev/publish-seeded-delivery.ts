@@ -1,12 +1,12 @@
 import { createPrismaClient, type PrismaClient } from '@nbos/database';
 import { frozenDeliveryAxes, isPublishedRoleVectorComplete, PRODUCT_TYPES } from '@nbos/shared';
-import { loadDevDeliveryEnv } from './load-dev-delivery-env';
+import { loadDeliveryEnv } from './load-dev-delivery-env';
 import { pickNewestDraftsByTier } from './pick-newest-draft-prices';
 import { resolveSeedAuthorId } from './resolve-seed-author';
 import { DELIVERY_CATALOG_SEED_ITEMS } from '../delivery-catalog/delivery-catalog-seed-data';
 import { buildSeededProfileKeys } from '../delivery-profiles/delivery-profiles-seed-data';
 
-loadDevDeliveryEnv();
+loadDeliveryEnv();
 
 const APPLY_FLAG = '--apply';
 const AUTHOR_FLAG = '--author=';

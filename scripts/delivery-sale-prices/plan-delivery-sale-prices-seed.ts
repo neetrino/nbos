@@ -1,58 +1,59 @@
-import { salePriceTargetKey } from '@nbos/shared';
-import { saleAmountForCategory } from './sale-price-seed-amounts';
-
-export type SalePriceSeedFunction = {
-  id: string;
-  code: string;
-  category: string;
-};
+import type { ResolvedSalePriceTarget } from './build-sale-price-targets';
 
 export type SalePriceSeedPlanEntry =
-  | { action: 'CREATE'; item: SalePriceSeedFunction; amountPerUnit: string; targetKey: string }
-  | { action: 'KEEP'; item: SalePriceSeedFunction; targetKey: string };
+  | { action: 'CREATE'; item: ResolvedSalePriceTarget }
+  | { action: 'UPDATE'; item: ResolvedSalePriceTarget }
+  | { action: 'KEEP'; item: ResolvedSalePriceTarget };
 
 export type SalePriceSeedPlan = {
   entries: SalePriceSeedPlanEntry[];
   createCount: number;
+  updateCount: number;
   keepCount: number;
 };
 
 /**
- * One published sale rate per catalog function. A target that already has any version is left
- * alone: a re-run must not overwrite a number the Owner already wrote.
+ * One whole-card sale amount per target. A matching amount stays. A different amount is
+ * replaced: the flat 10 000 / 20 000 seed is not an Owner edit.
  */
 export function planDeliverySalePricesSeed(
-  functions: readonly SalePriceSeedFunction[],
-  existingTargetKeys: readonly string[],
+  targets: readonly ResolvedSalePriceTarget[],
+  existing: readonly { targetKey: string; amountPerUnit: string }[],
 ): SalePriceSeedPlan {
-  const priced = new Set(existingTargetKeys);
-  const entries = functions.map<SalePriceSeedPlanEntry>((item) => {
-    const targetKey = salePriceTargetKey({ kind: 'FUNCTION', functionId: item.id });
-    if (priced.has(targetKey)) {
-      return { action: 'KEEP', item, targetKey };
-    }
-    return {
-      action: 'CREATE',
-      item,
-      amountPerUnit: saleAmountForCategory(item.category),
-      targetKey,
-    };
+  const amountByKey = new Map(existing.map((row) => [row.targetKey, row.amountPerUnit]));
+  const entries = targets.map<SalePriceSeedPlanEntry>((item) => {
+    const current = amountByKey.get(item.targetKey);
+    if (current === undefined) return { action: 'CREATE', item };
+    if (sameAmount(current, item.amountPerUnit)) return { action: 'KEEP', item };
+    return { action: 'UPDATE', item };
   });
   return {
     entries,
-    createCount: entries.filter((entry) => entry.action === 'CREATE').length,
-    keepCount: entries.filter((entry) => entry.action === 'KEEP').length,
+    createCount: countOf(entries, 'CREATE'),
+    updateCount: countOf(entries, 'UPDATE'),
+    keepCount: countOf(entries, 'KEEP'),
   };
 }
 
 export function formatSalePriceSeedPlan(plan: SalePriceSeedPlan, apply: boolean): string {
   const header = apply
-    ? `Applying delivery sale prices: ${plan.createCount} to publish, ${plan.keepCount} kept.`
-    : `Dry run. ${plan.createCount} would be published, ${plan.keepCount} already have a sale version.`;
-  const lines = plan.entries.map((entry) =>
-    entry.action === 'CREATE'
-      ? `  CREATE ${entry.item.code} (${entry.item.category}) ${entry.amountPerUnit} ${entry.targetKey}`
-      : `  KEEP   ${entry.item.code} -> ${entry.targetKey}`,
-  );
+    ? `Applying delivery sale prices: ${plan.createCount} to publish, ${plan.updateCount} to update, ${plan.keepCount} kept.`
+    : `Dry run. ${plan.createCount} would be published, ${plan.updateCount} would change, ${plan.keepCount} already match.`;
+  const lines = plan.entries.map((entry) => {
+    const amount = entry.item.amountPerUnit;
+    if (entry.action === 'KEEP') return `  KEEP   ${entry.item.code} ${amount}`;
+    return `  ${entry.action.padEnd(6)} ${entry.item.code} ${amount} ${entry.item.targetKey}`;
+  });
   return [header, ...lines].join('\n');
+}
+
+function sameAmount(current: string, desired: string): boolean {
+  return Number(current) === Number(desired);
+}
+
+function countOf(
+  entries: readonly SalePriceSeedPlanEntry[],
+  action: SalePriceSeedPlanEntry['action'],
+): number {
+  return entries.filter((entry) => entry.action === action).length;
 }

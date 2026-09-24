@@ -1,5 +1,5 @@
 import { createPrismaClient, type PrismaClient } from '@nbos/database';
-import { loadDevDeliveryEnv } from '../delivery-dev/load-dev-delivery-env';
+import { loadDeliveryEnv } from '../delivery-dev/load-dev-delivery-env';
 import { resolveSeedAuthorId } from '../delivery-dev/resolve-seed-author';
 import {
   SEED_ACCEPTANCE_PLACEHOLDER,
@@ -10,7 +10,7 @@ import { formatSeedPlan, planDeliveryCatalogSeed } from './plan-delivery-catalog
 import { buildSeedRoleUnits } from './build-seed-role-units';
 import { syncCatalogTierProductTypes } from './sync-catalog-tier-types';
 
-loadDevDeliveryEnv();
+loadDeliveryEnv();
 
 const FIRST_CONTENT_VERSION = 1;
 const FIRST_PRICE_VERSION = 1;
