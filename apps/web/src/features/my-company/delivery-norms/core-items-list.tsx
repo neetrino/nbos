@@ -106,11 +106,7 @@ function CoreItemRowActions({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <div className="flex shrink-0 gap-1">
-      <CoreItemIconButton
-        label={t('coreItems.moveUp')}
-        disabled={index === 0}
-        onClick={onMoveUp}
-      >
+      <CoreItemIconButton label={t('coreItems.moveUp')} disabled={index === 0} onClick={onMoveUp}>
         <ChevronUp />
       </CoreItemIconButton>
       <CoreItemIconButton

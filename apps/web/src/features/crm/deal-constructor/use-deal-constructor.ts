@@ -138,22 +138,30 @@ function useDealConstructorQuery(
 }
 
 function useQuoteSync(queryKey: string, serverQuote: DealQuoteDto | null) {
-  const [override, setOverride] = useState<{ key: string; quote: DealQuoteDto } | null>(null);
-  const confirmed = useRef<DealQuoteDto | null>(null);
-  if (override?.key !== queryKey) confirmed.current = serverQuote;
+  const [override, setOverride] = useState<KeyedQuote | null>(null);
+  const [pinned, setPinned] = useState<KeyedQuote | null>(null);
   const quote = override?.key === queryKey ? override.quote : serverQuote;
+  const baseline = pinned?.key === queryKey ? pinned.quote : serverQuote;
   return {
     quote,
-    preview: (next: DealQuoteDto) => setOverride({ key: queryKey, quote: next }),
-    remember: (saved: DealQuoteDto) => {
-      confirmed.current = saved;
+    preview: (next: DealQuoteDto) => {
+      setOverride({ key: queryKey, quote: next });
+      setPinned((current) =>
+        current?.key === queryKey || !serverQuote ? current : { key: queryKey, quote: serverQuote },
+      );
     },
+    remember: (saved: DealQuoteDto) => setPinned({ key: queryKey, quote: saved }),
     revert: () => {
-      if (confirmed.current) setOverride({ key: queryKey, quote: confirmed.current });
+      if (baseline) setOverride({ key: queryKey, quote: baseline });
     },
-    clear: () => setOverride(null),
+    clear: () => {
+      setOverride(null);
+      setPinned(null);
+    },
   };
 }
+
+type KeyedQuote = { key: string; quote: DealQuoteDto };
 
 type QuoteSync = ReturnType<typeof useQuoteSync>;
 
