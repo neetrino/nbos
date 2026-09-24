@@ -39,6 +39,12 @@ import { beginPermittedCreate, usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
+import {
+  CRM_RESPONSIBLE_FILTER_KEY,
+  buildCrmResponsibleFilterOptions,
+  resolveLeadAssignedToFilter,
+} from '@/features/crm/filters/crm-responsible-filter';
+import { useCrmResponsibleEmployeeOptions } from '@/features/crm/filters/use-crm-responsible-employee-options';
 
 const OPEN_CONTACT_QUERY = 'openId';
 
@@ -53,7 +59,9 @@ function ContactsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { can } = usePermission();
+  const { can, me } = usePermission();
+  const meId = me?.id ?? null;
+  const responsibleEmployees = useCrmResponsibleEmployeeOptions();
   const sidebarCollapsed = useAppSidebarCollapsed();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [listMeta, setListMeta] = useState<ListPaginationMeta>(emptyContactsListMeta);
@@ -62,6 +70,7 @@ function ContactsPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.clientsContacts);
+  const responsibleEmployeeId = resolveLeadAssignedToFilter(filters.responsible, meId);
   const [showCreate, setShowCreate] = useState(false);
   const openCreateContact = () =>
     beginPermittedCreate(can('ADD', 'CLIENTS'), () => setShowCreate(true));
@@ -112,6 +121,7 @@ function ContactsPageContent() {
         search: search || undefined,
         contactType:
           filters.contactType && filters.contactType !== 'all' ? filters.contactType : undefined,
+        responsibleEmployeeId,
       });
       setContacts(data.items);
       setListMeta(data.meta);
@@ -121,7 +131,7 @@ function ContactsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filters, scope]);
+  }, [page, search, filters, scope, responsibleEmployeeId]);
 
   useEffect(() => {
     setPage(1);
@@ -224,8 +234,13 @@ function ContactsPageContent() {
         label: 'Contact Type',
         options: CONTACT_ROLES.map((r) => ({ value: r.value, label: r.label })),
       },
+      {
+        key: CRM_RESPONSIBLE_FILTER_KEY,
+        label: 'Responsible',
+        options: buildCrmResponsibleFilterOptions('lead', responsibleEmployees, meId),
+      },
     ],
-    [],
+    [meId, responsibleEmployees],
   );
 
   const moduleHeroSlots = useMemo(

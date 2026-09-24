@@ -30,6 +30,44 @@ function createService(prisma: PrismaStub): AtsCallRedirectService {
 }
 
 describe('AtsCallRedirectService', () => {
+  it('returns SIP from Contact.responsibleEmployee when set', async () => {
+    const prisma: PrismaStub = {
+      contact: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'contact-1',
+          responsibleEmployee: { id: 'emp-owner', sipId: '555' },
+        }),
+      },
+      deal: { findFirst: vi.fn() },
+      lead: { findFirst: vi.fn() },
+    };
+    const service = createService(prisma);
+
+    await expect(service.resolveRedirectCall(inboundStart())).resolves.toBe('555');
+    expect(prisma.deal.findFirst).not.toHaveBeenCalled();
+  });
+
+  it('does not fall back to Deal when Contact owner has no SIP', async () => {
+    const prisma: PrismaStub = {
+      contact: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'contact-1',
+          responsibleEmployee: { id: 'emp-owner', sipId: null },
+        }),
+      },
+      deal: {
+        findFirst: vi.fn().mockResolvedValue({
+          seller: { id: 'emp-1', sipId: '3126107' },
+        }),
+      },
+      lead: { findFirst: vi.fn() },
+    };
+    const service = createService(prisma);
+
+    await expect(service.resolveRedirectCall(inboundStart())).resolves.toBeNull();
+    expect(prisma.deal.findFirst).not.toHaveBeenCalled();
+  });
+
   it('returns SIP when Contact matched via Deal.seller sipId', async () => {
     const prisma: PrismaStub = {
       contact: { findFirst: vi.fn().mockResolvedValue({ id: 'contact-1' }) },

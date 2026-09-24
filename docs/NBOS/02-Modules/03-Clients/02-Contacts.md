@@ -32,22 +32,23 @@ Contact (человек)
 
 ## 2. Поля карточки Contact
 
-| Поле              | Тип      | Обязательное | Описание                                                                                                        |
-| ----------------- | -------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
-| first_name        | String   | ✅           | Имя                                                                                                             |
-| last_name         | String   | ✅           | Фамилия                                                                                                         |
-| phone             | String   | ✅           | Основной телефон. Дополнительные номера — `ContactPhone` (extra), не строка в notes                             |
-| email             | String   | —            | Email                                                                                                           |
-| whatsapp          | String   | —            | Номер WhatsApp (если отличается от phone)                                                                       |
-| telegram          | String   | —            | Telegram username или номер                                                                                     |
-| instagram         | String   | —            | Instagram username                                                                                              |
-| facebook          | String   | —            | Facebook профиль                                                                                                |
-| contact_type      | Enum     | ✅           | Client, Partner, Contractor, Other. В текущей реализации может называться `role`, но по смыслу это тип контакта |
-| preferred_channel | Enum     | —            | WhatsApp, Telegram, Phone, Email (предпочтительный канал связи)                                                 |
-| language          | Enum     | —            | Armenian, Russian, English (язык общения)                                                                       |
-| notes             | Text     | —            | Заметки: особенности работы, предпочтения, важная информация                                                    |
-| created_at        | DateTime | auto         | Дата создания                                                                                                   |
-| source            | Enum     | —            | Откуда пришёл: Instagram, Facebook, Website, Cold Call, Partner, Referral, Other                                |
+| Поле                 | Тип           | Обязательное | Описание                                                                                                        |
+| -------------------- | ------------- | ------------ | --------------------------------------------------------------------------------------------------------------- |
+| first_name           | String        | ✅           | Имя                                                                                                             |
+| last_name            | String        | ✅           | Фамилия                                                                                                         |
+| phone                | String        | ✅           | Основной телефон. Дополнительные номера — `ContactPhone` (extra), не строка в notes                             |
+| email                | String        | —            | Email                                                                                                           |
+| whatsapp             | String        | —            | Номер WhatsApp (если отличается от phone)                                                                       |
+| telegram             | String        | —            | Telegram username или номер                                                                                     |
+| instagram            | String        | —            | Instagram username                                                                                              |
+| facebook             | String        | —            | Facebook профиль                                                                                                |
+| contact_type         | Enum          | ✅           | Client, Partner, Contractor, Other. В текущей реализации может называться `role`, но по смыслу это тип контакта |
+| preferred_channel    | Enum          | —            | WhatsApp, Telegram, Phone, Email (предпочтительный канал связи)                                                 |
+| language             | Enum          | —            | Armenian, Russian, English (язык общения)                                                                       |
+| notes                | Text          | —            | Заметки: особенности работы, предпочтения, важная информация                                                    |
+| responsible_employee | FK → Employee | —            | Постоянный ответственный. Карточка, список, фильтр. Входящий ATS `redirect_call` — на его SIP, если поле задано |
+| created_at           | DateTime      | auto         | Дата создания                                                                                                   |
+| source               | Enum          | —            | Откуда пришёл: Instagram, Facebook, Website, Cold Call, Partner, Referral, Other                                |
 
 ---
 
@@ -262,6 +263,7 @@ Contact создаётся из Lead. Если один человек обра�
 - Пользователь выбирает **survivor** и **absorbed**, затем конфликтующие поля (имя, primary phone, email, type и т.д.)
 - Extra phones: **union** по нормализованному номеру; primary = выбор пользователя
 - На survivor в транзакции переносятся: companies (primary / billing / additional), deals (`contactId` + additional), leads (`contactId` + additional; **без** авто Lead-merge), projects, products (`contactId` + additional; см. `07-Contact-and-Product.md`), история/notes (append), extra phones и остальные FK Contact
+- `responsible_employee`: если у survivor уже задан — остаётся; если пустой — берём с absorbed. Отдельного шага в мастере нет
 - Поглощённый Contact: указатель `mergedIntoId` + Profile A **Trash**. Не hard delete. Старое «дубликат удаляется» больше не действует
 - Restore absorbed без отдельного un-merge **блокируется** (как Lead)
 - Audit: кто, когда, from→to, выбранные поля

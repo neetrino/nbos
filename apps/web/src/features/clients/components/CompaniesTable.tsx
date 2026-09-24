@@ -22,6 +22,7 @@ import {
 } from '@/components/shared/entity-list-table';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
 import { COMPANY_TABLE_STATUS_BADGE_CLASS } from '@/features/clients/constants/clients-directory-card-classes';
+import { responsibleEmployeeLabel } from '@/features/clients/responsible-employee';
 import type { Company } from '@/lib/api/clients';
 
 interface CompaniesTableProps {
@@ -42,6 +43,7 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Primary Contact</TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Projects</TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Invoices</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Responsible</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Created</TableHead>
           </TableRow>
         </TableHeader>
@@ -100,6 +102,9 @@ export function CompaniesTable({ companies, onOpen }: CompaniesTableProps) {
                   className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground text-center`}
                 >
                   {company._count.invoices}
+                </TableCell>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {responsibleEmployeeLabel(company.responsibleEmployee) || <EntityListMutedDash />}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   <EntityListDate value={company.createdAt} />

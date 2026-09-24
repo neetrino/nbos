@@ -35,6 +35,7 @@ export class ContactsController {
   @ApiQuery({ name: 'role', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
+  @ApiQuery({ name: 'responsibleEmployeeId', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -42,6 +43,7 @@ export class ContactsController {
     @Query('role') role?: string,
     @Query('search') search?: string,
     @Query('scope') scope?: string,
+    @Query('responsibleEmployeeId') responsibleEmployeeId?: string,
   ) {
     return this.contactsService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -50,6 +52,7 @@ export class ContactsController {
       role,
       search,
       scope,
+      responsibleEmployeeId,
     });
   }
 
@@ -98,6 +101,7 @@ export class ContactsController {
       role?: string;
       notes?: string;
       messengerLinks?: InputJsonValue;
+      responsibleEmployeeId?: string | null;
     },
   ) {
     return this.contactsService.create(body);
@@ -117,6 +121,7 @@ export class ContactsController {
       role?: string;
       notes?: string;
       messengerLinks?: InputJsonValue;
+      responsibleEmployeeId?: string | null;
     },
   ) {
     return this.contactsService.update(id, body);

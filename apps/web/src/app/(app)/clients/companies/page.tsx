@@ -39,6 +39,12 @@ import { beginPermittedCreate, usePermission } from '@/lib/permissions';
 import { toast } from 'sonner';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
+import {
+  CRM_RESPONSIBLE_FILTER_KEY,
+  buildCrmResponsibleFilterOptions,
+  resolveLeadAssignedToFilter,
+} from '@/features/crm/filters/crm-responsible-filter';
+import { useCrmResponsibleEmployeeOptions } from '@/features/crm/filters/use-crm-responsible-employee-options';
 
 const OPEN_COMPANY_QUERY = 'openId';
 
@@ -54,7 +60,9 @@ function CompaniesPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sidebarCollapsed = useAppSidebarCollapsed();
-  const { can } = usePermission();
+  const { can, me } = usePermission();
+  const meId = me?.id ?? null;
+  const responsibleEmployees = useCrmResponsibleEmployeeOptions();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [listMeta, setListMeta] = useState<ListPaginationMeta>(emptyCompaniesListMeta);
   const [page, setPage] = useState(1);
@@ -62,6 +70,7 @@ function CompaniesPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = usePersistedSearchFilters(SEARCH_FILTER_PAGE_ID.clientsCompanies);
+  const responsibleEmployeeId = resolveLeadAssignedToFilter(filters.responsible, meId);
   const [showCreate, setShowCreate] = useState(false);
   const openCreateCompany = () =>
     beginPermittedCreate(can('ADD', 'CLIENTS'), () => setShowCreate(true));
@@ -99,6 +108,7 @@ function CompaniesPageContent() {
         search: search || undefined,
         type: filters.type && filters.type !== 'all' ? filters.type : undefined,
         taxStatus: filters.taxStatus && filters.taxStatus !== 'all' ? filters.taxStatus : undefined,
+        responsibleEmployeeId,
       });
       setCompanies(data.items);
       setListMeta(data.meta);
@@ -108,7 +118,7 @@ function CompaniesPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filters, scope]);
+  }, [page, search, filters, scope, responsibleEmployeeId]);
 
   useEffect(() => {
     setPage(1);
@@ -223,8 +233,13 @@ function CompaniesPageContent() {
         label: 'Tax Status',
         options: TAX_STATUSES.map((s) => ({ value: s.value, label: s.label })),
       },
+      {
+        key: CRM_RESPONSIBLE_FILTER_KEY,
+        label: 'Responsible',
+        options: buildCrmResponsibleFilterOptions('lead', responsibleEmployees, meId),
+      },
     ],
-    [],
+    [meId, responsibleEmployees],
   );
 
   const moduleHeroSlots = useMemo(

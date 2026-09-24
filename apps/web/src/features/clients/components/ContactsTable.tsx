@@ -22,6 +22,7 @@ import {
   EntityListPrimaryCell,
 } from '@/components/shared/entity-list-table';
 import { getContactRole } from '@/features/clients/constants/clients';
+import { responsibleEmployeeLabel } from '@/features/clients/responsible-employee';
 import type { Contact } from '@/lib/api/clients';
 
 interface ContactsTableProps {
@@ -42,6 +43,7 @@ export function ContactsTable({ contacts, onOpen }: ContactsTableProps) {
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Projects</TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Leads</TableHead>
             <TableHead className={`${ENTITY_LIST_HEAD_CLASS} text-center`}>Deals</TableHead>
+            <TableHead className={ENTITY_LIST_HEAD_CLASS}>Responsible</TableHead>
             <TableHead className={ENTITY_LIST_HEAD_CLASS}>Created</TableHead>
           </TableRow>
         </TableHeader>
@@ -113,6 +115,9 @@ export function ContactsTable({ contacts, onOpen }: ContactsTableProps) {
                   className={`${ENTITY_LIST_CELL_CLASS} text-muted-foreground text-center`}
                 >
                   {contact._count.deals}
+                </TableCell>
+                <TableCell className={ENTITY_LIST_CELL_CLASS}>
+                  {responsibleEmployeeLabel(contact.responsibleEmployee) || <EntityListMutedDash />}
                 </TableCell>
                 <TableCell className={ENTITY_LIST_CELL_CLASS}>
                   <EntityListDate value={contact.createdAt} />

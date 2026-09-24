@@ -3,6 +3,7 @@
 import { Building2 } from 'lucide-react';
 import { PersonContactRow, StatusBadge } from '@/components/shared';
 import { getCompanyType, getTaxStatus } from '@/features/clients/constants/clients';
+import { responsibleEmployeeLabel } from '@/features/clients/responsible-employee';
 import {
   CLIENTS_DIRECTORY_METRIC_CELL_CLASS,
   COMPANY_CARD_ICON_TILE_CLASS,
@@ -37,6 +38,7 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
   const contactName = company.contact
     ? `${company.contact.firstName} ${company.contact.lastName}`.trim()
     : '';
+  const responsibleLabel = responsibleEmployeeLabel(company.responsibleEmployee);
 
   return (
     <button type="button" onClick={() => onOpen(company)} className={COMPANY_DIRECTORY_CARD_CLASS}>
@@ -80,6 +82,11 @@ export function CompanyCard({ company, onOpen }: CompanyCardProps) {
         ) : (
           <p className="text-muted-foreground truncate text-sm">No linked contact</p>
         )}
+        {responsibleLabel ? (
+          <p className="text-muted-foreground mt-2 truncate text-xs">
+            Responsible: {responsibleLabel}
+          </p>
+        ) : null}
       </div>
 
       <div className="border-border mt-5 flex gap-2 border-t pt-4">

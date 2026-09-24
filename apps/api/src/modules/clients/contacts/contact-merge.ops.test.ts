@@ -17,6 +17,7 @@ function contactRow(overrides: Record<string, unknown> = {}) {
     trashedAt: null,
     mergedIntoId: null,
     extraPhones: [{ id: 'p-s', e164: '+37499111111', createdAt: new Date() }],
+    responsibleEmployeeId: null,
     ...overrides,
   };
 }
@@ -33,6 +34,7 @@ describe('mergeContacts', () => {
         email: 'anahit@new.test',
         role: 'PARTNER',
         notes: 'Absorbed note',
+        responsibleEmployeeId: 'emp-abs',
         extraPhones: [{ id: 'p-a', e164: '+37499333333', createdAt: new Date() }],
       }),
     );
@@ -63,6 +65,7 @@ describe('mergeContacts', () => {
         email: 'anahit@new.test',
         role: 'PARTNER',
         notes: 'Survivor note\nAbsorbed note',
+        responsibleEmployeeId: 'emp-abs',
       }),
     });
     expect(prisma.contactPhone.deleteMany).toHaveBeenCalledWith({

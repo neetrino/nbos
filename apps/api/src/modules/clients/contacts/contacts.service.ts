@@ -5,13 +5,7 @@ import {
   BadRequestException,
   Optional,
 } from '@nestjs/common';
-import {
-  PrismaClient,
-  type Prisma,
-  type ContactRole,
-  type InputJsonValue,
-  type TransactionClient,
-} from '@nbos/database';
+import { PrismaClient, type Prisma, type ContactRole } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { permanentlyDeleteProfileATrashedEntity } from '../../../common/lifecycle/profile-a-permanent-delete.ops';
@@ -32,47 +26,16 @@ import {
   contactDirectorySearchOr,
   contactOwnsPhone,
   createExtraContactPhone,
-  deleteOverlappingExtraPhones,
 } from './contact-phone.ops';
 import { findContactMergeCandidates, mergeContacts as runContactMerge } from './contact-merge.ops';
 import { CONTACT_MERGE_ERROR } from './contact-merge-guards.ops';
+import { applyContactUpdate, type CreateContactDto } from './contact-write.ops';
+import {
+  EMPLOYEE_PERSON_SELECT,
+  normalizeResponsibleEmployeeId,
+} from '../client-responsible-employee.ops';
 
 const CONTACT_SORT_FIELDS = new Set(['createdAt', 'updatedAt', 'firstName', 'lastName', 'email']);
-
-async function applyContactUpdate(
-  tx: TransactionClient,
-  id: string,
-  data: Partial<CreateContactDto>,
-) {
-  if (data.phone !== undefined) {
-    await deleteOverlappingExtraPhones(tx, id, data.phone);
-  }
-  return tx.contact.update({
-    where: { id },
-    data: {
-      ...(data.firstName && { firstName: data.firstName }),
-      ...(data.lastName && { lastName: data.lastName }),
-      ...(data.phone !== undefined && { phone: data.phone }),
-      ...(data.email !== undefined && { email: data.email }),
-      ...(data.role && { role: data.role as ContactRole }),
-      ...(data.notes !== undefined && { notes: data.notes }),
-      ...(data.messengerLinks !== undefined && {
-        messengerLinks: JSON.parse(JSON.stringify(data.messengerLinks)),
-      }),
-    },
-    include: CONTACT_LIST_INCLUDE,
-  });
-}
-
-interface CreateContactDto {
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  email?: string;
-  role?: string;
-  notes?: string;
-  messengerLinks?: InputJsonValue;
-}
 
 interface ContactQueryParams {
   page?: number;
@@ -83,6 +46,7 @@ interface ContactQueryParams {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   scope?: string;
+  responsibleEmployeeId?: string;
 }
 
 @Injectable()
@@ -103,6 +67,7 @@ export class ContactsService {
       sortBy = 'createdAt',
       sortOrder = 'desc',
       scope,
+      responsibleEmployeeId,
     } = params;
 
     const lifecycleScope = parseLifecycleScopeFromQuery(scope);
@@ -111,6 +76,7 @@ export class ContactsService {
     if (typeFilter) where.role = typeFilter as ContactRole;
     if (search) where.OR = contactDirectorySearchOr(search);
     if (lifecycleScope !== 'trash') where.mergedIntoId = null;
+    if (responsibleEmployeeId) where.responsibleEmployeeId = responsibleEmployeeId;
 
     const [items, total] = await Promise.all([
       this.prisma.contact.findMany({
@@ -137,6 +103,7 @@ export class ContactsService {
       where: { id },
       include: {
         extraPhones: { select: CONTACT_EXTRA_PHONE_SELECT, orderBy: { createdAt: 'asc' } },
+        responsibleEmployee: { select: EMPLOYEE_PERSON_SELECT },
         companies: true,
         projects: { select: { id: true, code: true, name: true } },
         leads: { select: { id: true, code: true, status: true } },
@@ -148,6 +115,10 @@ export class ContactsService {
   }
 
   async create(data: CreateContactDto) {
+    const responsibleEmployeeId = await normalizeResponsibleEmployeeId(
+      this.prisma,
+      data.responsibleEmployeeId,
+    );
     const contact = await this.prisma.contact.create({
       data: {
         firstName: data.firstName,
@@ -159,6 +130,7 @@ export class ContactsService {
         messengerLinks: data.messengerLinks
           ? JSON.parse(JSON.stringify(data.messengerLinks))
           : undefined,
+        ...(responsibleEmployeeId !== undefined && { responsibleEmployeeId }),
       },
       include: CONTACT_LIST_INCLUDE,
     });
@@ -169,7 +141,13 @@ export class ContactsService {
   async update(id: string, data: Partial<CreateContactDto>) {
     const existing = await this.findById(id);
     assertEntityIsActive(existing, 'trashedAt', 'Contact');
-    const contact = await this.prisma.$transaction((tx) => applyContactUpdate(tx, id, data));
+    const responsibleEmployeeId = await normalizeResponsibleEmployeeId(
+      this.prisma,
+      data.responsibleEmployeeId,
+    );
+    const contact = await this.prisma.$transaction((tx) =>
+      applyContactUpdate(tx, id, { ...data, responsibleEmployeeId }),
+    );
     await this.enqueueGoogleContactsSync(id);
     return contact;
   }

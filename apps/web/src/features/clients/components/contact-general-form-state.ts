@@ -1,6 +1,11 @@
 import type { Contact } from '@/lib/api/clients';
+import {
+  createResponsibleEmployeeDraft,
+  responsibleEmployeePatch,
+  type ResponsibleEmployeeDraftFields,
+} from './responsible-employee-draft';
 
-export interface ContactGeneralDraft {
+export interface ContactGeneralDraft extends ResponsibleEmployeeDraftFields {
   firstName: string;
   lastName: string;
   phone: string;
@@ -26,6 +31,7 @@ export function createContactGeneralDraft(contact: Contact): ContactGeneralDraft
     whatsapp: links.whatsapp ?? '',
     telegram: links.telegram ?? '',
     notes: contact.notes ?? '',
+    ...createResponsibleEmployeeDraft(contact.responsibleEmployee, contact.responsibleEmployeeId),
   };
 }
 
@@ -60,6 +66,7 @@ export function buildContactGeneralPatch(
   if (JSON.stringify(nextLinks) !== JSON.stringify(prevLinks)) {
     out.messengerLinks = nextLinks;
   }
+  Object.assign(out, responsibleEmployeePatch(snap, draft));
   return out;
 }
 

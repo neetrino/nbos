@@ -17,43 +17,16 @@ import {
 import { parseLifecycleScopeFromQuery } from '../../../common/lifecycle/entity-lifecycle-scope';
 import { mergeClientListScope } from '../client-entity-lifecycle';
 import { syncEntityContactLinks } from '../../crm/shared/sync-entity-contact-links.ops';
-
-const companyPersonSelect = { id: true, firstName: true, lastName: true } as const;
-
-const companyListInclude = {
-  contact: { select: companyPersonSelect },
-  billingContact: { select: companyPersonSelect },
-  additionalContacts: {
-    include: { contact: { select: companyPersonSelect } },
-  },
-  _count: { select: { projects: true, products: true, invoices: true } },
-} as const;
-
-interface CreateCompanyDto {
-  name: string;
-  contactId?: string | null;
-  contactIds?: string[];
-  billingContactId?: string | null;
-  type?: string;
-  taxId?: string;
-  legalName?: string | null;
-  legalAddress?: string;
-  bankDetails?: Record<string, unknown> | null;
-  taxStatus?: string;
-  phone?: string | null;
-  email?: string | null;
-  country?: string | null;
-  notes?: string;
-}
-
-interface CompanyQueryParams {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-  taxStatus?: string;
-  type?: string;
-  scope?: string;
-}
+import {
+  EMPLOYEE_PERSON_SELECT,
+  normalizeResponsibleEmployeeId,
+} from '../client-responsible-employee.ops';
+import {
+  COMPANY_LIST_INCLUDE,
+  COMPANY_PERSON_SELECT,
+  type CompanyQueryParams,
+  type CreateCompanyDto,
+} from './company-read.ops';
 
 @Injectable()
 export class CompaniesService {
@@ -63,7 +36,15 @@ export class CompaniesService {
   ) {}
 
   async findAll(params: CompanyQueryParams) {
-    const { page = 1, pageSize = 20, search, taxStatus, type, scope } = params;
+    const {
+      page = 1,
+      pageSize = 20,
+      search,
+      taxStatus,
+      type,
+      scope,
+      responsibleEmployeeId,
+    } = params;
     const lifecycleScope = parseLifecycleScopeFromQuery(scope);
     const where: Prisma.CompanyWhereInput = mergeClientListScope({}, lifecycleScope);
 
@@ -84,11 +65,12 @@ export class CompaniesService {
     }
     if (type) where.type = type as CompanyType;
     if (taxStatus) where.taxStatus = taxStatus as TaxStatus;
+    if (responsibleEmployeeId) where.responsibleEmployeeId = responsibleEmployeeId;
 
     const [items, total] = await Promise.all([
       this.prisma.company.findMany({
         where,
-        include: companyListInclude,
+        include: COMPANY_LIST_INCLUDE,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -109,8 +91,9 @@ export class CompaniesService {
         contact: true,
         billingContact: true,
         additionalContacts: {
-          include: { contact: { select: companyPersonSelect } },
+          include: { contact: { select: COMPANY_PERSON_SELECT } },
         },
+        responsibleEmployee: { select: EMPLOYEE_PERSON_SELECT },
         projects: { select: { id: true, code: true, name: true } },
         products: {
           select: {
@@ -160,6 +143,11 @@ export class CompaniesService {
         : null;
     if (billingId) await this.assertActiveContactExists(billingId);
 
+    const responsibleEmployeeId = await normalizeResponsibleEmployeeId(
+      this.prisma,
+      data.responsibleEmployeeId,
+    );
+
     const company = await this.prisma.company.create({
       data: {
         name: data.name,
@@ -175,6 +163,7 @@ export class CompaniesService {
         email: data.email ?? undefined,
         country: data.country ?? undefined,
         notes: data.notes,
+        ...(responsibleEmployeeId !== undefined && { responsibleEmployeeId }),
       },
     });
 
@@ -206,6 +195,11 @@ export class CompaniesService {
       }
     }
 
+    const responsibleEmployeeId = await normalizeResponsibleEmployeeId(
+      this.prisma,
+      data.responsibleEmployeeId,
+    );
+
     let billingContactId: string | null | undefined = undefined;
     if (data.billingContactId !== undefined) {
       if (data.billingContactId === null || data.billingContactId === '') {
@@ -234,6 +228,7 @@ export class CompaniesService {
           bankDetails: data.bankDetails ? JSON.parse(JSON.stringify(data.bankDetails)) : JsonNull,
         }),
         ...(billingContactId !== undefined && { billingContactId }),
+        ...(responsibleEmployeeId !== undefined && { responsibleEmployeeId }),
       },
     });
 
@@ -263,7 +258,7 @@ export class CompaniesService {
     return this.prisma.company.update({
       where: { id },
       data: { trashedAt: null },
-      include: companyListInclude,
+      include: COMPANY_LIST_INCLUDE,
     });
   }
 
