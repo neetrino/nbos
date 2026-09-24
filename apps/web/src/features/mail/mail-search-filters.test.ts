@@ -69,6 +69,13 @@ describe('mail search filters', () => {
     });
   });
 
+  it('passes My mailbox ids for All-inbox', () => {
+    expect(mergeMailInboxListParams('all', {}, null, ['a', 'b'])).toEqual({
+      scope: 'active',
+      mailAccountIds: ['a', 'b'],
+    });
+  });
+
   it('maps the Drafts folder to draftsOnly', () => {
     expect(mergeMailInboxListParams('drafts', {}, null)).toEqual({ draftsOnly: true });
   });

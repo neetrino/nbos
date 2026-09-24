@@ -1,6 +1,7 @@
 import type {
   MailAttachmentRow,
   MailAccountRow,
+  MailAccountViewerRelation,
   MailMessageRow,
   MailProviderConnectionRow,
   MailRecipientRow,
@@ -76,17 +77,20 @@ function toProviderConnectionRow(
   };
 }
 
-export function toAccountRow(row: {
-  id: string;
-  emailAddress: string;
-  displayName: string | null;
-  providerType: string;
-  status: string;
-  lastSyncAt: Date | null;
-  lastErrorAt: Date | null;
-  providerConnection?: Parameters<typeof toProviderConnectionRow>[0];
-  providerSecret?: { id: string } | null;
-}): MailAccountRow {
+export function toAccountRow(
+  row: {
+    id: string;
+    emailAddress: string;
+    displayName: string | null;
+    providerType: string;
+    status: string;
+    lastSyncAt: Date | null;
+    lastErrorAt: Date | null;
+    providerConnection?: Parameters<typeof toProviderConnectionRow>[0];
+    providerSecret?: { id: string } | null;
+  },
+  relation: MailAccountViewerRelation = 'owned',
+): MailAccountRow {
   return {
     id: row.id,
     emailAddress: row.emailAddress,
@@ -97,6 +101,7 @@ export function toAccountRow(row: {
     lastErrorAt: row.lastErrorAt?.toISOString() ?? null,
     hasStoredPassword: Boolean(row.providerSecret),
     providerConnection: toProviderConnectionRow(row.providerConnection ?? null),
+    relation,
   };
 }
 

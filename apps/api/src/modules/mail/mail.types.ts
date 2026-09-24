@@ -1,3 +1,5 @@
+export type MailAccountViewerRelation = 'owned' | 'shared' | 'tenant';
+
 export interface MailAccountRow {
   id: string;
   emailAddress: string;
@@ -8,6 +10,11 @@ export interface MailAccountRow {
   lastErrorAt: string | null;
   hasStoredPassword: boolean;
   providerConnection: MailProviderConnectionRow | null;
+  /**
+   * How this mailbox is visible to the requesting viewer:
+   * owned / shared (My by default) vs tenant-wide (Company by default).
+   */
+  relation: MailAccountViewerRelation;
 }
 
 export interface MailProviderConnectionRow {

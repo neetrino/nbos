@@ -1,6 +1,6 @@
 'use client';
 
-import { RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS } from '@/components/shared/detail-sheet-classes';
+import { useTranslations } from 'next-intl';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { NbosDatePicker } from '@/components/shared/date-picker';
@@ -11,9 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  CREDENTIAL_GRANT_LEVEL_GHOST_CLASS,
+  CREDENTIAL_GRANT_TRAILING_GAP_CLASS,
+} from '@/features/credentials/constants/credential-manual-access-ui';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
-
-const MANUAL_ACCESS_TRAILING_GAP_CLASS = 'flex items-center gap-2';
 
 export interface CredentialManualAccessGrantRowProps {
   grant: CredentialManualGrant;
@@ -28,6 +30,7 @@ export function CredentialManualAccessGrantRow({
   onExpiresAtChange,
   onRemove,
 }: CredentialManualAccessGrantRowProps) {
+  const t = useTranslations('credentials');
   const relations = useEntityRelations();
   const dateValue = grant.expiresAt ? grant.expiresAt.slice(0, 10) : '';
   const label = `${grant.employee.firstName} ${grant.employee.lastName}`.trim();
@@ -41,7 +44,7 @@ export function CredentialManualAccessGrantRow({
       onOpen={() => void relations.openEntity('employee', grant.employeeId)}
       onClear={() => onRemove(grant.employeeId)}
       trailing={
-        <span className={MANUAL_ACCESS_TRAILING_GAP_CLASS}>
+        <span className={CREDENTIAL_GRANT_TRAILING_GAP_CLASS}>
           <NbosDatePicker
             variant="compact"
             mode="date"
@@ -49,8 +52,8 @@ export function CredentialManualAccessGrantRow({
             iconButtonShell
             value={dateValue}
             clearable
-            aria-label={`Expires for ${label}`}
-            className="w-auto shrink-0"
+            aria-label={t('form.grantExpiresAria', { name: label })}
+            className="shrink-0"
             onChange={(next) => {
               const trimmed = next.trim();
               onExpiresAtChange(grant.employeeId, trimmed ? `${trimmed}T23:59:59.999Z` : null);
@@ -58,20 +61,20 @@ export function CredentialManualAccessGrantRow({
           />
           <Select
             value={grant.level}
-            onValueChange={(v) => {
-              if (v === 'VIEW' || v === 'EDIT') onLevelChange(grant.employeeId, v);
+            onValueChange={(value) => {
+              if (value === 'VIEW' || value === 'EDIT') onLevelChange(grant.employeeId, value);
             }}
           >
             <SelectTrigger
               size="sm"
-              className={RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS}
-              aria-label={`Access for ${label}`}
+              className={CREDENTIAL_GRANT_LEVEL_GHOST_CLASS}
+              aria-label={t('form.grantAccessAria', { name: label })}
             >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="VIEW">View</SelectItem>
-              <SelectItem value="EDIT">Edit</SelectItem>
+              <SelectItem value="VIEW">{t('form.grantView')}</SelectItem>
+              <SelectItem value="EDIT">{t('form.grantEdit')}</SelectItem>
             </SelectContent>
           </Select>
         </span>

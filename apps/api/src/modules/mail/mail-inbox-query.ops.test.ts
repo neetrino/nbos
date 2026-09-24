@@ -93,7 +93,7 @@ describe('listMailThreadsForViewer', () => {
     await listMailThreadsForViewer(prisma, 'emp-1', 'OWN', {});
     expect(emailThreadFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ mailAccountId: { in: ['live'] } }),
+        where: expect.objectContaining({ mailAccountId: 'live' }),
       }),
     );
   });
@@ -116,5 +116,25 @@ describe('inboxMailAccountIdsForList', () => {
       ok: false,
       error: 'mail_account_not_found',
     });
+  });
+
+  it('accepts an explicit empty My list', () => {
+    expect(inboxMailAccountIdsForList([{ id: 'live', status: 'ACTIVE' }], undefined, [])).toEqual({
+      ok: true,
+      ids: [],
+    });
+  });
+
+  it('filters mailAccountIds to accessible accounts', () => {
+    expect(
+      inboxMailAccountIdsForList(
+        [
+          { id: 'a', status: 'ACTIVE' },
+          { id: 'b', status: 'ACTIVE' },
+        ],
+        undefined,
+        ['a', 'missing'],
+      ),
+    ).toEqual({ ok: true, ids: ['a'] });
   });
 });

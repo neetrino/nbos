@@ -1,8 +1,17 @@
 'use client';
 
-import Link from 'next/link';
-import { Package, FolderKanban } from 'lucide-react';
-import { credentialProductHref } from '@/features/credentials/utils/credential-vault-card-meta';
+import type { ReactNode } from 'react';
+import { FolderKanban, Package } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import {
+  DetailSheetEntityLinkGrid,
+  DetailSheetSection,
+  RelationPickerField,
+} from '@/components/shared';
+import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
+import type { RelationEntityKind } from '@/components/shared/relation-picker/relation-picker.types';
+
+const emptyRelationSearch = async () => [];
 
 export interface CredentialFormContextLinksProps {
   projectId?: string | null;
@@ -11,56 +20,77 @@ export interface CredentialFormContextLinksProps {
   product?: { id: string; name: string } | null;
 }
 
-function ContextLink({
-  href,
-  icon: Icon,
-  label,
-}: {
-  href: string;
-  icon: typeof Package;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="text-muted-foreground hover:text-foreground hover:bg-muted/60 inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors"
-    >
-      <Icon className="size-3.5 shrink-0" aria-hidden />
-      <span className="truncate">{label}</span>
-    </Link>
-  );
-}
-
 export function CredentialFormContextLinks({
   projectId,
   project,
   productId,
   product,
 }: CredentialFormContextLinksProps) {
+  const t = useTranslations('credentials');
+  const relations = useEntityRelations();
   const resolvedProjectId = projectId ?? project?.id ?? null;
   const productRecord =
     product ?? (productId && resolvedProjectId ? { id: productId, name: 'Product' } : null);
-  const productHref = credentialProductHref(resolvedProjectId, productRecord);
-  const projectHref = project?.id ? `/projects/${project.id}` : null;
 
-  if (!productHref && !projectHref) {
+  if (!productRecord && !project) {
     return null;
   }
 
   return (
-    <section
-      className="border-border flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4"
-      aria-label="Context links"
-    >
-      <span className="text-muted-foreground shrink-0 text-xs">Context</span>
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-        {productHref && productRecord ? (
-          <ContextLink href={productHref} icon={Package} label={productRecord.name} />
+    <DetailSheetSection title={t('form.sectionLinked')} outlined>
+      <DetailSheetEntityLinkGrid className="sm:grid-cols-2">
+        {project ? (
+          <LinkedReadonlyField
+            label={t('table.project')}
+            entityKind="project"
+            value={project.id}
+            selectionLabel={project.name}
+            icon={<FolderKanban size={12} />}
+            onOpen={() => relations.openEntity('project', project.id)}
+          />
         ) : null}
-        {projectHref && project ? (
-          <ContextLink href={projectHref} icon={FolderKanban} label={project.name} />
+        {productRecord ? (
+          <LinkedReadonlyField
+            label={t('form.linkedProduct')}
+            entityKind="product"
+            value={productRecord.id}
+            selectionLabel={productRecord.name}
+            icon={<Package size={12} />}
+            onOpen={() => relations.openEntity('product', productRecord.id)}
+          />
         ) : null}
-      </div>
-    </section>
+      </DetailSheetEntityLinkGrid>
+    </DetailSheetSection>
+  );
+}
+
+function LinkedReadonlyField({
+  label,
+  entityKind,
+  value,
+  selectionLabel,
+  icon,
+  onOpen,
+}: {
+  label: string;
+  entityKind: RelationEntityKind;
+  value: string;
+  selectionLabel: string;
+  icon: ReactNode;
+  onOpen: () => void;
+}) {
+  return (
+    <RelationPickerField
+      label={label}
+      entityKind={entityKind}
+      value={value}
+      selectionLabel={selectionLabel}
+      icon={icon}
+      readOnly
+      placeholder={label}
+      onSearch={emptyRelationSearch}
+      onSelect={() => undefined}
+      onOpenSelected={onOpen}
+    />
   );
 }

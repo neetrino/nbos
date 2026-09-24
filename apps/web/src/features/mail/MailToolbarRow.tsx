@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderOpen, Plus, RefreshCcw, Settings, Share2, Trash2 } from 'lucide-react';
+import { FolderOpen, Plus, RefreshCcw, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +19,7 @@ import {
   type MailFolderKey,
 } from '@/features/mail/mail-folder-config';
 import { MAIL_FOLDER_ICONS } from '@/features/mail/mail-folder-icons';
+import type { MailMailboxListOverrides } from '@/features/mail/mail-mailbox-buckets';
 
 export interface MailToolbarRowProps {
   accounts: MailAccountHealthSummaryRow[];
@@ -27,20 +28,19 @@ export interface MailToolbarRowProps {
   searchValue: string;
   filterConfigs: FilterConfig[];
   filterValues: Record<string, string>;
+  mailboxOverrides: MailMailboxListOverrides;
   canEdit: boolean;
   busy: boolean;
-  syncingAccountId: string | null;
+  gettingMail: boolean;
   onSelectAccount: (accountId: string | null) => void;
   onSelectFolder: (folder: MailFolderKey) => void;
   onSearchChange: (value: string) => void;
   onFilterChange: (key: string, value: string) => void;
   onClearAll: () => void;
   onRefresh: () => void;
-  onSyncAccount: (accountId: string) => void;
-  onShareAccount: (account: MailAccountHealthSummaryRow) => void;
-  onDeleteAccount: (account: MailAccountHealthSummaryRow) => void;
   onConnectMailbox: () => void;
-  onReconnectMailbox: (account: MailAccountHealthSummaryRow) => void;
+  onMailboxSettings: (account: MailAccountHealthSummaryRow) => void;
+  onMailboxOverridesChange: (next: MailMailboxListOverrides) => void;
 }
 
 export function MailToolbarRow({
@@ -50,26 +50,24 @@ export function MailToolbarRow({
   searchValue,
   filterConfigs,
   filterValues,
+  mailboxOverrides,
   canEdit,
   busy,
-  syncingAccountId,
+  gettingMail,
   onSelectAccount,
   onSelectFolder,
   onSearchChange,
   onFilterChange,
   onClearAll,
   onRefresh,
-  onSyncAccount,
-  onShareAccount,
-  onDeleteAccount,
   onConnectMailbox,
-  onReconnectMailbox,
+  onMailboxSettings,
+  onMailboxOverridesChange,
 }: MailToolbarRowProps) {
   const selectedAccount =
     filterAccountId !== null
       ? accounts.find((account) => account.id === filterAccountId)
       : undefined;
-  const isSyncing = filterAccountId !== null && syncingAccountId === filterAccountId;
   const activeFolderLabel =
     MAIL_FOLDERS.find((folder) => folder.key === activeFolder)?.label ?? 'Inbox';
 
@@ -78,8 +76,10 @@ export function MailToolbarRow({
       <MailAccountSwitcher
         accounts={accounts}
         filterAccountId={filterAccountId}
+        mailboxOverrides={mailboxOverrides}
         disabled={busy}
         onSelectAccount={onSelectAccount}
+        onMailboxOverridesChange={onMailboxOverridesChange}
       />
 
       <Button
@@ -87,11 +87,12 @@ export function MailToolbarRow({
         variant="outline"
         size="icon"
         className="size-9 shrink-0"
-        disabled={busy}
-        title="Refresh"
+        disabled={busy || gettingMail}
+        title="Get new mail"
+        aria-label="Get new mail"
         onClick={() => onRefresh()}
       >
-        <RefreshCcw size={16} aria-hidden />
+        <RefreshCcw size={16} aria-hidden className={gettingMail ? 'animate-spin' : undefined} />
       </Button>
 
       <DropdownMenu>
@@ -152,37 +153,11 @@ export function MailToolbarRow({
             <>
               <DropdownMenuItem
                 className="cursor-pointer"
-                disabled={busy || isSyncing}
-                onClick={() => onSyncAccount(selectedAccount.id)}
-              >
-                <RefreshCcw className={isSyncing ? 'animate-spin' : ''} />
-                Sync mailbox
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => onShareAccount(selectedAccount)}
-              >
-                <Share2 />
-                Share mailbox
-              </DropdownMenuItem>
-              {selectedAccount.providerType === 'CORPORATE_IMAP_SMTP' ? (
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  disabled={busy}
-                  onClick={() => onReconnectMailbox(selectedAccount)}
-                >
-                  <RefreshCcw />
-                  Reconnect mailbox
-                </DropdownMenuItem>
-              ) : null}
-              <DropdownMenuItem
-                className="cursor-pointer"
-                variant="destructive"
                 disabled={busy}
-                onClick={() => onDeleteAccount(selectedAccount)}
+                onClick={() => onMailboxSettings(selectedAccount)}
               >
-                <Trash2 />
-                Delete mailbox
+                <Settings />
+                Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
