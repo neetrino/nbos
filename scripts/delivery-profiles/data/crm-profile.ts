@@ -1,6 +1,6 @@
 import type { ProfileSeedKind } from './profile-seed-types';
 
-const SMALL = [
+const BASE = [
   'CRM_TASKS',
   'CRM_LEAD_CAPTURE',
   'CRM_CALL_LOG',
@@ -11,10 +11,6 @@ const SMALL = [
   'SRV_DATA_MIGRATION',
   'SRV_TEAM_TRAINING',
   'SRV_ACCEPTANCE_SUPPORT',
-] as const;
-
-const CLASSIC = [
-  ...SMALL,
   'CRM_TASK_BOARD',
   'CRM_QUOTES',
   'ANL_DASHBOARD',
@@ -22,8 +18,8 @@ const CLASSIC = [
   'CNT_MULTILINGUAL',
 ] as const;
 
-const LARGE = [
-  ...CLASSIC,
+const EXTENDED = [
+  ...BASE,
   'CRM_WORKFLOW_AUTOMATION',
   'CRM_CONTRACTS',
   'CRM_SUPPORT_TICKETS',
@@ -32,18 +28,14 @@ const LARGE = [
   'MSG_WHATSAPP_NOTIFICATIONS',
 ] as const;
 
-const VERY_LARGE = [
-  ...LARGE,
+const FULL = [
+  ...EXTENDED,
   'CRM_ESIGNATURE',
   'FIN_INVOICES',
   'FIN_PAYMENTS_LEDGER',
   'HR_EMPLOYEE_DIRECTORY',
   'ANL_REPORT_BUILDER',
   'INT_PUBLIC_API',
-] as const;
-
-const ENTERPRISE = [
-  ...VERY_LARGE,
   'ACC_SSO_ENTERPRISE',
   'ACC_AUDIT_LOG',
   'PLT_MULTI_TENANCY',
@@ -64,22 +56,22 @@ export const CRM_PROFILE: ProfileSeedKind = {
   productType: 'CRM',
   productCategory: 'CODE',
   description:
-    'Ядро CRM на собственной разработке. Состав одинаков на всех размерах; размер меняет только объём ядра и набор предвыбранных модулей.',
+    'Custom-built CRM core. One kind is one core; kits only change the extra-module set.',
   coreItems: [
-    { label: 'Клиенты, компании и сделки' },
-    { label: 'Карточка записи' },
-    { label: 'Этапы и воронка' },
-    { label: 'Список и фильтры' },
+    { label: 'Customers, companies, and deals' },
+    { label: 'Record card' },
+    { label: 'Stages and pipeline' },
+    { label: 'List and filters' },
     {
-      label: 'Сотрудники, роли и права',
-      note: 'Простые роли; матрица прав на данные — отдельный модуль.',
+      label: 'Employees, roles, and permissions',
+      note: 'Simple roles; a data-permission matrix is a separate module.',
     },
-    { label: 'Главный администратор' },
-    { label: 'Журнал активности' },
-    { label: 'Базовые отчёты' },
-    { label: 'Адаптивность' },
+    { label: 'Lead administrator' },
+    { label: 'Activity log' },
+    { label: 'Basic reports' },
+    { label: 'Responsive layout' },
   ],
-  classicUnits: {
+  units: {
     BACKEND: 80,
     FRONTEND: 65,
     PM: 18,
@@ -89,10 +81,8 @@ export const CRM_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    SMALL,
-    CLASSIC,
-    LARGE,
-    VERY_LARGE,
-    ENTERPRISE,
+    BASE,
+    EXTENDED,
+    FULL,
   },
 };

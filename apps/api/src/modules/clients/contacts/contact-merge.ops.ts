@@ -10,6 +10,7 @@ import {
   assertContactMergePair,
 } from './contact-merge-guards.ops';
 import { moveContactMergeRelations } from './contact-merge-relations.ops';
+import { resolveMergedResponsibleEmployeeId } from '../client-responsible-employee.ops';
 
 const MERGE_CONTACT_SELECT = {
   id: true,
@@ -22,6 +23,7 @@ const MERGE_CONTACT_SELECT = {
   messengerLinks: true,
   trashedAt: true,
   mergedIntoId: true,
+  responsibleEmployeeId: true,
   extraPhones: { select: CONTACT_EXTRA_PHONE_SELECT },
 } as const;
 
@@ -135,6 +137,10 @@ async function runContactMerge(tx: TransactionClient, input: MergeContactsInput)
       role: resolved.role,
       notes: resolved.notes,
       messengerLinks: resolved.messengerLinks === null ? undefined : resolved.messengerLinks,
+      responsibleEmployeeId: resolveMergedResponsibleEmployeeId(
+        survivor.responsibleEmployeeId,
+        absorbed.responsibleEmployeeId,
+      ),
     },
   });
   await tx.contact.update({

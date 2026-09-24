@@ -7,6 +7,9 @@ import { DeliveryConfigurationController } from './delivery-configuration.contro
 import { DeliveryConfigurationService } from './delivery-configuration.service';
 import { CatalogStructureController } from './catalog-structure.controller';
 import { CatalogStructureService } from './catalog-structure.service';
+import { DealQuoteController } from './deal-quote.controller';
+import { DealQuoteService } from './deal-quote.service';
+import { FunctionCollectionsService } from './function-collections.service';
 import { SalePricesService } from './sale-prices.service';
 import { FunctionCatalogAttachmentsService } from './function-catalog-attachments.service';
 import { FunctionCatalogController } from './function-catalog.controller';
@@ -19,6 +22,7 @@ import { FunctionCatalogService } from './function-catalog.service';
     DeliveryCompensationRulesController,
     DeliveryConfigurationController,
     CatalogStructureController,
+    DealQuoteController,
   ],
   providers: [
     FunctionCatalogService,
@@ -27,6 +31,8 @@ import { FunctionCatalogService } from './function-catalog.service';
     DeliveryCompensationRulesPublishService,
     DeliveryConfigurationService,
     CatalogStructureService,
+    FunctionCollectionsService,
+    DealQuoteService,
     SalePricesService,
   ],
   exports: [
@@ -34,6 +40,8 @@ import { FunctionCatalogService } from './function-catalog.service';
     DeliveryCompensationRulesService,
     DeliveryConfigurationService,
     CatalogStructureService,
+    FunctionCollectionsService,
+    DealQuoteService,
     SalePricesService,
   ],
 })

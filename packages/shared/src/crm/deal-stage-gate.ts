@@ -1,5 +1,10 @@
 import { DEAL_STAGE_GATE_ORDER } from '../constants/crm-attribution';
 import { getAttributionValidationErrors, type AttributionForValidation } from './attribution-gate';
+import {
+  isHiddenFromNewProductTypePick,
+  productPlatformApplies,
+  productTypePlatformPairError,
+} from '../constants/product-platform';
 
 export type { StageGateError } from './attribution-gate';
 
@@ -10,6 +15,7 @@ export interface DealStageGateInput extends AttributionForValidation {
   paymentType: string | null;
   productCategory: string | null;
   productType: string | null;
+  productPlatform: string | null;
   pmId: string | null;
   deadline: Date | string | null;
   projectId: string | null;
@@ -112,6 +118,26 @@ export function getDealStageGateErrors(
         field: 'productType',
         message: 'Product type is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',
       });
+    }
+    if (isProductLike && productPlatformApplies(deal.productCategory) && !deal.productPlatform) {
+      errors.push({
+        field: 'productPlatform',
+        message: 'Product platform is required for PRODUCT/OUTSOURCE deals at SEND_OFFER',
+      });
+    }
+    const pairError = productTypePlatformPairError(
+      {
+        productCategory: deal.productCategory,
+        productType: deal.productType,
+        productPlatform: deal.productPlatform,
+      },
+      {
+        allowLegacyHiddenType: isHiddenFromNewProductTypePick(deal.productType),
+        currentProductType: deal.productType,
+      },
+    );
+    if (isProductLike && pairError) {
+      errors.push({ field: 'productType', message: pairError });
     }
     if (!hasOfferProof(deal)) {
       errors.push({

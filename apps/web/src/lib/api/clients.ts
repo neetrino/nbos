@@ -7,6 +7,13 @@ export interface ContactExtraPhone {
   createdAt: string;
 }
 
+export interface ResponsibleEmployee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string | null;
+}
+
 export interface Contact {
   id: string;
   firstName: string;
@@ -19,6 +26,8 @@ export interface Contact {
   messengerLinks: Record<string, string> | null;
   trashedAt?: string | null;
   mergedIntoId?: string | null;
+  responsibleEmployeeId?: string | null;
+  responsibleEmployee?: ResponsibleEmployee | null;
   createdAt: string;
   updatedAt: string;
   companies: Array<{ id: string; name: string }>;
@@ -38,6 +47,8 @@ export interface Company {
   email: string | null;
   country: string | null;
   billingContactId: string | null;
+  responsibleEmployeeId?: string | null;
+  responsibleEmployee?: ResponsibleEmployee | null;
   trashedAt?: string | null;
   createdAt: string;
   contact: { id: string; firstName: string; lastName: string } | null;

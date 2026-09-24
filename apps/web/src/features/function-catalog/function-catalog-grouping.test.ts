@@ -7,6 +7,7 @@ import {
 } from './function-catalog.constants';
 import {
   buildCatalogRailEntries,
+  buildCatalogRailFromCounts,
   countFunctionsByCategory,
   filterCatalogItems,
   groupFunctionsIntoCategoryBlocks,
@@ -81,6 +82,13 @@ describe('buildCatalogRailEntries', () => {
   it('omits Other when every function uses a canonical category', () => {
     const entries = buildCatalogRailEntries([PAYMENTS]);
     expect(entries.some((entry) => entry.id === FUNCTION_CATALOG_OTHER_ID)).toBe(false);
+  });
+
+  it('builds the same rail from API category counts', () => {
+    const entries = buildCatalogRailFromCounts(3, { payments: 2, 'legacy-ops': 1 });
+    expect(entries[0]).toEqual({ id: FUNCTION_CATALOG_ALL_ID, count: 3 });
+    expect(entries.find((entry) => entry.id === 'payments')?.count).toBe(2);
+    expect(entries.at(-1)).toEqual({ id: FUNCTION_CATALOG_OTHER_ID, count: 1 });
   });
 });
 

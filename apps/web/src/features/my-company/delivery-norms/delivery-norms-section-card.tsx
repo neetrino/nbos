@@ -6,16 +6,18 @@ export function DeliveryNormsSectionCard({
   description,
   children,
 }: {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   children: ReactNode;
 }) {
   return (
     <section className={SECTION_CARD_CLASS}>
-      <div>
-        <h2 className="text-foreground text-base font-semibold">{title}</h2>
-        <p className="text-muted-foreground text-sm">{description}</p>
-      </div>
+      {title || description ? (
+        <div className="space-y-1">
+          {title ? <h2 className="text-foreground text-base font-semibold">{title}</h2> : null}
+          {description ? <p className="text-muted-foreground text-sm">{description}</p> : null}
+        </div>
+      ) : null}
       {children}
     </section>
   );

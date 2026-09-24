@@ -1,5 +1,6 @@
 {
   "title": "Доска поставки",
+  "volumeAdjusted": "Объём изменён",
   "pipelineAria": "Конвейер поставки",
   "loading": "Загрузка доски…",
   "loadError": "Не удалось загрузить данные доски поставки.",
@@ -142,8 +143,13 @@
     "deadline": "Срок",
     "productCategory": "Категория продукта",
     "productType": "Тип продукта",
+    "productPlatform": "Платформа",
+    "platforms": {
+      "WEB": "Веб",
+      "APP": "Приложение",
+      "DESKTOP": "Desktop"
+    },
     "extensionName": "Название Extension",
-    "size": "Размер",
     "productLine": "Линейка продукта:",
     "pickDate": "Выберите дату…",
     "productNotesPlaceholder": "План, вехи, контекст клиента…",

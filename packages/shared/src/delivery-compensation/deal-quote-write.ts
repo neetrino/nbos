@@ -1,0 +1,114 @@
+import { CatalogContentValidationError } from './catalog-write';
+import { frozenDeliveryAxes } from './constants';
+import {
+  parseVolumeAdjustment,
+  VOLUME_FACTOR_STANDARD,
+  type VolumeAdjustment,
+} from './volume-factor';
+
+export type DealQuoteItemInput = VolumeAdjustment & {
+  functionId: string;
+  tierId: string | null;
+};
+
+export type DealQuoteWriteInput = VolumeAdjustment & {
+  appliedCollectionId: string | null;
+  items: DealQuoteItemInput[];
+} & ReturnType<typeof frozenDeliveryAxes>;
+
+export type DealQuoteApplyCollectionInput = {
+  collectionId: string;
+};
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_QUOTE_FUNCTIONS = 120;
+
+/**
+ * Parses the seller's draft composition on a deal. A collection id here is last-clicked UI
+ * state; the items are the source of truth after any manual edit. Client axes are ignored.
+ */
+export function parseDealQuoteBody(body: unknown): DealQuoteWriteInput {
+  if (!isRecord(body)) {
+    throw new CatalogContentValidationError('Body must be an object.');
+  }
+  return {
+    ...frozenDeliveryAxes(),
+    ...coreVolume(body),
+    appliedCollectionId: optionalUuid(body.appliedCollectionId, 'appliedCollectionId'),
+    items: requireItems(body.items),
+  };
+}
+
+export function parseDealQuoteApplyCollectionBody(body: unknown): DealQuoteApplyCollectionInput {
+  if (!isRecord(body)) {
+    throw new CatalogContentValidationError('Body must be an object.');
+  }
+  const collectionId = optionalUuid(body.collectionId, 'collectionId');
+  if (collectionId === null) {
+    throw new CatalogContentValidationError('collectionId is required.');
+  }
+  return { collectionId };
+}
+
+function requireItems(value: unknown): DealQuoteItemInput[] {
+  if (!Array.isArray(value)) {
+    throw new CatalogContentValidationError('items must be an array.');
+  }
+  if (value.length > MAX_QUOTE_FUNCTIONS) {
+    throw new CatalogContentValidationError(
+      `A quote cannot hold more than ${MAX_QUOTE_FUNCTIONS} functions.`,
+    );
+  }
+  const items = value.map((entry, index) => requireItem(entry, index));
+  if (new Set(items.map((item) => item.functionId)).size !== items.length) {
+    throw new CatalogContentValidationError('items contains a duplicate function.');
+  }
+  return items;
+}
+
+function requireItem(entry: unknown, index: number): DealQuoteItemInput {
+  if (!isRecord(entry)) {
+    throw new CatalogContentValidationError(`items[${index}] must be an object.`);
+  }
+  return {
+    functionId: requireUuid(entry.functionId, `items[${index}].functionId`),
+    tierId: optionalUuid(entry.tierId, `items[${index}].tierId`),
+    ...lineVolume(entry),
+  };
+}
+
+function coreVolume(body: Record<string, unknown>): VolumeAdjustment {
+  if (body.coreVolumeFactor === undefined) {
+    return { volumeFactor: VOLUME_FACTOR_STANDARD, volumeReason: null };
+  }
+  return parseVolumeAdjustment(body.coreVolumeFactor, body.coreVolumeReason);
+}
+
+function lineVolume(entry: Record<string, unknown>): VolumeAdjustment {
+  if (entry.volumeFactor === undefined) {
+    return { volumeFactor: VOLUME_FACTOR_STANDARD, volumeReason: null };
+  }
+  return parseVolumeAdjustment(entry.volumeFactor, entry.volumeReason);
+}
+
+function requireUuid(value: unknown, field: string): string {
+  const id = optionalUuid(value, field);
+  if (id === null) {
+    throw new CatalogContentValidationError(`${field} must be a uuid.`);
+  }
+  return id;
+}
+
+function optionalUuid(value: unknown, field: string): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  if (typeof value !== 'string' || !UUID_PATTERN.test(value.trim())) {
+    throw new CatalogContentValidationError(`${field} must be a uuid.`);
+  }
+  return value.trim();
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}

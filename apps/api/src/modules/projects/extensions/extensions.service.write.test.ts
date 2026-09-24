@@ -38,14 +38,13 @@ describe('ExtensionsService', () => {
       prisma.extension.create.mockResolvedValue({
         id: 'e1',
         name: 'Add login',
-        size: 'SMALL',
       });
       const result = await service.create({
         projectId: 'proj-1',
         productId: 'prod-1',
         name: 'Add login',
       });
-      expect(result.size).toBe('SMALL');
+      expect(result.name).toBe('Add login');
     });
 
     it('creates extension with product link', async () => {
@@ -55,18 +54,17 @@ describe('ExtensionsService', () => {
         projectId: 'proj-1',
         productId: 'prod-1',
         name: 'Feature',
-        size: 'MEDIUM',
         assignedTo: 'dev-1',
       });
       expect(prisma.extension.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             productId: 'prod-1',
-            size: 'MEDIUM',
             assignedTo: 'dev-1',
           }),
         }),
       );
+      expect(prisma.extension.create.mock.calls[0]?.[0].data).not.toHaveProperty('size');
     });
 
     it('rejects product from another project', async () => {

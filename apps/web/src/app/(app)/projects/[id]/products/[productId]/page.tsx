@@ -217,7 +217,7 @@ function ProductDetailPageContent() {
         </TabsContent>
 
         <TabsContent value="functions" className="mt-5 flex min-h-0 flex-1 flex-col">
-          <ProductFunctionsWorkspace productId={product.id} />
+          <ProductFunctionsWorkspace target={{ kind: 'product', id: product.id }} />
         </TabsContent>
 
         <TabsContent value="finance" className="mt-5 flex min-h-0 flex-1 flex-col">

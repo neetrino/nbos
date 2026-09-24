@@ -55,12 +55,18 @@ export function countFunctionsByCategory(
 export function buildCatalogRailEntries(
   items: readonly { category: string }[],
 ): CatalogRailEntry[] {
-  const counts = countFunctionsByCategory(items);
+  return buildCatalogRailFromCounts(items.length, countsRecord(countFunctionsByCategory(items)));
+}
+
+export function buildCatalogRailFromCounts(
+  total: number,
+  counts: Readonly<Record<string, number>>,
+): CatalogRailEntry[] {
   const entries: CatalogRailEntry[] = [
-    { id: FUNCTION_CATALOG_ALL_ID, count: items.length },
-    ...DELIVERY_FUNCTION_CATEGORIES.map((id) => ({ id, count: counts.get(id) ?? 0 })),
+    { id: FUNCTION_CATALOG_ALL_ID, count: total },
+    ...DELIVERY_FUNCTION_CATEGORIES.map((id) => ({ id, count: counts[id] ?? 0 })),
   ];
-  const otherCount = counts.get(FUNCTION_CATALOG_OTHER_ID) ?? 0;
+  const otherCount = otherCategoryCount(counts);
   if (otherCount > 0) {
     entries.push({ id: FUNCTION_CATALOG_OTHER_ID, count: otherCount });
   }
@@ -94,6 +100,19 @@ export function isCatalogRailId(value: string): value is CatalogRailId {
 
 function railCategoryId(category: string): CatalogRailCategoryId {
   return isDeliveryFunctionCategory(category) ? category : FUNCTION_CATALOG_OTHER_ID;
+}
+
+function countsRecord(counts: Map<CatalogRailCategoryId, number>): Record<string, number> {
+  return Object.fromEntries(counts);
+}
+
+function otherCategoryCount(counts: Readonly<Record<string, number>>): number {
+  return Object.entries(counts).reduce((sum, [category, count]) => {
+    if (category === FUNCTION_CATALOG_OTHER_ID || !isDeliveryFunctionCategory(category)) {
+      return sum + count;
+    }
+    return sum;
+  }, 0);
 }
 
 function visibleBlockIds(

@@ -16,6 +16,9 @@ function draft(overrides: Partial<CompanyGeneralDraft> = {}): CompanyGeneralDraf
     contactLabels: {},
     billingContactId: '',
     billingContactLabel: '',
+    responsibleEmployeeId: '',
+    responsibleDisplayLabel: '',
+    responsibleAvatar: null,
     ...overrides,
   };
 }
@@ -37,5 +40,15 @@ describe('buildCompanyGeneralPatch', () => {
       draft({ legalName: '', contactIds: [], contactLabels: {} }),
     );
     expect(patch).toEqual({ legalName: null, contactIds: [] });
+  });
+
+  it('patches responsible employee and allows clearing', () => {
+    const snap = draft({ responsibleEmployeeId: 'emp-1', responsibleDisplayLabel: 'Anna' });
+    expect(buildCompanyGeneralPatch(snap, draft({ responsibleEmployeeId: 'emp-2' }))).toEqual({
+      responsibleEmployeeId: 'emp-2',
+    });
+    expect(buildCompanyGeneralPatch(snap, draft({ responsibleEmployeeId: '' }))).toEqual({
+      responsibleEmployeeId: null,
+    });
   });
 });

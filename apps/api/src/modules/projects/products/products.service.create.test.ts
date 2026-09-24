@@ -72,11 +72,16 @@ describe('ProductsService', () => {
         name: 'Website',
         productCategory: 'CODE',
         productType: 'COMPANY_WEBSITE',
+        productPlatform: 'WEB',
       });
       expect(result.productType).toBe('COMPANY_WEBSITE');
       expect(prisma.product.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ contactId: 'contact-1', companyId: 'co-1' }),
+          data: expect.objectContaining({
+            contactId: 'contact-1',
+            companyId: 'co-1',
+            productPlatform: 'WEB',
+          }),
         }),
       );
       expect(productWhatsApp.ensureGroupForProduct).not.toHaveBeenCalled();
@@ -101,7 +106,7 @@ describe('ProductsService', () => {
         contactId: 'contact-1',
         name: 'App',
         productCategory: 'CODE',
-        productType: 'MOBILE_APP',
+        productType: 'ECOMMERCE',
         status: 'NEW',
         deliveryStage: 'STARTING',
         deliveryWorkStatus: 'ACTIVE',
@@ -128,7 +133,8 @@ describe('ProductsService', () => {
         projectId: 'proj-1',
         name: 'App',
         productCategory: 'CODE',
-        productType: 'MOBILE_APP',
+        productType: 'ECOMMERCE',
+        productPlatform: 'APP',
         pmId: 'pm-1',
         deadline: '2026-12-31',
         description: 'Mobile app',
@@ -139,6 +145,7 @@ describe('ProductsService', () => {
             pmId: 'pm-1',
             description: 'Mobile app',
             contactId: 'contact-1',
+            productPlatform: 'APP',
           }),
         }),
       );

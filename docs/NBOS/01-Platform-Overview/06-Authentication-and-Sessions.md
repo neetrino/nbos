@@ -93,7 +93,13 @@ Existing HR entity. Do not invent extra statuses.
 **Who may log in:** `ACTIVE`, `PROBATION`, `ON_LEAVE` with a password hash.  
 **Who must not:** `TERMINATED`, missing hash, or invite not completed.
 
-Invite-only onboarding stays on `Invitation` + `POST /api/v1/auth/accept-invite`. There is no `INVITED` / `SUSPENDED` employee status.
+Invite-only onboarding stays on `Invitation` + `POST /api/v1/auth/accept-invite`. There is no `INVITED` / `SUSPENDED` employee status. There is no admin-set password.
+
+Three one-time links, all opened at `/accept-invite?token=`:
+
+1. **Email invitation.** The owner chooses email and role. The person sets their name and password. The same link can be copied into a messenger.
+2. **Create employee.** The profile (name, role, department) exists immediately, still without a password. The owner copies a one-time access link; the person sets the password and can sign in. A later email invitation for that address reuses this link.
+3. **Open invite link.** No email and no role on the form. The person enters name, email, and password and joins as Observer. The owner changes the role after they appear. The link works once and expires in 7 days.
 
 ### 5.2 AuthSession
 

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildDealExistingProductChangePatch,
+  buildDealPlatformPatch,
   buildDealProjectChangePatch,
+  buildDealTaxonomyPatch,
   buildDealTypeChangePatch,
   type DealGeneralDraft,
 } from './deal-general-form-state';
@@ -18,6 +20,7 @@ const baseDraft: DealGeneralDraft = {
   maintenanceStartAt: null,
   productCategory: 'CODE',
   productType: 'COMPANY_WEBSITE',
+  productPlatform: 'WEB',
   existingProductId: null,
   existingProductPickLabel: null,
   companyId: null,
@@ -53,6 +56,7 @@ describe('buildDealTypeChangePatch', () => {
       type: 'EXTENSION',
       productCategory: null,
       productType: null,
+      productPlatform: null,
     });
   });
 
@@ -112,6 +116,61 @@ describe('buildDealExistingProductChangePatch', () => {
       existingProductPickLabel: null,
       projectId: null,
       linkedProjectLabel: null,
+    });
+  });
+});
+
+describe('buildDealTaxonomyPatch', () => {
+  it('maps a leftover MOBILE_APP kind onto platform APP', () => {
+    expect(buildDealTaxonomyPatch('CODE', 'MOBILE_APP', 'WEB')).toEqual({
+      productCategory: 'CODE',
+      productType: 'MOBILE_APP',
+      productPlatform: 'APP',
+    });
+  });
+
+  it('does not stamp WEB onto a marketing deal', () => {
+    expect(buildDealTaxonomyPatch('MARKETING', 'SEO', 'WEB')).toEqual({
+      productCategory: 'MARKETING',
+      productType: 'SEO',
+      productPlatform: null,
+    });
+  });
+
+  it('clears platform with the rest of the taxonomy', () => {
+    expect(buildDealTaxonomyPatch(null, 'ECOMMERCE', 'APP')).toEqual({
+      productCategory: null,
+      productType: null,
+      productPlatform: null,
+    });
+  });
+});
+
+describe('buildDealPlatformPatch', () => {
+  it('keeps APP on a code deal and never writes MOBILE_APP or invents WEB', () => {
+    expect(buildDealPlatformPatch(baseDraft, 'APP')).toEqual({
+      productPlatform: 'APP',
+      productType: null,
+    });
+    expect(buildDealPlatformPatch(baseDraft, 'MOBILE_APP')).toEqual({ productPlatform: null });
+    expect(buildDealPlatformPatch({ ...baseDraft, productType: 'ECOMMERCE' }, 'APP')).toEqual({
+      productPlatform: 'APP',
+    });
+  });
+
+  it('writes WEB for WordPress without a picker value', () => {
+    expect(buildDealTaxonomyPatch('WORDPRESS', 'ECOMMERCE', null)).toEqual({
+      productCategory: 'WORDPRESS',
+      productType: 'ECOMMERCE',
+      productPlatform: 'WEB',
+    });
+  });
+
+  it('leaves Code without a platform until one is chosen', () => {
+    expect(buildDealTaxonomyPatch('CODE', null, null)).toEqual({
+      productCategory: 'CODE',
+      productType: null,
+      productPlatform: null,
     });
   });
 });

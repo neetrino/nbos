@@ -38,6 +38,7 @@ export class CompaniesController {
   @ApiQuery({ name: 'type', required: false })
   @ApiQuery({ name: 'taxStatus', required: false })
   @ApiQuery({ name: 'scope', required: false, enum: ['active', 'trash'] })
+  @ApiQuery({ name: 'responsibleEmployeeId', required: false })
   async findAll(
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
@@ -45,6 +46,7 @@ export class CompaniesController {
     @Query('type') type?: string,
     @Query('taxStatus') taxStatus?: string,
     @Query('scope') scope?: string,
+    @Query('responsibleEmployeeId') responsibleEmployeeId?: string,
   ) {
     return this.companiesService.findAll({
       page: page ? parseInt(page, 10) : undefined,
@@ -53,6 +55,7 @@ export class CompaniesController {
       taxStatus,
       type,
       scope,
+      responsibleEmployeeId,
     });
   }
 
@@ -91,6 +94,7 @@ export class CompaniesController {
       email?: string | null;
       country?: string | null;
       bankDetails?: Record<string, unknown>;
+      responsibleEmployeeId?: string | null;
     },
   ) {
     return this.companiesService.create(body);
@@ -117,6 +121,7 @@ export class CompaniesController {
       email?: string | null;
       country?: string | null;
       bankDetails?: Record<string, unknown> | null;
+      responsibleEmployeeId?: string | null;
     },
   ) {
     return this.companiesService.update(id, body);

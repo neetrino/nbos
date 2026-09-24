@@ -22,9 +22,15 @@ interface InviteEmployeeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  onIssued: (token: string) => void;
 }
 
-export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEmployeeDialogProps) {
+export function InviteEmployeeDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+  onIssued,
+}: InviteEmployeeDialogProps) {
   const t = useTranslations('hr');
   const tCommon = useTranslations('common');
   const { me } = usePermission();
@@ -72,6 +78,7 @@ export function InviteEmployeeDialog({ open, onOpenChange, onSuccess }: InviteEm
           form,
           setLoading,
           onSuccess,
+          onIssued,
           onOpenChange,
           sent: t('invite.sent'),
           failed: t('invite.failed'),
@@ -139,6 +146,7 @@ async function submitInvite(options: {
   form: { email: string; roleId: string; departmentId: string };
   setLoading: (loading: boolean) => void;
   onSuccess: () => void;
+  onIssued: (token: string) => void;
   onOpenChange: (open: boolean) => void;
   sent: string;
   failed: string;
@@ -147,13 +155,14 @@ async function submitInvite(options: {
   if (!options.canSubmit) return;
   options.setLoading(true);
   try {
-    await invitationsApi.create({
+    const issued = await invitationsApi.create({
       email: options.form.email.trim(),
       roleId: options.form.roleId,
       departmentId: options.form.departmentId || undefined,
     });
     toast.success(options.sent);
     options.onSuccess();
+    options.onIssued(issued.token);
     options.onOpenChange(false);
   } catch (err) {
     toast.error(err instanceof Error ? err.message : options.failed);

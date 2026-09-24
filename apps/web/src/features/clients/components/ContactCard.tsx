@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Briefcase, Handshake, Mail, Phone, Target, User } from 'lucide-react';
 import { PersonSoftAvatar, StatusBadge } from '@/components/shared';
 import { getContactRole } from '@/features/clients/constants/clients';
+import { responsibleEmployeeLabel } from '@/features/clients/responsible-employee';
 import {
   CONTACT_DIRECTORY_CARD_CLASS,
   CONTACT_CARD_CONTACT_ICON_TILE_CLASS,
@@ -63,6 +64,7 @@ export function ContactCard({ contact, onOpen }: ContactCardProps) {
     contact.companies.length > 0
       ? contact.companies.map((c) => c.name).join(', ')
       : 'No linked companies';
+  const responsibleLabel = responsibleEmployeeLabel(contact.responsibleEmployee);
 
   return (
     <button type="button" onClick={() => onOpen(contact)} className={CONTACT_DIRECTORY_CARD_CLASS}>
@@ -80,6 +82,11 @@ export function ContactCard({ contact, onOpen }: ContactCardProps) {
           />
         ) : null}
         <p className="text-muted-foreground mt-2 max-w-full truncate text-xs">{companiesLabel}</p>
+        {responsibleLabel ? (
+          <p className="text-muted-foreground mt-1 max-w-full truncate text-xs">
+            Responsible: {responsibleLabel}
+          </p>
+        ) : null}
       </div>
 
       {contact.phone || contact.email ? (

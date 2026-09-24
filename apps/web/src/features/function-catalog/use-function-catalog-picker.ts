@@ -24,6 +24,7 @@ export function useFunctionCatalogPicker() {
   const catalog = useFunctionCatalogQuery({
     search: debouncedSearch,
     status: ACTIVE_FUNCTION_STATUS,
+    complete: true,
   });
   return {
     search,

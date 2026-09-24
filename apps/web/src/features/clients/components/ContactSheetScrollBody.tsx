@@ -13,6 +13,7 @@ import type { ContactPortfolioResponse } from '@/lib/api/client-portfolio';
 import type { ContactGeneralDraft } from './contact-general-form-state';
 import { ClientPortfolioAnalytics } from './client-portfolio/ClientPortfolioEmbedded';
 import { ContactExtraPhonesField } from './ContactExtraPhonesField';
+import { ResponsibleEmployeeField } from './ResponsibleEmployeeField';
 
 function formatShortDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -121,6 +122,26 @@ export function ContactSheetScrollBody({
 
         <DetailSheetSection title="Details" icon={<User size={12} />}>
           <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+            <ResponsibleEmployeeField
+              value={draft.responsibleEmployeeId}
+              selectionLabel={draft.responsibleDisplayLabel}
+              selectionAvatar={draft.responsibleAvatar}
+              disabled={fieldDisabled}
+              onSelect={(id, label, avatar) =>
+                patchDraft({
+                  responsibleEmployeeId: id,
+                  responsibleDisplayLabel: label,
+                  responsibleAvatar: avatar,
+                })
+              }
+              onClear={() =>
+                patchDraft({
+                  responsibleEmployeeId: '',
+                  responsibleDisplayLabel: '',
+                  responsibleAvatar: null,
+                })
+              }
+            />
             <InlineField
               variant="controlled"
               label="Contact type"

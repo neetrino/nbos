@@ -97,6 +97,7 @@ export interface ProjectProductSummary {
     tickets: number;
   };
   checklistStageProgress?: ChecklistStageProgress | null;
+  volumeAdjusted?: boolean;
   whatsappGroupBinding?: { status: string; groupChatId: string | null } | null;
 }
 
@@ -104,7 +105,6 @@ export interface ProjectExtensionSummary {
   id: string;
   name: string;
   status: string;
-  size: string;
   productId: string;
   projectId?: string;
   description?: string | null;
@@ -130,6 +130,7 @@ export interface ProjectExtensionSummary {
   updatedAt?: string;
   _count: { tasks: number };
   checklistStageProgress?: ChecklistStageProgress | null;
+  volumeAdjusted?: boolean;
 }
 
 export interface ProjectOrder {

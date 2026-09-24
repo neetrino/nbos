@@ -88,13 +88,19 @@ the configuration, written at the first close, is the intended carrier. Today no
 all (`ensureNotTerminal` refuses any move once a resolution is set), so the guard is still correct;
 the stamp has to land together with the reopen action, not after it.
 
-**1.12 Sale price: a multiplier on the card, plus an optional fixed amount that wins — Owner decision
-of 2026-09-20.** A module or core carries a sale multiplier (default 10 globally, ~20 for AI work,
-~3–5 for blogs and similar low-value work). Sale price is `units × developer rate × multiplier`, unless
-the card also carries a fixed sale amount, in which case the amount is used verbatim. Reason: standard
-and AI modules follow cost and should re-price themselves when the developer rate moves, while a blog
-or a landing page is a round market number that does not follow cost at all. One mechanism covers both,
-and the card always shows where the price came from.
+**1.12 Sale price: the stored number is the whole card price — Owner decision of 2026-09-23,
+replacing AMD per unit (2026-09-20).** Each function, gradation and core carries one AMD amount for
+the whole card. Units do not scale it. There is no fallback: no stored amount means no client
+amount. The client line is that amount times the deal volume factor only. Cost (`units × developer
+rate`) is not part of what the client pays and is not an input to this field. The column name
+`amountPerUnit` is historical and was not renamed. Existing stored numbers stay as entered.
+
+The 2026-09-20 implementation — a multiplier (default 10) plus an optional fixed amount that won —
+is withdrawn. The 2026-09-21 implicit “empty = 10 000” fallback is also withdrawn: a new draft cannot
+be saved without a number, and the seed publishes 10 000 (AI 20 000). The Owner's examples in
+[`08`](./08-CONSTRUCTOR-AND-SIZING.md) are different whole prices (blog ~5 000, AI ~20 000, ordinary
+work 10 000, services lower), not a factor on cost. One field covers them. The client amount is not a
+secret: the catalog card shows the resolved AMD; units stay behind RULES VIEW.
 
 Sale prices are versioned like units, so a price change never re-prices deals that were already
 assembled. This was not asked separately: unversioned prices would silently rewrite history, which
@@ -108,9 +114,9 @@ than dictating them from nothing. Everything is written as DRAFT, so a proposal 
 until he publishes it.
 
 Delivered on the same day: 202 cards in 18 categories with per-role unit proposals, on the scale of
-one unit for one thousand AMD of cost and a tenfold default sale price. The catalog is meant to hold
-one to two hundred cards, so categories are browsing aids, not restrictions: a `commerce` function may
-be selected for a CRM.
+one unit for one thousand AMD of internal cost. Sale rates are stored on each card (seed: 10 000,
+AI 20 000). The catalog is meant to hold one to two hundred cards, so categories are browsing aids,
+not restrictions: a `commerce` function may be selected for a CRM.
 
 **1.14 Catalog review of 2026-09-20: what was accepted and what was not.** A cross-family review of the
 202 cards raised fifteen findings. Accepted and fixed: the paid translation service was removed, since
@@ -173,10 +179,105 @@ recognise it as something they do. The card stays in the catalog as a draft, whi
 selected by anyone, and it must not be published unless such work is actually sold. Kept rather than
 deleted so the norm is ready if a client asks; it costs nothing while it stays draft.
 
+**1.17 Platform is WEB / APP / DESKTOP, never MOBILE_APP — Owner confirmation of 2026-09-21.** Kind
+and platform are separate fields. `ProductTypeEnum.MOBILE_APP` stays as a legacy kind until the type
+list is revised; the new axis is `productPlatform` with values WEB, APP and DESKTOP. Same function,
+same units on every platform, so platform is not part of the base-profile key. WordPress and Shopify
+stay WEB-only. **Marketing has no platform** (decision 1.20). Legacy `MOBILE_APP` kinds backfill to
+APP; the Owner still assigns a real kind by hand.
+
+**1.18 Size is gone; named collections are a replace-helper — Owner decision of 2026-09-21.**
+`configSize` is not a product, not a core price and not a calculation axis. One kind has one core
+and one core price (today's CLASSIC numbers). The 0.8…2 core multipliers and the five shop cards
+were a lie: composition did not change, money did. Catalog volume (500 vs 500 000 SKU) is not a
+global multiplier; it lives on import, search and load cards.
+
+A collection is a named list of extra function ids for a product type. The Owner authors it. A click
+in the deal constructor _replaces_ the extra selection; the seller then removes and adds by hand.
+The collection is not included-in-base and is not stored on the deal as a norm (last-applied id is
+UI only). The quote does not overwrite the deal amount.
+
+The constructor lives on the deal until Won, then extras copy onto the product configuration.
+The public vitrine is stage 3: same catalog, sale price only, not in this wave.
+
+**1.19 Extension.size had three values — Owner decision of 2026-09-21, removed 2026-09-22.**
+The change-order enum was `SMALL` / `STANDARD` / `LARGE`. That attribute, its default, and the
+checklist size filter are gone. An extension checklist rule applies to every extension in its
+stage. The Extension card in Delivery and the deal stays.
+
+**1.20 Marketing has no platform; Mobile App is not a new type — Owner confirmation of 2026-09-21.**
+The earlier WEB-only shortcut for Marketing was a form gate, not a business meaning. Marketing
+stores `productPlatform = NULL` and the field is hidden. Code keeps WEB / APP / DESKTOP;
+WordPress and Shopify stay WEB. `MOBILE_APP` stays in the enum for legacy cards and is hidden from
+new type pickers (current value still shows). App Store access slots follow platform APP (legacy
+`MOBILE_APP` type still qualifies). `WEB_APP` remains a real kind (web application), not a platform.
+
+**1.21 Implementation base, design modes and AI-reviewer are not axes — Owner decision of 2026-09-21.**
+They will not be chosen in Deal, Product, Delivery or norms. Matching a published core uses
+`entityKind` + `productType` (category wildcard as before). Standard design lives in the core.
+Columns stay in the database and every new write freezes `FROM_SCRATCH` / `AI_DESIGN` / `false`.
+`AI_DESIGNER_REVIEW_REQUIRED` no longer blocks a plan. Enrollment binds the published core when
+one exists so Starting is not stuck on `CONFIGURATION_INCOMPLETE`.
+
+**1.22 Code type list is filtered by platform — Owner confirmation of 2026-09-21.** Platform is a
+Deal/Product Code field, not a units axis and not a third core. One kind has one core; the same
+function costs the same on WEB, APP and DESKTOP. The eight-kind matrix below was the 1.22 slice;
+**1.23 replaces the type list** while keeping the same filter rules (sites WEB-only, illegal pairs
+rejected, Category → Platform → Type).
+
+| Platform | Types                                                                               |
+| -------- | ----------------------------------------------------------------------------------- |
+| WEB      | BUSINESS_CARD_WEBSITE, COMPANY_WEBSITE, LANDING, ECOMMERCE, CRM, ERP, SAAS, WEB_APP |
+| APP      | ECOMMERCE, CRM, ERP, SAAS, WEB_APP                                                  |
+| DESKTOP  | ECOMMERCE, CRM, ERP, SAAS, WEB_APP                                                  |
+
+`WEB_APP` stays a kind (custom system) on all three platforms. Sites are not
+offered on APP or DESKTOP. `MOBILE_APP` stays in the enum for legacy cards and is hidden from new
+picks; the `mobile-app-code` core is not offered on the norms screen. WordPress stays WEB-only with
+the previous type list. Shopify is ECOMMERCE on WEB. Marketing has no platform; its types are
+unchanged. UI order is Category → Platform → Type. Changing platform clears a type that is not
+allowed on the new platform; a leftover invalid pair or `MOBILE_APP` remains visible while it is
+the current value. SEND_OFFER and Product/Deal create/update reject an illegal pair. New
+`ProductTypeEnum` values were not added in this slice.
+
+**1.23 Code kinds are sellable directions — Owner confirmation of 2026-09-21.** Twenty-nine Code
+kinds, one core each. English abbreviations with a helper word in en/ru/hy. `BOS` is the all-in-one
+company OS; `INDUSTRY_OPERATIONS_SYSTEM` is a vertical process. `MOBILE_APP` and `SAAS` stay hidden
+legacy values. Platform matrix: Web widest, App thinner, Desktop thinnest. POS is APP/DESKTOP only.
+WordPress adds catalog and blog. Function extras for LMS, marketplace, POS and ticketing were
+seeded alongside existing catalog cards. Code Deal / Product type pick uses a searchable
+card grid with a 10–15 word description per kind (2026-09-22).
+
+**1.24 Instance volume is one factor on the core and on each added function — Owner request of
+2026-09-22.** The catalog standard stays ×1.0. A seller or PM may set ×0.0…×2.0 in steps of 0.1 on
+the product core and on each extra function. The floor was ×0.5 until 2026-09-23, when the Owner
+lowered it to ×0.0. The same number multiplies published role units and
+the calculated sale line. It is not `configSize`, not the withdrawn sale multiplier, and not a
+catalog axis. Tiers stay for non-proportional volume. Included-in-base functions have no slider.
+An extension has no core, so a core volume write is rejected.
+
+Leaving ×1.0 requires a written reason of at least 10 trimmed characters and is stored only with
+that reason. Returning to ×1.0 clears it. There is no approval queue. If the core or any added
+function is off standard, the delivery card shows that the standard changed. The quote keeps the
+factors and still does not overwrite `deal.amount`. Won copies them onto the configuration.
+Replacing a collection keeps the factor of a function that remains; a new line starts at ×1.0.
+Writes are refused after `scopeLockedAt` and after Won on the deal. On a materialized plan the
+change is a revision that rewrites existing unit snapshots from published units × the new factor.
+Frozen components are not rescaled. `Extension.size` stays removed; this factor does not restore it.
+
+**1.25 Five website kinds — Owner clarification of 2026-09-24.** The owner wants real estate,
+services, tourism, classifieds, and vacancies as separate website directions. Classifieds and
+vacancies are separate kinds because their required accounts and workflows differ. All five are
+WEB-only. Code offers all five; WordPress offers real estate, services, and tourism. The new core
+drafts define scope and named kits but contain no role units or sale price. They cannot be
+published until the Owner configures the role vector, and their prices cannot be inferred from
+existing cores. Existing enum values, published cores, and frozen Deal/Product snapshots stay as
+they are. See [`13-CORE-TYPE-REVIEW.md`](./13-CORE-TYPE-REVIEW.md).
+
 ## 2. Open points that need the Owner
 
-**2.1 Everything that needs a live database.** No migration, seed or HTTP call was run against any
-Neon host, including the development one. The runbook lists the exact commands in order. Until they
-run, every slice in the journal stays `IMPLEMENTED_NOT_VERIFIED`, and browser QA of the norms screen,
-the Functions workspace, the catalog browser and the replacement dialog has not happened. This is not
-a question to answer: it is work only the Owner can start.
+**2.1 Everything that needs a live database.** Decision 1.23 was applied on development
+`ep-nameless-term` (kinds migration, extra catalog cards, 29 published cores, function units and
+`PRODUCT_TYPE` list). Production (`ep-sweet-dew`) was not touched. Browser QA of Deal picker,
+norms, catalog rail and constructor is still pending. Other earlier slices stay
+`IMPLEMENTED_NOT_VERIFIED` until their own live evidence exists.

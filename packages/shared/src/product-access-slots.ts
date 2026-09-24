@@ -149,23 +149,28 @@ function slotsForCategory(category: string): AccessSlotDefinition[] {
 /**
  * Typed slots only (no UNIVERSAL). Order matches {@link getAccessSlotsForProduct} before the universal row.
  */
+function needsAppStoreSlots(productType: string, productPlatform?: string | null): boolean {
+  return productPlatform === 'APP' || productType === 'MOBILE_APP';
+}
+
 export function getTypedAccessSlotsForProduct(
   productCategory: string,
   productType: string,
+  productPlatform?: string | null,
 ): AccessSlotDefinition[] {
   const base = slotsForCategory(productCategory);
   if (base.length === 0) {
     return [];
   }
-  if (productType === 'MOBILE_APP') {
-    const extra: AccessSlotDefinition[] = [APP_STORE_SLOT];
-    if (!base.some((s) => s.slotKey === DATABASE_SLOT.slotKey)) {
-      extra.push(DATABASE_SLOT);
-    }
-    const keys = new Set(base.map((s) => s.slotKey));
-    return [...base, ...extra.filter((s) => !keys.has(s.slotKey))];
+  if (!needsAppStoreSlots(productType, productPlatform)) {
+    return base;
   }
-  return base;
+  const extra: AccessSlotDefinition[] = [APP_STORE_SLOT];
+  if (!base.some((s) => s.slotKey === DATABASE_SLOT.slotKey)) {
+    extra.push(DATABASE_SLOT);
+  }
+  const keys = new Set(base.map((s) => s.slotKey));
+  return [...base, ...extra.filter((s) => !keys.has(s.slotKey))];
 }
 
 /**
@@ -175,8 +180,9 @@ export function getTypedAccessSlotsForProduct(
 export function getAccessSlotsForProduct(
   productCategory: string,
   productType: string,
+  productPlatform?: string | null,
 ): AccessSlotDefinition[] {
-  const typed = getTypedAccessSlotsForProduct(productCategory, productType);
+  const typed = getTypedAccessSlotsForProduct(productCategory, productType, productPlatform);
   if (typed.length === 0) {
     return [];
   }
@@ -192,11 +198,12 @@ export function resolveEffectiveAccessSlotKey(
   productType: string,
   requestedSlotKey: string,
   credentialCategory: string,
+  productPlatform?: string | null,
 ): string {
   if (requestedSlotKey !== UNIVERSAL_ACCESS_SLOT_KEY) {
     return requestedSlotKey;
   }
-  const typed = getTypedAccessSlotsForProduct(productCategory, productType);
+  const typed = getTypedAccessSlotsForProduct(productCategory, productType, productPlatform);
   for (const def of typed) {
     if (isCategoryAllowedForSlot(def, credentialCategory)) {
       return def.slotKey;
@@ -209,8 +216,11 @@ export function findAccessSlotDefinition(
   productCategory: string,
   productType: string,
   slotKey: string,
+  productPlatform?: string | null,
 ): AccessSlotDefinition | undefined {
-  return getAccessSlotsForProduct(productCategory, productType).find((s) => s.slotKey === slotKey);
+  return getAccessSlotsForProduct(productCategory, productType, productPlatform).find(
+    (s) => s.slotKey === slotKey,
+  );
 }
 
 export function isCategoryAllowedForSlot(
@@ -250,10 +260,13 @@ export function shouldWriteCredentialProductIdOnBind(input: {
 export function getMissingRequiredAccessSlotsForDone(input: {
   productCategory: string;
   productType: string;
+  productPlatform?: string | null;
   boundSlotKeys: readonly string[];
 }): string[] {
   const profileKeys = new Set(
-    getAccessSlotsForProduct(input.productCategory, input.productType).map((slot) => slot.slotKey),
+    getAccessSlotsForProduct(input.productCategory, input.productType, input.productPlatform).map(
+      (slot) => slot.slotKey,
+    ),
   );
   const bound = new Set(input.boundSlotKeys);
   return PRODUCT_DONE_REQUIRED_ACCESS_SLOT_KEYS.filter(

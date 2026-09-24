@@ -1,9 +1,14 @@
 import { contactIdListsEqual } from '@nbos/shared';
 import { contactIdsAndLabelsFromRows } from '@/lib/entity-contact-list';
 import type { Company } from '@/lib/api/clients';
+import {
+  createResponsibleEmployeeDraft,
+  responsibleEmployeePatch,
+  type ResponsibleEmployeeDraftFields,
+} from './responsible-employee-draft';
 
 /** Editable company sheet fields (tax status is read-only after create; not part of draft). */
-export interface CompanyGeneralDraft {
+export interface CompanyGeneralDraft extends ResponsibleEmployeeDraftFields {
   name: string;
   type: string;
   taxId: string;
@@ -40,6 +45,7 @@ export function createCompanyGeneralDraft(company: Company): CompanyGeneralDraft
     billingContactLabel: company.billingContact
       ? `${company.billingContact.firstName} ${company.billingContact.lastName}`.trim()
       : '',
+    ...createResponsibleEmployeeDraft(company.responsibleEmployee, company.responsibleEmployeeId),
   };
 }
 
@@ -80,6 +86,7 @@ export function buildCompanyGeneralPatch(
       ? snap.billingContactId
       : null;
   if (billingId !== snapBillingId) out.billingContactId = billingId;
+  Object.assign(out, responsibleEmployeePatch(snap, draft));
   return out;
 }
 

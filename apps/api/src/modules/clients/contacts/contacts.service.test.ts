@@ -56,6 +56,15 @@ describe('ContactsService', () => {
         }),
       );
     });
+
+    it('filters by responsible employee', async () => {
+      await service.findAll({ responsibleEmployeeId: 'emp-1' });
+      expect(prisma.contact.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ responsibleEmployeeId: 'emp-1' }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {

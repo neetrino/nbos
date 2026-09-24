@@ -107,7 +107,9 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 2. Contact first (primary + extra phones, не Trash) → иначе Lead по телефону.
 3. SIP:
    - Lead: `assignedTo` → `Employee.sipId`;
-   - Contact: последний не-Trash Deal (`contactId` или additional) → `sellerId` → `sipId`; fallback — последний не-Trash Lead этого Contact с `assignedTo`.
+   - Contact: если задан `Contact.responsibleEmployeeId` — его `sipId` (пустой SIP = без redirect, без fallback на сделку);
+     иначе последний не-Trash Deal (`contactId` или additional) → `sellerId` → `sipId`; fallback — последний не-Trash Lead этого Contact с `assignedTo`.
+   - Company.responsibleEmployeeId в маршрут не входит.
 4. Нет assignee / пустой SIP → без `redirect_call`, лог `ats_redirect_skipped`.
 5. Новый номер → `{}` без `redirect_call`; Lead по правилам продукта.
 

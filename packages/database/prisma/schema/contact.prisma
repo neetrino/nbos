@@ -19,9 +19,12 @@ model Contact {
   trashedAt      DateTime?   @map("trashed_at")
   /// Profile A pointer after Contact merge; absorbed card is also trashed. Not hard delete.
   mergedIntoId   String?     @map("merged_into_id")
+  /// Permanent owner for ATS inbound redirect and directory filter. Empty is allowed.
+  responsibleEmployeeId String? @map("responsible_employee_id")
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
 
+  responsibleEmployee Employee? @relation("ContactResponsible", fields: [responsibleEmployeeId], references: [id], onDelete: SetNull)
   companies           Company[] @relation("CompanyPrimaryContact")
   billingForCompanies Company[] @relation("CompanyBillingContact")
   projects            Project[]
@@ -48,6 +51,7 @@ model Contact {
   @@index([trashedAt])
   @@index([phone])
   @@index([mergedIntoId])
+  @@index([responsibleEmployeeId])
   @@map("contacts")
 }
 
@@ -92,9 +96,12 @@ model Company {
   country      String?
   notes        String?
   trashedAt    DateTime?   @map("trashed_at")
+  /// Directory owner for lists and filters. Does not route ATS calls (calls match Contact phone).
+  responsibleEmployeeId String? @map("responsible_employee_id")
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
+  responsibleEmployee       Employee?                 @relation("CompanyResponsible", fields: [responsibleEmployeeId], references: [id], onDelete: SetNull)
   contact                   Contact?                  @relation("CompanyPrimaryContact", fields: [contactId], references: [id])
   billingContact            Contact?                  @relation("CompanyBillingContact", fields: [billingContactId], references: [id])
   additionalContacts        CompanyAdditionalContact[]
@@ -106,6 +113,7 @@ model Company {
   partnerServiceTerms       PartnerServiceTerm[]
 
   @@index([trashedAt])
+  @@index([responsibleEmployeeId])
   @@map("companies")
 }
 

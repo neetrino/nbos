@@ -26,6 +26,7 @@
   },
   "children": {
     "myCompany": {
+      "coreFunction": "Core & Function",
       "functionCatalog": "Function catalog",
       "deliveryNorms": "Delivery norms",
       "compensation": "Compensation",

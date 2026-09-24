@@ -15,9 +15,9 @@ import type { AtsWebhookPayload } from './ats.types';
  * Resolves ATS Active Call `redirect_call` (SIP ID) for known callers.
  *
  * Match priority: Contact (by phone) → else Lead (by phone).
- * Contact has no owner field — responsible Employee is Deal.sellerId
- * (most recent non-trashed Deal), else Lead.assignedTo for that contact.
- * Lead uses Lead.assignedTo. Missing assignee / sipId → no redirect.
+ * Contact owner is Contact.responsibleEmployeeId when set (empty SIP = no
+ * fallback). Else Deal.sellerId (most recent non-trashed Deal), else
+ * Lead.assignedTo for that contact. Lead uses Lead.assignedTo.
  */
 @Injectable()
 export class AtsCallRedirectService {
@@ -60,10 +60,17 @@ export class AtsCallRedirectService {
     const contact = await this.prisma.contact.findFirst({
       where: { trashedAt: null, ...contactAnyPhoneOr(variants) },
       orderBy: { updatedAt: 'desc' },
-      select: { id: true },
+      select: {
+        id: true,
+        responsibleEmployee: { select: { id: true, sipId: true } },
+      },
     });
     if (!contact) {
       return undefined;
+    }
+
+    if (contact.responsibleEmployee) {
+      return this.readSip(contact.responsibleEmployee, 'CONTACT_RESPONSIBLE');
     }
 
     const fromDeal = await this.sipFromContactDeal(contact.id);

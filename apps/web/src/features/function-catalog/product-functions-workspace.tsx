@@ -3,28 +3,24 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
-  DELIVERY_COMPENSATION_RULES_MODULE,
   DELIVERY_CONFIGURATION_PERMISSION_MODULE,
   type DeliveryFunctionOperationalDto,
 } from '@nbos/shared';
-import { formatMoneyDram } from '@/lib/format/money';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
+import { deliveryConfigurationsApi } from '@/lib/api/delivery-configurations';
 import { AddFunctionTrigger } from './add-function-trigger';
-import { FunctionCatalogCard } from './function-catalog-card';
-import { FunctionCatalogDetailSheet } from './function-catalog-detail-sheet';
 import { canAddFunctionsToConfiguration, isPlanMaterialized } from './function-catalog-select';
-import { salePriceCardLabels, type VisibleSalePrice } from './function-catalog-sale-price';
-import { loadProductFunctionsWorkspace } from './product-functions-workspace-data';
+import { RemoveExtraDialog } from './remove-extra-dialog';
+import {
+  loadProductFunctionsWorkspace,
+  type FunctionsWorkspaceTarget,
+} from './product-functions-workspace-data';
 import { ReplaceAssigneeTrigger } from './replace-assignee-trigger';
+import { MoneyHiddenComposition, type ProductFunctionsV2Config } from './product-functions-volume';
 
-type V2Config = {
-  id: string;
-  mode: 'V2';
-  enrolled: boolean;
-  expectedRevision: number;
-  features: { functionId: string; origin: string }[];
-  readiness?: { planState: string; errors: string[] };
-};
+type V2Config = ProductFunctionsV2Config;
 
 type LegacyOrConfig = { mode: 'LEGACY' } | V2Config;
 
@@ -34,7 +30,6 @@ const READINESS_MESSAGE_KEYS = {
   NORMATIVE_NOT_CONFIGURED: 'readiness.NORMATIVE_NOT_CONFIGURED',
   UNITS_NOT_CONFIGURED: 'readiness.UNITS_NOT_CONFIGURED',
   RATE_NOT_CONFIGURED: 'readiness.RATE_NOT_CONFIGURED',
-  AI_DESIGNER_REVIEW_REQUIRED: 'readiness.AI_DESIGNER_REVIEW_REQUIRED',
 } as const;
 
 type ReadinessMessageCode = keyof typeof READINESS_MESSAGE_KEYS;
@@ -43,26 +38,22 @@ function isReadinessMessageCode(code: string): code is ReadinessMessageCode {
   return code in READINESS_MESSAGE_KEYS;
 }
 
-export function ProductFunctionsWorkspace({ productId }: { productId: string }) {
+export function ProductFunctionsWorkspace({ target }: { target: FunctionsWorkspaceTarget }) {
   const t = useTranslations('hr.functionCatalog');
   const { can } = usePermission();
   const [config, setConfig] = useState<LegacyOrConfig | null>(null);
   const [catalog, setCatalog] = useState<DeliveryFunctionOperationalDto[]>([]);
-  const [salePriceByFunctionId, setSalePriceByFunctionId] = useState<Map<string, VisibleSalePrice>>(
-    () => new Map(),
-  );
   const [deliveryStatus, setDeliveryStatus] = useState<string | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const canEdit = can('EDIT', DELIVERY_CONFIGURATION_PERMISSION_MODULE);
-  const canSeeRules = can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE);
+  const { kind, id } = target;
   const reload = useCallback(() => {
-    void loadProductFunctionsWorkspace(productId, canSeeRules).then((loaded) => {
+    void loadProductFunctionsWorkspace({ kind, id }).then((loaded) => {
       setConfig(normalizeConfig(loaded.config));
       setCatalog(loaded.catalog);
       setDeliveryStatus(loaded.deliveryStatus);
-      setSalePriceByFunctionId(loaded.salePriceByFunctionId);
     });
-  }, [canSeeRules, productId]);
+  }, [kind, id]);
 
   useEffect(() => {
     reload();
@@ -78,9 +69,8 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
     <EnrolledFunctionsWorkspace
       config={config}
       catalog={catalog}
-      salePriceByFunctionId={salePriceByFunctionId}
-      openId={openId}
-      setOpenId={setOpenId}
+      catalogOpen={catalogOpen}
+      setCatalogOpen={setCatalogOpen}
       onReload={reload}
       canReplace={config.enrolled && canEdit}
       canAdd={canAddFunctionsToConfiguration({
@@ -88,8 +78,6 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
         canEdit,
         deliveryStatus,
       })}
-      expectedRevision={config.expectedRevision}
-      requireReason={isPlanMaterialized(config.readiness?.planState)}
     />
   );
 }
@@ -97,140 +85,152 @@ export function ProductFunctionsWorkspace({ productId }: { productId: string }) 
 function EnrolledFunctionsWorkspace({
   config,
   catalog,
-  salePriceByFunctionId,
-  openId,
-  setOpenId,
+  catalogOpen,
+  setCatalogOpen,
   onReload,
   canReplace,
   canAdd,
-  expectedRevision,
-  requireReason,
 }: {
   config: V2Config;
   catalog: DeliveryFunctionOperationalDto[];
-  salePriceByFunctionId: Map<string, VisibleSalePrice>;
-  openId: string | null;
-  setOpenId: (id: string | null) => void;
+  catalogOpen: boolean;
+  setCatalogOpen: (open: boolean) => void;
   onReload: () => void;
   canReplace: boolean;
   canAdd: boolean;
-  expectedRevision: number;
-  requireReason: boolean;
 }) {
   const t = useTranslations('hr.functionCatalog');
-  const selectedIds = new Set(config.features.map((feature) => feature.functionId));
-  const selected = catalog.filter((item) => selectedIds.has(item.id));
-  const openItem = catalog.find((item) => item.id === openId) ?? null;
-  const included = new Set(
-    config.features
-      .filter((feature) => feature.origin === 'INCLUDED')
-      .map((feature) => feature.functionId),
-  );
+  const extras = extrasFromConfig(config, catalog);
+  const included = includedFromConfig(config, catalog);
   const blockers = (config.readiness?.errors ?? []).filter(isReadinessMessageCode);
+  const requireReason = isPlanMaterialized(config.readiness?.planState);
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="text-muted-foreground text-sm">{t('subtitle')}</p>
-        <WorkspaceActions
-          configurationId={config.id}
-          selectedIds={selectedIds}
-          onReload={onReload}
-          canAdd={canAdd}
-          canReplace={canReplace}
-          expectedRevision={expectedRevision}
-          requireReason={requireReason}
-        />
-      </div>
       {blockers.map((code) => (
         <p key={code} className="text-sm text-amber-700">
           {t(READINESS_MESSAGE_KEYS[code])}
         </p>
       ))}
-      <SelectedFunctionCards
-        selected={selected}
+      {canReplace ? (
+        <ReplaceAssigneeTrigger configurationId={config.id} onReplaced={onReload} />
+      ) : null}
+      <WorkspaceComposition
+        config={config}
+        extras={extras}
         included={included}
-        salePriceByFunctionId={salePriceByFunctionId}
-        onOpen={setOpenId}
-      />
-      <FunctionCatalogDetailSheet
-        item={openItem}
-        onOpenChange={(open) => {
-          if (!open) setOpenId(null);
-        }}
+        canAdd={canAdd}
+        requireReason={requireReason}
+        catalogOpen={catalogOpen}
+        setCatalogOpen={setCatalogOpen}
+        onReload={onReload}
+        removeFailed={t('removeFailed')}
       />
     </div>
   );
 }
 
-function WorkspaceActions({
-  configurationId,
-  selectedIds,
-  onReload,
-  canAdd,
-  canReplace,
-  expectedRevision,
-  requireReason,
-}: {
-  configurationId: string;
-  selectedIds: Set<string>;
-  onReload: () => void;
-  canAdd: boolean;
-  canReplace: boolean;
-  expectedRevision: number;
-  requireReason: boolean;
-}) {
+function WorkspaceComposition(props: WorkspaceCompositionProps) {
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+  const { config, requireReason, onReload, removeFailed } = props;
   return (
-    <div className="flex flex-wrap gap-2">
-      {canAdd ? (
+    <>
+      <MoneyHiddenComposition
+        config={config}
+        extras={props.extras}
+        included={props.included}
+        canAdd={props.canAdd}
+        confirmRemove={!requireReason}
+        hideCoreVolume={config.extensionId != null}
+        onReload={onReload}
+        onAdd={() => props.setCatalogOpen(true)}
+        onRemoveExtra={(functionId) => {
+          if (requireReason) {
+            setPendingRemoveId(functionId);
+            return;
+          }
+          void removeExtra(config, functionId, onReload, removeFailed);
+        }}
+      />
+      <RemoveExtraDialog
+        open={pendingRemoveId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemoveId(null);
+        }}
+        onConfirm={(reason) =>
+          pendingRemoveId
+            ? removeExtra(config, pendingRemoveId, onReload, removeFailed, reason)
+            : Promise.resolve(false)
+        }
+      />
+      {props.canAdd ? (
         <AddFunctionTrigger
-          configurationId={configurationId}
-          alreadyAddedIds={selectedIds}
+          open={props.catalogOpen}
+          onOpenChange={props.setCatalogOpen}
+          configurationId={config.id}
+          alreadyAddedIds={new Set(config.features.map((feature) => feature.functionId))}
           onAdded={onReload}
-          expectedRevision={expectedRevision}
+          expectedRevision={config.expectedRevision}
           requireReason={requireReason}
         />
       ) : null}
-      {canReplace ? (
-        <ReplaceAssigneeTrigger configurationId={configurationId} onReplaced={onReload} />
-      ) : null}
-    </div>
+    </>
   );
 }
 
-function SelectedFunctionCards({
-  selected,
-  included,
-  salePriceByFunctionId,
-  onOpen,
-}: {
-  selected: DeliveryFunctionOperationalDto[];
-  included: Set<string>;
-  salePriceByFunctionId: Map<string, VisibleSalePrice>;
-  onOpen: (id: string | null) => void;
-}) {
-  const t = useTranslations('hr.functionCatalog');
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {selected.map((item) => (
-        <div key={item.id} className="space-y-1">
-          {included.has(item.id) ? (
-            <p className="text-muted-foreground text-xs">{t('includedBadge')}</p>
-          ) : null}
-          <FunctionCatalogCard
-            item={item}
-            showStatus={false}
-            statusLabel=""
-            onOpen={onOpen}
-            {...salePriceCardLabels(
-              salePriceByFunctionId.get(item.id),
-              (amount) => formatMoneyDram(Number(amount)),
-              t('unpublishedPrice'),
-            )}
-          />
-        </div>
-      ))}
-    </div>
+type WorkspaceCompositionProps = {
+  config: V2Config;
+  extras: DeliveryFunctionOperationalDto[];
+  included: Array<{ id: string; title: string; iconKey?: string }>;
+  canAdd: boolean;
+  requireReason: boolean;
+  catalogOpen: boolean;
+  setCatalogOpen: (open: boolean) => void;
+  onReload: () => void;
+  removeFailed: string;
+};
+
+function includedFromConfig(config: V2Config, catalog: DeliveryFunctionOperationalDto[]) {
+  const ids = new Set(
+    config.features
+      .filter((feature) => feature.origin === 'INCLUDED')
+      .map((feature) => feature.functionId),
   );
+  return catalog
+    .filter((item) => ids.has(item.id))
+    .map((item) => ({ id: item.id, title: item.title, iconKey: item.iconKey }));
+}
+
+function extrasFromConfig(config: V2Config, catalog: DeliveryFunctionOperationalDto[]) {
+  const extraIds = new Set(
+    config.features
+      .filter((feature) => feature.origin === 'EXTRA')
+      .map((feature) => feature.functionId),
+  );
+  return catalog.filter((item) => extraIds.has(item.id));
+}
+
+async function removeExtra(
+  config: V2Config,
+  functionId: string,
+  onReload: () => void,
+  fallback: string,
+  reason?: string,
+): Promise<boolean> {
+  const feature = config.features.find(
+    (row) => row.functionId === functionId && row.origin === 'EXTRA',
+  );
+  if (!feature) return false;
+  try {
+    await deliveryConfigurationsApi.removeFeature(config.id, feature.id, {
+      expectedRevision: config.expectedRevision,
+      reason,
+    });
+    onReload();
+    return true;
+  } catch (error) {
+    toast.error(getApiErrorMessage(error, fallback));
+    return false;
+  }
 }
 
 function normalizeConfig(input: { mode: string }): LegacyOrConfig {

@@ -1,5 +1,5 @@
 import { Injectable, Inject, ConflictException } from '@nestjs/common';
-import { PrismaClient, type ExtensionSizeEnum } from '@nbos/database';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { employeePersonSelect } from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
@@ -34,7 +34,6 @@ interface CreateExtensionDto {
   projectId: string;
   productId: string;
   name: string;
-  size?: string;
   assignedTo?: string;
   description?: string;
 }
@@ -42,7 +41,6 @@ interface CreateExtensionDto {
 interface UpdateExtensionDto {
   name?: string;
   productId?: string;
-  size?: string;
   assignedTo?: string | null;
   description?: string | null;
 }
@@ -79,7 +77,6 @@ export class ExtensionsService {
         projectId: data.projectId,
         productId,
         name: data.name,
-        size: (data.size as ExtensionSizeEnum) ?? 'SMALL',
         assignedTo: data.assignedTo,
         description: data.description,
         deliveryStage: 'STARTING',
@@ -113,7 +110,6 @@ export class ExtensionsService {
       data: {
         ...(data.name !== undefined && { name: data.name }),
         ...(productId !== undefined && { productId }),
-        ...(data.size !== undefined && { size: data.size as ExtensionSizeEnum }),
         ...(data.assignedTo !== undefined && { assignedTo: data.assignedTo }),
         ...(data.description !== undefined && { description: data.description }),
       },

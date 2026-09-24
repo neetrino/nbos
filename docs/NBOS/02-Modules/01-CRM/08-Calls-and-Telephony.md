@@ -66,6 +66,8 @@ Merge / Связать: Call переезжает вместе с ATS-событ
 
 Пустой `sipId` у ответственного: webhook без `redirect_call`, лог `ats_redirect_skipped`. Звонок всё равно пишется.
 
+Входящий `start` на известный Contact: сначала `Contact.responsibleEmployeeId` → SIP. Если ответственный задан, но SIP пустой — без redirect и без fallback на сделку. Если поле пустое — продавец последней не-Trash сделки, иначе `Lead.assignedTo` этого Contact. `Company.responsibleEmployeeId` звонок не маршрутизирует.
+
 `Employee.sipId` — HR / My Account → General → Contacts. Без SIP нет маршрута и нет исходящего click-to-call.
 
 ## 5. История

@@ -24,8 +24,8 @@ const SCOPE_DEPARTMENT = 'DEPARTMENT';
 
 /**
  * Canon §16: an actor "manages their configuration within the bounds of their access to the
- * Product". The permission says whether somebody may configure deliveries at all; this says which
- * cards, and without it `PROJECTS_EDIT` at `OWN` reaches every configuration in the company by id.
+ * Product". `DELIVERY_CONFIGURATION` says whether somebody may configure deliveries at all; this
+ * says which cards. Without it any holder of the permission reaches every configuration by id.
  */
 export function configurationAccessFromUser(
   user: CurrentUserPayload,

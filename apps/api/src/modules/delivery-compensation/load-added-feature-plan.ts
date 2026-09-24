@@ -1,8 +1,8 @@
 import type { TransactionClient } from '@nbos/database';
 import {
   calculateDeliveryPlan,
+  frozenDeliveryAxes,
   type DeliveryCompensationRoleKey,
-  type DeliveryDesignMode,
   type DeliveryPlanLine,
 } from '@nbos/shared';
 import { throwDeliveryCompensationError } from './delivery-compensation-http-error';
@@ -19,8 +19,8 @@ export async function loadAddedFeaturePlan(
       entityKind: 'PRODUCT' | 'EXTENSION';
       productId: string | null;
       extensionId: string | null;
-      designMode: string | null;
-      aiDesignerReview: boolean;
+      designMode?: string | null;
+      aiDesignerReview?: boolean;
       baseProfileVersion: { roleUnits: NormativeRoleUnitRow[] };
     };
     functionId: string;
@@ -30,20 +30,18 @@ export async function loadAddedFeaturePlan(
   lines: DeliveryPlanLine[];
   assignees: Partial<Record<DeliveryCompensationRoleKey, string>>;
 }> {
-  if (!input.configuration.designMode) {
-    throwDeliveryCompensationError('CONFIGURATION_INCOMPLETE');
-  }
   const asOf = new Date();
   const assignees = await loadV2Assignees(db, {
     entityKind: input.configuration.entityKind,
     productId: input.configuration.productId ?? undefined,
     extensionId: input.configuration.extensionId ?? undefined,
   });
+  const axes = frozenDeliveryAxes();
   const plan = calculateDeliveryPlan({
     ...loadPublishedDeliveryNormatives({
       asOf,
-      designMode: input.configuration.designMode as DeliveryDesignMode,
-      aiDesignerReview: input.configuration.aiDesignerReview,
+      designMode: axes.designMode,
+      aiDesignerReview: axes.aiDesignerReview,
       baseRoleUnits: input.configuration.baseProfileVersion.roleUnits,
       rates: await db.deliveryRoleRateVersion.findMany({ where: { status: 'PUBLISHED' } }),
       features: [{ functionId: input.functionId, origin: 'EXTRA', selectedPriceVersionId: null }],
@@ -52,7 +50,6 @@ export async function loadAddedFeaturePlan(
         include: { roleUnits: true },
       }),
     }),
-    designerAssigned: Boolean(assignees.DESIGNER),
     frozenComponents: [],
   });
   if (plan.errors.length > 0) {

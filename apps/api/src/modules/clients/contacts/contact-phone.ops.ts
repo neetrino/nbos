@@ -5,6 +5,7 @@ import {
   phoneLookupVariantsFromRaw,
   phonesOverlap,
 } from '../../crm/leads/lead-identity.ops';
+import { EMPLOYEE_PERSON_SELECT } from '../client-responsible-employee.ops';
 
 export const CONTACT_PHONE_ERROR = {
   EMPTY: 'CONTACT_PHONE_EMPTY',
@@ -20,6 +21,7 @@ export const CONTACT_EXTRA_PHONE_SELECT = {
 export const CONTACT_LIST_INCLUDE = {
   extraPhones: { select: CONTACT_EXTRA_PHONE_SELECT, orderBy: { createdAt: 'asc' as const } },
   companies: { select: { id: true, name: true } },
+  responsibleEmployee: { select: EMPLOYEE_PERSON_SELECT },
   _count: { select: { projects: true, leads: true, deals: true } },
 } as const;
 

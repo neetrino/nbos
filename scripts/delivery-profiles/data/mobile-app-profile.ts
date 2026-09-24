@@ -1,16 +1,12 @@
 import type { ProfileSeedKind } from './profile-seed-types';
 
-const SMALL = [
+const BASE = [
   'MOB_PUSH_NOTIFICATIONS',
   'MOB_STORE_PUBLISHING',
   'MOB_DEEP_LINKS',
   'MSG_EMAIL_NOTIFICATIONS',
   'SRV_ACCEPTANCE_SUPPORT',
   'SRV_DOMAIN_HOSTING_SETUP',
-] as const;
-
-const CLASSIC = [
-  ...SMALL,
   'CNT_MULTILINGUAL',
   'ACC_SOCIAL_LOGIN',
   'MOB_CAMERA_SCANNER',
@@ -18,8 +14,8 @@ const CLASSIC = [
   'MOB_GEOLOCATION',
 ] as const;
 
-const LARGE = [
-  ...CLASSIC,
+const EXTENDED = [
+  ...BASE,
   'MOB_IN_APP_PURCHASE',
   'MOB_OFFLINE_MODE',
   'MOB_TABLET_LAYOUT',
@@ -28,18 +24,14 @@ const LARGE = [
   'ANL_DASHBOARD',
 ] as const;
 
-const VERY_LARGE = [
-  ...LARGE,
+const FULL = [
+  ...EXTENDED,
   'PAY_AMERIABANK',
   'LOY_BONUS_POINTS',
   'MSG_WHATSAPP_NOTIFICATIONS',
   'ACC_TWO_FACTOR',
   'INT_PUBLIC_API',
   'ANL_FUNNEL_ANALYSIS',
-] as const;
-
-const ENTERPRISE = [
-  ...VERY_LARGE,
   'MOB_WEARABLE_COMPANION',
   'ACC_SSO_ENTERPRISE',
   'ACC_ROLE_MATRIX',
@@ -63,24 +55,24 @@ export const MOBILE_APP_PROFILE: ProfileSeedKind = {
   productType: 'MOBILE_APP',
   productCategory: 'CODE',
   description:
-    'Ядро мобильного приложения на собственной разработке. Одинаковый функционал в вебе и в приложении стоит одинаково; ось платформы на units не влияет.',
+    'Custom-built mobile-app core. The same functionality costs the same on web and in the app; the platform axis does not change units.',
   coreItems: [
-    { label: 'Каркас приложения' },
-    { label: 'Навигация' },
-    { label: 'Авторизация' },
-    { label: 'Экраны списка и детали' },
-    { label: 'Профиль пользователя' },
+    { label: 'Application shell' },
+    { label: 'Navigation' },
+    { label: 'Sign-in' },
+    { label: 'List and detail screens' },
+    { label: 'User profile' },
     {
-      label: 'Инфраструктура push на уровне каркаса',
-      note: 'Сценарии отправки — отдельный модуль.',
+      label: 'Push infrastructure in the shell',
+      note: 'Send scenarios are a separate module.',
     },
     {
-      label: 'Сборка релизной версии',
-      note: 'Публикация в магазины — отдельный модуль.',
+      label: 'Release build',
+      note: 'Store publishing is a separate module.',
     },
-    { label: 'Адаптивность под размеры телефонов' },
+    { label: 'Phone-size responsive layout' },
   ],
-  classicUnits: {
+  units: {
     BACKEND: 45,
     FRONTEND: 60,
     PM: 14,
@@ -90,10 +82,8 @@ export const MOBILE_APP_PROFILE: ProfileSeedKind = {
   },
   includedFunctionCodes: [],
   presets: {
-    SMALL,
-    CLASSIC,
-    LARGE,
-    VERY_LARGE,
-    ENTERPRISE,
+    BASE,
+    EXTENDED,
+    FULL,
   },
 };

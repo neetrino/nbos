@@ -17,8 +17,8 @@ import {
 import type { FullProject, ProjectProductSummary } from '@/lib/api/projects';
 import { translateDeliveryLifecycleLabel } from '@/features/projects/components/delivery-board/delivery-board-message-keys';
 import {
+  formsProductTypeKey,
   getProductStatus,
-  getProductType,
   PRODUCT_STATUSES,
 } from '@/features/projects/constants/projects';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
@@ -178,10 +178,11 @@ function ProductListRow({
   product: ProjectProductSummary;
 }) {
   const t = useTranslations('deliveryBoard');
+  const tForms = useTranslations('forms');
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
   const status = getProductStatus(product.status);
-  const productType = getProductType(product.productType);
+  const productTypeLabel = tForms(formsProductTypeKey(product.productType) as never);
   const statusLabel = product.deliveryLifecycle
     ? translateDeliveryLifecycleLabel(product.deliveryLifecycle, t)
     : status?.label;
@@ -205,8 +206,8 @@ function ProductListRow({
             bindingStatus={product.whatsappGroupBinding?.status}
             groupChatId={product.whatsappGroupBinding?.groupChatId}
           />
-          {productType ? (
-            <span className="text-muted-foreground text-xs">{productType.label}</span>
+          {productTypeLabel ? (
+            <span className="text-muted-foreground text-xs">{productTypeLabel}</span>
           ) : null}
         </div>
         <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">

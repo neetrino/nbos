@@ -9,16 +9,36 @@ import { PRISMA_TOKEN } from '../../database.module';
 import {
   buildCatalogListWhere,
   parseCatalogListQuery,
+  whereWithoutCategory,
   type CatalogListQuery,
 } from './catalog-list-query';
 import { isPrismaUniqueConstraint } from './prisma-unique';
-import { serializeOperationalFunction } from './serialize-operational-function';
+import {
+  serializeCardFunction,
+  serializeOperationalFunction,
+} from './serialize-operational-function';
 
 const CONTENT_INCLUDE = {
   contentVersions: {
     orderBy: { version: 'desc' as const },
     include: {
       attachments: { orderBy: { sortOrder: 'asc' as const } },
+    },
+  },
+  tiers: {
+    orderBy: { position: 'asc' as const },
+    select: { id: true, code: true, label: true, position: true },
+  },
+} as const;
+
+const CARD_INCLUDE = {
+  contentVersions: {
+    orderBy: { version: 'desc' as const },
+    select: {
+      version: true,
+      title: true,
+      summary: true,
+      publishedAt: true,
     },
   },
   tiers: {
@@ -42,7 +62,12 @@ export class FunctionCatalogService {
     },
   ): Promise<{
     items: DeliveryFunctionOperationalDto[];
-    meta: { total: number; page: number; pageSize: number };
+    meta: {
+      total: number;
+      page: number;
+      pageSize: number;
+      categoryCounts: Record<string, number>;
+    };
   }> {
     const query = parseCatalogListQuery(rawQuery);
     const where = buildCatalogListWhere(query, includeNonActive);
@@ -167,19 +192,32 @@ export class FunctionCatalogService {
   }
 
   private async pageOperational(query: CatalogListQuery, where: Record<string, unknown>) {
-    const [total, rows] = await Promise.all([
+    const countsWhere = whereWithoutCategory(where);
+    const [total, rows, categoryRows] = await Promise.all([
       this.prisma.deliveryFunction.count({ where }),
       this.prisma.deliveryFunction.findMany({
         where,
         orderBy: { code: 'asc' },
         skip: query.skip,
         take: query.pageSize,
-        include: CONTENT_INCLUDE,
+        include: CARD_INCLUDE,
+      }),
+      this.prisma.deliveryFunction.groupBy({
+        by: ['category'],
+        where: countsWhere,
+        _count: { _all: true },
       }),
     ]);
     return {
-      items: rows.map(serializeOperationalFunction),
-      meta: { total, page: query.page, pageSize: query.pageSize },
+      items: rows.map(serializeCardFunction),
+      meta: {
+        total,
+        page: query.page,
+        pageSize: query.pageSize,
+        categoryCounts: Object.fromEntries(
+          categoryRows.map((row) => [row.category, row._count._all]),
+        ),
+      },
     };
   }
 

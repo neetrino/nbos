@@ -1,5 +1,6 @@
 {
   "title": "Առաքման տախտակ",
+  "volumeAdjusted": "Ծավալը փոխված է",
   "pipelineAria": "Առաքման փուլաշար",
   "loading": "Բեռնվում է տախտակը…",
   "loadError": "Չհաջողվեց բեռնել առաքման տախտակի տվյալները։",
@@ -142,8 +143,13 @@
     "deadline": "Վերջնաժամկետ",
     "productCategory": "Արտադրանքի կատեգորիա",
     "productType": "Արտադրանքի տեսակ",
+    "productPlatform": "Հարթակ",
+    "platforms": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
+    },
     "extensionName": "Ընդլայնման անվանում",
-    "size": "Չափ",
     "productLine": "Արտադրանքի գիծ՝",
     "pickDate": "Ընտրեք ամսաթիվը…",
     "productNotesPlaceholder": "Պլան, հանգրվաններ, հաճախորդի համատեքստ…",

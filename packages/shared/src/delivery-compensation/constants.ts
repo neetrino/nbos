@@ -24,20 +24,11 @@ export type DeliveryFunctionStatus = (typeof DELIVERY_FUNCTION_STATUSES)[number]
 export const DELIVERY_NORMATIVE_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const;
 export type DeliveryNormativeStatus = (typeof DELIVERY_NORMATIVE_STATUSES)[number];
 
-export const DELIVERY_ROLE_UNIT_KINDS = ['REQUIRED', 'NOT_REQUIRED'] as const;
+export const DELIVERY_ROLE_UNIT_KINDS = ['REQUIRED', 'OPTIONAL', 'NOT_REQUIRED'] as const;
 export type DeliveryRoleUnitKind = (typeof DELIVERY_ROLE_UNIT_KINDS)[number];
 
 export const DELIVERY_ENTITY_KINDS = ['PRODUCT', 'EXTENSION'] as const;
 export type DeliveryEntityKind = (typeof DELIVERY_ENTITY_KINDS)[number];
-
-export const DELIVERY_CONFIG_SIZES = [
-  'SMALL',
-  'CLASSIC',
-  'LARGE',
-  'VERY_LARGE',
-  'ENTERPRISE',
-] as const;
-export type DeliveryConfigSize = (typeof DELIVERY_CONFIG_SIZES)[number];
 
 export const DELIVERY_IMPLEMENTATION_BASES = [
   'FROM_SCRATCH',
@@ -48,6 +39,27 @@ export type DeliveryImplementationBase = (typeof DELIVERY_IMPLEMENTATION_BASES)[
 
 export const DELIVERY_DESIGN_MODES = ['AI_DESIGN', 'CONCEPT', 'FULL_DESIGN'] as const;
 export type DeliveryDesignMode = (typeof DELIVERY_DESIGN_MODES)[number];
+
+/**
+ * Implementation base, design mode and AI-reviewer are no longer selectable axes.
+ * Columns stay in the database; every new write uses this frozen triple.
+ */
+export const FROZEN_IMPLEMENTATION_BASE =
+  'FROM_SCRATCH' as const satisfies DeliveryImplementationBase;
+export const FROZEN_DESIGN_MODE = 'AI_DESIGN' as const satisfies DeliveryDesignMode;
+export const FROZEN_AI_DESIGNER_REVIEW = false;
+
+export function frozenDeliveryAxes(): {
+  implementationBase: typeof FROZEN_IMPLEMENTATION_BASE;
+  designMode: typeof FROZEN_DESIGN_MODE;
+  aiDesignerReview: typeof FROZEN_AI_DESIGNER_REVIEW;
+} {
+  return {
+    implementationBase: FROZEN_IMPLEMENTATION_BASE,
+    designMode: FROZEN_DESIGN_MODE,
+    aiDesignerReview: FROZEN_AI_DESIGNER_REVIEW,
+  };
+}
 
 export const DELIVERY_FEATURE_ORIGINS = ['INCLUDED', 'EXTRA'] as const;
 export type DeliveryFeatureOrigin = (typeof DELIVERY_FEATURE_ORIGINS)[number];
@@ -80,6 +92,7 @@ export const DELIVERY_FUNCTION_CATEGORIES = [
   'content',
   'loyalty',
   'booking',
+  'learning',
   'crm_ops',
   'finance_ops',
   'hr_ops',

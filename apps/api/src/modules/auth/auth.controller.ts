@@ -159,7 +159,7 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Account created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired invitation' })
   acceptInvite(@Body() dto: AcceptInviteDto) {
-    return this.authService.acceptInvite(dto.token, dto.firstName, dto.lastName, dto.password);
+    return this.authService.acceptInvite(dto);
   }
 
   @Post('change-password')

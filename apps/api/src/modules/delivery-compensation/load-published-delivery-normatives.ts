@@ -40,11 +40,13 @@ export type LoadPublishedNormativesInput = {
   designMode: DeliveryDesignMode;
   aiDesignerReview: boolean;
   baseRoleUnits: NormativeRoleUnitRow[];
+  baseVolumeFactor?: string;
   rates: PublishedRateRow[];
   features: Array<{
     functionId: string;
     origin: 'INCLUDED' | 'EXTRA';
     selectedPriceVersionId: string | null;
+    volumeFactor?: string | null;
   }>;
   extraPriceVersions: PublishedPriceVersionRow[];
 };
@@ -53,6 +55,7 @@ export type LoadedPublishedNormatives = {
   designMode: DeliveryDesignMode;
   aiDesignerReview: boolean;
   baseRoleUnits: DeliveryRoleUnitInput[];
+  baseVolumeFactor?: string;
   rates: DeliveryPlanRateInput[];
   features: DeliveryPlanFeatureInput[];
 };
@@ -94,10 +97,12 @@ export function loadPublishedDeliveryNormatives(
     designMode: input.designMode,
     aiDesignerReview: input.aiDesignerReview,
     baseRoleUnits: toRoleUnitInputs(input.baseRoleUnits),
+    baseVolumeFactor: input.baseVolumeFactor,
     rates,
     features: input.features.map((feature) => ({
       functionId: feature.functionId,
       origin: feature.origin,
+      volumeFactor: feature.volumeFactor ?? undefined,
       roleUnits: extraUnitsForFeature(
         feature,
         extraByFunction.get(feature.functionId) ?? [],

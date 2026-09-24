@@ -46,7 +46,6 @@ describe('countDeliveryAggregates', () => {
           id: 'e1',
           name: 'E',
           status: 'DONE',
-          size: 'S',
           productId: 'p1',
           projectId: 'proj',
           assignee: null,

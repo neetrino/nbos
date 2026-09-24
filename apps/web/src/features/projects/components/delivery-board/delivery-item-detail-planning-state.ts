@@ -1,7 +1,7 @@
+import { coerceOptionalProductPlatform, keepProductTypeAfterPlatformChange } from '@nbos/shared';
 import type { FullExtension, UpdateExtensionData } from '@/lib/api/extensions';
 import type { FullProduct, UpdateProductData } from '@/lib/api/products';
 import { employeeAvatarUrl } from '@/features/hr/utils/employee-display';
-import { PRODUCT_TYPES_BY_CATEGORY } from '@/features/projects/constants/projects';
 
 function employeeLabel(e: { firstName: string; lastName: string } | null | undefined): string {
   if (!e) return '';
@@ -34,13 +34,13 @@ export type ProductPlanSnapshot = {
   qaLeadAvatar: string | null;
   productCategory: string;
   productType: string;
+  productPlatform: string;
   description: string;
   languages: string[];
 };
 
 export type ExtensionPlanSnapshot = {
   name: string;
-  size: string;
   assignedTo: string | null;
   assigneeLabel: string;
   assigneeAvatar: string | null;
@@ -74,6 +74,7 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
     qaLeadAvatar: employeeAvatarUrl(p.qaLead),
     productCategory: p.productCategory,
     productType: p.productType,
+    productPlatform: p.productPlatform ?? '',
     description: p.description ?? '',
     languages: [...(p.languages ?? [])],
   };
@@ -82,7 +83,6 @@ export function snapshotProductPlan(p: FullProduct): ProductPlanSnapshot {
 export function snapshotExtensionPlan(e: FullExtension): ExtensionPlanSnapshot {
   return {
     name: e.name,
-    size: e.size,
     assignedTo: e.assignedTo,
     assigneeLabel: e.assignee ? `${e.assignee.firstName} ${e.assignee.lastName}` : '',
     assigneeAvatar: employeeAvatarUrl(e.assignee),
@@ -130,15 +130,7 @@ export function buildProductPlanPatch(
     patch.qaLeadId = draft.qaLeadId;
   }
 
-  if (draft.productCategory !== snap.productCategory) {
-    patch.productCategory = draft.productCategory;
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
-    patch.productType = allowed.includes(draft.productType)
-      ? draft.productType
-      : (allowed[0] ?? draft.productType);
-  } else if (draft.productType !== snap.productType) {
-    patch.productType = draft.productType;
-  }
+  Object.assign(patch, productPlanTaxonomyPatch(snap, draft));
 
   const nextDesc = draft.description;
   if (nextDesc !== snap.description) {
@@ -154,6 +146,52 @@ export function buildProductPlanPatch(
   return Object.keys(patch).length > 0 ? patch : null;
 }
 
+function productPlanTaxonomyPatch(
+  snap: ProductPlanSnapshot,
+  draft: ProductPlanSnapshot,
+): UpdateProductData {
+  if (draft.productCategory !== snap.productCategory) {
+    const productPlatform = coerceOptionalProductPlatform({
+      productCategory: draft.productCategory,
+      productType: draft.productType || null,
+      requested: draft.productPlatform,
+    });
+    const productType = keepProductTypeAfterPlatformChange(
+      draft.productCategory,
+      draft.productType,
+      productPlatform,
+    );
+    return {
+      productCategory: draft.productCategory,
+      ...(productType ? { productType } : {}),
+      productPlatform,
+    };
+  }
+  if (draft.productType !== snap.productType) {
+    if (!draft.productType) {
+      return {};
+    }
+    return {
+      productType: draft.productType,
+      productPlatform: coerceOptionalProductPlatform({
+        productCategory: draft.productCategory,
+        productType: draft.productType,
+        requested: draft.productType === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
+      }),
+    };
+  }
+  if (draft.productPlatform !== snap.productPlatform) {
+    return {
+      productPlatform: coerceOptionalProductPlatform({
+        productCategory: draft.productCategory,
+        productType: draft.productType,
+        requested: draft.productPlatform,
+      }),
+    };
+  }
+  return {};
+}
+
 export function buildExtensionPlanPatch(
   snap: ExtensionPlanSnapshot,
   draft: ExtensionPlanSnapshot,
@@ -163,10 +201,6 @@ export function buildExtensionPlanPatch(
   const resolvedName = draft.name.trim() || snap.name;
   if (resolvedName !== snap.name) {
     patch.name = resolvedName;
-  }
-
-  if (draft.size !== snap.size) {
-    patch.size = draft.size;
   }
 
   if (draft.assignedTo !== snap.assignedTo) {

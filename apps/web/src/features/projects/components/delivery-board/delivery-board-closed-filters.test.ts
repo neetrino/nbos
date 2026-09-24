@@ -54,7 +54,6 @@ const extB: DeliveryBoardItem = {
     id: 'e1',
     name: 'Add-on',
     status: 'DONE',
-    size: 'M',
     productId: 'p1',
     projectId: 'proj2',
     assignee: { id: 'a1', firstName: 'Alex', lastName: 'D' },

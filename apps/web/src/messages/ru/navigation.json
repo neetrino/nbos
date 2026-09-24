@@ -26,6 +26,7 @@
   },
   "children": {
     "myCompany": {
+      "coreFunction": "Ядро и функции",
       "functionCatalog": "Каталог функций",
       "deliveryNorms": "Нормы поставки",
       "compensation": "Компенсация",

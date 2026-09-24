@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DELIVERY_COMPENSATION_RULES_MODULE,
   FINANCE_CLIENT_SERVICES_MODULE,
   FINANCE_EXPENSE_PLANS_MODULE,
-  FUNCTION_CATALOG_MODULE,
 } from '@nbos/shared/constants';
 import { FINANCE_MODULE_VIEW_REQUIREMENT } from './finance-nav-permissions';
 import { getPermissionClauses } from './permission-requirement';
 import { resolveNavPermission } from './resolve-nav-permission';
-import { EXPLICIT_ROUTE_PERMISSIONS } from './route-permissions';
+import { CORE_FUNCTION_VIEW_REQUIREMENT, EXPLICIT_ROUTE_PERMISSIONS } from './route-permissions';
 
 describe('resolveNavPermission', () => {
   it('resolves dashboard permission', () => {
@@ -153,15 +151,13 @@ describe('resolveNavPermission', () => {
     expect(resolveNavPermission('/finance/something-new')).toEqual(FINANCE_MODULE_VIEW_REQUIREMENT);
   });
 
-  it('gates the function catalog on FUNCTION_CATALOG, not COMPANY or Compensation', () => {
-    expect(resolveNavPermission('/my-company/function-catalog')).toEqual({
-      module: FUNCTION_CATALOG_MODULE,
-      action: 'VIEW',
-    });
-    expect(resolveNavPermission('/my-company/function-catalog/fn-1')).toEqual({
-      module: FUNCTION_CATALOG_MODULE,
-      action: 'VIEW',
-    });
+  it('gates Core & Function on catalog or rules, not COMPANY or Compensation', () => {
+    expect(resolveNavPermission('/my-company/function-catalog')).toEqual(
+      CORE_FUNCTION_VIEW_REQUIREMENT,
+    );
+    expect(resolveNavPermission('/my-company/function-catalog/fn-1')).toEqual(
+      CORE_FUNCTION_VIEW_REQUIREMENT,
+    );
     expect(resolveNavPermission('/my-company')).toEqual({
       module: 'COMPANY',
       action: 'VIEW',
@@ -176,10 +172,9 @@ describe('resolveNavPermission', () => {
     });
   });
 
-  it('gates delivery norms on DELIVERY_COMPENSATION_RULES, not COMPANY', () => {
-    expect(resolveNavPermission('/my-company/delivery-norms')).toEqual({
-      module: DELIVERY_COMPENSATION_RULES_MODULE,
-      action: 'VIEW',
-    });
+  it('gates delivery norms on catalog or rules, not COMPANY', () => {
+    expect(resolveNavPermission('/my-company/delivery-norms')).toEqual(
+      CORE_FUNCTION_VIEW_REQUIREMENT,
+    );
   });
 });

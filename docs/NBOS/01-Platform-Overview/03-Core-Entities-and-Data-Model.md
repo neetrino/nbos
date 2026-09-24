@@ -64,17 +64,18 @@ Contact (человек)
 
 Физическое лицо — человек, с которым ведётся взаимодействие.
 
-| Поле            | Тип      | Описание                           |
-| --------------- | -------- | ---------------------------------- |
-| id              | UUID     | Уникальный идентификатор           |
-| first_name      | String   | Имя                                |
-| last_name       | String   | Фамилия                            |
-| phone           | String   | Телефон (основной)                 |
-| email           | String   | Email                              |
-| messenger_links | JSON     | WhatsApp, Telegram, Instagram      |
-| role            | Enum     | Client, Partner, Contractor, Other |
-| notes           | Text     | Заметки                            |
-| created_at      | DateTime | Дата создания                      |
+| Поле                    | Тип            | Описание                                                  |
+| ----------------------- | -------------- | --------------------------------------------------------- |
+| id                      | UUID           | Уникальный идентификатор                                  |
+| first_name              | String         | Имя                                                       |
+| last_name               | String         | Фамилия                                                   |
+| phone                   | String         | Телефон (основной)                                        |
+| email                   | String         | Email                                                     |
+| messenger_links         | JSON           | WhatsApp, Telegram, Instagram                             |
+| role                    | Enum           | Client, Partner, Contractor, Other                        |
+| notes                   | Text           | Заметки                                                   |
+| responsible_employee_id | FK → Employee? | Постоянный ответственный (карточка, фильтр, входящий ATS) |
+| created_at              | DateTime       | Дата создания                                             |
 
 **Связи:**
 
@@ -88,18 +89,19 @@ Contact (человек)
 
 Юридическое лицо или ИП — для выставления счетов.
 
-| Поле          | Тип          | Описание                                  |
-| ------------- | ------------ | ----------------------------------------- |
-| id            | UUID         | Уникальный идентификатор                  |
-| name          | String       | Рабочее название (списки, поиск)          |
-| legal_name    | String       | Официальное юр. название для счетов       |
-| type          | Enum         | Legal Entity, Individual, Sole Proprietor |
-| tax_id        | String       | ИНН / VOEN / Tax ID                       |
-| legal_address | String       | Юридический адрес                         |
-| bank_details  | JSON         | Банковские реквизиты                      |
-| tax_status    | Enum         | Tax (налогооблагаемый), Free              |
-| contact_id    | FK → Contact | Основной контакт                          |
-| notes         | Text         | Заметки                                   |
+| Поле                    | Тип            | Описание                                                                     |
+| ----------------------- | -------------- | ---------------------------------------------------------------------------- |
+| id                      | UUID           | Уникальный идентификатор                                                     |
+| name                    | String         | Рабочее название (списки, поиск)                                             |
+| legal_name              | String         | Официальное юр. название для счетов                                          |
+| type                    | Enum           | Legal Entity, Individual, Sole Proprietor                                    |
+| tax_id                  | String         | ИНН / VOEN / Tax ID                                                          |
+| legal_address           | String         | Юридический адрес                                                            |
+| bank_details            | JSON           | Банковские реквизиты                                                         |
+| tax_status              | Enum           | Tax (налогооблагаемый), Free                                                 |
+| contact_id              | FK → Contact   | Основной контакт                                                             |
+| notes                   | Text           | Заметки                                                                      |
+| responsible_employee_id | FK → Employee? | Постоянный ответственный (карточка, список, фильтр). В маршрут ATS не входит |
 
 **Связи:**
 
@@ -136,7 +138,6 @@ Contact (человек)
 
 - `Product.productCategory`;
 - `Product.productType`;
-- `Extension.size`;
 - stage requirements configuration;
 - checklist template assignment.
 

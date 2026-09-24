@@ -1,4 +1,10 @@
-import { DELIVERY_FUNCTION_STATUSES, type DeliveryFunctionStatus } from '@nbos/shared';
+import {
+  DELIVERY_FUNCTION_CATEGORIES,
+  DELIVERY_FUNCTION_STATUSES,
+  type DeliveryFunctionStatus,
+} from '@nbos/shared';
+
+export const CATALOG_OTHER_CATEGORY = 'other';
 
 export const CATALOG_LIST_DEFAULT_PAGE_SIZE = 20;
 export const CATALOG_LIST_MAX_PAGE_SIZE = 100;
@@ -51,7 +57,9 @@ export function buildCatalogListWhere(
   } else if (query.status) {
     where.status = query.status;
   }
-  if (query.category) {
+  if (query.category === CATALOG_OTHER_CATEGORY) {
+    where.category = { notIn: [...DELIVERY_FUNCTION_CATEGORIES] };
+  } else if (query.category) {
     where.category = query.category;
   }
   if (query.search) {
@@ -62,4 +70,10 @@ export function buildCatalogListWhere(
     ];
   }
   return where;
+}
+
+/** Rail counts stay complete while a category filter pages that slice. */
+export function whereWithoutCategory(where: Record<string, unknown>): Record<string, unknown> {
+  const { category: _category, ...rest } = where;
+  return rest;
 }

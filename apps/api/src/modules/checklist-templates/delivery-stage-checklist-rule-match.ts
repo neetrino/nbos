@@ -1,7 +1,6 @@
 import type {
   DeliveryResolutionEnum,
   DeliveryStageEnum,
-  ExtensionSizeEnum,
   ProductCategoryEnum,
   ProductTypeEnum,
 } from '@nbos/database';
@@ -9,10 +8,6 @@ import type {
 export type ProductRuleFilter = {
   filterProductCategory: ProductCategoryEnum | null;
   filterProductType: ProductTypeEnum | null;
-};
-
-export type ExtensionRuleFilter = {
-  filterExtensionSize: ExtensionSizeEnum | null;
 };
 
 export function productRuleMatchesFilter(
@@ -26,16 +21,6 @@ export function productRuleMatchesFilter(
     return false;
   }
   if (rule.filterProductType != null && rule.filterProductType !== product.productType) {
-    return false;
-  }
-  return true;
-}
-
-export function extensionRuleMatchesFilter(
-  rule: ExtensionRuleFilter,
-  extension: { size: ExtensionSizeEnum },
-): boolean {
-  if (rule.filterExtensionSize != null && rule.filterExtensionSize !== extension.size) {
     return false;
   }
   return true;

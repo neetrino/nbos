@@ -29,9 +29,6 @@ enum DeliveryBonusComponentKindEnum {
 model DeliveryCompensationRuntimeSetting {
   id                   String   @id
   newEnrollmentEnabled Boolean  @default(false) @map("new_enrollment_enabled")
-  /// Sale multiplier used when a card carries no price of its own. Ten by default, per the agreed
-  /// starting point of one unit costing a thousand AMD and selling for ten.
-  defaultSaleMultiplier Decimal @default(10) @map("default_sale_multiplier") @db.Decimal(8, 4)
   updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@map("delivery_compensation_runtime_settings")
@@ -50,7 +47,6 @@ model DeliveryConfiguration {
   baseProfileVersionId String?                        @map("base_profile_version_id")
   productType          ProductTypeEnum?               @map("product_type")
   productCategory      ProductCategoryEnum?           @map("product_category")
-  configSize           DeliveryConfigSizeEnum?        @map("config_size")
   implementationBase   DeliveryImplementationBaseEnum? @map("implementation_base")
   designMode           DeliveryDesignModeEnum?        @map("design_mode")
   aiDesignerReview     Boolean                        @default(false) @map("ai_designer_review")
@@ -60,6 +56,9 @@ model DeliveryConfiguration {
   /// but its scope and money stay frozen, so the read-only guard keys off this stamp rather than the
   /// current status — a reopened card is `DEVELOPMENT` again and would otherwise become editable.
   scopeLockedAt        DateTime?                      @map("scope_locked_at")
+  /// Instance effort on this product's core. Extensions keep the default and reject writes.
+  coreVolumeFactor     Decimal                        @default(1.0) @map("core_volume_factor") @db.Decimal(3, 1)
+  coreVolumeReason     String?                        @map("core_volume_reason")
   draftVersion         Int                            @default(1) @map("draft_version")
   createdAt            DateTime                       @default(now()) @map("created_at")
   updatedAt            DateTime                       @updatedAt @map("updated_at")
@@ -93,6 +92,9 @@ model DeliveryConfigurationFeature {
   tierId                 String?                     @map("tier_id")
   selectedPriceVersionId String?                     @map("selected_price_version_id")
   origin                 DeliveryFeatureOriginEnum
+  /// Instance effort on this extra. Included-in-base rows stay at 1.0.
+  volumeFactor           Decimal                     @default(1.0) @map("volume_factor") @db.Decimal(3, 1)
+  volumeReason           String?                     @map("volume_reason")
   localNote              String?                     @map("local_note")
   workState              DeliveryFeatureWorkStateEnum @default(NOT_STARTED) @map("work_state")
   archivedAt             DateTime?                   @map("archived_at")

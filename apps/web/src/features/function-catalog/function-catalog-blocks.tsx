@@ -2,6 +2,7 @@
 
 import type { DeliveryFunctionOperationalDto } from '@nbos/shared';
 import { useTranslations } from 'next-intl';
+import { BrowseFunctionCard } from './browse-function-card';
 import { FunctionCatalogCard } from './function-catalog-card';
 import {
   catalogFunctionGradations,
@@ -23,6 +24,7 @@ export type FunctionCatalogBrowserMode =
       kind: 'pick';
       selectedIds: ReadonlySet<string>;
       alreadyAddedIds: ReadonlySet<string>;
+      includedIds?: ReadonlySet<string>;
       onToggle: (id: string) => void;
       gradationByFunctionId: GradationSelectionState;
       onSelectGradation: (functionId: string, tierId: string) => void;
@@ -33,6 +35,7 @@ export function FunctionCatalogCategoryBlocks({
   mode,
   unitsByFunctionId,
   salePriceByFunctionId,
+  cardGridClassName,
   formatUnits,
   formatSalePrice,
 }: {
@@ -40,6 +43,7 @@ export function FunctionCatalogCategoryBlocks({
   mode: FunctionCatalogBrowserMode;
   unitsByFunctionId: Map<string, number> | undefined;
   salePriceByFunctionId: Map<string, VisibleSalePrice>;
+  cardGridClassName?: string;
   formatUnits: (total: number) => string;
   formatSalePrice: (amount: string) => string;
 }) {
@@ -49,19 +53,27 @@ export function FunctionCatalogCategoryBlocks({
       {blocks.map((block) => (
         <section key={block.id} className="space-y-3">
           <CategoryHeading label={t(FUNCTION_CATALOG_CATEGORY_MESSAGE_KEYS[block.id])} />
-          <div className={FUNCTION_CATALOG_CARD_GRID_CLASS}>
+          <div className={cardGridClassName ?? FUNCTION_CATALOG_CARD_GRID_CLASS}>
             {block.items.map((item) => (
-              <FunctionCatalogCard
+              <CatalogBlockCard
                 key={item.id}
                 item={item}
-                variant="compact"
-                unitsLabel={unitsLabelFor(item.id, unitsByFunctionId, formatUnits)}
-                {...salePriceCardLabels(
-                  salePriceByFunctionId.get(item.id),
-                  formatSalePrice,
-                  t('unpublishedPrice'),
-                )}
-                {...cardModeProps(item, mode, t)}
+                mode={mode}
+                unitsLabel={
+                  includedInBase(mode, item.id)
+                    ? undefined
+                    : unitsLabelFor(item.id, unitsByFunctionId, formatUnits)
+                }
+                saleLabels={
+                  includedInBase(mode, item.id)
+                    ? {}
+                    : salePriceCardLabels(
+                        salePriceByFunctionId.get(item.id),
+                        formatSalePrice,
+                        t('unpublishedPrice'),
+                      )
+                }
+                t={t}
               />
             ))}
           </div>
@@ -92,6 +104,57 @@ function unitsLabelFor(
   return total === undefined ? undefined : formatUnits(total);
 }
 
+function includedInBase(mode: FunctionCatalogBrowserMode, functionId: string): boolean {
+  return mode.kind === 'pick' && mode.includedIds?.has(functionId) === true;
+}
+
+function includedLabel(
+  included: boolean,
+  alreadyAdded: boolean,
+  selected: boolean,
+  t: CatalogCopy,
+): string | undefined {
+  if (included) return t('inBase');
+  if (!alreadyAdded) return undefined;
+  return selected ? t('selected') : t('alreadyAdded');
+}
+
+function CatalogBlockCard({
+  item,
+  mode,
+  unitsLabel,
+  saleLabels,
+  t,
+}: {
+  item: DeliveryFunctionOperationalDto;
+  mode: FunctionCatalogBrowserMode;
+  unitsLabel?: string;
+  saleLabels: { salePriceLabel?: string; unpublishedLabel?: string };
+  t: CatalogCopy;
+}) {
+  if (mode.kind === 'browse') {
+    return (
+      <BrowseFunctionCard
+        item={item}
+        unitsLabel={unitsLabel}
+        salePriceLabel={saleLabels.salePriceLabel}
+        showStatus={mode.showStatus}
+        statusLabel={statusLabel(item.status, t)}
+        onOpen={mode.onOpen}
+      />
+    );
+  }
+  return (
+    <FunctionCatalogCard
+      item={item}
+      variant="compact"
+      unitsLabel={unitsLabel}
+      {...saleLabels}
+      {...cardModeProps(item, mode, t)}
+    />
+  );
+}
+
 function cardModeProps(
   item: DeliveryFunctionOperationalDto,
   mode: FunctionCatalogBrowserMode,
@@ -118,12 +181,14 @@ function cardModeProps(
       onOpen: mode.onOpen,
     };
   }
-  const alreadyAdded = mode.alreadyAddedIds.has(item.id);
+  const included = mode.includedIds?.has(item.id) === true;
+  const alreadyAdded = included || mode.alreadyAddedIds.has(item.id);
+  const selected = mode.selectedIds.has(item.id);
   return {
-    selected: mode.selectedIds.has(item.id),
-    selectable: isCatalogFunctionSelectable(item, mode.alreadyAddedIds),
+    selected,
+    selectable: isCatalogFunctionSelectable(item, mode.alreadyAddedIds) && !included,
     alreadyAdded,
-    alreadyAddedLabel: alreadyAdded ? t('alreadyAdded') : undefined,
+    alreadyAddedLabel: includedLabel(included, alreadyAdded, selected, t),
     onToggle: mode.onToggle,
     gradations: catalogFunctionGradations(item),
     selectedTierId: mode.gradationByFunctionId[item.id],

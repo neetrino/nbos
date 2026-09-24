@@ -61,8 +61,9 @@ export function buildAccessSlotRows(
   productType: string,
   bindings: Array<{ id: string; slotKey: string; credential: BindingCredential }>,
   revealable: Set<string>,
+  productPlatform?: string | null,
 ): ProductAccessSlotRowDto[] {
-  const definitions = getAccessSlotsForProduct(productCategory, productType);
+  const definitions = getAccessSlotsForProduct(productCategory, productType, productPlatform);
   const definitionKeys = new Set(definitions.map((def) => def.slotKey));
   const bySlot = new Map<string, typeof bindings>();
   for (const binding of bindings) {

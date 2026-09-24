@@ -292,9 +292,26 @@ export const departmentsApi = {
   },
 };
 
+export interface IssuedInvitation {
+  token: string;
+  expiresAt: string;
+}
+
 export const invitationsApi = {
-  async create(data: { email: string; roleId: string; departmentId?: string }): Promise<unknown> {
-    const resp = await api.post('/api/invitations', data);
+  async create(data: {
+    email: string;
+    roleId: string;
+    departmentId?: string;
+  }): Promise<IssuedInvitation> {
+    const resp = await api.post<IssuedInvitation>('/api/invitations', data);
+    return resp.data;
+  },
+  async openLink(): Promise<IssuedInvitation> {
+    const resp = await api.post<IssuedInvitation>('/api/invitations/open');
+    return resp.data;
+  },
+  async accessLink(employeeId: string): Promise<IssuedInvitation> {
+    const resp = await api.post<IssuedInvitation>('/api/invitations/access-link', { employeeId });
     return resp.data;
   },
   async getAll(): Promise<unknown[]> {

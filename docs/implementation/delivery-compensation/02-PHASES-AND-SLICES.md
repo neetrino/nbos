@@ -456,13 +456,7 @@ exists. An extension reaches its team through its assignee or its parent product
 The scope consulted is the scope of the action the route required, so a caller with `VIEW: ALL` and
 `EDIT: OWN` is company-wide on reads and narrow on money commands.
 
-**Out of scope and still open for the Owner:** a developer who is legitimately on a product team can
-still change scope on that product, name themselves in an extension role assignment, and take a
-share in a replacement — `applyEmployeeReplacement` refuses only `from === to`, not self as the
-incoming holder. That is the permission matrix granting `PROJECTS_EDIT` to delivery specialists, not
-object scope: this slice narrows **which cards** such a person reaches, not **what they may do** on
-a card they legitimately reach. Closing it means deciding whether configuration edits need a
-permission of their own instead of riding on `PROJECTS`.
+**Follow-up, now closed:** the matrix half of this was settled the same day — see the next entry.
 
 Security review found no medium-or-higher issue: all eleven routes are covered, the `ALL` bypass and
 the grant-scoped `DEPARTMENT` expansion match the other modules, and denials do not leak existence.
@@ -470,6 +464,218 @@ the grant-scoped `DEPARTMENT` expansion match the other modules, and denials do 
 **Checks:** vitest `apps/api/src/modules/{delivery-compensation,projects,common}` (458 passed, 6
 skipped); API `tsc --noEmit` (8GB); Prettier on touched files; every file under 300 lines.
 **Not run:** live HTTP probe on dev with a narrow-scope account, browser QA.
+
+### The configurator gets a permission of its own (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Object scope answered _which cards_; this answers _whether at all_. The configurator rode on
+`PROJECTS_EDIT`, which delivery specialists hold at `OWN` because that same permission carries
+domains, technical data and the WhatsApp integration — 19 routes they need for ordinary work. So
+narrowing them out of `PROJECTS` was never an option, and on their own cards they could still change
+scope, name role holders and replace assignees. Canon §12 already speaks of "the configuration
+right" apart from being a PM, so it becomes a module.
+
+`DELIVERY_CONFIGURATION` is registered exactly the way `FUNCTION_CATALOG` and
+`DELIVERY_COMPENSATION_RULES` were, through migration `20260921140000_delivery_configuration_permissions`
+plus `MODULES` and the role matrices. Nothing bespoke: the Settings → Roles matrix is built from
+`GET /permissions`, so the row and its NONE/OWN/DEPARTMENT/ALL selectors appear on their own. All
+four actions exist as on every other module; only VIEW and EDIT gate an endpoint, ADD and DELETE are
+reserved.
+
+Defaults keep every existing read and remove only the edit. VIEW mirrors the `PROJECTS_VIEW` scope
+each role already had — delivery specialists `OWN`, Finance Director, Head of Support and Operations
+Manager `ALL`. EDIT goes to Owner, CEO, PM and Head of Delivery, and to nobody else. Verified on dev
+after `migrate deploy`: four permission rows, EDIT on exactly those four roles, `VIEW: OWN` on the
+six specialist roles. Grants use `ON CONFLICT DO NOTHING`, so a scope an administrator already tuned
+is never overwritten.
+
+**Deploy this migration before the code.** In that order the old `PROJECTS` gate stays live for a
+moment; in the other order every configuration route denies everyone, including reads, until the
+grants land. Neither order widens anything.
+
+**Still open for the Owner:** a PM may name themselves as the PM role holder or take a share in a
+replacement, and that is legitimate — PM is one of the six compensated roles, so a blanket refusal
+would break the normal case. `applyEmployeeReplacement` refuses only `from === to`. Agreed direction
+is to surface these in the audit trail for the Owner rather than block them; not built yet.
+
+Review caught the role match being half dead: the fallback branch spelled slugs `'role-owner'`,
+while `roles.slug` holds the bare `owner`. On dev the id branch carried every grant, so nothing was
+mis-granted, but a database with generated role ids would have received none. Slugs now match the
+column, and the migration test asserts it against the spelling `20260919123000` already used.
+
+**Checks:** vitest `packages/database/prisma`, `packages/shared`,
+`apps/api/src/modules/delivery-compensation` (651 passed, then 193 re-run after the slug fix); API
+and web `tsc --noEmit` (8GB); Prettier on touched files; migration applied to **dev** and the
+resulting grants read back; guard metadata asserted on all eleven routes, not a sample.
+**Not run:** browser QA of the Settings → Roles row, live HTTP probe under a specialist account.
+
+### Product platform axis WEB / APP / DESKTOP (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED` `15dc34958`
+
+`productType` mixed kind with where the product runs, so a deal could not say "online shop + app".
+`productPlatform` is a new field on Deal and Product: WEB, APP, DESKTOP. The Owner named it APP, not
+MOBILE_APP. It does not enter the base-profile key and does not change units. WordPress and Shopify
+are WEB-only. Marketing later stores NULL (see 2026-09-21 platform-applies slice). Code may be any
+of the three.
+
+Migration `20260921163000_product_platform` adds the enum and columns, backfills legacy
+`product_type = MOBILE_APP` to APP, and leaves other **typed** rows on WEB. Deals with no
+`product_type` stay `NULL` — platform is only meaningful with taxonomy. Existing `MOBILE_APP` /
+`WEB_APP` kinds are not rewritten — the Owner still sets a real kind by hand. Won copies the
+platform onto the new product. SEND_OFFER requires it for PRODUCT/OUTSOURCE the same way it
+requires type.
+
+The type list itself is not expanded in this slice.
+
+**Checks:** vitest 14 files / 129 passed (shared coerce, migration SQL, product create/update,
+deal write, SEND_OFFER including OUTSOURCE, Won copy); shared + API + web `tsc --noEmit` (API/web
+8GB after prisma generate); Prettier. Review: clearing only `productCategory` no longer keeps APP;
+untyped legacy deals stay `NULL` on purpose.
+**Not run:** browser QA of the deal sheet and product create dialog. Production migrate not run.
+
+### Sale price: AMD per unit, no multiplier (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED` `647d12b2e`
+
+Decision 1.12 withdrawn the 2026-09-20 multiplier + fixed-amount pair. A card now carries one
+AMD-per-unit sale rate; empty uses the global default 10 000. The client line is `units × that
+rate`. Cost and the developer rate are not inputs.
+
+- `DeliverySalePriceVersion.amountPerUnit`, `defaultSaleAmountPerUnit`. Migration
+  `20260921180000_sale_amount_per_unit` backfills `multiplier * 1000` (1 development unit = 1 000
+  AMD). Leftover fixed-only rows received 10 000 so the column can be required — Owner re-enters
+  those rare drafts. Applied to **dev**. Production migrate not run.
+- `GET`/`POST sale-prices/default-unit-price`. DTO: `amountPerUnit` only with RULES VIEW, so catalog
+  VIEW cannot recover units by dividing `resolvedAmount`. `resolvedAmount` uses published units only.
+- Norms editor: one AMD field. Catalog cards read `resolvedAmount`. Constructor still not built.
+
+Review: catalog VIEW leaking units via rate ÷ amount — fixed before commit. Draft units no longer
+price a published card. Validation on write routes now maps to 400.
+
+**Checks:** vitest 6 files / 43 passed; shared + API + web `tsc --noEmit` (API/web 8GB after prisma
+generate); Prettier on touched files; migrate deploy on **dev**.
+**Not run:** browser QA of the norms screen (API process was down after generate); production migrate.
+
+### Size off, named collections, deal constructor (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.18. `configSize` is not a product and not a core price. One kind, one core (former
+CLASSIC units). Size presets deleted. Named collections replace the extra-function selection
+(replace, not union). Deal quote stores the draft until Won; sale-price quote does not overwrite
+the deal amount. Public vitrine remains stage 3 — planned, not in this wave.
+
+**Landed:** migration `20260921190000_delivery_size_off_collections`; matching without size;
+collections + deal-quote API; norms UI without size chips; seed 5 cores + named kits; Deal
+constructor block; extras copy on V2 enroll.
+
+**Checks:** `pnpm --filter @nbos/database generate`; shared/API/web `tsc --noEmit` (API/web 8GB);
+Prettier on touched TS/JSON; targeted vitest 19 files / 86 passed.
+**Not run:** live migrate, seed against a live DB, browser QA, production.
+
+### Cores leftover wipe + four enum kinds (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Dead `configSize` / `configSizes` keys removed from hr.json (en/ru/hy). Seed kits renamed
+`BASE` / `EXTENDED` / `FULL` (Базовый / Расширенный / Полный). `classicUnits` → `units`.
+Four DRAFT cores added for existing enum: `BUSINESS_CARD_WEBSITE`, `WEB_APP`, `ERP`, `SAAS`.
+Nine kinds total. OTHER and marketing not seeded. `retiredSizedProfileKeys` kept for other envs.
+
+Dev `ep-nameless-term` already had the five unsized cores and no size axis (other-chat evidence,
+2026-09-21). **2026-09-21 later:** `pnpm seed:delivery-profiles -- --apply` created the four missing
+DRAFT cores (`business-card-code`, `web-app-code`, `erp-code`, `saas-code`). Read-back: 9 keys.
+
+**Checks:** targeted vitest profile seed + `base-profile-label`; Prettier on touched files;
+`--apply` on live dev; 9 profile rows read back.
+**Not run:** browser QA; production migrate.
+
+### Extension.size three values (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+`ExtensionSizeEnum` is `SMALL` / `STANDARD` / `LARGE`. Migration remaps `MICRO→SMALL`,
+`MEDIUM→STANDARD` on `extensions` and checklist `filter_extension_size`. Demo seed and Won-deal
+auto-create use the new values. Catalog `configSize` axis stays gone.
+
+**Checks:** Prisma generate; migrate deploy on dev `ep-nameless-term` (`20260921200000_extension_three_sizes`);
+enum is SMALL/STANDARD/LARGE; demo rows remapped.
+**Not run:** production migrate; browser QA.
+
+**2026-09-22:** `Extension.size` и `filter_extension_size` сняты. Трёхзначный enum больше не актуален. Миграции `20260922210000_drop_base_profile_entity_kind` и `20260922220000_drop_extension_size` применены к dev (`ep-nameless-term`). Production не трогали.
+
+### Platform applies + hide Mobile App type (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Platform field only for Code (WEB/APP/DESKTOP) and WordPress/Shopify (WEB). Marketing and Other store
+`NULL`; the UI hides the field; SEND_OFFER does not require it. Product.productPlatform is optional.
+`MOBILE_APP` remains in `ProductTypeEnum` and in labels, but is not offered on new Code picks
+(legacy current value still appears). App Store slot is added when `productPlatform === APP` (legacy
+`MOBILE_APP` type still qualifies). Won copies null onto a marketing product instead of WEB.
+
+Migration `20260921210000_product_platform_nullable_marketing` applied to **dev**
+`ep-nameless-term` (2026-09-21). Column `products.product_platform` is nullable, default stays WEB.
+Read-back: 9 MARKETING + 94 OTHER products `NULL`; CODE 30 WEB; WordPress 44 WEB; Shopify 2 WEB.
+Marketing deals with a platform: 0.
+
+**Checks:** vitest 14 files / 140 passed (shared coerce/gate/slots, migration SQL, product write,
+Won, deal write, product create, SEND_OFFER); Prettier; `pnpm --filter @nbos/database generate`;
+shared + database + API + web `tsc --noEmit` (API/web 8GB); migrate deploy on dev.
+**Not run:** browser QA of deal sheet / create product / planning; production migrate.
+
+### Sale price always stored, no implicit default (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED` `2231f2ba6`
+
+Decision 1.12 withdrawn the implicit “empty = 10 000” fallback. A card has a client amount only when
+a sale version stores `amountPerUnit`. `resolveSalePrice` returns `CARD` or `UNKNOWN`. Column
+`defaultSaleAmountPerUnit` dropped (`20260921220000_drop_default_sale_amount`). Default-unit-price
+API and the norms form are gone. New drafts still require a number. Seed
+`pnpm seed:delivery-sale-prices` publishes 10 000 (AI 20 000) per function, KEEP if any version
+exists. Catalog still shows AMD only from `resolvedAmount` after **units** are published — this slice
+does not publish units.
+
+**2026-09-23:** the stored amount is the whole price of a function, a gradation, or a core. Units no
+longer scale it. `resolvedAmount` follows the stored amount even when units are unpublished.
+
+**Checks:** vitest 6 files / 28 passed (shared resolver, drop-migration SQL, sale-prices service,
+default-endpoint removed, seed plan); Prettier; prisma generate + migrate deploy on **dev**;
+shared + API + web `tsc --noEmit` (API/web 8GB). Review: no confirmed defects. Browser: Sale
+prices tab has no default-10 000 block; empty amount on a selected function is refused.
+Seed `--apply` on **dev** (2026-09-21): 205 PUBLISHED function rates (195 × 10 000, 10 AI × 20 000),
+author Sipan / Owner. Re-run KEEP. Units stay DRAFT — catalog AMD still waits on published units.
+**Not run:** production migrate.
+
+### Code type list by platform (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.22. New Code picks are filtered by `productPlatform`. Sites only on WEB. APP and DESKTOP
+offer ECOMMERCE, CRM, ERP, SAAS, WEB_APP. `WEB_APP` remains a kind on all three platforms.
+`MOBILE_APP` stays in the enum for legacy cards and is not offered; `mobile-app-code` is hidden on
+the norms screen and retired from the profile seed when unused. WordPress/Shopify/Marketing type
+lists are unchanged. One shared matrix in `@nbos/shared` (`listedProductTypesForPicker` /
+`product-platform`); Deal, Create Product and delivery planning consume it. Duplicate
+`PRODUCT_TYPES_BY_CATEGORY` copies in web constants were removed. Changing platform resets a type
+that is not allowed. SEND_OFFER and Product/Deal create/update reject an illegal pair. No new
+`ProductTypeEnum` values in this slice.
+
+**Checks:** vitest 12 files / 114 passed (shared matrix/picker/gate, product create/update taxonomy,
+deal write, SEND_OFFER, Deal form, CreateProduct field order, norms grouping, profile seed retire);
+shared + API + web `tsc --noEmit` (API/web 8GB); Prettier on touched TS/MD. Independent review:
+Code pickers no longer force-add `OTHER`. Planning save with a cleared type stays a no-op so the
+server is not sent APP + leftover site (400).
+**Not run:** browser QA of Deal Code WEB vs APP/DESKTOP (agent browser had a session but the deals
+board did not load — `/api/me` 503 at the time); seed `--apply` not run (no new cores; unused
+`mobile-app-code` draft retires on the next apply); production migrate.
+
+### Code kinds 1.23 + extra functions (2026-09-21) — `IMPLEMENTED_NOT_VERIFIED`
+
+Decision 1.23. `ProductTypeEnum` expanded with 21 Code directions (29 offered kinds total).
+`MOBILE_APP` and `SAAS` stay in the enum for legacy cards and stay hidden from new picks. One
+unsized core per offered kind. Extra catalog cards: LMS (5), marketplace (3), POS (3), ticketing
+(2), plus category `learning`. `CNT_MULTILINGUAL` tiers remap onto the new kinds. Seed units are
+the existing proposals (sale 10 000 / AI 20 000). Hover-help on the Deal picker is not in this
+slice; Deal type labels use i18n so the new kinds are readable.
+
+Migration `20260921230000_product_type_kinds` (ADD VALUE only). Seeds: catalog `--apply
+--update-tiers`, profiles `--apply --replace-drafts`, sale prices `--apply`, then
+`publish:delivery-dev --apply` on **dev** `ep-nameless-term` only. Scripts refuse `sweet-dew`.
+
+**Checks:** targeted vitest (taxonomy, catalog, profile seed, grouping, assert-dev-host); Prisma
+generate; Prettier on touched files.
+**Live on `ep-nameless-term` (2026-09-21):** migrate `20260921230000_product_type_kinds`; catalog
+`--apply --update-tiers` (13 extra cards, 22 tier mappings); profiles `--apply --replace-drafts`
+(22 create, 7 replace, retire `mobile-app-code`/`saas-code`); sale prices 13 × 10 000; migrate
+`20260921240000_price_one_published_per_tier` (one published vector per gradation); publish
+activated remaining cards, published leftover unit drafts, **29 cores PUBLISHED**, upserted 38
+`PRODUCT_TYPE` list options.
+**Not run:** production migrate; browser QA of Deal picker and catalog rail.
 
 ### Production launch
 

@@ -17,7 +17,7 @@ decisions instead of waiting. This file is the standing process contract for tha
 - Production deployment and production database migrations.
 - Credentials the executor does not have.
 - A contradiction between canon documents with no resolution path in the documents themselves.
-- Changing an already published money rule (rates, units, sale multiplier) rather than implementing it.
+- Changing an already published money rule (rates, units, sale rate) rather than implementing it.
 
 Items of this kind are collected in `12-AUTONOMOUS-DECISIONS.md` at the end of the run, shortest form:
 question, what was assumed, what the Owner must confirm.

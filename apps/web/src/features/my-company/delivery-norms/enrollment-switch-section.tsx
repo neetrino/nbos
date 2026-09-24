@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 import { deliveryNormsApi, type DeliveryEnrollmentSetting } from '@/lib/api/delivery-norms';
-import { DeliveryNormsSectionCard } from './delivery-norms-section-card';
 import { messageFromCaught } from './message-from-caught';
 
 export function EnrollmentSwitchSection({
@@ -21,42 +21,28 @@ export function EnrollmentSwitchSection({
   const t = useTranslations('hr.deliveryNorms');
   const [saving, setSaving] = useState(false);
   const enabled = setting?.newEnrollmentEnabled ?? false;
+  const locked = !canToggle || saving;
 
   return (
-    <DeliveryNormsSectionCard title={t('enrollment.title')} description={t('enrollment.subtitle')}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-foreground text-sm font-medium">
-            {enabled ? t('enrollment.stateOn') : t('enrollment.stateOff')}
-          </p>
-          {setting?.updatedAt ? (
-            <p className="text-muted-foreground text-xs">
-              {t('enrollment.updatedAt', { at: setting.updatedAt })}
-            </p>
-          ) : null}
-        </div>
-        {canToggle ? (
-          <Button
-            type="button"
-            size="sm"
-            variant={enabled ? 'outline' : 'default'}
-            disabled={saving}
-            onClick={() => {
-              void toggleEnrollment({
-                next: !enabled,
-                fallback: t('errors.enrollment'),
-                onChanged,
-                onError,
-                setSaving,
-              });
-            }}
-          >
-            {enabled ? t('enrollment.turnOff') : t('enrollment.turnOn')}
-          </Button>
-        ) : null}
-      </div>
-      <p className="text-muted-foreground text-xs">{t('enrollment.hint')}</p>
-    </DeliveryNormsSectionCard>
+    <div className={cn('flex min-w-0 items-center gap-3', locked && 'opacity-60')}>
+      <Switch
+        size="lg"
+        className="shrink-0"
+        checked={enabled}
+        disabled={locked}
+        aria-label={t('enrollment.title')}
+        onCheckedChange={(next) => {
+          void toggleEnrollment({
+            next: Boolean(next),
+            fallback: t('errors.enrollment'),
+            onChanged,
+            onError,
+            setSaving,
+          });
+        }}
+      />
+      <p className="text-muted-foreground min-w-0 text-sm">{t('enrollment.summary')}</p>
+    </div>
   );
 }
 

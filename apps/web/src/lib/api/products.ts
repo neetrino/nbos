@@ -41,6 +41,7 @@ export interface Product {
   name: string;
   productCategory: string;
   productType: string;
+  productPlatform: string | null;
   status: string;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   pmId: string | null;
@@ -101,6 +102,7 @@ export interface Product {
   } | null;
   _count: { extensions: number; tasks: number; tickets: number };
   checklistStageProgress?: ChecklistStageProgress | null;
+  volumeAdjusted?: boolean;
   /** Product delivery Work Space id when provisioned; null if not yet created. */
   workSpaceId?: string | null;
 }
@@ -159,7 +161,6 @@ export interface ProductDoneReadinessItem {
 export interface ProductExtensionRef {
   id: string;
   name: string;
-  size: string;
   status: string;
   assignedTo: string | null;
   assignee: ProductEmployee | null;
@@ -225,6 +226,7 @@ export interface CreateProductData {
   name: string;
   productCategory: string;
   productType: string;
+  productPlatform?: string | null;
   pmId?: string;
   deadline?: string;
   description?: string;
@@ -238,6 +240,7 @@ export interface UpdateProductData {
   name?: string;
   productCategory?: string;
   productType?: string;
+  productPlatform?: string | null;
   pmId?: string | null;
   developerId?: string | null;
   frontendDeveloperId?: string | null;

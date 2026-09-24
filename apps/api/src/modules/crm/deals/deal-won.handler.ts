@@ -18,6 +18,7 @@ import {
   allocateProjectCode,
   allocateSubscriptionCode,
 } from '../../../common/utils/entity-code-series';
+import { resolveProductPlatform } from '../../projects/products/resolve-product-platform';
 
 interface WonDealData {
   id: string;
@@ -35,6 +36,7 @@ interface WonDealData {
   projectId: string | null;
   productCategory: string | null;
   productType: string | null;
+  productPlatform?: string | null;
   pmId: string | null;
   deadline: Date | null;
   existingProductId: string | null;
@@ -342,6 +344,11 @@ export class DealWonHandler {
         name: deal.name ?? `Product from ${deal.code}`,
         productCategory: deal.productCategory as Prisma.ProductCreateInput['productCategory'],
         productType: deal.productType as Prisma.ProductCreateInput['productType'],
+        productPlatform: resolveProductPlatform({
+          productCategory: deal.productCategory,
+          productType: deal.productType,
+          requested: deal.productPlatform,
+        }),
         pmId: deal.pmId ?? undefined,
         deadline: deal.deadline ?? undefined,
         ...(options.activeDeliveryBoard
@@ -543,7 +550,6 @@ export class DealWonHandler {
         projectId: product.projectId,
         productId: product.id,
         name: deal.name ?? `Extension from ${deal.code}`,
-        size: 'MEDIUM',
       },
     });
 

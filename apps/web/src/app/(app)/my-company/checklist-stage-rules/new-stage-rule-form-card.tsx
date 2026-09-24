@@ -51,7 +51,6 @@ export function NewStageRuleFormCard({ templates, onCreated }: Props) {
   const [priority, setPriority] = useState('0');
   const [filterCategory, setFilterCategory] = useState<string>(FILTER_ANY);
   const [filterType, setFilterType] = useState<string>(FILTER_ANY);
-  const [filterSize, setFilterSize] = useState<string>(FILTER_ANY);
 
   const publishedTemplates = useMemo(
     () => templates.filter((t) => t.status === 'ACTIVE' && t.activeVersionId),
@@ -71,7 +70,6 @@ export function NewStageRuleFormCard({ templates, onCreated }: Props) {
     setPriority('0');
     setFilterCategory(FILTER_ANY);
     setFilterType(FILTER_ANY);
-    setFilterSize(FILTER_ANY);
   };
 
   const onCreate = async () => {
@@ -90,9 +88,7 @@ export function NewStageRuleFormCard({ templates, onCreated }: Props) {
             ...(filterCategory !== FILTER_ANY ? { filterProductCategory: filterCategory } : {}),
             ...(filterType !== FILTER_ANY ? { filterProductType: filterType } : {}),
           }
-        : {
-            ...(filterSize !== FILTER_ANY ? { filterExtensionSize: filterSize } : {}),
-          }),
+        : {}),
     };
     setSaving(true);
     try {
@@ -227,8 +223,6 @@ export function NewStageRuleFormCard({ templates, onCreated }: Props) {
           setFilterCategory={setFilterCategory}
           filterType={filterType}
           setFilterType={setFilterType}
-          filterSize={filterSize}
-          setFilterSize={setFilterSize}
         />
       </CardContent>
       <CardFooter className="bg-muted/40 border-border/60 flex flex-col gap-3 border-t sm:flex-row sm:items-center sm:justify-between">

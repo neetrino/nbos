@@ -135,7 +135,6 @@ Project (один бренд / один бизнес)
 
 - task/checklist templates выбираются по `Product.productCategory`;
 - `Product.productType`;
-- `Extension.size`;
 - stage;
 - payment model;
 - technical profile;

@@ -155,45 +155,6 @@ export const EXPENSE_CATEGORIES = [
   'OTHER',
 ] as const;
 
-export const PRODUCT_CATEGORIES = ['CODE', 'WORDPRESS', 'SHOPIFY', 'MARKETING', 'OTHER'] as const;
-
-export const PRODUCT_TYPES = [
-  'BUSINESS_CARD_WEBSITE',
-  'COMPANY_WEBSITE',
-  'MOBILE_APP',
-  'WEB_APP',
-  'CRM',
-  'ECOMMERCE',
-  'SAAS',
-  'LANDING',
-  'ERP',
-  'LOGO',
-  'BRANDING',
-  'DESIGN',
-  'SEO',
-  'PPC',
-  'SMM',
-  'OTHER',
-] as const;
-
-export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
-  CODE: [
-    'BUSINESS_CARD_WEBSITE',
-    'COMPANY_WEBSITE',
-    'MOBILE_APP',
-    'WEB_APP',
-    'CRM',
-    'ECOMMERCE',
-    'SAAS',
-    'LANDING',
-    'ERP',
-  ],
-  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
-  SHOPIFY: ['ECOMMERCE'],
-  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
-  OTHER: [],
-} as const;
-
 export const LEAD_SOURCES = ['MARKETING', 'SALES', 'PARTNER', 'CLIENT', 'NETWORK'] as const;
 
 export const MARKETING_CHANNELS = [
@@ -234,8 +195,6 @@ export const MARKETING_ATTRIBUTION_OPTION_TYPES = ['ACCOUNT', 'ACTIVITY', 'ORGAN
 
 export const DEAL_TYPES = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
 
-export const EXTENSION_SIZES = ['MICRO', 'SMALL', 'MEDIUM', 'LARGE'] as const;
-
 export const EXTENSION_STATUSES = ['NEW', 'DEVELOPMENT', 'QA', 'TRANSFER', 'DONE', 'LOST'] as const;
 
 export const ORDER_TYPES = ['PRODUCT', 'EXTENSION', 'MAINTENANCE', 'OUTSOURCE'] as const;
@@ -250,6 +209,7 @@ export const SLA_DEADLINES = {
   P3: { response: 24, resolve: 72 },
 } as const;
 
+export * from './product-platform';
 export * from './auth-session-client';
 export * from './sidebar-navigation';
 export * from './crm-attribution';

@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { PrismaClient } from '@nbos/database';
 import {
   decimalToNullableString,
+  frozenDeliveryAxes,
   hasExplicitZeroRequiredUnits,
   isPublishedRoleVectorComplete,
 } from '@nbos/shared';
@@ -26,7 +27,11 @@ export class DeliveryCompensationRulesPublishService {
       }
       assertZeroUnitsConfirmed(roleUnits, confirmZeroUnits);
       await tx.deliveryFunctionPriceVersion.updateMany({
-        where: { functionId: draft.functionId, status: 'PUBLISHED' },
+        where: {
+          functionId: draft.functionId,
+          tierId: draft.tierId,
+          status: 'PUBLISHED',
+        },
         data: { status: 'ARCHIVED' },
       });
       return tx.deliveryFunctionPriceVersion.update({
@@ -69,12 +74,20 @@ export class DeliveryCompensationRulesPublishService {
       }
       assertZeroUnitsConfirmed(roleUnits, confirmZeroUnits);
       await tx.deliveryBaseProfileVersion.updateMany({
-        where: { profileKey: draft.profileKey, status: 'PUBLISHED' },
+        where: {
+          status: 'PUBLISHED',
+          OR: [{ profileKey: draft.profileKey }, { productType: draft.productType }],
+        },
         data: { status: 'ARCHIVED' },
       });
       return tx.deliveryBaseProfileVersion.update({
         where: { id },
-        data: { status: 'PUBLISHED', publishedAt: new Date(), publishedById: actorId },
+        data: {
+          status: 'PUBLISHED',
+          publishedAt: new Date(),
+          publishedById: actorId,
+          ...frozenDeliveryAxes(),
+        },
         include: { roleUnits: true, includedFunctions: true },
       });
     });

@@ -3,18 +3,22 @@
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Calendar, ClipboardList, Layers, Tag, Wallet } from 'lucide-react';
+import { Calendar, ClipboardList, Layers, Tag, Wallet, AppWindow } from 'lucide-react';
 import {
   DetailSheetCollapsibleSection,
   DetailSheetCollapsibleSubsection,
   EntityNotesField,
   InlineField,
 } from '@/components/shared';
+import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import {
-  PRODUCT_CATEGORIES,
-  PRODUCT_TYPES,
-  PRODUCT_TYPES_BY_CATEGORY,
-} from '@/features/projects/constants/projects';
+  allowedProductPlatforms,
+  coerceOptionalProductPlatform,
+  keepProductTypeAfterPlatformChange,
+  listedProductTypesForPicker,
+  productPlatformPickerApplies,
+  productTypeFieldReady,
+} from '@nbos/shared';
 import { cn } from '@/lib/utils';
 import type { ProductPlanSnapshot } from './delivery-item-detail-planning-state';
 import { deliveryStageGateFieldClass } from './delivery-stage-gate-highlight';
@@ -42,15 +46,20 @@ export function ProductPlanningSection({
   stageChecklist?: ReactNode;
 }) {
   const t = useTranslations('deliveryBoard');
+  const tForms = useTranslations('forms');
   const [sectionOpen, setSectionOpen] = useState(true);
   const typeOptions = useMemo(() => {
-    const allowed = PRODUCT_TYPES_BY_CATEGORY[draft.productCategory] ?? [];
-    const set = new Set(allowed);
-    return PRODUCT_TYPES.filter((t) => set.size === 0 || set.has(t.value)).map((t) => ({
-      value: t.value,
-      label: t.label,
+    const listed = listedProductTypesForPicker(
+      draft.productCategory,
+      draft.productType,
+      draft.productPlatform,
+    );
+    const set = new Set(listed);
+    return PRODUCT_TYPES.filter((item) => set.has(item.value)).map((item) => ({
+      value: item.value,
+      label: tForms(`product.types.${item.value}` as never),
     }));
-  }, [draft.productCategory]);
+  }, [draft.productCategory, draft.productPlatform, draft.productType, tForms]);
 
   const patchDraft = (partial: Partial<ProductPlanSnapshot>) => {
     onDraftChange({ ...draft, ...partial });
@@ -101,26 +110,86 @@ export function ProductPlanningSection({
             disabled={disabled}
             onValueChange={(v) => {
               if (!v) return;
-              const allowed = PRODUCT_TYPES_BY_CATEGORY[v] ?? [];
-              const nextType = allowed.includes(draft.productType)
-                ? draft.productType
-                : (allowed[0] ?? draft.productType);
-              onDraftChange({ ...draft, productCategory: v, productType: nextType });
+              const keepPlatform =
+                v === 'CODE' && draft.productCategory === 'CODE' ? draft.productPlatform : null;
+              const nextPlatform =
+                coerceOptionalProductPlatform({
+                  productCategory: v,
+                  productType: draft.productType || null,
+                  requested: keepPlatform,
+                }) ?? '';
+              const keepType = keepProductTypeAfterPlatformChange(
+                v,
+                draft.productType,
+                nextPlatform || null,
+              );
+              onDraftChange({
+                ...draft,
+                productCategory: v,
+                productType: keepType ?? '',
+                productPlatform: nextPlatform,
+              });
             }}
           />
-          <InlineField
-            variant="controlled"
-            label={t('plan.productType')}
-            type="select"
-            value={draft.productType}
-            options={typeOptions}
-            icon={<Tag size={12} />}
-            disabled={disabled}
-            selectContentClassName={PRODUCT_TYPE_SELECT_MENU_CLASS}
-            onValueChange={(v) => {
-              if (v) patchDraft({ productType: v });
-            }}
-          />
+          {productPlatformPickerApplies(draft.productCategory) ? (
+            <InlineField
+              variant="controlled"
+              label={t('plan.productPlatform')}
+              type="select"
+              value={draft.productPlatform}
+              options={allowedProductPlatforms(draft.productCategory).map((value) => ({
+                value,
+                label: t(`plan.platforms.${value}`),
+              }))}
+              icon={<AppWindow size={12} />}
+              disabled={disabled}
+              onValueChange={(v) => {
+                if (!v) return;
+                const nextPlatform =
+                  coerceOptionalProductPlatform({
+                    productCategory: draft.productCategory,
+                    productType: draft.productType,
+                    requested: v,
+                  }) ?? '';
+                patchDraft({
+                  productPlatform: nextPlatform,
+                  productType:
+                    keepProductTypeAfterPlatformChange(
+                      draft.productCategory,
+                      draft.productType,
+                      nextPlatform,
+                    ) ?? '',
+                });
+              }}
+            />
+          ) : null}
+          {productTypeFieldReady({
+            productCategory: draft.productCategory,
+            productPlatform: draft.productPlatform,
+          }) ? (
+            <InlineField
+              variant="controlled"
+              label={t('plan.productType')}
+              type="select"
+              value={draft.productType}
+              options={typeOptions}
+              icon={<Tag size={12} />}
+              disabled={disabled}
+              selectContentClassName={PRODUCT_TYPE_SELECT_MENU_CLASS}
+              onValueChange={(v) => {
+                if (!v) return;
+                patchDraft({
+                  productType: v,
+                  productPlatform:
+                    coerceOptionalProductPlatform({
+                      productCategory: draft.productCategory,
+                      productType: v,
+                      requested: v === 'MOBILE_APP' ? 'APP' : draft.productPlatform,
+                    }) ?? '',
+                });
+              }}
+            />
+          ) : null}
         </DetailSheetCollapsibleSubsection>
       </div>
       <div

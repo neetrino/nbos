@@ -11,15 +11,10 @@ import {
   StatusBadge,
 } from '@/components/shared';
 import { cn } from '@/lib/utils';
-import type {
-  DeliveryLifecycleProjection,
-  ProjectExtensionSummary,
-  ProjectProductSummary,
-} from '@/lib/api/projects';
+import type { DeliveryLifecycleProjection } from '@/lib/api/projects';
 import {
-  getExtensionSize,
   getDeliveryLifecycleVariant,
-  getProductType,
+  formsProductTypeKey,
 } from '@/features/projects/constants/projects';
 import { translateDeliveryLifecycleLabel } from './delivery-board-message-keys';
 import { DeliveryStageActionBar } from './DeliveryStageActionBar';
@@ -103,12 +98,15 @@ export function ProjectDeliveryBoardCard({
   quickTaskDisabled = false,
 }: ProjectDeliveryBoardCardProps) {
   const [hoverActionsVisible, setHoverActionsVisible] = useState(false);
+  const tForms = useTranslations('forms');
   const lifecycle = getItemLifecycle(item);
   const productId = getNavigableProductId(item);
   const isExtension = item.kind === 'EXTENSION';
   const dealTypeVisual = getDealTypePresentation(isExtension ? 'EXTENSION' : 'PRODUCT');
   const title = isExtension ? item.extension.name : item.product.name;
-  const metaLabel = isExtension ? getExtensionMeta(item.extension) : getProductMeta(item.product);
+  const metaLabel = isExtension
+    ? null
+    : tForms(formsProductTypeKey(item.product.productType) as never);
   const isClosedCompact = displayMode === 'closedCompact' && Boolean(lifecycle?.isTerminal);
   const stopKanbanPointerBubble = kanbanActionIsolation
     ? (event: ReactPointerEvent) => {
@@ -167,6 +165,7 @@ export function ProjectDeliveryBoardCard({
             metaLabel={metaLabel}
             visual={dealTypeVisual}
             lifecycle={lifecycle ?? null}
+            volumeAdjusted={itemVolumeAdjusted(item)}
           />
           <div
             className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, 'border-border/50 mt-3')}
@@ -189,6 +188,7 @@ export function ProjectDeliveryBoardCard({
                 metaLabel={metaLabel}
                 visual={dealTypeVisual}
                 lifecycle={lifecycle ?? null}
+                volumeAdjusted={itemVolumeAdjusted(item)}
               />
               <div
                 className={cn(DELIVERY_BOARD_CARD_DIVIDER_BASE_CLASS, 'border-border/50 mt-3')}
@@ -207,6 +207,7 @@ export function ProjectDeliveryBoardCard({
                     {metaLabel && (
                       <p className="text-muted-foreground truncate text-xs">{metaLabel}</p>
                     )}
+                    <VolumeAdjustedMark item={item} />
                     {!kanbanMinimal ? (
                       <StatusBadge
                         label={dealTypeVisual.label}
@@ -293,12 +294,16 @@ function LifecycleBadge({ lifecycle }: { lifecycle: DeliveryLifecycleProjection 
   );
 }
 
-function getProductMeta(product: ProjectProductSummary) {
-  return getProductType(product.productType)?.label ?? product.productType;
+function VolumeAdjustedMark({ item }: { item: DeliveryBoardItem }) {
+  const t = useTranslations('deliveryBoard');
+  if (!itemVolumeAdjusted(item)) return null;
+  return <p className="text-xs text-amber-700">{t('volumeAdjusted')}</p>;
 }
 
-function getExtensionMeta(extension: ProjectExtensionSummary) {
-  return getExtensionSize(extension.size)?.label ?? extension.size;
+function itemVolumeAdjusted(item: DeliveryBoardItem): boolean {
+  return item.kind === 'EXTENSION'
+    ? Boolean(item.extension.volumeAdjusted)
+    : Boolean(item.product.volumeAdjusted);
 }
 
 function DeliveryKanbanCardHoverActions({

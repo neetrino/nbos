@@ -1,11 +1,16 @@
+import { OFFERED_CODE_PRODUCT_TYPES } from '@nbos/shared';
 import { describe, expect, it } from 'vitest';
+import { DELIVERY_CATALOG_SEED_ITEMS } from '../delivery-catalog/delivery-catalog-seed-data';
 import {
   buildProfileSeedVersions,
   PROFILE_SEED_KINDS,
   profileKeyFor,
   referencedFunctionCodes,
 } from './delivery-profiles-seed-data';
+import { collectionsForKind } from './data/profile-seed-types';
 import { formatProfileSeedPlan, planDeliveryProfilesSeed } from './plan-delivery-profiles-seed';
+import { profileSeedRoleUnits } from './profile-seed-role-units';
+import { isPublishedRoleVectorComplete } from '@nbos/shared';
 
 const ALL_CODES = referencedFunctionCodes();
 
@@ -14,91 +19,105 @@ function draft(profileKey: string) {
 }
 
 describe('delivery profile seed data', () => {
-  it('produces one profile key per kind and size, and keys never collide', () => {
+  it('only references catalog function codes', () => {
+    const catalog = new Set(DELIVERY_CATALOG_SEED_ITEMS.map((item) => item.code));
+    for (const code of referencedFunctionCodes()) {
+      expect(catalog.has(code), code).toBe(true);
+    }
+  });
+
+  it('produces one profile key per kind', () => {
     const versions = buildProfileSeedVersions();
     const keys = versions.map((version) => version.profileKey);
 
-    expect(versions).toHaveLength(PROFILE_SEED_KINDS.length * 5);
+    expect(versions).toHaveLength(PROFILE_SEED_KINDS.length);
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it('keeps the core composition identical across sizes and scales only its volume', () => {
-    const versions = buildProfileSeedVersions([PROFILE_SEED_KINDS[0]]);
-    const small = versions.find((version) => version.configSize === 'SMALL');
-    const enterprise = versions.find((version) => version.configSize === 'ENTERPRISE');
-
-    expect(small?.kind.coreItems).toEqual(enterprise?.kind.coreItems);
-    expect(Number(enterprise?.units.BACKEND)).toBeGreaterThan(Number(small?.units.BACKEND));
-  });
-
-  it('never marks a preset module as included in the base', () => {
+  it('never marks a collection module as included in the base', () => {
     for (const kind of PROFILE_SEED_KINDS) {
-      const presetCodes = new Set(Object.values(kind.presets).flat());
+      const codes = new Set(collectionsForKind(kind).flatMap((row) => row.functionCodes));
       for (const included of kind.includedFunctionCodes) {
-        expect(presetCodes.has(included)).toBe(false);
+        expect(codes.has(included)).toBe(false);
       }
     }
   });
 
-  it('grows the preset with the size instead of replacing it', () => {
+  it('grows named collections instead of replacing them', () => {
     for (const kind of PROFILE_SEED_KINDS) {
-      expect(kind.presets.SMALL.length).toBeLessThan(kind.presets.CLASSIC.length);
-      expect(kind.presets.CLASSIC.length).toBeLessThan(kind.presets.LARGE.length);
-      expect(kind.presets.LARGE.length).toBeLessThan(kind.presets.VERY_LARGE.length);
-      expect(kind.presets.VERY_LARGE.length).toBeLessThan(kind.presets.ENTERPRISE.length);
-      for (const code of kind.presets.SMALL) {
-        expect(kind.presets.ENTERPRISE).toContain(code);
-      }
+      expect(kind.presets.BASE.length).toBeLessThan(kind.presets.EXTENDED.length);
+      expect(kind.presets.EXTENDED.length).toBeLessThan(kind.presets.FULL.length);
+      expect(new Set(kind.presets.BASE).size).toBe(kind.presets.BASE.length);
+      expect(new Set(kind.presets.EXTENDED).size).toBe(kind.presets.EXTENDED.length);
+      expect(new Set(kind.presets.FULL).size).toBe(kind.presets.FULL.length);
     }
   });
 
-  it('lists no module twice inside one preset', () => {
-    for (const kind of PROFILE_SEED_KINDS) {
-      for (const codes of Object.values(kind.presets)) {
-        expect(new Set(codes).size).toBe(codes.length);
-      }
-    }
+  it('builds a key from the kind stem only', () => {
+    expect(profileKeyFor(PROFILE_SEED_KINDS[0])).toBe('business-card-code');
   });
 
-  it('keeps browser-only cards out of a mobile app preset', () => {
-    const browserOnlyCodes = ['INT_WEB_ANALYTICS', 'INT_ADS_PIXELS', 'INT_LIVE_CHAT'];
-    const mobile = PROFILE_SEED_KINDS.filter((kind) => kind.productType === 'MOBILE_APP');
-
-    expect(mobile.length).toBeGreaterThan(0);
-    for (const kind of mobile) {
-      const presetCodes = new Set(Object.values(kind.presets).flat());
-      for (const code of browserOnlyCodes) {
-        expect(presetCodes.has(code)).toBe(false);
-      }
-    }
+  it('seeds the remaining enum kinds as one unsized core each', () => {
+    const types = PROFILE_SEED_KINDS.map((kind) => kind.productType);
+    expect(types).toEqual(
+      expect.arrayContaining(['BUSINESS_CARD_WEBSITE', 'WEB_APP', 'ERP', 'BOS', 'LMS']),
+    );
+    expect(types).not.toContain('OTHER');
+    expect(types).not.toContain('MOBILE_APP');
+    expect(types).not.toContain('SAAS');
+    expect(buildProfileSeedVersions().map((row) => row.profileKey)).toEqual(
+      expect.arrayContaining(['business-card-code', 'web-app-code', 'erp-code', 'bos-code']),
+    );
+    expect(buildProfileSeedVersions().map((row) => row.profileKey)).not.toContain('saas-code');
+    expect(buildProfileSeedVersions().map((row) => row.profileKey)).not.toContain(
+      'mobile-app-code',
+    );
+    expect(types).toHaveLength(34);
+    expect([...types].sort()).toEqual([...OFFERED_CODE_PRODUCT_TYPES].sort());
   });
 
-  it('builds a readable key from the kind and the size', () => {
-    expect(profileKeyFor(PROFILE_SEED_KINDS[0], 'VERY_LARGE')).toBe('shop-code-very-large');
+  it('keeps new site cores unpublishable until the Owner configures role units', () => {
+    for (const type of [
+      'REAL_ESTATE_WEBSITE',
+      'SERVICE_WEBSITE',
+      'TRAVEL_WEBSITE',
+      'CLASSIFIEDS_PORTAL',
+      'JOB_BOARD',
+    ]) {
+      const core = PROFILE_SEED_KINDS.find((kind) => kind.productType === type);
+      expect(core).toBeDefined();
+      expect(profileSeedRoleUnits(core!.units)).toEqual([]);
+      expect(isPublishedRoleVectorComplete(profileSeedRoleUnits(core!.units))).toBe(false);
+    }
   });
 });
 
 describe('planDeliveryProfilesSeed', () => {
-  it('creates everything on an empty database', () => {
+  it('creates one core per kind on an empty database', () => {
     const plan = planDeliveryProfilesSeed([], ALL_CODES);
 
     expect(plan.keepCount).toBe(0);
-    expect(plan.createCount).toBe(PROFILE_SEED_KINDS.length * 5);
+    expect(plan.createCount).toBe(PROFILE_SEED_KINDS.length);
     expect(plan.missingFunctionCodes).toEqual([]);
   });
 
   it('keeps a profile key the Owner may already have edited', () => {
-    const plan = planDeliveryProfilesSeed([draft('shop-code-classic')], ALL_CODES);
+    const plan = planDeliveryProfilesSeed([draft('shop-code')], ALL_CODES);
 
     expect(plan.keepCount).toBe(1);
     expect(plan.replaceCount).toBe(0);
-    expect(plan.entries.find((entry) => entry.action === 'KEEP')?.version.profileKey).toBe(
-      'shop-code-classic',
-    );
+  });
+
+  it('updates copy of an existing core when asked', () => {
+    const plan = planDeliveryProfilesSeed([draft('shop-code')], ALL_CODES, { updateCopy: true });
+
+    expect(plan.updateCopyCount).toBe(1);
+    expect(plan.replaceCount).toBe(0);
+    expect(plan.keepCount).toBe(0);
   });
 
   it('replaces an untouched draft only when asked to', () => {
-    const existing = [draft('shop-code-classic')];
+    const existing = [draft('shop-code')];
 
     expect(planDeliveryProfilesSeed(existing, ALL_CODES).replaceCount).toBe(0);
     expect(
@@ -106,29 +125,21 @@ describe('planDeliveryProfilesSeed', () => {
     ).toBe(1);
   });
 
-  it('never replaces a published norm or one a configuration froze', () => {
+  it('retires unused sized draft keys and leftover MOBILE_APP and SAAS cores', () => {
     const plan = planDeliveryProfilesSeed(
       [
-        { profileKey: 'shop-code-small', status: 'PUBLISHED', configurationCount: 0 },
-        { profileKey: 'shop-code-classic', status: 'DRAFT', configurationCount: 3 },
+        draft('shop-code-classic'),
+        draft('shop-code'),
+        draft('mobile-app-code'),
+        draft('saas-code'),
       ],
       ALL_CODES,
       { replaceDrafts: true },
     );
 
-    expect(plan.replaceCount).toBe(0);
-    expect(plan.keepCount).toBe(2);
-    const reasons = plan.entries
-      .filter((entry) => entry.action === 'KEEP')
-      .map((entry) => (entry.action === 'KEEP' ? entry.reason : ''));
-    expect(reasons).toEqual(['not a draft', 'a configuration froze it']);
-  });
-
-  it('names the catalog codes it cannot resolve instead of writing orphans', () => {
-    const plan = planDeliveryProfilesSeed([], ['PAY_AMERIABANK']);
-
-    expect(plan.missingFunctionCodes.length).toBeGreaterThan(0);
-    expect(plan.missingFunctionCodes).not.toContain('PAY_AMERIABANK');
-    expect(formatProfileSeedPlan(plan, false)).toContain('Missing catalog codes');
+    expect(plan.retireCount).toBe(3);
+    expect(formatProfileSeedPlan(plan, false)).toContain('shop-code-classic');
+    expect(formatProfileSeedPlan(plan, false)).toContain('mobile-app-code');
+    expect(formatProfileSeedPlan(plan, false)).toContain('saas-code');
   });
 });

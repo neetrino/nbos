@@ -43,6 +43,21 @@ export function parseRoleRateWriteBody(body: unknown): RoleRateWriteInput {
   };
 }
 
+export function parseRoleRatePatchBody(body: unknown): { rate: string } {
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    throw new CatalogContentValidationError('body must be an object');
+  }
+  const record = body as Record<string, unknown>;
+  const leaked = FORBIDDEN_RATE_KEYS.filter((key) => key in record);
+  if (leaked.length > 0) {
+    throw new CatalogFinancialMassAssignmentError(leaked);
+  }
+  if (typeof record.rate !== 'string' || record.rate.trim() === '') {
+    throw new CatalogContentValidationError('rate is required');
+  }
+  return { rate: parseNonNegativeRate(record.rate.trim()) };
+}
+
 function assertAmdCurrency(currency: unknown): void {
   if (currency === undefined || currency === null || currency === '') {
     return;

@@ -53,6 +53,19 @@ describe('buildCompleteRoleUnitVector', () => {
     expect(qa).toEqual({ roleKey: 'QA', unitKind: 'NOT_REQUIRED', units: null });
   });
 
+  it('keeps OPTIONAL units instead of clearing them', () => {
+    const drafts = replaceRoleUnitDraft(createEmptyRoleUnitDrafts(), 'QA', {
+      unitKind: 'OPTIONAL',
+      unitsInput: '4',
+    });
+    const vector = buildCompleteRoleUnitVector(drafts);
+    expect(vector?.find((row) => row.roleKey === 'QA')).toEqual({
+      roleKey: 'QA',
+      unitKind: 'OPTIONAL',
+      units: '4',
+    });
+  });
+
   it('preserves an explicit zero on a REQUIRED role', () => {
     const drafts = replaceRoleUnitDraft(createEmptyRoleUnitDrafts(), 'BACKEND', {
       unitsInput: '0',

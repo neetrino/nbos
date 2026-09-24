@@ -9,6 +9,7 @@ import { DELIVERY_CATALOG_SEED_ITEMS, totalSeedUnits } from './delivery-catalog-
 import { seedUnitVectors } from './data/catalog-seed-types';
 
 const MIN_EXPECTED_ITEMS = 100;
+const CYRILLIC_PATTERN = /[А-Яа-яЁё]/;
 
 describe('delivery catalog seed data', () => {
   it('covers the whole business surface, not a sample', () => {
@@ -18,6 +19,35 @@ describe('delivery catalog seed data', () => {
   it('has unique codes', () => {
     const codes = DELIVERY_CATALOG_SEED_ITEMS.map((item) => item.code);
     expect(new Set(codes).size).toBe(codes.length);
+  });
+
+  it('uses name-first English titles for bank acquiring cards', () => {
+    const bankCodes = ['PAY_ACBA', 'PAY_ARDSHINBANK', 'PAY_INECOBANK', 'PAY_AMERIABANK'];
+    const titles = Object.fromEntries(
+      DELIVERY_CATALOG_SEED_ITEMS.filter((item) => bankCodes.includes(item.code)).map((item) => [
+        item.code,
+        item.title,
+      ]),
+    );
+
+    expect(titles).toMatchInlineSnapshot(`
+      {
+        "PAY_ACBA": "ACBA Bank acquiring",
+        "PAY_AMERIABANK": "Ameriabank acquiring",
+        "PAY_ARDSHINBANK": "Ardshinbank acquiring",
+        "PAY_INECOBANK": "InecoBank acquiring",
+      }
+    `);
+  });
+
+  it('contains no Russian catalog copy', () => {
+    const copy = DELIVERY_CATALOG_SEED_ITEMS.flatMap((item) => [
+      item.title,
+      item.summary,
+      item.scopeBoundaries,
+      ...(item.tiers?.map((tier) => tier.label) ?? []),
+    ]);
+    expect(copy.filter((value) => CYRILLIC_PATTERN.test(value))).toEqual([]);
   });
 
   it('uses only canonical categories', () => {

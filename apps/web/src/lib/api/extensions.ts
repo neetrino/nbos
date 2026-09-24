@@ -20,8 +20,8 @@ export interface Extension {
   projectId: string;
   productId: string;
   name: string;
-  size: string;
   status: string;
+  volumeAdjusted?: boolean;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   assignedTo: string | null;
   description: string | null;
@@ -107,7 +107,6 @@ export interface ExtensionOrderRef {
 export interface ExtensionStats {
   total: number;
   byStatus: Array<{ status: string; _count: number }>;
-  bySize: Array<{ size: string; _count: number }>;
 }
 
 interface ListData {
@@ -119,7 +118,6 @@ export interface CreateExtensionData {
   projectId: string;
   productId: string;
   name: string;
-  size?: string;
   assignedTo?: string;
   description?: string;
 }
@@ -127,7 +125,6 @@ export interface CreateExtensionData {
 export interface UpdateExtensionData {
   name?: string;
   productId?: string;
-  size?: string;
   assignedTo?: string | null;
   description?: string | null;
 }

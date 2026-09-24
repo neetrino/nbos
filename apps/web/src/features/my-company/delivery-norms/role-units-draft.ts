@@ -2,6 +2,7 @@ import {
   DELIVERY_COMPENSATION_ROLE_KEYS,
   parseUnits,
   type DeliveryCompensationRoleKey,
+  type DeliveryRoleUnitFinancialDto,
   type DeliveryRoleUnitInput,
   type DeliveryRoleUnitKind,
 } from '@nbos/shared';
@@ -26,6 +27,20 @@ export function createEmptyRoleUnitDrafts(): RoleUnitDraftRow[] {
     unitKind: 'REQUIRED',
     unitsInput: '',
   }));
+}
+
+export function roleUnitDraftsFromDto(
+  rows: readonly DeliveryRoleUnitFinancialDto[],
+): RoleUnitDraftRow[] {
+  const byRole = new Map(rows.map((row) => [row.roleKey, row]));
+  return DELIVERY_COMPENSATION_ROLE_KEYS.map((roleKey) => {
+    const row = byRole.get(roleKey);
+    return {
+      roleKey,
+      unitKind: row?.unitKind ?? 'REQUIRED',
+      unitsInput: row?.units ?? '',
+    };
+  });
 }
 
 export function createEmptyRoleRateDrafts(): RoleRateDraftMap {

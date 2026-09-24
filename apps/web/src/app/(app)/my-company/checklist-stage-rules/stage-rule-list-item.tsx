@@ -3,11 +3,7 @@
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
-import {
-  EXTENSION_SIZES,
-  PRODUCT_CATEGORIES,
-  PRODUCT_TYPES,
-} from '@/features/projects/constants/projects';
+import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import type {
   DeliveryChecklistTarget,
   DeliveryStageCanon,
@@ -73,11 +69,7 @@ export function StageRuleListItem({ row, onToggleActive, onDelete }: Props) {
               {labelFromOptions([...PRODUCT_TYPES], row.filterProductType, 'any')}
             </>
           ) : (
-            <>
-              {' '}
-              · Extension size{' '}
-              {labelFromOptions([...EXTENSION_SIZES], row.filterExtensionSize, 'any')}
-            </>
+            <> · Applies to every extension in this stage</>
           )}
         </p>
       </div>

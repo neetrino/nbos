@@ -19,23 +19,23 @@ export type CreateRoleRateBody = {
 
 export type CreateFunctionPriceBody = {
   functionId: string;
+  tierId?: string | null;
   effectiveFrom: string;
   roleUnits: DeliveryRoleUnitInput[];
 };
 
 export type CreateBaseProfileBody = {
-  profileKey: string;
-  entityKind: 'PRODUCT' | 'EXTENSION';
-  productType: string | null;
-  productCategory: string | null;
-  configSize: string;
-  implementationBase: string;
-  designMode: string;
-  aiDesignerReview?: boolean;
+  productType: string;
+  productCategory?: string | null;
   description?: string | null;
   effectiveFrom: string;
   roleUnits: DeliveryRoleUnitInput[];
   includedFunctionIds?: string[];
+};
+
+export type UpdateBaseProfileDraftBody = {
+  roleUnits: DeliveryRoleUnitInput[];
+  includedFunctionIds: string[];
 };
 
 export type PublishVectorBody = {
@@ -91,11 +91,44 @@ export const deliveryNormsApi = {
     return resp.data;
   },
 
+  async updateBaseProfileDraft(
+    id: string,
+    body: UpdateBaseProfileDraftBody,
+  ): Promise<DeliveryBaseProfileFinancialDto> {
+    const resp = await api.patch<DeliveryBaseProfileFinancialDto>(
+      `${RULES_BASE}/base-profiles/${id}`,
+      body,
+    );
+    return resp.data;
+  },
+
   async createFunctionPrice(
     body: CreateFunctionPriceBody,
   ): Promise<DeliveryFunctionPriceFinancialDto> {
     const resp = await api.post<DeliveryFunctionPriceFinancialDto>(
       `${RULES_BASE}/function-prices`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async updateRoleRateDraft(
+    id: string,
+    body: { rate: string },
+  ): Promise<DeliveryRoleRateFinancialDto> {
+    const resp = await api.patch<DeliveryRoleRateFinancialDto>(
+      `${RULES_BASE}/role-rates/${id}`,
+      body,
+    );
+    return resp.data;
+  },
+
+  async updateFunctionPriceDraft(
+    id: string,
+    body: { roleUnits: DeliveryRoleUnitInput[] },
+  ): Promise<DeliveryFunctionPriceFinancialDto> {
+    const resp = await api.patch<DeliveryFunctionPriceFinancialDto>(
+      `${RULES_BASE}/function-prices/${id}`,
       body,
     );
     return resp.data;

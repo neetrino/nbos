@@ -14,6 +14,7 @@ const baseDraft: DealGeneralDraft = {
   maintenanceStartAt: null,
   productCategory: null,
   productType: null,
+  productPlatform: null,
   existingProductId: null,
   existingProductPickLabel: null,
   companyId: null,

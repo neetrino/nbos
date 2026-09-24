@@ -27,7 +27,7 @@ describe('configurationAccessFromUser', () => {
     const user = {
       id: 'emp-1',
       departmentIds: ['dep-1'],
-      permissions: { PROJECTS_VIEW: 'ALL', PROJECTS_EDIT: 'OWN' },
+      permissions: { DELIVERY_CONFIGURATION_VIEW: 'ALL', DELIVERY_CONFIGURATION_EDIT: 'OWN' },
     } as unknown as CurrentUserPayload;
 
     expect(configurationAccessFromUser(user, 'VIEW').scope).toBe('ALL');

@@ -103,6 +103,40 @@ enum ProductTypeEnum {
   PPC
   SMM
   OTHER
+  PRODUCT_CATALOG
+  BLOG
+  NEWS_MEDIA_PORTAL
+  EVENT_WEBSITE
+  MARKETPLACE
+  B2B_COMMERCE_PORTAL
+  BOOKING_SYSTEM
+  TICKETING_SYSTEM
+  POS
+  HRM
+  LMS
+  TASK_MANAGEMENT_SYSTEM
+  HELP_DESK_SYSTEM
+  REGISTRATION_SYSTEM
+  EVENT_MANAGEMENT_SYSTEM
+  DOCUMENT_MANAGEMENT_SYSTEM
+  INVENTORY_SYSTEM
+  KNOWLEDGE_BASE
+  INDUSTRY_OPERATIONS_SYSTEM
+  BOS
+  CUSTOMER_PORTAL
+  PARTNER_PORTAL
+  REAL_ESTATE_WEBSITE
+  SERVICE_WEBSITE
+  TRAVEL_WEBSITE
+  CLASSIFIEDS_PORTAL
+  JOB_BOARD
+}
+
+/// Where the product runs. Not a compensation axis and not a product kind.
+enum ProductPlatformEnum {
+  WEB
+  APP
+  DESKTOP
 }
 
 enum ProductStatusEnum {
@@ -141,6 +175,8 @@ model Product {
   name                 String
   productCategory      ProductCategoryEnum     @map("product_category")
   productType          ProductTypeEnum         @map("product_type")
+  /// WEB / APP / DESKTOP for Code, WordPress, Shopify. Null for Marketing (no platform).
+  productPlatform      ProductPlatformEnum?    @default(WEB) @map("product_platform")
   status               ProductStatusEnum       @default(NEW)
   deliveryStage        DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
   deliveryWorkStatus   DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")
@@ -259,13 +295,6 @@ model ProductAccessSlotBinding {
   @@map("product_access_slot_bindings")
 }
 
-enum ExtensionSizeEnum {
-  MICRO
-  SMALL
-  MEDIUM
-  LARGE
-}
-
 enum ExtensionStatusEnum {
   NEW
   DEVELOPMENT
@@ -280,7 +309,6 @@ model Extension {
   projectId          String                  @map("project_id")
   productId          String                  @map("product_id")
   name               String
-  size               ExtensionSizeEnum       @default(SMALL)
   status             ExtensionStatusEnum     @default(NEW)
   deliveryStage      DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
   deliveryWorkStatus DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")

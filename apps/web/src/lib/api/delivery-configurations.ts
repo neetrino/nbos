@@ -8,7 +8,6 @@ export type OperationalConfigurationDto = {
   enrolled: boolean;
   designMode: string | null;
   aiDesignerReview: boolean;
-  configSize: string | null;
   implementationBase: string | null;
   checkedAt: string | null;
   baseProfileVersionId: string | null;
@@ -16,10 +15,14 @@ export type OperationalConfigurationDto = {
   /** Send back as `expectedRevision` on a scope change; the server refuses changes without it. */
   expectedRevision: number;
   readiness?: { planState: string; errors: string[] };
+  coreVolumeFactor: string;
+  coreVolumeReason: string | null;
   features: Array<{
     id: string;
     functionId: string;
     origin: string;
+    volumeFactor: string;
+    volumeReason: string | null;
     localNote: string | null;
     workState: string;
   }>;
@@ -29,6 +32,44 @@ export const deliveryConfigurationsApi = {
   async getByProduct(productId: string): Promise<OperationalConfigurationDto | { mode: 'LEGACY' }> {
     const resp = await api.get<OperationalConfigurationDto | { mode: 'LEGACY' }>(
       `/api/delivery-configurations/by-product/${productId}`,
+    );
+    return resp.data;
+  },
+
+  async getByExtension(
+    extensionId: string,
+  ): Promise<OperationalConfigurationDto | { mode: 'LEGACY' }> {
+    const resp = await api.get<OperationalConfigurationDto | { mode: 'LEGACY' }>(
+      `/api/delivery-configurations/by-extension/${extensionId}`,
+    );
+    return resp.data;
+  },
+
+  async removeFeature(
+    configurationId: string,
+    featureId: string,
+    options: { reason?: string; expectedRevision?: number } = {},
+  ): Promise<OperationalConfigurationDto> {
+    const resp = await api.delete<OperationalConfigurationDto>(
+      `/api/delivery-configurations/${configurationId}/features/${featureId}`,
+      { data: options },
+    );
+    return resp.data;
+  },
+
+  async setVolume(
+    configurationId: string,
+    body: {
+      target: 'core' | 'feature' | 'extras';
+      featureId?: string;
+      volumeFactor: string;
+      volumeReason: string | null;
+      expectedRevision?: number;
+    },
+  ): Promise<OperationalConfigurationDto> {
+    const resp = await api.put<OperationalConfigurationDto>(
+      `/api/delivery-configurations/${configurationId}/volume`,
+      body,
     );
     return resp.data;
   },

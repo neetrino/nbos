@@ -171,6 +171,14 @@
     "add": "Add",
     "createEmployee": "Create employee",
     "sendInvitation": "Send invitation",
+    "inviteLink": "Invite link",
+    "linkTitle": "One-time invite link",
+    "linkOpen": "Send this in a messenger. The person opens it and enters their name, email, and password. They join as Observer — change the role on their profile after they appear. The link works once.",
+    "linkSetup": "The profile is created. Send this link so they can set a password and sign in. It works once.",
+    "linkEmail": "The invitation email was sent. You can also paste this link into a messenger. It works once.",
+    "linkCopy": "Copy link",
+    "linkCopied": "Link copied",
+    "linkFailed": "Could not create the invite link",
     "emptyTitle": "No employees yet",
     "emptyDescription": "Create a profile or send an invitation to grow your team directory.",
     "loadFailed": "Employees could not be loaded. Check your connection and try again.",
@@ -195,7 +203,7 @@
   },
   "create": {
     "title": "Add employee",
-    "description": "Create a profile directly. Use Invite when the person should set their own password.",
+    "description": "Create a profile, then copy the one-time link so they can set a password.",
     "metaFailed": "Could not load roles or departments",
     "workEmail": "Work email",
     "selectRole": "Select role",
@@ -287,12 +295,16 @@
     "orgStructure": "Org Structure",
     "team": "Team",
     "departments": "Departments",
-    "rolesSeats": "Roles & Seats"
+    "rolesSeats": "Roles & Seats",
+    "coreFunction": "Core & Function"
   },
   "functionCatalog": {
     "title": "Function catalog",
     "subtitle": "Instructions for delivery functions. Compensation amounts are not shown here.",
     "search": "Search functions",
+    "collections": "Collections",
+    "collectionsHint": "Choose a set to replace extras. You can still add or remove functions after that.",
+    "collectionFunctionCount": "{count, plural, one {# function} other {# functions}}",
     "empty": "No published functions yet.",
     "emptySearch": "No functions match this search.",
     "categoriesRail": "Categories",
@@ -303,11 +315,18 @@
     "addFunctionConfirm": "Add selected",
     "addFunctionConfirming": "Adding…",
     "alreadyAdded": "Already added",
+    "inBase": "In the base",
+    "selected": "Selected",
     "selectedCount": "{count, plural, one {# selected} other {# selected}}",
     "alreadySelected": "This function is already on the product.",
     "closedReadOnly": "This delivery is closed. Functions cannot be changed.",
     "addedFunctions": "{count, plural, one {# function added} other {# functions added}}",
     "addFailed": "The selected functions could not be added.",
+    "removeFailed": "The function could not be removed.",
+    "removeFunctionTitle": "Remove function",
+    "removeFunctionConfirm": "Remove",
+    "removeFunctionConfirming": "Removing…",
+    "removeFunctionReasonPlaceholder": "Why this function is removed now",
     "unpublishedPrice": "Not yet published",
     "tierRequired": "Choose a volume for this function before adding it.",
     "chooseVolume": "Volume",
@@ -322,6 +341,7 @@
       "content": "Content",
       "loyalty": "Loyalty",
       "booking": "Booking",
+      "learning": "Learning",
       "crm_ops": "CRM operations",
       "finance_ops": "Finance operations",
       "hr_ops": "HR operations",
@@ -403,6 +423,105 @@
     "subtitle": "Owner and CEO publish same-role AMD rates, base-profile units, and function units. Empty means not configured; 0 is an explicit decision.",
     "refresh": "Refresh",
     "none": "Not set",
+    "search": {
+      "label": "Search",
+      "placeholder": "Find…",
+      "empty": "Nothing matches this search."
+    },
+    "add": "Add",
+    "sheet": {
+      "tabs": {
+        "general": "General",
+        "units": "Units",
+        "price": "Sales",
+        "composition": "Composition",
+        "included": "Included",
+        "collections": "Collections"
+      },
+      "functionAria": "Function card sections",
+      "coreAria": "Product core sections",
+      "needCore": "Save core units first so this kind has a version to price.",
+      "includedProductOnly": "Included-in-base lists catalog functions already paid by this kind's core units."
+    },
+    "workspace": {
+      "tabs": {
+        "aria": "Core and function sections",
+        "core": "Core",
+        "functions": "Functions",
+        "rates": "Role rates"
+      },
+      "profileTabs": {
+        "aria": "Base profile parts",
+        "core": "Core composition",
+        "collections": "Collections"
+      },
+      "unitTabs": {
+        "aria": "Core and function units",
+        "core": "Core",
+        "function": "Function"
+      },
+      "saleTabs": {
+        "aria": "Sale price targets"
+      },
+      "panel": {
+        "open": "Open"
+      },
+      "overview": {
+        "index": "00",
+        "title": "How to manage this",
+        "lead": "Work top to bottom. Each point opens the editor that belongs to it, so the links between rates, units, and prices stay visible.",
+        "counts": {
+          "published": "{published} published",
+          "rates": "{count, plural, one {# rate} other {# rates}}",
+          "profiles": "{count, plural, one {# core} other {# cores}}",
+          "functions": "{count, plural, one {# function price} other {# function prices}}",
+          "sale": "{count, plural, one {# sale price} other {# sale prices}}"
+        }
+      },
+      "map": {
+        "enrollment": {
+          "index": "01",
+          "title": "V2 enrollment",
+          "body": "Master switch. New deliveries join the unit model only while this is on."
+        },
+        "rates": {
+          "index": "02",
+          "title": "Role rates",
+          "body": "AMD price of one unit for each of the six roles. Employee salary is never used."
+        },
+        "units": {
+          "index": "03",
+          "title": "Units",
+          "body": "The unit vector for a product core and for catalog functions."
+        },
+        "unitCore": {
+          "title": "3.1 Core",
+          "body": "One core for each kind a new product can select. An empty card means the norm is not written yet."
+        },
+        "unitFunction": {
+          "title": "3.2 Function",
+          "body": "Units by role for catalog functions that are not already in the base."
+        },
+        "profiles": {
+          "index": "04",
+          "title": "Profiles",
+          "body": "Core composition and kits. These items have no unit vector."
+        },
+        "profileCore": {
+          "title": "4.1 Core composition",
+          "body": "The written list of what the core contains. Items have no units of their own."
+        },
+        "profileCollections": {
+          "title": "4.2 Collections",
+          "body": "Named extra kits. A click replaces the deal constructor selection. They are still billed, unlike included-in-base."
+        },
+        "sale": {
+          "index": "05",
+          "title": "Sale prices",
+          "body": "What the client pays for a function, a gradation, or a product core."
+        }
+      }
+    },
     "enrollment": {
       "title": "V2 enrollment",
       "subtitle": "Decides whether new deliveries may be enrolled in the unit model.",
@@ -411,53 +530,94 @@
       "turnOn": "Turn enrollment on",
       "turnOff": "Turn enrollment off",
       "updatedAt": "Changed: {at}",
-      "hint": "Existing deliveries are unaffected: turning this off only stops new enrollments."
+      "hint": "Existing deliveries are unaffected: turning this off only stops new enrollments.",
+      "summary": "Turning this off only stops new enrollments; existing deliveries stay unchanged."
     },
     "rates": {
       "title": "Role rates",
       "subtitle": "Same-role AMD tariffs. Employee salary is never used.",
       "createTitle": "New rate draft",
+      "createHint": "Current published rate on the left, new amount on the right. Empty roles are not created.",
       "fillSeed": "Fill all six at 1000 AMD",
+      "current": "Current",
+      "next": "New",
       "empty": "No role rates yet."
     },
     "profiles": {
       "title": "Base profiles",
-      "subtitle": "Per-role unit vectors for a product or extension size.",
+      "subtitle": "Core composition and kits. The unit vector lives under Units.",
       "createTitle": "New profile draft",
+      "createHint": "One core per product kind. Saving again updates the open draft or the next version of the same core.",
       "empty": "No base profiles yet.",
       "includedCount": "{count, plural, one {# included function} other {# included functions}}"
+    },
+    "cards": {
+      "sales": "Sales",
+      "units": "Units",
+      "included": "In base"
+    },
+    "cores": {
+      "title": "Core",
+      "subtitle": "Every kind a new product can select. An empty card means the norm is not written yet. One core per kind.",
+      "editHint": "Set units by role. Save writes a draft. Publish in the sheet header ships every saved draft.",
+      "searchPlaceholder": "Search kinds",
+      "groups": {
+        "all": "All",
+        "sites": "Sites",
+        "commerce": "Commerce",
+        "operations": "Operations",
+        "portals": "Portals",
+        "marketing": "Marketing",
+        "other": "Other"
+      }
     },
     "prices": {
       "title": "Function prices",
       "subtitle": "Per-role unit vectors for catalog functions.",
       "createTitle": "New function price draft",
+      "createHint": "Pick a catalog card and, when it has volumes, the volume these units apply to.",
+      "editTitle": "Function price draft",
+      "editHint": "Set per-role units. Save writes a draft; publish stays a separate action.",
       "empty": "No function prices yet.",
       "pickFunction": "Select a function",
+      "pickTier": "Select a volume",
       "unknownFunction": "Unknown function"
     },
     "roleUnits": {
       "title": "Role units",
-      "hint": "Leave a field empty to send null (not configured). Type 0 only when the role is explicitly unpaid.",
-      "placeholder": "empty = not configured",
-      "required": "Required",
-      "notRequired": "Not required",
-      "notRequiredHint": "Not required — units are sent as null.",
-      "notConfigured": "Not configured (null)",
-      "explicitZero": "Explicit 0",
-      "configured": "Configured"
+      "placeholder": "",
+      "needed": "Needed",
+      "ifPresent": "If present",
+      "unused": "None",
+      "kindAria": "Role status"
+    },
+    "edit": {
+      "action": "Edit",
+      "save": "Save"
     },
     "includedFunctions": {
       "title": "Included in base",
-      "hint": "Catalog functions already covered by this base profile.",
-      "empty": "No catalog functions to include yet."
+      "hint": "The list shows cards already covered by this profile. Search above to pick and add more.",
+      "empty": "No catalog functions to include yet.",
+      "add": "Add to base",
+      "addPlaceholder": "Find and add…",
+      "noneSelected": "Nothing is included in the base yet.",
+      "selected": "In this core",
+      "remove": "Remove"
     },
     "coreItems": {
       "title": "Core composition",
       "subtitle": "What the product core contains. Items have no units; the profile's role units price the core.",
+      "hint": "One core composition per product kind. Items have no units of their own.",
       "pickVersion": "Select a base profile version",
+      "pickKind": "Product type",
+      "versionMeta": "{size} · {version}",
+      "versionStatus": "{version} · {status}",
       "empty": "This core has no items yet.",
       "emptyVersions": "Create a base profile version first.",
-      "readOnly": "Only a draft version can be edited.",
+      "emptySearch": "No cores match this search.",
+      "readOnly": "You cannot edit this core.",
+      "revisePublished": "This list is published. Saving opens the next draft of the same core. Clients keep this list until that draft is published.",
       "addTitle": "Add a core item",
       "save": "Save composition",
       "saving": "Saving…",
@@ -470,25 +630,35 @@
       "moveDown": "Move down",
       "noUnits": "No units — this list is composition only."
     },
-    "sizePresets": {
-      "title": "Size presets",
-      "subtitle": "Modules pre-checked for a product size. They are still charged as extras, unlike functions included in the base.",
-      "hint": "A preset only pre-selects modules. It does not make them free. The “included in base” list is the one that covers work at no extra charge.",
-      "pickProfile": "Select a profile key",
+    "collections": {
+      "title": "Collections",
+      "subtitle": "Named extra-function kits. A click on a deal replaces the whole extra set.",
+      "hint": "A collection is a helper, not a price and not included-in-base. The seller can still remove or add functions after applying it.",
       "emptyProfiles": "Create a base profile first.",
-      "emptyFunctions": "No catalog functions to pre-select yet.",
-      "pickerTitle": "Pre-selected modules (charged as extras)",
-      "pickerHint": "Ticked modules are pre-checked for this size and billed as normal extras. They are not included in the base.",
-      "save": "Save this size",
+      "emptySearch": "No product types match this search.",
+      "emptyFunctions": "No catalog functions to add yet.",
+      "empty": "No collections for this kind yet.",
+      "unknownKind": "This profile is not tied to a product type.",
+      "pickerTitle": "Functions in this collection",
+      "pickerHint": "Applying the kit replaces extras on the deal. These functions are still billed.",
+      "name": "Collection name",
+      "create": "New collection",
+      "save": "Save collection",
       "saving": "Saving…",
-      "selectedCount": "{count, plural, one {# module} other {# modules}}",
-      "cleared": "None pre-selected"
+      "delete": "Delete collection",
+      "deleting": "Deleting…",
+      "deleteTitle": "Delete this collection?",
+      "deleteDescription": "Type the collection name to confirm. Deal extras stay; only the last-applied mark is cleared.",
+      "selectedCount": "{count, plural, one {# function} other {# functions}}"
     },
     "salePrices": {
       "title": "Sale prices",
-      "subtitle": "What the client pays for a function, a gradation, or a product core. A fixed AMD amount wins over a multiplier.",
+      "subtitle": "The amount the client pays for a function, a gradation, or a product core. Units do not change this price.",
       "createTitle": "New sale price draft",
+      "createHint": "Set the AMD total the client pays for a function, a gradation, or a core.",
+      "targetHint": "Function is a catalog card price. Gradation is a volume price for one function. Core is the selected profile composition price.",
       "empty": "No sale prices for this target yet.",
+      "allEmpty": "No sale prices yet.",
       "pickTarget": "Select what to price",
       "targetKind": "Priced as",
       "targetKinds": {
@@ -500,17 +670,11 @@
       "pickTier": "Select a gradation",
       "pickCore": "Select a base profile version",
       "noTiers": "No gradations with a sale price yet. Price functions and cores from the lists above.",
-      "multiplier": "Multiplier",
-      "fixedAmount": "Fixed amount ({currency})",
-      "fixedWins": "If both are set, the fixed amount is used.",
-      "unknownTarget": "Unknown target",
-      "defaultTitle": "Default sale multiplier",
-      "defaultSubtitle": "Used when a card carries no price of its own.",
-      "defaultSave": "Save default",
-      "savingDefault": "Saving…",
-      "sourceFixed": "Fixed amount",
-      "sourceMultiplier": "Multiplier",
-      "sourceDefault": "Default multiplier"
+      "amountPerUnit": "Sale price ({currency})",
+      "amountPerUnitShort": "Price",
+      "units": "Units",
+      "pending": "New price",
+      "unknownTarget": "Unknown target"
     },
     "fields": {
       "effectiveFrom": "Effective from",
@@ -518,12 +682,12 @@
       "entityKind": "Entity kind",
       "productType": "Product type",
       "productCategory": "Product category",
-      "configSize": "Config size",
       "implementationBase": "Implementation base",
       "designMode": "Design mode",
       "aiDesignerReview": "AI designer review",
       "description": "Description",
-      "function": "Function"
+      "function": "Function",
+      "tier": "Volume"
     },
     "columns": {
       "role": "Role",
@@ -543,7 +707,7 @@
     "publish": {
       "action": "Publish",
       "publishing": "Publishing…",
-      "confirmZeroUnits": "This vector has an explicit 0 on a required role. Publish it as a confirmed zero?"
+      "confirmZeroUnits": "This vector has an explicit 0 on a role that pays units. Publish it as a confirmed zero?"
     },
     "errors": {
       "load": "Delivery norms could not be loaded.",
@@ -553,14 +717,15 @@
       "rateRequired": "Enter at least one rate.",
       "roleUnits": "Check role units: no negatives, at most 4 decimal places.",
       "functionRequired": "Pick a catalog function.",
+      "tierRequired": "Pick a volume for this function.",
       "enrollment": "Enrollment switch could not be changed.",
       "coreItems": "The core composition could not be saved.",
       "coreItemLabel": "Enter an item label.",
-      "sizePresets": "The size preset could not be saved.",
+      "collections": "The collection could not be saved.",
+      "collectionsDelete": "The collection could not be deleted.",
       "salePrices": "The sale price draft could not be created.",
-      "salePriceRequired": "Set a sale multiplier or a fixed sale amount.",
-      "salePricePositive": "Multiplier and fixed amount must be greater than zero.",
-      "defaultMultiplier": "The default multiplier could not be saved.",
+      "salePriceRequired": "Set the sale price.",
+      "salePricePositive": "The sale price must be greater than zero.",
       "targetRequired": "Pick what this sale price applies to."
     },
     "status": {
@@ -583,19 +748,46 @@
     "productTypes": {
       "BUSINESS_CARD_WEBSITE": "Business card website",
       "COMPANY_WEBSITE": "Company website",
-      "MOBILE_APP": "Mobile app",
-      "WEB_APP": "Web app",
-      "CRM": "CRM",
-      "ECOMMERCE": "E-commerce",
+      "MOBILE_APP": "Mobile App",
+      "WEB_APP": "Custom system / app",
+      "CRM": "Sales CRM",
+      "ECOMMERCE": "Online store",
       "SAAS": "SaaS",
-      "LANDING": "Landing",
-      "ERP": "ERP",
+      "LANDING": "Single-page landing site",
+      "ERP": "Enterprise management system (ERP)",
+      "PRODUCT_CATALOG": "Catalog website",
+      "BLOG": "Blog",
+      "NEWS_MEDIA_PORTAL": "News and media website",
+      "EVENT_WEBSITE": "Event website",
+      "REAL_ESTATE_WEBSITE": "Real estate website",
+      "SERVICE_WEBSITE": "Services website",
+      "TRAVEL_WEBSITE": "Travel website",
+      "CLASSIFIEDS_PORTAL": "Classifieds portal",
+      "JOB_BOARD": "Job board",
+      "MARKETPLACE": "Marketplace",
+      "B2B_COMMERCE_PORTAL": "B2B wholesale portal",
+      "BOOKING_SYSTEM": "Online booking system",
+      "TICKETING_SYSTEM": "Ticket sales system",
+      "POS": "Point-of-sale system (POS)",
+      "HRM": "Human resources system (HRM)",
+      "LMS": "Learning platform (LMS)",
+      "TASK_MANAGEMENT_SYSTEM": "Task management system",
+      "HELP_DESK_SYSTEM": "Customer support system",
+      "REGISTRATION_SYSTEM": "Applications and registration system",
+      "EVENT_MANAGEMENT_SYSTEM": "Event management system",
+      "DOCUMENT_MANAGEMENT_SYSTEM": "Document management system",
+      "INVENTORY_SYSTEM": "Inventory management system",
+      "KNOWLEDGE_BASE": "Knowledge base",
+      "INDUSTRY_OPERATIONS_SYSTEM": "Industry operations system",
+      "BOS": "Business operations system (BOS)",
+      "CUSTOMER_PORTAL": "Customer self-service portal",
+      "PARTNER_PORTAL": "Partner portal",
       "LOGO": "Logo",
-      "BRANDING": "Branding",
+      "BRANDING": "Brand identity",
       "DESIGN": "Design",
-      "SEO": "SEO",
-      "PPC": "PPC",
-      "SMM": "SMM",
+      "SEO": "Search engine optimization (SEO)",
+      "PPC": "Paid advertising (PPC)",
+      "SMM": "Social media marketing (SMM)",
       "OTHER": "Other"
     },
     "productCategories": {
@@ -604,13 +796,6 @@
       "SHOPIFY": "Shopify",
       "MARKETING": "Marketing",
       "OTHER": "Other"
-    },
-    "configSizes": {
-      "SMALL": "Small",
-      "CLASSIC": "Classic",
-      "LARGE": "Large",
-      "VERY_LARGE": "Very large",
-      "ENTERPRISE": "Enterprise"
     },
     "implementationBases": {
       "FROM_SCRATCH": "From scratch",
@@ -621,6 +806,51 @@
       "AI_DESIGN": "AI design",
       "CONCEPT": "Concept",
       "FULL_DESIGN": "Full design"
+    },
+    "productTypeDescriptions": {
+      "BUSINESS_CARD_WEBSITE": "Small calling-card site: who you are, what you do, and how to reach you.",
+      "COMPANY_WEBSITE": "Company site: about, services, cases, and contacts. Not a shop.",
+      "MOBILE_APP": "Legacy mobile app. New deals pick a real type plus App.",
+      "WEB_APP": "Custom system outside ready-made kinds: your process and screens.",
+      "CRM": "Client and deal database: pipeline and seller tasks.",
+      "ECOMMERCE": "Online shop of your own catalog: cart, order, and payment. One seller.",
+      "SAAS": "Legacy SaaS kind. Hidden from new picks.",
+      "LANDING": "One page for a lead or call. Not a company website.",
+      "ERP": "Company resources: purchasing, production, finance, and warehouses.",
+      "PRODUCT_CATALOG": "Product showcase with cards and filters, without a cart or checkout.",
+      "BLOG": "Article site: sections, authors, and a feed. Not a page on a company site.",
+      "NEWS_MEDIA_PORTAL": "News portal with sections and an editorial desk. Heavier than a blog.",
+      "EVENT_WEBSITE": "Site for one event: program, speakers, venue. No tickets.",
+      "REAL_ESTATE_WEBSITE": "Property listings with details, filters, agents, and viewing inquiries.",
+      "SERVICE_WEBSITE": "Services with dedicated pages and inquiries. Scheduling and payments are added separately.",
+      "TRAVEL_WEBSITE": "Tours and destinations with itineraries and trip inquiries. Booking and payment are separate.",
+      "CLASSIFIEDS_PORTAL": "Listings posted by different users, with search and responses. On-platform checkout is optional.",
+      "JOB_BOARD": "Employer vacancies, candidate profiles, and applications for open roles.",
+      "MARKETPLACE": "Many sellers, shared orders. Not one company's shop.",
+      "B2B_COMMERCE_PORTAL": "Wholesale dealer cabinet: own prices and company orders.",
+      "BOOKING_SYSTEM": "Book a service, table, or specialist. Not ticket sales.",
+      "TICKETING_SYSTEM": "Sell and check tickets for an event or a screening.",
+      "POS": "In-store till: receipt, shift, scanner. Not an online shop. App and Desktop.",
+      "HRM": "People ops: employees, leave, documents, and org structure.",
+      "LMS": "Learning: courses, lessons, students, progress, and tests.",
+      "TASK_MANAGEMENT_SYSTEM": "Team tasks: assign, status, deadlines. Not a CRM.",
+      "HELP_DESK_SYSTEM": "Incoming tickets: queues and client correspondence.",
+      "REGISTRATION_SYSTEM": "Application and admission: accepted or not. Not ticket sales.",
+      "EVENT_MANAGEMENT_SYSTEM": "Event operations: guests, program, check-in, and badges.",
+      "DOCUMENT_MANAGEMENT_SYSTEM": "Company documents: versions, approval, routes, and archive.",
+      "INVENTORY_SYSTEM": "Stock in, out, and counts. Not an online shop.",
+      "KNOWLEDGE_BASE": "Articles and search for client or staff help.",
+      "INDUSTRY_OPERATIONS_SYSTEM": "System for one industry: clinic, workshop, plant. Not a general BOS.",
+      "BOS": "The company's whole operations in one product: clients, tasks, records.",
+      "CUSTOMER_PORTAL": "Customer cabinet: orders, documents, tickets, and profile.",
+      "PARTNER_PORTAL": "Dealer or agent cabinet: terms, requests, and materials.",
+      "LOGO": "Logo design for the brand.",
+      "BRANDING": "Brand identity: colors, type, and style.",
+      "DESIGN": "Design work without a coded product.",
+      "SEO": "Search-engine optimization.",
+      "PPC": "Paid ads and traffic campaigns.",
+      "SMM": "Social media marketing.",
+      "OTHER": "Catch-all when no listed type fits."
     }
   },
   "rolesSeats": {

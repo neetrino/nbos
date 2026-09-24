@@ -6,7 +6,15 @@ export type CoreItemDto = { id: string; position: number; label: string; note: s
 
 export type CoreItemInput = { label: string; note?: string | null };
 
-export type SizePresetDto = { profileKey: string; configSize: string; functionIds: string[] };
+export type CoreItemsSaveResult = { profileVersionId: string; items: CoreItemDto[] };
+
+export type FunctionCollectionDto = {
+  id: string;
+  productType: string;
+  name: string;
+  position: number;
+  functionIds: string[];
+};
 
 export type SalePriceVersionDto = {
   id: string;
@@ -14,8 +22,8 @@ export type SalePriceVersionDto = {
   version: number;
   status: string;
   effectiveFrom: string;
-  multiplier: string | null;
-  fixedAmount: string | null;
+  amountPerUnit: string | null;
+  resolvedAmount: string | null;
   currency: string;
 };
 
@@ -23,14 +31,13 @@ export type SalePriceDraftInput = {
   functionId?: string;
   tierId?: string;
   baseProfileVersionId?: string;
-  multiplier?: string;
-  fixedAmount?: string;
+  amountPerUnit: string;
   effectiveFrom: string;
 };
 
 /**
- * Core composition, size presets and sale prices. None of these expose cost: a core item is a list of
- * work, a preset is a list of modules, and a sale price is what the client pays.
+ * Core composition, named collections and sale prices. None of these expose cost: a core item is a
+ * list of work, a collection is a replace-helper kit, and a sale price is what the client pays.
  */
 export const deliveryCatalogStructureApi = {
   async listCoreItems(profileVersionId: string): Promise<CoreItemDto[]> {
@@ -40,22 +47,43 @@ export const deliveryCatalogStructureApi = {
     return resp.data;
   },
 
-  async replaceCoreItems(profileVersionId: string, items: CoreItemInput[]): Promise<CoreItemDto[]> {
-    const resp = await api.put<CoreItemDto[]>(
+  async replaceCoreItems(
+    profileVersionId: string,
+    items: CoreItemInput[],
+  ): Promise<CoreItemsSaveResult> {
+    const resp = await api.put<CoreItemsSaveResult>(
       `${BASE}/base-profiles/${profileVersionId}/core-items`,
       { items },
     );
     return resp.data;
   },
 
-  async listSizePresets(profileKey: string): Promise<SizePresetDto[]> {
-    const resp = await api.get<SizePresetDto[]>(`${BASE}/size-presets`, { params: { profileKey } });
+  async listCollections(productType?: string): Promise<FunctionCollectionDto[]> {
+    const resp = await api.get<FunctionCollectionDto[]>(`${BASE}/collections`, {
+      params: productType ? { productType } : undefined,
+    });
     return resp.data;
   },
 
-  async replaceSizePreset(input: SizePresetDto): Promise<SizePresetDto> {
-    const resp = await api.put<SizePresetDto>(`${BASE}/size-presets`, input);
+  async createCollection(input: {
+    productType: string;
+    name: string;
+    functionIds: string[];
+  }): Promise<FunctionCollectionDto> {
+    const resp = await api.post<FunctionCollectionDto>(`${BASE}/collections`, input);
     return resp.data;
+  },
+
+  async replaceCollection(
+    id: string,
+    input: { productType: string; name: string; functionIds: string[] },
+  ): Promise<FunctionCollectionDto> {
+    const resp = await api.put<FunctionCollectionDto>(`${BASE}/collections/${id}`, input);
+    return resp.data;
+  },
+
+  async deleteCollection(id: string): Promise<void> {
+    await api.delete(`${BASE}/collections/${id}`);
   },
 
   async listSalePrices(targetKey?: string): Promise<SalePriceVersionDto[]> {
@@ -70,23 +98,16 @@ export const deliveryCatalogStructureApi = {
     return resp.data;
   },
 
+  async updateSalePriceDraft(
+    id: string,
+    input: { amountPerUnit: string },
+  ): Promise<SalePriceVersionDto> {
+    const resp = await api.patch<SalePriceVersionDto>(`${BASE}/sale-prices/${id}`, input);
+    return resp.data;
+  },
+
   async publishSalePrice(id: string): Promise<SalePriceVersionDto> {
     const resp = await api.post<SalePriceVersionDto>(`${BASE}/sale-prices/${id}/publish`, {});
-    return resp.data;
-  },
-
-  async getDefaultMultiplier(): Promise<{ defaultSaleMultiplier: string }> {
-    const resp = await api.get<{ defaultSaleMultiplier: string }>(
-      `${BASE}/sale-prices/default-multiplier`,
-    );
-    return resp.data;
-  },
-
-  async setDefaultMultiplier(multiplier: string): Promise<{ defaultSaleMultiplier: string }> {
-    const resp = await api.post<{ defaultSaleMultiplier: string }>(
-      `${BASE}/sale-prices/default-multiplier`,
-      { multiplier },
-    );
     return resp.data;
   },
 };

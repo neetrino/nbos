@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { useTranslations } from 'next-intl';
 import type {
   DeliveryBaseProfileFinancialDto,
@@ -22,7 +22,6 @@ export type DeliveryNormsPageData = {
   catalog: DeliveryFunctionOperationalDto[];
   enrollment: DeliveryEnrollmentSetting | null;
   salePrices: SalePriceVersionDto[];
-  defaultMultiplier: string | null;
 };
 
 const EMPTY_DATA: DeliveryNormsPageData = {
@@ -32,20 +31,27 @@ const EMPTY_DATA: DeliveryNormsPageData = {
   catalog: [],
   enrollment: null,
   salePrices: [],
-  defaultMultiplier: null,
 };
 
-export function useDeliveryNormsPageData() {
+export function useDeliveryNormsPageData(enabled: boolean) {
   const t = useTranslations('hr.deliveryNorms');
   const [data, setData] = useState<DeliveryNormsPageData>(EMPTY_DATA);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!enabled) {
+      setData(EMPTY_DATA);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setLoading(true);
     try {
-      setData(await fetchDeliveryNorms());
+      const next = await fetchDeliveryNorms();
+      setData((prev) => ({ ...next, catalog: prev.catalog }));
       setError(null);
+      fillFunctionCatalog(setData);
     } catch (caught) {
       // Rates and units must not stay on screen once the server refuses the read.
       if (isAccessRevokedApiError(caught)) {
@@ -55,7 +61,7 @@ export function useDeliveryNormsPageData() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [enabled, t]);
 
   useEffect(() => {
     void load();
@@ -64,23 +70,22 @@ export function useDeliveryNormsPageData() {
   return { data, loading, error, setError, load };
 }
 
-async function fetchDeliveryNorms(): Promise<DeliveryNormsPageData> {
-  const [rates, profiles, prices, catalog, enrollment, salePrices, multiplier] = await Promise.all([
+async function fetchDeliveryNorms(): Promise<Omit<DeliveryNormsPageData, 'catalog'>> {
+  const [rates, profiles, prices, enrollment, salePrices] = await Promise.all([
     deliveryNormsApi.listRoleRates(),
     deliveryNormsApi.listBaseProfiles(),
     deliveryNormsApi.listFunctionPrices(),
-    deliveryFunctionsApi.listAll(),
     deliveryNormsApi.getEnrollment(),
     deliveryCatalogStructureApi.listSalePrices(),
-    deliveryCatalogStructureApi.getDefaultMultiplier(),
   ]);
-  return {
-    rates,
-    profiles,
-    prices,
-    catalog,
-    enrollment,
-    salePrices,
-    defaultMultiplier: multiplier.defaultSaleMultiplier,
-  };
+  return { rates, profiles, prices, enrollment, salePrices };
+}
+
+function fillFunctionCatalog(setData: Dispatch<SetStateAction<DeliveryNormsPageData>>): void {
+  void deliveryFunctionsApi.listAll().then(
+    (catalog) => {
+      setData((prev) => ({ ...prev, catalog }));
+    },
+    () => undefined,
+  );
 }

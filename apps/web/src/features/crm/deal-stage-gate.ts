@@ -18,6 +18,7 @@ export function toDealStageGateInput(deal: Deal): DealStageGateInput {
     paymentType: deal.paymentType,
     productCategory: deal.productCategory,
     productType: deal.productType,
+    productPlatform: deal.productPlatform,
     pmId: deal.pmId,
     deadline: deal.deadline,
     projectId: deal.projectId,

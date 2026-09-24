@@ -1,5 +1,6 @@
 {
   "title": "Delivery Board",
+  "volumeAdjusted": "Volume changed",
   "pipelineAria": "Delivery pipeline",
   "loading": "Loading board…",
   "loadError": "Could not load delivery board data.",
@@ -142,8 +143,13 @@
     "deadline": "Deadline",
     "productCategory": "Product category",
     "productType": "Product type",
+    "productPlatform": "Platform",
+    "platforms": {
+      "WEB": "Web",
+      "APP": "App",
+      "DESKTOP": "Desktop"
+    },
     "extensionName": "Extension name",
-    "size": "Size",
     "productLine": "Product line:",
     "pickDate": "Pick date…",
     "productNotesPlaceholder": "Plan, milestones, client context…",

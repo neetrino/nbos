@@ -35,6 +35,7 @@ export function productToDeliveryBoardItem(product: Product): DeliveryBoardItem 
     clientAcceptedAt: product.clientAcceptedAt,
     _count: product._count,
     checklistStageProgress: product.checklistStageProgress,
+    volumeAdjusted: product.volumeAdjusted,
   };
   return { kind: 'PRODUCT', product: summary };
 }
@@ -44,7 +45,6 @@ export function extensionToDeliveryBoardItem(extension: Extension): DeliveryBoar
     id: extension.id,
     name: extension.name,
     status: extension.status,
-    size: extension.size,
     productId: extension.productId,
     description: extension.description,
     assignedTo: extension.assignedTo,
@@ -68,6 +68,7 @@ export function extensionToDeliveryBoardItem(extension: Extension): DeliveryBoar
     updatedAt: extension.updatedAt,
     _count: extension._count,
     checklistStageProgress: extension.checklistStageProgress,
+    volumeAdjusted: extension.volumeAdjusted,
   };
   return { kind: 'EXTENSION', extension: summary };
 }

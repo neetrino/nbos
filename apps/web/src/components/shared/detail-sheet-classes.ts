@@ -72,6 +72,12 @@ export const DETAIL_SHEET_CONTENT_WIDTH_75VW_CLASS =
 /** Anchor floating rail to the left edge of a 75vw / mobile 85vw right sheet. */
 export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_75VW_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(75vw,calc(100vw-2rem-2.75rem))]`;
 
+/** Function-catalog picker — slightly narrower than composition (`75vw`) so three columns fit. */
+export const DETAIL_SHEET_CONTENT_WIDTH_62VW_CLASS =
+  'flex w-full min-w-0 max-w-[100vw] flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[min(62vw,calc(100vw-2rem-2.75rem))]';
+
+export const DETAIL_SHEET_FLOATING_RAIL_ANCHOR_62VW_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[min(62vw,calc(100vw-2rem-2.75rem))]`;
+
 /** Narrower detail sheet for entities with less form density (e.g. Finance invoice). */
 export const DETAIL_SHEET_CONTENT_WIDTH_COMPACT_CLASS =
   'flex w-full min-w-0 max-w-[100vw] flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[85vw] sm:max-w-none sm:data-[side=right]:w-[min(42rem,calc(100vw-2rem-2.75rem))]';

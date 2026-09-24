@@ -2,6 +2,7 @@ import { seedPermissionRole } from './seed-permission-role';
 import { createPrismaClient } from '../src/client';
 import dotenv from 'dotenv';
 import path from 'path';
+import { PRODUCT_TYPES } from '@nbos/shared';
 import { seedMessenger } from './seed-messenger';
 import { seedMail } from './seed-mail';
 import { seedRichDemo } from './seed-rich-demo';
@@ -426,6 +427,7 @@ async function main() {
       name: 'ACME Brand Identity',
       productCategory: 'MARKETING',
       productType: 'LOGO',
+      productPlatform: null,
       status: 'DONE',
       pmId: designer.id,
     },
@@ -439,6 +441,7 @@ async function main() {
       name: 'SEO Package',
       productCategory: 'MARKETING',
       productType: 'SEO',
+      productPlatform: null,
       status: 'CREATING',
       pmId: pm.id,
     },
@@ -454,6 +457,7 @@ async function main() {
       name: 'techstart.app',
       productCategory: 'CODE',
       productType: 'MOBILE_APP',
+      productPlatform: 'APP',
       status: 'CREATING',
       pmId: pm.id,
       deadline: new Date('2026-08-01'),
@@ -497,6 +501,7 @@ async function main() {
       name: 'CRM Branding Kit',
       productCategory: 'MARKETING',
       productType: 'BRANDING',
+      productPlatform: null,
       status: 'DEVELOPMENT',
       pmId: designer.id,
     },
@@ -539,6 +544,7 @@ async function main() {
       name: 'MedTech Logo & Design',
       productCategory: 'MARKETING',
       productType: 'DESIGN',
+      productPlatform: null,
       status: 'DONE',
       pmId: designer.id,
     },
@@ -583,6 +589,7 @@ async function main() {
       name: 'ACME Newsletter Module',
       productCategory: 'MARKETING',
       productType: 'OTHER',
+      productPlatform: null,
       status: 'ON_HOLD',
       deliveryStage: 'DEVELOPMENT',
       deliveryWorkStatus: 'ON_HOLD',
@@ -630,7 +637,6 @@ async function main() {
       projectId: project1.id,
       productId: prod1.id,
       name: 'Blog module',
-      size: 'MEDIUM',
       status: 'DEVELOPMENT',
       assignedTo: dev.id,
     },
@@ -640,7 +646,6 @@ async function main() {
       projectId: project1.id,
       productId: prod1.id,
       name: 'Multi-language support',
-      size: 'SMALL',
       status: 'NEW',
     },
   });
@@ -649,7 +654,6 @@ async function main() {
       projectId: project2.id,
       productId: prod4.id,
       name: 'Push notifications',
-      size: 'MICRO',
       status: 'DONE',
       assignedTo: dev.id,
     },
@@ -659,7 +663,6 @@ async function main() {
       projectId: project2.id,
       productId: prod4.id,
       name: 'Offline mode',
-      size: 'LARGE',
       status: 'NEW',
     },
   });
@@ -668,7 +671,6 @@ async function main() {
       projectId: project4.id,
       productId: prod8.id,
       name: 'Appointment scheduling',
-      size: 'MEDIUM',
       status: 'DEVELOPMENT',
       assignedTo: dev.id,
     },
@@ -678,7 +680,6 @@ async function main() {
       projectId: project4.id,
       productId: prod9.id,
       name: 'Blog GDPR banner',
-      size: 'SMALL',
       status: 'QA',
       deliveryStage: 'QA',
       assignedTo: dev.id,
@@ -689,7 +690,6 @@ async function main() {
       projectId: project1.id,
       productId: prod1.id,
       name: 'Production deploy checklist',
-      size: 'MICRO',
       status: 'TRANSFER',
       deliveryStage: 'TRANSFER',
       assignedTo: pm.id,
@@ -700,7 +700,6 @@ async function main() {
       projectId: project3.id,
       productId: prod6.id,
       name: 'Integration spike (abandoned)',
-      size: 'SMALL',
       status: 'LOST',
       cancellationReason: 'API vendor discontinued sandbox',
       assignedTo: dev.id,
@@ -869,6 +868,7 @@ async function main() {
       source: 'MARKETING',
       productCategory: 'CODE',
       productType: 'MOBILE_APP',
+      productPlatform: 'APP',
       pmId: pm.id,
       deadline: new Date('2026-08-01'),
       projectId: project2.id,
@@ -2099,30 +2099,15 @@ async function main() {
     { listKey: 'PRODUCT_CATEGORY', code: 'SHOPIFY', label: 'Shopify', sortOrder: 2 },
     { listKey: 'PRODUCT_CATEGORY', code: 'MARKETING', label: 'Marketing', sortOrder: 3 },
     { listKey: 'PRODUCT_CATEGORY', code: 'OTHER', label: 'Other', sortOrder: 4 },
-    {
+    ...PRODUCT_TYPES.map((code, sortOrder) => ({
       listKey: 'PRODUCT_TYPE',
-      code: 'BUSINESS_CARD_WEBSITE',
-      label: 'Business Card Website',
-      sortOrder: 0,
-    },
-    { listKey: 'PRODUCT_TYPE', code: 'COMPANY_WEBSITE', label: 'Company Website', sortOrder: 1 },
-    { listKey: 'PRODUCT_TYPE', code: 'MOBILE_APP', label: 'Mobile App', sortOrder: 2 },
-    { listKey: 'PRODUCT_TYPE', code: 'WEB_APP', label: 'Web Application', sortOrder: 3 },
-    { listKey: 'PRODUCT_TYPE', code: 'CRM', label: 'CRM System', sortOrder: 4 },
-    { listKey: 'PRODUCT_TYPE', code: 'ECOMMERCE', label: 'E-Commerce', sortOrder: 5 },
-    { listKey: 'PRODUCT_TYPE', code: 'SAAS', label: 'SaaS Platform', sortOrder: 6 },
-    { listKey: 'PRODUCT_TYPE', code: 'LANDING', label: 'Landing Page', sortOrder: 7 },
-    { listKey: 'PRODUCT_TYPE', code: 'ERP', label: 'ERP System', sortOrder: 8 },
-    { listKey: 'PRODUCT_TYPE', code: 'LOGO', label: 'Logo', sortOrder: 9 },
-    { listKey: 'PRODUCT_TYPE', code: 'BRANDING', label: 'Branding', sortOrder: 10 },
-    { listKey: 'PRODUCT_TYPE', code: 'DESIGN', label: 'Design', sortOrder: 11 },
-    { listKey: 'PRODUCT_TYPE', code: 'SEO', label: 'SEO', sortOrder: 12 },
-    { listKey: 'PRODUCT_TYPE', code: 'PPC', label: 'PPC', sortOrder: 13 },
-    { listKey: 'PRODUCT_TYPE', code: 'SMM', label: 'SMM', sortOrder: 14 },
-    { listKey: 'PRODUCT_TYPE', code: 'OTHER', label: 'Other', sortOrder: 99 },
+      code,
+      label: code,
+      sortOrder,
+    })),
   ];
   await prisma.systemListOption.createMany({ data: systemListOptions });
-  console.log('  ✓ System list options (21)');
+  console.log(`  ✓ System list options (${systemListOptions.length})`);
 
   console.log('\n✅ Seed completed successfully!');
   console.log('   20 projects (half archived), 15+ products per baseline + rich bundle');

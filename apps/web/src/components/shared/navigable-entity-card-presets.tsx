@@ -33,7 +33,7 @@ import {
   buildProductDetailPageHref,
   PRODUCT_DETAIL_TAB,
 } from '@/features/projects/constants/product-detail-tab';
-import { getProductType } from '@/features/projects/constants/projects';
+import { formsProductTypeKey } from '@/features/projects/constants/projects';
 import { getProductDirectoryBadge } from '@/features/projects/utils/products-hub-directory-badge';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
@@ -428,16 +428,17 @@ export function ProductNavigableCard({
   showProjectContext = false,
 }: ProductNavigableCardProps) {
   const t = useTranslations('deliveryBoard');
+  const tForms = useTranslations('forms');
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
-  const productType = getProductType(product.productType);
+  const productTypeLabel = tForms(formsProductTypeKey(product.productType) as never);
   const statusBadge = getProductDirectoryBadge(product, t);
 
   return (
     <NavigableEntityCard
       href={buildProductDetailPageHref(projectId, product.id)}
       icon={Package}
-      eyebrow={productType?.label}
+      eyebrow={productTypeLabel}
       title={product.name}
       badges={statusBadge ? [statusBadge] : undefined}
       metaLines={buildProductCardMeta(product, showProjectContext)}

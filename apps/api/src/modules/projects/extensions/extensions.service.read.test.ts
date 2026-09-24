@@ -111,15 +111,6 @@ describe('ExtensionsService', () => {
         }),
       );
     });
-
-    it('applies size filter', async () => {
-      await service.findAll({ size: 'LARGE' });
-      expect(prisma.extension.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ size: 'LARGE' }),
-        }),
-      );
-    });
   });
 
   describe('findById', () => {

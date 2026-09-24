@@ -1,4 +1,5 @@
 import type { StatusVariant } from '@/components/shared/StatusBadge';
+import { listedProductTypesForPicker, PRODUCT_TYPES as PRODUCT_TYPE_VALUES } from '@nbos/shared';
 
 export const PROJECT_HUB_TABS = [
   { value: 'all', label: 'All' },
@@ -23,42 +24,16 @@ export const PRODUCT_CATEGORIES = [
   { value: 'OTHER', label: 'Other' },
 ] as const;
 
-export const PRODUCT_TYPES = [
-  { value: 'BUSINESS_CARD_WEBSITE', label: 'Business Card Website' },
-  { value: 'COMPANY_WEBSITE', label: 'Company Website' },
-  { value: 'MOBILE_APP', label: 'Mobile App' },
-  { value: 'WEB_APP', label: 'Web Application' },
-  { value: 'CRM', label: 'CRM System' },
-  { value: 'ECOMMERCE', label: 'E-Commerce' },
-  { value: 'SAAS', label: 'SaaS Platform' },
-  { value: 'LANDING', label: 'Landing Page' },
-  { value: 'ERP', label: 'ERP System' },
-  { value: 'LOGO', label: 'Logo' },
-  { value: 'BRANDING', label: 'Branding' },
-  { value: 'DESIGN', label: 'Design' },
-  { value: 'SEO', label: 'SEO' },
-  { value: 'PPC', label: 'PPC' },
-  { value: 'SMM', label: 'SMM' },
-  { value: 'OTHER', label: 'Other' },
-] as const;
+export const PRODUCT_TYPES = PRODUCT_TYPE_VALUES.map((value) => ({ value, label: value }));
 
-export const PRODUCT_TYPES_BY_CATEGORY: Record<string, readonly string[]> = {
-  CODE: [
-    'BUSINESS_CARD_WEBSITE',
-    'COMPANY_WEBSITE',
-    'MOBILE_APP',
-    'WEB_APP',
-    'CRM',
-    'ECOMMERCE',
-    'SAAS',
-    'LANDING',
-    'ERP',
-  ],
-  WORDPRESS: ['BUSINESS_CARD_WEBSITE', 'COMPANY_WEBSITE', 'ECOMMERCE', 'LANDING'],
-  SHOPIFY: ['ECOMMERCE'],
-  MARKETING: ['LOGO', 'BRANDING', 'DESIGN', 'SEO', 'PPC', 'SMM'],
-  OTHER: [],
-};
+export function getProductTypesForCategory(
+  category: string,
+  currentType?: string,
+  productPlatform?: string | null,
+) {
+  const listed = listedProductTypesForPicker(category, currentType, productPlatform);
+  return PRODUCT_TYPES.filter((t) => listed.includes(t.value));
+}
 
 export const PRODUCT_STATUSES = [
   { value: 'NEW', label: 'New', variant: 'blue' as StatusVariant, color: 'bg-blue-500' },
@@ -105,13 +80,6 @@ export const EXTENSION_STATUSES = [
   { value: 'LOST', label: 'Lost', variant: 'red' as StatusVariant, color: 'bg-red-500' },
 ] as const;
 
-export const EXTENSION_SIZES = [
-  { value: 'MICRO', label: 'Micro', variant: 'gray' as StatusVariant },
-  { value: 'SMALL', label: 'Small', variant: 'blue' as StatusVariant },
-  { value: 'MEDIUM', label: 'Medium', variant: 'purple' as StatusVariant },
-  { value: 'LARGE', label: 'Large', variant: 'orange' as StatusVariant },
-] as const;
-
 export function getProductCategory(value: string) {
   return PRODUCT_CATEGORIES.find((c) => c.value === value);
 }
@@ -120,14 +88,9 @@ export function getProductType(value: string) {
   return PRODUCT_TYPES.find((t) => t.value === value);
 }
 
-/**
- * Возвращает отфильтрованный список ProductType по категории.
- * OTHER всегда добавляется в конец.
- */
-export function getProductTypesForCategory(category: string) {
-  const allowed = PRODUCT_TYPES_BY_CATEGORY[category] ?? [];
-  const filtered = PRODUCT_TYPES.filter((t) => allowed.includes(t.value) || t.value === 'OTHER');
-  return filtered;
+/** i18n key under the `forms` namespace. */
+export function formsProductTypeKey(value: string) {
+  return `product.types.${value}` as const;
 }
 
 export function getProductStatus(value: string) {
@@ -180,10 +143,6 @@ export function formatDeliveryHoldUntil(onHoldUntil: string | null) {
 
 export function getExtensionStatus(value: string) {
   return EXTENSION_STATUSES.find((s) => s.value === value);
-}
-
-export function getExtensionSize(value: string) {
-  return EXTENSION_SIZES.find((s) => s.value === value);
 }
 
 function toTitleCase(value: string) {

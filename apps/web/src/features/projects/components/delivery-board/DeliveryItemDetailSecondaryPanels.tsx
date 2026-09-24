@@ -14,6 +14,7 @@ interface DeliveryItemDetailSecondaryPanelsProps {
   projectHubHref: string;
   workSpaceHref: string;
   productId: string;
+  extensionId?: string | null;
   onTaskCreateOpenChange: (open: boolean) => void;
   tasksRefreshSignal?: number;
   bonusOrderId: string | null;
@@ -29,6 +30,7 @@ export function DeliveryItemDetailSecondaryPanels({
   projectHubHref,
   workSpaceHref,
   productId,
+  extensionId = null,
   onTaskCreateOpenChange,
   tasksRefreshSignal,
   bonusOrderId: _bonusOrderId,
@@ -58,7 +60,13 @@ export function DeliveryItemDetailSecondaryPanels({
 
       {view === 'functions' ? (
         <SecondaryCard title="Functions">
-          <ProductFunctionsWorkspace productId={productId} />
+          <ProductFunctionsWorkspace
+            target={
+              extensionId
+                ? { kind: 'extension', id: extensionId }
+                : { kind: 'product', id: productId }
+            }
+          />
         </SecondaryCard>
       ) : null}
 

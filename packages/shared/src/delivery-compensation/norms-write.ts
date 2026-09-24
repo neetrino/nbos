@@ -1,18 +1,13 @@
-import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../constants';
+import { isProductTypeOfferedForNewProduct, PRODUCT_CATEGORIES, PRODUCT_TYPES } from '../constants';
 import {
   CatalogContentValidationError,
   CatalogFinancialMassAssignmentError,
 } from './catalog-write';
 import {
   DELIVERY_COMPENSATION_ROLE_KEYS,
-  DELIVERY_CONFIG_SIZES,
-  DELIVERY_DESIGN_MODES,
-  DELIVERY_ENTITY_KINDS,
-  DELIVERY_IMPLEMENTATION_BASES,
   DELIVERY_ROLE_UNIT_KINDS,
-  type DeliveryConfigSize,
+  frozenDeliveryAxes,
   type DeliveryDesignMode,
-  type DeliveryEntityKind,
   type DeliveryImplementationBase,
 } from './constants';
 import { DeliveryDecimalError, parseUnits } from './decimal-scale';
@@ -22,10 +17,11 @@ import type { DeliveryRoleUnitInput } from './role-units';
 const FORBIDDEN_NORM_KEYS = ['employeeId', 'employee_id', 'salary', 'baseSalary', 'grade'] as const;
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const PROFILE_KEY_MAX_LENGTH = 120;
 
 export type FunctionPriceWriteInput = {
   functionId: string;
+  /** Null prices a card with a single volume. Required when the card has gradations. */
+  tierId: string | null;
   effectiveFrom: string;
   roleUnits: DeliveryRoleUnitInput[];
 };
@@ -34,11 +30,8 @@ export type ProductTypeKey = (typeof PRODUCT_TYPES)[number];
 export type ProductCategoryKey = (typeof PRODUCT_CATEGORIES)[number];
 
 export type BaseProfileWriteInput = {
-  profileKey: string;
-  entityKind: DeliveryEntityKind;
-  productType: ProductTypeKey | null;
+  productType: ProductTypeKey;
   productCategory: ProductCategoryKey | null;
-  configSize: DeliveryConfigSize;
   implementationBase: DeliveryImplementationBase;
   designMode: DeliveryDesignMode;
   aiDesignerReview: boolean;
@@ -52,35 +45,46 @@ export function parseFunctionPriceWriteBody(body: unknown): FunctionPriceWriteIn
   const record = readNormRecord(body);
   return {
     functionId: readUuid(record.functionId, 'functionId'),
+    tierId: readOptionalUuid(record.tierId, 'tierId'),
     effectiveFrom: readEffectiveFrom(record.effectiveFrom),
     roleUnits: parseRoleUnitVector(record.roleUnits),
   };
 }
 
+/** Card-level drafts never replace published gradation vectors. */
+export function functionPriceTierTargetError(
+  existingTierIds: readonly string[],
+  requestedTierId: string | null,
+): string | null {
+  if (existingTierIds.length === 0) {
+    return requestedTierId === null ? null : 'tierId is not used for a function without gradations';
+  }
+  if (requestedTierId === null) {
+    return 'tierId is required for a function with gradations';
+  }
+  if (!existingTierIds.includes(requestedTierId)) {
+    return 'tierId does not belong to this function';
+  }
+  return null;
+}
+
+/** Stable key for a kind that has no core yet. Later saves reuse the key already stored. */
+export function coreProfileKeyForProductType(productType: string): string {
+  return productType.toLowerCase().replaceAll('_', '-');
+}
+
 export function parseBaseProfileWriteBody(body: unknown): BaseProfileWriteInput {
   const record = readNormRecord(body);
-  const entityKind = readEnum(record.entityKind, DELIVERY_ENTITY_KINDS, 'entityKind');
-  const productType = readOptionalEnum(record.productType, PRODUCT_TYPES, 'productType');
-  if (entityKind === 'PRODUCT' && productType === null) {
-    throw new CatalogContentValidationError('productType is required for PRODUCT profiles');
-  }
+  rejectRetiredCoreAxes(record);
+  const productType = readOfferedProductType(record.productType);
   return {
-    profileKey: readProfileKey(record.profileKey),
-    entityKind,
     productType,
     productCategory: readOptionalEnum(
       record.productCategory,
       PRODUCT_CATEGORIES,
       'productCategory',
     ),
-    configSize: readEnum(record.configSize, DELIVERY_CONFIG_SIZES, 'configSize'),
-    implementationBase: readEnum(
-      record.implementationBase,
-      DELIVERY_IMPLEMENTATION_BASES,
-      'implementationBase',
-    ),
-    designMode: readEnum(record.designMode, DELIVERY_DESIGN_MODES, 'designMode'),
-    aiDesignerReview: record.aiDesignerReview === true,
+    ...frozenDeliveryAxes(),
     description: readOptionalText(record.description),
     effectiveFrom: readEffectiveFrom(record.effectiveFrom),
     roleUnits: parseRoleUnitVector(record.roleUnits),
@@ -134,6 +138,42 @@ function parseRoleUnitRow(entry: unknown): DeliveryRoleUnitInput {
   return { roleKey, unitKind, units };
 }
 
+export function parseFunctionPricePatchBody(body: unknown): {
+  roleUnits: DeliveryRoleUnitInput[];
+} {
+  const record = readNormRecord(body);
+  return { roleUnits: parseRoleUnitVector(record.roleUnits) };
+}
+
+export function parseBaseProfilePatchBody(body: unknown): {
+  roleUnits: DeliveryRoleUnitInput[];
+  includedFunctionIds: string[];
+} {
+  const record = readNormRecord(body);
+  rejectRetiredCoreAxes(record);
+  return {
+    roleUnits: parseRoleUnitVector(record.roleUnits),
+    includedFunctionIds: readFunctionIdList(record.includedFunctionIds),
+  };
+}
+
+function rejectRetiredCoreAxes(record: Record<string, unknown>): void {
+  if (record.entityKind !== undefined) {
+    throw new CatalogContentValidationError('entityKind is not an axis of a product core');
+  }
+}
+
+function readOfferedProductType(value: unknown): ProductTypeKey {
+  if (value === null || value === undefined || value === '') {
+    throw new CatalogContentValidationError('productType is required');
+  }
+  const productType = readEnum(value, PRODUCT_TYPES, 'productType');
+  if (!isProductTypeOfferedForNewProduct(productType)) {
+    throw new CatalogContentValidationError('productType is not offered for a new product');
+  }
+  return productType;
+}
+
 function readNullableUnits(value: unknown, roleKey: string): string | null {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -181,22 +221,18 @@ function readUuid(value: unknown, key: string): string {
   return value.trim();
 }
 
+function readOptionalUuid(value: unknown, key: string): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  return readUuid(value, key);
+}
+
 function readEffectiveFrom(value: unknown): string {
   if (typeof value !== 'string' || Number.isNaN(Date.parse(value))) {
     throw new CatalogContentValidationError('effectiveFrom is required');
   }
   return value;
-}
-
-function readProfileKey(value: unknown): string {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new CatalogContentValidationError('profileKey is required');
-  }
-  const text = value.trim();
-  if (text.length > PROFILE_KEY_MAX_LENGTH) {
-    throw new CatalogContentValidationError('profileKey is too long');
-  }
-  return text;
 }
 
 function readOptionalText(value: unknown): string | null {

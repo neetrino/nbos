@@ -66,6 +66,8 @@ model Employee {
   extensionsAssigned       Extension[]             @relation("ExtensionAssignee")
   extensionsClosed         Extension[]             @relation("ExtensionClosedBy")
   leadsAssigned            Lead[]                  @relation("LeadAssignee")
+  contactsResponsible      Contact[]               @relation("ContactResponsible")
+  companiesResponsible     Company[]               @relation("CompanyResponsible")
   dealsSelling             Deal[]                  @relation("DealSeller")
   dealsAsSellerAssistant   Deal[]                  @relation("DealSellerAssistant")
   dealsPM                  Deal[]                  @relation("DealPM")

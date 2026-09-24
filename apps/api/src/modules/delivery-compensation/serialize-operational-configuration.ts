@@ -1,4 +1,9 @@
-import { assertNoFinancialLeak, type DeliveryCompensationErrorCode } from '@nbos/shared';
+import {
+  assertNoFinancialLeak,
+  normalizeStoredVolumeFactor,
+  VOLUME_FACTOR_STANDARD,
+  type DeliveryCompensationErrorCode,
+} from '@nbos/shared';
 
 export type OperationalConfigurationDto = {
   id: string;
@@ -8,11 +13,12 @@ export type OperationalConfigurationDto = {
   enrolled: boolean;
   designMode: string | null;
   aiDesignerReview: boolean;
-  configSize: string | null;
   implementationBase: string | null;
   checkedAt: string | null;
   /** Frozen core of this card. Null until the parameters are confirmed. */
   baseProfileVersionId: string | null;
+  coreVolumeFactor: string;
+  coreVolumeReason: string | null;
   draftVersion: number;
   /**
    * Revision a scope change must send back as `expectedRevision`. Once the plan is materialized the
@@ -23,6 +29,8 @@ export type OperationalConfigurationDto = {
     id: string;
     functionId: string;
     origin: string;
+    volumeFactor: string;
+    volumeReason: string | null;
     localNote: string | null;
     workState: string;
   }>;
@@ -39,16 +47,19 @@ export function serializeOperationalConfiguration(input: {
   mode: string;
   designMode: string | null;
   aiDesignerReview: boolean;
-  configSize: string | null;
   implementationBase: string | null;
   checkedAt: Date | null;
   baseProfileVersionId?: string | null;
+  coreVolumeFactor?: { toString(): string } | string | null;
+  coreVolumeReason?: string | null;
   draftVersion: number;
   currentRevision?: { sequence: number } | null;
   features: Array<{
     id: string;
     functionId: string;
     origin: string;
+    volumeFactor?: { toString(): string } | string | null;
+    volumeReason?: string | null;
     localNote: string | null;
     workState: string;
     archivedAt: Date | null;
@@ -63,10 +74,11 @@ export function serializeOperationalConfiguration(input: {
     enrolled: input.mode === 'V2',
     designMode: input.designMode,
     aiDesignerReview: input.aiDesignerReview,
-    configSize: input.configSize,
     implementationBase: input.implementationBase,
     checkedAt: input.checkedAt?.toISOString() ?? null,
     baseProfileVersionId: input.baseProfileVersionId ?? null,
+    coreVolumeFactor: displayFactor(input.coreVolumeFactor),
+    coreVolumeReason: input.coreVolumeReason ?? null,
     draftVersion: input.draftVersion,
     expectedRevision: input.currentRevision?.sequence ?? input.draftVersion,
     features: input.features
@@ -75,6 +87,8 @@ export function serializeOperationalConfiguration(input: {
         id: feature.id,
         functionId: feature.functionId,
         origin: feature.origin,
+        volumeFactor: displayFactor(feature.volumeFactor),
+        volumeReason: feature.volumeReason ?? null,
         localNote: feature.localNote,
         workState: feature.workState,
       })),
@@ -88,4 +102,10 @@ export function serializeOperationalConfiguration(input: {
     throw new Error(`Operational configuration leaked financial keys: ${leaks.join(', ')}`);
   }
   return dto;
+}
+
+function displayFactor(value: { toString(): string } | string | null | undefined): string {
+  if (value === null || value === undefined) return VOLUME_FACTOR_STANDARD;
+  const text = typeof value === 'string' ? value : value.toString();
+  return normalizeStoredVolumeFactor(text);
 }

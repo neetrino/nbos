@@ -59,7 +59,43 @@ describe('inspectV2DevelopmentReadiness', () => {
     expect(JSON.stringify(result.errors)).not.toMatch(/\d{2,}/);
   });
 
-  it('blocks AI design with a Designer when reviewer is missing', () => {
+  it('blocks Development on a REQUIRED role even when its units are zero', () => {
+    const result = inspectV2DevelopmentReadiness({
+      mode: 'V2',
+      initialRevisionId: null,
+      checkedAt: new Date(),
+      assignees: { ...assignees, TECHNICAL_SPECIALIST: undefined },
+      normatives: {
+        ...normatives,
+        baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
+          row.roleKey === 'TECHNICAL_SPECIALIST' ? { ...row, units: '0' } : row,
+        ),
+      },
+    });
+    expect(result.apply).toBe(true);
+    if (!result.apply) return;
+    expect(result.errors).toContain('ROLE_ASSIGNMENT_REQUIRED');
+  });
+
+  it('allows Development when an OPTIONAL role has units and no assignee', () => {
+    const result = inspectV2DevelopmentReadiness({
+      mode: 'V2',
+      initialRevisionId: null,
+      checkedAt: new Date(),
+      assignees: { ...assignees, QA: undefined },
+      normatives: {
+        ...normatives,
+        baseRoleUnits: SYNTHETIC_TEST_BASE_UNITS.map((row) =>
+          row.roleKey === 'QA' ? { ...row, unitKind: 'OPTIONAL' as const } : row,
+        ),
+      },
+    });
+    expect(result.apply).toBe(true);
+    if (!result.apply) return;
+    expect(result.errors).not.toContain('ROLE_ASSIGNMENT_REQUIRED');
+  });
+
+  it('does not block Development on a missing AI reviewer', () => {
     const result = inspectV2DevelopmentReadiness({
       mode: 'V2',
       initialRevisionId: null,
@@ -69,6 +105,6 @@ describe('inspectV2DevelopmentReadiness', () => {
     });
     expect(result.apply).toBe(true);
     if (!result.apply) return;
-    expect(result.errors).toContain('AI_DESIGNER_REVIEW_REQUIRED');
+    expect(result.errors).not.toContain('AI_DESIGNER_REVIEW_REQUIRED');
   });
 });

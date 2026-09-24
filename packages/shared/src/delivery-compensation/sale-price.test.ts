@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CatalogContentValidationError } from './catalog-write';
 import {
-  DEFAULT_SALE_MULTIPLIER,
   parseSalePriceBody,
   resolveSalePrice,
   salePriceTargetKey,
   sumSalePrices,
 } from './sale-price';
-
-const RATE = '1000';
 
 describe('salePriceTargetKey', () => {
   it('separates a function, one of its gradations and a product core', () => {
@@ -19,52 +16,18 @@ describe('salePriceTargetKey', () => {
 });
 
 describe('resolveSalePrice', () => {
-  it('sells units at the global multiplier when the card carries no price', () => {
-    expect(
-      resolveSalePrice({
-        units: '30',
-        developerRate: RATE,
-        multiplier: null,
-        fixedAmount: null,
-        defaultMultiplier: DEFAULT_SALE_MULTIPLIER,
-      }),
-    ).toEqual({ amount: '300000.00', source: 'DEFAULT_MULTIPLIER' });
+  it('keeps the stored amount for a function, a gradation, or a core', () => {
+    expect(resolveSalePrice({ amount: '500000' })).toEqual({
+      amount: '500000.00',
+      source: 'CARD',
+    });
   });
 
-  it('uses the multiplier of the card when it has one', () => {
-    expect(
-      resolveSalePrice({
-        units: '30',
-        developerRate: RATE,
-        multiplier: '20',
-        fixedAmount: null,
-        defaultMultiplier: DEFAULT_SALE_MULTIPLIER,
-      }),
-    ).toEqual({ amount: '600000.00', source: 'MULTIPLIER' });
-  });
-
-  it('lets a fixed market price win over any multiplier', () => {
-    expect(
-      resolveSalePrice({
-        units: '100',
-        developerRate: RATE,
-        multiplier: '10',
-        fixedAmount: '400000',
-        defaultMultiplier: DEFAULT_SALE_MULTIPLIER,
-      }),
-    ).toEqual({ amount: '400000.00', source: 'FIXED' });
-  });
-
-  it('reports an unknown price rather than inventing one without units or a rate', () => {
-    expect(
-      resolveSalePrice({
-        units: null,
-        developerRate: RATE,
-        multiplier: '10',
-        fixedAmount: null,
-        defaultMultiplier: DEFAULT_SALE_MULTIPLIER,
-      }),
-    ).toEqual({ amount: null, source: 'UNKNOWN' });
+  it('does not invent a price when the card has no stored amount', () => {
+    expect(resolveSalePrice({ amount: null })).toEqual({
+      amount: null,
+      source: 'UNKNOWN',
+    });
   });
 });
 
@@ -81,35 +44,26 @@ describe('sumSalePrices', () => {
 describe('parseSalePriceBody', () => {
   const target = { kind: 'FUNCTION', functionId: 'fn-1' } as const;
 
-  it('accepts a multiplier alone', () => {
+  it('accepts a positive AMD-per-unit rate', () => {
     expect(
-      parseSalePriceBody({ multiplier: '7.5', effectiveFrom: '2026-10-01' }, target),
-    ).toMatchObject({ multiplier: '7.5000', fixedAmount: null });
+      parseSalePriceBody({ amountPerUnit: '5000', effectiveFrom: '2026-10-01' }, target),
+    ).toMatchObject({ amountPerUnit: '5000.0000' });
   });
 
-  it('accepts a fixed amount alone', () => {
-    expect(
-      parseSalePriceBody({ fixedAmount: 400000, effectiveFrom: '2026-10-01' }, target),
-    ).toMatchObject({ multiplier: null, fixedAmount: '400000.00' });
-  });
-
-  it('refuses a version with no price at all', () => {
+  it('refuses a version with no rate', () => {
     expect(() => parseSalePriceBody({ effectiveFrom: '2026-10-01' }, target)).toThrow(
-      /multiplier or a fixed sale amount/,
+      /amountPerUnit is required/,
     );
   });
 
-  it('refuses zero and negative prices', () => {
+  it('refuses zero and negative rates', () => {
     expect(() =>
-      parseSalePriceBody({ multiplier: '0', effectiveFrom: '2026-10-01' }, target),
-    ).toThrow(/greater than zero/);
-    expect(() =>
-      parseSalePriceBody({ fixedAmount: '-5', effectiveFrom: '2026-10-01' }, target),
+      parseSalePriceBody({ amountPerUnit: '0', effectiveFrom: '2026-10-01' }, target),
     ).toThrow(/greater than zero/);
   });
 
   it('requires a date the version takes effect from', () => {
-    expect(() => parseSalePriceBody({ multiplier: '10' }, target)).toThrow(
+    expect(() => parseSalePriceBody({ amountPerUnit: '10000' }, target)).toThrow(
       CatalogContentValidationError,
     );
   });

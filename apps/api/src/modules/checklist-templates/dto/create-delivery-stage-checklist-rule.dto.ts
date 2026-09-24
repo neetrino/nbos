@@ -1,7 +1,6 @@
 import {
   DeliveryChecklistTargetEnum,
   DeliveryStageEnum,
-  ExtensionSizeEnum,
   ProductCategoryEnum,
   ProductTypeEnum,
 } from '@nbos/database';
@@ -30,10 +29,6 @@ export class CreateDeliveryStageChecklistRuleDto {
   @IsOptional()
   @IsEnum(ProductTypeEnum)
   filterProductType?: ProductTypeEnum;
-
-  @IsOptional()
-  @IsEnum(ExtensionSizeEnum)
-  filterExtensionSize?: ExtensionSizeEnum;
 
   @IsOptional()
   @IsBoolean()

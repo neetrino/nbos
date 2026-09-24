@@ -12,6 +12,7 @@ function product(overrides: Partial<FullProduct> = {}): FullProduct {
     name: 'Website',
     productCategory: 'CODE',
     productType: 'COMPANY_WEBSITE',
+    productPlatform: 'WEB',
     status: 'DEVELOPMENT',
     pmId: null,
     deadline: null,

@@ -296,7 +296,6 @@ export interface DeliveryStageChecklistRuleRow {
   priority: number;
   filterProductCategory: string | null;
   filterProductType: string | null;
-  filterExtensionSize: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -315,7 +314,6 @@ export interface CreateDeliveryStageChecklistRuleBody {
   priority?: number;
   filterProductCategory?: string;
   filterProductType?: string;
-  filterExtensionSize?: string;
   isActive?: boolean;
 }
 

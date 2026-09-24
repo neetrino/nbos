@@ -1,5 +1,6 @@
 import {
   calculateDeliveryPlan,
+  requiredAssigneeRoles,
   type DeliveryCompensationErrorCode,
   type DeliveryCompensationRoleKey,
 } from '@nbos/shared';
@@ -35,15 +36,14 @@ export function inspectV2DevelopmentReadiness(input: {
   }
 
   const plan = calculateDeliveryPlan({
-    ...input.normatives,
-    designerAssigned: Boolean(input.assignees.DESIGNER),
+    baseRoleUnits: input.normatives.baseRoleUnits,
+    rates: input.normatives.rates,
+    features: input.normatives.features,
   });
   errors.push(...plan.errors);
-  const missingAssignees = plan.lines
-    .filter((line) => Number(line.amount) > 0)
-    .map((line) => line.roleKey)
-    .filter((role, index, roles) => roles.indexOf(role) === index)
-    .filter((role) => !input.assignees[role]);
+  const missingAssignees = requiredRolesFromNormatives(input.normatives).filter(
+    (role) => !input.assignees[role],
+  );
   if (missingAssignees.length > 0) {
     errors.push('ROLE_ASSIGNMENT_REQUIRED');
   }
@@ -56,9 +56,24 @@ export function inspectV2DevelopmentReadiness(input: {
   };
 }
 
+function requiredRolesFromNormatives(
+  normatives: LoadedPublishedNormatives,
+): DeliveryCompensationRoleKey[] {
+  const roles = new Set(requiredAssigneeRoles(normatives.baseRoleUnits));
+  for (const feature of normatives.features) {
+    if (feature.origin === 'INCLUDED') {
+      continue;
+    }
+    for (const role of requiredAssigneeRoles(feature.roleUnits)) {
+      roles.add(role);
+    }
+  }
+  return [...roles];
+}
+
 function emptyNormatives(): LoadedPublishedNormatives {
   return {
-    designMode: 'FULL_DESIGN',
+    designMode: 'AI_DESIGN',
     aiDesignerReview: false,
     baseRoleUnits: [],
     rates: [],

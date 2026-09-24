@@ -10,12 +10,16 @@ import { FINANCE_OPS_ITEMS } from './data/finance-ops-items';
 import { HR_OPS_ITEMS } from './data/hr-ops-items';
 import { INTEGRATIONS_ITEMS } from './data/integrations-items';
 import { LOGISTICS_ITEMS } from './data/logistics-items';
+import { LEARNING_ITEMS } from './data/learning-items';
 import { LOYALTY_ITEMS } from './data/loyalty-items';
+import { MARKETPLACE_ITEMS } from './data/marketplace-items';
 import { MESSAGING_ITEMS } from './data/messaging-items';
 import { MOBILE_ITEMS } from './data/mobile-items';
 import { PAYMENTS_ITEMS } from './data/payments-items';
 import { PLATFORM_ITEMS } from './data/platform-items';
+import { POS_ITEMS } from './data/pos-items';
 import { SERVICES_ITEMS } from './data/services-items';
+import { TICKETING_ITEMS } from './data/ticketing-items';
 import type { CatalogSeedItem } from './data/catalog-seed-types';
 
 export type { CatalogSeedItem } from './data/catalog-seed-types';
@@ -31,12 +35,16 @@ export type DeliveryCatalogSeedItem = CatalogSeedItem;
 export const DELIVERY_CATALOG_SEED_ITEMS: readonly CatalogSeedItem[] = [
   ...PAYMENTS_ITEMS,
   ...COMMERCE_ITEMS,
+  ...MARKETPLACE_ITEMS,
+  ...POS_ITEMS,
+  ...TICKETING_ITEMS,
   ...LOGISTICS_ITEMS,
   ...MESSAGING_ITEMS,
   ...ACCOUNTS_ITEMS,
   ...CONTENT_ITEMS,
   ...LOYALTY_ITEMS,
   ...BOOKING_ITEMS,
+  ...LEARNING_ITEMS,
   ...CRM_OPS_ITEMS,
   ...FINANCE_OPS_ITEMS,
   ...HR_OPS_ITEMS,
@@ -50,7 +58,7 @@ export const DELIVERY_CATALOG_SEED_ITEMS: readonly CatalogSeedItem[] = [
 ];
 
 export const SEED_INSTRUCTIONS_PLACEHOLDER =
-  'Шаги исполнения заполняет специалист по реальной практике перед публикацией карточки.';
+  'The specialist documents the execution steps from actual practice before publishing the card.';
 
 export const SEED_ACCEPTANCE_PLACEHOLDER =
-  'Критерии приёмки уточняет ответственный специалист перед публикацией карточки.';
+  'The responsible specialist defines the acceptance criteria before publishing the card.';

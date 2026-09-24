@@ -2,14 +2,7 @@
 
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDown, Plus, UserPlus, Users2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Users2 } from 'lucide-react';
 import {
   IntegratedSearchFilters,
   ViewModeSwitch,
@@ -23,9 +16,8 @@ import {
   EMPLOYEE_STATUSES,
   isEmployeeLevelValue,
 } from '@/features/hr/constants/hr';
-import { CreateEmployeeSheet } from '@/features/hr/components/CreateEmployeeSheet';
+import { useTeamDirectoryAdd } from '@/features/hr/components/team-directory-add';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
-import { InviteEmployeeDialog } from '@/features/hr/components/InviteEmployeeDialog';
 import { TeamEmployeeCard } from '@/features/hr/components/TeamEmployeeCard';
 import { TeamEmployeeTable } from '@/features/hr/components/TeamEmployeeTable';
 import { TeamStatusChips } from '@/features/hr/components/TeamStatusChips';
@@ -39,7 +31,7 @@ import { useTeamEmployeeDeepLink } from '@/features/hr/hooks/use-team-employee-d
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import type { Employee } from '@/lib/api/employees';
 import { invalidateEmployeeDirectoryCaches } from '@/lib/employees';
-import { PermissionGate, usePermission } from '@/lib/permissions';
+import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { SEARCH_FILTER_PAGE_ID, usePersistedSearchFilters } from '@/lib/persisted-client-state';
 import { useMobilePreferredView } from '@/hooks/use-mobile-preferred-view';
@@ -56,8 +48,6 @@ function TeamDirectoryPageContent() {
   const [showTerminated, setShowTerminated] = useState(false);
   const [view, setView] = useState<TeamDirectoryViewMode>('grid');
   const displayView = useMobilePreferredView(view, 'grid');
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -129,6 +119,13 @@ function TeamDirectoryPageContent() {
     await refetch();
   }, [refetch]);
 
+  const add = useTeamDirectoryAdd({
+    onEmployeeCreated: (emp) => {
+      void handleDirectoryRefresh().then(() => openSheet(emp));
+    },
+    onChanged: () => void handleDirectoryRefresh(),
+  });
+
   const moduleHeroSlots = useMemo(
     () => ({
       search: (
@@ -155,33 +152,22 @@ function TeamDirectoryPageContent() {
           <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
             {t('directory.counts', { active: activeCount, total })}
           </span>
-          <PermissionGate module="COMPANY" action="ADD">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={(props) => (
-                  <Button {...props} type="button">
-                    <Plus size={16} aria-hidden />
-                    {t('directory.add')}
-                    <ChevronDown className="ml-1 size-4 opacity-70" aria-hidden />
-                  </Button>
-                )}
-              />
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setCreateOpen(true)}>
-                  <Users2 className="mr-2 size-4" />
-                  {t('directory.createEmployee')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setInviteOpen(true)}>
-                  <UserPlus className="mr-2 size-4" />
-                  {t('directory.sendInvitation')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </PermissionGate>
+          {add.menu}
         </>
       ),
     }),
-    [activeCount, filterConfigs, filters, search, setFilters, t, total, view, viewOptions],
+    [
+      activeCount,
+      add.menu,
+      filterConfigs,
+      filters,
+      search,
+      setFilters,
+      t,
+      total,
+      view,
+      viewOptions,
+    ],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -227,18 +213,7 @@ function TeamDirectoryPageContent() {
           icon={Users2}
           title={t('directory.emptyTitle')}
           description={t('directory.emptyDescription')}
-          action={
-            <PermissionGate module="COMPANY" action="ADD">
-              <div className="flex flex-wrap justify-center gap-2">
-                <Button onClick={() => setCreateOpen(true)}>
-                  <Plus size={16} /> {t('directory.createEmployee')}
-                </Button>
-                <Button variant="outline" onClick={() => setInviteOpen(true)}>
-                  <UserPlus size={16} /> {t('directory.sendInvitation')}
-                </Button>
-              </div>
-            </PermissionGate>
-          }
+          action={add.buttons}
         />
       ) : (
         <div className={cn('flex flex-col gap-4', refreshing && 'opacity-80')}>
@@ -254,19 +229,7 @@ function TeamDirectoryPageContent() {
         </div>
       )}
 
-      <CreateEmployeeSheet
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onCreated={(emp) => {
-          void handleDirectoryRefresh().then(() => openSheet(emp));
-        }}
-      />
-
-      <InviteEmployeeDialog
-        open={inviteOpen}
-        onOpenChange={setInviteOpen}
-        onSuccess={() => void handleDirectoryRefresh()}
-      />
+      {add.dialogs}
 
       <EmployeeSheet
         employee={selectedEmployee}

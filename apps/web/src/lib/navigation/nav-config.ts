@@ -1,6 +1,4 @@
 import {
-  DELIVERY_COMPENSATION_RULES_MODULE,
-  FUNCTION_CATALOG_MODULE,
   MARKETING_MODULE,
   SETTINGS_MODULE,
   SETTINGS_RBAC_MODULE,
@@ -8,6 +6,7 @@ import {
   type SidebarModuleKey,
 } from '@nbos/shared/constants';
 import { FINANCE_MODULE_VIEW_REQUIREMENT } from './finance-nav-permissions';
+import { CORE_FUNCTION_VIEW_REQUIREMENT } from './route-permissions';
 import type { NavigationMessageKey } from './nav-message-keys';
 import type { PermissionRequirement } from './permission-requirement';
 
@@ -137,14 +136,9 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     permission: { module: 'COMPANY', action: 'VIEW' },
     children: [
       {
-        label: 'children.myCompany.functionCatalog',
-        href: '/my-company/function-catalog',
-        permission: { module: FUNCTION_CATALOG_MODULE, action: 'VIEW' },
-      },
-      {
-        label: 'children.myCompany.deliveryNorms',
+        label: 'children.myCompany.coreFunction',
         href: '/my-company/delivery-norms',
-        permission: { module: DELIVERY_COMPENSATION_RULES_MODULE, action: 'VIEW' },
+        permission: CORE_FUNCTION_VIEW_REQUIREMENT,
       },
       {
         label: 'children.myCompany.compensation',

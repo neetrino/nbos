@@ -18,6 +18,7 @@ type RoleUnitRecord = {
 export type FunctionPriceRecord = {
   id: string;
   functionId: string;
+  tierId: string | null;
   version: number;
   status: string;
   roleUnits: readonly RoleUnitRecord[];
@@ -27,9 +28,11 @@ export type BaseProfileRecord = {
   id: string;
   profileKey: string;
   version: number;
+  productType: string | null;
   status: string;
   roleUnits: readonly RoleUnitRecord[];
   includedFunctions: readonly { functionId: string }[];
+  coreItems?: readonly { id: string; position: number; label: string; note: string | null }[];
 };
 
 export type RoleRateRecord = {
@@ -55,6 +58,7 @@ export function serializeFunctionPrice(
   return {
     id: row.id,
     functionId: row.functionId,
+    tierId: row.tierId,
     version: row.version,
     status: row.status,
     roleUnits: serializeRoleUnits(row.roleUnits),
@@ -66,9 +70,16 @@ export function serializeBaseProfile(row: BaseProfileRecord): DeliveryBaseProfil
     id: row.id,
     profileKey: row.profileKey,
     version: row.version,
+    productType: row.productType,
     status: row.status,
     roleUnits: serializeRoleUnits(row.roleUnits),
     includedFunctionIds: row.includedFunctions.map((link) => link.functionId),
+    coreItems: (row.coreItems ?? []).map((item) => ({
+      id: item.id,
+      position: item.position,
+      label: item.label,
+      note: item.note,
+    })),
   };
 }
 

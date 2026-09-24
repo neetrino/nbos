@@ -62,6 +62,43 @@ describe('DealWonHandler', () => {
     expect(prisma.product.create).toHaveBeenCalledTimes(1);
   });
 
+  it('carries deal platform APP onto the product without inventing a MOBILE_APP platform', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(productDeal({ productType: 'ECOMMERCE', productPlatform: 'APP' }));
+
+    expect(prisma.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          productType: 'ECOMMERCE',
+          productPlatform: 'APP',
+        }),
+      }),
+    );
+  });
+
+  it('creates a marketing product without stamping WEB', async () => {
+    prisma.product.create.mockResolvedValue({ id: 'product-1' });
+
+    await handler.handle(
+      productDeal({
+        productCategory: 'MARKETING',
+        productType: 'SEO',
+        productPlatform: 'WEB',
+      }),
+    );
+
+    expect(prisma.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          productCategory: 'MARKETING',
+          productType: 'SEO',
+          productPlatform: null,
+        }),
+      }),
+    );
+  });
+
   it('copies deal additional contacts onto auto-created project', async () => {
     prisma.project.findFirst.mockResolvedValue(null);
     prisma.project.create.mockResolvedValue({ id: 'proj-1', code: 'P-2026-0001' });
@@ -307,7 +344,6 @@ describe('DealWonHandler', () => {
         projectId: 'proj-42',
         productId: 'prod-1',
         name: 'Extra module',
-        size: 'MEDIUM',
       },
     });
     expect(prisma.deal.update).toHaveBeenCalledWith({

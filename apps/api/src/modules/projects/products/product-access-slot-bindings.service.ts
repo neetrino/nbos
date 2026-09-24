@@ -159,7 +159,13 @@ export class ProductAccessSlotBindingsService {
   }
 
   private async assertBindable(
-    product: { id: string; projectId: string; productCategory: string; productType: string },
+    product: {
+      id: string;
+      projectId: string;
+      productCategory: string;
+      productType: string;
+      productPlatform?: string | null;
+    },
     requestedSlotKey: string,
     credentialId: string,
   ) {
@@ -167,6 +173,7 @@ export class ProductAccessSlotBindingsService {
       product.productCategory,
       product.productType,
       requestedSlotKey,
+      product.productPlatform,
     );
     if (!requestedDef) {
       throw new BadRequestException(`Unknown access slot for this product: ${requestedSlotKey}`);
@@ -196,11 +203,13 @@ export class ProductAccessSlotBindingsService {
       product.productType,
       requestedSlotKey,
       credential.category,
+      product.productPlatform,
     );
     const effectiveDef = findAccessSlotDefinition(
       product.productCategory,
       product.productType,
       effectiveSlotKey,
+      product.productPlatform,
     );
     if (!effectiveDef || !isCategoryAllowedForSlot(effectiveDef, credential.category)) {
       throw new BadRequestException(
@@ -213,7 +222,13 @@ export class ProductAccessSlotBindingsService {
   private async requireProduct(productId: string) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
-      select: { id: true, projectId: true, productCategory: true, productType: true },
+      select: {
+        id: true,
+        projectId: true,
+        productCategory: true,
+        productType: true,
+        productPlatform: true,
+      },
     });
     if (!product) throw new NotFoundException('Product not found');
     return product;
@@ -237,6 +252,7 @@ export class ProductAccessSlotBindingsService {
       product.productType,
       bindings,
       revealable,
+      product.productPlatform,
     );
     return { product, rows };
   }

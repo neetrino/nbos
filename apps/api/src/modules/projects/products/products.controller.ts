@@ -180,6 +180,7 @@ export class ProductsController {
       name: string;
       productCategory: string;
       productType: string;
+      productPlatform?: string | null;
       pmId?: string;
       deadline?: string;
       description?: string;
@@ -201,6 +202,7 @@ export class ProductsController {
       name?: string;
       productCategory?: string;
       productType?: string;
+      productPlatform?: string | null;
       pmId?: string | null;
       developerId?: string | null;
       frontendDeveloperId?: string | null;

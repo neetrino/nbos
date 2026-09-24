@@ -12,12 +12,13 @@ function configurationAtRevision(expectedRevision: number): OperationalConfigura
     enrolled: true,
     designMode: null,
     aiDesignerReview: false,
-    configSize: null,
     implementationBase: null,
     checkedAt: null,
     baseProfileVersionId: null,
     draftVersion: 1,
     expectedRevision,
+    coreVolumeFactor: '1.0',
+    coreVolumeReason: null,
     features: [],
   };
 }

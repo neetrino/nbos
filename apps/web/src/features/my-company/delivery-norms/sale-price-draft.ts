@@ -1,86 +1,12 @@
 import { salePriceTargetKey, type SalePriceTarget } from '@nbos/shared';
-import type {
-  SalePriceDraftInput,
-  SalePriceVersionDto,
-} from '@/lib/api/delivery-catalog-structure';
+import type { SalePriceDraftInput } from '@/lib/api/delivery-catalog-structure';
 import {
   SALE_PRICE_TARGET_KINDS,
-  SALE_PRICE_ZERO,
   TARGET_KEY_SEPARATOR,
   type SalePriceTargetKind,
 } from './delivery-norms.constants';
-import { dateInputToIso, isValidDateInput } from './effective-from';
 
 export type { SalePriceTargetKind };
-
-export type SalePriceFormDraft = {
-  multiplier: string;
-  fixedAmount: string;
-  effectiveFrom: string;
-};
-
-export type SalePriceFormResult =
-  | { ok: false; error: 'effectiveFrom' | 'priceRequired' | 'notPositive' }
-  | {
-      ok: true;
-      input: Pick<SalePriceDraftInput, 'multiplier' | 'fixedAmount' | 'effectiveFrom'>;
-      source: 'FIXED' | 'MULTIPLIER';
-    };
-
-export function parsePositiveDecimal(raw: string): string | null {
-  const trimmed = raw.trim();
-  if (trimmed === '') {
-    return null;
-  }
-  const value = Number(trimmed);
-  if (!Number.isFinite(value) || value <= SALE_PRICE_ZERO) {
-    return null;
-  }
-  return trimmed;
-}
-
-export function salePriceDraftSource(
-  multiplier: string,
-  fixedAmount: string,
-): 'FIXED' | 'MULTIPLIER' | 'NONE' {
-  if (fixedAmount.trim() !== '') {
-    return 'FIXED';
-  }
-  if (multiplier.trim() !== '') {
-    return 'MULTIPLIER';
-  }
-  return 'NONE';
-}
-
-export function buildSalePriceFormInput(draft: SalePriceFormDraft): SalePriceFormResult {
-  if (!isValidDateInput(draft.effectiveFrom)) {
-    return { ok: false, error: 'effectiveFrom' };
-  }
-  const multiplier = optionalPositiveField(draft.multiplier);
-  const fixedAmount = optionalPositiveField(draft.fixedAmount);
-  if (multiplier === 'empty' && fixedAmount === 'empty') {
-    return { ok: false, error: 'priceRequired' };
-  }
-  if (multiplier === 'invalid' || fixedAmount === 'invalid') {
-    return { ok: false, error: 'notPositive' };
-  }
-  return {
-    ok: true,
-    source: fixedAmount === 'empty' ? 'MULTIPLIER' : 'FIXED',
-    input: {
-      ...(multiplier === 'empty' ? {} : { multiplier }),
-      ...(fixedAmount === 'empty' ? {} : { fixedAmount }),
-      effectiveFrom: dateInputToIso(draft.effectiveFrom),
-    },
-  };
-}
-
-function optionalPositiveField(raw: string): string | 'empty' | 'invalid' {
-  if (raw.trim() === '') {
-    return 'empty';
-  }
-  return parsePositiveDecimal(raw) ?? 'invalid';
-}
 
 export function salePriceTargetFromKind(kind: SalePriceTargetKind, id: string): SalePriceTarget {
   if (kind === 'FUNCTION') {
@@ -94,6 +20,19 @@ export function salePriceTargetFromKind(kind: SalePriceTargetKind, id: string): 
 
 export function targetKeyForKind(kind: SalePriceTargetKind, id: string): string {
   return salePriceTargetKey(salePriceTargetFromKind(kind, id));
+}
+
+export function salePriceDraftBody(
+  kind: SalePriceTargetKind,
+  targetId: string,
+  input: { amountPerUnit: string; effectiveFrom: string },
+): SalePriceDraftInput {
+  return {
+    ...(kind === 'FUNCTION' ? { functionId: targetId } : {}),
+    ...(kind === 'TIER' ? { tierId: targetId } : {}),
+    ...(kind === 'CORE' ? { baseProfileVersionId: targetId } : {}),
+    ...input,
+  };
 }
 
 export function parseSalePriceTargetKey(
@@ -123,31 +62,6 @@ export function gradationsFromCatalog(
   return catalog.flatMap((item) =>
     (item.tiers ?? []).map((tier) => ({ id: tier.id, label: `${item.title} · ${tier.label}` })),
   );
-}
-
-export function tierIdsFromSalePrices(rows: readonly SalePriceVersionDto[]): string[] {
-  const ids: string[] = [];
-  for (const row of rows) {
-    const parsed = parseSalePriceTargetKey(row.targetKey);
-    if (parsed?.kind !== 'TIER' || ids.includes(parsed.id)) {
-      continue;
-    }
-    ids.push(parsed.id);
-  }
-  return ids;
-}
-
-export function salePricesForTarget(
-  rows: readonly SalePriceVersionDto[],
-  targetKey: string | null,
-): SalePriceVersionDto[] {
-  if (targetKey === null) {
-    return [];
-  }
-  return rows
-    .filter((row) => row.targetKey === targetKey)
-    .slice()
-    .sort((left, right) => right.version - left.version);
 }
 
 function isSalePriceTargetKind(value: string): value is SalePriceTargetKind {

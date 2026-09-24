@@ -1,5 +1,5 @@
 import { Injectable, Inject, ConflictException, Logger } from '@nestjs/common';
-import { PrismaClient, type ProductCategoryEnum, type ProductTypeEnum } from '@nbos/database';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { employeePersonSelect } from '../../../common/employee-person.select';
 import { NotificationService } from '../../notifications/notification.service';
@@ -22,6 +22,7 @@ import { getProductStats } from './product-stats';
 import {
   normalizeProductLanguages,
   writeProductUpdate,
+  buildProductCreateTaxonomy,
   type CreateProductDto,
   type UpdateProductDto,
 } from './product-write-data';
@@ -91,8 +92,7 @@ export class ProductsService {
         contactId,
         companyId,
         name: data.name,
-        productCategory: data.productCategory as ProductCategoryEnum,
-        productType: data.productType as ProductTypeEnum,
+        ...buildProductCreateTaxonomy(data),
         pmId: data.pmId,
         deadline: data.deadline ? new Date(data.deadline) : undefined,
         description: data.description,

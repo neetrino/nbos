@@ -7,11 +7,10 @@ export async function getExtensionStats(
 ) {
   const where = mergeActiveParentProjectScope(projectId ? { projectId } : {}, { projectId });
 
-  const [total, byStatus, bySize] = await Promise.all([
+  const [total, byStatus] = await Promise.all([
     prisma.extension.count({ where }),
     prisma.extension.groupBy({ by: ['status'], where, _count: true }),
-    prisma.extension.groupBy({ by: ['size'], where, _count: true }),
   ]);
 
-  return { total, byStatus, bySize };
+  return { total, byStatus };
 }

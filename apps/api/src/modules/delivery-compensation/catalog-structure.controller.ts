@@ -1,18 +1,32 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   DELIVERY_COMPENSATION_RULES_MODULE,
   FUNCTION_CATALOG_MODULE,
   type SalePriceTarget,
 } from '@nbos/shared';
+import { hasCallerPermission } from '../../common/authorization/caller-permission';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { CatalogStructureService } from './catalog-structure.service';
+import { FunctionCollectionsService } from './function-collections.service';
+import { mapCatalogWriteError } from './map-catalog-write-error';
 import { SalePricesService } from './sale-prices.service';
 
 /**
- * Core composition, size presets and sale prices. Reading is open to whoever may browse the catalog,
- * because none of it exposes cost: a core item is a list of work, a preset is a list of modules and a
- * sale price is what the client pays. Writing stays with the Owner, like every other norm.
+ * Core composition, named collections and sale prices. Reading is open to whoever may browse the
+ * catalog, because none of it exposes cost: a core item is a list of work, a collection is a
+ * replace-helper kit and a sale price is what the client pays. Writing stays with the Owner.
  */
 @ApiTags('delivery-compensation')
 @ApiBearerAuth()
@@ -20,6 +34,7 @@ import { SalePricesService } from './sale-prices.service';
 export class CatalogStructureController {
   constructor(
     private readonly structure: CatalogStructureService,
+    private readonly collections: FunctionCollectionsService,
     private readonly salePrices: SalePricesService,
   ) {}
 
@@ -32,47 +47,100 @@ export class CatalogStructureController {
 
   @Put('base-profiles/:id/core-items')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Replace the core composition of a draft base profile version.' })
-  replaceCoreItems(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
-    return this.structure.replaceCoreItems(id, body);
+  @ApiOperation({
+    summary:
+      'Replace core composition. A published core opens the next draft; the published list stays frozen.',
+  })
+  async replaceCoreItems(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.structure.replaceCoreItems(id, body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
   }
 
-  @Get('size-presets')
+  @Get('collections')
   @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Modules pre-checked per size. Charged as normal extras.' })
-  listSizePresets(@Query('profileKey') profileKey?: string) {
-    return this.structure.listSizePresets(profileKey ?? '');
+  @ApiOperation({ summary: 'Named extra-function kits. Apply replaces the deal quote selection.' })
+  listCollections(@Query('productType') productType?: string) {
+    return this.collections.list(productType);
   }
 
-  @Put('size-presets')
+  @Post('collections')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Replace one size level of one profile. An empty list clears it.' })
-  replaceSizePreset(@Body() body: unknown) {
-    return this.structure.replaceSizePreset(body);
+  @ApiOperation({ summary: 'Create a named extra-function kit for one product kind.' })
+  async createCollection(@Body() body: unknown) {
+    try {
+      return await this.collections.create(body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Put('collections/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Replace a named extra-function kit.' })
+  async replaceCollection(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.collections.replace(id, body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Delete('collections/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({
+    summary:
+      'Delete a named extra-function kit. Deal extras stay; the last-applied mark is cleared.',
+  })
+  async removeCollection(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      await this.collections.remove(id);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
   }
 
   @Get('sale-prices')
   @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Sale price versions of catalog items.' })
-  listSalePrices(@Query('targetKey') targetKey?: string) {
-    return this.salePrices.list(targetKey);
+  listSalePrices(@CurrentUser() user: CurrentUserPayload, @Query('targetKey') targetKey?: string) {
+    return this.salePrices.list(
+      targetKey,
+      hasCallerPermission(user.permissions, DELIVERY_COMPENSATION_RULES_MODULE, 'VIEW'),
+    );
   }
 
   @Post('sale-prices')
   @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Create a draft sale price for a function, a gradation or a core.' })
-  createSalePriceDraft(
+  async createSalePriceDraft(
     @Body()
     body: {
       functionId?: string;
       tierId?: string;
       baseProfileVersionId?: string;
-      multiplier?: string | number;
-      fixedAmount?: string | number;
+      amountPerUnit?: string | number;
       effectiveFrom?: string;
     },
   ) {
-    return this.salePrices.createDraft(readSalePriceTarget(body), body);
+    try {
+      return await this.salePrices.createDraft(readSalePriceTarget(body), body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
+  }
+
+  @Patch('sale-prices/:id')
+  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Update an open draft sale price. Published rows stay frozen.' })
+  async updateSalePriceDraft(@Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    try {
+      return await this.salePrices.updateDraft(id, body);
+    } catch (error) {
+      mapCatalogWriteError(error);
+    }
   }
 
   @Post('sale-prices/:id/publish')
@@ -83,20 +151,6 @@ export class CatalogStructureController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.salePrices.publish(id, user.id);
-  }
-
-  @Get('sale-prices/default-multiplier')
-  @RequirePermission(FUNCTION_CATALOG_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Multiplier applied when a card carries no price of its own.' })
-  async getDefaultMultiplier() {
-    return { defaultSaleMultiplier: await this.salePrices.defaultMultiplier() };
-  }
-
-  @Post('sale-prices/default-multiplier')
-  @RequirePermission(DELIVERY_COMPENSATION_RULES_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Set the global sale multiplier.' })
-  setDefaultMultiplier(@Body() body: { multiplier?: string | number }) {
-    return this.salePrices.setDefaultMultiplier(body.multiplier);
   }
 }
 

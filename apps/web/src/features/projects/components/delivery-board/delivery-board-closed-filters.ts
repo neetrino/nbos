@@ -14,7 +14,7 @@ export interface DeliveryBoardClosedFiltersInput {
   /** Billing company (CRM) on the item's project. */
   companyId: string;
   ownerId: string;
-  /** `ptype:${productType}` | `extsize:${size}` | '' */
+  /** `ptype:${productType}` | '' */
   productLineKey: string;
   closedFrom: string;
   closedTo: string;
@@ -76,9 +76,6 @@ export function applyDeliveryBoardClosedFilters(
       if (f.productLineKey.startsWith('ptype:')) {
         const t = f.productLineKey.slice('ptype:'.length);
         if (item.kind !== 'PRODUCT' || item.product.productType !== t) return false;
-      } else if (f.productLineKey.startsWith('extsize:')) {
-        const s = f.productLineKey.slice('extsize:'.length);
-        if (item.kind !== 'EXTENSION' || item.extension.size !== s) return false;
       }
     }
 
@@ -166,11 +163,6 @@ export function buildClosedFilterOptions(items: DeliveryBoardItem[]): ClosedFilt
       const a = item.extension.assignee;
       if (a && !ownerMap.has(a.id)) {
         ownerMap.set(a.id, `${a.firstName} ${a.lastName}`);
-      }
-      const ek = `extsize:${item.extension.size}`;
-      if (!seenLine.has(ek)) {
-        seenLine.add(ek);
-        lines.push({ value: ek, label: `Extension · ${item.extension.size}` });
       }
     }
   }

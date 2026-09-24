@@ -50,6 +50,15 @@ describe('CompaniesService', () => {
         }),
       );
     });
+
+    it('filters by responsible employee', async () => {
+      await service.findAll({ responsibleEmployeeId: 'emp-1' });
+      expect(prisma.company.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ responsibleEmployeeId: 'emp-1' }),
+        }),
+      );
+    });
   });
 
   describe('findById', () => {
