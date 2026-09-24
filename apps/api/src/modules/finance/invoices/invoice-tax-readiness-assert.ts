@@ -1,7 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import {
+  getInvoiceManualNotesGateErrors,
   getInvoiceOrderCommentGateErrors,
   getInvoiceTaxMoneyStatusGateErrors,
+  getOfficialInvoiceManualNotesSendErrors,
   getOfficialInvoiceOrderCommentSendErrors,
   getOfficialInvoiceRequestSendErrors,
   INVOICE_TAX_READINESS_GATE_CODE,
@@ -17,10 +19,17 @@ export function assertInvoiceTaxMoneyStatusGate(input: {
   officialInvoiceRequestSent: boolean;
   orderId?: string | null;
   orderComment?: string | null;
+  type?: string | null;
+  notes?: string | null;
 }): void {
   const errors = [
     ...getInvoiceTaxMoneyStatusGateErrors(input),
     ...getInvoiceOrderCommentGateErrors(input),
+    ...getInvoiceManualNotesGateErrors({
+      type: input.type ?? '',
+      notes: input.notes,
+      targetMoneyStatus: input.targetMoneyStatus,
+    }),
   ];
   if (errors.length === 0) return;
   throw new BadRequestException({
@@ -37,10 +46,13 @@ export function assertOfficialInvoiceRequestSend(input: {
   company?: InvoiceTaxCompanyRequisites | null;
   orderId?: string | null;
   orderComment?: string | null;
+  type?: string | null;
+  notes?: string | null;
 }): void {
   const errors = [
     ...getOfficialInvoiceRequestSendErrors(input),
     ...getOfficialInvoiceOrderCommentSendErrors(input),
+    ...getOfficialInvoiceManualNotesSendErrors(input),
   ];
   if (errors.length === 0) return;
   throw new BadRequestException({

@@ -1,4 +1,8 @@
 export const INVOICE_PRODUCT_GATE_FIELD = 'product' as const;
+export const INVOICE_NOTES_GATE_FIELD = 'notes' as const;
+
+export const INVOICE_MANUAL_NOTES_REQUIRED_MESSAGE =
+  'Fill in Description before sending a manual invoice to the accountant.';
 
 export const INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE =
   'A product is required to create this invoice.';
@@ -28,6 +32,45 @@ export function getInvoiceManualProductGateErrors(input: {
       message: 'Link a product on the invoice card before awaiting payment.',
     },
   ];
+}
+
+export function getInvoiceManualNotesGateErrors(input: {
+  type: string;
+  notes?: string | null;
+  targetMoneyStatus: string;
+}): Array<{ field: string; message: string }> {
+  if (!manualNotesRequired(input.type, input.notes)) return [];
+  if (!MANUAL_PRODUCT_REQUIRED_STATUSES.has(input.targetMoneyStatus)) return [];
+  return [{ field: INVOICE_NOTES_GATE_FIELD, message: INVOICE_MANUAL_NOTES_REQUIRED_MESSAGE }];
+}
+
+export function getOfficialInvoiceManualNotesSendErrors(input: {
+  type?: string | null;
+  notes?: string | null;
+}): Array<{ field: string; message: string }> {
+  if (!manualNotesRequired(input.type, input.notes)) return [];
+  return [{ field: INVOICE_NOTES_GATE_FIELD, message: INVOICE_MANUAL_NOTES_REQUIRED_MESSAGE }];
+}
+
+function manualNotesRequired(type?: string | null, notes?: string | null): boolean {
+  return type === 'MANUAL' && invoiceNotesPlainText(notes).length === 0;
+}
+
+/** Plain text of a Description field, including stored editor HTML. */
+export function invoiceNotesPlainText(value?: string | null): string {
+  const withBreaks = (value ?? '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+  return withBreaks
+    .split('\n')
+    .map((line) => line.replace(/\s+/g, ' ').trim())
+    .filter((line) => line.length > 0)
+    .join('\n');
 }
 
 /** Unsourced (manual) create requires an explicit product. Source ids inherit ownership. */

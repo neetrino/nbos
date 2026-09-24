@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
+  getOfficialInvoiceManualNotesSendErrors,
   getOfficialInvoiceOrderCommentSendErrors,
   getOfficialInvoiceRequestSendErrors,
 } from '@nbos/shared';
@@ -132,6 +133,10 @@ function canSendOfficialRequest(invoice: Invoice): boolean {
     getOfficialInvoiceOrderCommentSendErrors({
       orderId: invoice.orderId,
       orderComment: invoice.orderComment,
+    }).length === 0 &&
+    getOfficialInvoiceManualNotesSendErrors({
+      type: invoice.type,
+      notes: invoice.notes,
     }).length === 0
   );
 }

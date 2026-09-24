@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getInvoiceManualNotesGateErrors,
   getInvoiceManualProductGateErrors,
+  getOfficialInvoiceManualNotesSendErrors,
+  INVOICE_NOTES_GATE_FIELD,
   INVOICE_PRODUCT_GATE_FIELD,
+  invoiceNotesPlainText,
   isInvoicePayerContextLocked,
   isUnsourcedInvoiceCreateMissingProduct,
 } from './invoice-product-ownership-gate';
@@ -20,6 +24,33 @@ describe('isInvoicePayerContextLocked', () => {
     expect(
       isInvoicePayerContextLocked({ moneyStatus: 'NEW', officialInvoiceRequestSent: true }),
     ).toBe(true);
+  });
+});
+
+describe('getInvoiceManualNotesGateErrors', () => {
+  it('requires Description on a Manual invoice before collection', () => {
+    expect(
+      getInvoiceManualNotesGateErrors({
+        type: 'MANUAL',
+        notes: '  ',
+        targetMoneyStatus: 'AWAITING_PAYMENT',
+      }),
+    ).toEqual([
+      {
+        field: INVOICE_NOTES_GATE_FIELD,
+        message: 'Fill in Description before sending a manual invoice to the accountant.',
+      },
+    ]);
+  });
+
+  it('accepts Description stored as editor HTML', () => {
+    expect(invoiceNotesPlainText('<p>Hosting for Ommm</p>')).toBe('Hosting for Ommm');
+    expect(
+      getOfficialInvoiceManualNotesSendErrors({
+        type: 'MANUAL',
+        notes: '<p>Hosting for Ommm</p>',
+      }),
+    ).toEqual([]);
   });
 });
 

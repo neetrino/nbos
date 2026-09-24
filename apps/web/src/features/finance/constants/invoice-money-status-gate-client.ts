@@ -1,7 +1,9 @@
 import {
+  getInvoiceManualNotesGateErrors,
   getInvoiceManualProductGateErrors,
   getInvoiceOrderCommentGateErrors,
   getInvoiceTaxMoneyStatusGateErrors,
+  INVOICE_NOTES_GATE_FIELD,
   INVOICE_ORDER_COMMENT_FIELD,
   INVOICE_PRODUCT_GATE_FIELD,
   INVOICE_TAX_GATE_FIELD,
@@ -15,6 +17,7 @@ export const INVOICE_GATE_FIELD_COMPANY = INVOICE_TAX_GATE_FIELD.COMPANY;
 export const INVOICE_GATE_FIELD_PRODUCT = INVOICE_PRODUCT_GATE_FIELD;
 export const INVOICE_GATE_FIELD_OFFICIAL_INVOICE = INVOICE_TAX_GATE_FIELD.OFFICIAL_INVOICE;
 export const INVOICE_GATE_FIELD_ORDER_COMMENT = INVOICE_ORDER_COMMENT_FIELD;
+export const INVOICE_GATE_FIELD_NOTES = INVOICE_NOTES_GATE_FIELD;
 
 /** Local pre-check aligned with invoice Tax readiness + manual money-status guards. */
 export function getLocalInvoiceMoneyStatusGateErrors(
@@ -27,6 +30,11 @@ export function getLocalInvoiceMoneyStatusGateErrors(
     ...getInvoiceManualProductGateErrors({
       type: invoice.type,
       productId: invoice.productId,
+      targetMoneyStatus,
+    }),
+    ...getInvoiceManualNotesGateErrors({
+      type: invoice.type,
+      notes: invoice.notes,
       targetMoneyStatus,
     }),
   );
@@ -68,6 +76,9 @@ export function mapInvoiceMoneyStatusApiMessage(message: string): ApiFieldError[
   }
   if (message.includes('accountant note')) {
     return [{ field: INVOICE_GATE_FIELD_ORDER_COMMENT, message }];
+  }
+  if (message.includes('Description')) {
+    return [{ field: INVOICE_GATE_FIELD_NOTES, message }];
   }
   if (message.includes('tax ID') || message.includes('legal name') || message.includes('company')) {
     return [{ field: INVOICE_GATE_FIELD_COMPANY, message }];

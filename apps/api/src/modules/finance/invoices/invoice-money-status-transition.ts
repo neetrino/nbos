@@ -17,6 +17,7 @@ export interface InvoiceMoneyStatusTransitionRow {
   officialInvoiceRequestSent: boolean;
   orderId?: string | null;
   orderComment?: string | null;
+  notes?: string | null;
   company: { name: string; legalName: string | null; taxId: string | null } | null;
 }
 
@@ -25,6 +26,7 @@ export const INVOICE_MONEY_STATUS_TRANSITION_SELECT = {
   type: true,
   orderId: true,
   orderComment: true,
+  notes: true,
   amount: true,
   dueDate: true,
   taxStatus: true,
@@ -73,6 +75,8 @@ export async function prepareInvoiceMoneyStatusTransition(
     officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
     orderId: invoice.orderId,
     orderComment: invoice.orderComment,
+    type: invoice.type,
+    notes: invoice.notes,
   });
   if (targetMoneyStatus === 'CANCELLED' && shouldCancelOfficialRequestOnCardCancel(invoice)) {
     await cancelOfficialInvoiceRequest(prisma, invoice.id);

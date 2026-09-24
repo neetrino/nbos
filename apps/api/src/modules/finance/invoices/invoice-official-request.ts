@@ -9,6 +9,8 @@ export interface InvoiceOfficialRequestRow {
   taxStatus: string;
   moneyStatus: string;
   companyId: string | null;
+  type: string;
+  notes: string | null;
   orderId: string | null;
   orderComment: string | null;
   officialInvoiceRequestSent: boolean;
@@ -104,6 +106,8 @@ const officialRequestSelect = {
   id: true,
   taxStatus: true,
   moneyStatus: true,
+  type: true,
+  notes: true,
   companyId: true,
   orderId: true,
   orderComment: true,
