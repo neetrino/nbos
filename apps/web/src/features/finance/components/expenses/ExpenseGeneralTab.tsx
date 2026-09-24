@@ -113,13 +113,6 @@ export function ExpenseGeneralTab({
 
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-3`}>
-      {expense.linkedExpensePlan?.id && expense.linkedExpensePlan.name ? (
-        <ExpensePlanLinkBanner
-          planId={expense.linkedExpensePlan.id}
-          planName={expense.linkedExpensePlan.name}
-        />
-      ) : null}
-
       {payrollRunId ? (
         <ExpensePayrollLinkBanner
           payrollRunId={payrollRunId}
@@ -271,6 +264,13 @@ export function ExpenseGeneralTab({
           </div>
         </div>
       </DetailSheetSection>
+
+      {expense.linkedExpensePlan?.id && expense.linkedExpensePlan.name ? (
+        <ExpensePlanLinkBanner
+          planId={expense.linkedExpensePlan.id}
+          planName={expense.linkedExpensePlan.name}
+        />
+      ) : null}
 
       <FinanceProofAttachments
         entityType="EXPENSE"
