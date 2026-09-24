@@ -1,9 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
-import { InvoiceOfficialSection } from './InvoiceSheetSections';
 import { InvoiceLinkedEntitiesSection } from './InvoiceLinkedEntitiesSection';
+import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -33,6 +33,7 @@ export function InvoiceGeneralTab({
   onInvoiceUpdated,
 }: InvoiceGeneralTabProps) {
   const t = useTranslations('invoices');
+  const locale = useLocale();
   const billingFields =
     draft && onInvoiceUpdated ? (
       <>
@@ -57,6 +58,7 @@ export function InvoiceGeneralTab({
         invoice={invoice}
         gateRequiredFields={gateRequiredFields}
         billingFields={billingFields}
+        onInvoiceUpdated={onInvoiceUpdated}
       />
 
       {draft ? (
@@ -69,12 +71,6 @@ export function InvoiceGeneralTab({
           sectionClassName="mt-0"
         />
       ) : null}
-
-      <InvoiceOfficialSection
-        invoice={invoice}
-        onInvoiceUpdated={onInvoiceUpdated}
-        gateRequiredFields={gateRequiredFields}
-      />
 
       <InvoiceLinkedEntitiesSection
         invoice={invoice}
@@ -93,6 +89,9 @@ export function InvoiceGeneralTab({
           title=""
         />
       </DetailSheetSection>
+      <p className="text-muted-foreground text-sm">
+        {t('money.created')} {formatInvoiceSheetDate(invoice.createdAt, locale)}
+      </p>
     </div>
   );
 }

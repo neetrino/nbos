@@ -8,14 +8,11 @@ import {
   resolveInvoiceSourceFamily,
 } from '@/features/finance/utils/invoice-source-label';
 import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
-import { invoiceSourceMessageKey, officialInvoiceRequestStatusKey } from './invoice-message-keys';
+import { invoiceSourceMessageKey } from './invoice-message-keys';
 import type { Invoice } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
-import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
 import { RecordPaymentForm } from './RecordPaymentForm';
-import { InvoiceTaxReadinessBanner } from './InvoiceTaxReadinessBanner';
-import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
 
 export type InvoiceSheetInvoice = Invoice;
 
@@ -29,31 +26,6 @@ export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice })
       variant="blue"
       className={cn('self-center border', chrome.badgeClassName)}
     />
-  );
-}
-
-export function InvoiceOfficialSection({
-  invoice,
-  onInvoiceUpdated,
-  gateRequiredFields = new Set<string>(),
-}: {
-  invoice: InvoiceSheetInvoice;
-  onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
-  gateRequiredFields?: ReadonlySet<string>;
-}) {
-  const t = useTranslations('invoices');
-  return (
-    <DetailSheetSection
-      title={t('official.title')}
-      className={invoiceStageGateSectionClass(gateRequiredFields, 'officialInvoice')}
-    >
-      <InvoiceTaxReadinessBanner invoice={invoice} />
-      {onInvoiceUpdated ? (
-        <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
-      ) : (
-        <OfficialInvoiceReadOnly invoice={invoice} />
-      )}
-    </DetailSheetSection>
   );
 }
 
@@ -101,19 +73,6 @@ export function InvoicePaymentsSection({
           </div>
         </DetailSheetSection>
       ) : null}
-    </div>
-  );
-}
-
-function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  const t = useTranslations('invoices');
-  if (invoice.taxStatus !== 'TAX') {
-    return <p className="text-muted-foreground text-sm">{t('official.freeNotRequired')}</p>;
-  }
-  const status = officialInvoiceRequestStatusKey(invoice, false);
-  return (
-    <div className="space-y-2">
-      <StatusBadge label={t(status.key)} variant={status.variant} />
     </div>
   );
 }

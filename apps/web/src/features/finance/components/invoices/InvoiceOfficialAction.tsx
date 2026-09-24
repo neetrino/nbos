@@ -48,7 +48,9 @@ export function InvoiceOfficialAction({
       .then((updated) => {
         onUpdated(updated);
         toast.success(
-          invoice.officialInvoiceRequestSent ? t('official.sentAgain') : t('official.sentToAccountant'),
+          invoice.officialInvoiceRequestSent
+            ? t('official.sentAgain')
+            : t('official.sentToAccountant'),
         );
       })
       .catch((caught: unknown) => {
