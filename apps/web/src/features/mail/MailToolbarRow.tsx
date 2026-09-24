@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderOpen, Plus, RefreshCcw, Settings, Share2, Trash2 } from 'lucide-react';
+import { FolderOpen, Plus, RefreshCcw, Settings, Share2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,9 +39,8 @@ export interface MailToolbarRowProps {
   onClearAll: () => void;
   onRefresh: () => void;
   onShareAccount: (account: MailAccountHealthSummaryRow) => void;
-  onDeleteAccount: (account: MailAccountHealthSummaryRow) => void;
   onConnectMailbox: () => void;
-  onReconnectMailbox: (account: MailAccountHealthSummaryRow) => void;
+  onMailboxSettings: (account: MailAccountHealthSummaryRow) => void;
   onMailboxOverridesChange: (next: MailMailboxListOverrides) => void;
 }
 
@@ -63,9 +62,8 @@ export function MailToolbarRow({
   onClearAll,
   onRefresh,
   onShareAccount,
-  onDeleteAccount,
   onConnectMailbox,
-  onReconnectMailbox,
+  onMailboxSettings,
   onMailboxOverridesChange,
 }: MailToolbarRowProps) {
   const selectedAccount =
@@ -162,24 +160,13 @@ export function MailToolbarRow({
                 <Share2 />
                 Share mailbox
               </DropdownMenuItem>
-              {selectedAccount.providerType === 'CORPORATE_IMAP_SMTP' ? (
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  disabled={busy}
-                  onClick={() => onReconnectMailbox(selectedAccount)}
-                >
-                  <RefreshCcw />
-                  Reconnect mailbox
-                </DropdownMenuItem>
-              ) : null}
               <DropdownMenuItem
                 className="cursor-pointer"
-                variant="destructive"
                 disabled={busy}
-                onClick={() => onDeleteAccount(selectedAccount)}
+                onClick={() => onMailboxSettings(selectedAccount)}
               >
-                <Trash2 />
-                Delete mailbox
+                <Settings />
+                Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>

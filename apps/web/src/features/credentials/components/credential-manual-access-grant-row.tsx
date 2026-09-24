@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS } from '@/components/shared/detail-sheet-classes';
 import { RelationPickerChip } from '@/components/shared/relation-picker/RelationPickerChip';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { NbosDatePicker } from '@/components/shared/date-picker';
@@ -13,11 +12,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  CREDENTIAL_GRANT_DATE_PILL_CLASS,
-  CREDENTIAL_GRANT_LEVEL_PILL_CLASS,
+  CREDENTIAL_GRANT_LEVEL_GHOST_CLASS,
   CREDENTIAL_GRANT_TRAILING_GAP_CLASS,
 } from '@/features/credentials/constants/credential-manual-access-ui';
-import { cn } from '@/lib/utils';
 import type { CredentialManualGrant } from '@/lib/api/credentials';
 
 export interface CredentialManualAccessGrantRowProps {
@@ -56,7 +53,7 @@ export function CredentialManualAccessGrantRow({
             value={dateValue}
             clearable
             aria-label={t('form.grantExpiresAria', { name: label })}
-            className={cn('w-auto shrink-0', CREDENTIAL_GRANT_DATE_PILL_CLASS)}
+            className="shrink-0"
             onChange={(next) => {
               const trimmed = next.trim();
               onExpiresAtChange(grant.employeeId, trimmed ? `${trimmed}T23:59:59.999Z` : null);
@@ -70,10 +67,7 @@ export function CredentialManualAccessGrantRow({
           >
             <SelectTrigger
               size="sm"
-              className={cn(
-                RELATION_PICKER_CHIP_TRAILING_SELECT_CLASS,
-                CREDENTIAL_GRANT_LEVEL_PILL_CLASS,
-              )}
+              className={CREDENTIAL_GRANT_LEVEL_GHOST_CLASS}
               aria-label={t('form.grantAccessAria', { name: label })}
             >
               <SelectValue />

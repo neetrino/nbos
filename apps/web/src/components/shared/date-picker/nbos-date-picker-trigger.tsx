@@ -39,9 +39,7 @@ export function NbosDatePickerTrigger({
   'aria-label': ariaLabel,
 }: NbosDatePickerTriggerProps) {
   const t = useTranslations('forms');
-  const calendarIcon = (
-    <Calendar size={16} className="text-muted-foreground shrink-0" aria-hidden />
-  );
+  const calendarIcon = <Calendar size={16} className="shrink-0" aria-hidden />;
   const showEmptyPlaceholder = !iconButtonShell || hasValue;
   const valueLabel = showEmptyPlaceholder ? (
     <span
@@ -89,17 +87,18 @@ export function NbosDatePickerTrigger({
   if (iconButtonShell && embedded) {
     return (
       <span
+        title={hasValue ? displayValue : undefined}
         className={cn(
           NBOS_DATE_PICKER_ICON_BUTTON_SHELL_CLASS,
-          !hasValue && NBOS_DATE_PICKER_ICON_BUTTON_ICON_ONLY_CLASS,
-          hasValue && 'px-2',
+          NBOS_DATE_PICKER_ICON_BUTTON_ICON_ONLY_CLASS,
           disabled && 'pointer-events-none cursor-not-allowed opacity-50',
           className,
         )}
       >
         {calendarIcon}
-        {hasValue ? valueLabel : null}
-        {clearControl}
+        <span id={id} className="sr-only">
+          {ariaLabel ?? t('datePicker.selectExpiryDate')}
+        </span>
       </span>
     );
   }

@@ -29,6 +29,7 @@ export interface MailActivePanelHostProps {
   onThreadMarkedUnread?: (threadId: string, mailAccountId: string) => void;
   onThreadMarkedSpam?: (threadId: string, mailAccountId: string) => void;
   onMailboxConnected: () => void;
+  onDeleteMailbox?: (account: MailAccountHealthSummaryRow) => void;
   onComposeSent: (threadId: string) => void;
   onComposeClosed?: () => void;
   onThreadDeleted?: (threadId: string) => void;
@@ -45,6 +46,7 @@ export function MailActivePanelHost({
   onThreadMarkedUnread,
   onThreadMarkedSpam,
   onMailboxConnected,
+  onDeleteMailbox,
   onComposeSent,
   onComposeClosed,
   onThreadDeleted,
@@ -143,6 +145,16 @@ export function MailActivePanelHost({
               }
               onConnected={onMailboxConnected}
               onClose={closePanel}
+              onDelete={
+                activePanel.accountId && onDeleteMailbox
+                  ? () => {
+                      const account = accounts.find((row) => row.id === activePanel.accountId);
+                      if (account) {
+                        onDeleteMailbox(account);
+                      }
+                    }
+                  : undefined
+              }
             />
           ) : null}
 

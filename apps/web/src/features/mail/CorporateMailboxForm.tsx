@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import { mailApi } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
@@ -12,10 +10,12 @@ import {
   type CorporateMailboxFormState,
 } from './corporate-mailbox-form-state';
 import { CorporateSettingsFields } from './corporate-mailbox-settings-fields';
+import { MailboxFormActions } from './mailbox-form-actions';
 
 interface CorporateMailboxFormProps {
   onCancel: () => void;
   onConnected: () => void;
+  onDelete?: () => void;
   mode?: 'connect' | 'reconnect';
   accountId?: string;
   initial?: CorporateMailboxFormState;
@@ -26,6 +26,7 @@ interface CorporateMailboxFormProps {
 export function CorporateMailboxForm({
   onCancel,
   onConnected,
+  onDelete,
   mode = 'connect',
   accountId,
   initial,
@@ -80,45 +81,15 @@ export function CorporateMailboxForm({
         }
       />
       <MailboxFormActions
-        reconnect={reconnect}
         submitting={submitting}
+        cancelLabel={reconnect ? 'Cancel' : 'Back'}
+        primaryLabel={
+          submitting ? 'Validating…' : reconnect ? 'Reconnect mailbox' : 'Connect mailbox'
+        }
         onCancel={onCancel}
         onSubmit={() => void submit()}
+        onDelete={reconnect ? onDelete : undefined}
       />
-    </div>
-  );
-}
-
-function MailboxFormActions({
-  reconnect,
-  submitting,
-  onCancel,
-  onSubmit,
-}: {
-  reconnect: boolean;
-  submitting: boolean;
-  onCancel: () => void;
-  onSubmit: () => void;
-}) {
-  return (
-    <div className="flex justify-end gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-        onClick={onCancel}
-        disabled={submitting}
-      >
-        Back
-      </Button>
-      <Button
-        type="button"
-        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-        onClick={onSubmit}
-        disabled={submitting}
-      >
-        {submitting ? 'Validating…' : reconnect ? 'Reconnect mailbox' : 'Connect mailbox'}
-      </Button>
     </div>
   );
 }

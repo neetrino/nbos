@@ -7,15 +7,23 @@ import { ItBrandMarkIcon } from '@/components/shared/it-brand-mark/ItBrandMarkIc
 import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { resolveItBrandMarkFromHints } from '@/lib/it-brand-marks/resolve-it-brand-mark';
+import {
+  DETAIL_SHEET_SECTION_SURFACE_CLASS,
+  DETAIL_SHEET_SECTION_TITLE_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { CorporateMailboxForm } from './CorporateMailboxForm';
 import { corporateFormStateFromAccount } from './corporate-mailbox-form-state';
+import { MailboxFormActions } from './mailbox-form-actions';
 import { MailSheetPanelHeader } from './MailSheetPanelHeader';
 import { MAIL_PROVIDER_TILE_CLASS, MAIL_SHEET_BODY_CLASS } from './mail-ui-classes';
+
+const GMAIL_PROVIDER_TYPE = 'GMAIL';
 
 export interface ConnectMailboxSheetProps {
   enabled: boolean;
   onConnected: () => void;
   onClose: () => void;
+  onDelete?: () => void;
   reconnectAccount?: MailAccountRow | null;
 }
 
@@ -25,6 +33,7 @@ export function ConnectMailboxSheet({
   enabled,
   onConnected,
   onClose,
+  onDelete,
   reconnectAccount = null,
 }: ConnectMailboxSheetProps) {
   const [connectStep, setConnectStep] = useState<ConnectStep>('choose');
@@ -71,10 +80,19 @@ export function ConnectMailboxSheet({
             onGmail={() => void startGmail()}
             onCorporate={() => setConnectStep('corporate')}
           />
+        ) : reconnectAccount?.providerType === GMAIL_PROVIDER_TYPE ? (
+          <GmailMailboxSettings
+            lastError={reconnectAccount.providerConnection?.lastErrorMessage ?? null}
+            submitting={gmailLoading}
+            onCancel={onClose}
+            onReconnect={() => void startGmail()}
+            onDelete={onDelete}
+          />
         ) : (
           <CorporateMailboxForm
             onCancel={reconnectAccount ? onClose : () => setConnectStep('choose')}
             onConnected={handleCorporateConnected}
+            onDelete={onDelete}
             mode={reconnectAccount ? 'reconnect' : 'connect'}
             accountId={reconnectAccount?.id}
             initial={reconnectAccount ? corporateFormStateFromAccount(reconnectAccount) : undefined}
@@ -125,10 +143,52 @@ function ProviderChoiceList({
   );
 }
 
-function GmailProviderIcon() {
+function GmailProviderIcon({ className = 'mt-0.5 size-6' }: { className?: string }) {
   const mark = resolveItBrandMarkFromHints('Gmail');
   if (!mark) {
     return null;
   }
-  return <ItBrandMarkIcon mark={mark} className="mt-0.5 size-6" />;
+  return <ItBrandMarkIcon mark={mark} className={className} />;
+}
+
+function GmailMailboxSettings({
+  lastError,
+  submitting,
+  onCancel,
+  onReconnect,
+  onDelete,
+}: {
+  lastError: string | null;
+  submitting: boolean;
+  onCancel: () => void;
+  onReconnect: () => void;
+  onDelete?: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <section className={DETAIL_SHEET_SECTION_SURFACE_CLASS}>
+        <h3 className={DETAIL_SHEET_SECTION_TITLE_CLASS}>
+          <GmailProviderIcon className="size-3.5" />
+          Gmail
+        </h3>
+        {lastError ? (
+          <p className="text-destructive mb-3 text-sm" role="alert">
+            {lastError}
+          </p>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Reconnect with Google if this mailbox needs a new OAuth grant.
+          </p>
+        )}
+      </section>
+      <MailboxFormActions
+        submitting={submitting}
+        cancelLabel="Cancel"
+        primaryLabel={submitting ? 'Validating…' : 'Reconnect mailbox'}
+        onCancel={onCancel}
+        onSubmit={onReconnect}
+        onDelete={onDelete}
+      />
+    </div>
+  );
 }

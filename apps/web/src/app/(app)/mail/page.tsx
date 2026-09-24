@@ -803,11 +803,8 @@ export default function MailInboxPage() {
             accountEmail: account.emailAddress,
           })
         }
-        onDeleteAccount={(account) =>
-          setDeleteMailboxTarget({ id: account.id, emailAddress: account.emailAddress })
-        }
         onConnectMailbox={() => handleActivePanelChange({ type: 'connect' })}
-        onReconnectMailbox={(account) =>
+        onMailboxSettings={(account) =>
           handleActivePanelChange({ type: 'connect', accountId: account.id })
         }
         onMailboxOverridesChange={setMailboxOverrides}
@@ -930,6 +927,9 @@ export default function MailInboxPage() {
           clearThreadSelection(setSelectedThreadIds);
         }}
         onMailboxConnected={() => void load()}
+        onDeleteMailbox={(account) =>
+          setDeleteMailboxTarget({ id: account.id, emailAddress: account.emailAddress })
+        }
         onComposeSent={(threadId) => {
           handleActivePanelChange({ type: 'thread', threadId });
           void load();
