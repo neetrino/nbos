@@ -58,17 +58,12 @@ import { MailToolbarRow } from '@/features/mail/MailToolbarRow';
 
 import { activeMailThreadId, type ActiveMailPanel } from '@/features/mail/mail-active-panel';
 
-import {
-  mailAccountsForDailySwitcher,
-  type MailFolderKey,
-} from '@/features/mail/mail-folder-config';
+import { type MailFolderKey } from '@/features/mail/mail-folder-config';
 import { isMailComposeOnlyDraftThread } from '@/features/mail/mail-thread-helpers';
 import { resolveMailModuleAccessPhase } from '@/features/mail/mail-module-access';
 import {
   buildMailSearchFilterConfigs,
   hasActiveMailSearchFilters,
-  MAIL_SEARCH_FILTER_KEY,
-  MAIL_SEARCH_FILTER_VALUE,
   mergeMailInboxListParams,
   resolveMailSearchFilterValues,
 } from '@/features/mail/mail-search-filters';
@@ -184,15 +179,11 @@ export default function MailInboxPage() {
   const allVisibleSelected =
     visibleThreadIds.length > 0 && visibleThreadIds.every((id) => selectedThreadIds.has(id));
 
-  const mailFilterConfigs = useMemo(
-    () =>
-      buildMailSearchFilterConfigs(mailAccountsForDailySwitcher(accountHealth, filterAccountId)),
-    [accountHealth, filterAccountId],
-  );
+  const mailFilterConfigs = useMemo(() => buildMailSearchFilterConfigs(), []);
 
   const mailFilterValues = useMemo(
-    () => resolveMailSearchFilterValues(searchFilters, filterAccountId),
-    [filterAccountId, searchFilters],
+    () => resolveMailSearchFilterValues(searchFilters),
+    [searchFilters],
   );
 
   useEffect(() => {
@@ -501,17 +492,12 @@ export default function MailInboxPage() {
   });
 
   const handleMailFilterChange = (key: string, value: string) => {
-    if (key === MAIL_SEARCH_FILTER_KEY.mailbox) {
-      selectAccount(value === MAIL_SEARCH_FILTER_VALUE.all ? null : value);
-      return;
-    }
     setSearchFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleClearMailSearch = () => {
     setThreadSearchDraft('');
     setSearchFilters({});
-    selectAccount(null);
   };
 
   useEffect(() => {

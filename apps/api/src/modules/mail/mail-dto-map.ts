@@ -6,6 +6,10 @@ import type {
   MailRecipientRow,
   MailThreadListRow,
 } from './mail.types';
+import {
+  resolveMailThreadCounterpart,
+  type MailCounterpartMessage,
+} from './mail-thread-counterpart.ops';
 
 export interface MessageWithRecipients {
   id: string;
@@ -110,7 +114,9 @@ export function toThreadListRow(row: {
   assignedToEmployeeId?: string | null;
   assignedTo?: { firstName: string; lastName: string } | null;
   trashedAt?: Date | null;
+  messages?: MailCounterpartMessage[];
 }): MailThreadListRow {
+  const counterpart = resolveMailThreadCounterpart(row.messages?.[0]);
   return {
     id: row.id,
     mailAccountId: row.mailAccountId,
@@ -126,6 +132,8 @@ export function toThreadListRow(row: {
     assignedToName: row.assignedTo
       ? `${row.assignedTo.firstName} ${row.assignedTo.lastName}`.trim()
       : null,
+    counterpartEmail: counterpart.email,
+    counterpartDisplayName: counterpart.displayName,
     trashedAt: row.trashedAt?.toISOString() ?? null,
   };
 }

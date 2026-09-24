@@ -53,6 +53,9 @@ export interface MailThreadListRow {
   status: string;
   assignedToEmployeeId: string | null;
   assignedToName: string | null;
+  /** External party email for list display (inbound From / outbound To). */
+  counterpartEmail: string | null;
+  counterpartDisplayName: string | null;
   trashedAt: string | null;
 }
 

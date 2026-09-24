@@ -137,7 +137,17 @@ export async function listMailThreadsForViewer(
       orderBy: scope === 'trash' ? { trashedAt: 'desc' } : { lastMessageAt: 'desc' },
       skip,
       take: pageSize,
-      include: { assignedTo: { select: { firstName: true, lastName: true } } },
+      include: {
+        assignedTo: { select: { firstName: true, lastName: true } },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: {
+            direction: true,
+            recipients: { select: { kind: true, email: true, displayName: true } },
+          },
+        },
+      },
     }),
   ]);
   const items = threads.map(toThreadListRow);
@@ -170,9 +180,20 @@ export async function getMailThreadDetailDtoOrNull(
       recipients: { orderBy: { createdAt: 'asc' } },
     },
   });
+  const latestMessage = messages.length > 0 ? messages[messages.length - 1] : undefined;
   return {
     mailAccount: toAccountRow(thread.mailAccount),
-    thread: toThreadListRow(thread),
+    thread: toThreadListRow({
+      ...thread,
+      messages: latestMessage
+        ? [
+            {
+              direction: latestMessage.direction,
+              recipients: latestMessage.recipients,
+            },
+          ]
+        : [],
+    }),
     messages: messages.map(toMessageRow),
   };
 }
