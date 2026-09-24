@@ -15,6 +15,7 @@ const METRIC_COL_CLASS = 'flex min-w-[7.5rem] shrink-0 flex-col justify-end gap-
 
 export function NormsCatalogCard({
   title,
+  description,
   icon,
   unitsLabel,
   salePriceLabel,
@@ -29,6 +30,7 @@ export function NormsCatalogCard({
   onOpen,
 }: {
   title: string;
+  description?: string;
   icon?: ReactNode;
   unitsLabel: string;
   salePriceLabel?: string | null;
@@ -59,6 +61,7 @@ export function NormsCatalogCard({
       >
         <CardHeader
           title={title}
+          description={description}
           icon={icon}
           status={status}
           statusLabel={statusLabel}
@@ -81,12 +84,14 @@ export function NormsCatalogCard({
 
 function CardHeader({
   title,
+  description,
   icon,
   status,
   statusLabel,
   badge,
 }: {
   title: string;
+  description?: string;
   icon?: ReactNode;
   status: string | null;
   statusLabel: string | null;
@@ -96,8 +101,15 @@ function CardHeader({
     <span className="flex items-start justify-between gap-2">
       <span className="flex min-w-0 items-start gap-2">
         {icon}
-        <span className="text-foreground line-clamp-2 min-h-10 text-sm leading-snug font-bold">
-          {title}
+        <span className="min-w-0">
+          <span className="text-foreground line-clamp-2 min-h-10 text-sm leading-snug font-bold">
+            {title}
+          </span>
+          {description ? (
+            <span className="text-muted-foreground mt-1 line-clamp-2 text-xs leading-snug">
+              {description}
+            </span>
+          ) : null}
         </span>
       </span>
       {badge ??

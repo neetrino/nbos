@@ -61,6 +61,36 @@ describe('product platform', () => {
     ).toBe('WEB');
   });
 
+  it('offers the five new site kinds only on Web and limits WordPress to three', () => {
+    const newSites = [
+      'REAL_ESTATE_WEBSITE',
+      'SERVICE_WEBSITE',
+      'TRAVEL_WEBSITE',
+      'CLASSIFIEDS_PORTAL',
+      'JOB_BOARD',
+    ];
+    for (const productType of newSites) {
+      expect(listedProductTypesForPicker('CODE', null, 'WEB')).toContain(productType);
+      expect(listedProductTypesForPicker('CODE', null, 'APP')).not.toContain(productType);
+      expect(
+        productTypePlatformPairError({
+          productCategory: 'CODE',
+          productType,
+          productPlatform: 'APP',
+        }),
+      ).toBe(PRODUCT_TYPE_PLATFORM_MISMATCH);
+    }
+    expect(listedProductTypesForPicker('WORDPRESS', null, 'WEB')).toEqual(
+      expect.arrayContaining(newSites.slice(0, 3)),
+    );
+    expect(listedProductTypesForPicker('WORDPRESS', null, 'WEB')).not.toContain(
+      'CLASSIFIEDS_PORTAL',
+    );
+    expect(listedProductTypesForPicker('SHOPIFY', null, 'WEB')).not.toContain(
+      'REAL_ESTATE_WEBSITE',
+    );
+  });
+
   it('stays empty on a deal that has not picked a category yet', () => {
     expect(coerceOptionalProductPlatform({ requested: 'APP' })).toBeNull();
   });
@@ -128,7 +158,7 @@ describe('product type by platform', () => {
     expect(desktop).not.toContain('CUSTOMER_PORTAL');
     expect(web.length).toBeGreaterThan(app.length);
     expect(app.length).toBeGreaterThan(desktop.length);
-    expect(OFFERED_CODE_PRODUCT_TYPES).toHaveLength(29);
+    expect(OFFERED_CODE_PRODUCT_TYPES).toHaveLength(34);
   });
 
   it('waits for a Code platform before offering types', () => {

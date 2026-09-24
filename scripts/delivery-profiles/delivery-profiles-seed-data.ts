@@ -5,6 +5,7 @@ import {
   type ProfileSeedUnits,
 } from './data/profile-seed-types';
 import { BUSINESS_CARD_PROFILE } from './data/business-card-profile';
+import { NEW_SITE_KIND_PROFILES } from './data/new-site-kind-profiles';
 import {
   BLOG_PROFILE,
   EVENT_WEBSITE_PROFILE,
@@ -64,6 +65,7 @@ export const PROFILE_SEED_KINDS: readonly ProfileSeedKind[] = [
   BLOG_PROFILE,
   NEWS_MEDIA_PROFILE,
   EVENT_WEBSITE_PROFILE,
+  ...NEW_SITE_KIND_PROFILES,
   SHOP_PROFILE,
   MARKETPLACE_PROFILE,
   B2B_COMMERCE_PROFILE,

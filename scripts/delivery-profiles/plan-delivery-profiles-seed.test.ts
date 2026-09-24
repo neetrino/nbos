@@ -9,6 +9,8 @@ import {
 } from './delivery-profiles-seed-data';
 import { collectionsForKind } from './data/profile-seed-types';
 import { formatProfileSeedPlan, planDeliveryProfilesSeed } from './plan-delivery-profiles-seed';
+import { profileSeedRoleUnits } from './profile-seed-role-units';
+import { isPublishedRoleVectorComplete } from '@nbos/shared';
 
 const ALL_CODES = referencedFunctionCodes();
 
@@ -70,8 +72,23 @@ describe('delivery profile seed data', () => {
     expect(buildProfileSeedVersions().map((row) => row.profileKey)).not.toContain(
       'mobile-app-code',
     );
-    expect(types).toHaveLength(29);
+    expect(types).toHaveLength(34);
     expect([...types].sort()).toEqual([...OFFERED_CODE_PRODUCT_TYPES].sort());
+  });
+
+  it('keeps new site cores unpublishable until the Owner configures role units', () => {
+    for (const type of [
+      'REAL_ESTATE_WEBSITE',
+      'SERVICE_WEBSITE',
+      'TRAVEL_WEBSITE',
+      'CLASSIFIEDS_PORTAL',
+      'JOB_BOARD',
+    ]) {
+      const core = PROFILE_SEED_KINDS.find((kind) => kind.productType === type);
+      expect(core).toBeDefined();
+      expect(profileSeedRoleUnits(core!.units)).toEqual([]);
+      expect(isPublishedRoleVectorComplete(profileSeedRoleUnits(core!.units))).toBe(false);
+    }
   });
 });
 

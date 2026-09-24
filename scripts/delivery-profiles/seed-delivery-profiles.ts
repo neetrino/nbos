@@ -1,6 +1,6 @@
 import { createPrismaClient, type PrismaClient, type TransactionClient } from '@nbos/database';
 import { loadDevDeliveryEnv } from '../delivery-dev/load-dev-delivery-env';
-import { buildSeedRoleUnits } from '../delivery-catalog/build-seed-role-units';
+import { profileSeedRoleUnits } from './profile-seed-role-units';
 import {
   buildSeededProfileKeys,
   retiredSizedProfileKeys,
@@ -128,7 +128,7 @@ async function writeProfileVersion(
       description: kind.description,
       status: 'DRAFT',
       effectiveFrom: new Date(),
-      roleUnits: { create: buildSeedRoleUnits(version.units) },
+      roleUnits: { create: profileSeedRoleUnits(version.units) },
       coreItems: {
         create: kind.coreItems.map((item, index) => ({
           position: index + 1,

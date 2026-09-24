@@ -265,6 +265,15 @@ Writes are refused after `scopeLockedAt` and after Won on the deal. On a materia
 change is a revision that rewrites existing unit snapshots from published units × the new factor.
 Frozen components are not rescaled. `Extension.size` stays removed; this factor does not restore it.
 
+**1.25 Five website kinds — Owner clarification of 2026-09-24.** The owner wants real estate,
+services, tourism, classifieds, and vacancies as separate website directions. Classifieds and
+vacancies are separate kinds because their required accounts and workflows differ. All five are
+WEB-only. Code offers all five; WordPress offers real estate, services, and tourism. The new core
+drafts define scope and named kits but contain no role units or sale price. They cannot be
+published until the Owner configures the role vector, and their prices cannot be inferred from
+existing cores. Existing enum values, published cores, and frozen Deal/Product snapshots stay as
+they are. See [`13-CORE-TYPE-REVIEW.md`](./13-CORE-TYPE-REVIEW.md).
+
 ## 2. Open points that need the Owner
 
 **2.1 Everything that needs a live database.** Decision 1.23 was applied on development

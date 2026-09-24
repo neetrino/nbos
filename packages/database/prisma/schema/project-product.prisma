@@ -125,6 +125,11 @@ enum ProductTypeEnum {
   BOS
   CUSTOMER_PORTAL
   PARTNER_PORTAL
+  REAL_ESTATE_WEBSITE
+  SERVICE_WEBSITE
+  TRAVEL_WEBSITE
+  CLASSIFIEDS_PORTAL
+  JOB_BOARD
 }
 
 /// Where the product runs. Not a compensation axis and not a product kind.

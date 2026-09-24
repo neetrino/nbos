@@ -20,6 +20,11 @@ describe('coreKindGroupId', () => {
     expect(rail.find((entry) => entry.id === CORE_RAIL_ALL_ID)?.count).toBe(types.length);
     expect(summed).toBe(types.length);
     expect(coreKindGroupId('COMPANY_WEBSITE')).toBe('sites');
+    expect(coreKindGroupId('REAL_ESTATE_WEBSITE')).toBe('sites');
+    expect(coreKindGroupId('SERVICE_WEBSITE')).toBe('sites');
+    expect(coreKindGroupId('TRAVEL_WEBSITE')).toBe('sites');
+    expect(coreKindGroupId('CLASSIFIEDS_PORTAL')).toBe('sites');
+    expect(coreKindGroupId('JOB_BOARD')).toBe('sites');
     expect(coreKindGroupId('ECOMMERCE')).toBe('commerce');
     expect(coreKindGroupId('CRM')).toBe('operations');
     expect(coreKindGroupId('WEB_APP')).toBe('portals');

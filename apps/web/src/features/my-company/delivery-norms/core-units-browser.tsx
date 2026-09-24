@@ -84,9 +84,10 @@ function useCoreUnitsView(slots: CoreUnitSlot[], labels: Record<ProductTypeKey, 
     () =>
       itemsMatchingSearch(slots, query, (slot) => [
         kindTitle(labels, slot.productType),
+        t(`productTypeDescriptions.${slot.productType}` as never),
         slot.productType,
       ]),
-    [labels, query, slots],
+    [labels, query, slots, t],
   );
   const types = filtered.map((slot) => slot.productType);
   return {
@@ -164,6 +165,7 @@ function CoreKindCard({
   return (
     <NormsCatalogCard
       title={title}
+      description={t(`productTypeDescriptions.${slot.productType}` as never)}
       unitsLabel={unitsLabel}
       salePriceLabel={saleAmount ? formatMoneyDram(Number(saleAmount)) : null}
       includedLabel={includedCount === null ? null : String(includedCount)}
