@@ -45,6 +45,7 @@ describe('invoice-money-status-gate-client', () => {
         company: null,
         productId: null,
         projectId: null,
+        notes: 'Hosting',
         moneyStatus: 'NEW',
       }),
       'AWAITING_PAYMENT',

@@ -45,6 +45,9 @@ describe('getInvoiceManualNotesGateErrors', () => {
 
   it('accepts Description stored as editor HTML', () => {
     expect(invoiceNotesPlainText('<p>Hosting for Ommm</p>')).toBe('Hosting for Ommm');
+    expect(invoiceNotesPlainText('<p>a &amp; b</p>')).toBe('a & b');
+    expect(invoiceNotesPlainText('&amp;lt;')).toBe('&lt;');
+    expect(invoiceNotesPlainText('<script')).toBe('');
     expect(
       getOfficialInvoiceManualNotesSendErrors({
         type: 'MANUAL',

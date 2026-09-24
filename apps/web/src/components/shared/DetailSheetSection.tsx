@@ -43,7 +43,7 @@ export function DetailSheetSection({
           <div
             className={cn(
               DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
-              'rounded-xl bg-card p-3 hover:bg-card focus-within:bg-card',
+              'bg-card hover:bg-card focus-within:bg-card rounded-xl p-3',
             )}
           >
             {children}

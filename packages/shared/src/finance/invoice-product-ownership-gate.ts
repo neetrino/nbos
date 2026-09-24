@@ -58,19 +58,27 @@ function manualNotesRequired(type?: string | null, notes?: string | null): boole
 
 /** Plain text of a Description field, including stored editor HTML. */
 export function invoiceNotesPlainText(value?: string | null): string {
-  const withBreaks = (value ?? '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
-  return withBreaks
+  return decodeInvoiceNoteEntities(stripInvoiceNoteTags(value ?? ''))
     .split('\n')
     .map((line) => line.replace(/\s+/g, ' ').trim())
     .filter((line) => line.length > 0)
     .join('\n');
+}
+
+function stripInvoiceNoteTags(value: string): string {
+  return value
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/?[^>]+(>|$)/g, '');
+}
+
+/** One decode pass. Ampersand is last so `&amp;lt;` stays `&lt;`. */
+function decodeInvoiceNoteEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
 }
 
 /** Unsourced (manual) create requires an explicit product. Source ids inherit ownership. */
