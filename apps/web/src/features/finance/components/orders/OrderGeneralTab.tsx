@@ -61,15 +61,16 @@ export function OrderGeneralTab({
         </div>
       </DetailSheetCollapsibleSection>
 
-      <OrderLinkedPanel order={order} />
-
       <DetailSheetOptionalDescription
         entityType="generic"
         entityId={order.id}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
         disabled={formDisabled}
+        sectionClassName="mt-0"
       />
+
+      <OrderLinkedPanel order={order} />
       <p className="text-muted-foreground text-sm">
         Created {formatInvoiceSheetDate(order.createdAt, locale)}
       </p>

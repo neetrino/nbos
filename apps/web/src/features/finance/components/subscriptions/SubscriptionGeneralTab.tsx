@@ -237,15 +237,16 @@ export function SubscriptionGeneralTab({
         </div>
       </DetailSheetCollapsibleSection>
 
-      <SubscriptionDetailLinkedPanel subscription={subscription} />
-
       <DetailSheetOptionalDescription
         entityType="generic"
         entityId={subscription.id}
         value={draft.notes}
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
         disabled={formDisabled}
+        sectionClassName="mt-0"
       />
+
+      <SubscriptionDetailLinkedPanel subscription={subscription} />
       <p className="text-muted-foreground text-sm">
         Created {formatInvoiceSheetDate(subscription.createdAt, locale)}
       </p>

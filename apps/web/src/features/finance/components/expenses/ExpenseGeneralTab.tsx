@@ -265,6 +265,17 @@ export function ExpenseGeneralTab({
         </div>
       </DetailSheetSection>
 
+      <DetailSheetOptionalDescription
+        entityType="expense"
+        entityId={expense.id}
+        value={draft.notes}
+        label={t('fields.notes')}
+        placeholder={t('fields.notesPlaceholder')}
+        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+        disabled={formDisabled}
+        sectionClassName="mt-0"
+      />
+
       {expense.linkedExpensePlan?.id && expense.linkedExpensePlan.name ? (
         <ExpensePlanLinkBanner
           planId={expense.linkedExpensePlan.id}
@@ -278,16 +289,6 @@ export function ExpenseGeneralTab({
         purpose="EXPENSE_PROOF"
         title=""
         borderLabel={t('sheet.sections.proofs')}
-      />
-
-      <DetailSheetOptionalDescription
-        entityType="expense"
-        entityId={expense.id}
-        value={draft.notes}
-        label={t('fields.notes')}
-        placeholder={t('fields.notesPlaceholder')}
-        onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-        disabled={formDisabled}
       />
     </div>
   );
