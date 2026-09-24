@@ -36,6 +36,7 @@ export function OrgDepartmentSettingsControls({
   canEdit,
   canAdd,
   canDelete,
+  plainTrigger = false,
   onAddChild,
   onChanged,
   onDeleted,
@@ -45,6 +46,7 @@ export function OrgDepartmentSettingsControls({
   canEdit: boolean;
   canAdd: boolean;
   canDelete: boolean;
+  plainTrigger?: boolean;
   onAddChild: (parentId: string) => void;
   onChanged: () => void;
   onDeleted: () => void;
@@ -132,6 +134,7 @@ export function OrgDepartmentSettingsControls({
         canEdit={canEdit}
         canAdd={canAdd}
         canDelete={canDelete}
+        plainTrigger={plainTrigger}
         onAction={handleAction}
       />
       <DepartmentEditDialog

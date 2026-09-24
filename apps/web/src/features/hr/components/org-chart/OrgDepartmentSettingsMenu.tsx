@@ -32,11 +32,14 @@ export function OrgDepartmentSettingsMenu({
   canEdit,
   canAdd,
   canDelete,
+  plainTrigger = false,
   onAction,
 }: {
   canEdit: boolean;
   canAdd: boolean;
   canDelete: boolean;
+  /** Card chrome: dots only, no circular button shell. */
+  plainTrigger?: boolean;
   onAction: (action: OrgDepartmentSettingsAction) => void;
 }) {
   const t = useTranslations('hr');
@@ -49,9 +52,16 @@ export function OrgDepartmentSettingsMenu({
           <Button
             {...props}
             type="button"
-            size="icon-sm"
+            size={plainTrigger ? undefined : 'icon-sm'}
             variant="ghost"
+            className={
+              plainTrigger
+                ? 'text-muted-foreground hover:text-foreground size-7 shrink-0 rounded-md bg-transparent p-0 shadow-none hover:bg-transparent'
+                : undefined
+            }
             aria-label={t('orgChart.deptSettings.menuAria')}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
             <MoreHorizontal className="size-4" aria-hidden />
           </Button>

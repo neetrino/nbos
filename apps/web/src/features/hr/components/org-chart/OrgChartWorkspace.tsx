@@ -104,10 +104,14 @@ function OrgChartStage({
             expandedIds={chart.expandedIds}
             selectedId={chart.selectedId}
             myDepartmentIds={myDepartmentIds}
+            canEdit={canEdit}
+            canAdd={canAdd}
+            canDelete={canDelete}
             onSelect={chart.setSelectedId}
             onToggleExpanded={chart.toggleExpanded}
             onAddChild={onAddDepartment}
             onOpenEmployee={onOpenEmployee}
+            onDepartmentsChanged={onDepartmentsChanged}
           />
         </OrgChartCanvas>
         <OrgChartZoomControls
