@@ -60,6 +60,8 @@ type RelationPickerBaseProps = {
    * Search still tracks current selection ids.
    */
   selectionDisplay?: 'chips' | 'none';
+  /** Rendered at the bottom of the open search dropdown (e.g. confirm multi-add). */
+  dropdownFooter?: ReactNode;
 };
 
 export type RelationPickerSingleProps = RelationPickerBaseProps & {

@@ -1,6 +1,12 @@
 'use client';
 
-import { useRef, type CSSProperties, type KeyboardEvent, type RefObject } from 'react';
+import {
+  useRef,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { Check, Loader2, Search, X } from 'lucide-react';
@@ -40,6 +46,7 @@ type RelationPickerDropdownProps = {
   onKeyDown: (event: KeyboardEvent) => void;
   inputRef: RefObject<HTMLInputElement | null>;
   panelRef: RefObject<HTMLDivElement | null>;
+  footer?: ReactNode;
 };
 
 export function RelationPickerDropdown({
@@ -62,6 +69,7 @@ export function RelationPickerDropdown({
   onKeyDown,
   inputRef,
   panelRef,
+  footer,
 }: RelationPickerDropdownProps) {
   const anchorRef = useRef<HTMLDivElement>(null);
   const box = useRelationPickerDropdownBox(anchorRef, true);
@@ -84,6 +92,7 @@ export function RelationPickerDropdown({
             multiple={multiple}
             onCreateClick={onCreateClick}
             onSelect={onSelect}
+            footer={footer}
           />,
           document.body,
         )
@@ -172,6 +181,7 @@ function RelationPickerResultsPanel({
   multiple,
   onCreateClick,
   onSelect,
+  footer,
 }: {
   box: RelationPickerDropdownBox;
   panelRef: RefObject<HTMLDivElement | null>;
@@ -188,6 +198,7 @@ function RelationPickerResultsPanel({
   multiple: boolean;
   onCreateClick: () => void;
   onSelect: (value: string, label: string, avatar?: string) => void;
+  footer?: ReactNode;
 }) {
   const t = useTranslations('forms');
   const boxStyle: CSSProperties = {
@@ -243,6 +254,7 @@ function RelationPickerResultsPanel({
           onCreateClick={onCreateClick}
         />
       ) : null}
+      {footer ? <div className="border-border shrink-0 border-t p-2">{footer}</div> : null}
     </div>
   );
 }

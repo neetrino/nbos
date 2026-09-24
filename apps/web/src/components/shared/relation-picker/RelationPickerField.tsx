@@ -48,6 +48,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
     createPlacement = 'bottom',
     open: openProp,
     onOpenChange,
+    dropdownFooter,
   } = props;
   const maxResults = resolveRelationPickerMaxResults(entityKind, maxResultsProp);
   const searchDebounceMs = resolveRelationPickerSearchDebounceMs(entityKind);
@@ -243,6 +244,7 @@ export function RelationPickerField(props: RelationPickerFieldProps) {
           onKeyDown={handleKeyDown}
           inputRef={inputRef}
           panelRef={panelRef}
+          footer={dropdownFooter}
         />
       ) : (
         <ClosedRelationPicker
