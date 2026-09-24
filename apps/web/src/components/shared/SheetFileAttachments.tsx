@@ -77,10 +77,12 @@ export function SheetFileAttachments({
   const [dragOver, setDragOver] = useState(false);
   const visibleFiles = files.slice(0, SHEET_FILE_TILE_LIMIT);
   const fileCount = files.length + pendingUploads.length;
-  const hasFiles = loading || visibleFiles.length > 0 || pendingUploads.length > 0;
   const outlined = Boolean(outlinedLabel?.trim());
   const label = outlinedLabel?.trim() ?? '';
   const caption = borderLabel?.trim() ?? '';
+  const showLoadingRow =
+    !caption && loading && visibleFiles.length === 0 && pendingUploads.length === 0;
+  const hasFiles = showLoadingRow || visibleFiles.length > 0 || pendingUploads.length > 0;
   const barDisabled = loading;
   const pickFiles = (picked: File[]) => {
     if (picked.length > 0) void onUpload(picked);
@@ -93,16 +95,13 @@ export function SheetFileAttachments({
     <div
       className={cn(
         outlined || caption
-          ? cn(
-              OUTLINED_SHELL_CLASS,
-              caption && 'bg-card hover:bg-card focus-within:bg-card',
-            )
+          ? cn(OUTLINED_SHELL_CLASS, caption && 'bg-card hover:bg-card focus-within:bg-card')
           : embedded
             ? SHEET_FILE_ATTACHMENTS_EMBEDDED_CLASS
             : SHEET_FILE_ATTACHMENTS_SURFACE_CLASS,
         'min-w-0 transition-colors',
         dragOver && !barDisabled && 'ring-primary/25 ring-2',
-        barDisabled && 'opacity-80',
+        barDisabled && !caption && 'opacity-80',
       )}
       onDragOver={(e) => {
         e.preventDefault();
@@ -132,7 +131,7 @@ export function SheetFileAttachments({
                 {hasFiles ? `${sectionTitle}: ${fileCount}` : sectionTitle}
               </span>
             )}
-            {loading ? (
+            {loading && !caption ? (
               <Loader2
                 className="text-muted-foreground size-3.5 shrink-0 animate-spin"
                 aria-hidden
