@@ -29,7 +29,8 @@ export const ORG_DEPT_ROLE_MEMBER = 'MEMBER';
 
 export const ORG_CARD_SHELL_CLASS =
   'bg-card border-border absolute flex flex-col overflow-hidden rounded-2xl border shadow-md';
-export const ORG_CARD_SELECTED_CLASS = 'border-sky-400 shadow-lg ring-2 ring-sky-200/90';
+export const ORG_CARD_SELECTED_CLASS =
+  'border-sky-400 bg-sky-50 shadow-lg ring-2 ring-sky-300/80 dark:bg-sky-950/50 dark:ring-sky-700/70';
 export const ORG_COMPANY_CARD_CLASS = 'border-emerald-200/90 dark:border-emerald-800/80';
 export const ORG_CARD_FOOTER_IDLE_CLASS =
   'text-muted-foreground mt-auto border-t border-transparent px-3 py-2 text-center text-[11px]';
