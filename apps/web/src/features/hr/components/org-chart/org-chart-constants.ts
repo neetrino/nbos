@@ -38,8 +38,6 @@ export const ORG_COMPANY_FOOTER_CLASS =
   'text-emerald-800 dark:text-emerald-200 mt-auto border-t border-emerald-100 bg-emerald-50 px-3 py-2 text-center text-[11px] font-medium dark:border-emerald-900/50 dark:bg-emerald-950/40';
 export const ORG_PLUS_BUTTON_CLASS =
   'border-border bg-background text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-950/50 absolute z-10 flex items-center justify-center rounded-full border shadow-sm';
-export const ORG_TOOLBAR_CLASS =
-  'border-border bg-background/95 absolute top-3 left-3 z-20 flex items-center gap-1 rounded-full border px-2 py-1 shadow-sm backdrop-blur-sm';
 export const ORG_ZOOM_BAR_CLASS =
   'border-border bg-background/95 absolute bottom-3 left-3 z-20 flex items-center rounded-full border shadow-sm backdrop-blur-sm';
 export const ORG_CANVAS_CLASS =

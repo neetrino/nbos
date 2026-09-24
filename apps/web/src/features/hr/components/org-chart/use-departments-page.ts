@@ -17,12 +17,10 @@ import {
   departmentsNeedCardHydration,
 } from '@/features/hr/components/org-chart/org-chart-members';
 import { overlayOrgSeats } from '@/features/hr/components/org-chart/org-chart-seats';
-import type { OrgChartViewMode } from '@/features/hr/components/org-chart/OrgChartToolbar';
 import {
   departmentsApi,
   employeesApi,
   type DepartmentItem,
-  type DepartmentWithMembers,
   type Employee,
 } from '@/lib/api/employees';
 import { orgSeatsApi } from '@/lib/api/org-seats';
@@ -35,13 +33,7 @@ export function useDepartmentsPage() {
   const requestIdRef = useRef(0);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<OrgChartViewMode>('chart');
   const [search, setSearch] = useState('');
-  const [listState, setListState] = useState<ListExpandState>({
-    expandedId: null,
-    members: null,
-    loadingMembers: false,
-  });
   const [createState, setCreateState] = useState<CreateFormState>(emptyCreateForm);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const myDepartmentIds = useMemo(
@@ -85,16 +77,16 @@ export function useDepartmentsPage() {
   const registerFind = useCallback((finder: () => void) => {
     findRef.current = finder;
   }, []);
+  const submitSearch = useCallback(() => {
+    findRef.current();
+  }, []);
 
   return {
     t,
     departments,
     loading,
-    viewMode,
-    setViewMode,
     search,
     setSearch,
-    listState,
     createState,
     setCreateState,
     selectedEmployee,
@@ -103,20 +95,13 @@ export function useDepartmentsPage() {
     myDepartmentIds,
     primaryDepartmentId,
     registerFind,
-    submitSearch: () => findRef.current(),
+    submitSearch,
     openCreateDialog,
-    toggleExpand: (dept: DepartmentItem) => void toggleDepartmentMembers(dept, setListState, t),
     handleCreate: () =>
       void submitCreateDepartment(createState, t, setCreateState, fetchDepartments),
     openEmployee: (id: string) => openEmployeeSheet(id, t, setSelectedEmployee),
   };
 }
-
-type ListExpandState = {
-  expandedId: string | null;
-  members: DepartmentWithMembers | null;
-  loadingMembers: boolean;
-};
 
 type CreateFormState = {
   open: boolean;
@@ -135,41 +120,6 @@ const emptyCreateForm: CreateFormState = {
   description: '',
   parentId: '',
 };
-
-async function toggleDepartmentMembers(
-  dept: DepartmentItem,
-  setListState: Dispatch<SetStateAction<ListExpandState>>,
-  t: ReturnType<typeof useTranslations>,
-): Promise<void> {
-  let shouldLoad = false;
-  setListState((prev) => {
-    if (prev.expandedId === dept.id) {
-      return { expandedId: null, members: null, loadingMembers: false };
-    }
-    shouldLoad = true;
-    return { expandedId: dept.id, members: null, loadingMembers: true };
-  });
-  if (!shouldLoad) return;
-  try {
-    const [detail, seats] = await Promise.all([
-      departmentsApi.getById(dept.id),
-      orgSeatsApi.getAll(dept.id),
-    ]);
-    const overlaySeats = Array.isArray(seats) ? seats : [];
-    const members = {
-      ...detail,
-      members: overlayOrgSeats([detail], overlaySeats)[0]?.members ?? detail.members ?? [],
-    };
-    setListState((prev) =>
-      prev.expandedId === dept.id ? { ...prev, members, loadingMembers: false } : prev,
-    );
-  } catch (err) {
-    toast.error(err instanceof Error ? err.message : t('deptAdmin.membersLoadFailed'));
-    setListState((prev) =>
-      prev.expandedId === dept.id ? { ...prev, members: null, loadingMembers: false } : prev,
-    );
-  }
-}
 
 async function submitCreateDepartment(
   form: CreateFormState,

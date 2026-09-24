@@ -15,6 +15,7 @@ export function usePageHeroRenderState({
   syncModuleTitle = true,
   tabs,
   tabsEnd,
+  leading,
   search,
   secondaryTabs,
   viewMode,
@@ -29,7 +30,7 @@ export function usePageHeroRenderState({
   const hasSearch = Boolean(search);
   const hasTrailing = Boolean(viewMode || trailing);
   const hasTabsRow = Boolean(tabs || tabsEnd);
-  const hasToolbar = Boolean(hasTabsRow || hasSearch || hasTrailing);
+  const hasToolbar = Boolean(leading || hasTabsRow || hasSearch || hasTrailing);
   const isMobileViewport = useIsMobileViewport();
   const { searchActive, filterPanelOpen } = usePageHeroToolbar();
   const isCompactToolbar = usePageHeroCompactToolbar(sectionRef);

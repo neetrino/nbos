@@ -21,6 +21,7 @@ interface PageHeroDesktopChromeProps {
   toolsRowRef: RefObject<HTMLDivElement | null>;
   tabs?: ReactNode;
   tabsEnd?: ReactNode;
+  leading?: ReactNode;
   search?: ReactNode;
   secondaryTabs?: ReactNode;
   viewMode?: ReactNode;
@@ -38,6 +39,7 @@ export function PageHeroDesktopChrome({
   toolsRowRef,
   tabs,
   tabsEnd,
+  leading,
   search,
   secondaryTabs,
   viewMode,
@@ -72,6 +74,7 @@ export function PageHeroDesktopChrome({
     >
       {hasToolbar ? (
         <div className={cn(PAGE_HERO_TOOLBAR, filterOverflowClass)}>
+          {leading ? <div className="shrink-0">{leading}</div> : null}
           {hasTabsRow ? <HeroTabsRow tabs={tabs} tabsEnd={tabsEnd} /> : null}
           {hasSearch || trailingNode ? (
             <div

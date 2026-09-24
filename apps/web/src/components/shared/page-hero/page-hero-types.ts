@@ -8,6 +8,8 @@ export interface PageHeroProps {
   /** Mobile dock New slot when the trailing create button is hidden or disabled. */
   create?: MobileDockCreateAction;
   tabs?: ReactNode;
+  /** Desktop and mobile: first control on the hero row, before section tabs. */
+  leading?: ReactNode;
   /**
    * Renders on the same row as `tabs`, trailing edge (e.g. mobile primary +).
    * When set, the tabs row takes the full first toolbar line so tools wrap below.
