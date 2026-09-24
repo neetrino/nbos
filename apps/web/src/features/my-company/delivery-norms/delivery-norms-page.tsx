@@ -1,16 +1,17 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DELIVERY_COMPENSATION_RULES_MODULE, FUNCTION_CATALOG_MODULE } from '@nbos/shared';
 import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import type { DeliveryEnrollmentSetting } from '@/lib/api/delivery-norms';
 import { usePermission } from '@/lib/permissions';
 import { LOADING_CARD_COUNT } from './delivery-norms.constants';
 import { DeliveryNormsTabPanel } from './delivery-norms-tab-panel';
 import { useDeliveryNormsStoredLocation } from './delivery-norms-tab-storage';
 import { resolveDeliveryNormsSection, type DeliveryNormsSection } from './delivery-norms-workspace';
 import { EnrollmentSwitchSection } from './enrollment-switch-section';
-import { useDeliveryNormsHeroSlots } from './use-delivery-norms-hero-slots';
+import { useDeliveryNormsSectionTabs } from './use-delivery-norms-hero-slots';
 import {
   useDeliveryNormsPageData,
   type DeliveryNormsPageData,
@@ -26,7 +27,7 @@ export function DeliveryNormsPage() {
   const canPublish = can('EDIT', DELIVERY_COMPENSATION_RULES_MODULE);
   const { data, loading, error, setError, load } = useDeliveryNormsPageData(canSeeRules);
   const { section, setSection } = useDeliveryNormsSection(canSeeRules);
-  useDeliveryNormsHeroSlots({
+  const sectionTabs = useDeliveryNormsSectionTabs({
     section,
     canSeeRules,
     onSectionChange: setSection,
@@ -49,14 +50,14 @@ export function DeliveryNormsPage() {
       {error && hasDeliveryNormsData(data) ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
-      {canSeeRules ? (
-        <EnrollmentSwitchSection
-          setting={data.enrollment}
-          canToggle={canPublish}
-          onChanged={() => void load()}
-          onError={setError}
-        />
-      ) : null}
+      <DeliveryNormsControls
+        tabs={sectionTabs}
+        canSeeRules={canSeeRules}
+        setting={data.enrollment}
+        canToggle={canPublish}
+        onChanged={() => void load()}
+        onError={setError}
+      />
       <DataView
         loading={loading && section !== 'functions'}
         error={error}
@@ -67,6 +68,39 @@ export function DeliveryNormsPage() {
       >
         {panel}
       </DataView>
+    </div>
+  );
+}
+
+function DeliveryNormsControls({
+  tabs,
+  canSeeRules,
+  setting,
+  canToggle,
+  onChanged,
+  onError,
+}: {
+  tabs: ReactNode;
+  canSeeRules: boolean;
+  setting: DeliveryEnrollmentSetting | null;
+  canToggle: boolean;
+  onChanged: () => void;
+  onError: (message: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {tabs}
+      {canSeeRules ? (
+        <>
+          <span className="bg-border h-5 w-px shrink-0" aria-hidden />
+          <EnrollmentSwitchSection
+            setting={setting}
+            canToggle={canToggle}
+            onChanged={onChanged}
+            onError={onError}
+          />
+        </>
+      ) : null}
     </div>
   );
 }

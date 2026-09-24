@@ -530,7 +530,8 @@
       "turnOn": "Turn enrollment on",
       "turnOff": "Turn enrollment off",
       "updatedAt": "Changed: {at}",
-      "hint": "Existing deliveries are unaffected: turning this off only stops new enrollments."
+      "hint": "Existing deliveries are unaffected: turning this off only stops new enrollments.",
+      "summary": "Turning this off only stops new enrollments; existing deliveries stay unchanged."
     },
     "rates": {
       "title": "Role rates",

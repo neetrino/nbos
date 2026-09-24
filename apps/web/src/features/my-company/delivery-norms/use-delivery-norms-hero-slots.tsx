@@ -1,12 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Coins, Layers, Library } from 'lucide-react';
-import { PageHeroTabs, type PageHeroTabOption, useModuleHeroSlots } from '@/components/shared';
+import { PageHeroTabs, useModuleHeroSlots, type PageHeroTabOption } from '@/components/shared';
 import type { DeliveryNormsSection } from './delivery-norms-workspace';
 
-export function useDeliveryNormsHeroSlots({
+export function useDeliveryNormsSectionTabs({
   section,
   canSeeRules,
   onSectionChange,
@@ -14,8 +14,10 @@ export function useDeliveryNormsHeroSlots({
   section: DeliveryNormsSection;
   canSeeRules: boolean;
   onSectionChange: (section: DeliveryNormsSection) => void;
-}): void {
+}): ReactNode {
   const t = useTranslations('hr.deliveryNorms');
+  const emptyHeroSlots = useMemo(() => ({}), []);
+  useModuleHeroSlots(emptyHeroSlots);
   const options = useMemo((): PageHeroTabOption<DeliveryNormsSection>[] => {
     const functionTab = {
       value: 'functions' as const,
@@ -30,7 +32,7 @@ export function useDeliveryNormsHeroSlots({
     ];
   }, [canSeeRules, t]);
 
-  const secondaryTabs = useMemo(
+  return useMemo(
     () => (
       <PageHeroTabs
         value={section}
@@ -43,7 +45,4 @@ export function useDeliveryNormsHeroSlots({
     ),
     [onSectionChange, options, section, t],
   );
-
-  const slots = useMemo(() => ({ secondaryTabs }), [secondaryTabs]);
-  useModuleHeroSlots(slots);
 }

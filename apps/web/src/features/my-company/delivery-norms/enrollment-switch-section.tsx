@@ -22,12 +22,12 @@ export function EnrollmentSwitchSection({
   const [saving, setSaving] = useState(false);
   const enabled = setting?.newEnrollmentEnabled ?? false;
   const locked = !canToggle || saving;
-  const state = enabled ? t('enrollment.stateOn') : t('enrollment.stateOff');
 
   return (
-    <div className={cn('flex w-fit max-w-full items-center gap-3', locked && 'opacity-60')}>
+    <div className={cn('flex min-w-0 items-center gap-3', locked && 'opacity-60')}>
       <Switch
         size="lg"
+        className="shrink-0"
         checked={enabled}
         disabled={locked}
         aria-label={t('enrollment.title')}
@@ -41,14 +41,7 @@ export function EnrollmentSwitchSection({
           });
         }}
       />
-      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-        <p className="text-foreground text-base font-semibold tracking-tight">
-          {t('enrollment.title')}
-        </p>
-        <span className="bg-border h-4 w-px shrink-0" aria-hidden />
-        <p className="text-muted-foreground text-sm">{state}</p>
-        <p className="text-muted-foreground text-xs">{t('enrollment.hint')}</p>
-      </div>
+      <p className="text-muted-foreground min-w-0 text-sm">{t('enrollment.summary')}</p>
     </div>
   );
 }
