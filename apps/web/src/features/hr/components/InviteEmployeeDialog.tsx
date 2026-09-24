@@ -23,6 +23,8 @@ interface InviteEmployeeDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   onIssued: (token: string) => void;
+  /** Prefill department when inviting from a department drawer. */
+  defaultDepartmentId?: string;
 }
 
 export function InviteEmployeeDialog({
@@ -30,6 +32,7 @@ export function InviteEmployeeDialog({
   onOpenChange,
   onSuccess,
   onIssued,
+  defaultDepartmentId,
 }: InviteEmployeeDialogProps) {
   const t = useTranslations('hr');
   const tCommon = useTranslations('common');
@@ -41,11 +44,16 @@ export function InviteEmployeeDialog({
   const [departmentsError, setDepartmentsError] = useState<string | null>(null);
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
-  const [form, setForm] = useState({ email: '', roleId: '', departmentId: '' });
+  const [form, setForm] = useState({
+    email: '',
+    roleId: '',
+    departmentId: '',
+  });
   const assignableRoles = filterRolesForAssignmentPicker(roles, assignmentPickerActor(me));
   const canSubmit = Boolean(
     form.email.trim() && form.roleId && !rolesLoading && !departmentsLoading && !rolesError,
   );
+  const effectiveDepartmentId = form.departmentId || defaultDepartmentId || '';
 
   useEffect(() => {
     if (!open) return;
@@ -64,7 +72,10 @@ export function InviteEmployeeDialog({
   return (
     <CreateFormDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(next) => {
+        if (!next) setForm({ email: '', roleId: '', departmentId: '' });
+        onOpenChange(next);
+      }}
       title={t('invite.title')}
       submitting={loading}
       canSubmit={canSubmit}
@@ -75,7 +86,7 @@ export function InviteEmployeeDialog({
         void submitInvite({
           event,
           canSubmit,
-          form,
+          form: { ...form, departmentId: effectiveDepartmentId },
           setLoading,
           onSuccess,
           onIssued,
@@ -88,7 +99,7 @@ export function InviteEmployeeDialog({
       <InviteEmployeeDialogFields
         email={form.email}
         roleId={form.roleId}
-        departmentId={form.departmentId}
+        departmentId={effectiveDepartmentId}
         roles={assignableRoles}
         departments={departments}
         rolesLoading={rolesLoading}

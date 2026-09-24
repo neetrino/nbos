@@ -18,32 +18,49 @@ import {
 } from './org-chart-constants';
 import { orgChartCardPeople, orgChartSubordinateCount } from './org-chart-members';
 import { OrgChartPersonRow } from './OrgChartPersonRow';
+import { OrgDepartmentSettingsControls } from './OrgDepartmentSettingsControls';
 
 export function OrgDepartmentCard({
   department,
+  departments,
   node,
   heading,
   selected,
   childCount,
   expanded,
   isMine,
+  canEdit,
+  canAdd,
+  canDelete,
   onSelect,
   onToggleChildren,
   onOpenEmployee,
+  onAddChild,
+  onDepartmentsChanged,
 }: {
   department: DepartmentItem;
+  departments: readonly DepartmentItem[];
   node: OrgChartLayoutNode;
   heading: string;
   selected: boolean;
   childCount: number;
   expanded: boolean;
   isMine: boolean;
+  canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onSelect: () => void;
   onToggleChildren: () => void;
   onOpenEmployee?: (employeeId: string) => void;
+  onAddChild: (parentId: string) => void;
+  onDepartmentsChanged: () => void;
 }) {
   const t = useTranslations('hr');
   const people = orgChartCardPeople(department.members ?? []);
+  const drawerDepartment = {
+    ...department,
+    members: department.members ?? [],
+  };
   return (
     <article
       className={cn(ORG_CARD_SHELL_CLASS, selected && ORG_CARD_SELECTED_CLASS)}
@@ -68,6 +85,21 @@ export function OrgDepartmentCard({
           </p>
           {isMine ? (
             <span className={ORG_YOUR_DEPT_BADGE_CLASS}>{t('orgChart.yourDepartment')}</span>
+          ) : null}
+          {selected ? (
+            <div className="ml-auto shrink-0" onClick={(event) => event.stopPropagation()}>
+              <OrgDepartmentSettingsControls
+                department={drawerDepartment}
+                departments={departments}
+                canEdit={canEdit}
+                canAdd={canAdd}
+                canDelete={canDelete}
+                plainTrigger
+                onAddChild={onAddChild}
+                onChanged={onDepartmentsChanged}
+                onDeleted={onDepartmentsChanged}
+              />
+            </div>
           ) : null}
         </div>
         <OrgDepartmentCardPeople

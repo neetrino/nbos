@@ -4,7 +4,6 @@ import type { SearchFilterRecord } from '@/lib/persisted-client-state';
 import { mailFolderListParams, type MailFolderKey } from '@/features/mail/mail-folder-config';
 
 export const MAIL_SEARCH_FILTER_KEY = {
-  mailbox: 'mailbox',
   read: 'read',
   link: 'link',
   assigned: 'assigned',
@@ -26,18 +25,8 @@ const MAIL_ATTRIBUTE_FILTER_KEYS = [
   MAIL_SEARCH_FILTER_KEY.direction,
 ] as const;
 
-export function buildMailSearchFilterConfigs(
-  mailboxes: ReadonlyArray<{ id: string; emailAddress: string }>,
-): FilterConfig[] {
+export function buildMailSearchFilterConfigs(): FilterConfig[] {
   return [
-    {
-      key: MAIL_SEARCH_FILTER_KEY.mailbox,
-      label: 'Mailbox',
-      options: mailboxes.map((mailbox) => ({
-        value: mailbox.id,
-        label: mailbox.emailAddress,
-      })),
-    },
     {
       key: MAIL_SEARCH_FILTER_KEY.read,
       label: 'Read',
@@ -61,12 +50,8 @@ export function buildMailSearchFilterConfigs(
   ];
 }
 
-export function resolveMailSearchFilterValues(
-  filters: SearchFilterRecord,
-  mailboxId: string | null,
-): Record<string, string> {
+export function resolveMailSearchFilterValues(filters: SearchFilterRecord): Record<string, string> {
   return {
-    [MAIL_SEARCH_FILTER_KEY.mailbox]: mailboxId ?? MAIL_SEARCH_FILTER_VALUE.all,
     [MAIL_SEARCH_FILTER_KEY.read]:
       filters[MAIL_SEARCH_FILTER_KEY.read] ?? MAIL_SEARCH_FILTER_VALUE.all,
     [MAIL_SEARCH_FILTER_KEY.link]:

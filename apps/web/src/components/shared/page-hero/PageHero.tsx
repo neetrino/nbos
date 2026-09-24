@@ -22,7 +22,8 @@ export function PageHero(props: PageHeroProps) {
 }
 
 function PageHeroInner(props: PageHeroProps) {
-  const { tabs, tabsEnd, search, secondaryTabs, viewMode, trailing, className, create } = props;
+  const { tabs, tabsEnd, leading, search, secondaryTabs, viewMode, trailing, className, create } =
+    props;
   const state = usePageHeroRenderState(props);
 
   useRegisterMobileDockTools({ search, trailing, tabsEnd });
@@ -35,7 +36,14 @@ function PageHeroInner(props: PageHeroProps) {
   if (state.isMobileViewport) {
     return (
       <>
-        {tabs}
+        {leading ? (
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="shrink-0">{leading}</div>
+            {tabs ? <div className="min-w-0 flex-1">{tabs}</div> : null}
+          </div>
+        ) : (
+          tabs
+        )}
         {secondaryTabs ? (
           <div className={cn(PAGE_HERO_TAB_SCROLL, 'w-full min-w-0')}>{secondaryTabs}</div>
         ) : null}
@@ -49,6 +57,7 @@ function PageHeroInner(props: PageHeroProps) {
       toolsRowRef={state.toolsRowRef}
       tabs={tabs}
       tabsEnd={tabsEnd}
+      leading={leading}
       search={search}
       secondaryTabs={secondaryTabs}
       viewMode={viewMode}

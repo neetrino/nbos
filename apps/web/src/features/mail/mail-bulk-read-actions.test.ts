@@ -24,6 +24,8 @@ function thread(id: string, hasUnread: boolean): MailThreadListRow {
     status: 'ACTIVE',
     assignedToEmployeeId: null,
     assignedToName: null,
+    counterpartEmail: null,
+    counterpartDisplayName: null,
     trashedAt: null,
   };
 }

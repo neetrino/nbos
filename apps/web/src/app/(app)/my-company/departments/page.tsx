@@ -1,41 +1,57 @@
 'use client';
 
+import { useMemo } from 'react';
+import { IntegratedSearchFilters, useModuleHeroSlots } from '@/components/shared';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import { DepartmentCreateDialog } from '@/features/hr/components/DepartmentCreateDialog';
-import { DepartmentsListPanel } from '@/features/hr/components/DepartmentsListPanel';
-import { OrgChartToolbar } from '@/features/hr/components/org-chart/OrgChartToolbar';
+import { useDepartmentsPage } from '@/features/hr/components/org-chart/use-departments-page';
 import { OrgChartWorkspace } from '@/features/hr/components/org-chart/OrgChartWorkspace';
-import {
-  patchCreateName,
-  useDepartmentsPage,
-} from '@/features/hr/components/org-chart/use-departments-page';
 
 export default function DepartmentsPage() {
   const page = useDepartmentsPage();
+  const { search, setSearch, submitSearch, t } = page;
+  const heroSlots = useMemo(
+    () => ({
+      search: (
+        <div
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') submitSearch();
+          }}
+        >
+          <IntegratedSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            searchPlaceholder={t('orgChart.searchPlaceholder')}
+          />
+        </div>
+      ),
+    }),
+    [search, setSearch, submitSearch, t],
+  );
+  useModuleHeroSlots(heroSlots);
+
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col">
       <DepartmentsPageBody page={page} />
-      <OrgChartToolbar
-        viewMode={page.viewMode}
-        search={page.search}
-        onSearchChange={page.setSearch}
-        onSearchSubmit={page.submitSearch}
-        onViewModeChange={page.setViewMode}
-        onAdd={() => page.openCreateDialog(null)}
-      />
+      <DepartmentsPageDialogs page={page} />
+    </div>
+  );
+}
+
+function DepartmentsPageDialogs({ page }: { page: ReturnType<typeof useDepartmentsPage> }) {
+  return (
+    <>
       <DepartmentCreateDialog
         open={page.createState.open}
         departments={page.departments}
         formName={page.createState.name}
-        formSlug={page.createState.slug}
         formDescription={page.createState.description}
         formParentId={page.createState.parentId}
         saving={page.createState.saving}
         onOpenChange={(open) =>
           page.setCreateState((prev) => ({ ...prev, open, ...(open ? {} : { saving: false }) }))
         }
-        onNameChange={(name) => page.setCreateState((prev) => patchCreateName(name, prev))}
-        onSlugChange={(slug) => page.setCreateState((prev) => ({ ...prev, slug }))}
+        onNameChange={(name) => page.setCreateState((prev) => ({ ...prev, name }))}
         onDescriptionChange={(description) =>
           page.setCreateState((prev) => ({ ...prev, description }))
         }
@@ -50,7 +66,7 @@ export default function DepartmentsPage() {
         }}
         canEdit={page.canEdit}
       />
-    </div>
+    </>
   );
 }
 
@@ -62,27 +78,19 @@ function DepartmentsPageBody({ page }: { page: ReturnType<typeof useDepartmentsP
       </p>
     );
   }
-  if (page.viewMode === 'list') {
-    return (
-      <DepartmentsListPanel
-        departments={page.departments}
-        expandedId={page.listState.expandedId}
-        expandedMembers={page.listState.members}
-        loadingMembers={page.listState.loadingMembers}
-        onToggleExpand={page.toggleExpand}
-        onCreate={() => page.openCreateDialog(null)}
-      />
-    );
-  }
   return (
     <OrgChartWorkspace
       departments={page.departments}
       myDepartmentIds={page.myDepartmentIds}
       primaryDepartmentId={page.primaryDepartmentId}
       search={page.search}
+      canEdit={page.canEdit}
+      canAdd={page.canAdd}
+      canDelete={page.canDelete}
       onRegisterFind={page.registerFind}
       onAddDepartment={page.openCreateDialog}
       onOpenEmployee={(id) => void page.openEmployee(id)}
+      onDepartmentsChanged={page.refreshDepartments}
     />
   );
 }

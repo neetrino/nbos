@@ -290,6 +290,22 @@ export const departmentsApi = {
     const resp = await api.post<DepartmentItem>('/api/departments', data);
     return resp.data;
   },
+  async update(
+    id: string,
+    data: {
+      name?: string;
+      slug?: string;
+      description?: string | null;
+      parentId?: string | null;
+      sortOrder?: number;
+    },
+  ): Promise<DepartmentItem> {
+    const resp = await api.put<DepartmentItem>(`/api/departments/${id}`, data);
+    return resp.data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/api/departments/${id}`);
+  },
 };
 
 export interface IssuedInvitation {

@@ -10,26 +10,22 @@ import {
 } from './mail-search-filters';
 
 describe('mail search filters', () => {
-  it('builds mailbox plus attribute filters', () => {
-    const configs = buildMailSearchFilterConfigs([{ id: 'mb-1', emailAddress: 'ops@example.com' }]);
+  it('builds attribute filters without mailbox', () => {
+    const configs = buildMailSearchFilterConfigs();
     expect(configs.map((config) => config.key)).toEqual([
-      MAIL_SEARCH_FILTER_KEY.mailbox,
       MAIL_SEARCH_FILTER_KEY.read,
       MAIL_SEARCH_FILTER_KEY.link,
       MAIL_SEARCH_FILTER_KEY.assigned,
       MAIL_SEARCH_FILTER_KEY.direction,
     ]);
-    expect(configs[0]?.options).toEqual([{ value: 'mb-1', label: 'ops@example.com' }]);
   });
 
-  it('resolves filter values with mailbox from the account switcher', () => {
+  it('resolves filter values from search state only', () => {
     expect(
-      resolveMailSearchFilterValues(
-        { [MAIL_SEARCH_FILTER_KEY.read]: MAIL_SEARCH_FILTER_VALUE.unread },
-        'mb-1',
-      ),
+      resolveMailSearchFilterValues({
+        [MAIL_SEARCH_FILTER_KEY.read]: MAIL_SEARCH_FILTER_VALUE.unread,
+      }),
     ).toEqual({
-      [MAIL_SEARCH_FILTER_KEY.mailbox]: 'mb-1',
       [MAIL_SEARCH_FILTER_KEY.read]: MAIL_SEARCH_FILTER_VALUE.unread,
       [MAIL_SEARCH_FILTER_KEY.link]: MAIL_SEARCH_FILTER_VALUE.all,
       [MAIL_SEARCH_FILTER_KEY.assigned]: MAIL_SEARCH_FILTER_VALUE.all,

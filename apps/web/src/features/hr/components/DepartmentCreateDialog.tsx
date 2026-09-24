@@ -4,24 +4,15 @@ import { useTranslations } from 'next-intl';
 import { CreateFormDialog, InlineField } from '@/components/shared';
 import type { DepartmentItem } from '@/lib/api/employees';
 
-export function slugFromDepartmentName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '');
-}
-
 export function DepartmentCreateDialog({
   open,
   departments,
   formName,
-  formSlug,
   formDescription,
   formParentId,
   saving,
   onOpenChange,
   onNameChange,
-  onSlugChange,
   onDescriptionChange,
   onParentIdChange,
   onCreate,
@@ -29,13 +20,11 @@ export function DepartmentCreateDialog({
   open: boolean;
   departments: DepartmentItem[];
   formName: string;
-  formSlug: string;
   formDescription: string;
   formParentId: string;
   saving: boolean;
   onOpenChange: (open: boolean) => void;
   onNameChange: (name: string) => void;
-  onSlugChange: (slug: string) => void;
   onDescriptionChange: (value: string) => void;
   onParentIdChange: (parentId: string) => void;
   onCreate: () => void;
@@ -69,14 +58,6 @@ export function DepartmentCreateDialog({
         value={formName}
         placeholder={t('deptAdmin.namePlaceholder')}
         onValueChange={onNameChange}
-      />
-      <InlineField
-        variant="controlled"
-        label={t('deptAdmin.slug')}
-        type="text"
-        value={formSlug}
-        placeholder={t('deptAdmin.slugPlaceholder')}
-        onValueChange={onSlugChange}
       />
       <InlineField
         variant="controlled"

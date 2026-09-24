@@ -23,6 +23,8 @@ import { PageHero } from './PageHero';
 export type ModuleHeroSlots = {
   /** Replaces layout-level zone tabs (e.g. payroll run detail header). */
   tabs?: ReactNode;
+  /** First control on the hero row, before section tabs. */
+  leading?: ReactNode;
   search?: ReactNode;
   viewMode?: ReactNode;
   trailing?: ReactNode;
@@ -61,6 +63,7 @@ export function ModuleHeroSlotProvider({
     setSlotsState((prev) => {
       if (
         prev.tabs === next.tabs &&
+        prev.leading === next.leading &&
         prev.search === next.search &&
         prev.viewMode === next.viewMode &&
         prev.trailing === next.trailing &&
@@ -93,6 +96,7 @@ export function ModuleHeroSlotProvider({
               title={title}
               syncModuleTitle={false}
               tabs={slots.tabs ?? tabs}
+              leading={slots.leading}
               search={slots.search}
               viewMode={slots.viewMode}
               trailing={slots.trailing}
@@ -124,7 +128,15 @@ export function useModuleHeroSlots(slots: ModuleHeroSlots): void {
   useLayoutEffect(() => {
     setSlots(slots);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- caller memoizes slots; track slot fields only
-  }, [setSlots, slots.tabs, slots.search, slots.viewMode, slots.trailing, slots.secondaryTabs]);
+  }, [
+    setSlots,
+    slots.tabs,
+    slots.leading,
+    slots.search,
+    slots.viewMode,
+    slots.trailing,
+    slots.secondaryTabs,
+  ]);
 
   useLayoutEffect(() => {
     return () => setSlots(EMPTY_SLOTS);

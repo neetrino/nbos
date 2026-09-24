@@ -14,7 +14,7 @@ Tracks **shipped runtime** vs `01-Project-Hub-Overview.md` and delivery canon. B
 - **API:** `GET /projects/products?hubView=` `delivery` / `maintenance` / `closed`. All = omit `hubView` and send `includeHubView=true` so rows still get derived `hubView`. Generic list callers omit both (no subscription probe). Parent trash still excluded.
 - **Rules:** Delivery = open delivery. Maintenance = closed delivery + live maintenance subscription on the product. Closed = closed delivery and no live maintenance. Open delivery wins over a live subscription.
 - **Web:** `/projects/products` tabs `All | Delivery | Maintenance | Closed`; default All. Grid / list; search by product, project, company, contact. Company column uses `Product.company`, fallback `Project.company`. No create on this catalog.
-- **Product billing company:** `Product.companyId` editable on Product Overview above contacts. Project Overview keeps brand-default picker and shows unique companies from products.
+- **Product billing company:** `Product.companyId` editable on Product Overview above contacts. Project Overview shows each product company once. `Project.companyId` stays the seed for new products and is not a second card.
 
 ## Shipped (web + API) — Project Trash (Profile A)
 

@@ -20,25 +20,33 @@ export function OrgChartNodes({
   expandedIds,
   selectedId,
   myDepartmentIds,
+  canEdit,
+  canAdd,
+  canDelete,
   onSelect,
   onToggleExpanded,
   onAddChild,
   onOpenEmployee,
+  onDepartmentsChanged,
 }: {
   departments: DepartmentItem[];
   layout: OrgChartLayout;
   expandedIds: ReadonlySet<string>;
   selectedId: string | null;
   myDepartmentIds: ReadonlySet<string>;
+  canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onSelect: (id: string) => void;
   onToggleExpanded: (id: string) => void;
   onAddChild: (parentId: string | null) => void;
   onOpenEmployee?: (employeeId: string) => void;
+  onDepartmentsChanged: () => void;
 }) {
   const byId = new Map(departments.map((department) => [department.id, department]));
   return (
     <>
-      <OrgChartEdges layout={layout} />
+      <OrgChartEdges layout={layout} departments={departments} selectedId={selectedId} />
       {layout.nodes.map((node) => (
         <OrgChartNodeCard
           key={node.id}
@@ -48,9 +56,14 @@ export function OrgChartNodes({
           expandedIds={expandedIds}
           selectedId={selectedId}
           myDepartmentIds={myDepartmentIds}
+          canEdit={canEdit}
+          canAdd={canAdd}
+          canDelete={canDelete}
           onSelect={onSelect}
           onToggleExpanded={onToggleExpanded}
+          onAddChild={onAddChild}
           onOpenEmployee={onOpenEmployee}
+          onDepartmentsChanged={onDepartmentsChanged}
         />
       ))}
       {layout.nodes
@@ -74,9 +87,14 @@ function OrgChartNodeCard({
   expandedIds,
   selectedId,
   myDepartmentIds,
+  canEdit,
+  canAdd,
+  canDelete,
   onSelect,
   onToggleExpanded,
+  onAddChild,
   onOpenEmployee,
+  onDepartmentsChanged,
 }: {
   node: OrgChartLayout['nodes'][number];
   department: DepartmentItem | undefined;
@@ -84,9 +102,14 @@ function OrgChartNodeCard({
   expandedIds: ReadonlySet<string>;
   selectedId: string | null;
   myDepartmentIds: ReadonlySet<string>;
+  canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onSelect: (id: string) => void;
   onToggleExpanded: (id: string) => void;
+  onAddChild: (parentId: string | null) => void;
   onOpenEmployee?: (employeeId: string) => void;
+  onDepartmentsChanged: () => void;
 }) {
   if (node.id === ORG_COMPANY_NODE_ID) {
     return (
@@ -104,6 +127,7 @@ function OrgChartNodeCard({
   return (
     <OrgDepartmentCard
       department={department}
+      departments={departments}
       node={node}
       heading={orgChartDepartmentCardTitle(
         department.name,
@@ -113,9 +137,14 @@ function OrgChartNodeCard({
       childCount={childDepartmentCount(departments, department.id)}
       expanded={expandedIds.has(node.id)}
       isMine={myDepartmentIds.has(department.id)}
+      canEdit={canEdit}
+      canAdd={canAdd}
+      canDelete={canDelete}
       onSelect={() => onSelect(node.id)}
       onToggleChildren={() => onToggleExpanded(node.id)}
       onOpenEmployee={onOpenEmployee}
+      onAddChild={(parentId) => onAddChild(parentId)}
+      onDepartmentsChanged={onDepartmentsChanged}
     />
   );
 }

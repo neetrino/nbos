@@ -16,11 +16,15 @@ function formatThreadTitle(subjectNormalized: string): string {
   return trimmed.length === 0 ? '(No subject)' : trimmed;
 }
 
-function threadSenderLabel(thread: MailThreadListRow, accountEmail: string | undefined): string {
-  if (thread.assignedToName) {
-    return thread.assignedToName;
+function threadSenderLabel(thread: MailThreadListRow): string {
+  const named = thread.counterpartDisplayName?.trim();
+  if (named) {
+    return named;
   }
-  return accountEmail ?? 'Unknown';
+  if (thread.counterpartEmail) {
+    return thread.counterpartEmail;
+  }
+  return 'Unknown';
 }
 
 function threadPreview(thread: MailThreadListRow, accountEmail: string | undefined): string {
@@ -57,7 +61,7 @@ export function MailThreadList({
     <ul className="divide-border divide-y">
       {threads.map((thread) => {
         const accountEmail = accountEmailById.get(thread.mailAccountId);
-        const senderLabel = threadSenderLabel(thread, accountEmail);
+        const senderLabel = threadSenderLabel(thread);
         const subject = formatThreadTitle(thread.subjectNormalized);
         const preview = threadPreview(thread, accountEmail);
         const isSelected = selectedThreadIds.has(thread.id);

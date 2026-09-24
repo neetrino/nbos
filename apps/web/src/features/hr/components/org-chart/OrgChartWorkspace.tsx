@@ -9,7 +9,7 @@ import {
   type DepartmentWithMembers,
 } from '@/lib/api/employees';
 import { ORG_COMPANY_NODE_ID } from './org-chart-constants';
-import { orgSeatsApi } from '@/lib/api/org-seats';
+import { orgSeatsApi, type OrgSeat } from '@/lib/api/org-seats';
 import { overlayOrgSeats } from './org-chart-seats';
 import { findLayoutNode, layoutOrgChart, type OrgChartLayout } from './org-chart-layout';
 import { firstMatchingDepartmentId } from './org-chart-members';
@@ -32,17 +32,25 @@ export function OrgChartWorkspace({
   myDepartmentIds,
   primaryDepartmentId,
   search,
+  canEdit,
+  canAdd,
+  canDelete,
   onRegisterFind,
   onAddDepartment,
   onOpenEmployee,
+  onDepartmentsChanged,
 }: {
   departments: DepartmentItem[];
   myDepartmentIds: ReadonlySet<string>;
   primaryDepartmentId: string | null;
   search: string;
+  canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onRegisterFind: (finder: () => void) => void;
   onAddDepartment: (parentId: string | null) => void;
   onOpenEmployee?: (employeeId: string) => void;
+  onDepartmentsChanged: () => void;
 }) {
   const chart = useOrgChartState(departments, search, onRegisterFind, primaryDepartmentId);
   return (
@@ -50,8 +58,12 @@ export function OrgChartWorkspace({
       departments={departments}
       myDepartmentIds={myDepartmentIds}
       chart={chart}
+      canEdit={canEdit}
+      canAdd={canAdd}
+      canDelete={canDelete}
       onAddDepartment={onAddDepartment}
       onOpenEmployee={onOpenEmployee}
+      onDepartmentsChanged={onDepartmentsChanged}
     />
   );
 }
@@ -60,14 +72,22 @@ function OrgChartStage({
   departments,
   myDepartmentIds,
   chart,
+  canEdit,
+  canAdd,
+  canDelete,
   onAddDepartment,
   onOpenEmployee,
+  onDepartmentsChanged,
 }: {
   departments: DepartmentItem[];
   myDepartmentIds: ReadonlySet<string>;
   chart: ReturnType<typeof useOrgChartState>;
+  canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onAddDepartment: (parentId: string | null) => void;
   onOpenEmployee?: (employeeId: string) => void;
+  onDepartmentsChanged: () => void;
 }) {
   return (
     <div className="relative flex h-full min-h-0 flex-1 overflow-hidden">
@@ -84,10 +104,14 @@ function OrgChartStage({
             expandedIds={chart.expandedIds}
             selectedId={chart.selectedId}
             myDepartmentIds={myDepartmentIds}
+            canEdit={canEdit}
+            canAdd={canAdd}
+            canDelete={canDelete}
             onSelect={chart.setSelectedId}
             onToggleExpanded={chart.toggleExpanded}
             onAddChild={onAddDepartment}
             onOpenEmployee={onOpenEmployee}
+            onDepartmentsChanged={onDepartmentsChanged}
           />
         </OrgChartCanvas>
         <OrgChartZoomControls
@@ -101,8 +125,18 @@ function OrgChartStage({
         <OrgDepartmentDrawer
           department={chart.drawer}
           loading={chart.drawerLoading}
+          seats={chart.drawerSeats}
+          departments={departments}
+          canEdit={canEdit}
+          canAdd={canAdd}
+          canDelete={canDelete}
           onClose={() => chart.setSelectedId(null)}
           onOpenEmployee={onOpenEmployee}
+          onMembersChanged={() => {
+            chart.refreshDrawer();
+            onDepartmentsChanged();
+          }}
+          onAddChild={(parentId) => onAddDepartment(parentId)}
         />
       ) : null}
     </div>
@@ -123,7 +157,9 @@ function useOrgChartState(
   const [pendingFocusId, setPendingFocusId] = useState<string | null>(null);
   const [viewport, setViewport] = useState<OrgChartViewport>({ scale: 1, tx: 0, ty: 0 });
   const [drawer, setDrawer] = useState<DepartmentWithMembers | null>(null);
+  const [drawerSeats, setDrawerSeats] = useState<OrgSeat[]>([]);
   const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerReloadToken, setDrawerReloadToken] = useState(0);
   const layout = useMemo(
     () => layoutOrgChart(buildOrgChartTree(departments), expandedIds),
     [departments, expandedIds],
@@ -148,7 +184,14 @@ function useOrgChartState(
     setViewport,
     setPendingFocusId,
   );
-  useSelectedDepartmentDrawer(selectedId, setDrawer, setDrawerLoading, t);
+  useSelectedDepartmentDrawer(
+    selectedId,
+    drawerReloadToken,
+    setDrawer,
+    setDrawerSeats,
+    setDrawerLoading,
+    t,
+  );
   useEffect(() => {
     onRegisterFind(() => {
       const id = firstMatchingDepartmentId(departments, search);
@@ -166,7 +209,9 @@ function useOrgChartState(
     setSelectedId,
     toggleExpanded,
     drawer,
+    drawerSeats,
     drawerLoading,
+    refreshDrawer: () => setDrawerReloadToken((token) => token + 1),
     findMe: () =>
       primaryDepartmentId
         ? focusDepartment(primaryDepartmentId)
@@ -202,13 +247,16 @@ function useFocusPendingNode(
 
 function useSelectedDepartmentDrawer(
   selectedId: string | null,
+  reloadToken: number,
   setDrawer: (dept: DepartmentWithMembers | null) => void,
+  setDrawerSeats: (seats: OrgSeat[]) => void,
   setDrawerLoading: (loading: boolean) => void,
   t: ReturnType<typeof useTranslations>,
 ): void {
   useEffect(() => {
     if (!selectedId || selectedId === ORG_COMPANY_NODE_ID) {
       setDrawer(null);
+      setDrawerSeats([]);
       return undefined;
     }
     let cancelled = false;
@@ -217,6 +265,7 @@ function useSelectedDepartmentDrawer(
       .then(([data, seats]) => {
         if (!cancelled) {
           const overlaySeats = Array.isArray(seats) ? seats : [];
+          setDrawerSeats(overlaySeats);
           setDrawer({
             ...data,
             members: overlayOrgSeats([data], overlaySeats)[0]?.members ?? data.members ?? [],
@@ -225,7 +274,10 @@ function useSelectedDepartmentDrawer(
       })
       .catch((err: unknown) => {
         toast.error(err instanceof Error ? err.message : t('deptAdmin.membersLoadFailed'));
-        if (!cancelled) setDrawer(null);
+        if (!cancelled) {
+          setDrawer(null);
+          setDrawerSeats([]);
+        }
       })
       .finally(() => {
         if (!cancelled) setDrawerLoading(false);
@@ -233,7 +285,7 @@ function useSelectedDepartmentDrawer(
     return () => {
       cancelled = true;
     };
-  }, [selectedId, setDrawer, setDrawerLoading, t]);
+  }, [reloadToken, selectedId, setDrawer, setDrawerLoading, setDrawerSeats, t]);
 }
 
 function zoomCanvas(

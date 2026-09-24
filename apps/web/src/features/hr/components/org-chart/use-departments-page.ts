@@ -11,18 +11,16 @@ import {
 } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { slugFromDepartmentName } from '@/features/hr/components/DepartmentCreateDialog';
+import { uniqueDepartmentSlug } from '@/features/hr/components/department-slug';
 import {
   mergeDepartmentCardPreview,
   departmentsNeedCardHydration,
 } from '@/features/hr/components/org-chart/org-chart-members';
 import { overlayOrgSeats } from '@/features/hr/components/org-chart/org-chart-seats';
-import type { OrgChartViewMode } from '@/features/hr/components/org-chart/OrgChartToolbar';
 import {
   departmentsApi,
   employeesApi,
   type DepartmentItem,
-  type DepartmentWithMembers,
   type Employee,
 } from '@/lib/api/employees';
 import { orgSeatsApi } from '@/lib/api/org-seats';
@@ -35,13 +33,7 @@ export function useDepartmentsPage() {
   const requestIdRef = useRef(0);
   const [departments, setDepartments] = useState<DepartmentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<OrgChartViewMode>('chart');
   const [search, setSearch] = useState('');
-  const [listState, setListState] = useState<ListExpandState>({
-    expandedId: null,
-    members: null,
-    loadingMembers: false,
-  });
   const [createState, setCreateState] = useState<CreateFormState>(emptyCreateForm);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const myDepartmentIds = useMemo(
@@ -85,44 +77,45 @@ export function useDepartmentsPage() {
   const registerFind = useCallback((finder: () => void) => {
     findRef.current = finder;
   }, []);
+  const submitSearch = useCallback(() => {
+    findRef.current();
+  }, []);
 
   return {
     t,
     departments,
     loading,
-    viewMode,
-    setViewMode,
     search,
     setSearch,
-    listState,
     createState,
     setCreateState,
     selectedEmployee,
     setSelectedEmployee,
     canEdit: can('EDIT', 'COMPANY'),
+    canAdd: can('ADD', 'COMPANY'),
+    canDelete: can('DELETE', 'COMPANY'),
     myDepartmentIds,
     primaryDepartmentId,
     registerFind,
-    submitSearch: () => findRef.current(),
+    submitSearch,
     openCreateDialog,
-    toggleExpand: (dept: DepartmentItem) => void toggleDepartmentMembers(dept, setListState, t),
+    refreshDepartments: () => void fetchDepartments(),
     handleCreate: () =>
-      void submitCreateDepartment(createState, t, setCreateState, fetchDepartments),
+      void submitCreateDepartment(
+        createState,
+        departments.map((department) => department.slug),
+        t,
+        setCreateState,
+        fetchDepartments,
+      ),
     openEmployee: (id: string) => openEmployeeSheet(id, t, setSelectedEmployee),
   };
 }
-
-type ListExpandState = {
-  expandedId: string | null;
-  members: DepartmentWithMembers | null;
-  loadingMembers: boolean;
-};
 
 type CreateFormState = {
   open: boolean;
   saving: boolean;
   name: string;
-  slug: string;
   description: string;
   parentId: string;
 };
@@ -131,53 +124,18 @@ const emptyCreateForm: CreateFormState = {
   open: false,
   saving: false,
   name: '',
-  slug: '',
   description: '',
   parentId: '',
 };
 
-async function toggleDepartmentMembers(
-  dept: DepartmentItem,
-  setListState: Dispatch<SetStateAction<ListExpandState>>,
-  t: ReturnType<typeof useTranslations>,
-): Promise<void> {
-  let shouldLoad = false;
-  setListState((prev) => {
-    if (prev.expandedId === dept.id) {
-      return { expandedId: null, members: null, loadingMembers: false };
-    }
-    shouldLoad = true;
-    return { expandedId: dept.id, members: null, loadingMembers: true };
-  });
-  if (!shouldLoad) return;
-  try {
-    const [detail, seats] = await Promise.all([
-      departmentsApi.getById(dept.id),
-      orgSeatsApi.getAll(dept.id),
-    ]);
-    const overlaySeats = Array.isArray(seats) ? seats : [];
-    const members = {
-      ...detail,
-      members: overlayOrgSeats([detail], overlaySeats)[0]?.members ?? detail.members ?? [],
-    };
-    setListState((prev) =>
-      prev.expandedId === dept.id ? { ...prev, members, loadingMembers: false } : prev,
-    );
-  } catch (err) {
-    toast.error(err instanceof Error ? err.message : t('deptAdmin.membersLoadFailed'));
-    setListState((prev) =>
-      prev.expandedId === dept.id ? { ...prev, members: null, loadingMembers: false } : prev,
-    );
-  }
-}
-
 async function submitCreateDepartment(
   form: CreateFormState,
+  takenSlugs: readonly string[],
   t: ReturnType<typeof useTranslations>,
   setCreateState: Dispatch<SetStateAction<CreateFormState>>,
   fetchDepartments: () => Promise<void>,
 ): Promise<void> {
-  if (!form.name.trim() || !form.slug.trim()) {
+  if (!form.name.trim()) {
     toast.error(t('deptAdmin.nameSlugRequired'));
     return;
   }
@@ -185,7 +143,7 @@ async function submitCreateDepartment(
   try {
     await departmentsApi.create({
       name: form.name.trim(),
-      slug: form.slug.trim(),
+      slug: uniqueDepartmentSlug(form.name, takenSlugs),
       description: form.description.trim() || undefined,
       parentId: form.parentId || undefined,
     });
@@ -208,10 +166,6 @@ async function openEmployeeSheet(
   } catch (err) {
     toast.error(err instanceof Error ? err.message : t('deptAdmin.membersLoadFailed'));
   }
-}
-
-export function patchCreateName(name: string, prev: CreateFormState): CreateFormState {
-  return { ...prev, name, slug: slugFromDepartmentName(name) };
 }
 
 async function hydrateDepartmentCardMembers(
