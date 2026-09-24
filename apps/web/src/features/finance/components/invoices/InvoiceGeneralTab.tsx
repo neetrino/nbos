@@ -8,7 +8,6 @@ import { FinanceProofAttachments } from '@/features/finance/components/FinancePr
 import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetOptionalDescription,
-  DetailSheetSection,
 } from '@/components/shared';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
 import { InvoiceOrderCommentField } from './InvoiceOrderCommentField';
@@ -81,14 +80,13 @@ export function InvoiceGeneralTab({
         canEditContext={Boolean(draft && onInvoiceUpdated)}
       />
 
-      <DetailSheetSection title={t('sheet.proofs')}>
-        <FinanceProofAttachments
-          entityType="INVOICE"
-          entityId={invoice.id}
-          purpose="INVOICE_REQUEST_PROOF"
-          title=""
-        />
-      </DetailSheetSection>
+      <FinanceProofAttachments
+        entityType="INVOICE"
+        entityId={invoice.id}
+        purpose="INVOICE_REQUEST_PROOF"
+        title=""
+        borderLabel={t('sheet.proofs')}
+      />
       <p className="text-muted-foreground text-sm">
         {t('money.created')} {formatInvoiceSheetDate(invoice.createdAt, locale)}
       </p>

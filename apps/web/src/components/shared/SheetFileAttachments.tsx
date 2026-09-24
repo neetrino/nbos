@@ -9,6 +9,7 @@ import {
   DETAIL_SHEET_OUTLINED_ADD_BTN_CLASS,
   DETAIL_SHEET_OUTLINED_ADD_PLUS_CLASS,
   DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
   DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
 } from './detail-sheet-classes';
 import {
@@ -48,6 +49,8 @@ export interface SheetFileAttachmentsProps {
   emptyHint?: string;
   /** Outlined quiet field — caption + add in border notch; hides paperclip header. */
   outlinedLabel?: string;
+  /** Caption on the border. Keeps the row add button where it is. */
+  borderLabel?: string;
   onUpload: (files: File[]) => void | Promise<void>;
   onOpenFile: (file: FileAsset) => void;
   fileMenu: (file: FileAsset) => DriveFileCardMenuHandlers;
@@ -64,6 +67,7 @@ export function SheetFileAttachments({
   sectionTitle = SHEET_FILE_SECTION_TITLE,
   emptyHint,
   outlinedLabel,
+  borderLabel,
   onUpload,
   onOpenFile,
   fileMenu,
@@ -76,6 +80,7 @@ export function SheetFileAttachments({
   const hasFiles = loading || visibleFiles.length > 0 || pendingUploads.length > 0;
   const outlined = Boolean(outlinedLabel?.trim());
   const label = outlinedLabel?.trim() ?? '';
+  const caption = borderLabel?.trim() ?? '';
   const barDisabled = loading;
   const pickFiles = (picked: File[]) => {
     if (picked.length > 0) void onUpload(picked);
@@ -87,8 +92,8 @@ export function SheetFileAttachments({
   const shell = (
     <div
       className={cn(
-        outlined
-          ? OUTLINED_SHELL_CLASS
+        outlined || caption
+          ? cn(OUTLINED_SHELL_CLASS, caption && 'bg-card')
           : embedded
             ? SHEET_FILE_ATTACHMENTS_EMBEDDED_CLASS
             : SHEET_FILE_ATTACHMENTS_SURFACE_CLASS,
@@ -116,10 +121,14 @@ export function SheetFileAttachments({
       {!outlined ? (
         <div className={SHEET_FILE_ATTACHMENTS_HEADER_CLASS}>
           <span className={SHEET_FILE_ATTACHMENTS_TITLE_CLASS}>
-            <Paperclip className={SHEET_FILE_ATTACHMENTS_CLIP_ICON_CLASS} aria-hidden />
-            <span className="truncate">
-              {hasFiles ? `${sectionTitle}: ${fileCount}` : sectionTitle}
-            </span>
+            {caption ? null : (
+              <Paperclip className={SHEET_FILE_ATTACHMENTS_CLIP_ICON_CLASS} aria-hidden />
+            )}
+            {caption ? null : (
+              <span className="truncate">
+                {hasFiles ? `${sectionTitle}: ${fileCount}` : sectionTitle}
+              </span>
+            )}
             {loading ? (
               <Loader2
                 className="text-muted-foreground size-3.5 shrink-0 animate-spin"
@@ -154,6 +163,15 @@ export function SheetFileAttachments({
       />
     </div>
   );
+
+  if (caption) {
+    return (
+      <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{caption}</span>
+        {shell}
+      </div>
+    );
+  }
 
   if (!outlined) return shell;
   return (

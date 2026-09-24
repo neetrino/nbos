@@ -143,7 +143,7 @@ function InvoiceLinkedEntitiesBody({
 }) {
   return (
     <>
-      <DetailSheetSection title={title}>
+      <DetailSheetSection title={title} outlined>
         <DetailSheetEntityLinkGrid>
           {showsDeal && dealTitle && dealId ? (
             <InvoiceLinkedReadonlyField
