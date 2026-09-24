@@ -108,7 +108,7 @@ describe('Constants', () => {
     expect(PRODUCT_TYPES).toContain('MOBILE_APP');
     expect(PRODUCT_TYPES).toContain('SAAS');
     expect(PRODUCT_TYPES).toContain('OTHER');
-    expect(PRODUCT_TYPES).toHaveLength(38);
+    expect(PRODUCT_TYPES).toHaveLength(43);
   });
 
   it('hides MOBILE_APP and SAAS from new Code picks and keeps them for a legacy current value', () => {
