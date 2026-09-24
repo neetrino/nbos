@@ -7,14 +7,14 @@ import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetCollapsibleSection,
-  DetailSheetEntityLinkCard,
-  DetailSheetMetaDate,
+  DetailSheetEntityLinkGrid,
   DetailSheetSection,
   InlineField,
   useEntityItemHost,
 } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { formatInvoiceSheetDate } from '@/features/finance/components/invoices/format-invoice-sheet-date';
+import { InvoiceLinkedReadonlyField } from '@/features/finance/components/invoices/InvoiceLinkedReadonlyField';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { paymentMethodLabel } from '@/features/finance/utils/payment-method-label';
 import type { Payment } from '@/lib/api/finance';
@@ -51,16 +51,13 @@ export function PaymentGeneralTab({ payment }: PaymentGeneralTabProps) {
           </div>
           {confirmerName ? <InlineField label="Confirmed by" value={confirmerName} /> : null}
           {notes ? <InlineField label="Notes" value={notes} /> : null}
-          <div className="border-border mt-4 border-t pt-4">
-            <DetailSheetMetaDate
-              label="Recorded"
-              value={formatInvoiceSheetDate(payment.createdAt, locale)}
-            />
-          </div>
         </div>
       </DetailSheetCollapsibleSection>
 
       <PaymentLinkedPanel payment={payment} />
+      <p className="text-muted-foreground text-sm">
+        Recorded {formatInvoiceSheetDate(payment.createdAt, locale)}
+      </p>
     </div>
   );
 }
@@ -75,34 +72,39 @@ function PaymentLinkedPanel({ payment }: { payment: Payment }) {
   if (!invoice && !project && !company) return null;
 
   return (
-    <DetailSheetSection title="Linked">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    <DetailSheetSection title="Linked" outlined>
+      <DetailSheetEntityLinkGrid>
         {invoice ? (
-          <DetailSheetEntityLinkCard
+          <InvoiceLinkedReadonlyField
             label="Invoice"
-            title={invoice.code}
-            icon={FileText}
-            description={invoice.type ?? undefined}
+            entityKind="order"
+            value={invoice.id}
+            selectionLabel={invoice.code}
+            icon={<FileText size={12} />}
             onOpen={() => openEntityItem({ id: invoice.id, kind: 'invoice' })}
           />
         ) : null}
         {project ? (
-          <DetailSheetEntityLinkCard
-            href={`/projects/${project.id}`}
+          <InvoiceLinkedReadonlyField
             label="Project"
-            title={project.name}
-            icon={FolderKanban}
+            entityKind="project"
+            value={project.id}
+            selectionLabel={project.name}
+            icon={<FolderKanban size={12} />}
+            onOpen={() => relations.openEntity('project', project.id)}
           />
         ) : null}
         {company ? (
-          <DetailSheetEntityLinkCard
+          <InvoiceLinkedReadonlyField
             label="Company"
-            title={company.name}
-            icon={Building2}
+            entityKind="company"
+            value={company.id}
+            selectionLabel={company.name}
+            icon={<Building2 size={12} />}
             onOpen={() => relations.openEntity('company', company.id)}
           />
         ) : null}
-      </div>
+      </DetailSheetEntityLinkGrid>
     </DetailSheetSection>
   );
 }

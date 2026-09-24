@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { Calendar, DollarSign, Handshake, Layers, Repeat } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -25,6 +26,7 @@ import {
   getSubscriptionBillingValidationError,
   getSubscriptionPeriodAmountLabel,
 } from '@/features/finance/utils/subscription-form-state';
+import { formatInvoiceSheetDate } from '@/features/finance/components/invoices/format-invoice-sheet-date';
 import { partnersApi } from '@/lib/api/partners';
 import { SubscriptionAmountTaxField } from './SubscriptionAmountTaxField';
 import { SubscriptionDetailLinkedPanel } from './SubscriptionDetailLinkedPanel';
@@ -47,6 +49,7 @@ export function SubscriptionGeneralTab({
   replaceDraft,
   formDisabled = false,
 }: SubscriptionGeneralTabProps) {
+  const locale = useLocale();
   const [partnerOptions, setPartnerOptions] = useState<Array<{ value: string; label: string }>>([]);
 
   useEffect(() => {
@@ -243,6 +246,9 @@ export function SubscriptionGeneralTab({
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
         disabled={formDisabled}
       />
+      <p className="text-muted-foreground text-sm">
+        Created {formatInvoiceSheetDate(subscription.createdAt, locale)}
+      </p>
     </div>
   );
 }

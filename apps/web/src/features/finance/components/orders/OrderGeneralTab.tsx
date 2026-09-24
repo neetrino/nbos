@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocale } from 'next-intl';
 import { Building2, DollarSign, FolderKanban, Handshake, User } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetCollapsibleSection,
-  DetailSheetEntityLinkCard,
-  DetailSheetMetaDate,
+  DetailSheetEntityLinkGrid,
   DetailSheetOptionalDescription,
   DetailSheetSection,
   InlineField,
@@ -15,6 +15,8 @@ import {
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
+import { formatInvoiceSheetDate } from '@/features/finance/components/invoices/format-invoice-sheet-date';
+import { InvoiceLinkedReadonlyField } from '@/features/finance/components/invoices/InvoiceLinkedReadonlyField';
 import { formatAmount } from '@/features/finance/constants/finance';
 import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import type { OrderNotesDraft } from '@/features/finance/utils/order-notes-form-state';
@@ -27,20 +29,13 @@ interface OrderGeneralTabProps {
   formDisabled?: boolean;
 }
 
-function formatShortDate(value: string): string {
-  return new Intl.DateTimeFormat('en', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(value));
-}
-
 export function OrderGeneralTab({
   order,
   draft,
   patchDraft,
   formDisabled = false,
 }: OrderGeneralTabProps) {
+  const locale = useLocale();
   const total = Number(order.amount ?? order.totalAmount ?? 0);
   const [orderOpen, setOrderOpen] = useState(true);
 
@@ -63,9 +58,6 @@ export function OrderGeneralTab({
             <InlineField label="Amount" value={formatAmount(total)} />
             <InlineField label="Currency" value={order.currency} />
           </div>
-          <div className="border-border mt-4 border-t pt-4">
-            <DetailSheetMetaDate label="Created" value={formatShortDate(order.createdAt)} />
-          </div>
         </div>
       </DetailSheetCollapsibleSection>
 
@@ -78,6 +70,9 @@ export function OrderGeneralTab({
         onChange={(notes) => patchDraft({ notes: notes ?? '' })}
         disabled={formDisabled}
       />
+      <p className="text-muted-foreground text-sm">
+        Created {formatInvoiceSheetDate(order.createdAt, locale)}
+      </p>
     </div>
   );
 }
@@ -93,39 +88,47 @@ function OrderLinkedPanel({ order }: { order: Order }) {
 
   return (
     <>
-      <DetailSheetSection title="Linked">
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <DetailSheetEntityLinkCard
-            href={`/projects/${order.projectId}`}
+      <DetailSheetSection title="Linked" outlined>
+        <DetailSheetEntityLinkGrid>
+          <InvoiceLinkedReadonlyField
             label="Project"
-            title={order.project.name}
-            icon={FolderKanban}
+            entityKind="project"
+            value={order.projectId}
+            selectionLabel={order.project.name}
+            icon={<FolderKanban size={12} />}
+            onOpen={() => relations.openEntity('project', order.projectId)}
           />
           {order.company ? (
-            <DetailSheetEntityLinkCard
+            <InvoiceLinkedReadonlyField
               label="Company"
-              title={order.company.name}
-              icon={Building2}
+              entityKind="company"
+              value={order.company.id}
+              selectionLabel={order.company.name}
+              icon={<Building2 size={12} />}
               onOpen={() => relations.openEntity('company', order.company!.id)}
             />
           ) : null}
           {order.contact && contactName ? (
-            <DetailSheetEntityLinkCard
+            <InvoiceLinkedReadonlyField
               label="Contact"
-              title={contactName}
-              icon={User}
+              entityKind="contact"
+              value={order.contact.id}
+              selectionLabel={contactName}
+              icon={<User size={12} />}
               onOpen={() => relations.openEntity('contact', order.contact!.id)}
             />
           ) : null}
           {dealId && order.deal && canViewDeal ? (
-            <DetailSheetEntityLinkCard
+            <InvoiceLinkedReadonlyField
               label="Deal"
-              title={order.deal.name?.trim() || order.deal.code}
-              icon={Handshake}
+              entityKind="order"
+              value={dealId}
+              selectionLabel={order.deal.name?.trim() || order.deal.code}
+              icon={<Handshake size={12} />}
               onOpen={() => setDealSheetOpen(true)}
             />
           ) : null}
-        </div>
+        </DetailSheetEntityLinkGrid>
       </DetailSheetSection>
 
       <EntityDealSheetDeepLink
