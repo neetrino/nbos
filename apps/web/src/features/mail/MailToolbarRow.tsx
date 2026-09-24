@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderOpen, Plus, RefreshCcw, Settings, Share2 } from 'lucide-react';
+import { FolderOpen, Plus, RefreshCcw, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,7 +38,6 @@ export interface MailToolbarRowProps {
   onFilterChange: (key: string, value: string) => void;
   onClearAll: () => void;
   onRefresh: () => void;
-  onShareAccount: (account: MailAccountHealthSummaryRow) => void;
   onConnectMailbox: () => void;
   onMailboxSettings: (account: MailAccountHealthSummaryRow) => void;
   onMailboxOverridesChange: (next: MailMailboxListOverrides) => void;
@@ -61,7 +60,6 @@ export function MailToolbarRow({
   onFilterChange,
   onClearAll,
   onRefresh,
-  onShareAccount,
   onConnectMailbox,
   onMailboxSettings,
   onMailboxOverridesChange,
@@ -153,13 +151,6 @@ export function MailToolbarRow({
         <DropdownMenuContent align="end" className="w-52">
           {canEdit && selectedAccount !== undefined ? (
             <>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => onShareAccount(selectedAccount)}
-              >
-                <Share2 />
-                Share mailbox
-              </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 disabled={busy}

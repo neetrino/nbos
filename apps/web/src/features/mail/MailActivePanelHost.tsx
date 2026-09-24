@@ -9,6 +9,8 @@ import {
   isMailPanelOpen,
   type ActiveMailPanel,
 } from '@/features/mail/mail-active-panel';
+import type { MailMailboxSettingsTab } from '@/features/mail/mail-mailbox-settings-tabs';
+import { MailboxSettingsSheet } from '@/features/mail/MailboxSettingsSheet';
 import {
   MAIL_ACCESS_SHEET_CONTENT_CLASS,
   MAIL_ACCESS_SHEET_RAIL_ANCHOR_CLASS,
@@ -16,7 +18,6 @@ import {
   MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS,
 } from '@/features/mail/mail-workspace-sheet-classes';
 import { MailThreadDetailPanel } from '@/features/mail/MailThreadDetailPanel';
-import { ShareMailboxSheet } from '@/features/mail/ShareMailboxSheet';
 import { useMailThreadDetail } from '@/features/mail/use-mail-thread-detail';
 import type { MailAccountHealthSummaryRow } from '@/lib/api/mail';
 
@@ -83,6 +84,18 @@ export function MailActivePanelHost({
 
   const sourcePageHref = threadId ? `/mail/threads/${threadId}` : '#';
   const isAccessPanel = activePanel?.type === 'share' || activePanel?.type === 'connect';
+  const settingsAccountId =
+    activePanel?.type === 'share'
+      ? activePanel.accountId
+      : activePanel?.type === 'connect'
+        ? activePanel.accountId
+        : undefined;
+  const settingsAccount = settingsAccountId
+    ? (accounts.find((account) => account.id === settingsAccountId) ?? null)
+    : null;
+  const settingsTab: MailMailboxSettingsTab = activePanel?.type === 'share' ? 'access' : 'general';
+  const onDeleteSelectedMailbox =
+    settingsAccount && onDeleteMailbox ? () => onDeleteMailbox(settingsAccount) : undefined;
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
@@ -135,34 +148,17 @@ export function MailActivePanelHost({
             />
           ) : null}
 
-          {activePanel?.type === 'connect' ? (
-            <ConnectMailboxSheet
-              enabled
-              reconnectAccount={
-                activePanel.accountId
-                  ? (accounts.find((account) => account.id === activePanel.accountId) ?? null)
-                  : null
-              }
-              onConnected={onMailboxConnected}
-              onClose={closePanel}
-              onDelete={
-                activePanel.accountId && onDeleteMailbox
-                  ? () => {
-                      const account = accounts.find((row) => row.id === activePanel.accountId);
-                      if (account) {
-                        onDeleteMailbox(account);
-                      }
-                    }
-                  : undefined
-              }
-            />
+          {activePanel?.type === 'connect' && !settingsAccount ? (
+            <ConnectMailboxSheet enabled onConnected={onMailboxConnected} onClose={closePanel} />
           ) : null}
 
-          {activePanel?.type === 'share' ? (
-            <ShareMailboxSheet
-              enabled
-              accountId={activePanel.accountId}
-              accountEmail={activePanel.accountEmail}
+          {settingsAccount ? (
+            <MailboxSettingsSheet
+              account={settingsAccount}
+              initialTab={settingsTab}
+              onConnected={onMailboxConnected}
+              onClose={closePanel}
+              onDelete={onDeleteSelectedMailbox}
             />
           ) : null}
         </div>

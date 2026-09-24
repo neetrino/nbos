@@ -794,15 +794,6 @@ export default function MailInboxPage() {
         onFilterChange={handleMailFilterChange}
         onClearAll={handleClearMailSearch}
         onRefresh={() => void refreshFromProvider()}
-        onShareAccount={(account) =>
-          handleActivePanelChange({
-            type: 'share',
-
-            accountId: account.id,
-
-            accountEmail: account.emailAddress,
-          })
-        }
         onConnectMailbox={() => handleActivePanelChange({ type: 'connect' })}
         onMailboxSettings={(account) =>
           handleActivePanelChange({ type: 'connect', accountId: account.id })

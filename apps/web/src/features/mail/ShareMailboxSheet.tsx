@@ -29,6 +29,8 @@ export interface ShareMailboxSheetProps {
   enabled: boolean;
   accountId: string;
   accountEmail: string;
+  /** Skip sheet chrome when this panel is a Settings tab. */
+  embedded?: boolean;
 }
 
 const ROLES: MailAccountAccessRole[] = ['ADMIN', 'SENDER', 'READER'];
@@ -57,7 +59,12 @@ function AccessPersonRow({
   );
 }
 
-export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMailboxSheetProps) {
+export function ShareMailboxSheet({
+  enabled,
+  accountId,
+  accountEmail,
+  embedded = false,
+}: ShareMailboxSheetProps) {
   const [access, setAccess] = useState<MailAccountAccessListDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [grantEmployeeIds, setGrantEmployeeIds] = useState<string[]>([]);
@@ -167,10 +174,9 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <MailSheetPanelHeader title="Share mailbox" description={accountEmail} />
-
-      <div className={MAIL_SHEET_BODY_CLASS}>
+    <div className={embedded ? undefined : 'flex h-full min-h-0 flex-col'}>
+      {embedded ? null : <MailSheetPanelHeader title="Share mailbox" description={accountEmail} />}
+      <div className={embedded ? undefined : MAIL_SHEET_BODY_CLASS}>
         {loading || !access ? (
           <LoadingState />
         ) : (

@@ -1,12 +1,14 @@
 /** Popover width for compact calendar (px). */
 export const NBOS_DATE_PICKER_COMPACT_WIDTH_PX = 280;
 
-/** Ghost calendar icon in dense rows — color fill only on hover / open. */
+/** Calendar icon in dense rows — no fill; icon turns blue on hover. */
 export const NBOS_DATE_PICKER_ICON_BUTTON_SHELL_CLASS = [
-  'flex size-8 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-muted-foreground shadow-none',
+  'flex size-8 shrink-0 items-center justify-center rounded-none border-0 bg-transparent text-muted-foreground shadow-none',
   'cursor-pointer transition-colors',
-  'hover:bg-muted/40 hover:text-foreground',
-  'dark:bg-transparent dark:hover:bg-muted/40',
+  'hover:bg-transparent hover:text-sky-600',
+  'data-popup-open:bg-transparent data-popup-open:text-sky-600',
+  'dark:bg-transparent dark:hover:bg-transparent dark:hover:text-sky-400',
+  'dark:data-popup-open:bg-transparent dark:data-popup-open:text-sky-400',
 ].join(' ');
 
 export const NBOS_DATE_PICKER_ICON_BUTTON_ICON_ONLY_CLASS = 'px-0';

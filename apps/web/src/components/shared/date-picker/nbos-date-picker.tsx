@@ -131,8 +131,10 @@ export function NbosDatePicker({
       <PopoverTrigger
         disabled={disabled}
         className={cn(
-          'min-w-0 border-0 bg-transparent p-0 shadow-none',
-          iconButtonShell ? 'w-auto' : 'w-full',
+          'min-w-0 border-0 bg-transparent p-0 shadow-none hover:bg-transparent',
+          iconButtonShell
+            ? 'text-muted-foreground w-auto hover:text-sky-600 data-popup-open:text-sky-600 dark:hover:text-sky-400 dark:data-popup-open:text-sky-400'
+            : 'w-full',
         )}
       >
         <NbosDatePickerTrigger

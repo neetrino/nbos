@@ -25,6 +25,8 @@ export interface ConnectMailboxSheetProps {
   onClose: () => void;
   onDelete?: () => void;
   reconnectAccount?: MailAccountRow | null;
+  /** Skip sheet chrome when this form is a Settings tab. */
+  embedded?: boolean;
 }
 
 type ConnectStep = 'choose' | 'corporate';
@@ -35,6 +37,7 @@ export function ConnectMailboxSheet({
   onClose,
   onDelete,
   reconnectAccount = null,
+  embedded = false,
 }: ConnectMailboxSheetProps) {
   const [connectStep, setConnectStep] = useState<ConnectStep>('choose');
   const [gmailLoading, setGmailLoading] = useState(false);
@@ -60,6 +63,41 @@ export function ConnectMailboxSheet({
     onConnected();
   };
 
+  const form = (
+    <>
+      {step === 'choose' ? (
+        <ProviderChoiceList
+          gmailLoading={gmailLoading}
+          onGmail={() => void startGmail()}
+          onCorporate={() => setConnectStep('corporate')}
+        />
+      ) : reconnectAccount?.providerType === GMAIL_PROVIDER_TYPE ? (
+        <GmailMailboxSettings
+          lastError={reconnectAccount.providerConnection?.lastErrorMessage ?? null}
+          submitting={gmailLoading}
+          onCancel={onClose}
+          onReconnect={() => void startGmail()}
+          onDelete={onDelete}
+        />
+      ) : (
+        <CorporateMailboxForm
+          onCancel={reconnectAccount ? onClose : () => setConnectStep('choose')}
+          onConnected={handleCorporateConnected}
+          onDelete={onDelete}
+          mode={reconnectAccount ? 'reconnect' : 'connect'}
+          accountId={reconnectAccount?.id}
+          initial={reconnectAccount ? corporateFormStateFromAccount(reconnectAccount) : undefined}
+          hasStoredPassword={reconnectAccount?.hasStoredPassword ?? false}
+          lastError={reconnectAccount?.providerConnection?.lastErrorMessage ?? null}
+        />
+      )}
+    </>
+  );
+
+  if (embedded) {
+    return form;
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <MailSheetPanelHeader
@@ -73,34 +111,7 @@ export function ConnectMailboxSheet({
         }
       />
 
-      <div className={`${MAIL_SHEET_BODY_CLASS} overflow-y-auto`}>
-        {step === 'choose' ? (
-          <ProviderChoiceList
-            gmailLoading={gmailLoading}
-            onGmail={() => void startGmail()}
-            onCorporate={() => setConnectStep('corporate')}
-          />
-        ) : reconnectAccount?.providerType === GMAIL_PROVIDER_TYPE ? (
-          <GmailMailboxSettings
-            lastError={reconnectAccount.providerConnection?.lastErrorMessage ?? null}
-            submitting={gmailLoading}
-            onCancel={onClose}
-            onReconnect={() => void startGmail()}
-            onDelete={onDelete}
-          />
-        ) : (
-          <CorporateMailboxForm
-            onCancel={reconnectAccount ? onClose : () => setConnectStep('choose')}
-            onConnected={handleCorporateConnected}
-            onDelete={onDelete}
-            mode={reconnectAccount ? 'reconnect' : 'connect'}
-            accountId={reconnectAccount?.id}
-            initial={reconnectAccount ? corporateFormStateFromAccount(reconnectAccount) : undefined}
-            hasStoredPassword={reconnectAccount?.hasStoredPassword ?? false}
-            lastError={reconnectAccount?.providerConnection?.lastErrorMessage ?? null}
-          />
-        )}
-      </div>
+      <div className={`${MAIL_SHEET_BODY_CLASS} overflow-y-auto`}>{form}</div>
     </div>
   );
 }

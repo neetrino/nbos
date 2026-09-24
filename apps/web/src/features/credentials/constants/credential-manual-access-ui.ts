@@ -1,5 +1,5 @@
 /** Date + access-level controls on a grant row (ghost, hover-only fill). */
-export const CREDENTIAL_GRANT_TRAILING_GAP_CLASS = 'flex items-center gap-0.5';
+export const CREDENTIAL_GRANT_TRAILING_GAP_CLASS = 'flex items-center gap-2.5';
 
 export const CREDENTIAL_GRANT_LEVEL_GHOST_CLASS = [
   'h-8 min-h-8 w-auto shrink-0 gap-0.5 rounded-full border-0 bg-transparent px-2 shadow-none',
