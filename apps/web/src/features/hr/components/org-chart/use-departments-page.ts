@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { slugFromDepartmentName } from '@/features/hr/components/DepartmentCreateDialog';
+import { uniqueDepartmentSlug } from '@/features/hr/components/department-slug';
 import {
   mergeDepartmentCardPreview,
   departmentsNeedCardHydration,
@@ -98,7 +98,13 @@ export function useDepartmentsPage() {
     submitSearch,
     openCreateDialog,
     handleCreate: () =>
-      void submitCreateDepartment(createState, t, setCreateState, fetchDepartments),
+      void submitCreateDepartment(
+        createState,
+        departments.map((department) => department.slug),
+        t,
+        setCreateState,
+        fetchDepartments,
+      ),
     openEmployee: (id: string) => openEmployeeSheet(id, t, setSelectedEmployee),
   };
 }
@@ -107,7 +113,6 @@ type CreateFormState = {
   open: boolean;
   saving: boolean;
   name: string;
-  slug: string;
   description: string;
   parentId: string;
 };
@@ -116,18 +121,18 @@ const emptyCreateForm: CreateFormState = {
   open: false,
   saving: false,
   name: '',
-  slug: '',
   description: '',
   parentId: '',
 };
 
 async function submitCreateDepartment(
   form: CreateFormState,
+  takenSlugs: readonly string[],
   t: ReturnType<typeof useTranslations>,
   setCreateState: Dispatch<SetStateAction<CreateFormState>>,
   fetchDepartments: () => Promise<void>,
 ): Promise<void> {
-  if (!form.name.trim() || !form.slug.trim()) {
+  if (!form.name.trim()) {
     toast.error(t('deptAdmin.nameSlugRequired'));
     return;
   }
@@ -135,7 +140,7 @@ async function submitCreateDepartment(
   try {
     await departmentsApi.create({
       name: form.name.trim(),
-      slug: form.slug.trim(),
+      slug: uniqueDepartmentSlug(form.name, takenSlugs),
       description: form.description.trim() || undefined,
       parentId: form.parentId || undefined,
     });
@@ -158,10 +163,6 @@ async function openEmployeeSheet(
   } catch (err) {
     toast.error(err instanceof Error ? err.message : t('deptAdmin.membersLoadFailed'));
   }
-}
-
-export function patchCreateName(name: string, prev: CreateFormState): CreateFormState {
-  return { ...prev, name, slug: slugFromDepartmentName(name) };
 }
 
 async function hydrateDepartmentCardMembers(

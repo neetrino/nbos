@@ -20,7 +20,8 @@ export const ORG_ZOOM_FIT_PADDING_PX = 56;
 export const ORG_PAN_DRAG_THRESHOLD_PX = 4;
 export const ORG_WHEEL_ZOOM_SENSITIVITY = 0.0015;
 
-export const ORG_DRAWER_WIDTH_CLASS = 'w-[min(100%,22.5rem)]';
+export const ORG_DRAWER_WIDTH_CLASS =
+  'bg-card data-[side=right]:w-[min(22.5rem,85vw)] sm:data-[side=right]:w-[22.5rem]';
 
 export const ORG_DEPT_ROLE_HEAD = 'HEAD';
 export const ORG_DEPT_ROLE_DEPUTY = 'DEPUTY';

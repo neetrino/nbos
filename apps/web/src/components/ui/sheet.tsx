@@ -247,6 +247,7 @@ function SheetContent({
   floatingCloseClassName,
   forceNestedBackdrop = false,
   stackAboveEntitySheet = false,
+  hideOverlay = false,
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: 'top' | 'right' | 'bottom' | 'left' | 'center';
@@ -264,6 +265,8 @@ function SheetContent({
   forceNestedBackdrop?: boolean;
   /** Above nested entity sheets (contact portfolio quick actions). */
   stackAboveEntitySheet?: boolean;
+  /** No dimmed backdrop. Use with `modal={false}` when the page stays interactive. */
+  hideOverlay?: boolean;
 }) {
   const copy = useSheetChromeCopy();
   const floatingRailEnabled = floatingClose && (side === 'right' || side === 'center');
@@ -341,11 +344,13 @@ function SheetContent({
 
   return (
     <SheetPortal>
-      <SheetOverlay
-        forceRender={elevatedBackdrop}
-        stackAboveFloatingRail={elevatedBackdrop}
-        overlayStackClass={nestedStackClass}
-      />
+      {hideOverlay ? null : (
+        <SheetOverlay
+          forceRender={elevatedBackdrop}
+          stackAboveFloatingRail={elevatedBackdrop}
+          overlayStackClass={nestedStackClass}
+        />
+      )}
       {centerFloatingRail ? (
         <SheetCenterShell
           floatingRailVisible={floatingRailVisible}

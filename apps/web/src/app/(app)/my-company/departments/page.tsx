@@ -6,10 +6,7 @@ import { IntegratedSearchFilters, useModuleHeroSlots } from '@/components/shared
 import { Button } from '@/components/ui/button';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import { DepartmentCreateDialog } from '@/features/hr/components/DepartmentCreateDialog';
-import {
-  patchCreateName,
-  useDepartmentsPage,
-} from '@/features/hr/components/org-chart/use-departments-page';
+import { useDepartmentsPage } from '@/features/hr/components/org-chart/use-departments-page';
 import { OrgChartWorkspace } from '@/features/hr/components/org-chart/OrgChartWorkspace';
 import { PermissionGate } from '@/lib/permissions';
 
@@ -59,15 +56,13 @@ function DepartmentsPageDialogs({ page }: { page: ReturnType<typeof useDepartmen
         open={page.createState.open}
         departments={page.departments}
         formName={page.createState.name}
-        formSlug={page.createState.slug}
         formDescription={page.createState.description}
         formParentId={page.createState.parentId}
         saving={page.createState.saving}
         onOpenChange={(open) =>
           page.setCreateState((prev) => ({ ...prev, open, ...(open ? {} : { saving: false }) }))
         }
-        onNameChange={(name) => page.setCreateState((prev) => patchCreateName(name, prev))}
-        onSlugChange={(slug) => page.setCreateState((prev) => ({ ...prev, slug }))}
+        onNameChange={(name) => page.setCreateState((prev) => ({ ...prev, name }))}
         onDescriptionChange={(description) =>
           page.setCreateState((prev) => ({ ...prev, description }))
         }

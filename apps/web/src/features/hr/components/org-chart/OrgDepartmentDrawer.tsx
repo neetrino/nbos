@@ -5,6 +5,8 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 import { isDeptRoleValue } from '@/features/hr/constants/team-directory';
 import type { DepartmentMember, DepartmentWithMembers } from '@/lib/api/employees';
 import { ORG_DRAWER_WIDTH_CLASS } from './org-chart-constants';
@@ -32,47 +34,97 @@ export function OrgDepartmentDrawer({
   const filteredGroups = splitOrgChartMembers(filtered);
   const total = department?._count?.members ?? department?.members.length ?? 0;
 
+  const title = department?.name ?? t('deptAdmin.loading');
   return (
-    <aside
-      className={`border-border bg-background flex h-full min-h-0 shrink-0 flex-col border-l ${ORG_DRAWER_WIDTH_CLASS}`}
+    <Sheet
+      open
+      modal={false}
+      disablePointerDismissal
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <header className="flex items-center justify-between gap-2 px-4 py-3">
-        <h2 className="text-foreground truncate text-base font-semibold">
-          {department?.name ?? t('deptAdmin.loading')}
-        </h2>
+      <SheetContent
+        side="right"
+        showCloseButton={false}
+        hideOverlay
+        className={cn('flex h-full flex-col gap-0 overflow-hidden p-0', ORG_DRAWER_WIDTH_CLASS)}
+      >
+        <OrgDepartmentDrawerPanel
+          title={title}
+          totalLabel={t('orgChart.totalEmployees', { count: total })}
+          closeLabel={t('orgChart.closeDrawer')}
+          searchPlaceholder={t('orgChart.membersSearch')}
+          loadingLabel={t('deptAdmin.loadingMembers')}
+          query={query}
+          loading={loading}
+          groups={query.trim() ? filteredGroups : groups}
+          onQueryChange={setQuery}
+          onClose={onClose}
+          onOpenEmployee={onOpenEmployee}
+        />
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function OrgDepartmentDrawerPanel({
+  title,
+  totalLabel,
+  closeLabel,
+  searchPlaceholder,
+  loadingLabel,
+  query,
+  loading,
+  groups,
+  onQueryChange,
+  onClose,
+  onOpenEmployee,
+}: {
+  title: string;
+  totalLabel: string;
+  closeLabel: string;
+  searchPlaceholder: string;
+  loadingLabel: string;
+  query: string;
+  loading: boolean;
+  groups: ReturnType<typeof splitOrgChartMembers>;
+  onQueryChange: (value: string) => void;
+  onClose: () => void;
+  onOpenEmployee?: (employeeId: string) => void;
+}) {
+  return (
+    <>
+      <header className="flex items-center justify-between gap-2 px-4 pt-5 pb-3">
+        <SheetTitle className="truncate text-base font-semibold">{title}</SheetTitle>
         <Button
           type="button"
           size="icon-sm"
           variant="ghost"
           onClick={onClose}
-          aria-label={t('orgChart.closeDrawer')}
+          aria-label={closeLabel}
         >
           <X className="size-4" />
         </Button>
       </header>
-      <p className="text-muted-foreground px-4 text-xs">
-        {t('orgChart.totalEmployees', { count: total })}
-      </p>
+      <SheetDescription className="px-4 text-xs">{totalLabel}</SheetDescription>
       <div className="relative px-4 py-3">
         <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-6 size-3.5 -translate-y-1/2" />
         <Input
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={t('orgChart.membersSearch')}
+          onChange={(event) => onQueryChange(event.target.value)}
+          placeholder={searchPlaceholder}
           className="h-9 rounded-full pl-8 text-sm"
         />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         {loading ? (
-          <p className="text-muted-foreground text-sm">{t('deptAdmin.loadingMembers')}</p>
+          <p className="text-muted-foreground text-sm">{loadingLabel}</p>
         ) : (
-          <OrgDepartmentDrawerBody
-            groups={query.trim() ? filteredGroups : groups}
-            onOpenEmployee={onOpenEmployee}
-          />
+          <OrgDepartmentDrawerBody groups={groups} onOpenEmployee={onOpenEmployee} />
         )}
       </div>
-    </aside>
+    </>
   );
 }
 
