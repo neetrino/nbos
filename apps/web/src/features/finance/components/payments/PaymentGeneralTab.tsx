@@ -73,7 +73,7 @@ function PaymentLinkedPanel({ payment }: { payment: Payment }) {
 
   return (
     <DetailSheetSection title="Linked" outlined>
-      <DetailSheetEntityLinkGrid>
+      <DetailSheetEntityLinkGrid className="sm:grid-cols-2">
         {invoice ? (
           <InvoiceLinkedReadonlyField
             label="Invoice"

@@ -144,7 +144,7 @@ function InvoiceLinkedEntitiesBody({
   return (
     <>
       <DetailSheetSection title={title} outlined>
-        <DetailSheetEntityLinkGrid>
+        <DetailSheetEntityLinkGrid className="sm:grid-cols-2">
           {showsDeal && dealTitle && dealId ? (
             <InvoiceLinkedReadonlyField
               label="Deal"

@@ -89,7 +89,7 @@ function OrderLinkedPanel({ order }: { order: Order }) {
   return (
     <>
       <DetailSheetSection title="Linked" outlined>
-        <DetailSheetEntityLinkGrid>
+        <DetailSheetEntityLinkGrid className="sm:grid-cols-2">
           <InvoiceLinkedReadonlyField
             label="Project"
             entityKind="project"
