@@ -79,7 +79,6 @@ export function useMailProviderSync({
   onListReload,
 }: UseMailProviderSyncParams) {
   const [providerSyncBusy, setProviderSyncBusy] = useState(false);
-  const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
 
   const runProviderSync = useCallback(
     async (accountIds: readonly string[]) => {
@@ -88,9 +87,6 @@ export function useMailProviderSync({
         return;
       }
       setProviderSyncBusy(true);
-      if (accountIds.length === 1) {
-        setSyncingAccountId(accountIds[0] ?? null);
-      }
       try {
         const baselineById = new Map(
           accounts
@@ -109,7 +105,6 @@ export function useMailProviderSync({
         toast.error(getApiErrorMessage(syncError, 'Sync could not be started.'));
       } finally {
         setProviderSyncBusy(false);
-        setSyncingAccountId(null);
       }
     },
     [accounts, onListReload],
@@ -131,17 +126,5 @@ export function useMailProviderSync({
     await runProviderSync(targets.map((account) => account.id));
   }, [accounts, canEdit, filterAccountId, onListReload, runProviderSync]);
 
-  const syncAccount = useCallback(
-    async (accountId: string) => {
-      const targets = mailAccountsForProviderSync(accounts, accountId);
-      if (targets.length === 0) {
-        toast.error('This mailbox cannot sync. Reconnect it first.');
-        return;
-      }
-      await runProviderSync([accountId]);
-    },
-    [accounts, runProviderSync],
-  );
-
-  return { providerSyncBusy, syncingAccountId, refreshFromProvider, syncAccount };
+  return { providerSyncBusy, refreshFromProvider };
 }

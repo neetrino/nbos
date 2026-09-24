@@ -1,6 +1,8 @@
 'use client';
 
+import { ScrollText } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { DetailSheetSection } from '@/components/shared';
 import {
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_LIST_CLASS,
@@ -34,25 +36,16 @@ export function CredentialSheetAuditPanel({
   const locale = useLocale();
 
   return (
-    <section
-      className={
-        embedded
-          ? cn(DETAIL_SHEET_SECTION_STRETCH_CLASS, 'gap-3 pt-3')
-          : 'border-border grid gap-3 border-t pt-5'
-      }
-      aria-label={t('audit.aria')}
-    >
-      <div className="flex items-center justify-between gap-2">
-        {embedded ? (
-          <span className="sr-only">{t('form.tabs.activity')}</span>
-        ) : (
-          <h3 className="text-sm font-medium">{t('form.tabs.activity')}</h3>
-        )}
+    <DetailSheetSection
+      title={t('form.tabs.activity')}
+      icon={<ScrollText size={12} />}
+      className={embedded ? DETAIL_SHEET_SECTION_STRETCH_CLASS : undefined}
+      titleTrailing={
         <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={onReload}>
           {t('audit.refresh')}
         </Button>
-      </div>
-
+      }
+    >
       {loading ? (
         <Skeleton className={cn('w-full rounded-lg', embedded ? 'min-h-32 flex-1' : 'h-24')} />
       ) : entries.length === 0 ? (
@@ -65,7 +58,7 @@ export function CredentialSheetAuditPanel({
           )}
         >
           {entries.map((entry) => (
-            <li key={entry.id}>
+            <li key={entry.id} className="border-border bg-background rounded-xl border px-3 py-2">
               <span className="text-foreground font-medium">
                 {labelCredentialAuditAction(entry.action, t)}
               </span>
@@ -76,6 +69,6 @@ export function CredentialSheetAuditPanel({
           ))}
         </ul>
       )}
-    </section>
+    </DetailSheetSection>
   );
 }

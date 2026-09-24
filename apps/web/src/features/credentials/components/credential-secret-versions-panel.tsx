@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { History } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { DetailSheetSection } from '@/components/shared';
 import {
   DETAIL_SHEET_SECTION_STRETCH_CLASS,
   DETAIL_SHEET_TAB_LIST_CLASS,
@@ -34,6 +37,7 @@ export function CredentialSecretVersionsPanel({
   sheetOpen,
   embedded = false,
 }: CredentialSecretVersionsPanelProps) {
+  const t = useTranslations('credentials');
   const { me } = usePermission();
   const vault = useCredentialVaultSession();
   const { items, loading } = useCredentialSecretVersions(credentialId, sheetOpen);
@@ -62,62 +66,50 @@ export function CredentialSecretVersionsPanel({
   };
 
   return (
-    <section
-      className={
-        embedded
-          ? cn(DETAIL_SHEET_SECTION_STRETCH_CLASS, 'gap-3 pt-3')
-          : 'border-border grid gap-3 border-t pt-5'
-      }
-      aria-label="Secret history"
-    >
-      <div>
-        {embedded ? (
-          <span className="sr-only">Secret history</span>
+    <>
+      <DetailSheetSection
+        title={t('form.tabs.secretHistory')}
+        icon={<History size={12} />}
+        className={embedded ? DETAIL_SHEET_SECTION_STRETCH_CLASS : undefined}
+      >
+        <p className="text-muted-foreground mb-3 text-xs">{t('form.secretHistoryHint')}</p>
+        {loading ? (
+          <Skeleton className={cn('w-full rounded-lg', embedded ? 'min-h-32 flex-1' : 'h-16')} />
+        ) : items.length === 0 ? (
+          <p className="text-muted-foreground text-xs">{t('form.secretHistoryEmpty')}</p>
         ) : (
-          <h3 className="text-sm font-medium">Secret history</h3>
+          <ul
+            className={cn(
+              'space-y-2 text-xs',
+              embedded ? DETAIL_SHEET_TAB_LIST_CLASS : 'max-h-44 overflow-y-auto',
+            )}
+          >
+            {items.map((row) => (
+              <li
+                key={row.id}
+                className="border-border flex items-center justify-between gap-2 rounded-xl border px-3 py-2"
+              >
+                <span className="min-w-0">
+                  {fieldLabel(row.field)} v{row.versionNumber} · {row.source} ·{' '}
+                  {row.rotatedBy.firstName} {row.rotatedBy.lastName} ·{' '}
+                  {new Date(row.rotatedAt).toLocaleString()}
+                </span>
+                {canReveal ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 shrink-0 rounded-full text-xs"
+                    onClick={() => void revealVersion(row)}
+                  >
+                    {t('form.secretHistoryReveal')}
+                  </Button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
         )}
-        <p className="text-muted-foreground mt-1 text-xs">
-          Previous encrypted values saved when secrets change. Uses the same daily vault unlock as
-          critical live secrets.
-        </p>
-      </div>
-
-      {loading ? (
-        <Skeleton className={cn('w-full rounded-lg', embedded ? 'min-h-32 flex-1' : 'h-16')} />
-      ) : items.length === 0 ? (
-        <p className="text-muted-foreground text-xs">No archived versions yet.</p>
-      ) : (
-        <ul
-          className={cn(
-            'space-y-2 text-xs',
-            embedded ? DETAIL_SHEET_TAB_LIST_CLASS : 'max-h-44 overflow-y-auto',
-          )}
-        >
-          {items.map((row) => (
-            <li
-              key={row.id}
-              className="border-border flex items-center justify-between gap-2 rounded-lg border px-3 py-2"
-            >
-              <span className="min-w-0">
-                {fieldLabel(row.field)} v{row.versionNumber} · {row.source} ·{' '}
-                {row.rotatedBy.firstName} {row.rotatedBy.lastName} ·{' '}
-                {new Date(row.rotatedAt).toLocaleString()}
-              </span>
-              {canReveal ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 shrink-0 text-xs"
-                  onClick={() => void revealVersion(row)}
-                >
-                  Reveal
-                </Button>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
+      </DetailSheetSection>
 
       <CredentialStepUpDialog
         open={revealTarget !== null}
@@ -127,6 +119,6 @@ export function CredentialSecretVersionsPanel({
         title="Unlock vault to reveal historical secret"
         onConfirm={onReveal}
       />
-    </section>
+    </>
   );
 }

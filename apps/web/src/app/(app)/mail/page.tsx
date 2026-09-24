@@ -244,13 +244,12 @@ export default function MailInboxPage() {
     threadPage,
   ]);
 
-  const { providerSyncBusy, syncingAccountId, refreshFromProvider, syncAccount } =
-    useMailProviderSync({
-      canEdit,
-      accounts: accountHealth,
-      filterAccountId,
-      onListReload: load,
-    });
+  const { providerSyncBusy, refreshFromProvider } = useMailProviderSync({
+    canEdit,
+    accounts: accountHealth,
+    filterAccountId,
+    onListReload: load,
+  });
 
   const updateMailQuery = useCallback(
     (mutate: (params: URLSearchParams) => void, mode: 'push' | 'replace' = 'replace') => {
@@ -789,14 +788,12 @@ export default function MailInboxPage() {
         canEdit={canEdit}
         busy={loading}
         gettingMail={providerSyncBusy}
-        syncingAccountId={syncingAccountId}
         onSelectAccount={selectAccount}
         onSelectFolder={selectFolder}
         onSearchChange={setThreadSearchDraft}
         onFilterChange={handleMailFilterChange}
         onClearAll={handleClearMailSearch}
         onRefresh={() => void refreshFromProvider()}
-        onSyncAccount={(accountId) => void syncAccount(accountId)}
         onShareAccount={(account) =>
           handleActivePanelChange({
             type: 'share',
