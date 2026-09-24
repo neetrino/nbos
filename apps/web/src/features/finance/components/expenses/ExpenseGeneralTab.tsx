@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { DollarSign, Layers, LayoutGrid } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
@@ -128,7 +128,7 @@ export function ExpenseGeneralTab({
         />
       ) : null}
 
-      <DetailSheetSection title={t('sheet.sections.general')} icon={<LayoutGrid size={12} />}>
+      <DetailSheetSection title={t('sheet.sections.general')} outlined>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           <ExpenseSourceInvoiceStatus expense={expense} />
           {ledgerSummary}
@@ -272,14 +272,13 @@ export function ExpenseGeneralTab({
         </div>
       </DetailSheetSection>
 
-      <DetailSheetSection title={t('sheet.sections.proofs')} icon={<Layers size={12} />}>
-        <FinanceProofAttachments
-          entityType="EXPENSE"
-          entityId={expense.id}
-          purpose="EXPENSE_PROOF"
-          title=""
-        />
-      </DetailSheetSection>
+      <FinanceProofAttachments
+        entityType="EXPENSE"
+        entityId={expense.id}
+        purpose="EXPENSE_PROOF"
+        title=""
+        borderLabel={t('sheet.sections.proofs')}
+      />
 
       <DetailSheetOptionalDescription
         entityType="expense"

@@ -98,7 +98,7 @@ export function ExpenseDetailPaymentSection({
       ) : null}
 
       {expense.payments !== undefined ? (
-        <DetailSheetSection title={t('sheet.sections.paymentHistory')}>
+        <DetailSheetSection title={t('sheet.sections.paymentHistory')} outlined>
           {expense.payments.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t('payments.empty')}</p>
           ) : (
