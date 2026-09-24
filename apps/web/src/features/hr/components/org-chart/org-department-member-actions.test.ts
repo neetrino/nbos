@@ -7,6 +7,12 @@ import {
 } from './org-department-member-actions';
 
 function seat(partial: Partial<OrgSeat> & Pick<OrgSeat, 'id' | 'kind'>): OrgSeat {
+  const department = partial.department ?? {
+    id: 'dept-1',
+    name: 'Sales',
+    slug: 'sales',
+    headSeatId: null as string | null,
+  };
   return {
     id: partial.id,
     departmentId: partial.departmentId ?? 'dept-1',
@@ -16,12 +22,7 @@ function seat(partial: Partial<OrgSeat> & Pick<OrgSeat, 'id' | 'kind'>): OrgSeat
     kind: partial.kind,
     status: partial.status ?? 'ACTIVE',
     sortOrder: 0,
-    department: partial.department ?? {
-      id: 'dept-1',
-      name: 'Sales',
-      slug: 'sales',
-      headSeatId: partial.department?.headSeatId ?? null,
-    },
+    department,
     defaultPermissionRole: null,
     assignments: partial.assignments ?? [],
   };

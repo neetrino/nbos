@@ -1,28 +1,17 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Plus } from 'lucide-react';
 import { IntegratedSearchFilters, useModuleHeroSlots } from '@/components/shared';
-import { Button } from '@/components/ui/button';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import { DepartmentCreateDialog } from '@/features/hr/components/DepartmentCreateDialog';
 import { useDepartmentsPage } from '@/features/hr/components/org-chart/use-departments-page';
 import { OrgChartWorkspace } from '@/features/hr/components/org-chart/OrgChartWorkspace';
-import { PermissionGate } from '@/lib/permissions';
 
 export default function DepartmentsPage() {
   const page = useDepartmentsPage();
-  const { search, setSearch, submitSearch, openCreateDialog, t } = page;
+  const { search, setSearch, submitSearch, t } = page;
   const heroSlots = useMemo(
     () => ({
-      leading: (
-        <PermissionGate module="COMPANY" action="ADD">
-          <Button type="button" className="shrink-0" onClick={() => openCreateDialog(null)}>
-            <Plus className="size-4" aria-hidden />
-            {t('orgChart.add')}
-          </Button>
-        </PermissionGate>
-      ),
       search: (
         <div
           onKeyDown={(event) => {
@@ -37,7 +26,7 @@ export default function DepartmentsPage() {
         </div>
       ),
     }),
-    [openCreateDialog, search, setSearch, submitSearch, t],
+    [search, setSearch, submitSearch, t],
   );
   useModuleHeroSlots(heroSlots);
 
@@ -96,6 +85,8 @@ function DepartmentsPageBody({ page }: { page: ReturnType<typeof useDepartmentsP
       primaryDepartmentId={page.primaryDepartmentId}
       search={page.search}
       canEdit={page.canEdit}
+      canAdd={page.canAdd}
+      canDelete={page.canDelete}
       onRegisterFind={page.registerFind}
       onAddDepartment={page.openCreateDialog}
       onOpenEmployee={(id) => void page.openEmployee(id)}

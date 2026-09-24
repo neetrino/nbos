@@ -14,6 +14,7 @@ import { ORG_DRAWER_WIDTH_CLASS } from './org-chart-constants';
 import { splitOrgChartMembers } from './org-chart-members';
 import { OrgChartPersonRow, orgChartMemberLabel, orgChartMemberTitle } from './OrgChartPersonRow';
 import { OrgDepartmentMemberMenu } from './OrgDepartmentMemberMenu';
+import { OrgDepartmentSettingsControls } from './OrgDepartmentSettingsControls';
 
 export function OrgDepartmentDrawer({
   department,
@@ -21,18 +22,24 @@ export function OrgDepartmentDrawer({
   seats,
   departments,
   canEdit,
+  canAdd,
+  canDelete,
   onClose,
   onOpenEmployee,
   onMembersChanged,
+  onAddChild,
 }: {
   department: DepartmentWithMembers | null;
   loading: boolean;
   seats: readonly OrgSeat[];
   departments: readonly DepartmentItem[];
   canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onClose: () => void;
   onOpenEmployee?: (employeeId: string) => void;
   onMembersChanged: () => void;
+  onAddChild: (parentId: string) => void;
 }) {
   const t = useTranslations('hr');
   const [query, setQuery] = useState('');
@@ -62,15 +69,32 @@ export function OrgDepartmentDrawer({
       >
         <header className="flex items-center justify-between gap-2 px-4 pt-5 pb-3">
           <SheetTitle className="truncate text-base font-semibold">{title}</SheetTitle>
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="ghost"
-            onClick={onClose}
-            aria-label={t('orgChart.closeDrawer')}
-          >
-            <X className="size-4" />
-          </Button>
+          <div className="flex shrink-0 items-center gap-1">
+            {department ? (
+              <OrgDepartmentSettingsControls
+                department={department}
+                departments={departments}
+                canEdit={canEdit}
+                canAdd={canAdd}
+                canDelete={canDelete}
+                onAddChild={onAddChild}
+                onChanged={onMembersChanged}
+                onDeleted={() => {
+                  onMembersChanged();
+                  onClose();
+                }}
+              />
+            ) : null}
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="ghost"
+              onClick={onClose}
+              aria-label={t('orgChart.closeDrawer')}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
         </header>
         <SheetDescription className="px-4 text-xs">
           {t('orgChart.totalEmployees', { count: total })}

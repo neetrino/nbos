@@ -92,6 +92,8 @@ export function useDepartmentsPage() {
     selectedEmployee,
     setSelectedEmployee,
     canEdit: can('EDIT', 'COMPANY'),
+    canAdd: can('ADD', 'COMPANY'),
+    canDelete: can('DELETE', 'COMPANY'),
     myDepartmentIds,
     primaryDepartmentId,
     registerFind,

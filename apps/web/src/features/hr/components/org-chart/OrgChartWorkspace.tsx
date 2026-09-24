@@ -33,6 +33,8 @@ export function OrgChartWorkspace({
   primaryDepartmentId,
   search,
   canEdit,
+  canAdd,
+  canDelete,
   onRegisterFind,
   onAddDepartment,
   onOpenEmployee,
@@ -43,6 +45,8 @@ export function OrgChartWorkspace({
   primaryDepartmentId: string | null;
   search: string;
   canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onRegisterFind: (finder: () => void) => void;
   onAddDepartment: (parentId: string | null) => void;
   onOpenEmployee?: (employeeId: string) => void;
@@ -55,6 +59,8 @@ export function OrgChartWorkspace({
       myDepartmentIds={myDepartmentIds}
       chart={chart}
       canEdit={canEdit}
+      canAdd={canAdd}
+      canDelete={canDelete}
       onAddDepartment={onAddDepartment}
       onOpenEmployee={onOpenEmployee}
       onDepartmentsChanged={onDepartmentsChanged}
@@ -67,6 +73,8 @@ function OrgChartStage({
   myDepartmentIds,
   chart,
   canEdit,
+  canAdd,
+  canDelete,
   onAddDepartment,
   onOpenEmployee,
   onDepartmentsChanged,
@@ -75,6 +83,8 @@ function OrgChartStage({
   myDepartmentIds: ReadonlySet<string>;
   chart: ReturnType<typeof useOrgChartState>;
   canEdit: boolean;
+  canAdd: boolean;
+  canDelete: boolean;
   onAddDepartment: (parentId: string | null) => void;
   onOpenEmployee?: (employeeId: string) => void;
   onDepartmentsChanged: () => void;
@@ -114,12 +124,15 @@ function OrgChartStage({
           seats={chart.drawerSeats}
           departments={departments}
           canEdit={canEdit}
+          canAdd={canAdd}
+          canDelete={canDelete}
           onClose={() => chart.setSelectedId(null)}
           onOpenEmployee={onOpenEmployee}
           onMembersChanged={() => {
             chart.refreshDrawer();
             onDepartmentsChanged();
           }}
+          onAddChild={(parentId) => onAddDepartment(parentId)}
         />
       ) : null}
     </div>
