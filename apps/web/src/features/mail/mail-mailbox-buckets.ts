@@ -5,12 +5,18 @@ export type MailMailboxBucket = 'my' | 'company';
 export type MailMailboxListOverrides = {
   pinToMy: string[];
   pinToCompany: string[];
+  /** Manual order of mailbox ids in My (unknown ids ignored; new ones append). */
+  myOrder: string[];
+  /** Manual order of mailbox ids in Company. */
+  companyOrder: string[];
   companyExpanded: boolean;
 };
 
 export const EMPTY_MAIL_MAILBOX_LIST_OVERRIDES: MailMailboxListOverrides = {
   pinToMy: [],
   pinToCompany: [],
+  myOrder: [],
+  companyOrder: [],
   companyExpanded: false,
 };
 
@@ -22,6 +28,8 @@ export function parseMailMailboxListOverrides(raw: unknown): MailMailboxListOver
   return {
     pinToMy: parseIdList(record.pinToMy),
     pinToCompany: parseIdList(record.pinToCompany),
+    myOrder: parseIdList(record.myOrder),
+    companyOrder: parseIdList(record.companyOrder),
     companyExpanded: record.companyExpanded === true,
   };
 }
@@ -51,6 +59,31 @@ export function resolveMailboxBucket(
   return defaultMailboxBucket(relation);
 }
 
+export function applyMailboxListOrder<T extends { id: string }>(
+  items: readonly T[],
+  order: readonly string[],
+): T[] {
+  if (items.length <= 1 || order.length === 0) {
+    return [...items];
+  }
+  const remaining = new Map(items.map((item) => [item.id, item]));
+  const ordered: T[] = [];
+  for (const id of order) {
+    const item = remaining.get(id);
+    if (!item) {
+      continue;
+    }
+    ordered.push(item);
+    remaining.delete(id);
+  }
+  for (const item of items) {
+    if (remaining.has(item.id)) {
+      ordered.push(item);
+    }
+  }
+  return ordered;
+}
+
 export function partitionMailAccountsByBucket<
   T extends { id: string; relation?: MailAccountViewerRelation },
 >(accounts: readonly T[], overrides: MailMailboxListOverrides): { my: T[]; company: T[] } {
@@ -64,23 +97,80 @@ export function partitionMailAccountsByBucket<
       company.push(account);
     }
   }
-  return { my, company };
+  return {
+    my: applyMailboxListOrder(my, overrides.myOrder),
+    company: applyMailboxListOrder(company, overrides.companyOrder),
+  };
 }
 
+function insertIdBefore(order: string[], accountId: string, beforeId: string | null): string[] {
+  const without = order.filter((id) => id !== accountId);
+  if (beforeId === null) {
+    return [...without, accountId];
+  }
+  const index = without.indexOf(beforeId);
+  if (index < 0) {
+    return [...without, accountId];
+  }
+  return [...without.slice(0, index), accountId, ...without.slice(index)];
+}
+
+/**
+ * Moves a mailbox into `target` (My/Company) and places it before `beforeId`
+ * (or at the end when `beforeId` is null). `currentMyIds` / `currentCompanyIds`
+ * are the currently displayed ordered lists (after partition).
+ */
+export function placeMailboxInList(
+  overrides: MailMailboxListOverrides,
+  accountId: string,
+  relation: MailAccountViewerRelation,
+  target: MailMailboxBucket,
+  beforeId: string | null,
+  currentMyIds: readonly string[],
+  currentCompanyIds: readonly string[],
+): MailMailboxListOverrides {
+  const pinToMy = overrides.pinToMy.filter((id) => id !== accountId);
+  const pinToCompany = overrides.pinToCompany.filter((id) => id !== accountId);
+  const natural = defaultMailboxBucket(relation);
+  const nextPins =
+    target === natural
+      ? { pinToMy, pinToCompany }
+      : target === 'my'
+        ? { pinToMy: [...pinToMy, accountId], pinToCompany }
+        : { pinToMy, pinToCompany: [...pinToCompany, accountId] };
+
+  let myIds = currentMyIds.filter((id) => id !== accountId);
+  let companyIds = currentCompanyIds.filter((id) => id !== accountId);
+  if (target === 'my') {
+    myIds = insertIdBefore(myIds, accountId, beforeId);
+  } else {
+    companyIds = insertIdBefore(companyIds, accountId, beforeId);
+  }
+
+  return {
+    ...overrides,
+    ...nextPins,
+    myOrder: myIds,
+    companyOrder: companyIds,
+  };
+}
+
+/** Append to the end of `target` (bucket-only move). */
 export function moveMailboxToBucket(
   overrides: MailMailboxListOverrides,
   accountId: string,
   relation: MailAccountViewerRelation,
   target: MailMailboxBucket,
+  currentMyIds: readonly string[] = [],
+  currentCompanyIds: readonly string[] = [],
 ): MailMailboxListOverrides {
-  const pinToMy = overrides.pinToMy.filter((id) => id !== accountId);
-  const pinToCompany = overrides.pinToCompany.filter((id) => id !== accountId);
-  const natural = defaultMailboxBucket(relation);
-  if (target === natural) {
-    return { ...overrides, pinToMy, pinToCompany };
-  }
-  if (target === 'my') {
-    return { ...overrides, pinToMy: [...pinToMy, accountId], pinToCompany };
-  }
-  return { ...overrides, pinToMy, pinToCompany: [...pinToCompany, accountId] };
+  return placeMailboxInList(
+    overrides,
+    accountId,
+    relation,
+    target,
+    null,
+    currentMyIds,
+    currentCompanyIds,
+  );
 }

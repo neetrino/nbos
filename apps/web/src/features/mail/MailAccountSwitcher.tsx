@@ -16,8 +16,8 @@ import { cn } from '@/lib/utils';
 import type { MailAccountHealthSummaryRow } from '@/lib/api/mail';
 import { mailAccountsForDailySwitcher } from '@/features/mail/mail-folder-config';
 import {
-  moveMailboxToBucket,
   partitionMailAccountsByBucket,
+  placeMailboxInList,
   type MailMailboxBucket,
   type MailMailboxListOverrides,
 } from '@/features/mail/mail-mailbox-buckets';
@@ -67,21 +67,54 @@ function readDragAccountId(event: DragEvent): string | null {
   return id.length > 0 ? id : null;
 }
 
+type DropHint = {
+  bucket: MailMailboxBucket;
+  beforeId: string | null;
+};
+
 interface MailboxRowProps {
   account: MailAccountHealthSummaryRow;
   selected: boolean;
   bucket: MailMailboxBucket;
+  dropBeforeActive: boolean;
   onSelect: () => void;
   onDragEnd: () => void;
+  onRowDragOver: (bucket: MailMailboxBucket, beforeId: string) => void;
+  onRowDrop: (accountId: string, bucket: MailMailboxBucket, beforeId: string) => void;
 }
 
-function MailboxMenuRow({ account, selected, bucket, onSelect, onDragEnd }: MailboxRowProps) {
+function MailboxMenuRow({
+  account,
+  selected,
+  bucket,
+  dropBeforeActive,
+  onSelect,
+  onDragEnd,
+  onRowDragOver,
+  onRowDrop,
+}: MailboxRowProps) {
   return (
     <div
       className={cn(
         'group/mailbox-row flex items-center gap-0.5 rounded-md px-1',
         'hover:bg-accent hover:text-accent-foreground',
+        selected && 'bg-accent text-accent-foreground',
+        dropBeforeActive && 'ring-ring ring-1',
       )}
+      onDragOver={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer.dropEffect = 'move';
+        onRowDragOver(bucket, account.id);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const draggedId = readDragAccountId(event);
+        if (draggedId) {
+          onRowDrop(draggedId, bucket, account.id);
+        }
+      }}
     >
       <button
         type="button"
@@ -90,8 +123,9 @@ function MailboxMenuRow({ account, selected, bucket, onSelect, onDragEnd }: Mail
           'text-muted-foreground inline-flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md active:cursor-grabbing',
           'opacity-0 group-hover/mailbox-row:opacity-100 focus-visible:opacity-100',
           'group-hover/mailbox-row:text-accent-foreground',
+          selected && 'text-accent-foreground',
         )}
-        title="Drag to My or Company"
+        title="Drag to reorder or move between My and Company"
         aria-label={`Drag ${account.emailAddress}`}
         onPointerDown={(event) => event.stopPropagation()}
         onClick={(event) => {
@@ -102,7 +136,6 @@ function MailboxMenuRow({ account, selected, bucket, onSelect, onDragEnd }: Mail
           event.dataTransfer.setData(MAIL_DRAG_MIME, account.id);
           event.dataTransfer.setData('text/plain', account.id);
           event.dataTransfer.effectAllowed = 'move';
-          event.dataTransfer.setData('application/x-nbos-mail-bucket', bucket);
         }}
         onDragEnd={onDragEnd}
       >
@@ -112,17 +145,18 @@ function MailboxMenuRow({ account, selected, bucket, onSelect, onDragEnd }: Mail
         type="button"
         className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 px-1 py-1.5 text-left text-sm"
         onClick={onSelect}
+        aria-current={selected ? 'true' : undefined}
       >
-        <Check
-          className={cn('size-4 shrink-0', selected ? 'opacity-100' : 'opacity-0')}
-          aria-hidden
-        />
         <span className="min-w-0 flex-1 truncate">{account.emailAddress}</span>
         {accountStatusBadge(account.status)}
         {account.unreadThreadCount > 0 ? (
           <Badge
             variant="secondary"
-            className="group-hover/mailbox-row:bg-accent-foreground/15 group-hover/mailbox-row:text-accent-foreground shrink-0 tabular-nums"
+            className={cn(
+              'shrink-0 tabular-nums',
+              'group-hover/mailbox-row:bg-accent-foreground/15 group-hover/mailbox-row:text-accent-foreground',
+              selected && 'bg-accent-foreground/15 text-accent-foreground',
+            )}
           >
             {account.unreadThreadCount}
           </Badge>
@@ -135,9 +169,9 @@ function MailboxMenuRow({ account, selected, bucket, onSelect, onDragEnd }: Mail
 interface BucketDropZoneProps {
   bucket: MailMailboxBucket;
   active: boolean;
-  onDragOver: (bucket: MailMailboxBucket) => void;
+  onDragOver: (hint: DropHint) => void;
   onDragLeave: () => void;
-  onDrop: (accountId: string, target: MailMailboxBucket) => void;
+  onDrop: (accountId: string, target: MailMailboxBucket, beforeId: string | null) => void;
   children: ReactNode;
 }
 
@@ -155,7 +189,7 @@ function BucketDropZone({
       onDragOver={(event) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
-        onDragOver(bucket);
+        onDragOver({ bucket, beforeId: null });
       }}
       onDragLeave={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
@@ -167,7 +201,7 @@ function BucketDropZone({
         const accountId = readDragAccountId(event);
         onDragLeave();
         if (accountId) {
-          onDrop(accountId, bucket);
+          onDrop(accountId, bucket, null);
         }
       }}
     >
@@ -197,20 +231,27 @@ export function MailAccountSwitcher({
   const { my, company } = partitionMailAccountsByBucket(listedAccounts, mailboxOverrides);
   const label = accountLabel(filterAccountId, accounts);
   const companyExpanded = mailboxOverrides.companyExpanded;
-  const [dropBucket, setDropBucket] = useState<MailMailboxBucket | null>(null);
+  const [dropHint, setDropHint] = useState<DropHint | null>(null);
 
-  const handleDrop = (accountId: string, target: MailMailboxBucket) => {
+  const handlePlace = (accountId: string, target: MailMailboxBucket, beforeId: string | null) => {
     const account = listedAccounts.find((row) => row.id === accountId);
     if (!account) {
       return;
     }
-    const next = moveMailboxToBucket(
+    if (beforeId === accountId) {
+      return;
+    }
+    const next = placeMailboxInList(
       mailboxOverrides,
       accountId,
       account.relation ?? 'owned',
       target,
+      beforeId,
+      my.map((row) => row.id),
+      company.map((row) => row.id),
     );
     onMailboxOverridesChange(target === 'company' ? { ...next, companyExpanded: true } : next);
+    setDropHint(null);
   };
 
   return (
@@ -228,23 +269,25 @@ export function MailAccountSwitcher({
         <ChevronDown className="text-muted-foreground size-4 shrink-0" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-80 p-1">
-        <DropdownMenuItem className="cursor-pointer" onClick={() => onSelectAccount(null)}>
-          <Check
-            className={cn(
-              'size-4 shrink-0',
-              filterAccountId === null ? 'opacity-100' : 'opacity-0',
-            )}
-            aria-hidden
-          />
+        <DropdownMenuItem
+          className={cn(
+            'cursor-pointer',
+            filterAccountId === null && 'bg-accent text-accent-foreground',
+          )}
+          onClick={() => onSelectAccount(null)}
+        >
           <span className="truncate">All mailboxes</span>
+          {filterAccountId === null ? (
+            <Check className="ml-auto size-4 shrink-0" aria-hidden />
+          ) : null}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <BucketDropZone
           bucket="my"
-          active={dropBucket === 'my'}
-          onDragOver={setDropBucket}
-          onDragLeave={() => setDropBucket(null)}
-          onDrop={handleDrop}
+          active={dropHint?.bucket === 'my' && dropHint.beforeId === null}
+          onDragOver={setDropHint}
+          onDragLeave={() => setDropHint(null)}
+          onDrop={handlePlace}
         >
           <DropdownMenuGroup>
             <DropdownMenuLabel className="text-muted-foreground text-xs font-medium">
@@ -261,8 +304,11 @@ export function MailAccountSwitcher({
                   account={account}
                   selected={filterAccountId === account.id}
                   bucket="my"
+                  dropBeforeActive={dropHint?.bucket === 'my' && dropHint.beforeId === account.id}
                   onSelect={() => onSelectAccount(account.id)}
-                  onDragEnd={() => setDropBucket(null)}
+                  onDragEnd={() => setDropHint(null)}
+                  onRowDragOver={(bucket, beforeId) => setDropHint({ bucket, beforeId })}
+                  onRowDrop={handlePlace}
                 />
               ))
             )}
@@ -271,15 +317,15 @@ export function MailAccountSwitcher({
         <DropdownMenuSeparator />
         <BucketDropZone
           bucket="company"
-          active={dropBucket === 'company'}
-          onDragOver={(bucket) => {
-            setDropBucket(bucket);
+          active={dropHint?.bucket === 'company' && dropHint.beforeId === null}
+          onDragOver={(hint) => {
+            setDropHint(hint);
             if (!companyExpanded) {
               onMailboxOverridesChange({ ...mailboxOverrides, companyExpanded: true });
             }
           }}
-          onDragLeave={() => setDropBucket(null)}
-          onDrop={handleDrop}
+          onDragLeave={() => setDropHint(null)}
+          onDrop={handlePlace}
         >
           <DropdownMenuGroup>
             <button
@@ -317,8 +363,13 @@ export function MailAccountSwitcher({
                     account={account}
                     selected={filterAccountId === account.id}
                     bucket="company"
+                    dropBeforeActive={
+                      dropHint?.bucket === 'company' && dropHint.beforeId === account.id
+                    }
                     onSelect={() => onSelectAccount(account.id)}
-                    onDragEnd={() => setDropBucket(null)}
+                    onDragEnd={() => setDropHint(null)}
+                    onRowDragOver={(bucket, beforeId) => setDropHint({ bucket, beforeId })}
+                    onRowDrop={handlePlace}
                   />
                 ))
               )
