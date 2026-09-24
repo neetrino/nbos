@@ -93,7 +93,10 @@ export function SheetFileAttachments({
     <div
       className={cn(
         outlined || caption
-          ? cn(OUTLINED_SHELL_CLASS, caption && 'bg-card')
+          ? cn(
+              OUTLINED_SHELL_CLASS,
+              caption && 'bg-card hover:bg-card focus-within:bg-card',
+            )
           : embedded
             ? SHEET_FILE_ATTACHMENTS_EMBEDDED_CLASS
             : SHEET_FILE_ATTACHMENTS_SURFACE_CLASS,

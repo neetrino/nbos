@@ -40,7 +40,12 @@ export function DetailSheetSection({
       <section id={id} className={cn(DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS, className)}>
         <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{title}</span>
         {hasBody ? (
-          <div className={cn(DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS, 'rounded-xl bg-card p-3')}>
+          <div
+            className={cn(
+              DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+              'rounded-xl bg-card p-3 hover:bg-card focus-within:bg-card',
+            )}
+          >
             {children}
           </div>
         ) : null}
