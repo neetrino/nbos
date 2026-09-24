@@ -135,7 +135,7 @@ function InvoiceMoneyFooter({
         MONEY_METRIC_DIVIDER_CLASS,
       )}
     >
-      {paidOnValue ? <DetailSheetMetaDate label={paidOnLabel} value={paidOnValue} /> : <span />}
+      {paidOnValue ? <DetailSheetMetaDate label={paidOnLabel} value={paidOnValue} /> : null}
       {showAction ? (
         <InvoiceOfficialAction
           invoice={invoice}

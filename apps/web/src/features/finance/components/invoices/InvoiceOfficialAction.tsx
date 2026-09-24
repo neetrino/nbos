@@ -74,22 +74,24 @@ export function InvoiceOfficialAction({
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-col items-end gap-1.5',
+        'flex w-full min-w-0 flex-col gap-1.5',
         invoiceStageGateSectionClass(gateRequiredFields, 'officialInvoice'),
       )}
     >
       <InvoiceTaxReadinessBanner invoice={invoice} />
-      <Button
-        type="button"
-        size="sm"
-        disabled={sendBlocked}
-        onClick={send}
-        className={cn(ACTION_BUTTON_CLASS, STATUS_BUTTON_CLASS[status.variant])}
-      >
-        {busy || awaitingSend ? <Loader2 className="animate-spin" /> : null}
-        {actionLabel}
-      </Button>
-      <p className="text-muted-foreground text-xs">{statusLabel}</p>
+      <div className="flex w-full items-center justify-between gap-3">
+        <Button
+          type="button"
+          size="sm"
+          disabled={sendBlocked}
+          onClick={send}
+          className={cn(ACTION_BUTTON_CLASS, STATUS_BUTTON_CLASS[status.variant])}
+        >
+          {busy || awaitingSend ? <Loader2 className="animate-spin" /> : null}
+          {actionLabel}
+        </Button>
+        <p className="text-muted-foreground text-right text-xs">{statusLabel}</p>
+      </div>
     </div>
   );
 }
