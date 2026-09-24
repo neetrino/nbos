@@ -80,19 +80,19 @@ export function MailActivePanelHost({
   };
 
   const sourcePageHref = threadId ? `/mail/threads/${threadId}` : '#';
-  const isSharePanel = activePanel?.type === 'share';
+  const isAccessPanel = activePanel?.type === 'share' || activePanel?.type === 'connect';
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <EntityDetailSheetContent
         open={open}
-        layout={isSharePanel ? 'auxiliary' : 'full'}
+        layout={isAccessPanel ? 'auxiliary' : 'full'}
         width="wide"
         contentClassName={
-          isSharePanel ? MAIL_ACCESS_SHEET_CONTENT_CLASS : MAIL_WORKSPACE_SHEET_CONTENT_CLASS
+          isAccessPanel ? MAIL_ACCESS_SHEET_CONTENT_CLASS : MAIL_WORKSPACE_SHEET_CONTENT_CLASS
         }
         railAnchorClassName={
-          isSharePanel
+          isAccessPanel
             ? MAIL_ACCESS_SHEET_RAIL_ANCHOR_CLASS
             : MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS
         }

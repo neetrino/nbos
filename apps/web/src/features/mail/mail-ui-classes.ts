@@ -40,4 +40,4 @@ export const MAIL_THREAD_MAILBOX_LABEL_CLASS =
   'max-w-[11rem] shrink-0 truncate font-normal sm:max-w-[14rem]';
 
 export const MAIL_PROVIDER_TILE_CLASS =
-  'border-border bg-card hover:border-primary/30 hover:bg-muted/40 focus-visible:ring-ring flex flex-col items-start gap-2 rounded-2xl border p-4 text-left shadow-sm shadow-black/[0.03] transition-colors outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60';
+  'border-border bg-card hover:border-primary/30 hover:bg-muted/40 focus-visible:ring-ring flex items-start gap-3 rounded-2xl border p-4 text-left shadow-sm shadow-black/[0.03] transition-colors outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60';

@@ -67,7 +67,7 @@ export const MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS = cn(
   SHEET_FLOATING_RAIL_TOP_INSET_CLASS,
 );
 
-/** Narrow access panel (Share mailbox) — people + roles, not a reading column. */
+/** Narrow form panel (Share / Connect / Reconnect) — not a reading column. */
 export const MAIL_ACCESS_SHEET_CONTENT_CLASS = cn(
   'flex w-full flex-col gap-0 overflow-hidden p-0',
   rightSheetSideClasses(

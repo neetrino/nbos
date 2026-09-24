@@ -3,24 +3,15 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { InlineField } from '@/components/shared';
-import {
-  DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
-  DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE,
-  DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
-  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
-  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
-} from '@/components/shared/detail-sheet-classes';
-import { mailApi, type MailSecureMode } from '@/lib/api/mail';
+import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
+import { mailApi } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   CORPORATE_MAILBOX_INITIAL_STATE,
   isCorporateFormComplete,
-  MAIL_SECURE_MODES,
   type CorporateMailboxFormState,
 } from './corporate-mailbox-form-state';
-import { MAIL_FIELD_GRID_CLASS } from './mail-ui-classes';
+import { CorporateSettingsFields } from './corporate-mailbox-settings-fields';
 
 interface CorporateMailboxFormProps {
   onCancel: () => void;
@@ -31,8 +22,6 @@ interface CorporateMailboxFormProps {
   hasStoredPassword?: boolean;
   lastError?: string | null;
 }
-
-const SECURE_MODE_OPTIONS = MAIL_SECURE_MODES.map((mode) => ({ value: mode, label: mode }));
 
 export function CorporateMailboxForm({
   onCancel,
@@ -81,169 +70,55 @@ export function CorporateMailboxForm({
 
   return (
     <div className="flex flex-col gap-4">
-      {lastError ? (
-        <p className="text-destructive text-sm" role="alert">
-          {lastError}
-        </p>
-      ) : null}
       <CorporateSettingsFields
         state={state}
         set={set}
         disabled={submitting}
+        lastError={lastError}
         passwordPlaceholder={
           reconnect && hasStoredPassword ? 'Leave blank to keep saved password' : undefined
         }
       />
-      <div className="flex justify-end gap-2 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-          onClick={onCancel}
-          disabled={submitting}
-        >
-          Back
-        </Button>
-        <Button
-          type="button"
-          size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-          onClick={() => void submit()}
-          disabled={submitting}
-        >
-          {submitting ? 'Validating…' : reconnect ? 'Reconnect mailbox' : 'Connect mailbox'}
-        </Button>
-      </div>
+      <MailboxFormActions
+        reconnect={reconnect}
+        submitting={submitting}
+        onCancel={onCancel}
+        onSubmit={() => void submit()}
+      />
     </div>
   );
 }
 
-function CorporateSettingsFields({
-  state,
-  set,
-  disabled,
-  passwordPlaceholder,
+function MailboxFormActions({
+  reconnect,
+  submitting,
+  onCancel,
+  onSubmit,
 }: {
-  state: CorporateMailboxFormState;
-  set: <K extends keyof CorporateMailboxFormState>(
-    key: K,
-    value: CorporateMailboxFormState[K],
-  ) => void;
-  disabled: boolean;
-  passwordPlaceholder?: string;
+  reconnect: boolean;
+  submitting: boolean;
+  onCancel: () => void;
+  onSubmit: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3">
-      <InlineField
-        variant="controlled"
-        label="Email"
-        type="email"
-        value={state.email}
-        onValueChange={(value) => set('email', value)}
-        placeholder="user@company.com"
-        disabled={disabled}
-      />
-      <div className={MAIL_FIELD_GRID_CLASS}>
-        <InlineField
-          variant="controlled"
-          label="IMAP host"
-          type="text"
-          value={state.imapHost}
-          onValueChange={(value) => set('imapHost', value)}
-          placeholder="imap.company.com"
-          disabled={disabled}
-        />
-        <InlineField
-          variant="controlled"
-          label="IMAP port"
-          type="text"
-          value={state.imapPort}
-          onValueChange={(value) => set('imapPort', value)}
-          disabled={disabled}
-        />
-      </div>
-      <InlineField
-        variant="controlled"
-        label="IMAP secure mode"
-        type="select"
-        value={state.imapSecure}
-        options={SECURE_MODE_OPTIONS}
-        onValueChange={(value) => set('imapSecure', value as MailSecureMode)}
-        disabled={disabled}
-      />
-      <div className={MAIL_FIELD_GRID_CLASS}>
-        <InlineField
-          variant="controlled"
-          label="SMTP host"
-          type="text"
-          value={state.smtpHost}
-          onValueChange={(value) => set('smtpHost', value)}
-          placeholder="smtp.company.com"
-          disabled={disabled}
-        />
-        <InlineField
-          variant="controlled"
-          label="SMTP port"
-          type="text"
-          value={state.smtpPort}
-          onValueChange={(value) => set('smtpPort', value)}
-          disabled={disabled}
-        />
-      </div>
-      <InlineField
-        variant="controlled"
-        label="SMTP secure mode"
-        type="select"
-        value={state.smtpSecure}
-        options={SECURE_MODE_OPTIONS}
-        onValueChange={(value) => set('smtpSecure', value as MailSecureMode)}
-        disabled={disabled}
-      />
-      <div className={MAIL_FIELD_GRID_CLASS}>
-        <InlineField
-          variant="controlled"
-          label="Login"
-          type="text"
-          value={state.login}
-          onValueChange={(value) => set('login', value)}
-          disabled={disabled}
-        />
-        <CorporatePasswordField
-          value={state.password}
-          onChange={(value) => set('password', value)}
-          placeholder={passwordPlaceholder}
-          disabled={disabled}
-        />
-      </div>
-    </div>
-  );
-}
-
-function CorporatePasswordField({
-  value,
-  onChange,
-  placeholder,
-  disabled,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled: boolean;
-}) {
-  return (
-    <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
-      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>Password</span>
-      <div className={DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS}>
-        <Input
-          id="mb-password"
-          type="password"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          autoComplete="new-password"
-          placeholder={placeholder}
-          disabled={disabled}
-          className={DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS}
-        />
-      </div>
+    <div className="flex justify-end gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+        onClick={onCancel}
+        disabled={submitting}
+      >
+        Back
+      </Button>
+      <Button
+        type="button"
+        size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
+        onClick={onSubmit}
+        disabled={submitting}
+      >
+        {submitting ? 'Validating…' : reconnect ? 'Reconnect mailbox' : 'Connect mailbox'}
+      </Button>
     </div>
   );
 }

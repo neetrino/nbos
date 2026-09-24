@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, ServerCog } from 'lucide-react';
+import { ServerCog } from 'lucide-react';
 import { toast } from 'sonner';
+import { ItBrandMarkIcon } from '@/components/shared/it-brand-mark/ItBrandMarkIcon';
 import { mailApi, type MailAccountRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { resolveItBrandMarkFromHints } from '@/lib/it-brand-marks/resolve-it-brand-mark';
 import { CorporateMailboxForm } from './CorporateMailboxForm';
 import { corporateFormStateFromAccount } from './corporate-mailbox-form-state';
 import { MailSheetPanelHeader } from './MailSheetPanelHeader';
-import { MAIL_PROVIDER_TILE_CLASS } from './mail-ui-classes';
+import { MAIL_PROVIDER_TILE_CLASS, MAIL_SHEET_BODY_CLASS } from './mail-ui-classes';
 
 export interface ConnectMailboxSheetProps {
   enabled: boolean;
@@ -62,33 +64,13 @@ export function ConnectMailboxSheet({
         }
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+      <div className={`${MAIL_SHEET_BODY_CLASS} overflow-y-auto`}>
         {step === 'choose' ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => void startGmail()}
-              disabled={gmailLoading}
-              className={MAIL_PROVIDER_TILE_CLASS}
-            >
-              <Mail size={20} className="text-foreground" aria-hidden />
-              <span className="text-foreground font-medium">Gmail</span>
-              <span className="text-muted-foreground text-xs leading-relaxed">
-                Connect with Google (OAuth). Read &amp; send via Gmail API.
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setConnectStep('corporate')}
-              className={MAIL_PROVIDER_TILE_CLASS}
-            >
-              <ServerCog size={20} className="text-foreground" aria-hidden />
-              <span className="text-foreground font-medium">Corporate mail</span>
-              <span className="text-muted-foreground text-xs leading-relaxed">
-                Connect with IMAP + SMTP credentials.
-              </span>
-            </button>
-          </div>
+          <ProviderChoiceList
+            gmailLoading={gmailLoading}
+            onGmail={() => void startGmail()}
+            onCorporate={() => setConnectStep('corporate')}
+          />
         ) : (
           <CorporateMailboxForm
             onCancel={reconnectAccount ? onClose : () => setConnectStep('choose')}
@@ -103,4 +85,50 @@ export function ConnectMailboxSheet({
       </div>
     </div>
   );
+}
+
+function ProviderChoiceList({
+  gmailLoading,
+  onGmail,
+  onCorporate,
+}: {
+  gmailLoading: boolean;
+  onGmail: () => void;
+  onCorporate: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={onGmail}
+        disabled={gmailLoading}
+        className={MAIL_PROVIDER_TILE_CLASS}
+      >
+        <GmailProviderIcon />
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="text-foreground font-medium">Gmail</span>
+          <span className="text-muted-foreground text-xs leading-relaxed">
+            Connect with Google (OAuth). Read &amp; send via Gmail API.
+          </span>
+        </span>
+      </button>
+      <button type="button" onClick={onCorporate} className={MAIL_PROVIDER_TILE_CLASS}>
+        <ServerCog size={24} className="text-foreground mt-0.5 shrink-0" aria-hidden />
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="text-foreground font-medium">Corporate mail</span>
+          <span className="text-muted-foreground text-xs leading-relaxed">
+            Connect with IMAP + SMTP credentials.
+          </span>
+        </span>
+      </button>
+    </div>
+  );
+}
+
+function GmailProviderIcon() {
+  const mark = resolveItBrandMarkFromHints('Gmail');
+  if (!mark) {
+    return null;
+  }
+  return <ItBrandMarkIcon mark={mark} className="mt-0.5 size-6" />;
 }
