@@ -1,6 +1,6 @@
 'use client';
 
-import { type DragEvent, type ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Check, ChevronDown, ChevronRight, GripVertical, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -16,13 +16,21 @@ import { cn } from '@/lib/utils';
 import type { MailAccountHealthSummaryRow } from '@/lib/api/mail';
 import { mailAccountsForDailySwitcher } from '@/features/mail/mail-folder-config';
 import {
+  readDragAccountId,
+  setMailboxRowDragImage,
+  writeMailboxDragPayload,
+} from '@/features/mail/mail-account-switcher-drag';
+import {
   partitionMailAccountsByBucket,
   placeMailboxInList,
   type MailMailboxBucket,
   type MailMailboxListOverrides,
 } from '@/features/mail/mail-mailbox-buckets';
 
-const MAIL_DRAG_MIME = 'application/x-nbos-mail-account';
+const MAILBOX_ROW_CLASS =
+  'group/mailbox-row relative flex items-center rounded-md px-2 py-1.5 text-sm';
+const MAILBOX_ROW_HOVER_CLASS = 'hover:bg-muted';
+const MAILBOX_ROW_SELECTED_CLASS = 'bg-muted text-foreground';
 
 function accountStatusBadge(status: string) {
   if (status === 'NEEDS_RECONNECT') {
@@ -60,13 +68,6 @@ function accountLabel(
   return account?.emailAddress ?? 'Mailbox';
 }
 
-function readDragAccountId(event: DragEvent): string | null {
-  const raw =
-    event.dataTransfer.getData(MAIL_DRAG_MIME) || event.dataTransfer.getData('text/plain');
-  const id = raw.trim();
-  return id.length > 0 ? id : null;
-}
-
 type DropHint = {
   bucket: MailMailboxBucket;
   beforeId: string | null;
@@ -83,6 +84,44 @@ interface MailboxRowProps {
   onRowDrop: (accountId: string, bucket: MailMailboxBucket, beforeId: string) => void;
 }
 
+function MailboxDragHandle({
+  emailAddress,
+  accountId,
+  onDragEnd,
+}: {
+  emailAddress: string;
+  accountId: string;
+  onDragEnd: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      draggable
+      className={cn(
+        'bg-popover/90 text-muted-foreground absolute top-1/2 left-1 z-10 inline-flex size-7 -translate-y-1/2 cursor-grab items-center justify-center rounded-md shadow-sm',
+        'opacity-0 group-hover/mailbox-row:opacity-100 focus-visible:opacity-100 active:cursor-grabbing',
+      )}
+      title="Drag to reorder or move between My and Company"
+      aria-label={`Drag ${emailAddress}`}
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onDragStart={(event) => {
+        const row = event.currentTarget.parentElement;
+        writeMailboxDragPayload(event, accountId, emailAddress);
+        if (row instanceof HTMLElement) {
+          setMailboxRowDragImage(event, row);
+        }
+      }}
+      onDragEnd={onDragEnd}
+    >
+      <GripVertical className="size-3.5" aria-hidden />
+    </button>
+  );
+}
+
 function MailboxMenuRow({
   account,
   selected,
@@ -96,10 +135,10 @@ function MailboxMenuRow({
   return (
     <div
       className={cn(
-        'group/mailbox-row flex items-center gap-0.5 rounded-md px-1',
-        'hover:bg-accent hover:text-accent-foreground',
-        selected && 'bg-accent text-accent-foreground',
-        dropBeforeActive && 'ring-ring ring-1',
+        MAILBOX_ROW_CLASS,
+        MAILBOX_ROW_HOVER_CLASS,
+        selected && MAILBOX_ROW_SELECTED_CLASS,
+        dropBeforeActive && 'ring-border ring-1',
       )}
       onDragOver={(event) => {
         event.preventDefault();
@@ -118,50 +157,23 @@ function MailboxMenuRow({
     >
       <button
         type="button"
-        draggable
-        className={cn(
-          'text-muted-foreground inline-flex size-7 shrink-0 cursor-grab items-center justify-center rounded-md active:cursor-grabbing',
-          'opacity-0 group-hover/mailbox-row:opacity-100 focus-visible:opacity-100',
-          'group-hover/mailbox-row:text-accent-foreground',
-          selected && 'text-accent-foreground',
-        )}
-        title="Drag to reorder or move between My and Company"
-        aria-label={`Drag ${account.emailAddress}`}
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-        onDragStart={(event) => {
-          event.dataTransfer.setData(MAIL_DRAG_MIME, account.id);
-          event.dataTransfer.setData('text/plain', account.id);
-          event.dataTransfer.effectAllowed = 'move';
-        }}
-        onDragEnd={onDragEnd}
-      >
-        <GripVertical className="size-3.5" aria-hidden />
-      </button>
-      <button
-        type="button"
-        className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 px-1 py-1.5 text-left text-sm"
+        className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
         onClick={onSelect}
         aria-current={selected ? 'true' : undefined}
       >
         <span className="min-w-0 flex-1 truncate">{account.emailAddress}</span>
         {accountStatusBadge(account.status)}
         {account.unreadThreadCount > 0 ? (
-          <Badge
-            variant="secondary"
-            className={cn(
-              'shrink-0 tabular-nums',
-              'group-hover/mailbox-row:bg-accent-foreground/15 group-hover/mailbox-row:text-accent-foreground',
-              selected && 'bg-accent-foreground/15 text-accent-foreground',
-            )}
-          >
+          <Badge variant="secondary" className="shrink-0 tabular-nums">
             {account.unreadThreadCount}
           </Badge>
         ) : null}
       </button>
+      <MailboxDragHandle
+        emailAddress={account.emailAddress}
+        accountId={account.id}
+        onDragEnd={onDragEnd}
+      />
     </div>
   );
 }
@@ -185,7 +197,7 @@ function BucketDropZone({
 }: BucketDropZoneProps) {
   return (
     <div
-      className={cn('rounded-md', active && 'bg-accent/40')}
+      className={cn('rounded-md', active && 'bg-muted')}
       onDragOver={(event) => {
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
@@ -270,10 +282,7 @@ export function MailAccountSwitcher({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-80 p-1">
         <DropdownMenuItem
-          className={cn(
-            'cursor-pointer',
-            filterAccountId === null && 'bg-accent text-accent-foreground',
-          )}
+          className={cn('cursor-pointer', filterAccountId === null && MAILBOX_ROW_SELECTED_CLASS)}
           onClick={() => onSelectAccount(null)}
         >
           <span className="truncate">All mailboxes</span>
@@ -330,7 +339,7 @@ export function MailAccountSwitcher({
           <DropdownMenuGroup>
             <button
               type="button"
-              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs font-medium"
+              className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs font-medium"
               onPointerDown={(event) => event.preventDefault()}
               onClick={() =>
                 onMailboxOverridesChange({

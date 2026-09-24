@@ -10,6 +10,8 @@ import {
   type ActiveMailPanel,
 } from '@/features/mail/mail-active-panel';
 import {
+  MAIL_ACCESS_SHEET_CONTENT_CLASS,
+  MAIL_ACCESS_SHEET_RAIL_ANCHOR_CLASS,
   MAIL_WORKSPACE_SHEET_CONTENT_CLASS,
   MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS,
 } from '@/features/mail/mail-workspace-sheet-classes';
@@ -78,15 +80,22 @@ export function MailActivePanelHost({
   };
 
   const sourcePageHref = threadId ? `/mail/threads/${threadId}` : '#';
+  const isSharePanel = activePanel?.type === 'share';
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <EntityDetailSheetContent
         open={open}
-        layout="full"
+        layout={isSharePanel ? 'auxiliary' : 'full'}
         width="wide"
-        contentClassName={MAIL_WORKSPACE_SHEET_CONTENT_CLASS}
-        railAnchorClassName={MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS}
+        contentClassName={
+          isSharePanel ? MAIL_ACCESS_SHEET_CONTENT_CLASS : MAIL_WORKSPACE_SHEET_CONTENT_CLASS
+        }
+        railAnchorClassName={
+          isSharePanel
+            ? MAIL_ACCESS_SHEET_RAIL_ANCHOR_CLASS
+            : MAIL_WORKSPACE_SHEET_RAIL_ANCHOR_CLASS
+        }
         showRailActions={isThreadPanel}
         sourcePageHref={sourcePageHref}
         className="gap-0"

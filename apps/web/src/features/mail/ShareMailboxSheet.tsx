@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LoadingState, InlineField, RelationPickerField } from '@/components/shared';
+import { LoadingState, RelationPickerField } from '@/components/shared';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import { useRelationPickerActions } from '@/components/shared/relation-picker';
 import { useEmployeeRelationSearch } from '@/components/shared/relation-picker/relation-search-loaders';
@@ -26,13 +26,13 @@ export interface ShareMailboxSheetProps {
 }
 
 const ROLES: MailAccountAccessRole[] = ['ADMIN', 'SENDER', 'READER'];
+const MAIL_SHARE_DEFAULT_ROLE: MailAccountAccessRole = 'SENDER';
 
 export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMailboxSheetProps) {
   const [access, setAccess] = useState<MailAccountAccessListDto | null>(null);
   const [loading, setLoading] = useState(false);
-  const [grantEmployeeId, setGrantEmployeeId] = useState('');
-  const [grantEmployeeLabel, setGrantEmployeeLabel] = useState<string | null>(null);
-  const [grantRole, setGrantRole] = useState<MailAccountAccessRole>('READER');
+  const [grantEmployeeIds, setGrantEmployeeIds] = useState<string[]>([]);
+  const [grantEmployeeLabels, setGrantEmployeeLabels] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
   const excludeEmployeeIds = useMemo(() => {
@@ -46,6 +46,11 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
 
   const searchEmployees = useEmployeeRelationSearch(excludeEmployeeIds);
   const employeePicker = useRelationPickerActions('employee', 'mail-share-mailbox');
+
+  const clearGrantSelection = () => {
+    setGrantEmployeeIds([]);
+    setGrantEmployeeLabels({});
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,26 +67,45 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
     if (!enabled) {
       return;
     }
-    setGrantEmployeeId('');
-    setGrantEmployeeLabel(null);
+    setGrantEmployeeIds([]);
+    setGrantEmployeeLabels({});
     void load();
   }, [enabled, load]);
 
   const canManage = access?.viewerRole === 'OWNER' || access?.viewerRole === 'ADMIN';
 
   const grant = async () => {
-    if (!grantEmployeeId) {
-      toast.error('Select a user to share with.');
+    if (grantEmployeeIds.length === 0) {
+      toast.error('Select people to share with.');
       return;
     }
     setBusy(true);
+    let lastAccess: MailAccountAccessListDto | null = null;
+    let grantedCount = 0;
+    let lastError: unknown;
     try {
-      setAccess(await mailApi.grantAccess(accountId, grantEmployeeId, grantRole));
-      setGrantEmployeeId('');
-      setGrantEmployeeLabel(null);
-      toast.success('Access granted.');
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, 'Could not grant access.'));
+      for (const employeeId of grantEmployeeIds) {
+        try {
+          lastAccess = await mailApi.grantAccess(accountId, employeeId, MAIL_SHARE_DEFAULT_ROLE);
+          grantedCount += 1;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (lastAccess) {
+        setAccess(lastAccess);
+      }
+      if (grantedCount > 0) {
+        clearGrantSelection();
+        toast.success(
+          grantedCount === 1
+            ? 'Access granted as Sender.'
+            : `Shared with ${grantedCount} people as Sender.`,
+        );
+      }
+      if (lastError) {
+        toast.error(getApiErrorMessage(lastError, 'Could not grant access to everyone.'));
+      }
     } finally {
       setBusy(false);
     }
@@ -188,38 +212,29 @@ export function ShareMailboxSheet({ enabled, accountId, accountEmail }: ShareMai
             {canManage ? (
               <div className="border-border flex flex-col gap-3 border-t pt-4">
                 <RelationPickerField
-                  label="Share with a user"
+                  multiple
+                  label="Share with people"
+                  placeholder="Search employees…"
                   entityKind="employee"
-                  value={grantEmployeeId || null}
-                  selectionLabel={grantEmployeeLabel}
+                  value={grantEmployeeIds}
+                  selectionLabels={grantEmployeeLabels}
                   icon={<User size={12} />}
                   disabled={busy}
                   onSearch={searchEmployees}
-                  onSelect={(id, label) => {
-                    setGrantEmployeeId(id);
-                    setGrantEmployeeLabel(label);
-                  }}
-                  onClear={() => {
-                    setGrantEmployeeId('');
-                    setGrantEmployeeLabel(null);
+                  onChange={(ids, labels) => {
+                    setGrantEmployeeIds(ids);
+                    setGrantEmployeeLabels(labels);
                   }}
                   maxResults={12}
                   {...employeePicker}
                 />
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                  <InlineField
-                    variant="controlled"
-                    label="Role"
-                    type="select"
-                    value={grantRole}
-                    options={ROLES.map((role) => ({ value: role, label: role }))}
-                    onValueChange={(value) => setGrantRole(value as MailAccountAccessRole)}
-                    disabled={busy}
-                  />
-                  <Button type="button" onClick={() => void grant()} disabled={busy}>
-                    Add
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  onClick={() => void grant()}
+                  disabled={busy || grantEmployeeIds.length === 0}
+                >
+                  Add as Sender
+                </Button>
               </div>
             ) : null}
           </div>
