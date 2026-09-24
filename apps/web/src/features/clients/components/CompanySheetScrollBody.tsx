@@ -78,26 +78,6 @@ export function CompanySheetScrollBody({
                 onApply={(next) => patchDraft(next)}
               />
             </div>
-            <ResponsibleEmployeeField
-              value={draft.responsibleEmployeeId}
-              selectionLabel={draft.responsibleDisplayLabel}
-              selectionAvatar={draft.responsibleAvatar}
-              disabled={fieldDisabled}
-              onSelect={(id, label, avatar) =>
-                patchDraft({
-                  responsibleEmployeeId: id,
-                  responsibleDisplayLabel: label,
-                  responsibleAvatar: avatar,
-                })
-              }
-              onClear={() =>
-                patchDraft({
-                  responsibleEmployeeId: '',
-                  responsibleDisplayLabel: '',
-                  responsibleAvatar: null,
-                })
-              }
-            />
             <InlineField
               variant="controlled"
               label="Legal type"
@@ -222,6 +202,28 @@ export function CompanySheetScrollBody({
               onClear={() => patchDraft({ billingContactId: '', billingContactLabel: '' })}
               {...billingContactPicker}
             />
+            <div className="sm:col-span-2">
+              <ResponsibleEmployeeField
+                value={draft.responsibleEmployeeId}
+                selectionLabel={draft.responsibleDisplayLabel}
+                selectionAvatar={draft.responsibleAvatar}
+                disabled={fieldDisabled}
+                onSelect={(id, label, avatar) =>
+                  patchDraft({
+                    responsibleEmployeeId: id,
+                    responsibleDisplayLabel: label,
+                    responsibleAvatar: avatar,
+                  })
+                }
+                onClear={() =>
+                  patchDraft({
+                    responsibleEmployeeId: '',
+                    responsibleDisplayLabel: '',
+                    responsibleAvatar: null,
+                  })
+                }
+              />
+            </div>
           </div>
         </DetailSheetSection>
       </div>
