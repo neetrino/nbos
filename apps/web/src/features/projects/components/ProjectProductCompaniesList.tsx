@@ -13,8 +13,7 @@ export function ProjectProductCompaniesList({ project }: ProjectProductCompanies
   if (companies.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-muted-foreground text-xs">On products</p>
+    <div className="mt-3 flex flex-col gap-2">
       {companies.map((company) => (
         <ProjectCompanyCard key={company.id} companyId={company.id} name={company.name} />
       ))}

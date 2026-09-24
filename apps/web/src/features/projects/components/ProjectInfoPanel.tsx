@@ -50,10 +50,13 @@ export function ProjectInfoPanel({
         ) : null}
 
         <DetailInfoSubsection title="Contacts" first={!hasDescription} className="shrink-0 pb-3">
-          <ProjectContactsSection embedded project={project} onProjectUpdated={onProjectUpdated} />
-          <div className="mt-3">
-            <ProjectProductCompaniesList project={project} />
-          </div>
+          <ProjectContactsSection
+            embedded
+            showCompany={false}
+            project={project}
+            onProjectUpdated={onProjectUpdated}
+          />
+          <ProjectProductCompaniesList project={project} />
         </DetailInfoSubsection>
 
         <ProjectCommunicationSection project={project} />
