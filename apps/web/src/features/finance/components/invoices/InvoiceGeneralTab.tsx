@@ -1,9 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { isInvoicePayerContextLocked } from '@nbos/shared';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
-import { InvoiceLinkedEntitiesSection, InvoiceOfficialSection } from './InvoiceSheetSections';
+import { InvoiceOfficialSection } from './InvoiceSheetSections';
+import { InvoiceLinkedEntitiesSection } from './InvoiceLinkedEntitiesSection';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -11,7 +11,6 @@ import {
   DetailSheetSection,
 } from '@/components/shared';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
-import { InvoiceManualContextFields } from './InvoiceManualContextFields';
 import { InvoiceOrderCommentField } from './InvoiceOrderCommentField';
 import { InvoiceMoneyCard } from './InvoiceMoneyCard';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
@@ -60,22 +59,15 @@ export function InvoiceGeneralTab({
         billingFields={billingFields}
       />
 
-      {draft && onInvoiceUpdated ? (
-        <DetailSheetSection title={t('sheet.clientContext')}>
-          <InvoiceManualContextFields
-            invoice={invoice}
-            draft={draft}
-            patchDraft={patchDraft}
-            gateRequiredFields={gateRequiredFields}
-            disabled={
-              formDisabled ||
-              isInvoicePayerContextLocked({
-                moneyStatus: invoice.moneyStatus,
-                officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
-              })
-            }
-          />
-        </DetailSheetSection>
+      {draft ? (
+        <DetailSheetOptionalDescription
+          entityType="generic"
+          entityId={invoice.id}
+          value={draft.notes}
+          onChange={(notes) => patchDraft({ notes: notes ?? '' })}
+          disabled={formDisabled}
+          sectionClassName="mt-0"
+        />
       ) : null}
 
       <InvoiceOfficialSection
@@ -84,7 +76,14 @@ export function InvoiceGeneralTab({
         gateRequiredFields={gateRequiredFields}
       />
 
-      <InvoiceLinkedEntitiesSection invoice={invoice} gateRequiredFields={gateRequiredFields} />
+      <InvoiceLinkedEntitiesSection
+        invoice={invoice}
+        gateRequiredFields={gateRequiredFields}
+        draft={draft}
+        patchDraft={patchDraft}
+        formDisabled={formDisabled}
+        canEditContext={Boolean(draft && onInvoiceUpdated)}
+      />
 
       <DetailSheetSection title={t('sheet.proofs')}>
         <FinanceProofAttachments
@@ -94,16 +93,6 @@ export function InvoiceGeneralTab({
           title=""
         />
       </DetailSheetSection>
-
-      {draft ? (
-        <DetailSheetOptionalDescription
-          entityType="generic"
-          entityId={invoice.id}
-          value={draft.notes}
-          onChange={(notes) => patchDraft({ notes: notes ?? '' })}
-          disabled={formDisabled}
-        />
-      ) : null}
     </div>
   );
 }

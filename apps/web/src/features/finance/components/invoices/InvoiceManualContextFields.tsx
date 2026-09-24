@@ -22,6 +22,10 @@ interface InvoiceManualContextFieldsProps {
   patchDraft: (partial: Partial<InvoiceGeneralDraft>) => void;
   gateRequiredFields: ReadonlySet<string>;
   disabled?: boolean;
+  /** Issued invoice: open the link, do not change it. */
+  readOnly?: boolean;
+  /** Participate in a parent link grid instead of a nested grid. */
+  embedded?: boolean;
 }
 
 export function InvoiceManualContextFields({
@@ -30,6 +34,8 @@ export function InvoiceManualContextFields({
   patchDraft,
   gateRequiredFields,
   disabled = false,
+  readOnly = false,
+  embedded = false,
 }: InvoiceManualContextFieldsProps) {
   const labelSeed = `${invoice.id}:${invoice.company?.name ?? ''}:${invoice.product?.name ?? ''}`;
   const [labelSeedSeen, setLabelSeedSeen] = useState(labelSeed);
@@ -47,9 +53,14 @@ export function InvoiceManualContextFields({
   const companyPicker = useRelationPickerActions('company');
   const productPicker = useRelationPickerActions('product');
   const showProductPicker = invoice.type === 'MANUAL';
+  const canChange = !disabled && !readOnly;
 
   return (
-    <div className={showProductPicker ? 'grid gap-3 sm:grid-cols-2' : 'grid gap-3'}>
+    <div
+      className={
+        embedded ? 'contents' : showProductPicker ? 'grid gap-3 sm:grid-cols-2' : 'grid gap-3'
+      }
+    >
       <RelationPickerField
         label="Company"
         entityKind="company"
@@ -62,11 +73,16 @@ export function InvoiceManualContextFields({
           patchDraft({ companyId: id });
           setCompanyLabel(label);
         }}
-        onClear={() => {
-          patchDraft({ companyId: null });
-          setCompanyLabel(null);
-        }}
+        onClear={
+          canChange
+            ? () => {
+                patchDraft({ companyId: null });
+                setCompanyLabel(null);
+              }
+            : undefined
+        }
         disabled={disabled}
+        readOnly={readOnly}
         className={invoiceStageGateFieldClass(gateRequiredFields, INVOICE_GATE_FIELD_COMPANY)}
         {...companyPicker}
       />
@@ -83,11 +99,16 @@ export function InvoiceManualContextFields({
             patchDraft({ productId: id });
             setProductLabel(label);
           }}
-          onClear={() => {
-            patchDraft({ productId: null });
-            setProductLabel(null);
-          }}
+          onClear={
+            canChange
+              ? () => {
+                  patchDraft({ productId: null });
+                  setProductLabel(null);
+                }
+              : undefined
+          }
           disabled={disabled}
+          readOnly={readOnly}
           className={invoiceStageGateFieldClass(gateRequiredFields, INVOICE_GATE_FIELD_PRODUCT)}
           {...productPicker}
         />
