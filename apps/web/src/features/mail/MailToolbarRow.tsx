@@ -19,6 +19,7 @@ import {
   type MailFolderKey,
 } from '@/features/mail/mail-folder-config';
 import { MAIL_FOLDER_ICONS } from '@/features/mail/mail-folder-icons';
+import type { MailMailboxListOverrides } from '@/features/mail/mail-mailbox-buckets';
 
 export interface MailToolbarRowProps {
   accounts: MailAccountHealthSummaryRow[];
@@ -27,6 +28,7 @@ export interface MailToolbarRowProps {
   searchValue: string;
   filterConfigs: FilterConfig[];
   filterValues: Record<string, string>;
+  mailboxOverrides: MailMailboxListOverrides;
   canEdit: boolean;
   busy: boolean;
   syncingAccountId: string | null;
@@ -41,6 +43,7 @@ export interface MailToolbarRowProps {
   onDeleteAccount: (account: MailAccountHealthSummaryRow) => void;
   onConnectMailbox: () => void;
   onReconnectMailbox: (account: MailAccountHealthSummaryRow) => void;
+  onMailboxOverridesChange: (next: MailMailboxListOverrides) => void;
 }
 
 export function MailToolbarRow({
@@ -50,6 +53,7 @@ export function MailToolbarRow({
   searchValue,
   filterConfigs,
   filterValues,
+  mailboxOverrides,
   canEdit,
   busy,
   syncingAccountId,
@@ -64,6 +68,7 @@ export function MailToolbarRow({
   onDeleteAccount,
   onConnectMailbox,
   onReconnectMailbox,
+  onMailboxOverridesChange,
 }: MailToolbarRowProps) {
   const selectedAccount =
     filterAccountId !== null
@@ -78,8 +83,10 @@ export function MailToolbarRow({
       <MailAccountSwitcher
         accounts={accounts}
         filterAccountId={filterAccountId}
+        mailboxOverrides={mailboxOverrides}
         disabled={busy}
         onSelectAccount={onSelectAccount}
+        onMailboxOverridesChange={onMailboxOverridesChange}
       />
 
       <Button

@@ -91,12 +91,17 @@ export function mergeMailInboxListParams(
   folder: MailFolderKey,
   filters: SearchFilterRecord,
   mailboxId: string | null,
+  myMailboxIds?: string[],
 ): ListMailThreadsOptions {
   const folderParams = mailFolderListParams(folder);
   const filterParams = mailSearchFilterListParams(filters);
   return {
     ...folderParams,
     ...filterParams,
-    ...(mailboxId ? { mailAccountId: mailboxId } : {}),
+    ...(mailboxId
+      ? { mailAccountId: mailboxId }
+      : myMailboxIds !== undefined
+        ? { mailAccountIds: myMailboxIds }
+        : {}),
   };
 }

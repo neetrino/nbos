@@ -22,6 +22,7 @@ import { PatchMailThreadDto } from './dto/patch-mail-thread.dto';
 import { MailOutboundMutationService } from './mail-outbound-mutation.service';
 import { MailOutboundSendMutationService } from './mail-outbound-send-mutation.service';
 import { parseMailThreadListIntQuery } from './mail-thread-list-pagination.ops';
+import { parseMailAccountIdsQuery } from './mail-account-relation.ops';
 import { MailService } from './mail.service';
 import { MailThreadCommandService } from './mail-thread-command.service';
 
@@ -71,6 +72,12 @@ export class MailController {
   @ApiOperation({ summary: 'List email threads for accessible mailboxes' })
   @ApiQuery({ name: 'mailAccountId', required: false })
   @ApiQuery({
+    name: 'mailAccountIds',
+    required: false,
+    description:
+      'Comma-separated mailbox ids for All-inbox (My list). Present empty = no mailboxes. Absent = owned+shared default.',
+  })
+  @ApiQuery({
     name: 'unreadOnly',
     required: false,
     description: 'If true, only threads with hasUnread',
@@ -109,6 +116,7 @@ export class MailController {
     @CurrentUser() user: CurrentUserPayload,
     @Req() req: AuthedRequest,
     @Query('mailAccountId') mailAccountId?: string,
+    @Query('mailAccountIds') mailAccountIdsRaw?: string,
     @Query('unreadOnly') unreadOnly?: string,
     @Query('needsLinkOnly') needsLinkOnly?: string,
     @Query('spamOnly') spamOnly?: string,
@@ -122,6 +130,7 @@ export class MailController {
   ) {
     return this.mailService.listThreads(user.id, req.permissionScope ?? 'OWN', {
       mailAccountId,
+      mailAccountIds: parseMailAccountIdsQuery(mailAccountIdsRaw),
       unreadOnly: isQueryFlagTrue(unreadOnly),
       needsLinkOnly: isQueryFlagTrue(needsLinkOnly),
       spamOnly: isQueryFlagTrue(spamOnly),

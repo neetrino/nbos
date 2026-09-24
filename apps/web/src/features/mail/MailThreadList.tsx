@@ -1,11 +1,13 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import type { MailThreadListRow } from '@/lib/api/mail';
 import { formatMailListDate, mailInitialsFromLabel } from './mail-format';
 import {
   MAIL_AVATAR_CLASS,
+  MAIL_THREAD_MAILBOX_LABEL_CLASS,
   MAIL_THREAD_ROW_ACTIVE_CLASS,
   MAIL_THREAD_ROW_CLASS,
   MAIL_THREAD_ROW_UNREAD_CLASS,
@@ -27,17 +29,19 @@ function threadSenderLabel(thread: MailThreadListRow): string {
   return 'Unknown';
 }
 
-function threadPreview(thread: MailThreadListRow, accountEmail: string | undefined): string {
+/** Left-side meta under subject: sender email only (+ status when useful). */
+function threadSenderMeta(thread: MailThreadListRow): string | null {
+  const senderEmail = thread.counterpartEmail?.trim() || null;
+  if (senderEmail) {
+    return senderEmail;
+  }
   if (thread.needsBusinessLink) {
     return 'Needs business link';
   }
   if (thread.assignedToName) {
     return `Assigned · ${thread.assignedToName}`;
   }
-  if (accountEmail) {
-    return accountEmail;
-  }
-  return thread.status.replaceAll('_', ' ').toLowerCase();
+  return null;
 }
 
 export interface MailThreadListProps {
@@ -63,7 +67,7 @@ export function MailThreadList({
         const accountEmail = accountEmailById.get(thread.mailAccountId);
         const senderLabel = threadSenderLabel(thread);
         const subject = formatThreadTitle(thread.subjectNormalized);
-        const preview = threadPreview(thread, accountEmail);
+        const senderMeta = threadSenderMeta(thread);
         const isSelected = selectedThreadIds.has(thread.id);
         const isActive = selectedThreadId === thread.id;
 
@@ -93,18 +97,13 @@ export function MailThreadList({
                 {mailInitialsFromLabel(senderLabel)}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      'min-w-0 truncate text-sm',
-                      thread.hasUnread ? 'text-foreground font-semibold' : 'text-foreground/80',
-                    )}
-                  >
-                    {senderLabel}
-                  </span>
-                  <span className="text-muted-foreground ml-auto shrink-0 text-xs tabular-nums">
-                    {formatMailListDate(thread.lastMessageAt)}
-                  </span>
+                <span
+                  className={cn(
+                    'block truncate text-sm',
+                    thread.hasUnread ? 'text-foreground font-semibold' : 'text-foreground/80',
+                  )}
+                >
+                  {senderLabel}
                 </span>
                 <span
                   className={cn(
@@ -114,7 +113,21 @@ export function MailThreadList({
                 >
                   {subject}
                 </span>
-                <span className="text-muted-foreground block truncate text-xs">{preview}</span>
+                {senderMeta ? (
+                  <span className="text-muted-foreground block truncate text-xs">{senderMeta}</span>
+                ) : null}
+              </span>
+              {accountEmail ? (
+                <Badge
+                  variant="secondary"
+                  title={accountEmail}
+                  className={MAIL_THREAD_MAILBOX_LABEL_CLASS}
+                >
+                  {accountEmail}
+                </Badge>
+              ) : null}
+              <span className="text-muted-foreground shrink-0 self-start pt-0.5 text-xs tabular-nums">
+                {formatMailListDate(thread.lastMessageAt)}
               </span>
             </button>
           </li>

@@ -1,5 +1,7 @@
 import { api } from '../api';
 
+export type MailAccountViewerRelation = 'owned' | 'shared' | 'tenant';
+
 export interface MailAccountRow {
   id: string;
   emailAddress: string;
@@ -10,6 +12,11 @@ export interface MailAccountRow {
   lastErrorAt: string | null;
   hasStoredPassword: boolean;
   providerConnection: MailProviderConnectionRow | null;
+  /**
+   * How this mailbox is visible to the requesting viewer:
+   * owned / shared (My by default) vs tenant-wide (Company by default).
+   */
+  relation: MailAccountViewerRelation;
 }
 
 export interface MailProviderConnectionRow {
@@ -224,6 +231,8 @@ export interface ReplyMailPayload {
 
 export interface ListMailThreadsOptions {
   mailAccountId?: string;
+  /** Explicit All-inbox mailbox set (My list). Empty array = no mailboxes. */
+  mailAccountIds?: string[];
   unreadOnly?: boolean;
   needsLinkOnly?: boolean;
   assignedToMe?: boolean;
@@ -251,6 +260,8 @@ export const mailApi = {
     const params: Record<string, string> = {};
     if (options.mailAccountId) {
       params.mailAccountId = options.mailAccountId;
+    } else if (options.mailAccountIds !== undefined) {
+      params.mailAccountIds = options.mailAccountIds.join(',');
     }
     if (options.unreadOnly) {
       params.unreadOnly = 'true';

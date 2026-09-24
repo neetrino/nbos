@@ -58,9 +58,13 @@ import { MailToolbarRow } from '@/features/mail/MailToolbarRow';
 
 import { activeMailThreadId, type ActiveMailPanel } from '@/features/mail/mail-active-panel';
 
-import { type MailFolderKey } from '@/features/mail/mail-folder-config';
+import {
+  type MailFolderKey,
+  mailAccountsForDailySwitcher,
+} from '@/features/mail/mail-folder-config';
 import { isMailComposeOnlyDraftThread } from '@/features/mail/mail-thread-helpers';
 import { resolveMailModuleAccessPhase } from '@/features/mail/mail-module-access';
+import { partitionMailAccountsByBucket } from '@/features/mail/mail-mailbox-buckets';
 import {
   buildMailSearchFilterConfigs,
   hasActiveMailSearchFilters,
@@ -68,6 +72,7 @@ import {
   resolveMailSearchFilterValues,
 } from '@/features/mail/mail-search-filters';
 import { useMailBulkThreadRead } from '@/features/mail/use-mail-bulk-thread-read';
+import { useMailMailboxListOverrides } from '@/features/mail/use-mail-mailbox-list-overrides';
 
 function clearThreadSelection(setSelectedThreadIds: (ids: Set<string>) => void) {
   setSelectedThreadIds(new Set());
@@ -87,6 +92,7 @@ export default function MailInboxPage() {
   const [accountHealth, setAccountHealth] = useState<MailAccountHealthSummaryRow[]>([]);
 
   const [threads, setThreads] = useState<MailThreadListRow[]>([]);
+  const [mailboxOverrides, setMailboxOverrides] = useMailMailboxListOverrides();
 
   const [threadListMeta, setThreadListMeta] = useState<MailThreadListPageMeta | null>(null);
 
@@ -172,6 +178,18 @@ export default function MailInboxPage() {
     [accountHealth],
   );
 
+  const myMailboxAccounts = useMemo(() => {
+    const listed = mailAccountsForDailySwitcher(accountHealth, filterAccountId);
+    return partitionMailAccountsByBucket(listed, mailboxOverrides).my;
+  }, [accountHealth, filterAccountId, mailboxOverrides]);
+
+  const folderCountAccounts = useMemo(() => {
+    if (filterAccountId !== null) {
+      return accountHealth.filter((account) => account.id === filterAccountId);
+    }
+    return myMailboxAccounts;
+  }, [accountHealth, filterAccountId, myMailboxAccounts]);
+
   const visibleThreadIds = useMemo(() => threads.map((thread) => thread.id), [threads]);
 
   const selectedCount = selectedThreadIds.size;
@@ -196,19 +214,19 @@ export default function MailInboxPage() {
     setError(null);
 
     try {
-      const [health, threadPageResult] = await Promise.all([
-        mailApi.listAccountHealthSummaries(),
-
-        mailApi.listThreads({
-          ...mergeMailInboxListParams(activeFolder, searchFilters, filterAccountId),
-
-          search: threadSearchQuery || undefined,
-
-          page: threadPage,
-        }),
-      ]);
-
+      const health = await mailApi.listAccountHealthSummaries();
       setAccountHealth(health);
+
+      const listed = mailAccountsForDailySwitcher(health, filterAccountId);
+      const myIds = partitionMailAccountsByBucket(listed, mailboxOverrides).my.map(
+        (account) => account.id,
+      );
+
+      const threadPageResult = await mailApi.listThreads({
+        ...mergeMailInboxListParams(activeFolder, searchFilters, filterAccountId, myIds),
+        search: threadSearchQuery || undefined,
+        page: threadPage,
+      });
 
       setThreads(threadPageResult.items);
 
@@ -218,7 +236,14 @@ export default function MailInboxPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeFolder, filterAccountId, searchFilters, threadSearchQuery, threadPage]);
+  }, [
+    activeFolder,
+    filterAccountId,
+    mailboxOverrides,
+    searchFilters,
+    threadSearchQuery,
+    threadPage,
+  ]);
 
   const runSync = useCallback(
     async (accountId: string) => {
@@ -773,6 +798,7 @@ export default function MailInboxPage() {
         searchValue={threadSearchDraft}
         filterConfigs={mailFilterConfigs}
         filterValues={mailFilterValues}
+        mailboxOverrides={mailboxOverrides}
         canEdit={canEdit}
         busy={loading}
         syncingAccountId={syncingAccountId}
@@ -799,11 +825,12 @@ export default function MailInboxPage() {
         onReconnectMailbox={(account) =>
           handleActivePanelChange({ type: 'connect', accountId: account.id })
         }
+        onMailboxOverridesChange={setMailboxOverrides}
       />
 
       <div className={MAIL_INBOX_CANVAS_CLASS}>
         <MailFolderSidebar
-          accounts={accountHealth}
+          accounts={folderCountAccounts}
           filterAccountId={filterAccountId}
           activeFolder={activeFolder}
           onSelectFolder={selectFolder}
