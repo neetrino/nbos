@@ -1,35 +1,18 @@
 'use client';
 
-import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { FileText, Building2, User, Layers, Repeat, Handshake } from 'lucide-react';
-import {
-  DetailSheetEntityLinkCard,
-  DetailSheetEntityLinkGrid,
-  DetailSheetSection,
-  StatusBadge,
-} from '@/components/shared';
-import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
+import { DetailSheetSection, StatusBadge } from '@/components/shared';
 import { getInvoiceSourceCardChrome } from '@/features/finance/utils/invoice-source-card-chrome';
 import {
   getInvoiceSourceLabel,
   resolveInvoiceSourceFamily,
 } from '@/features/finance/utils/invoice-source-label';
 import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
-import { invoiceSourceMessageKey, officialInvoiceRequestStatusKey } from './invoice-message-keys';
-import { ordersListWithOpenOrderHref } from '@/features/finance/constants/order-deep-link';
-import { subscriptionsListWithOpenSubscriptionHref } from '@/features/finance/constants/subscription-deep-link';
-import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
-import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
+import { invoiceSourceMessageKey } from './invoice-message-keys';
 import type { Invoice } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
-import { InvoiceOfficialRequestPanel } from './InvoiceOfficialRequestPanel';
-import { getInvoiceDealTitle, getOrderDisplayTitle } from '@/features/finance/utils/order-display';
 import { RecordPaymentForm } from './RecordPaymentForm';
-import { InvoiceTaxReadinessBanner } from './InvoiceTaxReadinessBanner';
-import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoice-stage-gate-highlight';
-import { INVOICE_GATE_FIELD_COMPANY } from '@/features/finance/constants/invoice-money-status-gate-client';
 
 export type InvoiceSheetInvoice = Invoice;
 
@@ -43,159 +26,6 @@ export function InvoiceSheetBadge({ invoice }: { invoice: InvoiceSheetInvoice })
       variant="blue"
       className={cn('self-center border', chrome.badgeClassName)}
     />
-  );
-}
-
-export function InvoiceOfficialSection({
-  invoice,
-  onInvoiceUpdated,
-  gateRequiredFields = new Set<string>(),
-}: {
-  invoice: InvoiceSheetInvoice;
-  onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
-  gateRequiredFields?: ReadonlySet<string>;
-}) {
-  const t = useTranslations('invoices');
-  return (
-    <DetailSheetSection
-      title={t('official.title')}
-      className={invoiceStageGateSectionClass(gateRequiredFields, 'officialInvoice')}
-    >
-      <InvoiceTaxReadinessBanner invoice={invoice} />
-      {onInvoiceUpdated ? (
-        <InvoiceOfficialRequestPanel invoice={invoice} onUpdated={onInvoiceUpdated} />
-      ) : (
-        <OfficialInvoiceReadOnly invoice={invoice} />
-      )}
-    </DetailSheetSection>
-  );
-}
-
-export function InvoiceLinkedEntitiesSection({
-  invoice,
-  gateRequiredFields = new Set<string>(),
-}: {
-  invoice: InvoiceSheetInvoice;
-  gateRequiredFields?: ReadonlySet<string>;
-}) {
-  const t = useTranslations('invoices');
-  const relations = useEntityRelations();
-  const canViewDeal = useCanViewDeal();
-  const [dealSheetOpen, setDealSheetOpen] = useState(false);
-  const deal = invoice.order?.deal ?? null;
-  const dealId = deal?.id ?? null;
-  const dealTitle = getInvoiceDealTitle(invoice.order);
-  // Without deal rights the invoice falls back to its order, which carries the same amounts.
-  const showsDeal = Boolean(dealId && dealTitle) && canViewDeal;
-  const cards = [
-    invoice.order && !showsDeal
-      ? {
-          key: `order-${invoice.order.id}`,
-          icon: FileText,
-          label: 'Order',
-          title: getOrderDisplayTitle(invoice.order),
-          href: ordersListWithOpenOrderHref(invoice.order.id),
-        }
-      : null,
-    invoice.product && invoice.projectId
-      ? {
-          key: `product-${invoice.product.id}`,
-          icon: Layers,
-          label: 'Product',
-          title: invoice.product.name,
-          href: `/projects/${invoice.projectId}/products/${invoice.product.id}`,
-        }
-      : null,
-    invoice.subscriptionId
-      ? {
-          key: `sub-${invoice.subscriptionId}`,
-          icon: Repeat,
-          label: 'Subscription',
-          title: invoice.subscriptionId.slice(0, 8),
-          href: subscriptionsListWithOpenSubscriptionHref(invoice.subscriptionId),
-        }
-      : null,
-  ].filter(
-    (
-      row,
-    ): row is {
-      key: string;
-      icon: typeof FileText;
-      label: string;
-      title: string;
-      href: string;
-    } => row != null,
-  );
-
-  const hasCompany = Boolean(invoice.company);
-  const hasContact = Boolean(invoice.contact);
-  const hasUnlinkedProduct = Boolean(invoice.product && !invoice.projectId);
-  if (cards.length === 0 && !showsDeal && !hasCompany && !hasContact && !hasUnlinkedProduct) {
-    return null;
-  }
-
-  return (
-    <>
-      <DetailSheetSection title={t('sheet.linked')}>
-        <DetailSheetEntityLinkGrid>
-          {showsDeal && dealTitle ? (
-            <DetailSheetEntityLinkCard
-              icon={Handshake}
-              label="Deal"
-              title={dealTitle}
-              onOpen={() => setDealSheetOpen(true)}
-            />
-          ) : null}
-          {cards.map((row) => (
-            <DetailSheetEntityLinkCard
-              key={row.key}
-              href={row.href}
-              icon={row.icon}
-              label={row.label}
-              title={row.title}
-            />
-          ))}
-          {hasUnlinkedProduct && invoice.product ? (
-            <DetailSheetEntityLinkCard
-              icon={Layers}
-              label="Product"
-              title={invoice.product.name}
-              onOpen={() => relations.openEntity('product', invoice.product!.id)}
-            />
-          ) : null}
-          {invoice.company ? (
-            <div
-              className={invoiceStageGateSectionClass(
-                companyGateFields(gateRequiredFields),
-                INVOICE_GATE_FIELD_COMPANY,
-              )}
-            >
-              <DetailSheetEntityLinkCard
-                icon={Building2}
-                label="Company"
-                title={invoice.company.name}
-                onOpen={() => relations.openEntity('company', invoice.company!.id)}
-              />
-            </div>
-          ) : null}
-          {invoice.contact ? (
-            <DetailSheetEntityLinkCard
-              icon={User}
-              label="Contact"
-              title={`${invoice.contact.firstName} ${invoice.contact.lastName}`.trim()}
-              onOpen={() => relations.openEntity('contact', invoice.contact!.id)}
-            />
-          ) : null}
-        </DetailSheetEntityLinkGrid>
-      </DetailSheetSection>
-
-      <EntityDealSheetDeepLink
-        dealId={dealSheetOpen ? dealId : null}
-        open={dealSheetOpen && Boolean(dealId)}
-        onOpenChange={setDealSheetOpen}
-        forceNestedBackdrop
-      />
-    </>
   );
 }
 
@@ -243,30 +73,6 @@ export function InvoicePaymentsSection({
           </div>
         </DetailSheetSection>
       ) : null}
-    </div>
-  );
-}
-
-function companyGateFields(required: ReadonlySet<string>): ReadonlySet<string> {
-  if (
-    required.has(INVOICE_GATE_FIELD_COMPANY) ||
-    required.has('companyName') ||
-    required.has('companyTaxId')
-  ) {
-    return new Set([INVOICE_GATE_FIELD_COMPANY]);
-  }
-  return new Set();
-}
-
-function OfficialInvoiceReadOnly({ invoice }: { invoice: InvoiceSheetInvoice }) {
-  const t = useTranslations('invoices');
-  if (invoice.taxStatus !== 'TAX') {
-    return <p className="text-muted-foreground text-sm">{t('official.freeNotRequired')}</p>;
-  }
-  const status = officialInvoiceRequestStatusKey(invoice, false);
-  return (
-    <div className="space-y-2">
-      <StatusBadge label={t(status.key)} variant={status.variant} />
     </div>
   );
 }

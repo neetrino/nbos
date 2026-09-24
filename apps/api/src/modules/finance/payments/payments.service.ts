@@ -182,6 +182,8 @@ export class PaymentsService {
         moneyStatus: true,
         taxStatus: true,
         officialInvoiceRequestSent: true,
+        type: true,
+        notes: true,
         orderComment: true,
         dueDate: true,
         payments: { select: { amount: true } },
@@ -225,6 +227,8 @@ export class PaymentsService {
       officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
       orderId: invoice.orderId,
       orderComment: invoice.orderComment,
+      type: invoice.type,
+      notes: invoice.notes,
     });
     await assertPostingPeriodOpenForBookedAt(this.prisma, paymentDate);
     const created = await this.prisma.payment.create({

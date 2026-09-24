@@ -1,4 +1,8 @@
-import { resolveInvoiceDisplayTitle, resolveInvoiceOrderCommentLabelHy } from '@nbos/shared';
+import {
+  invoiceNotesPlainText,
+  resolveInvoiceDisplayTitle,
+  resolveInvoiceOrderCommentLabelHy,
+} from '@nbos/shared';
 import { formatCoveragePeriodLabel, formatDueDateLabel } from './client-payment-reminder-templates';
 
 const SUBSCRIPTION_TYPE_PHRASE_HY: Record<string, string> = {
@@ -47,6 +51,7 @@ export interface OfficialInvoiceNoteInput {
   clientServiceType?: string | null;
   productName?: string | null;
   dueDate?: Date | string | null;
+  notes?: string | null;
 }
 
 export function buildOfficialInvoicePurpose(input: OfficialInvoiceNoteInput): string {
@@ -74,7 +79,11 @@ export function buildOfficialInvoicePurpose(input: OfficialInvoiceNoteInput): st
     const due = formatOfficialDueUntil(input.dueDate);
     return joinNoteLines([name, joinWhy(phrase, due), input.code]);
   }
-  return joinNoteLines([resolveNoteDisplayTitle(input), input.code]);
+  return joinNoteLines([
+    resolveNoteDisplayTitle(input),
+    invoiceNotesPlainText(input.notes),
+    input.code,
+  ]);
 }
 
 function resolveNoteDisplayTitle(input: OfficialInvoiceNoteInput): string {

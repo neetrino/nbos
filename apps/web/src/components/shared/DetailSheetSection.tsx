@@ -3,6 +3,9 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import {
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
   DETAIL_SHEET_SECTION_SURFACE_CLASS,
   DETAIL_SHEET_SECTION_TITLE_CLASS,
 } from './detail-sheet-classes';
@@ -15,6 +18,8 @@ export interface DetailSheetSectionProps {
   titleRowClassName?: string;
   children?: ReactNode;
   className?: string;
+  /** Title sits on the border. Body keeps the same white field fill. */
+  outlined?: boolean;
 }
 
 /** Rounded gradient block used across Lead/Deal-style detail sheets. */
@@ -26,8 +31,27 @@ export function DetailSheetSection({
   titleRowClassName,
   children,
   className,
+  outlined = false,
 }: DetailSheetSectionProps) {
   const hasBody = children != null;
+
+  if (outlined) {
+    return (
+      <section id={id} className={cn(DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS, className)}>
+        <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{title}</span>
+        {hasBody ? (
+          <div
+            className={cn(
+              DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+              'bg-card hover:bg-card focus-within:bg-card rounded-xl p-3',
+            )}
+          >
+            {children}
+          </div>
+        ) : null}
+      </section>
+    );
+  }
 
   return (
     <section id={id} className={cn(DETAIL_SHEET_SECTION_SURFACE_CLASS, className)}>

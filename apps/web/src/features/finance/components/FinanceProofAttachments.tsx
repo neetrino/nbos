@@ -11,6 +11,8 @@ interface FinanceProofAttachmentsProps {
   purpose: FinanceProofPurpose;
   title?: string;
   emptyHint?: string;
+  /** Caption on the field border. The add button stays in the row. */
+  borderLabel?: string;
 }
 
 export function FinanceProofAttachments({
@@ -19,17 +21,22 @@ export function FinanceProofAttachments({
   purpose,
   title = 'Proofs & attachments',
   emptyHint = 'Drag finance proof files here (restricted visibility)',
+  borderLabel,
 }: FinanceProofAttachmentsProps) {
+  const caption = borderLabel?.trim() ?? '';
   return (
-    <section className="space-y-3">
-      {title ? <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>{title}</h4> : null}
+    <section className={caption ? undefined : 'space-y-3'}>
+      {caption || !title ? null : (
+        <h4 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>{title}</h4>
+      )}
       <EntityAttachmentBlock
         entityType={entityType}
         entityId={entityId}
         libraryKey="finance"
         purpose={purpose}
         purposes={FINANCE_PROOF_PURPOSES}
-        emptyHint={emptyHint}
+        emptyHint={caption ? '' : emptyHint}
+        borderLabel={caption || undefined}
       />
     </section>
   );

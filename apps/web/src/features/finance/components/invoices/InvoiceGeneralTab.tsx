@@ -1,17 +1,18 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { isInvoicePayerContextLocked } from '@nbos/shared';
+import { useLocale, useTranslations } from 'next-intl';
+import { invoiceNotesPlainText } from '@nbos/shared';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
-import { InvoiceLinkedEntitiesSection, InvoiceOfficialSection } from './InvoiceSheetSections';
+import { InvoiceLinkedEntitiesSection } from './InvoiceLinkedEntitiesSection';
+import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
 import { FinanceProofAttachments } from '@/features/finance/components/FinanceProofAttachments';
 import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetOptionalDescription,
-  DetailSheetSection,
 } from '@/components/shared';
+import { DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS } from '@/components/shared/detail-sheet-classes';
+import { cn } from '@/lib/utils';
 import { InvoiceGeneralBillingFields } from './InvoiceGeneralBillingFields';
-import { InvoiceManualContextFields } from './InvoiceManualContextFields';
 import { InvoiceOrderCommentField } from './InvoiceOrderCommentField';
 import { InvoiceMoneyCard } from './InvoiceMoneyCard';
 import type { InvoiceGeneralDraft } from '@/features/finance/utils/invoice-general-form-state';
@@ -34,6 +35,9 @@ export function InvoiceGeneralTab({
   onInvoiceUpdated,
 }: InvoiceGeneralTabProps) {
   const t = useTranslations('invoices');
+  const locale = useLocale();
+  const descriptionRequired =
+    invoice.type === 'MANUAL' && invoiceNotesPlainText(draft?.notes).length === 0;
   const billingFields =
     draft && onInvoiceUpdated ? (
       <>
@@ -58,42 +62,8 @@ export function InvoiceGeneralTab({
         invoice={invoice}
         gateRequiredFields={gateRequiredFields}
         billingFields={billingFields}
-      />
-
-      {draft && onInvoiceUpdated ? (
-        <DetailSheetSection title={t('sheet.clientContext')}>
-          <InvoiceManualContextFields
-            invoice={invoice}
-            draft={draft}
-            patchDraft={patchDraft}
-            gateRequiredFields={gateRequiredFields}
-            disabled={
-              formDisabled ||
-              isInvoicePayerContextLocked({
-                moneyStatus: invoice.moneyStatus,
-                officialInvoiceRequestSent: invoice.officialInvoiceRequestSent,
-              })
-            }
-          />
-        </DetailSheetSection>
-      ) : null}
-
-      <InvoiceOfficialSection
-        invoice={invoice}
         onInvoiceUpdated={onInvoiceUpdated}
-        gateRequiredFields={gateRequiredFields}
       />
-
-      <InvoiceLinkedEntitiesSection invoice={invoice} gateRequiredFields={gateRequiredFields} />
-
-      <DetailSheetSection title={t('sheet.proofs')}>
-        <FinanceProofAttachments
-          entityType="INVOICE"
-          entityId={invoice.id}
-          purpose="INVOICE_REQUEST_PROOF"
-          title=""
-        />
-      </DetailSheetSection>
 
       {draft ? (
         <DetailSheetOptionalDescription
@@ -102,8 +72,32 @@ export function InvoiceGeneralTab({
           value={draft.notes}
           onChange={(notes) => patchDraft({ notes: notes ?? '' })}
           disabled={formDisabled}
+          sectionClassName={cn(
+            'mt-0',
+            descriptionRequired && DETAIL_SHEET_STAGE_GATE_REQUIRED_CLASS,
+          )}
         />
       ) : null}
+
+      <InvoiceLinkedEntitiesSection
+        invoice={invoice}
+        gateRequiredFields={gateRequiredFields}
+        draft={draft}
+        patchDraft={patchDraft}
+        formDisabled={formDisabled}
+        canEditContext={Boolean(draft && onInvoiceUpdated)}
+      />
+
+      <FinanceProofAttachments
+        entityType="INVOICE"
+        entityId={invoice.id}
+        purpose="INVOICE_REQUEST_PROOF"
+        title=""
+        borderLabel={t('sheet.proofs')}
+      />
+      <p className="text-muted-foreground text-sm">
+        {t('money.created')} {formatInvoiceSheetDate(invoice.createdAt, locale)}
+      </p>
     </div>
   );
 }

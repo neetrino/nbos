@@ -42,6 +42,7 @@ export interface ExpensePlanDetailSheetProps {
   onOpenChange: (open: boolean) => void;
   onPlanUpdated?: (plan: ExpensePlan) => void;
   onPlanDeleted?: (planId: string) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function ExpensePlanDetailSheet({
@@ -51,6 +52,7 @@ export function ExpensePlanDetailSheet({
   onOpenChange,
   onPlanUpdated,
   onPlanDeleted,
+  forceNestedBackdrop = false,
 }: ExpensePlanDetailSheetProps) {
   const t = useExpensePlansT();
   const { canEdit, canDelete, canCreateExpenseCard } = useExpensePlanPermissions();
@@ -76,16 +78,12 @@ export function ExpensePlanDetailSheet({
   const bumpCards = useCallback(() => setCardsRefreshNonce((n) => n + 1), []);
 
   useEffect(() => {
+    setActiveTab('general');
     if (!open) {
       setGenerateOpen(false);
       setCreateOpen(false);
-      setActiveTab('general');
     }
-  }, [open]);
-
-  useEffect(() => {
-    setActiveTab('general');
-  }, [planId, open]);
+  }, [open, planId]);
 
   useLayoutEffect(() => {
     if (!plan) {
@@ -200,6 +198,7 @@ export function ExpensePlanDetailSheet({
           layout="full"
           width="compact"
           sourcePageHref={sourcePageHref}
+          forceNestedBackdrop={forceNestedBackdrop}
         >
           <div className="bg-background shrink-0 px-7 pt-5 pb-3">
             {loading && !plan ? (

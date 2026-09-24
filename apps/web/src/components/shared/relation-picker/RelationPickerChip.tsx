@@ -182,6 +182,7 @@ export function RelationPickerChip({
       <div
         className={cn(
           RELATION_PICKER_CHIP_SHELL_CLASS,
+          'bg-card',
           'group/open gap-2',
           disabled && 'opacity-60',
         )}
@@ -214,7 +215,7 @@ export function RelationPickerChip({
   }
 
   return (
-    <span className={cn(RELATION_PICKER_CHIP_SHELL_CLASS, disabled && 'opacity-60')}>
+    <span className={cn(RELATION_PICKER_CHIP_SHELL_CLASS, 'bg-card', disabled && 'opacity-60')}>
       {canOpen ? (
         <div
           className={cn(

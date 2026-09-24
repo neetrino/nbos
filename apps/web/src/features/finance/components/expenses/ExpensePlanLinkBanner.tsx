@@ -1,39 +1,40 @@
 'use client';
 
-import Link from 'next/link';
+import { useState } from 'react';
 import { CalendarDays } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { buttonVariants } from '@/components/ui/button';
-import { expensePlansListWithOpenPlanHref } from '@/features/finance/constants/expense-plan-deep-link';
-import { cn } from '@/lib/utils';
+import { DetailSheetEntityLinkGrid, DetailSheetSection } from '@/components/shared';
+import { ExpensePlanDetailSheet } from '@/features/finance/components/expenses/ExpensePlanDetailSheet';
+import { InvoiceLinkedReadonlyField } from '@/features/finance/components/invoices/InvoiceLinkedReadonlyField';
 
 export interface ExpensePlanLinkBannerProps {
   planId: string;
   planName: string;
 }
 
-/** Compact plan link row for expense detail sheet (no prose block). */
+/** Expense plan link, shown in the sheet Linked block. */
 export function ExpensePlanLinkBanner({ planId, planName }: ExpensePlanLinkBannerProps) {
-  const t = useTranslations('expenses');
+  const [open, setOpen] = useState(false);
+
   return (
-    <div className="border-border/80 bg-muted/25 flex items-center gap-2 rounded-lg border px-2 py-1.5 text-xs">
-      <CalendarDays size={12} className="text-muted-foreground shrink-0" aria-hidden />
-      <Link
-        href={expensePlansListWithOpenPlanHref(planId)}
-        className="text-primary min-w-0 flex-1 truncate font-medium hover:underline"
-        title={planName}
-      >
-        {planName}
-      </Link>
-      <Link
-        href="/finance/expenses/plans"
-        className={cn(
-          buttonVariants({ variant: 'ghost', size: 'sm' }),
-          'h-6 shrink-0 px-2 text-xs',
-        )}
-      >
-        {t('banners.plans')}
-      </Link>
-    </div>
+    <>
+      <DetailSheetSection title="Linked" outlined>
+        <DetailSheetEntityLinkGrid className="sm:grid-cols-2">
+          <InvoiceLinkedReadonlyField
+            label="Plan"
+            entityKind="project"
+            value={planId}
+            selectionLabel={planName}
+            icon={<CalendarDays size={12} />}
+            onOpen={() => setOpen(true)}
+          />
+        </DetailSheetEntityLinkGrid>
+      </DetailSheetSection>
+      <ExpensePlanDetailSheet
+        planId={open ? planId : null}
+        open={open}
+        onOpenChange={setOpen}
+        forceNestedBackdrop
+      />
+    </>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { DollarSign, Layers } from 'lucide-react';
+import { DollarSign } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -82,7 +82,7 @@ export function ExpensePlanGeneralTab({
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} mx-auto w-full max-w-none gap-4`}>
       {cancelled ? <p className="text-muted-foreground text-sm">{t('sheet.stoppedHint')}</p> : null}
-      <DetailSheetSection title={t('sheet.sectionPlan')} icon={<Layers size={12} />}>
+      <DetailSheetSection title={t('sheet.sectionPlan')} outlined>
         <div className={DETAIL_SHEET_SECTION_BODY_CLASS}>
           <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
             <InlineField

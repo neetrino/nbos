@@ -186,6 +186,7 @@ function ClosedSingleChip({
           entityKind={entityKind}
           disabled={disabled}
           imageUrl={props.selectionAvatar}
+          icon={props.icon}
           onOpen={
             onOpenSelected && props.value ? () => onOpenSelected(props.value as string) : undefined
           }

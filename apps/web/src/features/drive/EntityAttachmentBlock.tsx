@@ -21,6 +21,7 @@ interface EntityAttachmentBlockProps {
   purpose?: string;
   purposes?: readonly string[];
   emptyHint?: string;
+  borderLabel?: string;
 }
 
 function resolveLibrary(key: DriveLibraryKey) {
@@ -38,6 +39,7 @@ export function EntityAttachmentBlock({
   purpose,
   purposes,
   emptyHint = 'You can drag a file here or click to browse',
+  borderLabel,
 }: EntityAttachmentBlockProps) {
   const library = resolveLibrary(libraryKey);
   const uploadPurpose = purpose ?? library.purposes?.[0] ?? 'OTHER';
@@ -101,6 +103,7 @@ export function EntityAttachmentBlock({
       pendingUploads={pending}
       loading={loading}
       emptyHint={emptyHint}
+      borderLabel={borderLabel}
       onUpload={uploadFiles}
       onOpenFile={(file) => {
         const url = file.externalUrl;

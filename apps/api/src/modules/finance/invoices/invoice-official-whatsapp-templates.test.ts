@@ -71,6 +71,15 @@ describe('official invoice WhatsApp templates', () => {
     expect(purpose).toBe(['Qualitech SEO', 'INV-2026-0164'].join('\n'));
   });
 
+  it('puts the manual Description into the accountant note', () => {
+    const purpose = buildOfficialInvoicePurpose({
+      code: 'INV-2026-0164',
+      productName: 'Qualitech SEO',
+      notes: '<p>Hosting for Ommm</p>',
+    });
+    expect(purpose).toBe(['Qualitech SEO', 'Hosting for Ommm', 'INV-2026-0164'].join('\n'));
+  });
+
   it('renders issue and cancel Armenian copy without IDINV', () => {
     const fields = {
       code: 'INV-9',

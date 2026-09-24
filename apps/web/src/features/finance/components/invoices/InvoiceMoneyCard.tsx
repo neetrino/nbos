@@ -15,6 +15,7 @@ import { invoiceStageGateSectionClass } from '@/features/finance/constants/invoi
 import { INVOICE_GATE_FIELD_PAYMENTS } from '@/features/finance/constants/invoice-money-status-gate-client';
 import { cn } from '@/lib/utils';
 import { formatInvoiceSheetDate } from './format-invoice-sheet-date';
+import { InvoiceOfficialAction } from './InvoiceOfficialAction';
 import { invoiceTaxMessageKey } from './invoice-message-keys';
 import type { InvoiceSheetInvoice } from './InvoiceSheetSections';
 
@@ -24,12 +25,14 @@ interface InvoiceMoneyCardProps {
   invoice: InvoiceSheetInvoice;
   gateRequiredFields?: ReadonlySet<string>;
   billingFields?: ReactNode;
+  onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
 }
 
 export function InvoiceMoneyCard({
   invoice,
   gateRequiredFields = new Set(),
   billingFields = null,
+  onInvoiceUpdated,
 }: InvoiceMoneyCardProps) {
   const t = useTranslations('invoices');
   const locale = useLocale();
@@ -98,21 +101,49 @@ export function InvoiceMoneyCard({
         </div>
       </div>
 
-      <div className={cn('mt-4 border-t pt-4', MONEY_METRIC_DIVIDER_CLASS)}>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <DetailSheetMetaDate
-            label={t('money.created')}
-            value={formatInvoiceSheetDate(invoice.createdAt, locale)}
-          />
-          {invoice.paidDate ? (
-            <DetailSheetMetaDate
-              label={t('money.paidOn')}
-              value={formatInvoiceSheetDate(invoice.paidDate, locale)}
-            />
-          ) : null}
-        </div>
-      </div>
+      <InvoiceMoneyFooter
+        invoice={invoice}
+        gateRequiredFields={gateRequiredFields}
+        paidOnLabel={t('money.paidOn')}
+        paidOnValue={invoice.paidDate ? formatInvoiceSheetDate(invoice.paidDate, locale) : null}
+        onInvoiceUpdated={onInvoiceUpdated}
+      />
     </section>
+  );
+}
+
+function InvoiceMoneyFooter({
+  invoice,
+  gateRequiredFields,
+  paidOnLabel,
+  paidOnValue,
+  onInvoiceUpdated,
+}: {
+  invoice: InvoiceSheetInvoice;
+  gateRequiredFields: ReadonlySet<string>;
+  paidOnLabel: string;
+  paidOnValue: string | null;
+  onInvoiceUpdated?: (invoice: InvoiceSheetInvoice) => void;
+}) {
+  const showAction = invoice.taxStatus === 'TAX';
+  if (!showAction && !paidOnValue) return null;
+
+  return (
+    <div
+      className={cn(
+        'mt-4 flex flex-wrap items-end justify-between gap-3 border-t pt-4',
+        MONEY_METRIC_DIVIDER_CLASS,
+      )}
+    >
+      {paidOnValue ? <DetailSheetMetaDate label={paidOnLabel} value={paidOnValue} /> : null}
+      {showAction ? (
+        <InvoiceOfficialAction
+          invoice={invoice}
+          onUpdated={onInvoiceUpdated}
+          gateRequiredFields={gateRequiredFields}
+        />
+      ) : null}
+    </div>
   );
 }
 
