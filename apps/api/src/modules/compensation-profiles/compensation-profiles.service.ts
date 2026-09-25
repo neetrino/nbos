@@ -119,6 +119,7 @@ export class CompensationProfilesService {
       throw new BadRequestException('Archived compensation profiles cannot be activated');
     }
     if (profile.status === 'ACTIVE') {
+      await this.copyBaseSalaryToEmployee(profile.employeeId, profile.baseSalary);
       return this.findById(profileId);
     }
     if (!PROFILE_STATUSES.includes(profile.status)) {
@@ -140,7 +141,7 @@ export class CompensationProfilesService {
         });
       }
 
-      return tx.compensationProfile.update({
+      const activated = await tx.compensationProfile.update({
         where: { id: profileId },
         data: {
           status: 'ACTIVE',
@@ -149,9 +150,38 @@ export class CompensationProfilesService {
         },
         include,
       });
+      await tx.employee.update({
+        where: { id: profile.employeeId },
+        data: { baseSalary: profile.baseSalary },
+      });
+      return activated;
     });
 
     return serializeCompensationProfile(updated);
+  }
+
+  async listActiveSummaries() {
+    const rows = await this.prisma.compensationProfile.findMany({
+      where: { status: 'ACTIVE' },
+      orderBy: { effectiveFrom: 'desc' },
+      select: {
+        employeeId: true,
+        baseSalary: true,
+        currency: true,
+        bonusPolicy: { select: { name: true, templateCode: true } },
+        kpiPolicy: { select: { name: true } },
+      },
+    });
+    return {
+      items: rows.map((row) => ({
+        employeeId: row.employeeId,
+        baseSalary: row.baseSalary.toString(),
+        currency: row.currency,
+        bonusPolicyName: row.bonusPolicy?.name ?? null,
+        bonusTemplateCode: row.bonusPolicy?.templateCode ?? null,
+        kpiPolicyName: row.kpiPolicy?.name ?? null,
+      })),
+    };
   }
 
   async findById(profileId: string) {
@@ -163,6 +193,13 @@ export class CompensationProfilesService {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
     return serializeCompensationProfile(row);
+  }
+
+  private async copyBaseSalaryToEmployee(employeeId: string, baseSalary: { toString(): string }) {
+    await this.prisma.employee.update({
+      where: { id: employeeId },
+      data: { baseSalary: baseSalary.toString() },
+    });
   }
 
   private async assertEmployeeExists(employeeId: string) {

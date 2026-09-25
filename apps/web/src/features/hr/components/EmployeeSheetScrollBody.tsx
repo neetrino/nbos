@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Building2, Calendar, Mail, Phone, Send, User } from 'lucide-react';
 import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
@@ -16,6 +17,7 @@ import {
 import type { RoleItem } from '@/lib/api/employees';
 import type { EmployeeGeneralDraft } from './employee-general-form-state';
 import { useTranslations } from 'next-intl';
+import { usePermission } from '@/lib/permissions';
 
 export interface EmployeeSheetScrollBodyProps {
   employeeId: string;
@@ -43,6 +45,8 @@ export function EmployeeSheetScrollBody({
   const tStatus = useTranslations('hr.status');
   const tLevel = useTranslations('hr.level');
   const tForms = useTranslations('forms');
+  const { can } = usePermission();
+  const canSetSalary = can('VIEW', 'FINANCE_SALARY');
   const levelOptions = EMPLOYEE_LEVELS.map((l) => ({
     value: l.value,
     label: tLevel(l.value),
@@ -208,6 +212,17 @@ export function EmployeeSheetScrollBody({
             onValueChange={(v) => patchDraft({ roleId: v ?? draft.roleId })}
           />
         </div>
+        {canSetSalary ? (
+          <p className="text-muted-foreground text-sm">
+            {tEmp('salaryHint')}{' '}
+            <Link
+              href={`/my-company/compensation?employee=${employeeId}`}
+              className="text-primary font-medium hover:underline"
+            >
+              {tEmp('salaryLink')}
+            </Link>
+          </p>
+        ) : null}
       </DetailSheetSection>
 
       <DetailSheetOptionalDescription

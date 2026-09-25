@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { CircleDollarSign, ShieldCheck, Users } from 'lucide-react';
 import { PageHero, StatusBadge } from '@/components/shared';
@@ -8,13 +9,19 @@ import { employeesApi, type Employee } from '@/lib/api/employees';
 import { DeliveryRatesPanel } from '@/features/function-catalog/delivery-rates-panel';
 import { CompensationProfileWorkspace } from '@/features/my-company/compensation/compensation-profile-workspace';
 import { bonusesApi, type SalesBonusPolicyRow } from '@/lib/api/bonus';
+import {
+  compensationProfilesApi,
+  type ActiveCompensationSummary,
+} from '@/lib/api/compensation-profiles';
 
 function fullName(employee: Employee): string {
   return `${employee.firstName} ${employee.lastName}`.trim();
 }
 
 export default function CompensationPage() {
+  const initialEmployeeId = useSearchParams().get('employee') ?? '';
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [activeProfiles, setActiveProfiles] = useState<ActiveCompensationSummary[]>([]);
   const [salesPolicies, setSalesPolicies] = useState<SalesBonusPolicyRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,21 +29,33 @@ export default function CompensationPage() {
     void (async () => {
       setLoading(true);
       try {
-        const [employeeResp, policyRows] = await Promise.all([
+        const [employeeResp, policyRows, activeResp] = await Promise.all([
           employeesApi.getAll({ page: 1, pageSize: 500 }),
           bonusesApi.getSalesPolicies(),
+          compensationProfilesApi.listActive(),
         ]);
         setEmployees(employeeResp.items);
         setSalesPolicies(policyRows);
+        setActiveProfiles(activeResp.items);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
+  const activeByEmployee = useMemo(() => {
+    const map = new Map<string, ActiveCompensationSummary>();
+    for (const row of activeProfiles) map.set(row.employeeId, row);
+    return map;
+  }, [activeProfiles]);
   const withBaseSalary = useMemo(
-    () => employees.filter((employee) => employee.baseSalary && employee.baseSalary !== '0'),
-    [employees],
+    () =>
+      employees.filter((employee) => {
+        const active = activeByEmployee.get(employee.id);
+        const salary = active?.baseSalary ?? employee.baseSalary;
+        return salary != null && salary !== '' && salary !== '0' && salary !== '0.00';
+      }),
+    [employees, activeByEmployee],
   );
   const activePolicyCount = useMemo(
     () => salesPolicies.filter((row) => row.isActive).length,
@@ -45,12 +64,11 @@ export default function CompensationPage() {
 
   return (
     <div className="space-y-6">
-      <PageHero title="Compensation" />
+      <PageHero title="Salaries" />
       <p className="text-muted-foreground text-sm">
-        Compensation profiles runtime view: base salary coverage, active sales bonus policies, and
-        links to payroll controls.
+        Set each person&apos;s minimum salary here, then activate the draft. Payroll uses that
+        active profile. Sales bonuses are scaled by the KPI gate. Developer bonuses are not.
       </p>
-      <DeliveryRatesPanel />
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="border-border bg-card rounded-2xl border p-4">
@@ -67,7 +85,10 @@ export default function CompensationPage() {
             Base salary configured
           </div>
           <p className="text-foreground text-2xl font-semibold">{withBaseSalary.length}</p>
-          <p className="text-muted-foreground text-xs">Employees with non-zero `baseSalary`</p>
+          <p className="text-muted-foreground text-xs">
+            Active profile with a minimum salary. Missing:{' '}
+            {employees.length - withBaseSalary.length}
+          </p>
         </div>
         <div className="border-border bg-card rounded-2xl border p-4">
           <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
@@ -123,11 +144,22 @@ export default function CompensationPage() {
         </div>
       </div>
 
-      <CompensationProfileWorkspace employees={employees} />
+      <CompensationProfileWorkspace
+        employees={employees}
+        initialEmployeeId={initialEmployeeId}
+        onSalaryActivated={(employeeId, baseSalary) => {
+          setEmployees((prev) =>
+            prev.map((employee) =>
+              employee.id === employeeId ? { ...employee, baseSalary } : employee,
+            ),
+          );
+          void compensationProfilesApi.listActive().then((resp) => setActiveProfiles(resp.items));
+        }}
+      />
 
       <div className="border-border bg-card overflow-hidden rounded-2xl border">
         <div className="border-border flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-sm font-semibold">Team registry (base salary on employee)</h2>
+          <h2 className="text-sm font-semibold">Who has a minimum salary</h2>
           {loading ? <span className="text-muted-foreground text-xs">Loading…</span> : null}
         </div>
         <div className="overflow-x-auto">
@@ -137,7 +169,9 @@ export default function CompensationPage() {
                 <th className="px-4 py-2 text-left">Employee</th>
                 <th className="px-4 py-2 text-left">Department</th>
                 <th className="px-4 py-2 text-left">Role / Level</th>
-                <th className="px-4 py-2 text-left">Base salary</th>
+                <th className="px-4 py-2 text-left">Minimum salary</th>
+                <th className="px-4 py-2 text-left">Bonus</th>
+                <th className="px-4 py-2 text-left">KPI</th>
                 <th className="px-4 py-2 text-left">Status</th>
               </tr>
             </thead>
@@ -150,7 +184,17 @@ export default function CompensationPage() {
                     {employee.role.name}
                     {employee.level ? ` / ${employee.level}` : ''}
                   </td>
-                  <td className="px-4 py-2">{employee.baseSalary ?? '—'}</td>
+                  <td className="px-4 py-2">
+                    {activeByEmployee.get(employee.id)?.baseSalary ??
+                      employee.baseSalary ??
+                      'Not set'}
+                  </td>
+                  <td className="px-4 py-2">
+                    {activeByEmployee.get(employee.id)?.bonusPolicyName ?? '—'}
+                  </td>
+                  <td className="px-4 py-2">
+                    {activeByEmployee.get(employee.id)?.kpiPolicyName ?? 'Off'}
+                  </td>
                   <td className="px-4 py-2">
                     <StatusBadge
                       label={employee.status}
@@ -161,7 +205,7 @@ export default function CompensationPage() {
               ))}
               {!loading && employees.length === 0 ? (
                 <tr>
-                  <td className="text-muted-foreground px-4 py-6 text-center" colSpan={5}>
+                  <td className="text-muted-foreground px-4 py-6 text-center" colSpan={7}>
                     No employee records found.
                   </td>
                 </tr>
@@ -170,6 +214,8 @@ export default function CompensationPage() {
           </table>
         </div>
       </div>
+
+      <DeliveryRatesPanel />
     </div>
   );
 }

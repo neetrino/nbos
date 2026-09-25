@@ -35,7 +35,12 @@ export const MY_COMPANY_HUB_SECTIONS: MyCompanyHubSection[] = [
   { key: 'team', href: '/my-company/team', icon: Users2 },
   { key: 'departments', href: '/my-company/departments', icon: Building2 },
   { key: 'rolesSeats', href: '/my-company/roles-seats', icon: ShieldCheck },
-  { key: 'compensation', href: '/my-company/compensation', icon: BadgeDollarSign },
+  {
+    key: 'compensation',
+    href: '/my-company/compensation',
+    icon: BadgeDollarSign,
+    require: { module: 'FINANCE_SALARY', action: 'VIEW' },
+  },
   {
     key: 'bonusPolicies',
     href: '/my-company/bonus-policies',

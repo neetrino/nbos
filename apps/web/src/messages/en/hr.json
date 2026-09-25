@@ -39,7 +39,9 @@
   "employment": {
     "status": "Status",
     "hireDate": "Hire date",
-    "platformRole": "Platform role"
+    "platformRole": "Platform role",
+    "salaryHint": "Minimum salary and bonus rules are set separately.",
+    "salaryLink": "Set salary"
   },
   "sheet": {
     "loading": "Loading…",
@@ -369,6 +371,7 @@
     "team": "Team",
     "departments": "Departments",
     "rolesSeats": "Roles & Seats",
+    "salaries": "Salaries",
     "coreFunction": "Core & Function"
   },
   "functionCatalog": {
@@ -438,7 +441,7 @@
     "pricingHidden": "Pricing is available only to Owner and CEO.",
     "normativeMissing": "Normative not configured",
     "ratesTitle": "Delivery role rates",
-    "ratesSubtitle": "Same-role AMD tariffs. Employee salary is never used.",
+    "ratesSubtitle": "AMD per unit for delivery bonuses. This is not an employee's minimum salary.",
     "profilesTitle": "Delivery base profiles",
     "legacySkip": "This product stays on the previous delivery model until Owner adopts v2.",
     "adoptV2": "Adopt v2 composition",
@@ -1042,7 +1045,7 @@
       "title": "Foundation guardrails",
       "subtitle": "These are intentionally explicit so Finance, KPI and RBAC do not rely on incomplete data.",
       "seats": "Business seats are separate from technical roles, with source-aware access grants.",
-      "compensation": "Compensation, KPI and bonus policies are visible as module areas but not payroll sources yet.",
+      "compensation": "Minimum salary is set under Salaries. Payroll reads the active profile. KPI scales sales bonuses only.",
       "orgChart": "The Departments org chart uses explicit seat assignments with zoom, search, collapse, and a member drawer."
     },
     "recent": {
@@ -1064,8 +1067,8 @@
         "description": "Business seats and accountabilities, separated from technical permissions."
       },
       "compensation": {
-        "title": "Compensation",
-        "description": "Compensation profiles, bonus policies, and payroll-facing rules."
+        "title": "Salaries",
+        "description": "Minimum salary for each employee, plus the bonus rule. KPI only for sales."
       },
       "bonusPolicies": {
         "title": "Bonus policies",

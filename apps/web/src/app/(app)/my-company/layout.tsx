@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Layers } from 'lucide-react';
+import { BadgeDollarSign, Layers } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DELIVERY_COMPENSATION_RULES_MODULE, FUNCTION_CATALOG_MODULE } from '@nbos/shared';
 import { ModuleHeroSlotProvider, PageHeroNavLinks } from '@/components/shared/page-hero';
@@ -21,6 +21,15 @@ export default function MyCompanyLayout({ children }: { children: ReactNode }) {
       exactMatch: item.exactMatch,
       label: t(item.labelKey),
     })),
+    ...(canOpenHr && can('VIEW', 'FINANCE_SALARY')
+      ? [
+          {
+            href: '/my-company/compensation',
+            icon: BadgeDollarSign,
+            label: t('companyNav.salaries'),
+          },
+        ]
+      : []),
     ...(canOpenCoreFunction
       ? [
           {

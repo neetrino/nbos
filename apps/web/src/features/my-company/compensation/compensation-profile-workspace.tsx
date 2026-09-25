@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -11,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import { StatusBadge } from '@/components/shared';
+import { CompensationProfileFields } from '@/features/my-company/compensation/compensation-profile-fields';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import {
   compensationProfilesApi,
@@ -21,15 +20,8 @@ import {
 import { bonusPoliciesApi, type BonusPolicyRow } from '@/lib/api/bonus-policies';
 import { kpiPoliciesApi, type KpiPolicyRow } from '@/lib/api/kpi-policies';
 import type { Employee } from '@/lib/api/employees';
-import { DEFAULT_BONUS_POLICY_ID } from '@/lib/constants/default-bonus-policy-id';
 import { DEFAULT_KPI_POLICY_ID } from '@/lib/constants/default-kpi-policy-id';
-import {
-  BONUS_POLICY_TEMPLATE_DELIVERY_PROPORTIONAL_FUNDING,
-  BONUS_POLICY_TEMPLATE_MANUAL_ONLY,
-  BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED,
-  BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES,
-  BONUS_POLICY_TEMPLATE_SUPPORT_MANUAL_PLANNED,
-} from '@/features/my-company/compensation/bonus-policy-template-codes';
+import { BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES } from '@/features/my-company/compensation/bonus-policy-template-codes';
 
 const STATUS_VARIANT: Record<string, StatusVariant> = {
   ACTIVE: 'green',
@@ -46,8 +38,16 @@ function employeeLabel(employee: Employee): string {
   return `${employee.firstName} ${employee.lastName}`.trim();
 }
 
-export function CompensationProfileWorkspace({ employees }: { employees: readonly Employee[] }) {
-  const [selectedId, setSelectedId] = useState('');
+export function CompensationProfileWorkspace({
+  employees,
+  initialEmployeeId = '',
+  onSalaryActivated,
+}: {
+  employees: readonly Employee[];
+  initialEmployeeId?: string;
+  onSalaryActivated?: (employeeId: string, baseSalary: string) => void;
+}) {
+  const [selectedId, setSelectedId] = useState(initialEmployeeId);
   const [profiles, setProfiles] = useState<CompensationProfileRow[]>([]);
   const [bonusPolicies, setBonusPolicies] = useState<BonusPolicyRow[]>([]);
   const [kpiPolicies, setKpiPolicies] = useState<KpiPolicyRow[]>([]);
@@ -57,13 +57,8 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
 
   const [baseSalary, setBaseSalary] = useState('');
   const [effectiveFrom, setEffectiveFrom] = useState(todayIsoDate());
-  const [bonusPolicyId, setBonusPolicyId] = useState(DEFAULT_BONUS_POLICY_ID);
-  const [kpiPolicyId, setKpiPolicyId] = useState(DEFAULT_KPI_POLICY_ID);
-
-  const selectedEmployee = useMemo(
-    () => employees.find((e) => e.id === selectedId),
-    [employees, selectedId],
-  );
+  const [bonusPolicyId, setBonusPolicyId] = useState('');
+  const [kpiPolicyId, setKpiPolicyId] = useState('');
 
   const activeBonusPolicies = useMemo(
     () => bonusPolicies.filter((p) => p.status === 'ACTIVE'),
@@ -78,16 +73,6 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
   const draftProfile = useMemo(
     () => profiles.find((p) => p.status === 'DRAFT') ?? null,
     [profiles],
-  );
-
-  const selectedBonusTemplate = useMemo(
-    () => activeBonusPolicies.find((p) => p.id === bonusPolicyId)?.templateCode ?? null,
-    [activeBonusPolicies, bonusPolicyId],
-  );
-
-  const selectedKpiPolicy = useMemo(
-    () => activeKpiPolicies.find((p) => p.id === kpiPolicyId) ?? null,
-    [activeKpiPolicies, kpiPolicyId],
   );
 
   const loadProfiles = useCallback(async (employeeId: string) => {
@@ -122,56 +107,59 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
     void loadProfiles(selectedId);
   }, [selectedId, employees, loadProfiles]);
 
-  useEffect(() => {
-    if (draftProfile?.bonusPolicyId) {
-      setBonusPolicyId(draftProfile.bonusPolicyId);
-    }
-  }, [draftProfile?.id, draftProfile?.bonusPolicyId]);
+  const activeProfile = useMemo(
+    () => profiles.find((p) => p.status === 'ACTIVE') ?? null,
+    [profiles],
+  );
 
   useEffect(() => {
-    if (draftProfile?.kpiPolicyId) {
-      setKpiPolicyId(draftProfile.kpiPolicyId);
-    }
-  }, [draftProfile?.id, draftProfile?.kpiPolicyId]);
+    const source = draftProfile ?? activeProfile;
+    if (!source) return;
+    setBaseSalary(source.baseSalary);
+    setBonusPolicyId(source.bonusPolicyId ?? '');
+    setKpiPolicyId(source.kpiPolicyId ?? '');
+  }, [draftProfile, activeProfile]);
 
-  const handleCreateDraft = async () => {
+  const handleSaveDraft = async () => {
     if (!selectedId) return;
     const salary = Number.parseFloat(baseSalary);
     if (!Number.isFinite(salary) || salary < 0) {
-      setError('Enter a valid base salary.');
+      setError('Enter a valid minimum salary.');
       return;
     }
     setBusy(true);
     try {
-      const created = await compensationProfilesApi.createDraft(selectedId, {
-        baseSalary: salary,
-        effectiveFrom,
-        bonusPolicyId: bonusPolicyId || undefined,
-        kpiPolicyId: kpiPolicyId || undefined,
-      });
-      setProfiles((prev) => [created, ...prev]);
+      if (draftProfile) {
+        const updated = await compensationProfilesApi.patchDraft(draftProfile.id, {
+          baseSalary: salary,
+          effectiveFrom,
+          bonusPolicyId: bonusPolicyId || null,
+          kpiPolicyId: kpiPolicyId || null,
+        });
+        setProfiles((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      } else {
+        const created = await compensationProfilesApi.createDraft(selectedId, {
+          baseSalary: salary,
+          effectiveFrom,
+          bonusPolicyId: bonusPolicyId || undefined,
+          kpiPolicyId: kpiPolicyId || undefined,
+        });
+        setProfiles((prev) => [created, ...prev]);
+      }
       setError(null);
     } catch {
-      setError('Could not create draft profile.');
+      setError('Could not save the salary draft.');
     } finally {
       setBusy(false);
     }
   };
 
-  const handleSaveDraftPolicies = async () => {
-    if (!draftProfile) return;
-    setBusy(true);
-    try {
-      const updated = await compensationProfilesApi.patchDraft(draftProfile.id, {
-        bonusPolicyId: bonusPolicyId || null,
-        kpiPolicyId: kpiPolicyId || null,
-      });
-      setProfiles((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-      setError(null);
-    } catch {
-      setError('Could not update policies on draft.');
-    } finally {
-      setBusy(false);
+  const handleBonusPolicy = (nextId: string) => {
+    setBonusPolicyId(nextId);
+    const template = activeBonusPolicies.find((p) => p.id === nextId)?.templateCode;
+    if (template === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES && !kpiPolicyId) {
+      const hasDefault = activeKpiPolicies.some((p) => p.id === DEFAULT_KPI_POLICY_ID);
+      if (hasDefault) setKpiPolicyId(DEFAULT_KPI_POLICY_ID);
     }
   };
 
@@ -188,6 +176,7 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
           return p;
         }),
       );
+      onSalaryActivated?.(updated.employeeId, updated.baseSalary);
       setError(null);
     } catch {
       setError('Could not activate profile.');
@@ -200,10 +189,10 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
     <div className="border-border bg-card space-y-4 rounded-2xl border p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-foreground text-sm font-semibold">Compensation profiles</h2>
+          <h2 className="text-foreground text-sm font-semibold">Minimum salary</h2>
           <p className="text-muted-foreground mt-1 text-xs leading-snug">
-            Link bonus and KPI policies per employee. Payroll attach uses the ACTIVE profile for the
-            payroll month; sales accrual uses company rate rows when bonus policy is sales template.
+            Everyone gets a minimum salary plus bonuses. Sales: attach the sales bonus rule and a
+            KPI gate. Developers: salary plus the delivery bonus rule, and leave KPI empty.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -282,139 +271,21 @@ export function CompensationProfileWorkspace({ employees }: { employees: readonl
             </ul>
           )}
 
-          <div className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-2">
-            <label className="space-y-1 text-sm">
-              <span className="text-muted-foreground">Bonus policy</span>
-              <Select
-                value={bonusPolicyId || 'none'}
-                disabled={busy || activeBonusPolicies.length === 0}
-                onValueChange={(v) => setBonusPolicyId(!v || v === 'none' ? '' : v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="None" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {activeBonusPolicies.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES ? (
-                <p className="text-muted-foreground text-xs">
-                  Percentages are edited under{' '}
-                  <Link
-                    href="/my-company/sales-bonus-policies"
-                    className="text-primary hover:underline"
-                  >
-                    Sales bonus policies
-                  </Link>
-                  .
-                </p>
-              ) : null}
-              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_MANUAL_ONLY ? (
-                <p className="text-muted-foreground text-xs">
-                  No automatic accrual — bonuses are created manually in Finance.
-                </p>
-              ) : null}
-              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_DELIVERY_PROPORTIONAL_FUNDING ? (
-                <p className="text-muted-foreground text-xs">
-                  Planned delivery bonuses auto-release proportionally when the product is Done and
-                  client payments fund the pool (Finance bonus pools).
-                </p>
-              ) : null}
-              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED ? (
-                <p className="text-muted-foreground text-xs">
-                  Create bonus entries on Finance → Bonus board (Create bonus). Automated MQL/SQL
-                  accrual is not wired yet.
-                </p>
-              ) : null}
-              {selectedBonusTemplate === BONUS_POLICY_TEMPLATE_SUPPORT_MANUAL_PLANNED ? (
-                <p className="text-muted-foreground text-xs">
-                  Create bonus entries on Finance → Bonus board (Create bonus). Automated SLA
-                  accrual is not wired yet.
-                </p>
-              ) : null}
-            </label>
-            <label className="space-y-1 text-sm">
-              <span className="text-muted-foreground">KPI gate policy</span>
-              <Select
-                value={kpiPolicyId || 'none'}
-                disabled={busy || activeKpiPolicies.length === 0}
-                onValueChange={(v) => setKpiPolicyId(!v || v === 'none' ? '' : v)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="None" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {activeKpiPolicies.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedKpiPolicy != null && selectedKpiPolicy.scorecardMetrics.length > 0 ? (
-                <p className="text-muted-foreground text-xs">
-                  Scorecard:{' '}
-                  {selectedKpiPolicy.scorecardMetrics
-                    .map((m) =>
-                      m.payrollField
-                        ? `${m.label} → payroll ${m.payrollField === 'kpiSalesPlanAmount' ? 'plan' : 'actual'}`
-                        : m.label,
-                    )
-                    .join(' · ')}
-                </p>
-              ) : null}
-            </label>
-            {draftProfile ? (
-              <div className="flex items-end md:col-span-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  disabled={busy}
-                  onClick={() => void handleSaveDraftPolicies()}
-                >
-                  Save policies on draft
-                </Button>
-              </div>
-            ) : null}
-          </div>
-
-          {!draftProfile && selectedEmployee ? (
-            <div className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-3">
-              <NbosMoneyInput
-                label="Base salary"
-                labelClassName="text-muted-foreground font-normal"
-                value={baseSalary}
-                disabled={busy}
-                onChange={setBaseSalary}
-              />
-              <label className="space-y-1 text-sm">
-                <span className="text-muted-foreground">Effective from</span>
-                <Input
-                  type="date"
-                  value={effectiveFrom}
-                  disabled={busy}
-                  onChange={(e) => setEffectiveFrom(e.target.value)}
-                />
-              </label>
-              <div className="flex items-end">
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => void handleCreateDraft()}
-                >
-                  Create draft profile
-                </Button>
-              </div>
-            </div>
-          ) : null}
+          <CompensationProfileFields
+            busy={busy}
+            bonusPolicyId={bonusPolicyId}
+            kpiPolicyId={kpiPolicyId}
+            bonusPolicies={activeBonusPolicies}
+            kpiPolicies={activeKpiPolicies}
+            baseSalary={baseSalary}
+            effectiveFrom={effectiveFrom}
+            hasDraft={draftProfile != null}
+            onBonusPolicy={handleBonusPolicy}
+            onKpiPolicy={setKpiPolicyId}
+            onBaseSalary={setBaseSalary}
+            onEffectiveFrom={setEffectiveFrom}
+            onSaveDraft={() => void handleSaveDraft()}
+          />
         </>
       ) : null}
     </div>
