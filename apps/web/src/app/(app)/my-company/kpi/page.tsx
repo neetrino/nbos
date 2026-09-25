@@ -43,10 +43,11 @@ export default function KpiPage() {
     [control?.priorities.length],
   );
 
-  useCompanySectionTabs('kpi');
+  const sectionTabs = useCompanySectionTabs('kpi', undefined, 'below');
 
   return (
     <div className="flex flex-col gap-4">
+      {sectionTabs}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <CompanyStatCard
           icon={<Target size={16} aria-hidden />}
