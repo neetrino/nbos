@@ -297,6 +297,26 @@ export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   'flex h-10 w-full min-w-0 items-center gap-1 rounded-xl pl-3.5 pr-1.5 text-sm',
 ].join(' ');
 
+/**
+ * Employee / contact chip shell — no left padding; avatar sits flush and terminates the outline.
+ * Pair with {@link RELATION_PICKER_PERSON_CHIP_AVATAR_CLASS}.
+ */
+export const RELATION_PICKER_PERSON_CHIP_SHELL_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  DETAIL_SHEET_OUTLINED_SHELL_BORDER_CLASS,
+  'flex h-10 w-full min-w-0 items-center gap-1 overflow-visible rounded-xl py-0 pl-0 pr-1.5 text-sm',
+].join(' ');
+
+/**
+ * Flush-left person avatar on relation chips.
+ * Covers the shell’s left/top/bottom stroke so the circle is the field’s left terminus
+ * (h-10 row + 1px border), while remaining the clickable sheet target with the name.
+ */
+export const RELATION_PICKER_PERSON_CHIP_AVATAR_CLASS = [
+  'relative z-[1] size-[calc(2.5rem+2px)] shrink-0 rounded-full border border-border/50',
+  '-my-px -ml-px',
+].join(' ');
+
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
 export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 

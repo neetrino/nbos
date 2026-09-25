@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Building2, ExternalLink, Megaphone, User } from 'lucide-react';
+import { Building2, ExternalLink, Megaphone } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   DetailSheetSection,
@@ -210,7 +210,6 @@ export function DealMarketingSection({
                 selectionLabel={draft.clientPickLabel}
                 className={dealStageGateFieldClass(gateRequiredFields, 'sourceContactId')}
                 placeholder={t('leadSheet.whichClientPlaceholder')}
-                icon={<User size={12} />}
                 disabled={disabled || attributionLocked}
                 onSearch={searchContacts}
                 onSelect={(value, label) =>

@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils';
 import {
   DETAIL_SHEET_FIELD_CLEAR_BTN_CLASS,
   RELATION_PICKER_CHIP_SHELL_CLASS,
+  RELATION_PICKER_PERSON_CHIP_AVATAR_CLASS,
+  RELATION_PICKER_PERSON_CHIP_SHELL_CLASS,
   RELATION_PICKER_REPLACE_ZONE_CLASS,
   RELATION_PICKER_REPLACE_ZONE_GROW_CLASS,
   RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
@@ -43,10 +45,19 @@ function relationChipLeading(
   label: string,
   icon: ReactNode | undefined,
   imageUrl?: string | null,
+  personAvatarClassName?: string,
 ): ReactNode {
-  if (icon) return icon;
-  if (!entityKind) return null;
-  return relationPickerOptionLeading(entityKind, label, 'inline', imageUrl ?? undefined);
+  // Person chips always use the photo/initials avatar (flush-left). Ignore `icon`
+  // so CRM leftovers like Building2/User never replace the employee portrait.
+  if (icon && !usesPersonAvatar(entityKind)) return icon;
+  if (!entityKind) return icon ?? null;
+  return relationPickerOptionLeading(
+    entityKind,
+    label,
+    'inline',
+    imageUrl ?? undefined,
+    personAvatarClassName,
+  );
 }
 
 export function RelationPickerChip({
@@ -67,7 +78,13 @@ export function RelationPickerChip({
   const canReplace = Boolean(onReplace) && !disabled;
   const personLeading = usesPersonAvatar(entityKind);
 
-  const leading = relationChipLeading(entityKind, label, icon, imageUrl);
+  const leading = relationChipLeading(
+    entityKind,
+    label,
+    icon,
+    imageUrl,
+    personLeading ? RELATION_PICKER_PERSON_CHIP_AVATAR_CLASS : undefined,
+  );
 
   const labelClass = cn(RELATION_PICKER_SHEET_TARGET_LABEL_CLASS, 'font-semibold');
 
@@ -167,8 +184,9 @@ export function RelationPickerChip({
     </button>
   ) : null;
 
-  // Avatar + name in one horizontal row. Grow a div (not the <button>) — buttons
+  // Avatar flush-left + name in one row. Grow a div (not the <button>) — buttons
   // ignore flex-1 width in several browsers, which made truncate ellipsis too early.
+  // Keep overflow visible so the flush avatar can cover the shell border edge.
   if (personLeading) {
     const personOpenBody = (
       <>
@@ -181,13 +199,13 @@ export function RelationPickerChip({
     return (
       <div
         className={cn(
-          RELATION_PICKER_CHIP_SHELL_CLASS,
+          RELATION_PICKER_PERSON_CHIP_SHELL_CLASS,
           'bg-card',
           'group/open gap-2',
           disabled && 'opacity-60',
         )}
       >
-        <div className="flex min-w-0 flex-1 items-center overflow-hidden">
+        <div className="flex min-w-0 flex-1 items-center overflow-visible">
           {canOpen ? (
             <button
               type="button"
@@ -195,14 +213,14 @@ export function RelationPickerChip({
               onClick={onOpen}
               className={cn(
                 RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
-                'flex w-full min-w-0 items-center gap-2.5 overflow-hidden text-left',
+                'flex w-full min-w-0 items-center gap-2.5 overflow-visible text-left',
               )}
               aria-label={t('openNamed', { label })}
             >
               {personOpenBody}
             </button>
           ) : (
-            <div className="flex w-full min-w-0 items-center gap-2.5 overflow-hidden">
+            <div className="flex w-full min-w-0 items-center gap-2.5 overflow-visible">
               {personOpenBody}
             </div>
           )}
