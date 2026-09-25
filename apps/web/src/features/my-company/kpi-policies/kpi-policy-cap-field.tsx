@@ -31,15 +31,15 @@ export function KpiPolicyCapField({
     <div className="space-y-1">
       <InlineField
         variant="controlled"
-        label="Monthly bonus cap"
+        label="Monthly ceiling"
         value={value}
         suffix="× salary"
         disabled={disabled}
         onValueChange={onChange}
       />
       <p className="text-muted-foreground text-xs">
-        Default {KPI_POLICY_CAP_MULTIPLIER_DEFAULT} ({KPI_POLICY_CAP_MULTIPLIER_MIN}–
-        {KPI_POLICY_CAP_MULTIPLIER_MAX}). Excess above base × this value becomes carry-over.
+        {KPI_POLICY_CAP_MULTIPLIER_MIN}–{KPI_POLICY_CAP_MULTIPLIER_MAX} times base salary. Default{' '}
+        {KPI_POLICY_CAP_MULTIPLIER_DEFAULT}. Anything above carries to the next month.
       </p>
     </div>
   );

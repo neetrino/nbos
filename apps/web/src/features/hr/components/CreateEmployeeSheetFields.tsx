@@ -1,8 +1,8 @@
 'use client';
 
+import { Building2, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { FormFieldRow, InlineField } from '@/components/shared';
-import { FORM_FIELD_CELL_CLASS } from '@/components/shared/create-form';
+import { InlineField, InsightSheetSection } from '@/components/shared';
 import { EMPLOYEE_LEVELS } from '@/features/hr/constants/hr';
 import type { DepartmentItem, RoleItem } from '@/lib/api/employees';
 
@@ -45,95 +45,95 @@ export function CreateEmployeeSheetFields({
   ];
 
   return (
-    <>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('form.firstName')}
-          type="text"
-          value={form.firstName}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(firstName) => onChange({ firstName })}
-        />
-        <InlineField
-          variant="controlled"
-          label={t('form.lastName')}
-          type="text"
-          value={form.lastName}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(lastName) => onChange({ lastName })}
-        />
-      </FormFieldRow>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('create.workEmail')}
-          type="email"
-          value={form.email}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(email) => onChange({ email })}
-        />
-        <InlineField
-          variant="controlled"
-          label={t('form.phone')}
-          type="phone"
-          value={form.phone}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(phone) => onChange({ phone })}
-        />
-      </FormFieldRow>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('employment.platformRole')}
-          type="select"
-          value={form.roleId}
-          options={roleOptions}
-          placeholder={t('create.selectRole')}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(roleId) => roleId && onChange({ roleId })}
-        />
-        <InlineField
-          variant="controlled"
-          label={t('form.level')}
-          type="select"
-          value={form.level || 'none'}
-          options={levelOptions}
-          placeholder={t('form.selectLevel')}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(value) => onChange({ level: value === 'none' || !value ? '' : value })}
-        />
-      </FormFieldRow>
-      <FormFieldRow>
-        <InlineField
-          variant="controlled"
-          label={t('departments.primaryCheckbox')}
-          type="select"
-          value={form.departmentId || 'none'}
-          options={departmentOptions}
-          placeholder={t('create.optional')}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(value) =>
-            onChange({ departmentId: value === 'none' || !value ? '' : value })
-          }
-        />
-        <InlineField
-          variant="controlled"
-          label={t('create.positionSeat')}
-          type="text"
-          value={form.position}
-          disabled={saving}
-          className={FORM_FIELD_CELL_CLASS}
-          onValueChange={(position) => onChange({ position })}
-        />
-      </FormFieldRow>
-    </>
+    <div className="space-y-4">
+      <InsightSheetSection
+        icon={<User size={15} />}
+        title={t('form.profile')}
+        hint={t('create.personHint')}
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <InlineField
+            variant="controlled"
+            label={t('form.firstName')}
+            type="text"
+            value={form.firstName}
+            disabled={saving}
+            onValueChange={(firstName) => onChange({ firstName })}
+          />
+          <InlineField
+            variant="controlled"
+            label={t('form.lastName')}
+            type="text"
+            value={form.lastName}
+            disabled={saving}
+            onValueChange={(lastName) => onChange({ lastName })}
+          />
+          <InlineField
+            variant="controlled"
+            label={t('create.workEmail')}
+            type="email"
+            value={form.email}
+            disabled={saving}
+            onValueChange={(email) => onChange({ email })}
+          />
+          <InlineField
+            variant="controlled"
+            label={t('form.phone')}
+            type="phone"
+            value={form.phone}
+            disabled={saving}
+            onValueChange={(phone) => onChange({ phone })}
+          />
+        </div>
+      </InsightSheetSection>
+      <InsightSheetSection
+        icon={<Building2 size={15} />}
+        title={t('form.employment')}
+        hint={t('create.placeHint')}
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <InlineField
+            variant="controlled"
+            label={t('employment.platformRole')}
+            type="select"
+            value={form.roleId}
+            options={roleOptions}
+            placeholder={t('create.selectRole')}
+            disabled={saving}
+            onValueChange={(roleId) => roleId && onChange({ roleId })}
+          />
+          <InlineField
+            variant="controlled"
+            label={t('form.level')}
+            type="select"
+            value={form.level || 'none'}
+            options={levelOptions}
+            placeholder={t('form.selectLevel')}
+            disabled={saving}
+            onValueChange={(value) => onChange({ level: value === 'none' || !value ? '' : value })}
+          />
+          <InlineField
+            variant="controlled"
+            label={t('departments.primaryCheckbox')}
+            type="select"
+            value={form.departmentId || 'none'}
+            options={departmentOptions}
+            placeholder={t('create.optional')}
+            disabled={saving}
+            onValueChange={(value) =>
+              onChange({ departmentId: value === 'none' || !value ? '' : value })
+            }
+          />
+          <InlineField
+            variant="controlled"
+            label={t('create.positionSeat')}
+            type="text"
+            value={form.position}
+            disabled={saving}
+            onValueChange={(position) => onChange({ position })}
+          />
+        </div>
+      </InsightSheetSection>
+    </div>
   );
 }

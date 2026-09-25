@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { Layers, ListTree, Package, Puzzle } from 'lucide-react';
 import type { DeliveryCoreItemFinancialDto, DeliveryFunctionOperationalDto } from '@nbos/shared';
-import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS, DetailSheetSection } from '@/components/shared';
+import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS, InsightSheetSection } from '@/components/shared';
 import { CoreItemsEditor } from './core-items-editor';
 import { FunctionCollectionKindEditor } from './function-collection-kind-editor';
 import { IncludedFunctionsPicker } from './included-functions-picker';
@@ -30,7 +31,11 @@ export function CoreCompositionTab({
   }
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} gap-4`}>
-      <DetailSheetSection title={t('coreItems.title')}>
+      <InsightSheetSection
+        icon={<ListTree size={15} />}
+        title={t('coreItems.title')}
+        hint={t('coreItems.hint')}
+      >
         <CoreItemsEditor
           versionId={versionId}
           status={status}
@@ -39,7 +44,7 @@ export function CoreCompositionTab({
           onError={onError}
           onChanged={onChanged}
         />
-      </DetailSheetSection>
+      </InsightSheetSection>
     </div>
   );
 }
@@ -56,9 +61,13 @@ export function CoreUnitsTab({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} gap-4`}>
-      <DetailSheetSection title={t('roleUnits.title')}>
+      <InsightSheetSection
+        icon={<Layers size={15} />}
+        title={t('roleUnits.title')}
+        hint={t('cores.editHint')}
+      >
         <RoleUnitsEditor rows={roleUnits} disabled={disabled} onChange={onChange} />
-      </DetailSheetSection>
+      </InsightSheetSection>
     </div>
   );
 }
@@ -77,15 +86,20 @@ export function CoreIncludedTab({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} gap-4`}>
-      <DetailSheetSection title={t('includedFunctions.title')}>
+      <InsightSheetSection
+        icon={<Puzzle size={15} />}
+        title={t('includedFunctions.title')}
+        hint={t('includedFunctions.hint')}
+      >
         <IncludedFunctionsPicker
           options={catalog}
           selectedIds={selectedIds}
           disabled={disabled}
           hideTitle
+          hideHint
           onChange={onChange}
         />
-      </DetailSheetSection>
+      </InsightSheetSection>
     </div>
   );
 }
@@ -104,14 +118,18 @@ export function CoreCollectionsTab({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} gap-4`}>
-      <DetailSheetSection title={t('collections.title')}>
+      <InsightSheetSection
+        icon={<Package size={15} />}
+        title={t('collections.title')}
+        hint={t('collections.hint')}
+      >
         <FunctionCollectionKindEditor
           productType={productType}
           catalog={catalog}
           canEdit={canEdit}
           onError={onError}
         />
-      </DetailSheetSection>
+      </InsightSheetSection>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { KeyRound, MonitorSmartphone } from 'lucide-react';
+import { KeyRound, MonitorSmartphone, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { InsightSheetSection } from '@/components/shared';
 import { employeesApi } from '@/lib/api/employees';
 import { getApiErrorMessage } from '@/lib/api-errors';
 
@@ -57,27 +58,31 @@ export function EmployeeSecurityAdminPanel({
   }
 
   return (
-    <div className="space-y-5 p-5">
-      <SecurityActionRow
-        icon={<KeyRound className="size-4" aria-hidden />}
-        title={t('resetLinkTitle')}
-        description={t('resetLinkDescription', { email: employeeEmail })}
-        actionLabel={t('resetLinkAction')}
-        disabled={busy}
-        onAction={() => setConfirming('resetLink')}
-      />
-      <SecurityActionRow
-        icon={<MonitorSmartphone className="size-4" aria-hidden />}
-        title={t('revokeSessionsTitle')}
-        description={t('revokeSessionsDescription')}
-        actionLabel={t('revokeSessionsAction')}
-        disabled={busy}
-        onAction={() => setConfirming('revokeSessions')}
-      />
-
-      <p className="text-muted-foreground border-t pt-4 text-xs leading-relaxed">
-        {t('policyNote')}
-      </p>
+    <div className="space-y-4 p-5">
+      <InsightSheetSection
+        icon={<Shield size={15} />}
+        title={t('sectionTitle')}
+        hint={t('sectionHint')}
+      >
+        <ul className="flex flex-col gap-1">
+          <SecurityActionRow
+            icon={<KeyRound size={14} aria-hidden />}
+            title={t('resetLinkTitle')}
+            description={t('resetLinkDescription', { email: employeeEmail })}
+            actionLabel={t('resetLinkAction')}
+            disabled={busy}
+            onAction={() => setConfirming('resetLink')}
+          />
+          <SecurityActionRow
+            icon={<MonitorSmartphone size={14} aria-hidden />}
+            title={t('revokeSessionsTitle')}
+            description={t('revokeSessionsDescription')}
+            actionLabel={t('revokeSessionsAction')}
+            disabled={busy}
+            onAction={() => setConfirming('revokeSessions')}
+          />
+        </ul>
+      </InsightSheetSection>
 
       <Dialog open={confirming !== null} onOpenChange={(open) => !open && setConfirming(null)}>
         <DialogContent forceNestedBackdrop className="sm:max-w-sm">
@@ -133,17 +138,17 @@ function SecurityActionRow({
   onAction: () => void;
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="bg-muted text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
+    <li className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5">
+      <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
         {icon}
-      </div>
+      </span>
       <div className="min-w-0 flex-1">
-        <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
-        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{description}</p>
+        <p className="text-foreground text-sm font-medium">{title}</p>
+        <p className="text-muted-foreground text-xs leading-snug">{description}</p>
       </div>
       <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={onAction}>
         {actionLabel}
       </Button>
-    </div>
+    </li>
   );
 }

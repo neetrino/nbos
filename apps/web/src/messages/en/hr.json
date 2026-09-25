@@ -34,7 +34,10 @@
     "phone": "Phone",
     "sipId": "SIP ID",
     "telegram": "Telegram",
-    "employment": "Employment"
+    "employment": "Employment",
+    "profileHint": "Name, birthday, level, and the job title shown on the team.",
+    "contactsHint": "How to reach this person at work.",
+    "employmentHint": "Status, start date, and the role that controls access."
   },
   "employment": {
     "status": "Status",
@@ -63,6 +66,8 @@
     "photoTooLarge": "Photo must be at most 2 MB."
   },
   "securityAdmin": {
+    "sectionTitle": "Account access",
+    "sectionHint": "The employee sets their own password. You can send a reset link or end sessions.",
     "resetLinkTitle": "Password reset link",
     "resetLinkDescription": "Send the standard reset email to {email}. The employee chooses the new password; nobody else sees it.",
     "resetLinkAction": "Send link",
@@ -83,6 +88,8 @@
   },
   "departments": {
     "title": "Department assignments",
+    "hint": "Where this person sits, and which department is primary.",
+    "addHint": "Choose a department and the role inside it.",
     "empty": "No departments assigned yet",
     "primary": "Primary",
     "setPrimaryAria": "Set as primary",
@@ -205,6 +212,8 @@
   },
   "create": {
     "title": "Add employee",
+    "personHint": "The name and how they sign in.",
+    "placeHint": "Role, level, department, and job title.",
     "description": "Create a profile, then copy the one-time link so they can set a password.",
     "metaFailed": "Could not load roles or departments",
     "workEmail": "Work email",

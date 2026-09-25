@@ -24,13 +24,13 @@ export function KpiPolicyTargetField({
       <InlineField
         variant="controlled"
         type="money"
-        label="Sales monthly KPI target"
+        label="Monthly sales plan"
         value={value}
         disabled={disabled}
         onValueChange={onChange}
       />
       <p className="text-muted-foreground text-xs">
-        Stored on the policy. Payroll uses the resolved plan and actual.
+        Optional. Leave empty when the plan already lives on payroll.
       </p>
     </div>
   );

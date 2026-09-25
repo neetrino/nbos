@@ -118,9 +118,11 @@ function NormsEntitySheetHeader({
             isMobileViewport && DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
           )}
         >
-          <span className="text-foreground shrink-0">{icon}</span>
+          <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+            {icon}
+          </span>
           <div className="min-w-0">
-            <h2 className="text-foreground truncate text-xl font-bold tracking-tight">{title}</h2>
+            <h2 className="text-foreground truncate text-base font-semibold">{title}</h2>
             {subtitle ? (
               <p className="text-muted-foreground mt-0.5 truncate text-xs">{subtitle}</p>
             ) : null}
