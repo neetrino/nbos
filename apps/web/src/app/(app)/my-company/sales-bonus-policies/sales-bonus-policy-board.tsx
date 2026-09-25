@@ -67,15 +67,17 @@ export function SalesBonusPolicyBoard({
 }) {
   const groups = groupByCategory(rows);
   return (
-    <div className="grid items-start gap-4 lg:grid-cols-2">
-      {groups.map((group) => (
-        <CategoryRateCard
-          key={group[0]?.fromCategory}
-          rows={group}
-          savingId={savingId}
-          onSave={onSave}
-        />
-      ))}
+    <div className="@container">
+      <div className="grid items-start gap-4 @min-[76rem]:grid-cols-2">
+        {groups.map((group) => (
+          <CategoryRateCard
+            key={group[0]?.fromCategory}
+            rows={group}
+            savingId={savingId}
+            onSave={onSave}
+          />
+        ))}
+      </div>
     </div>
   );
 }
