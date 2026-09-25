@@ -40,6 +40,10 @@ export const BONUS_POLICY_TEMPLATE_OPTIONS: BonusPolicyTemplateOption[] = [
   },
 ];
 
+export function bonusPolicyTemplateOption(code: string): BonusPolicyTemplateOption | undefined {
+  return BONUS_POLICY_TEMPLATE_OPTIONS.find((option) => option.value === code);
+}
+
 export function bonusPolicyTemplateLabel(code: string): string {
-  return BONUS_POLICY_TEMPLATE_OPTIONS.find((o) => o.value === code)?.label ?? code;
+  return bonusPolicyTemplateOption(code)?.label ?? code;
 }

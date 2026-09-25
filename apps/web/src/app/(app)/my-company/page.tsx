@@ -135,9 +135,9 @@ function MyCompanyHubLoaded({
         systemRoles={systemRoles}
       />
       <HubSectionGrid sections={visibleHubSections} />
-      <div className="grid min-w-0 items-stretch gap-4 xl:grid-cols-[minmax(22rem,1.05fr)_minmax(0,0.95fr)]">
+      <div className="grid min-w-0 items-stretch gap-4 2xl:grid-cols-[minmax(22rem,1.05fr)_minmax(0,0.95fr)]">
         <div className="relative min-h-0">
-          <div className="xl:absolute xl:inset-0">
+          <div className="2xl:absolute 2xl:inset-0">
             <OrgFoundationColumn
               departments={departments}
               assignedEmployees={assignedEmployees}
@@ -226,7 +226,7 @@ function OrgFoundationColumn({
       {departments.length === 0 ? (
         <HubEmptyDepartments />
       ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2 overflow-y-auto">
+        <div className="grid min-h-0 flex-1 grid-cols-1 content-start gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-2">
           {departments.map((department) => (
             <DepartmentFoundationCard key={department.id} department={department} />
           ))}

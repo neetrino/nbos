@@ -68,19 +68,17 @@ export function DepartmentFoundationCard({ department }: { department: Departmen
     ? t('hub.foundation.reportsTo', { name: department.parent.name })
     : t('hub.foundation.topLevel');
   return (
-    <div className="border-border bg-background flex min-w-0 flex-col gap-3 rounded-xl border p-3">
+    <div className="border-border bg-background flex min-w-0 items-center justify-between gap-2 rounded-xl border px-2.5 py-2">
       <div className="min-w-0">
-        <p className="text-foreground line-clamp-2 text-sm leading-snug font-semibold">
-          {department.name}
-        </p>
-        <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs">{reportsTo}</p>
+        <p className="text-foreground truncate text-sm font-semibold">{department.name}</p>
+        <p className="text-muted-foreground truncate text-xs">{reportsTo}</p>
       </div>
-      <div className="flex items-end justify-between gap-2">
-        <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
-          <Users size={16} />
+      <div className="flex shrink-0 items-center gap-1.5">
+        <span className="bg-primary/10 text-primary flex size-6 items-center justify-center rounded-full">
+          <Users size={13} />
         </span>
         <span
-          className="text-foreground text-2xl leading-none font-semibold tabular-nums"
+          className="text-foreground text-lg leading-none font-semibold tabular-nums"
           aria-label={t('deptAdmin.membersCount', { count: memberCount })}
         >
           {memberCount}
