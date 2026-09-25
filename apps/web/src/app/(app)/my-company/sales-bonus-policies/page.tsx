@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -100,24 +100,11 @@ export default function SalesBonusPoliciesPage() {
     </div>
   );
 
-  const refresh = useMemo(
-    () => (
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => void load()}
-        disabled={loading}
-      >
-        Refresh
-      </Button>
-    ),
-    [loading, load],
-  );
-  useCompanySectionTabs('bonus', refresh);
+  const sectionTabs = useCompanySectionTabs('bonus', undefined, 'below');
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
+      {sectionTabs}
       <p className="text-muted-foreground text-sm">
         Seller and assistant percentages by CRM From category and payment model (classic on first
         fully paid tranche; subscription: first paid invoice, then month 2+ per invoice when rates

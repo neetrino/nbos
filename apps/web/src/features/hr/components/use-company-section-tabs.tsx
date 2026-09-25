@@ -10,8 +10,15 @@ import {
   type CompanySectionGroup,
 } from '@/features/hr/constants/my-company-section-tabs';
 
-/** Second tab row under My Company, same pattern as Core & Function. */
-export function useCompanySectionTabs(group: CompanySectionGroup, trailing?: ReactNode): void {
+/**
+ * Second tab row under My Company.
+ * `below` renders it under the hero, same as Core & Function.
+ */
+export function useCompanySectionTabs(
+  group: CompanySectionGroup,
+  trailing?: ReactNode,
+  placement: 'hero' | 'below' = 'hero',
+): ReactNode {
   const t = useTranslations('hr');
   const pathname = usePathname();
   const router = useRouter();
@@ -25,7 +32,7 @@ export function useCompanySectionTabs(group: CompanySectionGroup, trailing?: Rea
       })),
     [group, t],
   );
-  const secondaryTabs = useMemo(
+  const sectionTabs = useMemo(
     () => (
       <PageHeroTabs
         value={active}
@@ -38,6 +45,10 @@ export function useCompanySectionTabs(group: CompanySectionGroup, trailing?: Rea
     ),
     [active, options, router, t],
   );
-  const slots = useMemo(() => ({ secondaryTabs, trailing }), [secondaryTabs, trailing]);
+  const slots = useMemo(
+    () => (placement === 'below' ? {} : { secondaryTabs: sectionTabs, trailing }),
+    [placement, sectionTabs, trailing],
+  );
   useModuleHeroSlots(slots);
+  return placement === 'below' ? sectionTabs : null;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
@@ -62,9 +62,20 @@ export default function BonusPoliciesPage() {
   const [creating, setCreating] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const trailing = useMemo(
-    () => (
-      <div className="flex items-center gap-2">
+  const sectionTabs = useCompanySectionTabs('bonus', undefined, 'below');
+  const hasData = items.length > 0;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {sectionTabs}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="text-muted-foreground max-w-3xl text-sm">
+          Rules you attach to a salary. Sales percentages live on{' '}
+          <Link href="/my-company/sales-bonus-policies" className="text-primary hover:underline">
+            Sales rates
+          </Link>
+          .
+        </p>
         <Button
           type="button"
           size="sm"
@@ -77,32 +88,7 @@ export default function BonusPoliciesPage() {
           <Plus className="size-4" aria-hidden />
           New policy
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={loading}
-          onClick={() => void load()}
-        >
-          Refresh
-        </Button>
       </div>
-    ),
-    [loading, load],
-  );
-  useCompanySectionTabs('bonus', trailing);
-
-  const hasData = items.length > 0;
-
-  return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground text-sm">
-        Rules you attach to a salary. Sales percentages live on{' '}
-        <Link href="/my-company/sales-bonus-policies" className="text-primary hover:underline">
-          Sales rates
-        </Link>
-        .
-      </p>
       {error && hasData ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
@@ -114,7 +100,7 @@ export default function BonusPoliciesPage() {
         errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
         emptyFallback={<p className="text-muted-foreground text-sm">No policies yet.</p>}
       >
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4">
           {items.map((policy) => (
             <BonusPolicyCard
               key={policy.id}
