@@ -70,11 +70,6 @@ export default function SalesBonusPoliciesPage() {
   return (
     <div className="flex flex-col gap-4">
       {sectionTabs}
-      <p className="text-muted-foreground text-sm">
-        Rates by CRM source. Classic applies to the first fully paid tranche. Subscription uses the
-        first paid invoice, then month 2+ on each later invoice.
-      </p>
-
       {error && hasData ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}

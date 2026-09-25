@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { ListChecks, Plus } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/shared';
@@ -67,28 +67,38 @@ export default function ChecklistTemplatesListPage() {
   useCompanySectionTabs('checklists', trailing);
 
   return (
-    <div className="space-y-6">
-      <p className="text-muted-foreground text-sm">
-        Reusable SOP checklists with versioning. Publish creates the active snapshot for new
-        instances; drafts continue on a separate version.
-      </p>
-
+    <section className="border-border bg-card relative overflow-hidden rounded-2xl border p-4">
+      <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
+      <div className="relative flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+            <ListChecks size={15} />
+          </div>
+          <h2 className="text-foreground text-sm font-semibold">Templates</h2>
+        </div>
+        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+          {loading ? '…' : rows.length}
+        </span>
+      </div>
       {loading ? (
-        <p className="text-muted-foreground text-sm">Loading…</p>
+        <p className="text-muted-foreground relative mt-3 text-xs">Loading…</p>
       ) : rows.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No templates yet. Create one to attach to Delivery requirements later.
+        <p className="text-muted-foreground relative mt-3 text-xs">
+          No templates yet. Create one to attach when a delivery stage starts.
         </p>
       ) : (
-        <ul className="grid gap-2 sm:grid-cols-2">
+        <ul className="relative mt-3 flex flex-col gap-1">
           {rows.map((row) => (
             <li key={row.id}>
               <Link
                 href={`/my-company/checklist-templates/${row.id}`}
-                className="border-border hover:border-primary/40 bg-card flex items-start justify-between gap-3 rounded-2xl border px-3.5 py-3"
+                className="hover:bg-muted/60 flex items-center gap-2.5 rounded-xl px-1.5 py-1.5"
               >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{row.name}</p>
+                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+                  {row.name.slice(0, 2).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground truncate text-sm font-medium">{row.name}</p>
                   <p className="text-muted-foreground truncate text-xs">
                     {CHECKLIST_TEMPLATE_CATEGORY_LABELS[row.category]} ·{' '}
                     {CHECKLIST_OWNER_MODULE_LABELS[row.ownerModule]}
@@ -103,6 +113,6 @@ export default function ChecklistTemplatesListPage() {
           ))}
         </ul>
       )}
-    </div>
+    </section>
   );
 }

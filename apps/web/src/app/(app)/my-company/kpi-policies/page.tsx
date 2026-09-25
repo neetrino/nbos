@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DataView,
@@ -117,34 +118,42 @@ export default function KpiPoliciesPage() {
   const hasData = items.length > 0;
   const content = (
     <>
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
-        <InlineField
-          variant="controlled"
-          label="Name"
-          value={newName}
-          placeholder="Seller KPI gate Q2"
-          disabled={creating}
-          onValueChange={setNewName}
-          className="mb-3"
-        />
-        <div className="mb-4 grid gap-3 md:grid-cols-2">
-          <KpiPolicyCapField
-            value={newCapMultiplier}
-            disabled={creating}
-            onChange={setNewCapMultiplier}
-          />
-          <KpiPolicyTargetField
-            value={newTargetAmount}
-            disabled={creating}
-            onChange={setNewTargetAmount}
-          />
+      <div className="border-border bg-card relative overflow-hidden rounded-2xl border p-4">
+        <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
+        <div className="relative mb-3 flex items-center gap-2.5">
+          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+            <Target size={15} />
+          </div>
+          <h2 className="text-foreground text-sm font-semibold">New policy</h2>
         </div>
-        <KpiGateBandEditor bands={newBands} onChange={setNewBands} disabled={creating} />
-        <div className="mt-4 flex justify-end">
-          <Button type="button" size="sm" disabled={creating} onClick={() => void handleCreate()}>
-            {creating ? 'Creating…' : 'Create policy'}
-          </Button>
+        <div className="relative">
+          <InlineField
+            variant="controlled"
+            label="Name"
+            value={newName}
+            placeholder="Seller KPI gate Q2"
+            disabled={creating}
+            onValueChange={setNewName}
+            className="mb-3"
+          />
+          <div className="mb-4 grid gap-3 md:grid-cols-2">
+            <KpiPolicyCapField
+              value={newCapMultiplier}
+              disabled={creating}
+              onChange={setNewCapMultiplier}
+            />
+            <KpiPolicyTargetField
+              value={newTargetAmount}
+              disabled={creating}
+              onChange={setNewTargetAmount}
+            />
+          </div>
+          <KpiGateBandEditor bands={newBands} onChange={setNewBands} disabled={creating} />
+          <div className="mt-4 flex justify-end">
+            <Button type="button" size="sm" disabled={creating} onClick={() => void handleCreate()}>
+              {creating ? 'Creating…' : 'Create policy'}
+            </Button>
+          </div>
         </div>
       </div>
       <div className="space-y-4">
@@ -177,12 +186,7 @@ export default function KpiPoliciesPage() {
   useCompanySectionTabs('kpi', refresh);
 
   return (
-    <div className="flex flex-col gap-6">
-      <p className="text-muted-foreground text-sm">
-        Payout multipliers by plan attainment % and monthly bonus cap (× base salary). Assign on
-        each compensation profile; payroll attach applies both for SALES releases and carry-over.
-      </p>
-
+    <div className="flex flex-col gap-4">
       {error && hasData ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}

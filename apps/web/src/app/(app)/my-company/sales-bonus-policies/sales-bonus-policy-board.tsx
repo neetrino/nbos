@@ -24,13 +24,13 @@ const MODEL_COPY: Record<
     icon: Receipt,
   },
   SUBSCRIPTION_FIRST_MONTH: {
-    title: 'First invoice',
-    hint: 'Subscription, first paid invoice',
+    title: 'Subscription',
+    hint: "One month's amount, after the first invoice is paid",
     icon: BadgePercent,
   },
   SUBSCRIPTION_RECURRING: {
-    title: 'Month 2+',
-    hint: 'Each later paid invoice',
+    title: 'Later months',
+    hint: 'Each invoice after the first. Zero pays no bonus',
     icon: Repeat,
   },
 };
@@ -155,7 +155,7 @@ function PolicyRateEditor({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-foreground truncate text-sm font-medium">{copy.title}</p>
-        <p className="text-muted-foreground truncate text-xs">{copy.hint}</p>
+        <p className="text-muted-foreground line-clamp-2 text-xs">{copy.hint}</p>
       </div>
       <PercentField label="Seller" value={sellerPercent} onChange={setSellerPercent} />
       <PercentField label="Assistant" value={assistantPercent} onChange={setAssistantPercent} />

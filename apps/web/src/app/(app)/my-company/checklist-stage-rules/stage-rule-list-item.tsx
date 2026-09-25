@@ -1,9 +1,9 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { ListChecks, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared';
-import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
+import { PRODUCT_CATEGORIES } from '@/features/projects/constants/projects';
 import type {
   DeliveryChecklistTarget,
   DeliveryStageCanon,
@@ -43,36 +43,26 @@ export function StageRuleListItem({ row, onToggleActive, onDelete }: Props) {
   return (
     <li
       className={cn(
-        'border-border/80 flex flex-col gap-4 border-b px-4 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6',
-        !row.isActive && 'bg-muted/20',
+        'flex items-center gap-2.5 rounded-xl px-1.5 py-1.5',
+        !row.isActive && 'opacity-55',
       )}
     >
-      <div className="min-w-0 flex-1 space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge label={TARGET_LABEL[row.target]} variant="indigo" />
-          <StatusBadge label={STAGE_LABEL[row.deliveryStage]} variant="violet" />
-          <StatusBadge
-            label={row.isActive ? 'Active' : 'Paused'}
-            variant={row.isActive ? 'green' : 'gray'}
-          />
-        </div>
-        <p className="text-foreground text-base font-medium tracking-tight">
-          {row.checklistTemplate.name}
-        </p>
-        <p className="text-muted-foreground text-xs leading-relaxed">
-          Priority {row.priority}
-          {row.target === 'PRODUCT' ? (
-            <>
-              {' '}
-              · Category{' '}
-              {labelFromOptions([...PRODUCT_CATEGORIES], row.filterProductCategory, 'any')} · Type{' '}
-              {labelFromOptions([...PRODUCT_TYPES], row.filterProductType, 'any')}
-            </>
-          ) : (
-            <> · Applies to every extension in this stage</>
-          )}
+      <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+        <ListChecks size={14} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-foreground truncate text-sm font-medium">{row.checklistTemplate.name}</p>
+        <p className="text-muted-foreground truncate text-xs">
+          {TARGET_LABEL[row.target]} · {STAGE_LABEL[row.deliveryStage]} · Priority {row.priority}
+          {row.target === 'PRODUCT'
+            ? ` · ${labelFromOptions([...PRODUCT_CATEGORIES], row.filterProductCategory, 'any category')}`
+            : ''}
         </p>
       </div>
+      <StatusBadge
+        label={row.isActive ? 'Active' : 'Paused'}
+        variant={row.isActive ? 'green' : 'gray'}
+      />
       <div className="flex shrink-0 flex-wrap items-center gap-2">
         <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
           <Button variant="outline" size="sm" onClick={() => void onToggleActive(row)}>

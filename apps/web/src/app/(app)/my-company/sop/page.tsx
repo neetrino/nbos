@@ -2,13 +2,70 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ClipboardList, BookOpenText, RefreshCw } from 'lucide-react';
+import { BookOpenText, ClipboardList, RefreshCw } from 'lucide-react';
 import { StatusBadge, useModuleHeroSlots } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { CompanyStatCard } from '@/features/hr/components/MyCompanyHubCards';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 
 const SOP_REVIEW_DUE_DAYS = 30;
+
+function SopLibrary({ docs, loading }: { docs: DocumentListItem[]; loading: boolean }) {
+  return (
+    <section className="border-border bg-card relative overflow-hidden rounded-2xl border p-4">
+      <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
+      <div className="relative flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+            <BookOpenText size={15} />
+          </div>
+          <h2 className="text-foreground text-sm font-semibold">SOP library</h2>
+        </div>
+        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+          {loading ? '…' : docs.length}
+        </span>
+      </div>
+      {loading ? (
+        <p className="text-muted-foreground relative mt-3 text-xs">Loading…</p>
+      ) : docs.length === 0 ? (
+        <p className="text-muted-foreground relative mt-3 text-xs">
+          No SOP documents yet. Create them in Documents.
+        </p>
+      ) : (
+        <ul className="relative mt-3 flex flex-col gap-1">
+          {docs.map((row) => (
+            <SopLibraryRow key={row.id} row={row} />
+          ))}
+        </ul>
+      )}
+      <div className="relative mt-3 flex flex-wrap gap-2">
+        <Link href="/documents" className="text-primary text-xs font-medium">
+          Open Documents
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function SopLibraryRow({ row }: { row: DocumentListItem }) {
+  const ageDays = daysFromNow(row.updatedAt);
+  const inQueue = ageDays >= SOP_REVIEW_DUE_DAYS;
+  return (
+    <li className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5">
+      <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+        {row.title.slice(0, 2).toUpperCase()}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-foreground truncate text-sm font-medium">{row.title}</p>
+        <p className="text-muted-foreground truncate text-xs">
+          {row.section?.name ?? 'No section'} · {new Date(row.updatedAt).toLocaleDateString()}
+        </p>
+      </div>
+      <StatusBadge label={row.status} variant={row.status === 'PUBLISHED' ? 'green' : 'gray'} />
+      <StatusBadge label={inQueue ? 'Review due' : 'Fresh'} variant={inQueue ? 'amber' : 'blue'} />
+    </li>
+  );
+}
 
 function daysFromNow(iso: string): number {
   const now = new Date();
@@ -63,13 +120,8 @@ export default function SopPage() {
   useModuleHeroSlots(slots);
 
   return (
-    <div className="space-y-6">
-      <p className="text-muted-foreground text-sm">
-        SOP library from Documents: what needs review, which sections are covered, and who owns the
-        process.
-      </p>
-
-      <div className="grid gap-2 sm:grid-cols-3">
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <CompanyStatCard
           icon={<BookOpenText size={16} aria-hidden />}
           label="SOP documents"
@@ -90,85 +142,7 @@ export default function SopPage() {
         />
       </div>
 
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <StatusBadge label="Runtime slice" variant="blue" />
-          <p className="text-muted-foreground text-sm">
-            Process Templates / Runs persistence remains a deeper phase; this screen now provides
-            live SOP library and review queue using Documents data.
-          </p>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {(
-            [
-              ['/my-company/checklist-templates', 'Checklist templates'],
-              ['/documents', 'Documents'],
-              ['/tasks', 'Tasks'],
-              ['/my-company/team', 'Team'],
-            ] as const
-          ).map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              className="border-border hover:border-primary/40 rounded-xl border px-3 py-2 text-sm font-medium"
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="border-border bg-card overflow-hidden rounded-2xl border">
-        <div className="border-border flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-sm font-semibold">SOP Library (search: &quot;sop&quot;)</h2>
-          {loading ? <span className="text-muted-foreground text-xs">Loading…</span> : null}
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted/40 text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 text-left">Title</th>
-                <th className="px-4 py-2 text-left">Section</th>
-                <th className="px-4 py-2 text-left">Status</th>
-                <th className="px-4 py-2 text-left">Updated</th>
-                <th className="px-4 py-2 text-left">Review</th>
-              </tr>
-            </thead>
-            <tbody>
-              {docs.map((row) => {
-                const ageDays = daysFromNow(row.updatedAt);
-                const inQueue = ageDays >= SOP_REVIEW_DUE_DAYS;
-                return (
-                  <tr key={row.id} className="border-border border-t">
-                    <td className="px-4 py-2">{row.title}</td>
-                    <td className="px-4 py-2">{row.section?.name ?? '—'}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge
-                        label={row.status}
-                        variant={row.status === 'PUBLISHED' ? 'green' : 'gray'}
-                      />
-                    </td>
-                    <td className="px-4 py-2">{new Date(row.updatedAt).toLocaleDateString()}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge
-                        label={inQueue ? 'Review due' : 'Fresh'}
-                        variant={inQueue ? 'amber' : 'blue'}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-              {!loading && docs.length === 0 ? (
-                <tr>
-                  <td className="text-muted-foreground px-4 py-6 text-center" colSpan={5}>
-                    No SOP-like documents found. Create SOP docs in Documents section.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <SopLibrary docs={docs} loading={loading} />
     </div>
   );
 }

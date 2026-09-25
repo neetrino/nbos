@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ClipboardList, Loader2, Route } from 'lucide-react';
-import { DeleteConfirmDialog, StatusBadge, useDeleteConfirm } from '@/components/shared';
+import { ClipboardList, Route } from 'lucide-react';
+import { DeleteConfirmDialog, useDeleteConfirm } from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { Card } from '@/components/ui/card';
 import {
@@ -66,38 +66,23 @@ export default function ChecklistStageRulesPage() {
   useCompanySectionTabs('checklists');
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-10">
-      <p className="text-muted-foreground text-sm">
-        When a product or extension enters a stage, matching rules create checklist instances from
-        the published template snapshot.
-      </p>
-
+    <div className="mx-auto flex max-w-5xl flex-col gap-4 pb-10">
       <NewStageRuleFormCard templates={templates} onCreated={load} />
 
-      <Card className="border-border/80 overflow-hidden shadow-sm shadow-black/[0.04]">
-        <div className="border-border/60 bg-muted/30 flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
-          <div className="text-muted-foreground flex items-center gap-2 text-sm">
-            <Route className="size-4 shrink-0 opacity-70" aria-hidden />
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="size-4 animate-spin" aria-hidden />
-                Loading rules…
-              </span>
-            ) : (
-              <span>
-                {rules.length} rule{rules.length === 1 ? '' : 's'} ·{' '}
-                <span className="text-foreground font-medium">{activeRuleCount} active</span>
-              </span>
-            )}
-          </div>
-          {!loading && rules.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              <StatusBadge label="Active" variant="green" dot dotColor="bg-emerald-500" />
-              <StatusBadge label="Paused" variant="gray" dot dotColor="bg-zinc-400" />
+      <Card className="border-border bg-card relative overflow-hidden rounded-2xl border p-4 shadow-none">
+        <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
+        <div className="relative flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+              <Route size={15} />
             </div>
-          ) : null}
+            <h2 className="text-foreground text-sm font-semibold">Stage rules</h2>
+          </div>
+          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+            {loading ? '…' : `${activeRuleCount}/${rules.length}`}
+          </span>
         </div>
-        <ul className="divide-border/60 divide-y">
+        <ul className="relative mt-3 flex flex-col gap-1">
           {rules.map((row) => (
             <StageRuleListItem
               key={row.id}
