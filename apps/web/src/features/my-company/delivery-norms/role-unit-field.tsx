@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { DELIVERY_ROLE_UNIT_KINDS, type DeliveryRoleUnitKind } from '@nbos/shared';
-import { SegmentedTabs } from '@/components/shared';
 import { cn } from '@/lib/utils';
 import {
   ROLE_MESSAGE_KEYS,
@@ -32,8 +31,10 @@ export function RoleUnitField({
 
   return (
     <div className={cn(ROLE_UNIT_CARD_CLASS, disabled && 'pointer-events-none opacity-60')}>
-      <p className="text-muted-foreground truncate text-xs font-medium">{roleName}</p>
-      <div className="flex items-center gap-3">
+      <p className="text-muted-foreground mb-2 truncate text-center text-xs font-medium">
+        {roleName}
+      </p>
+      <div className="flex items-center gap-2">
         <RoleUnitsInput
           row={row}
           label={roleName}
@@ -99,14 +100,23 @@ function RoleKindSwitch({
   onChange: (value: DeliveryRoleUnitKind) => void;
 }) {
   return (
-    <SegmentedTabs
-      className="min-w-0 flex-1"
-      listClassName="flex w-full"
-      buttonClassName="flex-1 px-1.5 py-1 text-xs"
-      ariaLabel={label}
-      value={value}
-      onChange={onChange}
-      options={DELIVERY_ROLE_UNIT_KINDS.map((kind) => ({ value: kind, label: labels[kind] }))}
-    />
+    <div role="group" aria-label={label} className="flex min-w-0 flex-1 flex-col gap-1">
+      {DELIVERY_ROLE_UNIT_KINDS.map((kind) => (
+        <button
+          key={kind}
+          type="button"
+          aria-pressed={kind === value}
+          className={cn(
+            'rounded-md px-2 py-1 text-xs font-medium',
+            kind === value
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-muted',
+          )}
+          onClick={() => onChange(kind)}
+        >
+          {labels[kind]}
+        </button>
+      ))}
+    </div>
   );
 }
