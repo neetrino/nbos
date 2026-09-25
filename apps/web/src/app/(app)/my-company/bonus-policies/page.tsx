@@ -100,7 +100,7 @@ export default function BonusPoliciesPage() {
         errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
         emptyFallback={<p className="text-muted-foreground text-sm">No policies yet.</p>}
       >
-        <ul className="grid grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-4">
+        <ul className="grid w-full grid-cols-2 items-stretch gap-3 xl:grid-cols-3 2xl:grid-cols-4">
           {items.map((policy) => (
             <BonusPolicyCard
               key={policy.id}

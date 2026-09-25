@@ -37,22 +37,22 @@ export function BonusPolicyCard({
   const hint = bonusPolicyTemplateOption(policy.templateCode)?.hint;
 
   return (
-    <li>
+    <li className="flex min-w-0">
       <button
         type="button"
         onClick={() => onOpen(policy)}
         className={cn(
-          'border-border bg-card hover:border-primary/40 flex w-full flex-col gap-3 rounded-2xl border p-4 text-left transition-colors',
+          'border-border bg-card hover:border-primary/40 flex h-full w-full min-w-0 flex-col gap-3 rounded-2xl border p-4 text-left transition-colors',
           policy.status === 'ARCHIVED' && 'opacity-70',
         )}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex min-w-0 items-start gap-3">
           <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-xl">
             <Percent className="size-4" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <p className="truncate text-sm font-semibold">{policy.name}</p>
+            <div className="flex min-w-0 items-start justify-between gap-2">
+              <p className="min-w-0 flex-1 truncate text-sm font-semibold">{policy.name}</p>
               <StatusBadge
                 label={STATUS_LABEL[policy.status]}
                 variant={STATUS_VARIANT[policy.status]}
@@ -64,10 +64,10 @@ export function BonusPolicyCard({
             </p>
           </div>
         </div>
-        {hint ? (
-          <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">{hint}</p>
-        ) : null}
-        <p className="text-muted-foreground text-xs">
+        <p className="text-muted-foreground line-clamp-2 min-h-8 text-xs leading-relaxed">
+          {hint ?? ''}
+        </p>
+        <p className="text-muted-foreground mt-auto text-xs">
           {assignmentLabel(policy.linkedProfileCount)}
         </p>
       </button>
