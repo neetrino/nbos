@@ -17,6 +17,7 @@ import {
   ROLE_UNITS_INPUT_CLASS,
   ROLE_UNIT_AMOUNT_CLASS,
   ROLE_UNIT_DIVIDER_CLASS,
+  ROLE_UNIT_NAME_CLASS,
   ROLE_UNIT_ROW_CLASS,
 } from './delivery-norms.constants';
 import type { RoleUnitDraftRow } from './role-units-draft';
@@ -51,7 +52,7 @@ export function RoleUnitField({
         />
       </div>
       <span className={ROLE_UNIT_DIVIDER_CLASS} aria-hidden />
-      <p className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">{roleName}</p>
+      <p className={ROLE_UNIT_NAME_CLASS}>{roleName}</p>
       <span className={ROLE_UNIT_DIVIDER_CLASS} aria-hidden />
       <RoleKindSelect
         value={row.unitKind}

@@ -89,7 +89,10 @@ export const ROLE_UNIT_ROW_CLASS =
   'border-border bg-card flex items-center gap-2.5 rounded-xl border py-1.5 pr-1.5 pl-1.5 shadow-sm';
 
 export const ROLE_UNIT_AMOUNT_CLASS =
-  'bg-muted/50 flex h-10 w-14 shrink-0 items-center rounded-lg px-1';
+  'bg-muted/50 flex h-11 w-[4.75rem] shrink-0 items-center rounded-xl px-1.5';
+
+export const ROLE_UNIT_NAME_CLASS =
+  'text-foreground min-w-0 flex-1 truncate text-base font-semibold';
 
 export const ROLE_UNITS_INPUT_CLASS =
   'text-foreground h-9 w-full bg-transparent text-center text-2xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/40 disabled:cursor-default';
