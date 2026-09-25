@@ -91,8 +91,8 @@ export function RelationPickerChip({
   /** Person chips: truncate with title — keep min-w-0 on ancestors so ellipsis uses full row width. */
   const personLabelClass = cn(
     'text-foreground block min-w-0 truncate font-semibold transition-colors',
-    'group-hover/open:text-sky-600 group-focus-within/open:text-sky-600',
-    'dark:group-hover/open:text-sky-400 dark:group-focus-within/open:text-sky-400',
+    'group-hover/open:text-sky-700 group-focus-within/open:text-sky-700 group-active/open:text-sky-700',
+    'dark:group-hover/open:text-sky-300 dark:group-focus-within/open:text-sky-300',
   );
 
   const sheetLabel =
@@ -214,6 +214,7 @@ export function RelationPickerChip({
               className={cn(
                 RELATION_PICKER_SHEET_TARGET_BUTTON_CLASS,
                 'flex w-full min-w-0 items-center gap-2.5 overflow-visible text-left',
+                'focus-visible:ring-0 focus-visible:ring-offset-0',
               )}
               aria-label={t('openNamed', { label })}
             >
