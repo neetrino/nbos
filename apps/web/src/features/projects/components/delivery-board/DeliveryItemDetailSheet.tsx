@@ -470,7 +470,6 @@ export function DeliveryItemDetailSheet({
                       workSpaceHref={headerProps.workSpaceHref}
                       sourcePageHref={headerProps.sourcePageHref}
                       credentialsTabHref={credentialsTabHref}
-                      projectHubHref={projectHubHref}
                       onRefreshDetail={refreshDetailAndBoard}
                       productPlan={productPlan}
                       onProductPlanChange={setProductPlan}

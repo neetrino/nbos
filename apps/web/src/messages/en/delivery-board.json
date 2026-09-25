@@ -159,6 +159,7 @@
     "title": "Client & order",
     "client": "Client",
     "company": "Company",
+    "order": "Order",
     "deal": "Deal",
     "project": "Project",
     "product": "Product",

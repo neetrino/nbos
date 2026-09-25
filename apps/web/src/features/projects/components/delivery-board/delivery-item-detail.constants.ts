@@ -23,10 +23,11 @@ export const DELIVERY_DETAIL_SHEET_CONTENT_CLASS =
 export const DELIVERY_DETAIL_SHEET_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[60vw]`;
 
 /**
- * General tab: wider left (planning, access, team) + narrow Stage readiness / Client & order column.
+ * General tab: planning / access / team on the left, Stage readiness / Client & order on the right.
+ * Right column min 20rem / max 24rem — enough for 2×2 commercial actions, still narrower than left.
  */
 export const DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS =
-  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_14rem] xl:items-start xl:gap-4';
+  'grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)] xl:items-start xl:gap-4';
 
 /**
  * Right column (Stage readiness + Client & order) — sticks while the left column scrolls.

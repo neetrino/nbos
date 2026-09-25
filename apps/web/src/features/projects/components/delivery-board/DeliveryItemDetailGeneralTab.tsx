@@ -34,7 +34,6 @@ interface DeliveryItemDetailGeneralTabProps {
   workSpaceHref: string;
   sourcePageHref: string;
   credentialsTabHref: string;
-  projectHubHref: string;
   onRefreshDetail: () => void;
   productPlan: ProductPlanSnapshot | null;
   onProductPlanChange: (next: ProductPlanSnapshot) => void;
@@ -53,7 +52,6 @@ export function DeliveryItemDetailGeneralTab({
   workSpaceHref,
   sourcePageHref,
   credentialsTabHref,
-  projectHubHref,
   onRefreshDetail,
   productPlan,
   onProductPlanChange,
@@ -178,7 +176,6 @@ export function DeliveryItemDetailGeneralTab({
             kind={kind}
             product={product}
             extension={extension}
-            projectHubHref={projectHubHref}
             sourcePageHref={sourcePageHref}
             credentialsTabHref={credentialsTabHref}
             gateRequiredFields={gateRequiredFields}
