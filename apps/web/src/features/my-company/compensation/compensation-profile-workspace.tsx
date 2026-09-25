@@ -1,9 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StatusBadge } from '@/components/shared';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { DetailSheetFormFooter, DetailSheetTabBar } from '@/components/shared';
 import { CompensationProfileFields } from '@/features/my-company/compensation/compensation-profile-fields';
-import type { StatusVariant } from '@/components/shared/StatusBadge';
+import { SalaryHistoryList } from '@/features/my-company/compensation/salary-history-list';
+import {
+  bonusNote,
+  isSalaryFormDirty,
+  kpiNote,
+  replaceActivated,
+  salaryNote,
+  salarySheetTabs,
+  SalaryActivateConfirm,
+  type SalaryFormSnapshot,
+} from '@/features/my-company/compensation/salary-sheet-parts';
+import { TEAM_SHEET_BODY_CLASS } from '@/features/hr/constants/team-sheet-layout';
 import {
   compensationProfilesApi,
   type CompensationProfileRow,
@@ -11,15 +23,9 @@ import {
 import { bonusPoliciesApi, type BonusPolicyRow } from '@/lib/api/bonus-policies';
 import { kpiPoliciesApi, type KpiPolicyRow } from '@/lib/api/kpi-policies';
 import type { Employee } from '@/lib/api/employees';
+import { parseMoneyAmount } from '@/lib/format/money';
 import { DEFAULT_KPI_POLICY_ID } from '@/lib/constants/default-kpi-policy-id';
 import { BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES } from '@/features/my-company/compensation/bonus-policy-template-codes';
-
-const STATUS_VARIANT: Record<string, StatusVariant> = {
-  ACTIVE: 'green',
-  DRAFT: 'amber',
-  REVIEW: 'blue',
-  ARCHIVED: 'gray',
-};
 
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
@@ -29,15 +35,14 @@ export function CompensationProfileWorkspace({
   employees,
   initialEmployeeId = '',
   onSalaryActivated,
-  onEditorState,
-  activateRef,
 }: {
   employees: readonly Employee[];
   initialEmployeeId?: string;
   onSalaryActivated?: (employeeId: string, baseSalary: string) => void;
-  onEditorState?: (state: { canActivate: boolean; busy: boolean }) => void;
-  activateRef?: { current: () => void };
 }) {
+  const t = useTranslations('hr.salaries');
+  const [tab, setTab] = useState('general');
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(initialEmployeeId);
   const [profiles, setProfiles] = useState<CompensationProfileRow[]>([]);
   const [bonusPolicies, setBonusPolicies] = useState<BonusPolicyRow[]>([]);
@@ -66,19 +71,22 @@ export function CompensationProfileWorkspace({
     [profiles],
   );
 
-  const loadProfiles = useCallback(async (employeeId: string) => {
-    setLoading(true);
-    try {
-      const resp = await compensationProfilesApi.listForEmployee(employeeId);
-      setProfiles(resp.items);
-      setError(null);
-    } catch {
-      setError('Could not load compensation profiles for this employee.');
-      setProfiles([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadProfiles = useCallback(
+    async (employeeId: string) => {
+      setLoading(true);
+      try {
+        const resp = await compensationProfilesApi.listForEmployee(employeeId);
+        setProfiles(resp.items);
+        setError(null);
+      } catch {
+        setError(t('loadFailed'));
+        setProfiles([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     void Promise.all([bonusPoliciesApi.list(), kpiPoliciesApi.list()]).then(([bonus, kpi]) => {
@@ -109,40 +117,53 @@ export function CompensationProfileWorkspace({
     setBaseSalary(source.baseSalary);
     setBonusPolicyId(source.bonusPolicyId ?? '');
     setKpiPolicyId(source.kpiPolicyId ?? '');
+    setEffectiveFrom(source.effectiveFrom.slice(0, 10));
   }, [draftProfile, activeProfile]);
 
-  const handleSaveDraft = async () => {
-    if (!selectedId) return;
-    const salary = Number.parseFloat(baseSalary);
-    if (!Number.isFinite(salary) || salary < 0) {
-      setError('Enter a valid minimum salary.');
+  const requestSave = () => {
+    const salary = parseMoneyAmount(baseSalary);
+    if (!selectedId || baseSalary.trim() === '' || salary < 0) {
+      setError(t('invalidSalary'));
       return;
     }
+    setError(null);
+    setConfirmOpen(true);
+  };
+
+  const confirmSave = async () => {
+    if (!selectedId) return;
+    const salary = parseMoneyAmount(baseSalary);
     setBusy(true);
     try {
-      if (draftProfile) {
-        const updated = await compensationProfilesApi.patchDraft(draftProfile.id, {
-          baseSalary: salary,
-          effectiveFrom,
-          bonusPolicyId: bonusPolicyId || null,
-          kpiPolicyId: kpiPolicyId || null,
-        });
-        setProfiles((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-      } else {
-        const created = await compensationProfilesApi.createDraft(selectedId, {
-          baseSalary: salary,
-          effectiveFrom,
-          bonusPolicyId: bonusPolicyId || undefined,
-          kpiPolicyId: kpiPolicyId || undefined,
-        });
-        setProfiles((prev) => [created, ...prev]);
-      }
+      const saved = await persistDraft(selectedId, salary);
+      const updated = await compensationProfilesApi.activate(saved.id);
+      setProfiles((prev) => replaceActivated(prev, updated));
+      onSalaryActivated?.(updated.employeeId, updated.baseSalary);
+      setConfirmOpen(false);
       setError(null);
     } catch {
-      setError('Could not save the salary draft.');
+      setError(t('saveFailed'));
     } finally {
       setBusy(false);
     }
+  };
+
+  const persistDraft = async (employeeId: string, salary: number) => {
+    const payload = {
+      baseSalary: salary,
+      effectiveFrom,
+      bonusPolicyId: bonusPolicyId || null,
+      kpiPolicyId: kpiPolicyId || null,
+    };
+    if (draftProfile) {
+      return compensationProfilesApi.patchDraft(draftProfile.id, payload);
+    }
+    return compensationProfilesApi.createDraft(employeeId, {
+      baseSalary: salary,
+      effectiveFrom,
+      bonusPolicyId: bonusPolicyId || undefined,
+      kpiPolicyId: kpiPolicyId || undefined,
+    });
   };
 
   const handleBonusPolicy = (nextId: string) => {
@@ -154,88 +175,101 @@ export function CompensationProfileWorkspace({
     }
   };
 
-  const handleActivate = async (profileId: string) => {
-    setBusy(true);
-    try {
-      const updated = await compensationProfilesApi.activate(profileId);
-      setProfiles((prev) =>
-        prev.map((p) => {
-          if (p.id === updated.id) return updated;
-          if (p.status === 'ACTIVE' && p.id !== updated.id) {
-            return { ...p, status: 'ARCHIVED' as const };
-          }
-          return p;
-        }),
-      );
-      onSalaryActivated?.(updated.employeeId, updated.baseSalary);
-      setError(null);
-    } catch {
-      setError('Could not activate profile.');
-    } finally {
-      setBusy(false);
-    }
+  const activeSalaryNote = salaryNote(activeProfile, baseSalary, (amount) =>
+    t('activeSalary', { amount }),
+  );
+  const activeKpiNote = kpiNote(activeProfile, kpiPolicyId, t('kpiOff'), (name) =>
+    t('activeKpi', { name }),
+  );
+  const activeBonusNote = bonusNote(activeProfile, bonusPolicyId, t('bonusOff'), (name) =>
+    t('activeBonus', { name }),
+  );
+  const savedSnapshot = savedSalarySnapshot(
+    draftProfile ?? activeProfile,
+    employees.find((row) => row.id === selectedId)?.baseSalary ?? '',
+  );
+  const dirty = isSalaryFormDirty(
+    { baseSalary, effectiveFrom, bonusPolicyId, kpiPolicyId },
+    savedSnapshot,
+  );
+  const resetForm = () => {
+    setBaseSalary(savedSnapshot.baseSalary);
+    setEffectiveFrom(savedSnapshot.effectiveFrom);
+    setBonusPolicyId(savedSnapshot.bonusPolicyId);
+    setKpiPolicyId(savedSnapshot.kpiPolicyId);
+    setError(null);
   };
 
-  const draftId = draftProfile?.id ?? null;
-  const activateCurrent = useRef(handleActivate);
-  activateCurrent.current = handleActivate;
-  if (activateRef) {
-    activateRef.current = () => {
-      if (draftId) void activateCurrent.current(draftId);
-    };
-  }
-
-  useEffect(() => {
-    onEditorState?.({ canActivate: draftId != null && !busy, busy });
-  }, [busy, draftId, onEditorState]);
-
   return (
-    <div className="space-y-4">
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
-
-      {selectedId ? (
-        <>
-          {loading ? (
-            <p className="text-muted-foreground text-sm">Loading profiles…</p>
-          ) : (
-            <ul className="space-y-2">
-              {profiles.map((p) => (
-                <li
-                  key={p.id}
-                  className="border-border bg-card flex flex-wrap items-center gap-2 rounded-2xl border px-4 py-3 text-sm"
-                >
-                  <StatusBadge label={p.status} variant={STATUS_VARIANT[p.status] ?? 'gray'} />
-                  <span className="tabular-nums">
-                    {p.baseSalary} {p.currency}
-                  </span>
-                  <span className="text-muted-foreground">from {p.effectiveFrom}</span>
-                  <span className="text-muted-foreground">Bonus: {p.bonusPolicy?.name ?? '—'}</span>
-                  <span className="text-muted-foreground">KPI: {p.kpiPolicy?.name ?? '—'}</span>
-                </li>
-              ))}
-              {profiles.length === 0 ? (
-                <li className="text-muted-foreground text-sm">No profiles yet.</li>
-              ) : null}
-            </ul>
-          )}
-
-          <CompensationProfileFields
-            busy={busy}
-            bonusPolicyId={bonusPolicyId}
-            kpiPolicyId={kpiPolicyId}
-            bonusPolicies={activeBonusPolicies}
-            kpiPolicies={activeKpiPolicies}
-            baseSalary={baseSalary}
-            effectiveFrom={effectiveFrom}
-            hasDraft={draftProfile != null}
-            onBonusPolicy={handleBonusPolicy}
-            onKpiPolicy={setKpiPolicyId}
-            onBaseSalary={setBaseSalary}
-            onEffectiveFrom={setEffectiveFrom}
-            onSaveDraft={() => void handleSaveDraft()}
-          />
-        </>
-      ) : null}
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className={TEAM_SHEET_BODY_CLASS}>
+          {error && !dirty ? <p className="text-destructive text-sm">{error}</p> : null}
+          {selectedId ? (
+            <>
+              <DetailSheetTabBar
+                tabs={salarySheetTabs(t('tabGeneral'), t('tabHistory'))}
+                activeTab={tab}
+                onTabChange={setTab}
+              />
+              {tab === 'history' ? (
+                <SalaryHistoryList profiles={profiles} />
+              ) : (
+                <CompensationProfileFields
+                  busy={busy || loading}
+                  bonusPolicyId={bonusPolicyId}
+                  kpiPolicyId={kpiPolicyId}
+                  bonusPolicies={activeBonusPolicies}
+                  kpiPolicies={activeKpiPolicies}
+                  baseSalary={baseSalary}
+                  effectiveFrom={effectiveFrom}
+                  activeSalaryNote={activeSalaryNote}
+                  activeKpiNote={activeKpiNote}
+                  activeBonusNote={activeBonusNote}
+                  onBonusPolicy={handleBonusPolicy}
+                  onKpiPolicy={setKpiPolicyId}
+                  onBaseSalary={setBaseSalary}
+                  onEffectiveFrom={setEffectiveFrom}
+                />
+              )}
+            </>
+          ) : null}
+        </div>
+      </div>
+      <DetailSheetFormFooter
+        visible={tab === 'general' && selectedId !== ''}
+        dirty={dirty}
+        saving={busy}
+        errorMessage={dirty ? error : null}
+        onSave={requestSave}
+        onCancel={resetForm}
+      />
+      <SalaryActivateConfirm
+        open={confirmOpen}
+        busy={busy}
+        onOpenChange={setConfirmOpen}
+        onConfirm={() => void confirmSave()}
+      />
     </div>
   );
+}
+
+function savedSalarySnapshot(
+  source: CompensationProfileRow | null,
+  employeeSalary: string,
+): SalaryFormSnapshot {
+  if (!source) {
+    return {
+      baseSalary: employeeSalary,
+      effectiveFrom: todayIsoDate(),
+      bonusPolicyId: '',
+      kpiPolicyId: '',
+    };
+  }
+  return {
+    baseSalary: source.baseSalary,
+    effectiveFrom: source.effectiveFrom.slice(0, 10),
+    bonusPolicyId: source.bonusPolicyId ?? '',
+    kpiPolicyId: source.kpiPolicyId ?? '',
+  };
 }

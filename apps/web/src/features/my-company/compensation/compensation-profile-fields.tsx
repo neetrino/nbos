@@ -1,6 +1,8 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Calendar, CircleDollarSign, Percent } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
 import {
@@ -33,12 +35,13 @@ export function CompensationProfileFields({
   kpiPolicies,
   baseSalary,
   effectiveFrom,
-  hasDraft,
+  activeSalaryNote,
+  activeKpiNote,
+  activeBonusNote,
   onBonusPolicy,
   onKpiPolicy,
   onBaseSalary,
   onEffectiveFrom,
-  onSaveDraft,
 }: {
   busy: boolean;
   bonusPolicyId: string;
@@ -47,18 +50,27 @@ export function CompensationProfileFields({
   kpiPolicies: readonly KpiPolicyRow[];
   baseSalary: string;
   effectiveFrom: string;
-  hasDraft: boolean;
+  activeSalaryNote: string | null;
+  activeKpiNote: string | null;
+  activeBonusNote: string | null;
   onBonusPolicy: (id: string) => void;
   onKpiPolicy: (id: string) => void;
   onBaseSalary: (value: string) => void;
   onEffectiveFrom: (value: string) => void;
-  onSaveDraft: () => void;
 }) {
   const template = bonusPolicies.find((p) => p.id === bonusPolicyId)?.templateCode ?? null;
   const kpi = kpiPolicies.find((p) => p.id === kpiPolicyId) ?? null;
 
   return (
     <>
+      <SalaryDraftFields
+        busy={busy}
+        baseSalary={baseSalary}
+        effectiveFrom={effectiveFrom}
+        activeSalaryNote={activeSalaryNote}
+        onBaseSalary={onBaseSalary}
+        onEffectiveFrom={onEffectiveFrom}
+      />
       <BonusAndKpiFields
         busy={busy}
         bonusPolicyId={bonusPolicyId}
@@ -71,17 +83,10 @@ export function CompensationProfileFields({
             ? kpi.scorecardMetrics.map((m) => m.label).join(' · ')
             : null
         }
+        activeKpiNote={activeKpiNote}
+        activeBonusNote={activeBonusNote}
         onBonusPolicy={onBonusPolicy}
         onKpiPolicy={onKpiPolicy}
-      />
-      <SalaryDraftFields
-        busy={busy}
-        baseSalary={baseSalary}
-        effectiveFrom={effectiveFrom}
-        hasDraft={hasDraft}
-        onBaseSalary={onBaseSalary}
-        onEffectiveFrom={onEffectiveFrom}
-        onSaveDraft={onSaveDraft}
       />
     </>
   );
@@ -95,6 +100,8 @@ function BonusAndKpiFields({
   kpiPolicies,
   template,
   kpiLabel,
+  activeKpiNote,
+  activeBonusNote,
   onBonusPolicy,
   onKpiPolicy,
 }: {
@@ -105,28 +112,33 @@ function BonusAndKpiFields({
   kpiPolicies: readonly KpiPolicyRow[];
   template: string | null;
   kpiLabel: string | null;
+  activeKpiNote: string | null;
+  activeBonusNote: string | null;
   onBonusPolicy: (id: string) => void;
   onKpiPolicy: (id: string) => void;
 }) {
+  const t = useTranslations('hr.salaries');
   return (
     <DetailSheetSection
-      title="Bonus and KPI"
+      title={t('sectionBonus')}
       icon={<Percent size={12} />}
       className={TEAM_SHEET_SECTION_CLASS}
     >
       <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
         <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">Bonus rule</span>
+          <span className="text-muted-foreground">{t('bonusRule')}</span>
           <Select
             value={bonusPolicyId || 'none'}
             disabled={busy || bonusPolicies.length === 0}
             onValueChange={(v) => onBonusPolicy(!v || v === 'none' ? '' : v)}
           >
             <SelectTrigger className="bg-card h-10 w-full rounded-xl">
-              <SelectValue placeholder="None" />
+              <SelectValue placeholder={t('none')}>
+                {() => bonusPolicies.find((p) => p.id === bonusPolicyId)?.name ?? t('none')}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">None</SelectItem>
+              <SelectItem value="none">{t('none')}</SelectItem>
               {bonusPolicies.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.name}
@@ -134,20 +146,25 @@ function BonusAndKpiFields({
               ))}
             </SelectContent>
           </Select>
+          {activeBonusNote ? (
+            <p className="text-muted-foreground text-xs">{activeBonusNote}</p>
+          ) : null}
           <BonusRuleHint template={template} />
         </label>
         <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">KPI gate</span>
+          <span className="text-muted-foreground">{t('kpiGate')}</span>
           <Select
             value={kpiPolicyId || 'none'}
             disabled={busy || kpiPolicies.length === 0}
             onValueChange={(v) => onKpiPolicy(!v || v === 'none' ? '' : v)}
           >
             <SelectTrigger className="bg-card h-10 w-full rounded-xl">
-              <SelectValue placeholder="None" />
+              <SelectValue placeholder={t('none')}>
+                {() => kpiPolicies.find((p) => p.id === kpiPolicyId)?.name ?? t('none')}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">None</SelectItem>
+              <SelectItem value="none">{t('none')}</SelectItem>
               {kpiPolicies.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.name}
@@ -155,11 +172,12 @@ function BonusAndKpiFields({
               ))}
             </SelectContent>
           </Select>
-          {kpiLabel ? <p className="text-muted-foreground text-xs">Scorecard: {kpiLabel}</p> : null}
+          {activeKpiNote ? <p className="text-muted-foreground text-xs">{activeKpiNote}</p> : null}
+          {kpiLabel ? (
+            <p className="text-muted-foreground text-xs">{t('scorecard', { metrics: kpiLabel })}</p>
+          ) : null}
           {template === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES && !kpiPolicyId ? (
-            <p className="text-muted-foreground text-xs">
-              Sales bonuses are not scaled until you attach a KPI gate.
-            </p>
+            <p className="text-muted-foreground text-xs">{t('salesKpiHint')}</p>
           ) : null}
         </label>
       </div>
@@ -171,28 +189,27 @@ function SalaryDraftFields({
   busy,
   baseSalary,
   effectiveFrom,
-  hasDraft,
+  activeSalaryNote,
   onBaseSalary,
   onEffectiveFrom,
-  onSaveDraft,
 }: {
   busy: boolean;
   baseSalary: string;
   effectiveFrom: string;
-  hasDraft: boolean;
+  activeSalaryNote: string | null;
   onBaseSalary: (value: string) => void;
   onEffectiveFrom: (value: string) => void;
-  onSaveDraft: () => void;
 }) {
+  const t = useTranslations('hr.salaries');
   return (
     <DetailSheetSection
-      title="Minimum salary"
+      title={t('sectionSalary')}
       icon={<CircleDollarSign size={12} />}
       className={TEAM_SHEET_SECTION_CLASS}
     >
       <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
         <NbosMoneyInput
-          label="Amount"
+          label={t('amount')}
           labelClassName="text-muted-foreground text-xs font-normal"
           className="bg-card h-10 rounded-xl"
           value={baseSalary}
@@ -201,7 +218,7 @@ function SalaryDraftFields({
         />
         <label className="space-y-1.5 text-sm">
           <span className="text-muted-foreground flex items-center gap-1 text-xs">
-            Effective from
+            {t('effectiveFrom')}
             <Calendar size={12} />
           </span>
           <Input
@@ -213,51 +230,36 @@ function SalaryDraftFields({
           />
         </label>
       </div>
-      <div className="mt-4 flex justify-end">
-        <Button type="button" disabled={busy} onClick={onSaveDraft}>
-          {hasDraft ? 'Save draft' : 'Create draft'}
-        </Button>
-      </div>
+      {activeSalaryNote ? (
+        <p className="text-muted-foreground mt-3 text-xs">{activeSalaryNote}</p>
+      ) : null}
     </DetailSheetSection>
   );
 }
 
 function BonusRuleHint({ template }: { template: string | null }) {
+  const t = useTranslations('hr.salaries');
   if (template === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES) {
     return (
       <p className="text-muted-foreground text-xs">
-        Percentages are edited under{' '}
+        {t('salesHintBefore')}{' '}
         <Link href="/my-company/sales-bonus-policies" className="text-primary hover:underline">
-          Sales bonus policies
+          {t('salesHintLink')}
         </Link>
-        .
       </p>
     );
   }
   if (template === BONUS_POLICY_TEMPLATE_DELIVERY_PROPORTIONAL_FUNDING) {
-    return (
-      <p className="text-muted-foreground text-xs">
-        Delivery bonuses release when the product is Done and payments fund the pool. Leave KPI
-        empty for developers.
-      </p>
-    );
+    return <p className="text-muted-foreground text-xs">{t('deliveryHint')}</p>;
   }
   if (template === BONUS_POLICY_TEMPLATE_MANUAL_ONLY) {
-    return (
-      <p className="text-muted-foreground text-xs">
-        No automatic accrual — bonuses are created manually in Finance.
-      </p>
-    );
+    return <p className="text-muted-foreground text-xs">{t('manualHint')}</p>;
   }
   if (
     template === BONUS_POLICY_TEMPLATE_MARKETING_MANUAL_PLANNED ||
     template === BONUS_POLICY_TEMPLATE_SUPPORT_MANUAL_PLANNED
   ) {
-    return (
-      <p className="text-muted-foreground text-xs">
-        Create bonus entries on Finance → Bonus board. Automated accrual is not wired yet.
-      </p>
-    );
+    return <p className="text-muted-foreground text-xs">{t('plannedHint')}</p>;
   }
   return null;
 }

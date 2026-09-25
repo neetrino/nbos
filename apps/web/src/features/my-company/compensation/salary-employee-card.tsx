@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/shared';
+import { formatMoneyDram } from '@/lib/format/money';
 import { EmployeePersonAvatar } from '@/components/shared/EmployeePersonAvatar';
 import type { ActiveCompensationSummary } from '@/lib/api/compensation-profiles';
 import type { Employee } from '@/lib/api/employees';
@@ -43,8 +44,8 @@ export function SalaryEmployeeCard({
         {employee.position || employee.role.name}
       </p>
       <div className="border-border mt-5 w-full space-y-1 border-t pt-4 text-left text-sm">
-        <p className="text-foreground tabular-nums">
-          {hasSalary ? `${salary} ${summary?.currency ?? 'AMD'}` : t('notSet')}
+        <p className="text-foreground text-lg font-semibold tabular-nums">
+          {hasSalary ? formatMoneyDram(Number.parseFloat(salary)) : t('notSet')}
         </p>
         <p className="text-muted-foreground truncate">
           {summary?.bonusPolicyName ?? t('bonusOff')}

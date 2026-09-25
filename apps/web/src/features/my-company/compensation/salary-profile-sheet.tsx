@@ -1,12 +1,9 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent } from '@/components/shared/EntityDetailSheetContent';
 import {
-  TEAM_SHEET_BODY_CLASS,
   TEAM_SHEET_HEADER_CLASS,
   TEAM_SHEET_WIDTH,
 } from '@/features/hr/constants/team-sheet-layout';
@@ -25,13 +22,6 @@ export function SalaryProfileSheet({
   onSalaryActivated: (employeeId: string, baseSalary: string) => void;
 }) {
   const t = useTranslations('hr.salaries');
-  const activateRef = useRef<() => void>(() => undefined);
-  const [canActivate, setCanActivate] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const onEditorState = useCallback((state: { canActivate: boolean; busy: boolean }) => {
-    setCanActivate(state.canActivate);
-    setBusy(state.busy);
-  }, []);
   if (!employee) return null;
   const name = `${employee.firstName} ${employee.lastName}`.trim();
 
@@ -45,30 +35,14 @@ export function SalaryProfileSheet({
       >
         <div className="flex h-full min-h-0 flex-col">
           <div className={TEAM_SHEET_HEADER_CLASS}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="truncate text-base font-semibold">{name}</h2>
-                <p className="text-muted-foreground mt-1 text-xs">{t('sheetHint')}</p>
-              </div>
-              <Button
-                type="button"
-                className="shrink-0"
-                disabled={!canActivate || busy}
-                onClick={() => activateRef.current()}
-              >
-                {t('activate')}
-              </Button>
-            </div>
+            <h2 className="truncate text-base font-semibold">{name}</h2>
+            <p className="text-muted-foreground mt-1 text-xs">{t('sheetHint')}</p>
           </div>
-          <div className={`${TEAM_SHEET_BODY_CLASS} min-h-0 flex-1 overflow-y-auto`}>
-            <CompensationProfileWorkspace
-              employees={[employee]}
-              initialEmployeeId={employee.id}
-              activateRef={activateRef}
-              onEditorState={onEditorState}
-              onSalaryActivated={onSalaryActivated}
-            />
-          </div>
+          <CompensationProfileWorkspace
+            employees={[employee]}
+            initialEmployeeId={employee.id}
+            onSalaryActivated={onSalaryActivated}
+          />
         </div>
       </EntityDetailSheetContent>
     </Sheet>
