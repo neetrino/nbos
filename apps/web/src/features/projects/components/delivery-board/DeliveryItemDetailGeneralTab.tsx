@@ -20,6 +20,7 @@ import { DeliveryItemStageReadinessSection } from './DeliveryItemStageReadinessS
 import { DeliveryStageChecklistPanel } from './DeliveryStageChecklistPanel';
 import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
 import { DeliveryItemCommercialSection } from './DeliveryItemCommercialSection';
+import { DeliveryItemCompositionSection } from './delivery-item-composition-section';
 import { DeliveryItemFilesSection } from './DeliveryItemFilesSection';
 import {
   DELIVERY_DETAIL_GENERAL_TAB_GRID_CLASS,
@@ -171,6 +172,16 @@ export function DeliveryItemDetailGeneralTab({
             checklistProgress={checklistProgress}
             gateRequiredFields={gateRequiredFields}
             stageGateActionBlockers={stageGateActionBlockers}
+          />
+          <DeliveryItemCompositionSection
+            target={
+              kind === 'PRODUCT'
+                ? { kind: 'product', id: productId }
+                : { kind: 'extension', id: item.extension.id }
+            }
+            productType={product?.productType ?? extension?.product.productType}
+            productPlatform={product?.productPlatform ?? null}
+            orderId={product?.order?.id ?? extension?.order?.id ?? null}
           />
           <DeliveryItemCommercialSection
             kind={kind}

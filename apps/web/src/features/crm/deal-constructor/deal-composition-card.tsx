@@ -24,6 +24,7 @@ export function DealCompositionCard({
   ready,
   error,
   onOpen,
+  hideMoney = false,
 }: {
   typeLabel: string;
   platformLabel: string | null;
@@ -34,6 +35,8 @@ export function DealCompositionCard({
   ready: boolean;
   error?: string | null;
   onOpen: () => void;
+  /** Delivery surfaces hide sale price and units (canon: money stays in Wallet/Finance). */
+  hideMoney?: boolean;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
@@ -58,6 +61,7 @@ export function DealCompositionCard({
           saleTotal={saleTotal}
           unitsTotal={unitsTotal}
           canSeeUnits={canSeeUnits}
+          hideMoney={hideMoney}
         />
       ) : (
         <p className="text-muted-foreground text-xs">{t('choosePlatformAndType')}</p>
@@ -67,6 +71,11 @@ export function DealCompositionCard({
   );
 }
 
+function compositionMetricsGridClass(hideMoney: boolean, canSeeUnits: boolean): string {
+  if (hideMoney) return 'grid-cols-1';
+  return canSeeUnits ? 'grid-cols-3' : 'grid-cols-2';
+}
+
 function ReadyCardBody({
   typeLabel,
   platformLabel,
@@ -74,6 +83,7 @@ function ReadyCardBody({
   saleTotal,
   unitsTotal,
   canSeeUnits,
+  hideMoney,
 }: {
   typeLabel: string;
   platformLabel: string | null;
@@ -81,6 +91,7 @@ function ReadyCardBody({
   saleTotal: string | null;
   unitsTotal: number | undefined;
   canSeeUnits: boolean;
+  hideMoney: boolean;
 }) {
   const t = useTranslations('crm.dealSheet.dealConstructor');
   return (
@@ -91,28 +102,30 @@ function ReadyCardBody({
           <span className={COMPOSITION_DEAL_CHIP_CLASS}>{platformLabel}</span>
         ) : null}
       </span>
-      <span className={cn('grid gap-3', canSeeUnits ? 'grid-cols-3' : 'grid-cols-2')}>
+      <span className={cn('grid gap-3', compositionMetricsGridClass(hideMoney, canSeeUnits))}>
         <MetricTile
           label={t('extraMetric')}
           value={String(extraCount)}
           valueClass={COMPOSITION_DEAL_METRIC_EXTRA_CLASS}
         />
-        {canSeeUnits && unitsTotal !== undefined ? (
+        {!hideMoney && canSeeUnits && unitsTotal !== undefined ? (
           <MetricTile
             label={t('unitsMetric')}
             value={String(unitsTotal)}
             valueClass={COMPOSITION_DEAL_METRIC_UNITS_CLASS}
           />
         ) : null}
-        <MetricTile
-          label={t('priceMetric')}
-          value={saleTotal ? formatMoneyDram(Number(saleTotal)) : '—'}
-          valueClass={
-            saleTotal
-              ? COMPOSITION_DEAL_METRIC_PRICE_CLASS
-              : COMPOSITION_DEAL_METRIC_PRICE_EMPTY_CLASS
-          }
-        />
+        {hideMoney ? null : (
+          <MetricTile
+            label={t('priceMetric')}
+            value={saleTotal ? formatMoneyDram(Number(saleTotal)) : '—'}
+            valueClass={
+              saleTotal
+                ? COMPOSITION_DEAL_METRIC_PRICE_CLASS
+                : COMPOSITION_DEAL_METRIC_PRICE_EMPTY_CLASS
+            }
+          />
+        )}
       </span>
     </span>
   );

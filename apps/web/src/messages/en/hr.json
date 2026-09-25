@@ -441,6 +441,10 @@
     "ratesSubtitle": "Same-role AMD tariffs. Employee salary is never used.",
     "profilesTitle": "Delivery base profiles",
     "legacySkip": "This product stays on the previous delivery model until Owner adopts v2.",
+    "adoptV2": "Adopt v2 composition",
+    "adoptingV2": "Adopting…",
+    "adoptFailed": "Could not adopt v2 composition.",
+    "adoptNeedsOrder": "Link an order before adopting v2.",
     "includedBadge": "Included in base",
     "readiness": {
       "CONFIGURATION_INCOMPLETE": "Finish function setup and confirm scope before Development.",

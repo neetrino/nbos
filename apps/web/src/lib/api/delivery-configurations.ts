@@ -45,6 +45,25 @@ export const deliveryConfigurationsApi = {
     return resp.data;
   },
 
+  async enrollProduct(productId: string, orderId: string): Promise<OperationalConfigurationDto> {
+    const resp = await api.post<OperationalConfigurationDto>(
+      `/api/delivery-configurations/by-product/${productId}`,
+      { orderId },
+    );
+    return resp.data;
+  },
+
+  async enrollExtension(
+    extensionId: string,
+    orderId: string,
+  ): Promise<OperationalConfigurationDto> {
+    const resp = await api.post<OperationalConfigurationDto>(
+      `/api/delivery-configurations/by-extension/${extensionId}`,
+      { orderId },
+    );
+    return resp.data;
+  },
+
   async removeFeature(
     configurationId: string,
     featureId: string,
