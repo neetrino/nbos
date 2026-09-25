@@ -2,18 +2,15 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { StatusBadge } from '@/components/shared';
+import { InlineField, StatusBadge } from '@/components/shared';
 import { bonusPolicyTemplateLabel } from '@/features/my-company/bonus-policies/bonus-policy-template-options';
 import type { BonusPolicyRow, BonusPolicyStatus } from '@/lib/api/bonus-policies';
+
+const STATUS_OPTIONS = [
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'ARCHIVED', label: 'Archived' },
+];
 
 const STATUS_VARIANT: Record<string, 'green' | 'amber' | 'gray' | 'red'> = {
   ACTIVE: 'green',
@@ -62,7 +59,6 @@ export function BonusPolicyEditorCard({
         <span className="text-muted-foreground text-xs">
           {bonusPolicyTemplateLabel(policy.templateCode)}
         </span>
-        <span className="text-muted-foreground font-mono text-xs">{policy.templateCode}</span>
         {policy.linkedProfileCount > 0 ? (
           <span className="text-muted-foreground text-xs">
             {policy.linkedProfileCount} compensation profile
@@ -71,48 +67,40 @@ export function BonusPolicyEditorCard({
         ) : null}
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">Policy name</span>
-          <Input value={name} disabled={saving} onChange={(e) => setName(e.target.value)} />
-        </label>
-        <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">Status</span>
-          <Select
-            value={status}
-            disabled={saving}
-            onValueChange={(v) => {
-              if (v) setStatus(v as BonusPolicyStatus);
-            }}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="DRAFT">Draft</SelectItem>
-              <SelectItem value="ARCHIVED">Archived</SelectItem>
-            </SelectContent>
-          </Select>
-        </label>
-        <label className="space-y-1 text-sm md:col-span-2">
-          <span className="text-muted-foreground">Scope (optional)</span>
-          <Input
-            value={scope}
-            disabled={saving}
-            placeholder="e.g. COMPANY, SALES, DELIVERY"
-            onChange={(e) => setScope(e.target.value)}
-          />
-        </label>
-        <label className="space-y-1 text-sm md:col-span-2">
-          <span className="text-muted-foreground">Notes</span>
-          <Textarea
-            value={notes}
-            disabled={saving}
-            rows={2}
-            className="resize-y"
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </label>
+        <InlineField
+          variant="controlled"
+          label="Policy name"
+          value={name}
+          disabled={saving}
+          onValueChange={setName}
+        />
+        <InlineField
+          variant="controlled"
+          type="select"
+          label="Status"
+          value={status}
+          options={STATUS_OPTIONS}
+          disabled={saving}
+          onValueChange={(value) => setStatus(value as BonusPolicyStatus)}
+        />
+        <InlineField
+          variant="controlled"
+          label="Scope"
+          value={scope}
+          placeholder="COMPANY, SALES, DELIVERY"
+          disabled={saving}
+          onValueChange={setScope}
+          className="md:col-span-2"
+        />
+        <InlineField
+          variant="controlled"
+          type="textarea"
+          label="Notes"
+          value={notes}
+          disabled={saving}
+          onValueChange={setNotes}
+          className="md:col-span-2"
+        />
       </div>
       <div className="mt-4 flex justify-end">
         <Button type="button" size="sm" disabled={saving} onClick={() => void handleSave()}>

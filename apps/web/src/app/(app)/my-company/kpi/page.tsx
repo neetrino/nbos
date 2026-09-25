@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Target, TrendingUp, Wallet, Timer } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
+import { CompanyStatCard } from '@/features/hr/components/MyCompanyHubCards';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { dashboardApi, type DashboardControlCenterProjection } from '@/lib/api/dashboard';
@@ -51,37 +52,27 @@ export default function KpiPage() {
         modules.
       </p>
 
-      <div className="grid gap-3 md:grid-cols-4">
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <Target size={16} />
-            Open tasks
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{metrics?.openTasks ?? '—'}</p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <TrendingUp size={16} />
-            Open deals
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{metrics?.openDeals ?? '—'}</p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <Wallet size={16} />
-            Pending invoices
-          </div>
-          <p className="text-foreground text-2xl font-semibold">
-            {metrics?.pendingInvoices ?? '—'}
-          </p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <Timer size={16} />
-            Priority alerts
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{priorityCount}</p>
-        </div>
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <CompanyStatCard
+          icon={<Target size={16} aria-hidden />}
+          label="Open tasks"
+          value={String(metrics?.openTasks ?? '—')}
+        />
+        <CompanyStatCard
+          icon={<TrendingUp size={16} aria-hidden />}
+          label="Open deals"
+          value={String(metrics?.openDeals ?? '—')}
+        />
+        <CompanyStatCard
+          icon={<Wallet size={16} aria-hidden />}
+          label="Pending invoices"
+          value={String(metrics?.pendingInvoices ?? '—')}
+        />
+        <CompanyStatCard
+          icon={<Timer size={16} aria-hidden />}
+          label="Priority alerts"
+          value={String(priorityCount)}
+        />
       </div>
 
       <div className="border-border bg-card rounded-2xl border p-4">
@@ -104,37 +95,24 @@ export default function KpiPage() {
 
       <div className="border-border bg-card rounded-2xl border p-4">
         <h2 className="mb-2 text-sm font-semibold">Scorecard Module Links</h2>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/dashboard"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Dashboard Control Center
-          </Link>
-          <Link
-            href="/reports"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Reports Catalog
-          </Link>
-          <Link
-            href="/my-company/kpi-policies"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            KPI gate policies (edit bands)
-          </Link>
-          <Link
-            href="/finance/payroll"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Payroll KPI Gate Impact
-          </Link>
-          <Link
-            href="/tasks"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Tasks SLA / Throughput
-          </Link>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(
+            [
+              ['/dashboard', 'Dashboard'],
+              ['/reports', 'Reports'],
+              ['/my-company/kpi-policies', 'KPI gate policies'],
+              ['/finance/payroll', 'Payroll'],
+              ['/tasks', 'Tasks'],
+            ] as const
+          ).map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="border-border hover:border-primary/40 rounded-xl border px-3 py-2 text-sm font-medium"
+            >
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

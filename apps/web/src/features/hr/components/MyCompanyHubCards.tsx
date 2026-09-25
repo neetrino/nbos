@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Building2 } from 'lucide-react';
+import { Building2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/shared';
 import type { DepartmentItem } from '@/lib/api/employees';
@@ -19,7 +19,34 @@ export function FoundationMetric({
   icon: ReactNode;
 }) {
   return (
-    <div className="border-border bg-card flex min-w-0 items-center gap-3 rounded-2xl border px-3.5 py-2.5 sm:max-w-sm sm:flex-1">
+    <div className="border-border bg-card flex min-w-0 flex-1 flex-col rounded-2xl border px-4 py-3.5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-muted-foreground text-xs font-medium">{label}</p>
+        <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+          {icon}
+        </div>
+      </div>
+      <p className="text-foreground mt-2 text-3xl font-semibold tracking-tight tabular-nums">
+        {value}
+      </p>
+      <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{helper}</p>
+    </div>
+  );
+}
+
+export function CompanyStatCard({
+  icon,
+  label,
+  value,
+  helper,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  helper?: string;
+}) {
+  return (
+    <div className="border-border bg-card flex min-w-0 items-center gap-3 rounded-2xl border px-3.5 py-2.5">
       <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
         {icon}
       </div>
@@ -28,7 +55,7 @@ export function FoundationMetric({
           <span className="text-lg font-semibold tabular-nums">{value}</span>
           <span className="truncate text-sm font-medium">{label}</span>
         </p>
-        <p className="text-muted-foreground truncate text-xs">{helper}</p>
+        {helper ? <p className="text-muted-foreground truncate text-xs">{helper}</p> : null}
       </div>
     </div>
   );
@@ -37,21 +64,28 @@ export function FoundationMetric({
 export function DepartmentFoundationCard({ department }: { department: DepartmentItem }) {
   const t = useTranslations('hr');
   const memberCount = department._count?.members ?? 0;
+  const reportsTo = department.parent?.name
+    ? t('hub.foundation.reportsTo', { name: department.parent.name })
+    : t('hub.foundation.topLevel');
   return (
-    <div className="border-border flex items-center justify-between gap-2 rounded-xl border px-3 py-2">
+    <div className="border-border bg-background flex min-w-0 flex-col gap-3 rounded-xl border p-3">
       <div className="min-w-0">
-        <p className="text-foreground truncate text-sm font-medium">{department.name}</p>
-        <p className="text-muted-foreground truncate text-xs">
-          {department.parent?.name
-            ? t('hub.foundation.reportsTo', { name: department.parent.name })
-            : t('hub.foundation.topLevel')}
+        <p className="text-foreground line-clamp-2 text-sm leading-snug font-semibold">
+          {department.name}
         </p>
+        <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs">{reportsTo}</p>
       </div>
-      <StatusBadge
-        label={t('deptAdmin.membersCount', { count: memberCount })}
-        variant="default"
-        className="shrink-0"
-      />
+      <div className="flex items-end justify-between gap-2">
+        <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+          <Users size={16} />
+        </span>
+        <span
+          className="text-foreground text-2xl leading-none font-semibold tabular-nums"
+          aria-label={t('deptAdmin.membersCount', { count: memberCount })}
+        >
+          {memberCount}
+        </span>
+      </div>
     </div>
   );
 }

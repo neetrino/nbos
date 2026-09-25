@@ -3,16 +3,13 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+  DataView,
+  ErrorState,
+  InlineField,
+  ListMutationErrorBanner,
+  LoadingState,
+} from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { BonusPolicyEditorCard } from '@/features/my-company/bonus-policies/bonus-policy-editor-card';
 import { BONUS_POLICY_TEMPLATE_OPTIONS } from '@/features/my-company/bonus-policies/bonus-policy-template-options';
@@ -103,54 +100,46 @@ export default function BonusPoliciesPage() {
       <div className="border-border bg-card rounded-2xl border p-4">
         <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
         <div className="grid gap-3 md:grid-cols-2">
-          <label className="space-y-1 text-sm">
-            <span className="text-muted-foreground">Name</span>
-            <Input
-              value={newName}
-              disabled={creating}
-              placeholder="e.g. Delivery manual Q2"
-              onChange={(e) => setNewName(e.target.value)}
-            />
-          </label>
-          <label className="space-y-1 text-sm">
-            <span className="text-muted-foreground">Template</span>
-            <Select
-              value={newTemplate}
-              disabled={creating}
-              onValueChange={(v) => {
-                if (v) setNewTemplate(v);
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {BONUS_POLICY_TEMPLATE_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </label>
-          <label className="space-y-1 text-sm md:col-span-2">
-            <span className="text-muted-foreground">Scope (optional)</span>
-            <Input
-              value={newScope}
-              disabled={creating}
-              onChange={(e) => setNewScope(e.target.value)}
-            />
-          </label>
-          <label className="space-y-1 text-sm md:col-span-2">
-            <span className="text-muted-foreground">Notes (optional)</span>
-            <Textarea
-              value={newNotes}
-              disabled={creating}
-              rows={2}
-              className="resize-y"
-              onChange={(e) => setNewNotes(e.target.value)}
-            />
-          </label>
+          <InlineField
+            variant="controlled"
+            label="Name"
+            value={newName}
+            placeholder="Delivery manual Q2"
+            disabled={creating}
+            onValueChange={setNewName}
+          />
+          <InlineField
+            variant="controlled"
+            type="select"
+            label="Template"
+            value={newTemplate}
+            options={BONUS_POLICY_TEMPLATE_OPTIONS.map((option) => ({
+              value: option.value,
+              label: option.label,
+            }))}
+            disabled={creating}
+            onValueChange={(value) => {
+              if (value) setNewTemplate(value);
+            }}
+          />
+          <InlineField
+            variant="controlled"
+            label="Scope"
+            value={newScope}
+            placeholder="COMPANY"
+            disabled={creating}
+            onValueChange={setNewScope}
+            className="md:col-span-2"
+          />
+          <InlineField
+            variant="controlled"
+            type="textarea"
+            label="Notes"
+            value={newNotes}
+            disabled={creating}
+            onValueChange={setNewNotes}
+            className="md:col-span-2"
+          />
         </div>
         {selectedTemplate ? (
           <p className="text-muted-foreground mt-2 text-xs">{selectedTemplate.hint}</p>

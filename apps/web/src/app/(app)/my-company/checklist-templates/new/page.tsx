@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FileText, Loader2, Sparkles } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -14,17 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { PageHero } from '@/components/shared';
+import { InlineField } from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { usePermission } from '@/lib/permissions';
 import {
@@ -49,10 +39,19 @@ const CATEGORIES: ChecklistTemplateCategory[] = [
 
 const OWNER_MODULES: ChecklistOwnerModule[] = ['MY_COMPANY', 'PROJECTS', 'TASKS', 'TECHNICAL'];
 
-const SELECT_TRIGGER_FORM = 'w-full min-w-0';
-
 export default function NewChecklistTemplatePage() {
-  useCompanySectionTabs('checklists');
+  const backLink = useMemo(
+    () => (
+      <Link
+        href="/my-company/checklist-templates"
+        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+      >
+        Back to list
+      </Link>
+    ),
+    [],
+  );
+  useCompanySectionTabs('checklists', backLink);
   const router = useRouter();
   const { can, isLoading } = usePermission();
   const [name, setName] = useState('');
@@ -111,17 +110,6 @@ export default function NewChecklistTemplatePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 pb-10">
-      <PageHero
-        title="New checklist template"
-        trailing={
-          <Link
-            href="/my-company/checklist-templates"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-          >
-            Back to list
-          </Link>
-        }
-      />
       <p className="text-muted-foreground text-sm">
         Start with a name and classification. You’ll add checklist items next, then publish to lock
         the version used for new instances.
@@ -143,85 +131,44 @@ export default function NewChecklistTemplatePage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
-          <div className="space-y-2">
-            <Label htmlFor="ct-name">Name</Label>
-            <Input
-              id="ct-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. WordPress handoff checklist"
-              className="text-base"
-              autoComplete="off"
+          <InlineField
+            variant="controlled"
+            label="Name"
+            value={name}
+            placeholder="WordPress handoff checklist"
+            onValueChange={setName}
+          />
+          <InlineField
+            variant="controlled"
+            type="textarea"
+            label="Description"
+            value={description}
+            placeholder="When should teams use this checklist?"
+            onValueChange={setDescription}
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <InlineField
+              variant="controlled"
+              type="select"
+              label="Category"
+              value={category}
+              options={CATEGORIES.map((item) => ({
+                value: item,
+                label: CHECKLIST_TEMPLATE_CATEGORY_LABELS[item],
+              }))}
+              onValueChange={(value) => setCategory(value as ChecklistTemplateCategory)}
             />
-            <p className="text-muted-foreground text-xs">Shown wherever this template is picked.</p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="ct-desc">Description</Label>
-            <Textarea
-              id="ct-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              placeholder="When should teams use this checklist? What outcome does it protect?"
-              className="min-h-[7.5rem] resize-y"
+            <InlineField
+              variant="controlled"
+              type="select"
+              label="Owner context"
+              value={ownerModule}
+              options={OWNER_MODULES.map((item) => ({
+                value: item,
+                label: CHECKLIST_OWNER_MODULE_LABELS[item],
+              }))}
+              onValueChange={(value) => setOwnerModule(value as ChecklistOwnerModule)}
             />
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select
-                value={category}
-                onValueChange={(v) => setCategory(v as ChecklistTemplateCategory)}
-              >
-                <SelectTrigger className={SELECT_TRIGGER_FORM}>
-                  <SelectValue>
-                    {(value: string | null) =>
-                      value
-                        ? (CHECKLIST_TEMPLATE_CATEGORY_LABELS[value as ChecklistTemplateCategory] ??
-                          value)
-                        : null
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {CHECKLIST_TEMPLATE_CATEGORY_LABELS[c]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-muted-foreground text-xs">
-                Groups templates for browsing and reporting.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label>Owner context</Label>
-              <Select
-                value={ownerModule}
-                onValueChange={(v) => setOwnerModule(v as ChecklistOwnerModule)}
-              >
-                <SelectTrigger className={SELECT_TRIGGER_FORM}>
-                  <SelectValue>
-                    {(value: string | null) =>
-                      value
-                        ? (CHECKLIST_OWNER_MODULE_LABELS[value as ChecklistOwnerModule] ?? value)
-                        : null
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {OWNER_MODULES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {CHECKLIST_OWNER_MODULE_LABELS[c]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-muted-foreground text-xs">
-                Which area of NBOS this SOP is mainly associated with (organizational tag).
-              </p>
-            </div>
           </div>
         </CardContent>
         <CardFooter className="bg-muted/40 border-border/60 flex flex-col gap-3 border-t sm:flex-row sm:items-center sm:justify-between">

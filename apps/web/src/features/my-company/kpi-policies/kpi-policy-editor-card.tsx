@@ -2,15 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { StatusBadge } from '@/components/shared';
+import { InlineField, StatusBadge } from '@/components/shared';
 import type { KpiPolicyRow } from '@/lib/api/kpi-policies';
 import { KpiGateBandEditor } from './kpi-gate-band-editor';
 import { parseDraftsToRules, rulesToDrafts, type KpiGateBandDraft } from './kpi-gate-band-utils';
@@ -18,6 +10,12 @@ import { KpiPolicyCapField, parseCapMultiplierDraft } from './kpi-policy-cap-fie
 import { KPI_POLICY_CAP_MULTIPLIER_DEFAULT } from './kpi-policy-cap.constants';
 import { KpiPolicyScorecardMetrics } from './kpi-policy-scorecard-metrics';
 import { KpiPolicyTargetField, parseTargetAmountDraft } from './kpi-policy-target-field';
+
+const STATUS_OPTIONS = [
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'DRAFT', label: 'Draft' },
+  { value: 'ARCHIVED', label: 'Archived' },
+];
 
 const STATUS_VARIANT: Record<string, 'green' | 'amber' | 'gray' | 'red'> = {
   ACTIVE: 'green',
@@ -74,7 +72,6 @@ export function KpiPolicyEditorCard({
     <div className="border-border bg-card rounded-2xl border p-4">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <StatusBadge label={policy.status} variant={STATUS_VARIANT[policy.status] ?? 'gray'} />
-        <span className="text-muted-foreground font-mono text-xs">{policy.templateCode}</span>
         {policy.linkedProfileCount > 0 ? (
           <span className="text-muted-foreground text-xs">
             {policy.linkedProfileCount} compensation profile
@@ -83,34 +80,25 @@ export function KpiPolicyEditorCard({
         ) : null}
       </div>
       <div className="mb-4 grid gap-3 md:grid-cols-2">
-        <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">Policy name</span>
-          <Input value={name} disabled={saving} onChange={(e) => setName(e.target.value)} />
-        </label>
-        <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">Status</span>
-          <Select
-            value={status}
-            disabled={saving}
-            onValueChange={(v) => {
-              if (v) setStatus(v as KpiPolicyRow['status']);
-            }}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ACTIVE">Active</SelectItem>
-              <SelectItem value="DRAFT">Draft</SelectItem>
-              <SelectItem value="ARCHIVED">Archived</SelectItem>
-            </SelectContent>
-          </Select>
-        </label>
+        <InlineField
+          variant="controlled"
+          label="Policy name"
+          value={name}
+          disabled={saving}
+          onValueChange={setName}
+        />
+        <InlineField
+          variant="controlled"
+          type="select"
+          label="Status"
+          value={status}
+          options={STATUS_OPTIONS}
+          disabled={saving}
+          onValueChange={(value) => setStatus(value as KpiPolicyRow['status'])}
+        />
       </div>
-      <div className="mb-4 max-w-xs">
+      <div className="mb-4 grid gap-3 md:grid-cols-2">
         <KpiPolicyCapField value={capMultiplier} disabled={saving} onChange={setCapMultiplier} />
-      </div>
-      <div className="mb-4 max-w-xs">
         <KpiPolicyTargetField value={targetAmount} disabled={saving} onChange={setTargetAmount} />
       </div>
       <KpiGateBandEditor bands={bands} onChange={setBands} disabled={saving} />

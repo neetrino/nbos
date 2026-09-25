@@ -2,8 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import {
+  DataView,
+  ErrorState,
+  InlineField,
+  ListMutationErrorBanner,
+  LoadingState,
+} from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { KpiPolicyEditorCard } from '@/features/my-company/kpi-policies/kpi-policy-editor-card';
 import {
@@ -114,23 +119,21 @@ export default function KpiPoliciesPage() {
     <>
       <div className="border-border bg-card rounded-2xl border p-4">
         <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
-        <label className="mb-3 block space-y-1 text-sm">
-          <span className="text-muted-foreground">Name</span>
-          <Input
-            value={newName}
-            disabled={creating}
-            placeholder="e.g. Seller KPI gate Q2"
-            onChange={(e) => setNewName(e.target.value)}
-          />
-        </label>
-        <div className="mb-4 max-w-xs">
+        <InlineField
+          variant="controlled"
+          label="Name"
+          value={newName}
+          placeholder="Seller KPI gate Q2"
+          disabled={creating}
+          onValueChange={setNewName}
+          className="mb-3"
+        />
+        <div className="mb-4 grid gap-3 md:grid-cols-2">
           <KpiPolicyCapField
             value={newCapMultiplier}
             disabled={creating}
             onChange={setNewCapMultiplier}
           />
-        </div>
-        <div className="mb-4 max-w-xs">
           <KpiPolicyTargetField
             value={newTargetAmount}
             disabled={creating}

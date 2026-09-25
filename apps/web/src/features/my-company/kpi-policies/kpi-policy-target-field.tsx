@@ -1,4 +1,6 @@
-import { Input } from '@/components/ui/input';
+'use client';
+
+import { InlineField } from '@/components/shared';
 
 export function parseTargetAmountDraft(value: string): number | null {
   const trimmed = value.trim();
@@ -18,18 +20,18 @@ export function KpiPolicyTargetField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="space-y-1 text-sm">
-      <span className="text-muted-foreground">Sales monthly KPI target</span>
-      <Input
+    <div className="space-y-1">
+      <InlineField
+        variant="controlled"
+        type="money"
+        label="Sales monthly KPI target"
         value={value}
         disabled={disabled}
-        inputMode="decimal"
-        placeholder="e.g. 3000000"
-        onChange={(e) => onChange(e.target.value)}
+        onValueChange={onChange}
       />
-      <span className="text-muted-foreground block text-xs">
-        Stored in My Company policy. Payroll only consumes the resolved plan and actual.
-      </span>
-    </label>
+      <p className="text-muted-foreground text-xs">
+        Stored on the policy. Payroll uses the resolved plan and actual.
+      </p>
+    </div>
   );
 }

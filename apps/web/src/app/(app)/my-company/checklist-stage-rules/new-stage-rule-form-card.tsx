@@ -11,15 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { InlineField } from '@/components/shared';
 import {
   checklistTemplatesApi,
   type ChecklistTemplateListItem,
@@ -29,13 +21,7 @@ import {
 } from '@/lib/api/checklist-templates';
 import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
-import {
-  DELIVERY_STAGES,
-  FILTER_ANY,
-  SELECT_TRIGGER_FORM,
-  TARGETS,
-} from './delivery-stage-rule-options';
-import { selectOptionLabel } from './stage-rules-select-helpers';
+import { DELIVERY_STAGES, FILTER_ANY, TARGETS } from './delivery-stage-rule-options';
 import { StageRuleOptionalFiltersSection } from './stage-rule-optional-filters-section';
 
 type Props = {
@@ -56,14 +42,6 @@ export function NewStageRuleFormCard({ templates, onCreated }: Props) {
     () => templates.filter((t) => t.status === 'ACTIVE' && t.activeVersionId),
     [templates],
   );
-
-  const templateNameById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const t of templates) {
-      map.set(t.id, t.name);
-    }
-    return map;
-  }, [templates]);
 
   const resetForm = () => {
     setTemplateId('');
@@ -125,96 +103,43 @@ export function NewStageRuleFormCard({ templates, onCreated }: Props) {
             <Layers className="size-3.5" aria-hidden />
             Scope
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-2">
-              <Label>Target</Label>
-              <Select
-                value={target}
-                onValueChange={(v) => {
-                  if (v) setTarget(v as DeliveryChecklistTarget);
-                }}
-              >
-                <SelectTrigger className={SELECT_TRIGGER_FORM}>
-                  <SelectValue placeholder="Target">
-                    {(value: string | null) =>
-                      selectOptionLabel(value, TARGETS, FILTER_ANY) ?? null
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {TARGETS.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Delivery stage</Label>
-              <Select
-                value={deliveryStage}
-                onValueChange={(v) => {
-                  if (v) setDeliveryStage(v as DeliveryStageCanon);
-                }}
-              >
-                <SelectTrigger className={SELECT_TRIGGER_FORM}>
-                  <SelectValue placeholder="Stage">
-                    {(value: string | null) =>
-                      selectOptionLabel(value, DELIVERY_STAGES, FILTER_ANY) ?? null
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {DELIVERY_STAGES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2 sm:col-span-2 lg:col-span-2">
-              <Label>Checklist template</Label>
-              <Select
-                value={templateId}
-                onValueChange={(v) => {
-                  if (v) setTemplateId(v);
-                }}
-              >
-                <SelectTrigger className={SELECT_TRIGGER_FORM}>
-                  <SelectValue placeholder="Select a published template">
-                    {(value: string | null) =>
-                      value ? (templateNameById.get(value) ?? value) : null
-                    }
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {publishedTemplates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-muted-foreground text-xs">
-                {publishedTemplates.length} published template(s) available.
-              </p>
-            </div>
-          </div>
-          <div className="max-w-xs space-y-2">
-            <Label htmlFor="rule-priority">Priority</Label>
-            <Input
-              id="rule-priority"
-              inputMode="numeric"
-              className="font-mono text-sm"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <InlineField
+              variant="controlled"
+              type="select"
+              label="Target"
+              value={target}
+              options={TARGETS.map((item) => ({ value: item.value, label: item.label }))}
+              onValueChange={(value) => setTarget(value as DeliveryChecklistTarget)}
             />
-            <p className="text-muted-foreground text-xs">
-              Lower numbers run first when multiple rules match.
-            </p>
+            <InlineField
+              variant="controlled"
+              type="select"
+              label="Delivery stage"
+              value={deliveryStage}
+              options={DELIVERY_STAGES.map((item) => ({ value: item.value, label: item.label }))}
+              onValueChange={(value) => setDeliveryStage(value as DeliveryStageCanon)}
+            />
+            <InlineField
+              variant="controlled"
+              type="select"
+              label="Checklist template"
+              value={templateId}
+              placeholder="Published template"
+              options={publishedTemplates.map((item) => ({ value: item.id, label: item.name }))}
+              onValueChange={setTemplateId}
+              className="sm:col-span-2"
+            />
+            <InlineField
+              variant="controlled"
+              label="Priority"
+              value={priority}
+              onValueChange={setPriority}
+            />
           </div>
+          <p className="text-muted-foreground text-xs">
+            {publishedTemplates.length} published templates. Lower priority runs first.
+          </p>
         </div>
 
         <StageRuleOptionalFiltersSection

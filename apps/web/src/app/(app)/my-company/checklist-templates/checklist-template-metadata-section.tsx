@@ -2,16 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { InlineField } from '@/components/shared';
 import { PermissionGate } from '@/lib/permissions';
 import {
   checklistTemplatesApi,
@@ -35,8 +26,6 @@ const CATEGORIES: ChecklistTemplateCategory[] = [
 ];
 
 const OWNER_MODULES: ChecklistOwnerModule[] = ['MY_COMPANY', 'PROJECTS', 'TASKS', 'TECHNICAL'];
-
-const SELECT_TRIGGER = 'w-full min-w-0';
 
 type Props = {
   templateId: string;
@@ -96,83 +85,48 @@ export function ChecklistTemplateMetadataSection({
       {!embedded ? (
         <p className="text-muted-foreground mb-3 text-sm font-medium">Template details</p>
       ) : null}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="ctm-name" className={embedded ? 'text-xs' : undefined}>
-            Name
-          </Label>
-          <Input
-            id="ctm-name"
-            value={name}
-            disabled={readOnly}
-            onChange={(e) => setName(e.target.value)}
-            className={embedded ? 'h-9 text-sm' : undefined}
-          />
-        </div>
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="ctm-desc" className={embedded ? 'text-xs' : undefined}>
-            Description
-          </Label>
-          <Textarea
-            id="ctm-desc"
-            value={description}
-            disabled={readOnly}
-            rows={embedded ? 2 : 3}
-            onChange={(e) => setDescription(e.target.value)}
-            className={embedded ? 'min-h-[3.25rem] resize-y text-sm' : undefined}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className={embedded ? 'text-xs' : undefined}>Category</Label>
-          <Select
-            value={category}
-            disabled={readOnly}
-            onValueChange={(v) => setCategory(v as ChecklistTemplateCategory)}
-          >
-            <SelectTrigger className={SELECT_TRIGGER}>
-              <SelectValue>
-                {(value: string | null) =>
-                  value
-                    ? (CHECKLIST_TEMPLATE_CATEGORY_LABELS[value as ChecklistTemplateCategory] ??
-                      value)
-                    : null
-                }
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {CHECKLIST_TEMPLATE_CATEGORY_LABELS[c]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label className={embedded ? 'text-xs' : undefined}>Owner context</Label>
-          <Select
-            value={ownerModule}
-            disabled={readOnly}
-            onValueChange={(v) => setOwnerModule(v as ChecklistOwnerModule)}
-          >
-            <SelectTrigger className={SELECT_TRIGGER}>
-              <SelectValue>
-                {(value: string | null) =>
-                  value
-                    ? (CHECKLIST_OWNER_MODULE_LABELS[value as ChecklistOwnerModule] ?? value)
-                    : null
-                }
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {OWNER_MODULES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {CHECKLIST_OWNER_MODULE_LABELS[c]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <InlineField
+          variant="controlled"
+          label="Name"
+          value={name}
+          disabled={readOnly}
+          onValueChange={setName}
+          className="sm:col-span-2"
+        />
+        <InlineField
+          variant="controlled"
+          type="textarea"
+          label="Description"
+          value={description}
+          disabled={readOnly}
+          onValueChange={setDescription}
+          className="sm:col-span-2"
+        />
+        <InlineField
+          variant="controlled"
+          type="select"
+          label="Category"
+          value={category}
+          disabled={readOnly}
+          options={CATEGORIES.map((item) => ({
+            value: item,
+            label: CHECKLIST_TEMPLATE_CATEGORY_LABELS[item],
+          }))}
+          onValueChange={(value) => setCategory(value as ChecklistTemplateCategory)}
+        />
+        <InlineField
+          variant="controlled"
+          type="select"
+          label="Owner context"
+          value={ownerModule}
+          disabled={readOnly}
+          options={OWNER_MODULES.map((item) => ({
+            value: item,
+            label: CHECKLIST_OWNER_MODULE_LABELS[item],
+          }))}
+          onValueChange={(value) => setOwnerModule(value as ChecklistOwnerModule)}
+        />
       </div>
       <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
         <Button

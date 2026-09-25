@@ -2,11 +2,15 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ClipboardList, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
+import {
+  CHECKLIST_OWNER_MODULE_LABELS,
+  CHECKLIST_TEMPLATE_CATEGORY_LABELS,
+} from '@/features/checklist/checklist-template-form-labels';
 import {
   checklistTemplatesApi,
   type ChecklistTemplateListItem,
@@ -69,40 +73,36 @@ export default function ChecklistTemplatesListPage() {
         instances; drafts continue on a separate version.
       </p>
 
-      <div className="border-border bg-card rounded-2xl border">
-        <div className="border-border flex items-center justify-between gap-2 border-b px-4 py-3">
-          <div className="text-muted-foreground flex items-center gap-2 text-sm">
-            <ClipboardList className="size-4" />
-            {loading ? 'Loading…' : `${rows.length} template(s)`}
-          </div>
-        </div>
-        <ul className="divide-border divide-y">
+      {loading ? (
+        <p className="text-muted-foreground text-sm">Loading…</p>
+      ) : rows.length === 0 ? (
+        <p className="text-muted-foreground text-sm">
+          No templates yet. Create one to attach to Delivery requirements later.
+        </p>
+      ) : (
+        <ul className="grid gap-2 sm:grid-cols-2">
           {rows.map((row) => (
             <li key={row.id}>
               <Link
                 href={`/my-company/checklist-templates/${row.id}`}
-                className="hover:bg-muted/40 flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                className="border-border hover:border-primary/40 bg-card flex items-start justify-between gap-3 rounded-2xl border px-3.5 py-3"
               >
-                <div>
-                  <p className="font-medium">{row.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {row.category} · {row.ownerModule}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{row.name}</p>
+                  <p className="text-muted-foreground truncate text-xs">
+                    {CHECKLIST_TEMPLATE_CATEGORY_LABELS[row.category]} ·{' '}
+                    {CHECKLIST_OWNER_MODULE_LABELS[row.ownerModule]}
                     {row.activeVersion
-                      ? ` · active v${row.activeVersion.versionNumber}`
-                      : ' · no published version'}
+                      ? ` · v${row.activeVersion.versionNumber}`
+                      : ' · not published'}
                   </p>
                 </div>
                 <StatusBadge label={row.status} variant={statusVariant(row.status)} />
               </Link>
             </li>
           ))}
-          {!loading && rows.length === 0 ? (
-            <li className="text-muted-foreground px-4 py-6 text-sm">
-              No templates yet. Create one to attach to Delivery requirements later.
-            </li>
-          ) : null}
         </ul>
-      </div>
+      )}
     </div>
   );
 }

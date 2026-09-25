@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ClipboardList, BookOpenText, RefreshCw } from 'lucide-react';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { StatusBadge, useModuleHeroSlots } from '@/components/shared';
 import { Button } from '@/components/ui/button';
+import { CompanyStatCard } from '@/features/hr/components/MyCompanyHubCards';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 
 const SOP_REVIEW_DUE_DAYS = 30;
@@ -20,7 +21,7 @@ export default function SopPage() {
   const [docs, setDocs] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [sectionRows, documentRows] = await Promise.all([
@@ -32,60 +33,61 @@ export default function SopPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   const reviewQueue = useMemo(
     () => docs.filter((row) => row.updatedAt && daysFromNow(row.updatedAt) >= SOP_REVIEW_DUE_DAYS),
     [docs],
   );
 
+  const trailing = useMemo(
+    () => (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => void load()}
+        disabled={loading}
+      >
+        <RefreshCw size={14} aria-hidden />
+        Refresh
+      </Button>
+    ),
+    [load, loading],
+  );
+  const slots = useMemo(() => ({ trailing }), [trailing]);
+  useModuleHeroSlots(slots);
+
   return (
     <div className="space-y-6">
-      <PageHero
-        title="SOP & Templates"
-        trailing={
-          <Button type="button" variant="outline" size="sm" onClick={() => void load()}>
-            <RefreshCw size={14} aria-hidden />
-            Refresh
-          </Button>
-        }
-      />
       <p className="text-muted-foreground text-sm">
-        Operational SOP runtime library linked with Documents: review queue, section coverage, and
-        process ownership references.
+        SOP library from Documents: what needs review, which sections are covered, and who owns the
+        process.
       </p>
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <BookOpenText size={16} />
-            SOP-like documents
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{docs.length}</p>
-          <p className="text-muted-foreground text-xs">
-            Search: &quot;sop&quot; in Documents module
-          </p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <ClipboardList size={16} />
-            Review queue
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{reviewQueue.length}</p>
-          <p className="text-muted-foreground text-xs">{`Older than ${SOP_REVIEW_DUE_DAYS} days`}</p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <BookOpenText size={16} />
-            Document sections
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{sections.length}</p>
-          <p className="text-muted-foreground text-xs">SOP coverage by sections/ownership</p>
-        </div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <CompanyStatCard
+          icon={<BookOpenText size={16} aria-hidden />}
+          label="SOP documents"
+          value={String(docs.length)}
+          helper="Search “sop” in Documents"
+        />
+        <CompanyStatCard
+          icon={<ClipboardList size={16} aria-hidden />}
+          label="Review queue"
+          value={String(reviewQueue.length)}
+          helper={`Older than ${SOP_REVIEW_DUE_DAYS} days`}
+        />
+        <CompanyStatCard
+          icon={<BookOpenText size={16} aria-hidden />}
+          label="Sections"
+          value={String(sections.length)}
+          helper="Coverage by ownership"
+        />
       </div>
 
       <div className="border-border bg-card rounded-2xl border p-4">
@@ -96,31 +98,23 @@ export default function SopPage() {
             live SOP library and review queue using Documents data.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/my-company/checklist-templates"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Checklist Template Builder
-          </Link>
-          <Link
-            href="/documents"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Open Documents Library
-          </Link>
-          <Link
-            href="/tasks"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Open Tasks (for process runs)
-          </Link>
-          <Link
-            href="/my-company/team"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Open Team Ownership
-          </Link>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(
+            [
+              ['/my-company/checklist-templates', 'Checklist templates'],
+              ['/documents', 'Documents'],
+              ['/tasks', 'Tasks'],
+              ['/my-company/team', 'Team'],
+            ] as const
+          ).map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="border-border hover:border-primary/40 rounded-xl border px-3 py-2 text-sm font-medium"
+            >
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 

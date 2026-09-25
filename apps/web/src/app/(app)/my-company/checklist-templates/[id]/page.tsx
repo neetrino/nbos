@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { StatusBadge } from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import {
   checklistTemplatesApi,
@@ -197,31 +197,29 @@ export default function ChecklistTemplateDetailPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 pb-10">
-      <PageHero
-        title={detail.name}
-        trailing={
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge label={detail.status} variant={statusVariant(detail.status)} />
-            <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={readOnly}
-                onClick={() => setDupOpen(true)}
-              >
-                Duplicate
-              </Button>
-            </PermissionGate>
-            <Link
-              href="/my-company/checklist-templates"
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-lg font-semibold tracking-tight">{detail.name}</h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge label={detail.status} variant={statusVariant(detail.status)} />
+          <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={readOnly}
+              onClick={() => setDupOpen(true)}
             >
-              All templates
-            </Link>
-          </div>
-        }
-      />
+              Duplicate
+            </Button>
+          </PermissionGate>
+          <Link
+            href="/my-company/checklist-templates"
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+          >
+            All templates
+          </Link>
+        </div>
+      </div>
       <p className="text-muted-foreground line-clamp-2 text-sm">
         {detail.description ?? 'No description'}
       </p>
