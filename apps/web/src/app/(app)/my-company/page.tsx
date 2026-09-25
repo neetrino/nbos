@@ -149,56 +149,25 @@ function MyCompanyHubLoaded({
           icon={<ShieldCheck size={16} />}
         />
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="border-border bg-card rounded-2xl border p-6">
-          <div className="mb-5 flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-xl">
-                <Network size={20} />
-              </div>
-              <div>
-                <h2 className="text-foreground text-lg font-semibold">
-                  {t('hub.foundation.title')}
-                </h2>
-                <p className="text-muted-foreground text-sm">{t('hub.foundation.subtitle')}</p>
-              </div>
-            </div>
-            <StatusBadge
-              label={t('hub.foundation.assigned', {
-                assigned: assignedEmployees,
-                total: employees.length,
-              })}
-              variant={assignedEmployees === employees.length ? 'emerald' : 'amber'}
-            />
-          </div>
-          {departments.length === 0 ? (
-            <HubEmptyDepartments />
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {departments.map((department) => (
-                <DepartmentFoundationCard key={department.id} department={department} />
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="grid gap-3">
+      <div className="grid items-start gap-4 lg:grid-cols-[1.4fr_0.6fr]">
+        <div className="grid gap-3 sm:grid-cols-2">
           {visibleHubSections.map((section) => {
             const Icon = section.icon;
             return (
               <Link
                 key={section.href}
                 href={section.href}
-                className="border-border bg-card hover:bg-muted/40 block rounded-2xl border p-4 transition-colors"
+                className="border-border bg-card hover:border-primary/30 hover:bg-muted/30 block rounded-2xl border px-4 py-3 transition-colors"
               >
                 <div className="flex items-start gap-3">
-                  <div className="bg-secondary text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-lg">
-                    <Icon size={17} />
+                  <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+                    <Icon size={15} />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-foreground text-sm font-semibold">
                       {t(`hub.sections.${section.key}.title` as never)}
                     </h3>
-                    <p className="text-muted-foreground mt-1 text-sm">
+                    <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs leading-relaxed">
                       {t(`hub.sections.${section.key}.description` as never)}
                     </p>
                   </div>
@@ -207,19 +176,58 @@ function MyCompanyHubLoaded({
             );
           })}
         </div>
-      </div>
-      <div className="border-border bg-card rounded-2xl border p-5">
-        <h2 className="text-foreground text-base font-semibold">{t('hub.guardrails.title')}</h2>
-        <p className="text-muted-foreground mt-1 text-sm">{t('hub.guardrails.subtitle')}</p>
-        <div className="mt-4 grid gap-3 lg:grid-cols-3">
-          {(['seats', 'compensation', 'orgChart'] as const).map((gap) => (
-            <div key={gap} className="bg-muted/40 rounded-xl p-4">
-              <p className="text-muted-foreground text-sm">{t(`hub.guardrails.${gap}` as never)}</p>
+        <div className="border-border bg-card rounded-2xl border p-4">
+          <div className="mb-3 flex items-start justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <Network size={15} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-foreground text-sm font-semibold">
+                  {t('hub.foundation.title')}
+                </h2>
+                <p className="text-muted-foreground line-clamp-2 text-xs">
+                  {t('hub.foundation.subtitle')}
+                </p>
+              </div>
             </div>
-          ))}
+            <StatusBadge
+              label={t('hub.foundation.assigned', {
+                assigned: assignedEmployees,
+                total: employees.length,
+              })}
+              variant={assignedEmployees === employees.length ? 'emerald' : 'amber'}
+              className="shrink-0"
+            />
+          </div>
+          {departments.length === 0 ? (
+            <HubEmptyDepartments />
+          ) : (
+            <div className="flex flex-col gap-2">
+              {departments.map((department) => (
+                <DepartmentFoundationCard key={department.id} department={department} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      <RecentTeamContext employees={employees} />
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="border-border bg-card rounded-2xl border p-4">
+          <h2 className="text-foreground text-sm font-semibold">{t('hub.guardrails.title')}</h2>
+          <p className="text-muted-foreground mt-1 text-xs">{t('hub.guardrails.subtitle')}</p>
+          <div className="mt-3 flex flex-col gap-2">
+            {(['seats', 'compensation', 'orgChart'] as const).map((gap) => (
+              <p
+                key={gap}
+                className="border-border text-muted-foreground rounded-xl border px-3 py-2.5 text-xs leading-relaxed"
+              >
+                {t(`hub.guardrails.${gap}` as never)}
+              </p>
+            ))}
+          </div>
+        </div>
+        <RecentTeamContext employees={employees} />
+      </div>
     </>
   );
 }
@@ -227,26 +235,27 @@ function MyCompanyHubLoaded({
 function RecentTeamContext({ employees }: { employees: Employee[] }) {
   const t = useTranslations('hr');
   return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <h2 className="text-foreground text-base font-semibold">{t('hub.recent.title')}</h2>
+    <div className="border-border bg-card rounded-2xl border p-4">
+      <h2 className="text-foreground text-sm font-semibold">{t('hub.recent.title')}</h2>
       {employees.length === 0 ? (
-        <p className="text-muted-foreground mt-2 text-sm">{t('hub.recent.empty')}</p>
+        <p className="text-muted-foreground mt-2 text-xs">{t('hub.recent.empty')}</p>
       ) : (
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {employees.slice(0, 6).map((employee) => (
-            <div key={employee.id} className="border-border rounded-xl border p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-foreground text-sm font-medium">
-                    {employee.firstName} {employee.lastName}
-                  </p>
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    {employee.role.name} ·{' '}
-                    {getPrimaryDepartment(employee) ?? t('hub.recent.noDepartment')}
-                  </p>
-                </div>
-                <HubEmployeeStatusBadge status={employee.status} />
+            <div
+              key={employee.id}
+              className="border-border flex items-start justify-between gap-2 rounded-xl border px-3 py-2.5"
+            >
+              <div className="min-w-0">
+                <p className="text-foreground truncate text-sm font-medium">
+                  {employee.firstName} {employee.lastName}
+                </p>
+                <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                  {employee.role.name} ·{' '}
+                  {getPrimaryDepartment(employee) ?? t('hub.recent.noDepartment')}
+                </p>
               </div>
+              <HubEmployeeStatusBadge status={employee.status} />
             </div>
           ))}
         </div>
