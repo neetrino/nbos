@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Building2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/shared';
@@ -10,16 +11,25 @@ export function FoundationMetric({
   label,
   value,
   helper,
+  icon,
 }: {
   label: string;
   value: number;
   helper: string;
+  icon: ReactNode;
 }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <p className="text-muted-foreground text-sm">{label}</p>
-      <p className="text-foreground mt-2 text-3xl font-semibold">{value}</p>
-      <p className="text-muted-foreground mt-1 text-xs">{helper}</p>
+    <div className="border-border bg-card flex min-w-0 items-center gap-3 rounded-2xl border px-3.5 py-2.5 sm:max-w-sm sm:flex-1">
+      <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-foreground flex items-baseline gap-2">
+          <span className="text-lg font-semibold tabular-nums">{value}</span>
+          <span className="truncate text-sm font-medium">{label}</span>
+        </p>
+        <p className="text-muted-foreground truncate text-xs">{helper}</p>
+      </div>
     </div>
   );
 }

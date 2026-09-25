@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Network } from 'lucide-react';
+import { Building2, Network, ShieldCheck, Users2 } from 'lucide-react';
 import {
   DataView,
   ErrorState,
@@ -129,21 +129,24 @@ function MyCompanyHubLoaded({
   const t = useTranslations('hr');
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <FoundationMetric
           label={t('hub.metrics.activeEmployees')}
           value={activeEmployees}
           helper={t('hub.metrics.activeHelper')}
+          icon={<Users2 size={16} />}
         />
         <FoundationMetric
           label={t('hub.metrics.departments')}
           value={departments.length}
           helper={t('hub.metrics.departmentsHelper')}
+          icon={<Building2 size={16} />}
         />
         <FoundationMetric
           label={t('hub.metrics.roles')}
           value={rolesCount}
           helper={t('hub.metrics.rolesHelper', { count: systemRoles })}
+          icon={<ShieldCheck size={16} />}
         />
       </div>
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
