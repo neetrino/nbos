@@ -1,24 +1,29 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { ClipboardList, Route } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { DeleteConfirmDialog, useDeleteConfirm } from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
-import { Card } from '@/components/ui/card';
 import {
   checklistTemplatesApi,
   type ChecklistTemplateListItem,
   type DeliveryStageChecklistRuleRow,
 } from '@/lib/api/checklist-templates';
+import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
-import { NewStageRuleFormCard } from './new-stage-rule-form-card';
-import { StageRuleListItem } from './stage-rule-list-item';
+import { StageRuleCard } from './stage-rule-card';
+import { StageRuleCreateSheet } from './stage-rule-create-sheet';
+import { StageRuleDetailSheet } from './stage-rule-detail-sheet';
 
 export default function ChecklistStageRulesPage() {
   const [rules, setRules] = useState<DeliveryStageChecklistRuleRow[]>([]);
   const [templates, setTemplates] = useState<ChecklistTemplateListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [openRule, setOpenRule] = useState<DeliveryStageChecklistRuleRow | null>(null);
   const deleteConfirm = useDeleteConfirm();
+  const sectionTabs = useCompanySectionTabs('checklists', undefined, 'below');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -44,7 +49,10 @@ export default function ChecklistStageRulesPage() {
 
   const onToggleActive = async (row: DeliveryStageChecklistRuleRow) => {
     try {
-      await checklistTemplatesApi.updateStageRule(row.id, { isActive: !row.isActive });
+      const updated = await checklistTemplatesApi.updateStageRule(row.id, {
+        isActive: !row.isActive,
+      });
+      setOpenRule(updated);
       await load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Update failed');
@@ -55,73 +63,40 @@ export default function ChecklistStageRulesPage() {
     try {
       await checklistTemplatesApi.deleteStageRule(id);
       toast.success('Rule removed');
+      setOpenRule(null);
       await load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Delete failed');
     }
   };
 
-  const activeRuleCount = rules.filter((r) => r.isActive).length;
-
-  useCompanySectionTabs('checklists');
-
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4 pb-10">
-      <NewStageRuleFormCard templates={templates} onCreated={load} />
-
-      <Card className="border-border bg-card relative overflow-hidden rounded-2xl border p-4 shadow-none">
-        <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
-        <div className="relative flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
-              <Route size={15} />
-            </div>
-            <h2 className="text-foreground text-sm font-semibold">Stage rules</h2>
-          </div>
-          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
-            {loading ? '…' : `${activeRuleCount}/${rules.length}`}
-          </span>
-        </div>
-        <ul className="relative mt-3 flex flex-col gap-1">
-          {rules.map((row) => (
-            <StageRuleListItem
-              key={row.id}
-              row={row}
-              onToggleActive={onToggleActive}
-              onDelete={(id) => {
-                const row = rules.find((rule) => rule.id === id);
-                if (!row) return;
-                deleteConfirm.request({
-                  id,
-                  name: row.checklistTemplate.name,
-                });
-              }}
-            />
-          ))}
-          {!loading && rules.length === 0 ? (
-            <li className="text-muted-foreground flex flex-col items-center gap-3 px-6 py-14 text-center text-sm">
-              <span className="bg-muted/80 text-muted-foreground flex size-12 items-center justify-center rounded-2xl">
-                <ClipboardList className="size-6 opacity-60" aria-hidden />
-              </span>
-              <div className="max-w-sm space-y-1">
-                <p className="text-foreground font-medium">No stage rules yet</p>
-                <p>
-                  Add a rule above to automatically spawn checklists when delivery items enter the
-                  selected stage.
-                </p>
-              </div>
-            </li>
-          ) : null}
-        </ul>
-      </Card>
-
+    <div className="flex flex-col gap-4">
+      {sectionTabs}
+      <StageRulesHeader onCreate={() => setCreating(true)} />
+      <StageRulesGrid loading={loading} rules={rules} onOpen={setOpenRule} />
+      <StageRuleCreateSheet
+        open={creating}
+        templates={templates}
+        onOpenChange={setCreating}
+        onCreated={load}
+      />
+      <StageRuleDetailSheet
+        rule={openRule}
+        open={openRule != null}
+        onOpenChange={(open) => {
+          if (!open) setOpenRule(null);
+        }}
+        onToggleActive={(row) => void onToggleActive(row)}
+        onDelete={(row) => deleteConfirm.request({ id: row.id, name: row.checklistTemplate.name })}
+      />
       <DeleteConfirmDialog
         level="simple"
         open={deleteConfirm.open}
         onOpenChange={deleteConfirm.onOpenChange}
         itemName={deleteConfirm.target?.name ?? ''}
         title="Delete stage rule?"
-        description="Checklists will no longer auto-spawn when items enter this stage."
+        description="This checklist will no longer start when items enter this stage."
         onConfirm={() => {
           const id = deleteConfirm.target?.id;
           if (!id) return;
@@ -130,5 +105,41 @@ export default function ChecklistStageRulesPage() {
         }}
       />
     </div>
+  );
+}
+
+function StageRulesHeader({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <p className="text-muted-foreground max-w-3xl text-sm">
+        When a delivery item enters a stage, the matching checklist starts on its own.
+      </p>
+      <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
+        <Button type="button" size="sm" onClick={onCreate}>
+          <Plus className="size-4" aria-hidden />
+          New rule
+        </Button>
+      </PermissionGate>
+    </div>
+  );
+}
+
+function StageRulesGrid({
+  loading,
+  rules,
+  onOpen,
+}: {
+  loading: boolean;
+  rules: DeliveryStageChecklistRuleRow[];
+  onOpen: (row: DeliveryStageChecklistRuleRow) => void;
+}) {
+  if (loading) return <p className="text-muted-foreground text-sm">Loading…</p>;
+  if (rules.length === 0) return <p className="text-muted-foreground text-sm">No rules yet.</p>;
+  return (
+    <ul className="grid w-full grid-cols-2 items-stretch gap-3 xl:grid-cols-3 2xl:grid-cols-4">
+      {rules.map((row) => (
+        <StageRuleCard key={row.id} row={row} onOpen={onOpen} />
+      ))}
+    </ul>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 /** Card block used inside detail sheets: icon well, title, and a one-line hint. */
 export function InsightSheetSection({
@@ -8,16 +9,23 @@ export function InsightSheetSection({
   title,
   hint,
   trailing,
+  className,
   children,
 }: {
   icon: ReactNode;
   title: string;
   hint?: string;
   trailing?: ReactNode;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="border-border bg-card relative overflow-hidden rounded-2xl border p-4">
+    <section
+      className={cn(
+        'border-border bg-card relative overflow-hidden rounded-2xl border p-4',
+        className,
+      )}
+    >
       <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
       <div className="relative flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2.5">

@@ -142,11 +142,12 @@ export function DeliveryItemFilesSection({
 
   return (
     <DetailSheetCollapsibleSection
+      appearance="insight"
       title={t('files.title')}
-      icon={<File size={12} />}
+      hint={t('sheetHints.files')}
+      icon={<File size={15} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
-      className="shadow-sm"
     >
       <div className="flex flex-col gap-4">
         {hasDealFiles ? (

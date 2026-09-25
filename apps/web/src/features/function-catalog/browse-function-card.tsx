@@ -8,7 +8,8 @@ import { NormsCatalogCard } from '@/features/my-company/delivery-norms/norms-cat
 import { CatalogFunctionIcon } from './catalog-icon';
 import { CATALOG_ICON_SIZE_PX } from './function-catalog.constants';
 
-const ICON_SHELL_CLASS = 'bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg';
+const ICON_SHELL_CLASS =
+  'bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg';
 
 export function BrowseFunctionCard({
   item,

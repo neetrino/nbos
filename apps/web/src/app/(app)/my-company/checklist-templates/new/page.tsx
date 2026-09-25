@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { FileText, Loader2, Sparkles } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
@@ -40,18 +40,7 @@ const CATEGORIES: ChecklistTemplateCategory[] = [
 const OWNER_MODULES: ChecklistOwnerModule[] = ['MY_COMPANY', 'PROJECTS', 'TASKS', 'TECHNICAL'];
 
 export default function NewChecklistTemplatePage() {
-  const backLink = useMemo(
-    () => (
-      <Link
-        href="/my-company/checklist-templates"
-        className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-      >
-        Back to list
-      </Link>
-    ),
-    [],
-  );
-  useCompanySectionTabs('checklists', backLink);
+  const sectionTabs = useCompanySectionTabs('checklists', undefined, 'below');
   const router = useRouter();
   const { can, isLoading } = usePermission();
   const [name, setName] = useState('');
@@ -86,7 +75,8 @@ export default function NewChecklistTemplatePage() {
 
   if (!isLoading && !can('ADD', 'CHECKLIST_TEMPLATES')) {
     return (
-      <div className="mx-auto max-w-lg space-y-6 py-6">
+      <div className="mx-auto flex max-w-lg flex-col gap-4 py-6">
+        {sectionTabs}
         <Card className="border-border/80 shadow-sm shadow-black/[0.04]">
           <CardHeader>
             <CardTitle>Access restricted</CardTitle>
@@ -109,7 +99,8 @@ export default function NewChecklistTemplatePage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 pb-10">
+    <div className="mx-auto flex max-w-3xl flex-col gap-4 pb-10">
+      {sectionTabs}
       <p className="text-muted-foreground text-sm">
         Start with a name and classification. You’ll add checklist items next, then publish to lock
         the version used for new instances.

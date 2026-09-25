@@ -7,11 +7,9 @@ import { UNIT_SUM_EMPTY } from './format-unit-sum';
 import { NormativeStatusBadge } from './normative-status-badge';
 
 const CARD_BUTTON_CLASS = [
-  'flex h-full w-full flex-col gap-4 p-4 text-left',
+  'flex h-full w-full min-w-0 flex-col gap-3 p-3.5 text-left',
   'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
 ].join(' ');
-
-const METRIC_COL_CLASS = 'flex min-w-[7.5rem] shrink-0 flex-col justify-end gap-1.5';
 
 export function NormsCatalogCard({
   title,
@@ -51,7 +49,7 @@ export function NormsCatalogCard({
       padding="none"
       baseShadow="sm"
       hoverShadow="md"
-      className={cn('h-full', !canOpen && 'opacity-70')}
+      className={cn('h-full min-w-0', !canOpen && 'opacity-70')}
     >
       <button
         type="button"
@@ -98,11 +96,11 @@ function CardHeader({
   badge?: ReactNode;
 }) {
   return (
-    <span className="flex items-start justify-between gap-2">
-      <span className="flex min-w-0 items-start gap-2">
+    <span className="flex items-center justify-between gap-2">
+      <span className="flex min-w-0 items-center gap-2.5">
         {icon}
         <span className="min-w-0">
-          <span className="text-foreground line-clamp-2 min-h-10 text-sm leading-snug font-bold">
+          <span className="text-foreground line-clamp-2 text-sm leading-snug font-semibold">
             {title}
           </span>
           {description ? (
@@ -129,23 +127,12 @@ function CardLead({
   caption: string;
   metrics: readonly CardMetric[];
 }) {
+  const tiles = [{ caption, value: label ?? '—' }, ...metrics];
   return (
-    <span className="flex items-end justify-between gap-4">
-      <span className="min-w-0">
-        <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
-          {caption}
-        </span>
-        <span className="text-foreground mt-1 block text-xl leading-none font-bold tabular-nums">
-          {label ?? '—'}
-        </span>
-      </span>
-      {metrics.length > 0 ? (
-        <span className={METRIC_COL_CLASS}>
-          {metrics.map((metric) => (
-            <MetricRow key={metric.caption} {...metric} />
-          ))}
-        </span>
-      ) : null}
+    <span className={cn('grid gap-2', tiles.length > 2 ? 'grid-cols-3' : 'grid-cols-2')}>
+      {tiles.map((tile) => (
+        <MetricTile key={tile.caption} {...tile} />
+      ))}
     </span>
   );
 }
@@ -171,15 +158,15 @@ function cardMetrics(input: {
   return rows;
 }
 
-function MetricRow({ value, caption, muted }: CardMetric) {
+function MetricTile({ value, caption, muted }: CardMetric) {
   return (
-    <span className="flex items-baseline justify-between gap-3">
-      <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
+    <span className="bg-background flex min-w-0 flex-col rounded-xl px-2.5 py-2">
+      <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.12em] uppercase">
         {caption}
       </span>
       <span
         className={cn(
-          'truncate text-xs font-medium tabular-nums',
+          'mt-1 truncate text-base leading-none font-semibold tabular-nums',
           muted ? 'text-muted-foreground' : 'text-foreground',
         )}
       >

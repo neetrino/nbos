@@ -25,17 +25,13 @@ import { ChecklistTemplateAuditPanel } from '../checklist-template-audit-panel';
 import { ChecklistTemplateDraftCard } from '../checklist-template-draft-card';
 
 function statusVariant(status: string): 'default' | 'green' | 'gray' | 'blue' | 'amber' | 'red' {
-  if (status === 'ACTIVE') {
-    return 'green';
-  }
-  if (status === 'ARCHIVED') {
-    return 'gray';
-  }
+  if (status === 'ACTIVE') return 'green';
+  if (status === 'ARCHIVED') return 'gray';
   return 'blue';
 }
 
 export default function ChecklistTemplateDetailPage() {
-  useCompanySectionTabs('checklists');
+  const sectionTabs = useCompanySectionTabs('checklists', undefined, 'below');
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const id = params.id;
@@ -172,16 +168,20 @@ export default function ChecklistTemplateDetailPage() {
 
   if (loading && !detail) {
     return (
-      <div className="text-muted-foreground flex items-center gap-2 p-8 text-sm">
-        <Loader2 className="size-4 animate-spin" aria-hidden />
-        Loading template…
+      <div className="flex flex-col gap-4">
+        {sectionTabs}
+        <div className="text-muted-foreground flex items-center gap-2 p-8 text-sm">
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+          Loading template…
+        </div>
       </div>
     );
   }
 
   if (!detail) {
     return (
-      <div className="space-y-4 p-6">
+      <div className="flex flex-col gap-4 p-6">
+        {sectionTabs}
         <p className="text-muted-foreground text-sm">Template not found.</p>
         <Link
           href="/my-company/checklist-templates"
@@ -196,7 +196,8 @@ export default function ChecklistTemplateDetailPage() {
   const readOnly = detail.status === 'ARCHIVED';
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 pb-10">
+    <div className="mx-auto flex max-w-5xl flex-col gap-4 pb-10">
+      {sectionTabs}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-lg font-semibold tracking-tight">{detail.name}</h1>
         <div className="flex flex-wrap items-center gap-2">

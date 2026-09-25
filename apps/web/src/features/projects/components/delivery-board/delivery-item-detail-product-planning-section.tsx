@@ -69,11 +69,13 @@ export function ProductPlanningSection({
 
   return (
     <DetailSheetCollapsibleSection
+      appearance="insight"
       title={t('plan.deliveryTitle')}
-      icon={<ClipboardList size={12} />}
+      hint={t('sheetHints.plan')}
+      icon={<ClipboardList size={15} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
-      className="w-full max-w-full min-w-0 shadow-sm"
+      className="w-full max-w-full min-w-0"
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
         <DetailSheetCollapsibleSubsection title={t('plan.project')}>

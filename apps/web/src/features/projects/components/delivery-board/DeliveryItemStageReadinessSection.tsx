@@ -1,7 +1,7 @@
 'use client';
 
-import { CheckCircle2, Circle } from 'lucide-react';
-import { DETAIL_SHEET_SECTION_TITLE_CLASS } from '@/components/shared';
+import { CheckCircle2, Circle, Gauge } from 'lucide-react';
+import { InsightSheetSection } from '@/components/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import type { ChecklistStageProgress, DeliveryLifecycleProjection } from '@/lib/api/projects';
@@ -12,7 +12,6 @@ import {
   translateReadinessLabel,
 } from './delivery-board-message-keys';
 import type { ApiFieldError } from '@/lib/api-errors';
-import { cn } from '@/lib/utils';
 import {
   buildExtensionStageReadinessRows,
   buildProductStageReadinessRows,
@@ -50,35 +49,39 @@ export function DeliveryItemStageReadinessSection({
 
   if (!lifecycle || rows.length === 0) {
     return (
-      <section className="border-border bg-card rounded-xl border p-4 shadow-sm">
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-2')}>{t('readiness.title')}</h3>
+      <InsightSheetSection
+        icon={<Gauge size={15} />}
+        title={t('readiness.title')}
+        hint={t('sheetHints.readiness')}
+      >
         <p className="text-muted-foreground text-sm">{t('readiness.empty')}</p>
-      </section>
+      </InsightSheetSection>
     );
   }
 
   const doneCount = rows.filter((r) => r.done).length;
+  const progress = readiness
+    ? `${readiness.completed}/${readiness.total}`
+    : `${doneCount}/${rows.length}`;
 
   return (
-    <section
-      className={deliveryStageGateSectionClass(
-        gateRequiredFields,
-        'clientAcceptance',
-        'border-border bg-card rounded-xl border p-4 shadow-sm',
-      )}
+    <InsightSheetSection
+      icon={<Gauge size={15} />}
+      title={t('readiness.title')}
+      hint={t('sheetHints.readiness')}
+      className={deliveryStageGateSectionClass(gateRequiredFields, 'clientAcceptance')}
+      trailing={
+        <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+          {progress}
+        </span>
+      }
     >
-      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-0')}>{t('readiness.title')}</h3>
-        <p className="text-muted-foreground text-xs">
-          {translateDeliveryLifecycleLabel(lifecycle, t)}
-          {readiness
-            ? ` · ${readiness.completed}/${readiness.total}`
-            : ` · ${doneCount}/${rows.length}`}
-        </p>
-      </div>
-      <ul className="space-y-1.5">
+      <p className="text-muted-foreground mb-2 text-xs">
+        {translateDeliveryLifecycleLabel(lifecycle, t)}
+      </p>
+      <ul className="flex flex-col gap-1">
         {rows.map((row) => (
-          <li key={row.key} className="flex items-start gap-2 text-sm">
+          <li key={row.key} className="flex items-start gap-2.5 rounded-xl px-1.5 py-1.5 text-sm">
             {row.done ? (
               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden />
             ) : (
@@ -106,6 +109,6 @@ export function DeliveryItemStageReadinessSection({
           ))}
         </ul>
       ) : null}
-    </section>
+    </InsightSheetSection>
   );
 }

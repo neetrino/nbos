@@ -3,10 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { User, type LucideIcon } from 'lucide-react';
-import { DetailSheetSection } from '@/components/shared';
+import { Handshake, User, type LucideIcon } from 'lucide-react';
+import { InsightSheetSection } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { cn } from '@/lib/utils';
 import { InvoiceLinkedReadonlyField } from '@/features/finance/components/invoices/InvoiceLinkedReadonlyField';
 import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
@@ -169,7 +168,12 @@ export function DeliveryItemCommercialSection({
 
   return (
     <>
-      <DetailSheetSection title={t('commercial.title')} outlined className={cn(gateClass)}>
+      <InsightSheetSection
+        icon={<Handshake size={15} />}
+        title={t('commercial.title')}
+        hint={t('sheetHints.commercial')}
+        className={gateClass}
+      >
         <CommercialLinkedFields
           contact={contact}
           deal={deal}
@@ -180,7 +184,7 @@ export function DeliveryItemCommercialSection({
           onOpenDeal={() => setDealSheetOpen(true)}
           onOpenOrder={() => setOrderSheetOpen(true)}
         />
-      </DetailSheetSection>
+      </InsightSheetSection>
       <CommercialNestedSheets
         dealId={deal?.id ?? null}
         orderId={order?.id ?? null}

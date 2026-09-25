@@ -124,11 +124,13 @@ export function DeliveryAccessInfrastructureSection({
   return (
     <>
       <DetailSheetCollapsibleSection
+        appearance="insight"
         title={t('access.title')}
-        icon={<KeyRound size={12} />}
+        hint={t('sheetHints.access')}
+        icon={<KeyRound size={15} />}
         open={sectionOpen}
         onOpenChange={setSectionOpen}
-        className={cn('shadow-sm', deliveryStageGateSectionClass(gateRequiredFields, 'access'))}
+        className={deliveryStageGateSectionClass(gateRequiredFields, 'access')}
       >
         {setupPanel ? (
           <div className="grid gap-4 lg:grid-cols-2 lg:items-start">

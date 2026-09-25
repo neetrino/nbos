@@ -134,6 +134,15 @@
     "checklistDetailFull": "{completedChecklists}/{totalChecklists} complete, {reviewed}/{total} reviewed",
     "checklistDetailReviewed": "{reviewed}/{total} reviewed"
   },
+  "sheetHints": {
+    "plan": "Deadline, product, and the notes the team works from.",
+    "extension": "What this extension delivers, and when it is due.",
+    "access": "Credentials this product needs before it can go live.",
+    "team": "Who runs the delivery, and who sold it.",
+    "files": "Offer, contract, and files attached to this item.",
+    "readiness": "What still has to be true before the next stage.",
+    "commercial": "Client, deal, and order linked to this delivery."
+  },
   "plan": {
     "deliveryTitle": "Delivery plan",
     "extensionTitle": "Extension plan",

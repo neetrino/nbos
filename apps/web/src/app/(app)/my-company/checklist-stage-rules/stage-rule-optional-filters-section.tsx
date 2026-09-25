@@ -1,6 +1,5 @@
 'use client';
 
-import { Filter } from 'lucide-react';
 import { InlineField } from '@/components/shared';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import type { DeliveryChecklistTarget } from '@/lib/api/checklist-templates';
@@ -74,10 +73,6 @@ export function StageRuleOptionalFiltersSection({
 }: Props) {
   return (
     <div className="space-y-3">
-      <div className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wide uppercase">
-        <Filter className="size-3.5" aria-hidden />
-        Optional filters
-      </div>
       {target === 'PRODUCT' ? (
         <ProductOptionalFilters
           filterCategory={filterCategory}
