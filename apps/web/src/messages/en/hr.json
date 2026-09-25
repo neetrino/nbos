@@ -374,6 +374,20 @@
     "salaries": "Salaries",
     "coreFunction": "Core & Function"
   },
+  "salaries": {
+    "search": "Search people",
+    "all": "All",
+    "missing": "Salary not set",
+    "set": "Salary set",
+    "notSet": "Not set",
+    "bonusOff": "No bonus rule",
+    "kpiOff": "No KPI",
+    "emptyTitle": "No people",
+    "emptyDescription": "No employees match this search.",
+    "sheetHint": "Minimum salary plus the bonus rule. Attach KPI only for sales. Save a draft, then activate it.",
+    "loadFailed": "Could not load salaries.",
+    "counts": "{configured} of {total} have a salary"
+  },
   "functionCatalog": {
     "title": "Function catalog",
     "subtitle": "Instructions for delivery functions. Compensation amounts are not shown here.",

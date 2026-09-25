@@ -41,10 +41,12 @@ function employeeLabel(employee: Employee): string {
 export function CompensationProfileWorkspace({
   employees,
   initialEmployeeId = '',
+  embedded = false,
   onSalaryActivated,
 }: {
   employees: readonly Employee[];
   initialEmployeeId?: string;
+  embedded?: boolean;
   onSalaryActivated?: (employeeId: string, baseSalary: string) => void;
 }) {
   const [selectedId, setSelectedId] = useState(initialEmployeeId);
@@ -184,52 +186,57 @@ export function CompensationProfileWorkspace({
       setBusy(false);
     }
   };
-
   return (
-    <div className="border-border bg-card space-y-4 rounded-2xl border p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h2 className="text-foreground text-sm font-semibold">Minimum salary</h2>
-          <p className="text-muted-foreground mt-1 text-xs leading-snug">
-            Everyone gets a minimum salary plus bonuses. Sales: attach the sales bonus rule and a
-            KPI gate. Developers: salary plus the delivery bonus rule, and leave KPI empty.
-          </p>
+    <div
+      className={embedded ? 'space-y-4' : 'border-border bg-card space-y-4 rounded-2xl border p-4'}
+    >
+      {embedded ? null : (
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <h2 className="text-foreground text-sm font-semibold">Minimum salary</h2>
+            <p className="text-muted-foreground mt-1 text-xs leading-snug">
+              Everyone gets a minimum salary plus bonuses. Sales: attach the sales bonus rule and a
+              KPI gate. Developers: salary plus the delivery bonus rule, and leave KPI empty.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <Link
+              href="/my-company/sales-bonus-policies"
+              className="text-primary font-medium hover:underline"
+            >
+              Sales rates
+            </Link>
+            <Link
+              href="/my-company/kpi-policies"
+              className="text-primary font-medium hover:underline"
+            >
+              KPI gates
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2 text-xs">
-          <Link
-            href="/my-company/sales-bonus-policies"
-            className="text-primary font-medium hover:underline"
-          >
-            Sales rates
-          </Link>
-          <Link
-            href="/my-company/kpi-policies"
-            className="text-primary font-medium hover:underline"
-          >
-            KPI gates
-          </Link>
-        </div>
-      </div>
+      )}
 
-      <label className="block max-w-md space-y-1 text-sm">
-        <span className="text-muted-foreground">Employee</span>
-        <Select
-          value={selectedId || 'none'}
-          onValueChange={(v) => setSelectedId(!v || v === 'none' ? '' : v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select employee…" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Select employee…</SelectItem>
-            {employees.map((e) => (
-              <SelectItem key={e.id} value={e.id}>
-                {employeeLabel(e)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </label>
+      {embedded ? null : (
+        <label className="block max-w-md space-y-1 text-sm">
+          <span className="text-muted-foreground">Employee</span>
+          <Select
+            value={selectedId || 'none'}
+            onValueChange={(v) => setSelectedId(!v || v === 'none' ? '' : v)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select employee…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Select employee…</SelectItem>
+              {employees.map((e) => (
+                <SelectItem key={e.id} value={e.id}>
+                  {employeeLabel(e)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </label>
+      )}
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
