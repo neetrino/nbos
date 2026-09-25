@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import {
+  ROLE_KIND_TONE_CLASS,
   ROLE_KIND_TRIGGER_CLASS,
   ROLE_MESSAGE_KEYS,
   ROLE_UNITS_INPUT_CLASS,
@@ -121,7 +122,11 @@ function RoleKindSelect({
         onChange(next as DeliveryRoleUnitKind);
       }}
     >
-      <SelectTrigger size="sm" aria-label={label} className={ROLE_KIND_TRIGGER_CLASS}>
+      <SelectTrigger
+        size="sm"
+        aria-label={label}
+        className={cn(ROLE_KIND_TRIGGER_CLASS, ROLE_KIND_TONE_CLASS[value])}
+      >
         <SelectValue>{() => labels[value]}</SelectValue>
       </SelectTrigger>
       <SelectContent>

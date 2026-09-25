@@ -1,4 +1,8 @@
-import type { DeliveryCompensationRoleKey, DeliveryNormativeStatus } from '@nbos/shared';
+import type {
+  DeliveryCompensationRoleKey,
+  DeliveryNormativeStatus,
+  DeliveryRoleUnitKind,
+} from '@nbos/shared';
 import type { StatusVariant } from '@/components/shared';
 
 export const SECTION_CARD_CLASS =
@@ -93,9 +97,16 @@ export const ROLE_UNITS_INPUT_CLASS =
 export const ROLE_UNIT_DIVIDER_CLASS = 'bg-border h-6 w-px shrink-0';
 
 export const ROLE_KIND_TRIGGER_CLASS = [
-  'h-8 w-[8.75rem] shrink-0 rounded-lg border-0 bg-muted/60 px-2.5 shadow-none',
-  'hover:bg-muted data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg',
+  'h-8 w-[8.75rem] shrink-0 rounded-lg border-0 px-2.5 shadow-none',
+  'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg',
 ].join(' ');
+
+/** Soft status tint for the role-unit dropdown. */
+export const ROLE_KIND_TONE_CLASS: Record<DeliveryRoleUnitKind, string> = {
+  REQUIRED: 'bg-success/15 text-success hover:bg-success/20 [&_svg]:text-success',
+  OPTIONAL: 'bg-warning/25 text-foreground hover:bg-warning/35 [&_svg]:text-foreground',
+  NOT_REQUIRED: 'bg-muted text-muted-foreground hover:bg-muted [&_svg]:text-muted-foreground',
+};
 
 export const INCLUDED_PICKER_STACK_CLASS = 'space-y-8';
 
