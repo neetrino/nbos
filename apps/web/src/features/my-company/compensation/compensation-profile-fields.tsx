@@ -3,20 +3,11 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Calendar, CircleDollarSign, Percent } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
+import { DetailSheetSection, InlineField } from '@/components/shared';
 import {
   TEAM_SHEET_FIELD_GRID_CLASS,
   TEAM_SHEET_SECTION_CLASS,
 } from '@/features/hr/constants/team-sheet-layout';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { NbosMoneyInput } from '@/components/shared/NbosMoneyInput';
 import type { BonusPolicyRow } from '@/lib/api/bonus-policies';
 import type { KpiPolicyRow } from '@/lib/api/kpi-policies';
 import {
@@ -125,53 +116,33 @@ function BonusAndKpiFields({
       className={TEAM_SHEET_SECTION_CLASS}
     >
       <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-        <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">{t('bonusRule')}</span>
-          <Select
+        <div className="space-y-1.5">
+          <InlineField
+            variant="controlled"
+            label={t('bonusRule')}
+            type="select"
             value={bonusPolicyId || 'none'}
+            options={policyOptions(t('none'), bonusPolicies)}
+            placeholder={t('none')}
             disabled={busy || bonusPolicies.length === 0}
-            onValueChange={(v) => onBonusPolicy(!v || v === 'none' ? '' : v)}
-          >
-            <SelectTrigger className="bg-card h-10 w-full rounded-xl">
-              <SelectValue placeholder={t('none')}>
-                {() => bonusPolicies.find((p) => p.id === bonusPolicyId)?.name ?? t('none')}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">{t('none')}</SelectItem>
-              {bonusPolicies.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onValueChange={(value) => onBonusPolicy(value === 'none' ? '' : value)}
+          />
           {activeBonusNote ? (
             <p className="text-muted-foreground text-xs">{activeBonusNote}</p>
           ) : null}
           <BonusRuleHint template={template} />
-        </label>
-        <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground">{t('kpiGate')}</span>
-          <Select
+        </div>
+        <div className="space-y-1.5">
+          <InlineField
+            variant="controlled"
+            label={t('kpiGate')}
+            type="select"
             value={kpiPolicyId || 'none'}
+            options={policyOptions(t('none'), kpiPolicies)}
+            placeholder={t('none')}
             disabled={busy || kpiPolicies.length === 0}
-            onValueChange={(v) => onKpiPolicy(!v || v === 'none' ? '' : v)}
-          >
-            <SelectTrigger className="bg-card h-10 w-full rounded-xl">
-              <SelectValue placeholder={t('none')}>
-                {() => kpiPolicies.find((p) => p.id === kpiPolicyId)?.name ?? t('none')}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">{t('none')}</SelectItem>
-              {kpiPolicies.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onValueChange={(value) => onKpiPolicy(value === 'none' ? '' : value)}
+          />
           {activeKpiNote ? <p className="text-muted-foreground text-xs">{activeKpiNote}</p> : null}
           {kpiLabel ? (
             <p className="text-muted-foreground text-xs">{t('scorecard', { metrics: kpiLabel })}</p>
@@ -179,7 +150,7 @@ function BonusAndKpiFields({
           {template === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES && !kpiPolicyId ? (
             <p className="text-muted-foreground text-xs">{t('salesKpiHint')}</p>
           ) : null}
-        </label>
+        </div>
       </div>
     </DetailSheetSection>
   );
@@ -208,33 +179,37 @@ function SalaryDraftFields({
       className={TEAM_SHEET_SECTION_CLASS}
     >
       <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
-        <NbosMoneyInput
+        <InlineField
+          variant="controlled"
           label={t('amount')}
-          labelClassName="text-muted-foreground text-xs font-normal"
-          className="bg-card h-10 rounded-xl"
+          type="money"
           value={baseSalary}
+          icon={<CircleDollarSign size={12} />}
           disabled={busy}
-          onChange={onBaseSalary}
+          onValueChange={onBaseSalary}
         />
-        <label className="space-y-1.5 text-sm">
-          <span className="text-muted-foreground flex items-center gap-1 text-xs">
-            {t('effectiveFrom')}
-            <Calendar size={12} />
-          </span>
-          <Input
-            type="date"
-            className="bg-card h-10 rounded-xl"
-            value={effectiveFrom}
-            disabled={busy}
-            onChange={(e) => onEffectiveFrom(e.target.value)}
-          />
-        </label>
+        <InlineField
+          variant="controlled"
+          label={t('effectiveFrom')}
+          type="date"
+          value={effectiveFrom || null}
+          icon={<Calendar size={12} />}
+          disabled={busy}
+          onValueChange={(value) => onEffectiveFrom(value ?? '')}
+        />
       </div>
       {activeSalaryNote ? (
         <p className="text-muted-foreground mt-3 text-xs">{activeSalaryNote}</p>
       ) : null}
     </DetailSheetSection>
   );
+}
+
+function policyOptions(noneLabel: string, rows: readonly { id: string; name: string }[]) {
+  return [
+    { value: 'none', label: noneLabel },
+    ...rows.map((row) => ({ value: row.id, label: row.name })),
+  ];
 }
 
 function BonusRuleHint({ template }: { template: string | null }) {
