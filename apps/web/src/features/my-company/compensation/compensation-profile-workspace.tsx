@@ -1,15 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StatusBadge } from '@/components/shared';
 import { CompensationProfileFields } from '@/features/my-company/compensation/compensation-profile-fields';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
@@ -34,20 +25,18 @@ function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function employeeLabel(employee: Employee): string {
-  return `${employee.firstName} ${employee.lastName}`.trim();
-}
-
 export function CompensationProfileWorkspace({
   employees,
   initialEmployeeId = '',
-  embedded = false,
   onSalaryActivated,
+  onEditorState,
+  activateRef,
 }: {
   employees: readonly Employee[];
   initialEmployeeId?: string;
-  embedded?: boolean;
   onSalaryActivated?: (employeeId: string, baseSalary: string) => void;
+  onEditorState?: (state: { canActivate: boolean; busy: boolean }) => void;
+  activateRef?: { current: () => void };
 }) {
   const [selectedId, setSelectedId] = useState(initialEmployeeId);
   const [profiles, setProfiles] = useState<CompensationProfileRow[]>([]);
@@ -186,58 +175,22 @@ export function CompensationProfileWorkspace({
       setBusy(false);
     }
   };
+
+  const draftId = draftProfile?.id ?? null;
+  const activateCurrent = useRef(handleActivate);
+  activateCurrent.current = handleActivate;
+  if (activateRef) {
+    activateRef.current = () => {
+      if (draftId) void activateCurrent.current(draftId);
+    };
+  }
+
+  useEffect(() => {
+    onEditorState?.({ canActivate: draftId != null && !busy, busy });
+  }, [busy, draftId, onEditorState]);
+
   return (
-    <div
-      className={embedded ? 'space-y-4' : 'border-border bg-card space-y-4 rounded-2xl border p-4'}
-    >
-      {embedded ? null : (
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <h2 className="text-foreground text-sm font-semibold">Minimum salary</h2>
-            <p className="text-muted-foreground mt-1 text-xs leading-snug">
-              Everyone gets a minimum salary plus bonuses. Sales: attach the sales bonus rule and a
-              KPI gate. Developers: salary plus the delivery bonus rule, and leave KPI empty.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <Link
-              href="/my-company/sales-bonus-policies"
-              className="text-primary font-medium hover:underline"
-            >
-              Sales rates
-            </Link>
-            <Link
-              href="/my-company/kpi-policies"
-              className="text-primary font-medium hover:underline"
-            >
-              KPI gates
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {embedded ? null : (
-        <label className="block max-w-md space-y-1 text-sm">
-          <span className="text-muted-foreground">Employee</span>
-          <Select
-            value={selectedId || 'none'}
-            onValueChange={(v) => setSelectedId(!v || v === 'none' ? '' : v)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select employee…" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Select employee…</SelectItem>
-              {employees.map((e) => (
-                <SelectItem key={e.id} value={e.id}>
-                  {employeeLabel(e)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </label>
-      )}
-
+    <div className="space-y-4">
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
       {selectedId ? (
@@ -249,7 +202,7 @@ export function CompensationProfileWorkspace({
               {profiles.map((p) => (
                 <li
                   key={p.id}
-                  className="border-border flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+                  className="border-border bg-card flex flex-wrap items-center gap-2 rounded-2xl border px-4 py-3 text-sm"
                 >
                   <StatusBadge label={p.status} variant={STATUS_VARIANT[p.status] ?? 'gray'} />
                   <span className="tabular-nums">
@@ -258,18 +211,6 @@ export function CompensationProfileWorkspace({
                   <span className="text-muted-foreground">from {p.effectiveFrom}</span>
                   <span className="text-muted-foreground">Bonus: {p.bonusPolicy?.name ?? '—'}</span>
                   <span className="text-muted-foreground">KPI: {p.kpiPolicy?.name ?? '—'}</span>
-                  {p.status === 'DRAFT' ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={busy}
-                      className="ml-auto"
-                      onClick={() => void handleActivate(p.id)}
-                    >
-                      Activate
-                    </Button>
-                  ) : null}
                 </li>
               ))}
               {profiles.length === 0 ? (

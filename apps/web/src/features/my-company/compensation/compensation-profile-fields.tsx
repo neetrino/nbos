@@ -1,6 +1,12 @@
 import Link from 'next/link';
+import { Calendar, CircleDollarSign, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DetailSheetSection } from '@/components/shared/DetailSheetSection';
+import {
+  TEAM_SHEET_FIELD_GRID_CLASS,
+  TEAM_SHEET_SECTION_CLASS,
+} from '@/features/hr/constants/team-sheet-layout';
 import {
   Select,
   SelectContent,
@@ -103,55 +109,61 @@ function BonusAndKpiFields({
   onKpiPolicy: (id: string) => void;
 }) {
   return (
-    <div className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-2">
-      <label className="space-y-1 text-sm">
-        <span className="text-muted-foreground">Bonus rule</span>
-        <Select
-          value={bonusPolicyId || 'none'}
-          disabled={busy || bonusPolicies.length === 0}
-          onValueChange={(v) => onBonusPolicy(!v || v === 'none' ? '' : v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="None" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">None</SelectItem>
-            {bonusPolicies.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <BonusRuleHint template={template} />
-      </label>
-      <label className="space-y-1 text-sm">
-        <span className="text-muted-foreground">KPI gate</span>
-        <Select
-          value={kpiPolicyId || 'none'}
-          disabled={busy || kpiPolicies.length === 0}
-          onValueChange={(v) => onKpiPolicy(!v || v === 'none' ? '' : v)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="None" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">None</SelectItem>
-            {kpiPolicies.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {kpiLabel ? <p className="text-muted-foreground text-xs">Scorecard: {kpiLabel}</p> : null}
-        {template === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES && !kpiPolicyId ? (
-          <p className="text-muted-foreground text-xs">
-            Sales bonuses are not scaled until you attach a KPI gate.
-          </p>
-        ) : null}
-      </label>
-    </div>
+    <DetailSheetSection
+      title="Bonus and KPI"
+      icon={<Percent size={12} />}
+      className={TEAM_SHEET_SECTION_CLASS}
+    >
+      <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
+        <label className="space-y-1 text-sm">
+          <span className="text-muted-foreground">Bonus rule</span>
+          <Select
+            value={bonusPolicyId || 'none'}
+            disabled={busy || bonusPolicies.length === 0}
+            onValueChange={(v) => onBonusPolicy(!v || v === 'none' ? '' : v)}
+          >
+            <SelectTrigger className="bg-card h-10 w-full rounded-xl">
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {bonusPolicies.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <BonusRuleHint template={template} />
+        </label>
+        <label className="space-y-1 text-sm">
+          <span className="text-muted-foreground">KPI gate</span>
+          <Select
+            value={kpiPolicyId || 'none'}
+            disabled={busy || kpiPolicies.length === 0}
+            onValueChange={(v) => onKpiPolicy(!v || v === 'none' ? '' : v)}
+          >
+            <SelectTrigger className="bg-card h-10 w-full rounded-xl">
+              <SelectValue placeholder="None" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {kpiPolicies.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {kpiLabel ? <p className="text-muted-foreground text-xs">Scorecard: {kpiLabel}</p> : null}
+          {template === BONUS_POLICY_TEMPLATE_SALES_COMPANY_RATES && !kpiPolicyId ? (
+            <p className="text-muted-foreground text-xs">
+              Sales bonuses are not scaled until you attach a KPI gate.
+            </p>
+          ) : null}
+        </label>
+      </div>
+    </DetailSheetSection>
   );
 }
 
@@ -173,29 +185,40 @@ function SalaryDraftFields({
   onSaveDraft: () => void;
 }) {
   return (
-    <div className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-3">
-      <NbosMoneyInput
-        label="Minimum salary"
-        labelClassName="text-muted-foreground font-normal"
-        value={baseSalary}
-        disabled={busy}
-        onChange={onBaseSalary}
-      />
-      <label className="space-y-1 text-sm">
-        <span className="text-muted-foreground">Effective from</span>
-        <Input
-          type="date"
-          value={effectiveFrom}
+    <DetailSheetSection
+      title="Minimum salary"
+      icon={<CircleDollarSign size={12} />}
+      className={TEAM_SHEET_SECTION_CLASS}
+    >
+      <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
+        <NbosMoneyInput
+          label="Amount"
+          labelClassName="text-muted-foreground text-xs font-normal"
+          className="bg-card h-10 rounded-xl"
+          value={baseSalary}
           disabled={busy}
-          onChange={(e) => onEffectiveFrom(e.target.value)}
+          onChange={onBaseSalary}
         />
-      </label>
-      <div className="flex items-end">
-        <Button type="button" size="sm" disabled={busy} onClick={onSaveDraft}>
+        <label className="space-y-1.5 text-sm">
+          <span className="text-muted-foreground flex items-center gap-1 text-xs">
+            Effective from
+            <Calendar size={12} />
+          </span>
+          <Input
+            type="date"
+            className="bg-card h-10 rounded-xl"
+            value={effectiveFrom}
+            disabled={busy}
+            onChange={(e) => onEffectiveFrom(e.target.value)}
+          />
+        </label>
+      </div>
+      <div className="mt-4 flex justify-end">
+        <Button type="button" disabled={busy} onClick={onSaveDraft}>
           {hasDraft ? 'Save draft' : 'Create draft'}
         </Button>
       </div>
-    </div>
+    </DetailSheetSection>
   );
 }
 
