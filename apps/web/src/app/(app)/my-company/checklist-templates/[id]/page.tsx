@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { StatusBadge } from '@/components/shared';
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
@@ -170,17 +169,17 @@ export default function ChecklistTemplateDetailPage() {
     return (
       <div className="flex flex-col gap-4">
         {sectionTabs}
-        <div className="text-muted-foreground flex items-center gap-2 p-8 text-sm">
+        <p className="text-muted-foreground flex items-center gap-2 text-sm">
           <Loader2 className="size-4 animate-spin" aria-hidden />
           Loading template…
-        </div>
+        </p>
       </div>
     );
   }
 
   if (!detail) {
     return (
-      <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4">
         {sectionTabs}
         <p className="text-muted-foreground text-sm">Template not found.</p>
         <Link
@@ -195,13 +194,25 @@ export default function ChecklistTemplateDetailPage() {
 
   const readOnly = detail.status === 'ARCHIVED';
 
+  const published = detail.activeVersion
+    ? `Published v${detail.activeVersion.versionNumber}`
+    : 'Not published';
+  const draft = detail.draftVersion ? `Draft v${detail.draftVersion.versionNumber}` : 'No draft';
+
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4 pb-10">
+    <div className="flex flex-col gap-4 pb-10">
       {sectionTabs}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold tracking-tight">{detail.name}</h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h1 className="truncate text-lg font-semibold">{detail.name}</h1>
+            <StatusBadge label={detail.status} variant={statusVariant(detail.status)} />
+          </div>
+          <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
+            {detail.description?.trim() || 'No description yet.'} {published} · {draft}
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge label={detail.status} variant={statusVariant(detail.status)} />
           <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
             <Button
               type="button"
@@ -221,43 +232,23 @@ export default function ChecklistTemplateDetailPage() {
           </Link>
         </div>
       </div>
-      <p className="text-muted-foreground line-clamp-2 text-sm">
-        {detail.description ?? 'No description'}
-      </p>
 
-      <Card className="border-border/80 shadow-sm shadow-black/[0.04]">
-        <CardContent className="grid gap-6 p-4 sm:p-5 lg:grid-cols-2 lg:gap-8">
-          <div className="min-w-0 space-y-2">
-            <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              Template details
-            </h2>
-            <ChecklistTemplateMetadataSection
-              templateId={id}
-              detail={detail}
-              readOnly={readOnly}
-              onUpdated={setDetail}
-              embedded
-            />
-          </div>
-          <div className="border-border/60 min-w-0 space-y-2 lg:border-l lg:pl-8">
-            <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              Audit trail
-            </h2>
-            <ChecklistTemplateAuditPanel templateId={id} embedded />
-          </div>
-        </CardContent>
-      </Card>
-
-      <p className="text-muted-foreground text-xs">
-        Active{' '}
-        <span className="text-foreground font-medium">
-          {detail.activeVersion ? `v${detail.activeVersion.versionNumber}` : '—'}
-        </span>
-        {' · '}Draft{' '}
-        <span className="text-foreground font-medium">
-          {detail.draftVersion ? `v${detail.draftVersion.versionNumber}` : '—'}
-        </span>
-      </p>
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(16rem,0.85fr)]">
+        <section className="border-border bg-card rounded-2xl border p-4">
+          <h2 className="text-foreground mb-3 text-sm font-semibold">Template details</h2>
+          <ChecklistTemplateMetadataSection
+            templateId={id}
+            detail={detail}
+            readOnly={readOnly}
+            onUpdated={setDetail}
+            embedded
+          />
+        </section>
+        <section className="border-border bg-card rounded-2xl border p-4">
+          <h2 className="text-foreground mb-3 text-sm font-semibold">Recent changes</h2>
+          <ChecklistTemplateAuditPanel templateId={id} embedded />
+        </section>
+      </div>
 
       <ChecklistTemplateVersionHistory
         versions={detail.versions}

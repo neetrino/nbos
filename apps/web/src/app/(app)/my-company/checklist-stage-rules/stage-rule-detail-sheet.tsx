@@ -2,7 +2,12 @@
 
 import { Sheet } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { DetailSheetSection, EntityDetailSheetContent, StatusBadge } from '@/components/shared';
+import {
+  DetailSheetSection,
+  EntityDetailSheetContent,
+  InlineField,
+  StatusBadge,
+} from '@/components/shared';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import type { DeliveryStageChecklistRuleRow } from '@/lib/api/checklist-templates';
 import { PermissionGate } from '@/lib/permissions';
@@ -78,57 +83,62 @@ function StageRuleDetailBody({
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className={TEAM_SHEET_BODY_CLASS}>
           <DetailSheetSection title="When it starts" outlined>
-            <dl className="grid gap-3 text-sm">
-              <RuleFact label="Applies to" value={optionLabel(TARGETS, rule.target, rule.target)} />
-              <RuleFact
+            <div className="grid gap-3">
+              <ReadOnlyField label="Checklist" value={rule.checklistTemplate.name} />
+              <ReadOnlyField
+                label="Applies to"
+                value={optionLabel(TARGETS, rule.target, rule.target)}
+              />
+              <ReadOnlyField
                 label="Delivery stage"
                 value={optionLabel(DELIVERY_STAGES, rule.deliveryStage, rule.deliveryStage)}
               />
-              <RuleFact label="Priority" value={String(rule.priority)} />
-              {rule.target === 'PRODUCT' ? (
-                <>
-                  <RuleFact label="Product category" value={category} />
-                  <RuleFact label="Product type" value={productType} />
-                </>
-              ) : (
-                <p className="text-muted-foreground text-xs">
-                  Applies to every extension in this stage.
-                </p>
-              )}
-            </dl>
-          </DetailSheetSection>
-          <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
-            <div className="flex flex-wrap justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onToggleActive(rule)}
-              >
-                {rule.isActive ? 'Pause' : 'Activate'}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-destructive hover:bg-destructive/10"
-                onClick={() => onDelete(rule)}
-              >
-                Delete rule
-              </Button>
+              <ReadOnlyField label="Priority" value={String(rule.priority)} />
+              <p className="text-muted-foreground text-xs">Lower priority runs first.</p>
             </div>
-          </PermissionGate>
+          </DetailSheetSection>
+          <DetailSheetSection title="Filters" outlined>
+            {rule.target === 'PRODUCT' ? (
+              <div className="grid gap-3">
+                <ReadOnlyField label="Product category" value={category} />
+                <ReadOnlyField label="Product type" value={productType} />
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-xs">
+                Applies to every extension in this stage.
+              </p>
+            )}
+          </DetailSheetSection>
         </div>
       </div>
+      <PermissionGate module="CHECKLIST_TEMPLATES" action="EDIT">
+        <div className="border-border flex shrink-0 justify-end gap-2 border-t px-5 py-3">
+          <Button type="button" variant="outline" size="sm" onClick={() => onToggleActive(rule)}>
+            {rule.isActive ? 'Pause' : 'Activate'}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:bg-destructive/10"
+            onClick={() => onDelete(rule)}
+          >
+            Delete rule
+          </Button>
+        </div>
+      </PermissionGate>
     </div>
   );
 }
 
-function RuleFact({ label, value }: { label: string; value: string }) {
+function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className="text-foreground mt-0.5 font-medium">{value}</dd>
-    </div>
+    <InlineField
+      variant="controlled"
+      label={label}
+      value={value}
+      disabled
+      onValueChange={() => undefined}
+    />
   );
 }

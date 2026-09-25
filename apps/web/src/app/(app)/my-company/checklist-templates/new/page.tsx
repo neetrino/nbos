@@ -75,7 +75,7 @@ export default function NewChecklistTemplatePage() {
 
   if (!isLoading && !can('ADD', 'CHECKLIST_TEMPLATES')) {
     return (
-      <div className="mx-auto flex max-w-lg flex-col gap-4 py-6">
+      <div className="flex flex-col gap-4 py-6">
         {sectionTabs}
         <Card className="border-border/80 shadow-sm shadow-black/[0.04]">
           <CardHeader>
@@ -99,7 +99,7 @@ export default function NewChecklistTemplatePage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4 pb-10">
+    <div className="flex flex-col gap-4 pb-10">
       {sectionTabs}
       <p className="text-muted-foreground text-sm">
         Start with a name and classification. You’ll add checklist items next, then publish to lock

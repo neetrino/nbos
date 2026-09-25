@@ -30,7 +30,7 @@ export function ChecklistTemplateVersionHistory({
   const latest = versions[0];
 
   return (
-    <div className="border-border/80 bg-card rounded-2xl border shadow-sm shadow-black/[0.03]">
+    <div className="border-border bg-card rounded-2xl border">
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="hover:bg-muted/50 flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left outline-none select-none">
           <span className="flex min-w-0 items-center gap-2">

@@ -30,7 +30,7 @@ export function ChecklistTemplateDraftCard({
   onArchive,
 }: Props) {
   return (
-    <Card className="border-border/80 shadow-sm shadow-black/[0.04]">
+    <Card className="border-border bg-card rounded-2xl border shadow-none">
       <CardContent className="space-y-5 p-4 sm:p-5">
         <ChecklistDraftItemsEditor
           templateId={templateId}
