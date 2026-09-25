@@ -2,11 +2,25 @@
 
 import { useTranslations } from 'next-intl';
 import { DELIVERY_ROLE_UNIT_KINDS, type DeliveryRoleUnitKind } from '@nbos/shared';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import {
+  ROLE_KIND_SHELL_CLASS,
   ROLE_MESSAGE_KEYS,
-  ROLE_UNITS_INPUT_CLASS,
-  ROLE_UNIT_CARD_CLASS,
+  ROLE_UNITS_INPUT_SHELL_CLASS,
+  ROLE_UNIT_ROW_CLASS,
 } from './delivery-norms.constants';
 import type { RoleUnitDraftRow } from './role-units-draft';
 
@@ -15,6 +29,11 @@ const KIND_LABEL_KEYS = {
   OPTIONAL: 'roleUnits.ifPresent',
   NOT_REQUIRED: 'roleUnits.unused',
 } as const;
+
+const KIND_TRIGGER_CLASS = [
+  'h-8 w-full border-0 bg-transparent px-2 shadow-none',
+  'hover:bg-transparent data-[size=sm]:h-8 data-[size=sm]:min-h-8',
+].join(' ');
 
 export function RoleUnitField({
   row,
@@ -27,26 +46,27 @@ export function RoleUnitField({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const unused = row.unitKind === 'NOT_REQUIRED';
-  const roleName = t(ROLE_MESSAGE_KEYS[row.roleKey]);
-
   return (
-    <div className={cn(ROLE_UNIT_CARD_CLASS, disabled && 'pointer-events-none opacity-60')}>
-      <p className="text-muted-foreground mb-2 truncate text-center text-xs font-medium">
-        {roleName}
-      </p>
-      <div className="flex items-center gap-2">
-        <RoleUnitsInput
-          row={row}
-          label={roleName}
-          disabled={disabled || unused}
-          onChange={onChange}
-        />
-        <RoleKindSwitch
-          value={row.unitKind}
-          label={t('roleUnits.kindAria')}
-          labels={kindLabels(t)}
-          onChange={(unitKind) => onChange({ unitKind })}
-        />
+    <div
+      className={cn(
+        DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+        disabled && 'pointer-events-none opacity-60',
+      )}
+    >
+      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t(ROLE_MESSAGE_KEYS[row.roleKey])}</span>
+      <div className={ROLE_UNIT_ROW_CLASS}>
+        <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, ROLE_UNITS_INPUT_SHELL_CLASS)}>
+          <RoleUnitsInput row={row} disabled={disabled || unused} onChange={onChange} />
+        </div>
+        <div className={ROLE_KIND_SHELL_CLASS}>
+          <RoleKindSelect
+            value={row.unitKind}
+            disabled={disabled}
+            label={t('roleUnits.kindAria')}
+            labels={kindLabels(t)}
+            onChange={(unitKind) => onChange({ unitKind })}
+          />
+        </div>
       </div>
     </div>
   );
@@ -54,25 +74,26 @@ export function RoleUnitField({
 
 function RoleUnitsInput({
   row,
-  label,
   disabled,
   onChange,
 }: {
   row: RoleUnitDraftRow;
-  label: string;
   disabled?: boolean;
   onChange: (patch: Partial<Omit<RoleUnitDraftRow, 'roleKey'>>) => void;
 }) {
+  const t = useTranslations('hr.deliveryNorms');
   const unused = row.unitKind === 'NOT_REQUIRED';
   return (
     <input
       type="text"
       inputMode="decimal"
       disabled={disabled}
-      aria-label={label}
       value={unused ? '' : row.unitsInput}
-      placeholder="—"
-      className={ROLE_UNITS_INPUT_CLASS}
+      placeholder={t('roleUnits.placeholder')}
+      className={cn(
+        DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
+        'min-w-0 text-center text-sm tabular-nums',
+      )}
       onChange={(event) => onChange({ unitsInput: event.target.value })}
     />
   );
@@ -88,35 +109,38 @@ function kindLabels(
   };
 }
 
-function RoleKindSwitch({
+function RoleKindSelect({
   value,
+  disabled,
   label,
   labels,
   onChange,
 }: {
   value: DeliveryRoleUnitKind;
+  disabled?: boolean;
   label: string;
   labels: Record<DeliveryRoleUnitKind, string>;
   onChange: (value: DeliveryRoleUnitKind) => void;
 }) {
   return (
-    <div role="group" aria-label={label} className="flex min-w-0 flex-1 flex-col gap-1">
-      {DELIVERY_ROLE_UNIT_KINDS.map((kind) => (
-        <button
-          key={kind}
-          type="button"
-          aria-pressed={kind === value}
-          className={cn(
-            'rounded-md px-2 py-1 text-xs font-medium',
-            kind === value
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-muted',
-          )}
-          onClick={() => onChange(kind)}
-        >
-          {labels[kind]}
-        </button>
-      ))}
-    </div>
+    <Select
+      value={value}
+      disabled={disabled}
+      onValueChange={(next) => {
+        if (!next || !(DELIVERY_ROLE_UNIT_KINDS as readonly string[]).includes(next)) return;
+        onChange(next as DeliveryRoleUnitKind);
+      }}
+    >
+      <SelectTrigger size="sm" aria-label={label} className={KIND_TRIGGER_CLASS}>
+        <SelectValue>{() => labels[value]}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {DELIVERY_ROLE_UNIT_KINDS.map((option) => (
+          <SelectItem key={option} value={option}>
+            {labels[option]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

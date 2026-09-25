@@ -79,13 +79,14 @@ export const NORMS_SHEET_FOOTER_CLASS = 'px-5 py-3';
 
 export const NORMS_LIST_GRID_CLASS = 'grid gap-3 lg:grid-cols-2';
 
-export const ROLE_UNITS_BREAKDOWN_CLASS = 'grid grid-cols-2 gap-2';
+export const ROLE_UNITS_BREAKDOWN_CLASS = 'flex flex-col gap-3';
 
-export const ROLE_UNIT_CARD_CLASS =
-  'border-border bg-background flex flex-col rounded-2xl border px-2.5 py-3 shadow-sm';
+export const ROLE_UNIT_ROW_CLASS = 'flex items-center gap-2';
 
-export const ROLE_UNITS_INPUT_CLASS =
-  'text-foreground h-9 min-w-0 flex-1 bg-transparent text-center text-2xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/50 disabled:cursor-default';
+export const ROLE_UNITS_INPUT_SHELL_CLASS = 'w-[4.75rem] shrink-0 px-2';
+
+export const ROLE_KIND_SHELL_CLASS =
+  'bg-muted hover:bg-muted/80 flex h-10 min-w-0 flex-1 items-center rounded-xl px-1';
 
 export const INCLUDED_PICKER_STACK_CLASS = 'space-y-8';
 
