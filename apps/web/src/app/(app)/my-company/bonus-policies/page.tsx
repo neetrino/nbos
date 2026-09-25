@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,13 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  DataView,
-  ErrorState,
-  ListMutationErrorBanner,
-  LoadingState,
-  PageHero,
-} from '@/components/shared';
+import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { BonusPolicyEditorCard } from '@/features/my-company/bonus-policies/bonus-policy-editor-card';
 import { BONUS_POLICY_TEMPLATE_OPTIONS } from '@/features/my-company/bonus-policies/bonus-policy-template-options';
 import { BONUS_POLICY_TEMPLATE_MANUAL_ONLY } from '@/features/my-company/compensation/bonus-policy-template-codes';
@@ -179,22 +174,24 @@ export default function BonusPoliciesPage() {
     </>
   );
 
+  const refresh = useMemo(
+    () => (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={loading}
+        onClick={() => void load()}
+      >
+        Refresh
+      </Button>
+    ),
+    [loading, load],
+  );
+  useCompanySectionTabs('bonus', refresh);
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHero
-        title="Bonus policies"
-        trailing={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={loading}
-            onClick={() => void load()}
-          >
-            Refresh
-          </Button>
-        }
-      />
       <p className="text-muted-foreground text-sm">
         Rule bundles assigned on compensation profiles. Template code selects the accrual engine;
         seller percentages for{' '}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -12,13 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DataView,
-  ErrorState,
-  ListMutationErrorBanner,
-  LoadingState,
-  PageHero,
-} from '@/components/shared';
+import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { bonusesApi, type SalesBonusPaymentModel, type SalesBonusPolicyRow } from '@/lib/api/bonus';
 
 const PAYMENT_MODEL_LABEL: Record<SalesBonusPaymentModel, string> = {
@@ -105,22 +100,24 @@ export default function SalesBonusPoliciesPage() {
     </div>
   );
 
+  const refresh = useMemo(
+    () => (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => void load()}
+        disabled={loading}
+      >
+        Refresh
+      </Button>
+    ),
+    [loading, load],
+  );
+  useCompanySectionTabs('bonus', refresh);
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHero
-        title="Sales bonus policies"
-        trailing={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void load()}
-            disabled={loading}
-          >
-            Refresh
-          </Button>
-        }
-      />
       <p className="text-muted-foreground text-sm">
         Seller and assistant percentages by CRM From category and payment model (classic on first
         fully paid tranche; subscription: first paid invoice, then month 2+ per invoice when rates

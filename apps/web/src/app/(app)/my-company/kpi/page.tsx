@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Target, TrendingUp, Wallet, Timer } from 'lucide-react';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { StatusBadge } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { dashboardApi, type DashboardControlCenterProjection } from '@/lib/api/dashboard';
 
@@ -41,9 +42,10 @@ export default function KpiPage() {
     [control?.priorities.length],
   );
 
+  useCompanySectionTabs('kpi');
+
   return (
     <div className="space-y-6">
-      <PageHero title="KPI / Scorecard" />
       <p className="text-muted-foreground text-sm">
         Company KPI runtime: cross-module signals, scorecard gate policy, and links to execution
         modules.

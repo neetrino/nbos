@@ -1,15 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  DataView,
-  ErrorState,
-  ListMutationErrorBanner,
-  LoadingState,
-  PageHero,
-} from '@/components/shared';
+import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { KpiPolicyEditorCard } from '@/features/my-company/kpi-policies/kpi-policy-editor-card';
 import {
   DEFAULT_GATE_BAND_DRAFTS,
@@ -162,22 +157,24 @@ export default function KpiPoliciesPage() {
     </>
   );
 
+  const refresh = useMemo(
+    () => (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={loading}
+        onClick={() => void load()}
+      >
+        Refresh
+      </Button>
+    ),
+    [loading, load],
+  );
+  useCompanySectionTabs('kpi', refresh);
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHero
-        title="KPI gate policies"
-        trailing={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={loading}
-            onClick={() => void load()}
-          >
-            Refresh
-          </Button>
-        }
-      />
       <p className="text-muted-foreground text-sm">
         Payout multipliers by plan attainment % and monthly bonus cap (× base salary). Assign on
         each compensation profile; payroll attach applies both for SALES releases and carry-over.

@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   Target,
   Users2,
-  Waypoints,
 } from 'lucide-react';
 
 export type MyCompanyHubSectionKey =
@@ -16,13 +15,10 @@ export type MyCompanyHubSectionKey =
   | 'departments'
   | 'rolesSeats'
   | 'compensation'
-  | 'bonusPolicies'
-  | 'salesBonus'
+  | 'bonus'
   | 'kpi'
-  | 'kpiGate'
   | 'sop'
-  | 'checklists'
-  | 'checklistRules';
+  | 'checklists';
 
 export type MyCompanyHubSection = {
   key: MyCompanyHubSectionKey;
@@ -42,16 +38,14 @@ export const MY_COMPANY_HUB_SECTIONS: MyCompanyHubSection[] = [
     require: { module: 'FINANCE_SALARY', action: 'VIEW' },
   },
   {
-    key: 'bonusPolicies',
+    key: 'bonus',
     href: '/my-company/bonus-policies',
-    icon: BadgeDollarSign,
+    icon: Percent,
     require: { module: 'COMPANY', action: 'VIEW' },
   },
-  { key: 'salesBonus', href: '/my-company/sales-bonus-policies', icon: Percent },
-  { key: 'kpi', href: '/my-company/kpi', icon: Target },
   {
-    key: 'kpiGate',
-    href: '/my-company/kpi-policies',
+    key: 'kpi',
+    href: '/my-company/kpi',
     icon: Target,
     require: { module: 'COMPANY', action: 'VIEW' },
   },
@@ -60,12 +54,6 @@ export const MY_COMPANY_HUB_SECTIONS: MyCompanyHubSection[] = [
     key: 'checklists',
     href: '/my-company/checklist-templates',
     icon: ListChecks,
-    require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
-  },
-  {
-    key: 'checklistRules',
-    href: '/my-company/checklist-stage-rules',
-    icon: Waypoints,
     require: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
   },
 ];

@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageHero } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { usePermission } from '@/lib/permissions';
 import {
   CHECKLIST_OWNER_MODULE_LABELS,
@@ -51,6 +52,7 @@ const OWNER_MODULES: ChecklistOwnerModule[] = ['MY_COMPANY', 'PROJECTS', 'TASKS'
 const SELECT_TRIGGER_FORM = 'w-full min-w-0';
 
 export default function NewChecklistTemplatePage() {
+  useCompanySectionTabs('checklists');
   const router = useRouter();
   const { can, isLoading } = usePermission();
   const [name, setName] = useState('');

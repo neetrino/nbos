@@ -372,6 +372,17 @@
     "departments": "Departments",
     "rolesSeats": "Roles & Seats",
     "salaries": "Salaries",
+    "bonus": "Bonus",
+    "bonusPolicies": "Bonus policies",
+    "salesBonus": "Sales rates",
+    "kpi": "KPI",
+    "kpiScorecard": "Scorecard",
+    "kpiGate": "KPI gate",
+    "checklists": "Checklists",
+    "checklistTemplates": "Templates",
+    "checklistRules": "Delivery rules",
+    "sop": "SOP",
+    "subtabsAria": "Section pages",
     "coreFunction": "Core & Function"
   },
   "salaries": {
@@ -1119,33 +1130,21 @@
         "title": "Salaries",
         "description": "Minimum salary for each employee, plus the bonus rule. KPI only for sales."
       },
-      "bonusPolicies": {
-        "title": "Bonus policies",
-        "description": "Bonus rule bundles (sales, delivery, manual) for compensation profiles."
-      },
-      "salesBonus": {
-        "title": "Sales bonus policies",
-        "description": "Seller and assistant rates by From category and Classic vs subscription first invoice."
+      "bonus": {
+        "title": "Bonus",
+        "description": "Bonus rule bundles, plus seller and assistant rates for sales."
       },
       "kpi": {
-        "title": "KPI / Scorecard",
-        "description": "Company, department, and employee KPI policies and scorecards."
-      },
-      "kpiGate": {
-        "title": "KPI gate policies",
-        "description": "Attainment thresholds and payout % for payroll (linked via compensation profiles)."
+        "title": "KPI",
+        "description": "Scorecard signals and the attainment thresholds that scale a sales bonus."
       },
       "sop": {
         "title": "SOP & Templates",
         "description": "SOP documents, process templates, and operational runs."
       },
       "checklists": {
-        "title": "Checklist templates",
-        "description": "Versioned checklist builders for delivery, QA, maintenance, and SOP."
-      },
-      "checklistRules": {
-        "title": "Delivery checklist rules",
-        "description": "Bind published templates to Product / Extension stages; instances on stage entry."
+        "title": "Checklists",
+        "description": "Checklist templates, and the delivery rules that create them when a stage starts."
       }
     }
   }

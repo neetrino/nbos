@@ -8,6 +8,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { PageHero, StatusBadge } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import {
   checklistTemplatesApi,
   parseChecklistTemplateItems,
@@ -34,6 +35,7 @@ function statusVariant(status: string): 'default' | 'green' | 'gray' | 'blue' | 
 }
 
 export default function ChecklistTemplateDetailPage() {
+  useCompanySectionTabs('checklists');
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const id = params.id;

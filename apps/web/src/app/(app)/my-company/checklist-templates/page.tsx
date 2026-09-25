@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ClipboardList, Plus } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { StatusBadge } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import {
   checklistTemplatesApi,
   type ChecklistTemplateListItem,
@@ -45,30 +46,24 @@ export default function ChecklistTemplatesListPage() {
     void load();
   }, [load]);
 
+  const trailing = useMemo(
+    () => (
+      <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
+        <Link
+          href="/my-company/checklist-templates/new"
+          className={cn(buttonVariants({ size: 'sm' }))}
+        >
+          <Plus className="mr-1 size-4" aria-hidden />
+          New template
+        </Link>
+      </PermissionGate>
+    ),
+    [],
+  );
+  useCompanySectionTabs('checklists', trailing);
+
   return (
     <div className="space-y-6">
-      <PageHero
-        title="Checklist templates"
-        trailing={
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/my-company/checklist-stage-rules"
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-            >
-              Stage rules
-            </Link>
-            <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
-              <Link
-                href="/my-company/checklist-templates/new"
-                className={cn(buttonVariants({ size: 'sm' }))}
-              >
-                <Plus className="mr-1 size-4" aria-hidden />
-                New template
-              </Link>
-            </PermissionGate>
-          </div>
-        }
-      />
       <p className="text-muted-foreground text-sm">
         Reusable SOP checklists with versioning. Publish creates the active snapshot for new
         instances; drafts continue on a separate version.

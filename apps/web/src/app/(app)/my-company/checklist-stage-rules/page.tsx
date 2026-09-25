@@ -1,17 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { ClipboardList, Loader2, Route } from 'lucide-react';
-import { DeleteConfirmDialog, PageHero, StatusBadge, useDeleteConfirm } from '@/components/shared';
-import { buttonVariants } from '@/components/ui/button';
+import { DeleteConfirmDialog, StatusBadge, useDeleteConfirm } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { Card } from '@/components/ui/card';
 import {
   checklistTemplatesApi,
   type ChecklistTemplateListItem,
   type DeliveryStageChecklistRuleRow,
 } from '@/lib/api/checklist-templates';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { NewStageRuleFormCard } from './new-stage-rule-form-card';
 import { StageRuleListItem } from './stage-rule-list-item';
@@ -65,19 +63,10 @@ export default function ChecklistStageRulesPage() {
 
   const activeRuleCount = rules.filter((r) => r.isActive).length;
 
+  useCompanySectionTabs('checklists');
+
   return (
     <div className="mx-auto max-w-5xl space-y-8 pb-10">
-      <PageHero
-        title="Delivery checklist stage rules"
-        trailing={
-          <Link
-            href="/my-company/checklist-templates"
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-          >
-            Checklist templates
-          </Link>
-        }
-      />
       <p className="text-muted-foreground text-sm">
         When a product or extension enters a stage, matching rules create checklist instances from
         the published template snapshot.
