@@ -39,7 +39,8 @@
   "list": {
     "host": "Host",
     "status": "Status",
-    "created": "Created"
+    "created": "Created",
+    "search": "Search meetings"
   },
   "status": {
     "CREATED": "Scheduled",
@@ -58,7 +59,11 @@
     "noSessions": "No sessions yet.",
     "participantsHint": "Participant details appear after join.",
     "entityLinks": "Business links",
-    "entityLinksHint": "Enter an entity ID you can access in CRM or Projects. This does not browse all records.",
+    "entityLinksHint": "Search a deal or a project you can access.",
+    "dealLabel": "Deal",
+    "projectLabel": "Project",
+    "pickDeal": "Search deals",
+    "pickProject": "Search projects",
     "entityType": "Entity type",
     "entityId": "Entity ID",
     "noEntityLinks": "No linked entities.",

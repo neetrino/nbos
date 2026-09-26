@@ -39,7 +39,8 @@
   "list": {
     "host": "Հոստ",
     "status": "Կargavijak",
-    "created": "Սteghtsvats"
+    "created": "Ստեղծված",
+    "search": "Որոնել հանդիպումներ"
   },
   "status": {
     "CREATED": "Պlanavorvats",
@@ -57,8 +58,12 @@
     "sessions": "Sesianer",
     "noSessions": "Sesianer chkan.",
     "participantsHint": "Masnakitsner@ erevum en miatsumic heto.",
-    "entityLinks": "Biznes kaper",
-    "entityLinksHint": "Mutqagreq ID, vorin uneq mutq.",
+    "entityLinks": "Կապեր",
+    "entityLinksHint": "Գտեք գործարք կամ նախագիծ, որին ունեք մուտք։",
+    "dealLabel": "Գործարք",
+    "projectLabel": "Նախագիծ",
+    "pickDeal": "Որոնել գործարք",
+    "pickProject": "Որոնել նախագիծ",
     "entityType": "Tesak",
     "entityId": "ID",
     "noEntityLinks": "Kaper chkan.",

@@ -4,14 +4,11 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import type { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DetailSheetSection, RelationPickerField } from '@/components/shared';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  useDealRelationSearch,
+  useProjectRelationSearch,
+} from '@/components/shared/relation-picker';
 import type {
   InviteListItem,
   VideoMeetingCard,
@@ -96,76 +93,74 @@ export function VideoMeetingInviteSection({
 
 export function VideoMeetingEntityLinksSection({
   card,
-  entityType,
-  entityId,
-  onEntityType,
-  onEntityId,
   onAttach,
   onDetach,
   t,
 }: {
   card: VideoMeetingCard;
-  entityType: VideoMeetingEntityLinkType;
-  entityId: string;
-  onEntityType: (value: VideoMeetingEntityLinkType) => void;
-  onEntityId: (value: string) => void;
-  onAttach: () => Promise<void>;
+  onAttach: (entityType: VideoMeetingEntityLinkType, entityId: string) => Promise<void>;
   onDetach: (linkId: string) => Promise<void>;
   t: VideoMeetingsDetailT;
 }) {
+  const searchDeals = useDealRelationSearch();
+  const searchProjects = useProjectRelationSearch();
+
   return (
-    <section className="bg-muted/20 border-border/70 space-y-3 rounded-xl border border-dashed p-4">
-      <div>
-        <h2 className="text-sm font-medium">{t('detail.entityLinks')}</h2>
-        <p className="text-muted-foreground mt-1 text-xs">{t('detail.entityLinksHint')}</p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Select
-          value={entityType}
-          onValueChange={(value) => onEntityType(value as VideoMeetingEntityLinkType)}
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder={t('detail.entityType')} />
-          </SelectTrigger>
-          <SelectContent>
-            {(['DEAL', 'PROJECT', 'PRODUCT', 'CONTACT'] as const).map((type) => (
-              <SelectItem key={type} value={type}>
-                {type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          value={entityId}
-          onChange={(event) => onEntityId(event.target.value)}
-          placeholder={t('detail.entityId')}
-          className="max-w-xs"
+    <DetailSheetSection title={t('detail.entityLinks')}>
+      <div className="space-y-3">
+        <RelationPickerField
+          label={t('detail.dealLabel')}
+          entityKind="deal"
+          value={null}
+          placeholder={t('detail.pickDeal')}
+          onSearch={searchDeals}
+          onSelect={(id) => void onAttach('DEAL', id)}
         />
-        <Button type="button" size="sm" variant="secondary" onClick={() => void onAttach()}>
-          {t('actions.attachLink')}
-        </Button>
+        <RelationPickerField
+          label={t('detail.projectLabel')}
+          entityKind="project"
+          value={null}
+          placeholder={t('detail.pickProject')}
+          onSearch={searchProjects}
+          onSelect={(id) => void onAttach('PROJECT', id)}
+        />
+        <VideoMeetingLinkedEntities card={card} onDetach={onDetach} t={t} />
       </div>
-      {card.entityLinks.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{t('detail.noEntityLinks')}</p>
-      ) : (
-        <ul className="space-y-2 text-sm">
-          {card.entityLinks.map((link) => (
-            <li key={link.id} className="flex flex-wrap items-center justify-between gap-2">
-              <span>
-                {link.entityType} · {link.entityId}
-              </span>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => void onDetach(link.id)}
-              >
-                {t('actions.detachLink')}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+    </DetailSheetSection>
   );
+}
+
+function VideoMeetingLinkedEntities({
+  card,
+  onDetach,
+  t,
+}: {
+  card: VideoMeetingCard;
+  onDetach: (linkId: string) => Promise<void>;
+  t: VideoMeetingsDetailT;
+}) {
+  if (card.entityLinks.length === 0) {
+    return <p className="text-muted-foreground text-sm">{t('detail.noEntityLinks')}</p>;
+  }
+
+  return (
+    <ul className="space-y-2 text-sm">
+      {card.entityLinks.map((link) => (
+        <li key={link.id} className="flex items-center justify-between gap-2">
+          <span className="min-w-0 truncate">
+            {linkLabel(link.entityType, t)} · {link.entityId}
+          </span>
+          <Button type="button" size="sm" variant="outline" onClick={() => void onDetach(link.id)}>
+            {t('actions.detachLink')}
+          </Button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function linkLabel(entityType: string, t: VideoMeetingsDetailT): string {
+  if (entityType === 'DEAL') return t('detail.dealLabel');
+  if (entityType === 'PROJECT') return t('detail.projectLabel');
+  return entityType;
 }
