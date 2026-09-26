@@ -5,6 +5,7 @@ import { presentWebhookString } from './ats-webhook-field';
 import type { AtsWebhookPayload } from './ats.types';
 
 export type AtsCallSparsePatch = {
+  lid?: string;
   state?: string;
   disposition?: string;
   billsec?: string;
@@ -21,6 +22,7 @@ export type AtsCallSparsePatch = {
 /** Create/update data from present webhook strings only. Explicit empty/null is not written. */
 export function buildSparseAtsCallPatch(payload: AtsWebhookPayload): AtsCallSparsePatch {
   const patch: AtsCallSparsePatch = {};
+  assignLid(patch, payload.lid);
   assignPresentString(patch, 'disposition', payload.disposition);
   assignPresentString(patch, 'billsec', payload.billsec);
   assignPresentString(patch, 'recordLink', payload.recordLink);
@@ -39,6 +41,14 @@ export function buildAtsCallCreateData(payload: AtsWebhookPayload): AtsCallSpars
   uid: string;
 } {
   return { uid: payload.uid, ...buildSparseAtsCallPatch(payload) };
+}
+
+function assignLid(patch: AtsCallSparsePatch, lid: string | null | undefined): void {
+  const present = presentWebhookString(lid);
+  if (present === undefined) return;
+  const normalized = present.trim();
+  if (!normalized) return;
+  patch.lid = normalized;
 }
 
 function assignPresentString(

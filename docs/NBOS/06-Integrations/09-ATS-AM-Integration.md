@@ -74,8 +74,8 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 | `state`       | `start` \| `status` (answered) \| `finish` \| `end`                                            |
 | `calldirect`  | `"0"` inbound, `"1"` outbound                                                                  |
 | `disposition` | `ANSWERED` \| `NO ANSWER`                                                                      |
-| `uid`         | Sub-leg id; NBOS Call identity (идемпотентность)                                               |
-| `lid`         | Global call id; parsed for logs only, not Call identity (follow-up)                            |
+| `uid`         | Sub-leg id; unique connection row (идемпотентность webhook)                                    |
+| `lid`         | Global conversation id. Stored on the connection. CRM cards group UIDs that share one `lid`    |
 | `clid`        | Inbound: номер клиента. Outbound: часто локальный SIP / trunk, **не** клиент                   |
 | `op`          | SIP сотрудника (`15`, `3103585-26`) **или**, на orange-trunk outbound, набранный номер клиента |
 | `input`       | Inbound: DID. Outbound: DID или набранный номер; клиент = `op`, если `op` — валидный телефон   |
@@ -83,7 +83,7 @@ SIP из `Employee.sipId`, не хардкод. Пример: `{"redirect_call":
 | `billsec`     | Длительность                                                                                   |
 | `record_link` | URL записи; может протухнуть — канон хранения в `08-Calls`                                     |
 
-Неизвестные поля игнорировать. `lid` не пишется в DB в этом срезе.
+Неизвестные поля игнорировать. Пустой `lid` не группирует звонок: карточка остаётся на своём `uid`.
 
 ### 2.3 Поведение ingest (контракт)
 

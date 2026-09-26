@@ -236,6 +236,7 @@ describe('AtsCallService', () => {
       createdAt: new Date(),
       responsibleEmployeeId: 'emp-1',
       answeredEmployeeId: null,
+      lid: null,
     });
 
     await service.ingestCallEvent(
@@ -273,6 +274,7 @@ describe('AtsCallService', () => {
       createdAt: new Date(),
       responsibleEmployeeId: 'emp-1',
       answeredEmployeeId: null,
+      lid: null,
     });
 
     await service.ingestCallEvent(

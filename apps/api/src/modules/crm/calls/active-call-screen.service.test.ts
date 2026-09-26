@@ -107,4 +107,42 @@ describe('ActiveCallScreenService recent-call filter', () => {
       }),
     );
   });
+
+  it('shows one live conversation when another UID shares the LID', async () => {
+    const { prisma, service } = createService();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({
+      ...SCREEN_ROW,
+      lid: 'L-1',
+      state: 'start',
+      billsec: '1',
+    });
+    prisma.atsCallEvent.findFirst.mockResolvedValue({ id: 'call-1' });
+    prisma.atsCallEvent.findMany.mockImplementation(async (args: { select?: { id?: boolean } }) => {
+      if (args.select?.id) return [];
+      return [
+        { state: 'start', billsec: '1', disposition: null },
+        { state: 'status', billsec: '40', disposition: 'ANSWERED' },
+      ];
+    });
+
+    const snapshot = await service.getScreen('call-1', OWN_ACTOR);
+
+    expect(snapshot.callId).toBe('call-1');
+    expect(snapshot.uid).toBe('uid-1');
+    expect(snapshot.phase).toBe('answered');
+    expect(snapshot.durationSec).toBe(40);
+    expect(snapshot.noteVersion).toBe(4);
+    expect(snapshot.recordingStatus).toBeNull();
+    expect(prisma.atsCallEvent.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          AND: [
+            { phone: '+37499123456', id: { not: 'call-1' } },
+            { OR: [{ lid: null }, { lid: { not: 'L-1' } }] },
+            expect.any(Object),
+          ],
+        },
+      }),
+    );
+  });
 });

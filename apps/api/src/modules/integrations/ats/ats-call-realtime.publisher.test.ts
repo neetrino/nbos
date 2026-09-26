@@ -168,4 +168,85 @@ describe('AtsCallRealtimePublisher', () => {
       expect.objectContaining({ event: CALL_SSE_EVENT.FINISHED }),
     );
   });
+
+  it('reuses the first connection id when another UID shares the LID', async () => {
+    const trunk = {
+      ...CALL_ROW,
+      id: 'call-trunk',
+      uid: 'uid-trunk',
+      lid: 'L-1',
+      createdAt: new Date('2026-09-26T10:00:00.000Z'),
+      state: 'start',
+    };
+    const agent = {
+      ...CALL_ROW,
+      id: 'call-agent',
+      uid: 'uid-agent',
+      lid: 'L-1',
+      createdAt: new Date('2026-09-26T10:00:02.000Z'),
+      state: 'status',
+      answeredEmployeeId: 'emp-ans',
+      answeredEmployee: { firstName: 'Anna', lastName: 'Petrosyan' },
+    };
+    const publish = vi.fn().mockResolvedValue(undefined);
+    const prisma = {
+      atsCallEvent: {
+        findUnique: vi.fn().mockResolvedValue(agent),
+        findMany: vi.fn().mockResolvedValue([trunk, agent]),
+      },
+    };
+    const publisher = new AtsCallRealtimePublisher(prisma as never, { publish } as never);
+
+    await publisher.publishAfterWebhook(
+      inboundStart({ uid: 'uid-agent', lid: 'L-1', state: 'status' }),
+      { callId: 'call-agent', isFirstSeen: true, stateTransitionApplied: true },
+    );
+
+    expect(publish).toHaveBeenCalledWith({
+      event: CALL_SSE_EVENT.ANSWERED,
+      payload: expect.objectContaining({
+        callId: 'call-trunk',
+        uid: 'uid-trunk',
+        phase: 'answered',
+        employeeId: 'emp-ans',
+      }),
+    });
+  });
+
+  it('does not finish the screen while another connection with the same LID is live', async () => {
+    const trunk = {
+      ...CALL_ROW,
+      id: 'call-trunk',
+      uid: 'uid-trunk',
+      lid: 'L-1',
+      createdAt: new Date('2026-09-26T10:00:00.000Z'),
+      state: 'finish',
+    };
+    const agent = {
+      ...trunk,
+      id: 'call-agent',
+      uid: 'uid-agent',
+      state: 'status',
+      createdAt: new Date('2026-09-26T10:00:02.000Z'),
+    };
+    const publish = vi.fn().mockResolvedValue(undefined);
+    const prisma = {
+      atsCallEvent: {
+        findUnique: vi.fn().mockResolvedValue(trunk),
+        findMany: vi.fn().mockResolvedValue([trunk, agent]),
+      },
+    };
+    const publisher = new AtsCallRealtimePublisher(prisma as never, { publish } as never);
+
+    await publisher.publishAfterWebhook(
+      inboundStart({ uid: 'uid-trunk', lid: 'L-1', state: 'finish' }),
+      {
+        callId: 'call-trunk',
+        isFirstSeen: false,
+        stateTransitionApplied: true,
+      },
+    );
+
+    expect(publish).not.toHaveBeenCalled();
+  });
 });
