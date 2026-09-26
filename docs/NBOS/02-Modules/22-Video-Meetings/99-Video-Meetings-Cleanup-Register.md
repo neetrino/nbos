@@ -2,22 +2,26 @@
 
 **Status:** canon approved; coding NOT STARTED. Classify verified runtime by the existing NBOS `OK / PARTIAL / MISSING / STALE / BUSINESS DECISION` rubric before implementation.
 
+**S00 audit (2026-09-26):** rechecked on `feature/video-meetings-v1` (from `sipan` + Module 22 canon). Standalone rooms / LiveKit / Egress remain **MISSING** (no Prisma `VideoMeeting*`, no `apps/api` video-meetings module, no LiveKit packages). Executable slice plan and gap evidence: [`docs/implementation/video-meetings-v1/`](../../../implementation/video-meetings-v1/). That package uses **S00–S07**; the coarser checklist below is retained as a product outline only.
+
 ## Preliminary repo-to-canon comparison
 
-| Area                                      | Observed baseline                                             | Classification                                          |
-| ----------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------- |
-| Calendar scheduled client Meeting         | Existing calendar service/schema/UI                           | OK adjacent system; **not** the VideoMeeting owner      |
-| Drive R2 durable generated files          | Existing `FileArtifactOperation` and Drive lifecycle          | PARTIAL: Egress async producer adapter unverified       |
-| Drive `MEETING_RECORDING`                 | Existing file-purpose enum                                    | OK adjacent foundation                                  |
-| CRM ATS phone recordings                  | Existing phone-call storage/playback                          | OK separate workflow; do not reuse as video call entity |
-| Standalone video rooms / LiveKit / Egress | No confirmed module in inspected branch                       | MISSING                                                 |
-| AI meeting summary                        | Example idea in AI future docs, not runnable AI transcription | DEFER V2                                                |
+| Area                                      | Observed baseline                                                | Classification                                          |
+| ----------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------- |
+| Calendar scheduled client Meeting         | Existing calendar service/schema/UI                              | OK adjacent system; **not** the VideoMeeting owner      |
+| Drive R2 durable generated files          | Existing `FileArtifactOperation` and Drive lifecycle             | PARTIAL: Egress async producer adapter unverified       |
+| Drive `MEETING_RECORDING`                 | Existing file-purpose enum                                       | OK adjacent foundation                                  |
+| CRM ATS phone recordings                  | Existing phone-call storage/playback                             | OK separate workflow; do not reuse as video call entity |
+| Standalone video rooms / LiveKit / Egress | No confirmed module in inspected branch (re-verified 2026-09-26) | MISSING                                                 |
+| AI meeting summary                        | Example idea in AI future docs, not runnable AI transcription    | DEFER V2                                                |
 
 These are **preliminary** code/doc observations, not evidence of live production deployment.
 
 ## V1 vertical slices
 
-- [ ] **S00:** recheck current branch/runtime; resolve legal/capacity/RBAC/retention and async Drive Egress interface decisions.
+Outline (see implementation package for authoritative S00–S07):
+
+- [x] **S00 (docs):** gap analysis / ADR / LiveKit pin / recording feasibility plan — [`docs/implementation/video-meetings-v1/`](../../../implementation/video-meetings-v1/). Local LiveKit **NOT RUN**. Product code not started.
 - [ ] **S01:** meeting/session/participants/invite/consent/recording/link schema; domain permission negative tests, standalone list/detail.
 - [ ] **S02:** self-hosted LiveKit and backend tokens, admission and employee/guest room UI; resilient join/rejoin.
 - [ ] **S03:** manual consented **composite + per-participant audio** recording, identity/time mapping and Egress lifecycle.
