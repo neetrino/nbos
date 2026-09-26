@@ -14,6 +14,10 @@ import {
   PersonContactRow,
   PersonSoftAvatar,
 } from '@/components/shared';
+import {
+  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
+  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
+} from '@/components/shared/detail-sheet-classes';
 import { useRevalidationState } from '@/hooks/use-revalidation-state';
 import { getApiErrorMessage, isAccessRevokedApiError } from '@/lib/api-errors';
 import { PERSON_OVERVIEW_GRID_CLASS } from '@/components/shared/person-contact-row.constants';
@@ -41,15 +45,29 @@ function memberDisplayName(row: ProductTeamMemberRow): string {
   return `${row.employee.firstName} ${row.employee.lastName}`.trim();
 }
 
-function MemberSlotMeta({ row }: { row: ProductTeamMemberRow }) {
+function ProductTeamMemberChip({ row }: { row: ProductTeamMemberRow }) {
+  const relations = useEntityRelations();
+  const hasSlot = Boolean(row.slot);
+  const slotLabel = formatProductSlot(row.slot);
+
   return (
-    <div className="flex shrink-0 flex-col items-end gap-0.5">
-      <span className="text-xs capitalize">{formatProductSlot(row.slot)}</span>
-      {row.isPrimary && row.slot ? (
-        <Badge variant="outline" className="text-[10px]">
-          primary
-        </Badge>
+    <div className={DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS}>
+      {hasSlot ? (
+        <span className={cn(DETAIL_SHEET_OUTLINED_LABEL_CLASS, 'capitalize')}>{slotLabel}</span>
       ) : null}
+      <PersonContactRow
+        name={memberDisplayName(row)}
+        email={row.employee.email}
+        imageUrl={row.employee.avatar}
+        onOpen={() => relations.openEntity('employee', row.employee.id)}
+        trailing={
+          row.isPrimary && hasSlot ? (
+            <Badge variant="outline" className="text-[10px]">
+              primary
+            </Badge>
+          ) : null
+        }
+      />
     </div>
   );
 }
@@ -174,14 +192,7 @@ function TeamBody({
       {embedded ? (
         <div className={PERSON_OVERVIEW_GRID_CLASS}>
           {members.map((row) => (
-            <PersonContactRow
-              key={row.id}
-              name={memberDisplayName(row)}
-              email={row.employee.email}
-              imageUrl={row.employee.avatar}
-              onOpen={() => relations.openEntity('employee', row.employee.id)}
-              trailing={<MemberSlotMeta row={row} />}
-            />
+            <ProductTeamMemberChip key={row.id} row={row} />
           ))}
         </div>
       ) : (

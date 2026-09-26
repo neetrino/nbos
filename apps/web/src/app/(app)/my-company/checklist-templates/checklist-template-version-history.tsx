@@ -20,17 +20,23 @@ function versionStatusVariant(
 interface ChecklistTemplateVersionHistoryProps {
   versions: ChecklistTemplateVersionSummary[];
   onPreview: (versionId: string, label: string) => void;
+  /** Open list for a sheet tab, without the collapsible card. */
+  plain?: boolean;
 }
 
 export function ChecklistTemplateVersionHistory({
   versions,
   onPreview,
+  plain = false,
 }: ChecklistTemplateVersionHistoryProps) {
   const [open, setOpen] = useState(false);
+  if (plain) {
+    return <VersionList versions={versions} onPreview={onPreview} />;
+  }
   const latest = versions[0];
 
   return (
-    <div className="border-border/80 bg-card rounded-2xl border shadow-sm shadow-black/[0.03]">
+    <div className="border-border bg-card rounded-2xl border">
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="hover:bg-muted/50 flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left outline-none select-none">
           <span className="flex min-w-0 items-center gap-2">
@@ -58,35 +64,46 @@ export function ChecklistTemplateVersionHistory({
             Publishing keeps immutable snapshots for Delivery rules and checklist instances. Keep
             this list for traceability; collapse it when you focus on editing the draft.
           </p>
-          <ul className="text-muted-foreground max-h-52 space-y-1 overflow-auto text-xs">
-            {versions.map((v) => (
-              <li
-                key={v.id}
-                className="border-border/60 flex flex-wrap items-center justify-between gap-2 border-b border-dashed py-1.5 last:border-0"
-              >
-                <span className="flex flex-wrap items-center gap-2">
-                  <span>
-                    v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()}
-                  </span>
-                  <StatusBadge label={v.status} variant={versionStatusVariant(v.status)} />
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground h-7 text-xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPreview(v.id, `v${v.versionNumber} · ${v.status}`);
-                  }}
-                >
-                  Preview
-                </Button>
-              </li>
-            ))}
-          </ul>
+          <VersionList versions={versions} onPreview={onPreview} compact />
         </CollapsibleContent>
       </Collapsible>
     </div>
+  );
+}
+
+function VersionList({
+  versions,
+  onPreview,
+  compact = false,
+}: {
+  versions: ChecklistTemplateVersionSummary[];
+  onPreview: (versionId: string, label: string) => void;
+  compact?: boolean;
+}) {
+  return (
+    <ul className={cn('flex flex-col gap-1', compact && 'max-h-52 overflow-auto')}>
+      {versions.map((version) => (
+        <li key={version.id} className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5">
+          <span className="text-primary w-8 shrink-0 text-xs font-semibold tabular-nums">
+            v{version.versionNumber}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground text-sm font-medium">
+              {new Date(version.createdAt).toLocaleString()}
+            </p>
+          </div>
+          <StatusBadge label={version.status} variant={versionStatusVariant(version.status)} />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground h-7 text-xs"
+            onClick={() => onPreview(version.id, `v${version.versionNumber} · ${version.status}`)}
+          >
+            Preview
+          </Button>
+        </li>
+      ))}
+    </ul>
   );
 }

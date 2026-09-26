@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Target, TrendingUp, Wallet, Timer } from 'lucide-react';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { ArrowUpRight, Gauge, Target, Timer, TrendingUp, Wallet } from 'lucide-react';
+import { StatusBadge } from '@/components/shared';
+import { CompanyStatCard } from '@/features/hr/components/MyCompanyHubCards';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import type { StatusVariant } from '@/components/shared/StatusBadge';
 import { dashboardApi, type DashboardControlCenterProjection } from '@/lib/api/dashboard';
 
@@ -41,100 +43,102 @@ export default function KpiPage() {
     [control?.priorities.length],
   );
 
+  const sectionTabs = useCompanySectionTabs('kpi', undefined, 'below');
+
   return (
-    <div className="space-y-6">
-      <PageHero title="KPI / Scorecard" />
-      <p className="text-muted-foreground text-sm">
-        Company KPI runtime: cross-module signals, scorecard gate policy, and links to execution
-        modules.
-      </p>
-
-      <div className="grid gap-3 md:grid-cols-4">
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <Target size={16} />
-            Open tasks
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{metrics?.openTasks ?? '—'}</p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <TrendingUp size={16} />
-            Open deals
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{metrics?.openDeals ?? '—'}</p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <Wallet size={16} />
-            Pending invoices
-          </div>
-          <p className="text-foreground text-2xl font-semibold">
-            {metrics?.pendingInvoices ?? '—'}
-          </p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <Timer size={16} />
-            Priority alerts
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{priorityCount}</p>
-        </div>
+    <div className="flex flex-col gap-4">
+      {sectionTabs}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <CompanyStatCard
+          icon={<Target size={16} aria-hidden />}
+          label="Open tasks"
+          value={String(metrics?.openTasks ?? '—')}
+        />
+        <CompanyStatCard
+          icon={<TrendingUp size={16} aria-hidden />}
+          label="Open deals"
+          value={String(metrics?.openDeals ?? '—')}
+        />
+        <CompanyStatCard
+          icon={<Wallet size={16} aria-hidden />}
+          label="Pending invoices"
+          value={String(metrics?.pendingInvoices ?? '—')}
+        />
+        <CompanyStatCard
+          icon={<Timer size={16} aria-hidden />}
+          label="Priority alerts"
+          value={String(priorityCount)}
+        />
       </div>
 
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold">KPI Gate Policy</h2>
-          {loading ? <span className="text-muted-foreground text-xs">Loading metrics…</span> : null}
-        </div>
-        <div className="grid gap-2 md:grid-cols-3">
-          {KPI_GATE_TABLE.map((row) => (
-            <div key={row.label} className="border-border rounded-xl border p-3">
-              <div className="mb-2">
-                <StatusBadge label={row.label} variant={row.variant} />
-              </div>
-              <p className="text-foreground text-sm font-medium">{row.threshold}</p>
-              <p className="text-muted-foreground text-xs">Bonus payout: {row.payout}</p>
+      <section className="border-border bg-card relative overflow-hidden rounded-2xl border p-4">
+        <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
+        <div className="relative flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+              <Gauge size={15} />
             </div>
+            <h2 className="text-foreground text-sm font-semibold">KPI gate</h2>
+          </div>
+          {loading ? (
+            <span className="text-muted-foreground text-xs">Loading…</span>
+          ) : (
+            <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+              {KPI_GATE_TABLE.length}
+            </span>
+          )}
+        </div>
+        <ul className="relative mt-3 flex flex-col gap-1">
+          {KPI_GATE_TABLE.map((row, index) => (
+            <li key={row.label} className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5">
+              <span className="text-primary w-6 shrink-0 text-xs font-semibold tabular-nums">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-foreground text-sm font-medium">{row.label}</p>
+                <p className="text-muted-foreground text-xs">Attainment {row.threshold}</p>
+              </div>
+              <span className="text-foreground text-lg font-semibold tabular-nums">
+                {row.payout}
+              </span>
+              <StatusBadge label="Payout" variant={row.variant} />
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      </section>
 
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <h2 className="mb-2 text-sm font-semibold">Scorecard Module Links</h2>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/dashboard"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Dashboard Control Center
-          </Link>
-          <Link
-            href="/reports"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Reports Catalog
-          </Link>
-          <Link
-            href="/my-company/kpi-policies"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            KPI gate policies (edit bands)
-          </Link>
-          <Link
-            href="/finance/payroll"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Payroll KPI Gate Impact
-          </Link>
-          <Link
-            href="/tasks"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Tasks SLA / Throughput
-          </Link>
+      <section className="border-border bg-card relative overflow-hidden rounded-2xl border p-4">
+        <div className="bg-primary/15 pointer-events-none absolute -bottom-10 -left-8 size-28 rounded-full blur-2xl" />
+        <div className="relative flex items-center gap-2.5">
+          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+            <ArrowUpRight size={15} />
+          </div>
+          <h2 className="text-foreground text-sm font-semibold">Where the scorecard is used</h2>
         </div>
-      </div>
+        <ul className="relative mt-3 grid gap-1 sm:grid-cols-2">
+          {(
+            [
+              ['/dashboard', 'Dashboard'],
+              ['/reports', 'Reports'],
+              ['/my-company/kpi-policies', 'KPI gate policies'],
+              ['/finance/payroll', 'Payroll'],
+              ['/tasks', 'Tasks'],
+            ] as const
+          ).map(([href, label]) => (
+            <li key={href}>
+              <Link
+                href={href}
+                className="hover:bg-muted/60 flex items-center gap-2.5 rounded-xl px-1.5 py-1.5"
+              >
+                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <ArrowUpRight size={14} />
+                </span>
+                <span className="text-foreground text-sm font-medium">{label}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

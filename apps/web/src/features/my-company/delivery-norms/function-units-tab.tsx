@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS, DetailSheetSection } from '@/components/shared';
+import { Layers } from 'lucide-react';
+import { DETAIL_SHEET_TAB_BODY_STRETCH_CLASS, InsightSheetSection } from '@/components/shared';
 import { FunctionVolumeSelect } from './function-volume-select';
 import { RoleUnitsEditor } from './role-units-editor';
 import type { RoleUnitDraftRow } from './role-units-draft';
@@ -24,7 +25,11 @@ export function FunctionUnitsTab({
   const t = useTranslations('hr.deliveryNorms');
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} gap-4`}>
-      <DetailSheetSection title={t('roleUnits.title')}>
+      <InsightSheetSection
+        icon={<Layers size={15} />}
+        title={t('roleUnits.title')}
+        hint={t('prices.editHint')}
+      >
         <div className="space-y-4">
           <FunctionVolumeSelect
             options={tierOptions}
@@ -34,7 +39,7 @@ export function FunctionUnitsTab({
           />
           <RoleUnitsEditor rows={roleUnits} disabled={disabled} onChange={onRoleUnits} />
         </div>
-      </DetailSheetSection>
+      </InsightSheetSection>
     </div>
   );
 }

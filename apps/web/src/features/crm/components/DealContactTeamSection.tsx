@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Building2, User, UserCog } from 'lucide-react';
+import { User } from 'lucide-react';
 import {
   DETAIL_SHEET_COLUMN_DIVIDER_CLASS,
   DetailSheetSection,
@@ -59,7 +59,6 @@ export function DealContactTeamSection({
               (deal.seller ? `${deal.seller.firstName} ${deal.seller.lastName}` : null)
             }
             selectionAvatar={draft.sellerAvatar}
-            icon={<Building2 size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
             onSelect={(value, label, avatar) =>
@@ -83,7 +82,6 @@ export function DealContactTeamSection({
                 : null)
             }
             selectionAvatar={draft.sellerAssistantAvatar}
-            icon={<Building2 size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
             onSelect={(value, label, avatar) =>
@@ -112,7 +110,6 @@ export function DealContactTeamSection({
             }
             selectionAvatar={draft.pmAvatar}
             className={dealStageGateFieldClass(gateRequiredFields, 'pmId')}
-            icon={<UserCog size={12} />}
             disabled={disabled}
             onSearch={searchEmployees}
             onSelect={(value, label, avatar) =>
@@ -136,7 +133,6 @@ export function DealContactTeamSection({
             selectionLabels={draft.contactLabels}
             className={dealStageGateFieldClass(gateRequiredFields, 'contactId')}
             placeholder={t('dealSheet.searchOrCreateContact')}
-            icon={<User size={12} />}
             disabled={disabled}
             onSearch={contactRelationSearch}
             onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}

@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { User, Megaphone, ExternalLink, Building2 } from 'lucide-react';
+import { Megaphone, ExternalLink, Building2 } from 'lucide-react';
 import {
   DETAIL_SHEET_SECTION_BODY_CLASS,
   InlineField,
@@ -218,7 +218,6 @@ export function LeadMarketingFields({
           value={draft.sourceContactId}
           selectionLabel={draft.clientPickLabel}
           placeholder={t('leadSheet.whichClientPlaceholder')}
-          icon={<User size={12} />}
           disabled={formDisabled || attributionLocked}
           onSearch={searchContacts}
           onSelect={(value, label) =>

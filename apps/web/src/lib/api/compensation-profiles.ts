@@ -36,7 +36,23 @@ export interface PatchCompensationProfileDraftPayload {
   notes?: string | null;
 }
 
+export interface ActiveCompensationSummary {
+  employeeId: string;
+  baseSalary: string;
+  currency: string;
+  bonusPolicyName: string | null;
+  bonusTemplateCode: string | null;
+  kpiPolicyName: string | null;
+}
+
 export const compensationProfilesApi = {
+  async listActive(): Promise<{ items: ActiveCompensationSummary[] }> {
+    const { data } = await api.get<{ items: ActiveCompensationSummary[] }>(
+      '/api/compensation-profile-summaries',
+    );
+    return data;
+  },
+
   async listForEmployee(employeeId: string): Promise<{ items: CompensationProfileRow[] }> {
     const { data } = await api.get<{ items: CompensationProfileRow[] }>(
       `/api/employees/${employeeId}/compensation-profiles`,

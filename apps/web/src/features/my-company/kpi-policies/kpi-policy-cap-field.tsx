@@ -1,6 +1,6 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
+import { InlineField } from '@/components/shared';
 import {
   KPI_POLICY_CAP_MULTIPLIER_DEFAULT,
   KPI_POLICY_CAP_MULTIPLIER_MAX,
@@ -28,22 +28,19 @@ export function KpiPolicyCapField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="space-y-1 text-sm">
-      <span className="text-muted-foreground">Monthly bonus cap (× base salary)</span>
-      <Input
-        type="number"
-        min={KPI_POLICY_CAP_MULTIPLIER_MIN}
-        max={KPI_POLICY_CAP_MULTIPLIER_MAX}
-        step={0.1}
+    <div className="space-y-1">
+      <InlineField
+        variant="controlled"
+        label="Monthly ceiling"
         value={value}
+        suffix="× salary"
         disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
+        onValueChange={onChange}
       />
       <p className="text-muted-foreground text-xs">
-        Default {KPI_POLICY_CAP_MULTIPLIER_DEFAULT} ({KPI_POLICY_CAP_MULTIPLIER_MIN}–
-        {KPI_POLICY_CAP_MULTIPLIER_MAX}). Payroll attach caps variable bonus at base × this value;
-        excess becomes carry-over.
+        {KPI_POLICY_CAP_MULTIPLIER_MIN}–{KPI_POLICY_CAP_MULTIPLIER_MAX} times base salary. Default{' '}
+        {KPI_POLICY_CAP_MULTIPLIER_DEFAULT}. Anything above carries to the next month.
       </p>
-    </label>
+    </div>
   );
 }

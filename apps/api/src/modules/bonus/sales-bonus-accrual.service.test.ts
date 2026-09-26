@@ -162,6 +162,68 @@ describe('SalesBonusAccrualService', () => {
       }),
     );
     expect(prisma.bonusEntry.createMany).toHaveBeenCalledTimes(1);
+    const created = prisma.bonusEntry.createMany.mock.calls[0]?.[0] as {
+      data: Array<{ amount: Decimal; calculationSnapshot: { basis: string; baseAmount: string } }>;
+    };
+    expect(created.data[0]?.amount.toString()).toBe('40000');
+    expect(created.data[0]?.calculationSnapshot.basis).toBe('FIRST_PAID_MONTH');
+    expect(created.data[0]?.calculationSnapshot.baseAmount).toBe('100000');
+  });
+
+  it('accrues first-month subscription bonus from one month of a multi-month invoice', async () => {
+    prisma.invoice.findUnique.mockResolvedValue({
+      id: 'inv-prepaid',
+      moneyStatus: 'PAID',
+      amount: 300_000,
+      coverageMonthCount: null,
+      orderId: 'ord-sub',
+      order: {
+        id: 'ord-sub',
+        projectId: 'proj1',
+        totalAmount: 1_200_000,
+        paymentType: 'SUBSCRIPTION',
+        dealId: 'deal1',
+        deal: {
+          id: 'deal1',
+          source: 'CLIENT',
+          amount: 100_000,
+          sellerId: 'emp-seller',
+          sellerAssistantId: 'emp-asst',
+        },
+      },
+    });
+    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
+      sellerPercent: 40,
+      assistantPercent: 10,
+    });
+    prisma.order.findUnique.mockResolvedValue({
+      id: 'ord-sub',
+      projectId: 'proj1',
+      productId: null,
+      extensionId: null,
+    });
+    prisma.bonusEntry.aggregate
+      .mockResolvedValueOnce({ _sum: { amount: new Decimal(0) } })
+      .mockResolvedValueOnce({ _sum: { amount: new Decimal(0) } });
+    prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
+    prisma.productBonusPool.upsert.mockResolvedValue({});
+    prisma.bonusEntry.createMany.mockResolvedValue({ count: 2 });
+
+    await service.onInvoicePaid('inv-prepaid');
+
+    expect(prisma.salesBonusPolicy.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_FIRST_MONTH' }),
+      }),
+    );
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.arrayContaining([
+          expect.objectContaining({ employeeId: 'emp-seller', amount: new Decimal(40000) }),
+          expect.objectContaining({ employeeId: 'emp-asst', amount: new Decimal(10000) }),
+        ]),
+      }),
+    );
   });
 
   it('skips recurring accrual when invoice employee rows already exist', async () => {

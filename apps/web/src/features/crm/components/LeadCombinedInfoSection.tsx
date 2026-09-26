@@ -114,7 +114,6 @@ export function LeadCombinedInfoSection({
               value={draft.contactIds}
               selectionLabels={draft.contactLabels}
               placeholder={t('leadSheet.contactsPlaceholder')}
-              icon={<User size={12} />}
               disabled={formDisabled}
               onSearch={contactRelationSearch}
               onChange={(ids, labels) => patchDraft({ contactIds: ids, contactLabels: labels })}
@@ -131,7 +130,6 @@ export function LeadCombinedInfoSection({
                   (lead.assignee ? `${lead.assignee.firstName} ${lead.assignee.lastName}` : null)
                 }
                 selectionAvatar={draft.sellerAvatar}
-                icon={<User size={12} />}
                 disabled={formDisabled}
                 onSearch={searchEmployees}
                 onSelect={(value, label, avatar) =>

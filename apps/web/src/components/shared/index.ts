@@ -230,6 +230,7 @@ export {
   DetailSheetOptionalDescriptionField,
 } from './DetailSheetOptionalDescription';
 export { DetailSheetSection, type DetailSheetSectionProps } from './DetailSheetSection';
+export { InsightSheetSection } from './InsightSheetSection';
 export { DetailSheetMetaDate } from './DetailSheetMetaDate';
 export {
   DetailSheetCollapsibleSection,

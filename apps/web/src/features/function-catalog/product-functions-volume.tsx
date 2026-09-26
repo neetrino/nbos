@@ -31,6 +31,8 @@ export function MoneyHiddenComposition({
   onReload,
   onAdd,
   onRemoveExtra,
+  title,
+  coreTitle,
 }: {
   config: ProductFunctionsV2Config;
   extras: DeliveryFunctionOperationalDto[];
@@ -41,14 +43,17 @@ export function MoneyHiddenComposition({
   onReload: () => void;
   onAdd: () => void;
   onRemoveExtra: (functionId: string) => void;
+  title?: string;
+  coreTitle?: string | null;
 }) {
   const t = useTranslations('hr.functionCatalog');
   const save = (body: VolumeBody) =>
     saveConfigurationVolume(config, body, t('removeFailed'), onReload);
   return (
     <ProductCompositionPanel
+      title={title}
       coreProfileVersionId={config.baseProfileVersionId}
-      coreTitle={null}
+      coreTitle={coreTitle ?? null}
       included={included}
       extras={extras}
       saleTotal={null}

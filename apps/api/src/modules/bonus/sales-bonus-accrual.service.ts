@@ -5,20 +5,21 @@ import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import {
-  hasRecurringSalesAccrualForInvoiceEmployee,
   hasSalesAccrualForInvoice,
   hasSlottedSalesBonusOnOrder,
 } from './sales-bonus-accrual-idempotency';
 import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
+import { accrueSubscriptionRecurringSalesBonus } from './sales-bonus-subscription-recurring';
 import {
   earnedPeriodFromUtcDate,
   refreshSalesBonusesForEmployeesEarnedMonth,
 } from './sales-bonus-kpi-payable';
+import { subscriptionFirstMonthBonusBase } from './subscription-first-month-bonus-base';
 
 type SlottedPaymentModel = 'CLASSIC' | 'SUBSCRIPTION_FIRST_MONTH';
 type PolicyPaymentModel = SlottedPaymentModel | 'SUBSCRIPTION_RECURRING';
 
-type AccrualBasis = 'ORDER_TOTAL' | 'FIRST_PAID_INVOICE_AMOUNT' | 'SUBSCRIPTION_RECURRING_INVOICE';
+type AccrualBasis = 'ORDER_TOTAL' | 'FIRST_PAID_MONTH' | 'SUBSCRIPTION_RECURRING_INVOICE';
 
 type AccrualDeal = {
   id: string;
@@ -47,8 +48,8 @@ export class SalesBonusAccrualService {
 
   /**
    * Called when an invoice is fully PAID. Classic: one seller + assistant wave per order.
-   * Subscription: first paid invoice uses first-month policy; later paid invoices use
-   * `SUBSCRIPTION_RECURRING` (idempotent per invoice via `salesAccrualInvoiceId`).
+   * Subscription: first paid invoice uses one month of that invoice and the first-month
+   * policy, once; later paid invoices use `SUBSCRIPTION_RECURRING`.
    */
   async onInvoicePaid(invoiceId: string): Promise<void> {
     try {
@@ -73,6 +74,7 @@ export class SalesBonusAccrualService {
         paidDate: true,
         moneyStatus: true,
         amount: true,
+        coverageMonthCount: true,
         orderId: true,
         order: {
           select: {
@@ -86,6 +88,7 @@ export class SalesBonusAccrualService {
               select: {
                 id: true,
                 source: true,
+                amount: true,
                 sellerId: true,
                 sellerAssistantId: true,
               },
@@ -131,7 +134,12 @@ export class SalesBonusAccrualService {
       invoice.paidDate != null
         ? earnedPeriodFromUtcDate(invoice.paidDate)
         : earnedPeriodFromUtcDate(new Date());
-    const invoiceCore = { id: invoice.id, amount: decimalFrom(invoice.amount) };
+    const invoiceCore = {
+      id: invoice.id,
+      amount: decimalFrom(invoice.amount),
+      coverageMonthCount: invoice.coverageMonthCount,
+      periodAmount: raw.deal.amount == null ? null : decimalFrom(raw.deal.amount),
+    };
 
     let created = false;
     if (order.paymentType === 'SUBSCRIPTION') {
@@ -154,79 +162,35 @@ export class SalesBonusAccrualService {
   }
 
   private async runSubscriptionAccrual(
-    invoice: { id: string; amount: Decimal },
+    invoice: {
+      id: string;
+      amount: Decimal;
+      coverageMonthCount: number | null;
+      periodAmount: Decimal | null;
+    },
     order: AccrualOrder,
     earnedPeriod: string,
   ): Promise<boolean> {
     const firstMonthDone = await hasSlottedSalesBonusOnOrder(this.prisma, order.id);
     if (!firstMonthDone) {
+      const baseAmount = subscriptionFirstMonthBonusBase({
+        invoiceAmount: invoice.amount,
+        coverageMonthCount: invoice.coverageMonthCount,
+        periodAmount: invoice.periodAmount,
+      });
       return this.runSlottedAccrual(invoice, order, 'SUBSCRIPTION_FIRST_MONTH', earnedPeriod, {
-        baseAmount: decimalFrom(invoice.amount),
-        basis: 'FIRST_PAID_INVOICE_AMOUNT',
+        baseAmount,
+        basis: 'FIRST_PAID_MONTH',
       });
     }
-    return this.runSubscriptionRecurringAccrual(invoice, order, earnedPeriod);
-  }
-
-  private async runSubscriptionRecurringAccrual(
-    invoice: { id: string; amount: Decimal },
-    order: AccrualOrder,
-    earnedPeriod: string,
-  ): Promise<boolean> {
-    const policy = await this.loadPolicy(order.deal.source, 'SUBSCRIPTION_RECURRING');
-    if (!policy) {
-      this.logger.warn(
-        { from: order.deal.source, paymentModel: 'SUBSCRIPTION_RECURRING', dealId: order.deal.id },
-        'No active sales bonus policy row',
-      );
-      return false;
-    }
-
-    if (policy.sellerPercent.eq(0) && policy.assistantPercent.eq(0)) {
-      return false;
-    }
-
-    const baseAmount = decimalFrom(invoice.amount);
-    const snapshot = {
-      fromCategory: order.deal.source,
-      paymentModel: 'SUBSCRIPTION_RECURRING' as const,
-      sellerPercent: Number(policy.sellerPercent),
-      assistantPercent: Number(policy.assistantPercent),
-      baseAmount: baseAmount.toString(),
-      invoiceId: invoice.id,
-      orderId: order.id,
-      dealId: order.deal.id,
-      basis: 'SUBSCRIPTION_RECURRING_INVOICE' as const,
-    };
-
-    const rows = buildSalesBonusAmountRows(order.deal, policy, baseAmount);
-    const rowsToCreate = [];
-    for (const row of rows) {
-      const exists = await hasRecurringSalesAccrualForInvoiceEmployee(
-        this.prisma,
-        order.id,
-        invoice.id,
-        row.employeeId,
-      );
-      if (!exists) {
-        rowsToCreate.push(row);
-      }
-    }
-    if (rowsToCreate.length === 0) {
-      return false;
-    }
-
-    const snapshotJson = snapshot as InputJsonValue;
-    return persistSalesBonusRows(
-      this.prisma,
+    return accrueSubscriptionRecurringSalesBonus({
+      prisma: this.prisma,
+      logger: this.logger,
+      invoice,
       order,
-      order.deal,
-      rowsToCreate,
-      snapshotJson,
-      invoice.id,
-      null,
       earnedPeriod,
-    );
+      loadPolicy: (fromCategory, paymentModel) => this.loadPolicy(fromCategory, paymentModel),
+    });
   }
 
   private async loadPolicy(

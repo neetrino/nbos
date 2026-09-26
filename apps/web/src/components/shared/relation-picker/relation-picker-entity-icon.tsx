@@ -63,10 +63,16 @@ export function relationPickerOptionLeading(
   label: string,
   variant: 'boxed' | 'inline' = 'boxed',
   imageUrl?: string,
+  /** Overrides compact picker size — e.g. flush chip avatar. */
+  personAvatarClassName?: string,
 ): ReactNode {
   if (usesPersonAvatar(kind)) {
     return variant === 'inline' ? (
-      <PersonSoftAvatar name={label} imageUrl={imageUrl} className={PERSON_PICKER_AVATAR_CLASS} />
+      <PersonSoftAvatar
+        name={label}
+        imageUrl={imageUrl}
+        className={cn(PERSON_PICKER_AVATAR_CLASS, personAvatarClassName)}
+      />
     ) : (
       <EmployeePersonAvatar label={label} imageUrl={imageUrl} />
     );

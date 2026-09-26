@@ -1,13 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { ListChecks, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DetailSheetSection } from '@/components/shared';
-import {
-  TEAM_SHEET_BODY_CLASS,
-  TEAM_SHEET_SECTION_CLASS,
-} from '@/features/hr/constants/team-sheet-layout';
+import { InsightSheetSection } from '@/components/shared';
+import { TEAM_SHEET_BODY_CLASS } from '@/features/hr/constants/team-sheet-layout';
 import {
   ChecklistWorkbenchItemRow,
   type ChecklistWorkbenchMarkHandler,
@@ -113,11 +110,14 @@ export function EmployeeLifecycleChecklistPanel({
           (item) => item.mark === 'DONE' || item.mark === 'NOT_DONE',
         ).length;
         return (
-          <DetailSheetSection key={instance.id} title={title} className={TEAM_SHEET_SECTION_CLASS}>
-            <p className="text-muted-foreground mb-3 text-xs tabular-nums">
-              {t('lifecycle.itemsReviewed', { reviewed, count: items.length })}
-              {instance.completedAt ? t('lifecycle.completedSuffix') : ''}
-            </p>
+          <InsightSheetSection
+            key={instance.id}
+            icon={<ListChecks size={15} />}
+            title={title}
+            hint={`${t('lifecycle.itemsReviewed', { reviewed, count: items.length })}${
+              instance.completedAt ? t('lifecycle.completedSuffix') : ''
+            }`}
+          >
             <ul className="space-y-2">
               {items.map((item, index) => (
                 <ChecklistWorkbenchItemRow
@@ -143,7 +143,7 @@ export function EmployeeLifecycleChecklistPanel({
                 </Button>
               </div>
             ) : null}
-          </DetailSheetSection>
+          </InsightSheetSection>
         );
       })}
     </div>

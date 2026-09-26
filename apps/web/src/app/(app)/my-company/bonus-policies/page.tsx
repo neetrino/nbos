@@ -2,48 +2,37 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  DataView,
-  ErrorState,
-  ListMutationErrorBanner,
-  LoadingState,
-  PageHero,
-} from '@/components/shared';
-import { BonusPolicyEditorCard } from '@/features/my-company/bonus-policies/bonus-policy-editor-card';
-import { BONUS_POLICY_TEMPLATE_OPTIONS } from '@/features/my-company/bonus-policies/bonus-policy-template-options';
-import { BONUS_POLICY_TEMPLATE_MANUAL_ONLY } from '@/features/my-company/compensation/bonus-policy-template-codes';
-import {
-  bonusPoliciesApi,
-  type BonusPolicyRow,
-  type BonusPolicyStatus,
-} from '@/lib/api/bonus-policies';
+import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/components/shared';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
+import { BonusPolicyCard } from '@/features/my-company/bonus-policies/bonus-policy-card';
+import { BonusPolicySheet } from '@/features/my-company/bonus-policies/bonus-policy-sheet';
+import { bonusPoliciesApi, type BonusPolicyRow } from '@/lib/api/bonus-policies';
 
-export default function BonusPoliciesPage() {
+const STATUS_RANK: Record<BonusPolicyRow['status'], number> = {
+  ACTIVE: 0,
+  DRAFT: 1,
+  ARCHIVED: 2,
+};
+
+function sortPolicies(items: BonusPolicyRow[]): BonusPolicyRow[] {
+  return [...items].sort(
+    (left, right) =>
+      STATUS_RANK[left.status] - STATUS_RANK[right.status] || left.name.localeCompare(right.name),
+  );
+}
+
+function useBonusPolicyList() {
   const [items, setItems] = useState<BonusPolicyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [savingId, setSavingId] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newTemplate, setNewTemplate] = useState(BONUS_POLICY_TEMPLATE_MANUAL_ONLY);
-  const [newScope, setNewScope] = useState('COMPANY');
-  const [newNotes, setNewNotes] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const resp = await bonusPoliciesApi.list();
-      setItems(resp.items);
+      setItems(sortPolicies(resp.items));
       setError(null);
     } catch {
       setError('Bonus policies could not be loaded.');
@@ -56,157 +45,50 @@ export default function BonusPoliciesPage() {
     void load();
   }, [load]);
 
-  const handleSave = async (
-    id: string,
-    payload: {
-      name: string;
-      status: BonusPolicyStatus;
-      scope: string | null;
-      notes: string | null;
-    },
-  ) => {
-    setSavingId(id);
-    try {
-      const updated = await bonusPoliciesApi.update(id, payload);
-      setItems((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-      setError(null);
-    } catch {
-      setError('Save failed. Check the name and try again.');
-    } finally {
-      setSavingId(null);
-    }
+  const replaceSaved = (row: BonusPolicyRow) => {
+    setItems((prev) => {
+      const exists = prev.some((item) => item.id === row.id);
+      const next = exists ? prev.map((item) => (item.id === row.id ? row : item)) : [...prev, row];
+      return sortPolicies(next);
+    });
   };
 
-  const handleCreate = async () => {
-    if (newName.trim().length < 2) {
-      setError('Enter a policy name (at least 2 characters).');
-      return;
-    }
-    setCreating(true);
-    try {
-      const created = await bonusPoliciesApi.create({
-        name: newName.trim(),
-        templateCode: newTemplate,
-        scope: newScope.trim() || undefined,
-        notes: newNotes.trim() || undefined,
-      });
-      setItems((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
-      setNewName('');
-      setNewNotes('');
-      setError(null);
-    } catch {
-      setError('Could not create policy.');
-    } finally {
-      setCreating(false);
-    }
-  };
+  return { items, loading, error, setError, load, replaceSaved };
+}
 
-  const selectedTemplate = BONUS_POLICY_TEMPLATE_OPTIONS.find((o) => o.value === newTemplate);
+export default function BonusPoliciesPage() {
+  const { items, loading, error, setError, load, replaceSaved } = useBonusPolicyList();
+  const [editing, setEditing] = useState<BonusPolicyRow | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const sectionTabs = useCompanySectionTabs('bonus', undefined, 'below');
   const hasData = items.length > 0;
-  const content = (
-    <>
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <h2 className="text-foreground mb-3 text-sm font-semibold">New policy</h2>
-        <div className="grid gap-3 md:grid-cols-2">
-          <label className="space-y-1 text-sm">
-            <span className="text-muted-foreground">Name</span>
-            <Input
-              value={newName}
-              disabled={creating}
-              placeholder="e.g. Delivery manual Q2"
-              onChange={(e) => setNewName(e.target.value)}
-            />
-          </label>
-          <label className="space-y-1 text-sm">
-            <span className="text-muted-foreground">Template</span>
-            <Select
-              value={newTemplate}
-              disabled={creating}
-              onValueChange={(v) => {
-                if (v) setNewTemplate(v);
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {BONUS_POLICY_TEMPLATE_OPTIONS.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </label>
-          <label className="space-y-1 text-sm md:col-span-2">
-            <span className="text-muted-foreground">Scope (optional)</span>
-            <Input
-              value={newScope}
-              disabled={creating}
-              onChange={(e) => setNewScope(e.target.value)}
-            />
-          </label>
-          <label className="space-y-1 text-sm md:col-span-2">
-            <span className="text-muted-foreground">Notes (optional)</span>
-            <Textarea
-              value={newNotes}
-              disabled={creating}
-              rows={2}
-              className="resize-y"
-              onChange={(e) => setNewNotes(e.target.value)}
-            />
-          </label>
-        </div>
-        {selectedTemplate ? (
-          <p className="text-muted-foreground mt-2 text-xs">{selectedTemplate.hint}</p>
-        ) : null}
-        <div className="mt-4 flex justify-end">
-          <Button type="button" size="sm" disabled={creating} onClick={() => void handleCreate()}>
-            {creating ? 'Creating…' : 'Create policy'}
-          </Button>
-        </div>
-      </div>
-      <div className="space-y-4">
-        {items.map((policy) => (
-          <BonusPolicyEditorCard
-            key={policy.id}
-            policy={policy}
-            saving={savingId === policy.id}
-            onSave={handleSave}
-          />
-        ))}
-      </div>
-    </>
-  );
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHero
-        title="Bonus policies"
-        trailing={
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={loading}
-            onClick={() => void load()}
-          >
-            Refresh
-          </Button>
-        }
-      />
-      <p className="text-muted-foreground text-sm">
-        Rule bundles assigned on compensation profiles. Template code selects the accrual engine;
-        seller percentages for{' '}
-        <Link
-          href="/my-company/sales-bonus-policies"
-          className="text-primary underline-offset-2 hover:underline"
+    <div className="flex flex-col gap-4">
+      {sectionTabs}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <p className="text-muted-foreground max-w-3xl text-sm">
+          Rules you attach to a salary. Sales percentages live on{' '}
+          <Link href="/my-company/sales-bonus-policies" className="text-primary hover:underline">
+            Sales rates
+          </Link>
+          .
+        </p>
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            setEditing(null);
+            setCreating(true);
+            setSheetOpen(true);
+          }}
         >
-          Sales bonus policies
-        </Link>{' '}
-        apply when template is Sales — company rate grid.
-      </p>
-
+          <Plus className="size-4" aria-hidden />
+          New policy
+        </Button>
+      </div>
       {error && hasData ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
       ) : null}
@@ -214,12 +96,30 @@ export default function BonusPoliciesPage() {
         loading={loading}
         error={error}
         hasData={hasData}
-        loadingFallback={<LoadingState variant="cards" count={2} />}
+        loadingFallback={<LoadingState variant="cards" count={4} />}
         errorFallback={<ErrorState description={error ?? ''} onRetry={() => void load()} />}
-        emptyFallback={content}
+        emptyFallback={<p className="text-muted-foreground text-sm">No policies yet.</p>}
       >
-        {content}
+        <ul className="grid w-full grid-cols-2 items-stretch gap-3 xl:grid-cols-3 2xl:grid-cols-4">
+          {items.map((policy) => (
+            <BonusPolicyCard
+              key={policy.id}
+              policy={policy}
+              onOpen={(row) => {
+                setCreating(false);
+                setEditing(row);
+                setSheetOpen(true);
+              }}
+            />
+          ))}
+        </ul>
       </DataView>
+      <BonusPolicySheet
+        policy={creating ? null : editing}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onSaved={replaceSaved}
+      />
     </div>
   );
 }

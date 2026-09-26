@@ -1,136 +1,147 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import {
-  Building2,
-  ChevronRight,
-  FileText,
-  FolderKanban,
-  KeyRound,
-  Package,
-  UserCircle,
-} from 'lucide-react';
-import { DETAIL_SHEET_SECTION_TITLE_CLASS, StatusBadge } from '@/components/shared';
+import { Handshake, User, type LucideIcon } from 'lucide-react';
+import { InsightSheetSection } from '@/components/shared';
 import { useEntityRelations } from '@/components/shared/relation-picker/entity-relations-context';
-import { cn } from '@/lib/utils';
-import { getDealDisplayTitle } from '@/features/crm/utils/crm-entity-display';
+import { InvoiceLinkedReadonlyField } from '@/features/finance/components/invoices/InvoiceLinkedReadonlyField';
 import { OrderDetailSheet } from '@/features/finance/components/orders/OrderDetailSheet';
-import { getOrderDisplayTitle } from '@/features/finance/utils/order-display';
-import {
-  ORDER_STATUSES,
-  orderStatusLabel,
-} from '@/features/finance/components/orders/order-statuses';
 import { EntityDealSheetDeepLink } from '@/features/projects/components/EntityDealSheetDeepLink';
 import { useCanViewDeal } from '@/features/crm/hooks/use-can-view-deal';
+import type { RelationEntityKind } from '@/components/shared/relation-picker/relation-picker.types';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
+import {
+  buildCommercialEntityRows,
+  resolveCommercialContact,
+  resolveCommercialDeal,
+  resolveCommercialOrder,
+  resolveCommercialProduct,
+  type CommercialLinkTarget,
+} from './delivery-item-commercial-links';
 
-const COMMERCIAL_ICON_WELL_CLASS =
-  'bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-full';
-
-const COMMERCIAL_ROW_CLASS = 'border-border flex items-center gap-3 border-b py-3 last:border-b-0';
-
-const COMMERCIAL_ACTION_BTN_CLASS =
-  'bg-primary text-primary-foreground inline-flex h-auto min-h-12 w-full flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium shadow-sm transition-opacity hover:opacity-90';
-
-const COMMERCIAL_ACTIONS_GRID_CLASS = 'border-border grid grid-cols-2 gap-2 border-t pt-3';
+const COMMERCIAL_LINK_STACK_CLASS = 'flex flex-col gap-2';
 
 interface DeliveryItemCommercialSectionProps {
   kind: 'PRODUCT' | 'EXTENSION';
   product: FullProduct | null;
   extension: FullExtension | null;
-  projectHubHref: string;
   sourcePageHref: string;
   credentialsTabHref: string;
   gateRequiredFields?: ReadonlySet<string>;
 }
 
-function CommercialInfoRow({
-  icon,
+function CommercialEntityRow({
   label,
-  value,
+  entityKind,
+  target,
+  icon: Icon,
   onOpen,
 }: {
-  icon: ReactNode;
   label: string;
-  value: string;
-  onOpen?: () => void;
+  entityKind: RelationEntityKind;
+  target: CommercialLinkTarget;
+  icon: LucideIcon;
+  onOpen: () => void;
 }) {
-  const body = (
-    <>
-      <div className={COMMERCIAL_ICON_WELL_CLASS}>{icon}</div>
-      <div className="min-w-0 flex-1">
-        <p className="text-muted-foreground text-[11px] font-medium">{label}</p>
-        <p className="text-foreground truncate text-sm font-semibold tracking-tight">{value}</p>
-      </div>
-      {onOpen ? (
-        <ChevronRight className="text-muted-foreground size-4 shrink-0 opacity-70" aria-hidden />
-      ) : null}
-    </>
+  return (
+    <InvoiceLinkedReadonlyField
+      label={label}
+      entityKind={entityKind}
+      value={target.id}
+      selectionLabel={target.label}
+      icon={<Icon size={12} />}
+      onOpen={onOpen}
+    />
   );
+}
 
-  if (!onOpen) {
-    return <div className={COMMERCIAL_ROW_CLASS}>{body}</div>;
-  }
+function CommercialLinkedFields(props: {
+  contact: CommercialLinkTarget | null;
+  deal: CommercialLinkTarget | null;
+  order: CommercialLinkTarget | null;
+  productLink: CommercialLinkTarget | null;
+  credentialsHref: string;
+  sourcePageHref: string;
+  onOpenDeal: () => void;
+  onOpenOrder: () => void;
+}) {
+  const t = useTranslations('deliveryBoard');
+  const router = useRouter();
+  const relations = useEntityRelations();
+  const { contact } = props;
+  const rows = buildCommercialEntityRows({
+    deal: props.deal,
+    order: props.order,
+    productLink: props.productLink,
+    credentialsHref: props.credentialsHref,
+    labels: {
+      deal: t('commercial.deal'),
+      order: t('commercial.order'),
+      product: t('commercial.product'),
+      credentials: t('commercial.credentials'),
+    },
+    onOpenDeal: props.onOpenDeal,
+    onOpenOrder: props.onOpenOrder,
+    onOpenProduct: () => router.push(props.sourcePageHref),
+    onOpenCredentials: () => router.push(props.credentialsHref),
+  });
 
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className={cn(
-        COMMERCIAL_ROW_CLASS,
-        'hover:bg-muted/30 -mx-1 w-[calc(100%+0.5rem)] cursor-pointer rounded-lg px-1 text-left transition-colors',
+    <div className={COMMERCIAL_LINK_STACK_CLASS}>
+      {contact ? (
+        <CommercialEntityRow
+          label={t('commercial.client')}
+          entityKind="contact"
+          target={contact}
+          icon={User}
+          onOpen={() => relations.openEntity('contact', contact.id)}
+        />
+      ) : (
+        <p className="text-muted-foreground px-1 py-1 text-xs">{t('commercial.noClient')}</p>
       )}
-    >
-      {body}
-    </button>
+      {rows.map(({ key, ...row }) => (
+        <CommercialEntityRow key={key} {...row} />
+      ))}
+    </div>
   );
 }
 
-function CommercialNavLink({
-  href,
-  label,
-  icon,
+function CommercialNestedSheets({
+  dealId,
+  orderId,
+  dealOpen,
+  orderOpen,
+  onDealOpenChange,
+  onOrderOpenChange,
 }: {
-  href: string;
-  label: string;
-  icon: ReactNode;
+  dealId: string | null;
+  orderId: string | null;
+  dealOpen: boolean;
+  orderOpen: boolean;
+  onDealOpenChange: (open: boolean) => void;
+  onOrderOpenChange: (open: boolean) => void;
 }) {
   return (
-    <Link href={href} className={COMMERCIAL_ACTION_BTN_CLASS} title={label}>
-      <span className="inline-flex shrink-0">{icon}</span>
-      <span className="text-center leading-tight">{label}</span>
-    </Link>
-  );
-}
-
-function CommercialNavButton({
-  label,
-  icon,
-  onClick,
-  disabled,
-  title,
-}: {
-  label: string;
-  icon: ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
-  title?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      title={title ?? label}
-      className={cn(COMMERCIAL_ACTION_BTN_CLASS, disabled && 'pointer-events-none opacity-50')}
-    >
-      <span className="inline-flex shrink-0">{icon}</span>
-      <span className="text-center leading-tight">{label}</span>
-    </button>
+    <>
+      <EntityDealSheetDeepLink
+        dealId={dealOpen ? dealId : null}
+        open={dealOpen && Boolean(dealId)}
+        onOpenChange={onDealOpenChange}
+        forceNestedBackdrop
+      />
+      <OrderDetailSheet
+        orderId={orderOpen ? orderId : null}
+        open={orderOpen && Boolean(orderId)}
+        onOpenChange={onOrderOpenChange}
+        onCreateInvoice={() => undefined}
+        canQuickCreateInvoice={false}
+        forceNestedBackdrop
+      />
+    </>
   );
 }
 
@@ -138,145 +149,49 @@ export function DeliveryItemCommercialSection({
   kind,
   product,
   extension,
-  projectHubHref,
   sourcePageHref,
   credentialsTabHref,
   gateRequiredFields = new Set(),
 }: DeliveryItemCommercialSectionProps) {
   const t = useTranslations('deliveryBoard');
   const canViewDeal = useCanViewDeal();
-  const relations = useEntityRelations();
   const [dealSheetOpen, setDealSheetOpen] = useState(false);
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
-
-  const commercialGateClass =
+  const contact = resolveCommercialContact(kind, product, extension);
+  const deal = resolveCommercialDeal(kind, product, extension, canViewDeal);
+  const order = resolveCommercialOrder(kind, product, extension);
+  const productLink = resolveCommercialProduct(kind, product, extension);
+  const gateClass =
     gateRequiredFields.has('order') || gateRequiredFields.has('finance')
-      ? deliveryStageGateSectionClass(gateRequiredFields, 'order', 'rounded-xl')
+      ? deliveryStageGateSectionClass(gateRequiredFields, 'order')
       : undefined;
-  const project = kind === 'PRODUCT' ? product?.project : extension?.project;
-  const order = kind === 'PRODUCT' ? product?.order : extension?.order;
-  const deal = order?.deal;
-
-  const contact = project?.contact;
-  const company =
-    kind === 'PRODUCT'
-      ? (product?.company ?? project?.company)
-      : (extension?.product.company ?? project?.company);
-  const orderStatusMeta = order ? ORDER_STATUSES[order.status] : undefined;
-  // Delivery roles see the order, not the deal: the deal card is a CRM record.
-  const dealId = canViewDeal ? (deal?.id ?? null) : null;
-  const orderId = order?.id ?? null;
-  const dealButtonTitle = deal
-    ? t('commercial.openDeal', { title: getDealDisplayTitle(deal) })
-    : t('commercial.deal');
 
   return (
     <>
-      <section
-        className={cn(
-          'border-border bg-card rounded-xl border px-4 py-4 shadow-sm',
-          commercialGateClass,
-        )}
+      <InsightSheetSection
+        icon={<Handshake size={15} />}
+        title={t('commercial.title')}
+        hint={t('sheetHints.commercial')}
+        className={gateClass}
       >
-        <h3 className={cn(DETAIL_SHEET_SECTION_TITLE_CLASS, 'mb-3')}>
-          <Package size={13} aria-hidden />
-          {t('commercial.title')}
-        </h3>
-
-        <div className="flex flex-col gap-4">
-          <div className="min-w-0">
-            {contact ? (
-              <CommercialInfoRow
-                icon={<UserCircle size={16} aria-hidden />}
-                label={t('commercial.client')}
-                value={`${contact.firstName} ${contact.lastName}`.trim()}
-                onOpen={() => relations.openEntity('contact', contact.id)}
-              />
-            ) : (
-              <p className="text-muted-foreground border-border border-b py-3 text-xs">
-                {t('commercial.noClient')}
-              </p>
-            )}
-            {company ? (
-              <CommercialInfoRow
-                icon={<Building2 size={16} aria-hidden />}
-                label={t('commercial.company')}
-                value={company.name}
-                onOpen={() => relations.openEntity('company', company.id)}
-              />
-            ) : null}
-            {order ? (
-              <button
-                type="button"
-                onClick={() => setOrderSheetOpen(true)}
-                className={cn(
-                  COMMERCIAL_ROW_CLASS,
-                  'hover:bg-muted/30 -mx-1 w-[calc(100%+0.5rem)] cursor-pointer rounded-lg px-1 text-left transition-colors',
-                )}
-              >
-                <div className={cn(COMMERCIAL_ICON_WELL_CLASS, 'rounded-lg')}>
-                  <FileText size={16} aria-hidden />
-                </div>
-                <div className="min-w-0 flex-1 space-y-1.5">
-                  <p className="text-foreground truncate text-sm font-semibold tracking-tight">
-                    {getOrderDisplayTitle(order)}
-                  </p>
-                  <StatusBadge
-                    label={orderStatusLabel(order.status)}
-                    variant={orderStatusMeta?.variant ?? 'gray'}
-                  />
-                </div>
-                <ChevronRight
-                  className="text-muted-foreground size-4 shrink-0 opacity-70"
-                  aria-hidden
-                />
-              </button>
-            ) : null}
-          </div>
-
-          <nav className={COMMERCIAL_ACTIONS_GRID_CLASS} aria-label={t('commercial.linksAria')}>
-            {canViewDeal ? (
-              <CommercialNavButton
-                label={t('commercial.deal')}
-                icon={<FileText size={13} aria-hidden />}
-                onClick={() => setDealSheetOpen(true)}
-                disabled={!dealId}
-                title={dealButtonTitle}
-              />
-            ) : null}
-            <CommercialNavLink
-              href={projectHubHref}
-              label={t('commercial.project')}
-              icon={<FolderKanban size={13} aria-hidden />}
-            />
-            <CommercialNavLink
-              href={sourcePageHref}
-              label={t('commercial.product')}
-              icon={<Package size={13} aria-hidden />}
-            />
-            <CommercialNavLink
-              href={credentialsTabHref}
-              label={t('commercial.credentials')}
-              icon={<KeyRound size={13} aria-hidden />}
-            />
-          </nav>
-        </div>
-      </section>
-
-      <EntityDealSheetDeepLink
-        dealId={dealSheetOpen ? dealId : null}
-        open={dealSheetOpen && Boolean(dealId)}
-        onOpenChange={setDealSheetOpen}
-        forceNestedBackdrop
-      />
-
-      <OrderDetailSheet
-        orderId={orderSheetOpen ? orderId : null}
-        open={orderSheetOpen && Boolean(orderId)}
-        onOpenChange={setOrderSheetOpen}
-        onCreateInvoice={() => undefined}
-        canQuickCreateInvoice={false}
-        forceNestedBackdrop
+        <CommercialLinkedFields
+          contact={contact}
+          deal={deal}
+          order={order}
+          productLink={productLink}
+          credentialsHref={credentialsTabHref}
+          sourcePageHref={sourcePageHref}
+          onOpenDeal={() => setDealSheetOpen(true)}
+          onOpenOrder={() => setOrderSheetOpen(true)}
+        />
+      </InsightSheetSection>
+      <CommercialNestedSheets
+        dealId={deal?.id ?? null}
+        orderId={order?.id ?? null}
+        dealOpen={dealSheetOpen}
+        orderOpen={orderSheetOpen}
+        onDealOpenChange={setDealSheetOpen}
+        onOrderOpenChange={setOrderSheetOpen}
       />
     </>
   );

@@ -1,6 +1,7 @@
 'use client';
 
-import { Building2 } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Building2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/shared';
 import type { DepartmentItem } from '@/lib/api/employees';
@@ -10,16 +11,52 @@ export function FoundationMetric({
   label,
   value,
   helper,
+  icon,
 }: {
   label: string;
   value: number;
   helper: string;
+  icon: ReactNode;
 }) {
   return (
-    <div className="border-border bg-card rounded-2xl border p-5">
-      <p className="text-muted-foreground text-sm">{label}</p>
-      <p className="text-foreground mt-2 text-3xl font-semibold">{value}</p>
-      <p className="text-muted-foreground mt-1 text-xs">{helper}</p>
+    <div className="border-border bg-card flex min-w-0 flex-1 flex-col rounded-2xl border px-4 py-3.5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-muted-foreground text-xs font-medium">{label}</p>
+        <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+          {icon}
+        </div>
+      </div>
+      <p className="text-foreground mt-2 text-3xl font-semibold tracking-tight tabular-nums">
+        {value}
+      </p>
+      <p className="text-muted-foreground mt-1 text-xs leading-relaxed">{helper}</p>
+    </div>
+  );
+}
+
+export function CompanyStatCard({
+  icon,
+  label,
+  value,
+  helper,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  helper?: string;
+}) {
+  return (
+    <div className="border-border bg-card flex min-w-0 items-center gap-3 rounded-2xl border px-3.5 py-2.5">
+      <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-foreground flex items-baseline gap-2">
+          <span className="text-lg font-semibold tabular-nums">{value}</span>
+          <span className="truncate text-sm font-medium">{label}</span>
+        </p>
+        {helper ? <p className="text-muted-foreground truncate text-xs">{helper}</p> : null}
+      </div>
     </div>
   );
 }
@@ -27,25 +64,26 @@ export function FoundationMetric({
 export function DepartmentFoundationCard({ department }: { department: DepartmentItem }) {
   const t = useTranslations('hr');
   const memberCount = department._count?.members ?? 0;
+  const reportsTo = department.parent?.name
+    ? t('hub.foundation.reportsTo', { name: department.parent.name })
+    : t('hub.foundation.topLevel');
   return (
-    <div className="border-border rounded-xl border p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-foreground text-sm font-medium">{department.name}</p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            {department.parent?.name
-              ? t('hub.foundation.reportsTo', { name: department.parent.name })
-              : t('hub.foundation.topLevel')}
-          </p>
-        </div>
-        <StatusBadge
-          label={t('deptAdmin.membersCount', { count: memberCount })}
-          variant="default"
-        />
+    <div className="border-border bg-background flex min-w-0 items-center justify-between gap-2 rounded-xl border px-2.5 py-2">
+      <div className="min-w-0">
+        <p className="text-foreground truncate text-sm font-semibold">{department.name}</p>
+        <p className="text-muted-foreground truncate text-xs">{reportsTo}</p>
       </div>
-      {department.description ? (
-        <p className="text-muted-foreground mt-3 line-clamp-2 text-xs">{department.description}</p>
-      ) : null}
+      <div className="flex shrink-0 items-center gap-1.5">
+        <span className="bg-primary/10 text-primary flex size-6 items-center justify-center rounded-full">
+          <Users size={13} />
+        </span>
+        <span
+          className="text-foreground text-lg leading-none font-semibold tabular-nums"
+          aria-label={t('deptAdmin.membersCount', { count: memberCount })}
+        >
+          {memberCount}
+        </span>
+      </div>
     </div>
   );
 }

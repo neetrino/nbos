@@ -1,4 +1,8 @@
-import type { DeliveryCompensationRoleKey, DeliveryNormativeStatus } from '@nbos/shared';
+import type {
+  DeliveryCompensationRoleKey,
+  DeliveryNormativeStatus,
+  DeliveryRoleUnitKind,
+} from '@nbos/shared';
 import type { StatusVariant } from '@/components/shared';
 
 export const SECTION_CARD_CLASS =
@@ -79,14 +83,33 @@ export const NORMS_SHEET_FOOTER_CLASS = 'px-5 py-3';
 
 export const NORMS_LIST_GRID_CLASS = 'grid gap-3 lg:grid-cols-2';
 
-export const ROLE_UNITS_BREAKDOWN_CLASS = 'flex flex-col gap-3';
+export const ROLE_UNITS_BREAKDOWN_CLASS = 'flex flex-col gap-2';
 
-export const ROLE_UNIT_ROW_CLASS = 'flex items-center gap-2';
+export const ROLE_UNIT_ROW_CLASS =
+  'border-border bg-card flex items-center gap-2.5 rounded-xl border py-1.5 pr-1.5 pl-1.5 shadow-sm';
 
-export const ROLE_UNITS_INPUT_SHELL_CLASS = 'w-[4.75rem] shrink-0 px-2';
+export const ROLE_UNIT_AMOUNT_CLASS =
+  'bg-muted/50 flex h-11 w-[4.75rem] shrink-0 items-center rounded-xl px-1.5';
 
-export const ROLE_KIND_SHELL_CLASS =
-  'bg-muted hover:bg-muted/80 flex h-10 min-w-0 flex-1 items-center rounded-xl px-1';
+export const ROLE_UNIT_NAME_CLASS =
+  'text-foreground min-w-0 flex-1 truncate text-base font-semibold';
+
+export const ROLE_UNITS_INPUT_CLASS =
+  'text-foreground h-9 w-full bg-transparent text-center text-2xl font-semibold tabular-nums outline-none placeholder:text-muted-foreground/40 disabled:cursor-default';
+
+export const ROLE_UNIT_DIVIDER_CLASS = 'bg-border h-6 w-px shrink-0';
+
+export const ROLE_KIND_TRIGGER_CLASS = [
+  'h-8 w-[8.75rem] shrink-0 rounded-lg border-0 px-2.5 shadow-none',
+  'data-[size=sm]:h-8 data-[size=sm]:min-h-8 data-[size=sm]:rounded-lg',
+].join(' ');
+
+/** Soft status tint for the role-unit dropdown. */
+export const ROLE_KIND_TONE_CLASS: Record<DeliveryRoleUnitKind, string> = {
+  REQUIRED: 'bg-success/15 text-success hover:bg-success/20 [&_svg]:text-success',
+  OPTIONAL: 'bg-warning/25 text-foreground hover:bg-warning/35 [&_svg]:text-foreground',
+  NOT_REQUIRED: 'bg-muted text-muted-foreground hover:bg-muted [&_svg]:text-muted-foreground',
+};
 
 export const INCLUDED_PICKER_STACK_CLASS = 'space-y-8';
 

@@ -37,6 +37,8 @@ export type PageHeroNavLinkItem = {
   excludeMatchPrefix?: string;
   /** When true, active only on exact pathname match (e.g. module index route). */
   exactMatch?: boolean;
+  /** Active when the path is any of these routes or a child of them. */
+  matchHrefs?: readonly string[];
 };
 
 const EMPTY_MOBILE_DOCK_ITEMS: MobileDockItem[] = [];
@@ -58,6 +60,9 @@ function isNavItemActive(pathname: string, item: PageHeroNavLinkItem): boolean {
     item.excludeMatchPrefix !== undefined && pathname.startsWith(item.excludeMatchPrefix);
   if (excluded) return false;
   if (item.exactMatch) return pathname === item.href;
+  if (item.matchHrefs !== undefined) {
+    return item.matchHrefs.some((href) => pathname === href || pathname.startsWith(`${href}/`));
+  }
   return pathname === item.href || pathname.startsWith(`${prefix}/`);
 }
 

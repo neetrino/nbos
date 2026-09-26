@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Building2, Plus, Star, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -11,12 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DetailSheetSection } from '@/components/shared';
+import { InsightSheetSection } from '@/components/shared';
 import { TEAM_DEPT_ROLE_OPTIONS, isDeptRoleValue } from '@/features/hr/constants/team-directory';
-import {
-  TEAM_SHEET_BODY_CLASS,
-  TEAM_SHEET_SECTION_CLASS,
-} from '@/features/hr/constants/team-sheet-layout';
+import { TEAM_SHEET_BODY_CLASS } from '@/features/hr/constants/team-sheet-layout';
 import { employeesApi, type DepartmentItem, type Employee } from '@/lib/api/employees';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -100,35 +96,28 @@ export function EmployeeDepartmentsPanel({
 
   return (
     <div className={TEAM_SHEET_BODY_CLASS}>
-      <DetailSheetSection
+      <InsightSheetSection
+        icon={<Building2 size={15} />}
         title={t('departments.title')}
-        icon={<Building2 size={12} />}
-        className={TEAM_SHEET_SECTION_CLASS}
+        hint={t('departments.hint')}
       >
         {employee.departments.length === 0 ? (
           <p className="text-muted-foreground py-4 text-center text-sm">{t('departments.empty')}</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="flex flex-col gap-1">
             {employee.departments.map((ed) => (
-              <li
-                key={ed.id}
-                className="border-border bg-muted/30 flex items-center justify-between gap-2 rounded-lg border px-3 py-2"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <Building2 className="text-muted-foreground size-4 shrink-0" />
-                  <div>
-                    <p className="font-medium">{ed.department.name}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {isDeptRoleValue(ed.deptRole) ? t(`deptRole.${ed.deptRole}`) : ed.deptRole}
-                      </Badge>
-                      {ed.isPrimary && (
-                        <Badge variant="secondary" className="text-xs">
-                          {t('departments.primary')}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
+              <li key={ed.id} className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5">
+                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <Building2 size={14} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground truncate text-sm font-medium">
+                    {ed.department.name}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {isDeptRoleValue(ed.deptRole) ? t(`deptRole.${ed.deptRole}`) : ed.deptRole}
+                    {ed.isPrimary ? ` · ${t('departments.primary')}` : ''}
+                  </p>
                 </div>
                 {canEdit && (
                   <div className="flex shrink-0 items-center gap-1">
@@ -162,10 +151,14 @@ export function EmployeeDepartmentsPanel({
             ))}
           </ul>
         )}
-      </DetailSheetSection>
+      </InsightSheetSection>
 
       {canEdit && (
-        <div className="border-border rounded-lg border border-dashed p-3">
+        <InsightSheetSection
+          icon={<Plus size={15} />}
+          title={t('departments.add')}
+          hint={t('departments.addHint')}
+        >
           {!adding ? (
             <Button
               type="button"
@@ -233,7 +226,7 @@ export function EmployeeDepartmentsPanel({
               </div>
             </div>
           )}
-        </div>
+        </InsightSheetSection>
       )}
     </div>
   );

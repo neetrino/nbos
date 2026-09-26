@@ -54,11 +54,12 @@ export function DeliveryItemTeamSection({
 
   return (
     <DetailSheetCollapsibleSection
+      appearance="insight"
       title={t('team.title')}
-      icon={<User size={12} />}
+      hint={t('sheetHints.team')}
+      icon={<User size={15} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
-      className="shadow-sm"
     >
       <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2">
         {kind === 'PRODUCT' && productPlan ? (

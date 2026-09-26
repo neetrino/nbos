@@ -1,40 +1,44 @@
 'use client';
 
-import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { ClipboardList, Plus } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import {
   checklistTemplatesApi,
   type ChecklistTemplateListItem,
 } from '@/lib/api/checklist-templates';
 import { PermissionGate } from '@/lib/permissions';
 import { toast } from 'sonner';
+import { ChecklistTemplateCard } from './checklist-template-card';
+import { ChecklistTemplateSheet } from './checklist-template-sheet';
 
-function statusVariant(status: string): 'default' | 'green' | 'gray' | 'blue' | 'amber' | 'red' {
-  if (status === 'ACTIVE') {
-    return 'green';
-  }
-  if (status === 'ARCHIVED') {
-    return 'gray';
-  }
-  return 'blue';
-}
+const LIST_HREF = '/my-company/checklist-templates';
 
 export default function ChecklistTemplatesListPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground text-sm">Loading…</p>}>
+      <ChecklistTemplatesList />
+    </Suspense>
+  );
+}
+
+function ChecklistTemplatesList() {
+  const router = useRouter();
+  const search = useSearchParams();
+  const templateId = search.get('template');
+  const creating = search.get('create') === '1' && templateId == null;
   const [rows, setRows] = useState<ChecklistTemplateListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const sectionTabs = useCompanySectionTabs('checklists', undefined, 'below');
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await checklistTemplatesApi.list();
-      setRows(data ?? []);
+      setRows((await checklistTemplatesApi.list()) ?? []);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to load checklist templates';
-      toast.error(msg);
+      toast.error(err instanceof Error ? err.message : 'Failed to load checklist templates');
       setRows([]);
     } finally {
       setLoading(false);
@@ -45,69 +49,66 @@ export default function ChecklistTemplatesListPage() {
     void load();
   }, [load]);
 
-  return (
-    <div className="space-y-6">
-      <PageHero
-        title="Checklist templates"
-        trailing={
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/my-company/checklist-stage-rules"
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-            >
-              Stage rules
-            </Link>
-            <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
-              <Link
-                href="/my-company/checklist-templates/new"
-                className={cn(buttonVariants({ size: 'sm' }))}
-              >
-                <Plus className="mr-1 size-4" aria-hidden />
-                New template
-              </Link>
-            </PermissionGate>
-          </div>
-        }
-      />
-      <p className="text-muted-foreground text-sm">
-        Reusable SOP checklists with versioning. Publish creates the active snapshot for new
-        instances; drafts continue on a separate version.
-      </p>
+  const openTemplate = (id: string) => {
+    router.replace(`${LIST_HREF}?template=${id}`, { scroll: false });
+  };
 
-      <div className="border-border bg-card rounded-2xl border">
-        <div className="border-border flex items-center justify-between gap-2 border-b px-4 py-3">
-          <div className="text-muted-foreground flex items-center gap-2 text-sm">
-            <ClipboardList className="size-4" />
-            {loading ? 'Loading…' : `${rows.length} template(s)`}
-          </div>
-        </div>
-        <ul className="divide-border divide-y">
-          {rows.map((row) => (
-            <li key={row.id}>
-              <Link
-                href={`/my-company/checklist-templates/${row.id}`}
-                className="hover:bg-muted/40 flex flex-wrap items-center justify-between gap-3 px-4 py-3"
-              >
-                <div>
-                  <p className="font-medium">{row.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {row.category} · {row.ownerModule}
-                    {row.activeVersion
-                      ? ` · active v${row.activeVersion.versionNumber}`
-                      : ' · no published version'}
-                  </p>
-                </div>
-                <StatusBadge label={row.status} variant={statusVariant(row.status)} />
-              </Link>
-            </li>
-          ))}
-          {!loading && rows.length === 0 ? (
-            <li className="text-muted-foreground px-4 py-6 text-sm">
-              No templates yet. Create one to attach to Delivery requirements later.
-            </li>
-          ) : null}
-        </ul>
+  return (
+    <div className="flex flex-col gap-4">
+      {sectionTabs}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          Open a template to edit the steps, then publish it for delivery rules.
+        </p>
+        <PermissionGate module="CHECKLIST_TEMPLATES" action="ADD">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => router.replace(`${LIST_HREF}?create=1`, { scroll: false })}
+          >
+            <Plus className="size-4" aria-hidden />
+            New template
+          </Button>
+        </PermissionGate>
       </div>
+      <ChecklistTemplateList loading={loading} rows={rows} onOpen={openTemplate} />
+      <ChecklistTemplateSheet
+        open={creating || templateId != null}
+        creating={creating}
+        templateId={templateId}
+        onOpenChange={(open) => {
+          if (!open) router.replace(LIST_HREF, { scroll: false });
+        }}
+        onCreated={(row) => {
+          void load();
+          openTemplate(row.id);
+        }}
+        onChanged={() => void load()}
+        onDuplicated={(id) => {
+          void load();
+          openTemplate(id);
+        }}
+      />
     </div>
+  );
+}
+
+function ChecklistTemplateList({
+  loading,
+  rows,
+  onOpen,
+}: {
+  loading: boolean;
+  rows: ChecklistTemplateListItem[];
+  onOpen: (id: string) => void;
+}) {
+  if (loading) return <p className="text-muted-foreground text-sm">Loading…</p>;
+  if (rows.length === 0) return <p className="text-muted-foreground text-sm">No templates yet.</p>;
+  return (
+    <ul className="grid w-full grid-cols-2 items-stretch gap-3 xl:grid-cols-3 2xl:grid-cols-4">
+      {rows.map((row) => (
+        <ChecklistTemplateCard key={row.id} row={row} onOpen={onOpen} />
+      ))}
+    </ul>
   );
 }

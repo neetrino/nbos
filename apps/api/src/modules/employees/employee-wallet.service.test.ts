@@ -122,4 +122,24 @@ describe('EmployeeWalletService', () => {
     expect(snap.projectBreakdown[0].payoutState).toBe('PARTIAL');
     expect(snap.activity.some((a) => a.kind === 'BONUS_RELEASE')).toBe(true);
   });
+
+  it('prefers the active compensation profile salary over the employee column', async () => {
+    prisma.employee.findUnique.mockResolvedValue({
+      id: 'e1',
+      firstName: 'A',
+      lastName: 'B',
+      position: 'Dev',
+      level: 'MID',
+      baseSalary: new Decimal(1),
+      role: { name: 'Developer' },
+    });
+    prisma.compensationProfile.findFirst.mockResolvedValue({
+      baseSalary: new Decimal(250_000),
+    });
+    prisma.bonusEntry.findMany.mockResolvedValue([]);
+    prisma.salaryLine.findMany.mockResolvedValue([]);
+
+    const snap = await service.getWallet('e1');
+    expect(snap.employee.baseSalary).toBe('250000');
+  });
 });

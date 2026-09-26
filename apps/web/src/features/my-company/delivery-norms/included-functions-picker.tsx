@@ -24,6 +24,7 @@ export function IncludedFunctionsPicker({
   disabled,
   title,
   hideTitle,
+  hideHint,
   hint,
   emptyLabel,
   onChange,
@@ -33,6 +34,7 @@ export function IncludedFunctionsPicker({
   disabled?: boolean;
   title?: string;
   hideTitle?: boolean;
+  hideHint?: boolean;
   hint?: string;
   emptyLabel?: string;
   onChange: (next: string[]) => void;
@@ -53,7 +55,9 @@ export function IncludedFunctionsPicker({
         </h4>
       )}
       <fieldset className="contents" disabled={disabled}>
-        <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
+        {hideHint ? null : (
+          <p className="text-muted-foreground text-xs">{hint ?? t('includedFunctions.hint')}</p>
+        )}
         <IncludedAddSearch
           options={addOptions}
           disabled={disabled}

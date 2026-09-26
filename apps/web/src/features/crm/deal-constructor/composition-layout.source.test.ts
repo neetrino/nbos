@@ -33,9 +33,21 @@ describe('composition and catalog layout', () => {
     expect(card).not.toContain('selected || alreadyAdded');
     expect(card).toContain('onRemove');
     expect(section).toContain('alreadyAddedIds: selectedIds');
+    const deliveryCard = readFileSync(
+      path.join(
+        process.cwd(),
+        'apps/web/src/features/projects/components/delivery-board/delivery-item-composition-section.tsx',
+      ),
+      'utf8',
+    );
     expect(dealCard).toContain('COMPOSITION_DEAL_METRIC_UNITS_CLASS');
+    expect(dealCard).toContain('hideMoney');
     expect(dealCard).not.toContain('saleUnknown');
     expect(dealCard).not.toContain('coreTitle');
+    expect(deliveryCard).toContain('hideMoney');
+    expect(deliveryCard).toContain('ProductFunctionsComposition');
+    expect(deliveryCard).toContain('DeliveryCompositionLegacyPanel');
+    expect(deliveryCard).toContain('canAdd');
     expect(browser).toContain('belowSearch');
     expect(chips).toContain('FUNCTION_CATALOG_COLLECTION_CHIP_CLASS');
   });

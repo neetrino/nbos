@@ -1,13 +1,71 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { ClipboardList, BookOpenText, RefreshCw } from 'lucide-react';
-import { PageHero, StatusBadge } from '@/components/shared';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { BookOpenText, ClipboardList, RefreshCw } from 'lucide-react';
+import { StatusBadge, useModuleHeroSlots } from '@/components/shared';
 import { Button } from '@/components/ui/button';
+import { CompanyStatCard } from '@/features/hr/components/MyCompanyHubCards';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 
 const SOP_REVIEW_DUE_DAYS = 30;
+
+function SopLibrary({ docs, loading }: { docs: DocumentListItem[]; loading: boolean }) {
+  return (
+    <section className="border-border bg-card relative overflow-hidden rounded-2xl border p-4">
+      <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
+      <div className="relative flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+            <BookOpenText size={15} />
+          </div>
+          <h2 className="text-foreground text-sm font-semibold">SOP library</h2>
+        </div>
+        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+          {loading ? '…' : docs.length}
+        </span>
+      </div>
+      {loading ? (
+        <p className="text-muted-foreground relative mt-3 text-xs">Loading…</p>
+      ) : docs.length === 0 ? (
+        <p className="text-muted-foreground relative mt-3 text-xs">
+          No SOP documents yet. Create them in Documents.
+        </p>
+      ) : (
+        <ul className="relative mt-3 flex flex-col gap-1">
+          {docs.map((row) => (
+            <SopLibraryRow key={row.id} row={row} />
+          ))}
+        </ul>
+      )}
+      <div className="relative mt-3 flex flex-wrap gap-2">
+        <Link href="/documents" className="text-primary text-xs font-medium">
+          Open Documents
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function SopLibraryRow({ row }: { row: DocumentListItem }) {
+  const ageDays = daysFromNow(row.updatedAt);
+  const inQueue = ageDays >= SOP_REVIEW_DUE_DAYS;
+  return (
+    <li className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5">
+      <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+        {row.title.slice(0, 2).toUpperCase()}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-foreground truncate text-sm font-medium">{row.title}</p>
+        <p className="text-muted-foreground truncate text-xs">
+          {row.section?.name ?? 'No section'} · {new Date(row.updatedAt).toLocaleDateString()}
+        </p>
+      </div>
+      <StatusBadge label={row.status} variant={row.status === 'PUBLISHED' ? 'green' : 'gray'} />
+      <StatusBadge label={inQueue ? 'Review due' : 'Fresh'} variant={inQueue ? 'amber' : 'blue'} />
+    </li>
+  );
+}
 
 function daysFromNow(iso: string): number {
   const now = new Date();
@@ -20,7 +78,7 @@ export default function SopPage() {
   const [docs, setDocs] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [sectionRows, documentRows] = await Promise.all([
@@ -32,149 +90,59 @@ export default function SopPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   const reviewQueue = useMemo(
     () => docs.filter((row) => row.updatedAt && daysFromNow(row.updatedAt) >= SOP_REVIEW_DUE_DAYS),
     [docs],
   );
 
+  const trailing = useMemo(
+    () => (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => void load()}
+        disabled={loading}
+      >
+        <RefreshCw size={14} aria-hidden />
+        Refresh
+      </Button>
+    ),
+    [load, loading],
+  );
+  const slots = useMemo(() => ({ trailing }), [trailing]);
+  useModuleHeroSlots(slots);
+
   return (
-    <div className="space-y-6">
-      <PageHero
-        title="SOP & Templates"
-        trailing={
-          <Button type="button" variant="outline" size="sm" onClick={() => void load()}>
-            <RefreshCw size={14} aria-hidden />
-            Refresh
-          </Button>
-        }
-      />
-      <p className="text-muted-foreground text-sm">
-        Operational SOP runtime library linked with Documents: review queue, section coverage, and
-        process ownership references.
-      </p>
-
-      <div className="grid gap-3 md:grid-cols-3">
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <BookOpenText size={16} />
-            SOP-like documents
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{docs.length}</p>
-          <p className="text-muted-foreground text-xs">
-            Search: &quot;sop&quot; in Documents module
-          </p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <ClipboardList size={16} />
-            Review queue
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{reviewQueue.length}</p>
-          <p className="text-muted-foreground text-xs">{`Older than ${SOP_REVIEW_DUE_DAYS} days`}</p>
-        </div>
-        <div className="border-border bg-card rounded-2xl border p-4">
-          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-sm">
-            <BookOpenText size={16} />
-            Document sections
-          </div>
-          <p className="text-foreground text-2xl font-semibold">{sections.length}</p>
-          <p className="text-muted-foreground text-xs">SOP coverage by sections/ownership</p>
-        </div>
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <CompanyStatCard
+          icon={<BookOpenText size={16} aria-hidden />}
+          label="SOP documents"
+          value={String(docs.length)}
+          helper="Search “sop” in Documents"
+        />
+        <CompanyStatCard
+          icon={<ClipboardList size={16} aria-hidden />}
+          label="Review queue"
+          value={String(reviewQueue.length)}
+          helper={`Older than ${SOP_REVIEW_DUE_DAYS} days`}
+        />
+        <CompanyStatCard
+          icon={<BookOpenText size={16} aria-hidden />}
+          label="Sections"
+          value={String(sections.length)}
+          helper="Coverage by ownership"
+        />
       </div>
 
-      <div className="border-border bg-card rounded-2xl border p-4">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <StatusBadge label="Runtime slice" variant="blue" />
-          <p className="text-muted-foreground text-sm">
-            Process Templates / Runs persistence remains a deeper phase; this screen now provides
-            live SOP library and review queue using Documents data.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <Link
-            href="/my-company/checklist-templates"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Checklist Template Builder
-          </Link>
-          <Link
-            href="/documents"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Open Documents Library
-          </Link>
-          <Link
-            href="/tasks"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Open Tasks (for process runs)
-          </Link>
-          <Link
-            href="/my-company/team"
-            className="border-border hover:bg-muted rounded-lg border px-3 py-1.5"
-          >
-            Open Team Ownership
-          </Link>
-        </div>
-      </div>
-
-      <div className="border-border bg-card overflow-hidden rounded-2xl border">
-        <div className="border-border flex items-center justify-between border-b px-4 py-3">
-          <h2 className="text-sm font-semibold">SOP Library (search: &quot;sop&quot;)</h2>
-          {loading ? <span className="text-muted-foreground text-xs">Loading…</span> : null}
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted/40 text-muted-foreground">
-              <tr>
-                <th className="px-4 py-2 text-left">Title</th>
-                <th className="px-4 py-2 text-left">Section</th>
-                <th className="px-4 py-2 text-left">Status</th>
-                <th className="px-4 py-2 text-left">Updated</th>
-                <th className="px-4 py-2 text-left">Review</th>
-              </tr>
-            </thead>
-            <tbody>
-              {docs.map((row) => {
-                const ageDays = daysFromNow(row.updatedAt);
-                const inQueue = ageDays >= SOP_REVIEW_DUE_DAYS;
-                return (
-                  <tr key={row.id} className="border-border border-t">
-                    <td className="px-4 py-2">{row.title}</td>
-                    <td className="px-4 py-2">{row.section?.name ?? '—'}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge
-                        label={row.status}
-                        variant={row.status === 'PUBLISHED' ? 'green' : 'gray'}
-                      />
-                    </td>
-                    <td className="px-4 py-2">{new Date(row.updatedAt).toLocaleDateString()}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge
-                        label={inQueue ? 'Review due' : 'Fresh'}
-                        variant={inQueue ? 'amber' : 'blue'}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-              {!loading && docs.length === 0 ? (
-                <tr>
-                  <td className="text-muted-foreground px-4 py-6 text-center" colSpan={5}>
-                    No SOP-like documents found. Create SOP docs in Documents section.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <SopLibrary docs={docs} loading={loading} />
     </div>
   );
 }

@@ -94,8 +94,9 @@ export class EmployeeWalletService {
       fetchWalletActivity(this.prisma, employeeId),
     ]);
     const nextLine = pickNextOpenPayrollSalaryLine(salaryRows);
+    const profileSalary = await this.loadActiveProfileSalary(employeeId);
     return {
-      employee: this.toEmployeeBlock(employee),
+      employee: this.toEmployeeBlock(employee, profileSalary),
       bonuses: this.mapBonusRows(bonusRows, rollups, poolByOrder),
       nextPayroll: this.mapNextPayroll(nextLine),
       projectBreakdown: buildEmployeeWalletProjectBreakdown(
@@ -158,22 +159,35 @@ export class EmployeeWalletService {
     ]);
   }
 
-  private toEmployeeBlock(employee: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    position: string | null;
-    level: string | null;
-    baseSalary: Decimal | null;
-    role: { name: string };
-  }) {
+  private async loadActiveProfileSalary(employeeId: string): Promise<Decimal | null> {
+    const row = await this.prisma.compensationProfile.findFirst({
+      where: { employeeId, status: 'ACTIVE' },
+      orderBy: { effectiveFrom: 'desc' },
+      select: { baseSalary: true },
+    });
+    return row?.baseSalary ?? null;
+  }
+
+  private toEmployeeBlock(
+    employee: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      position: string | null;
+      level: string | null;
+      baseSalary: Decimal | null;
+      role: { name: string };
+    },
+    profileSalary: Decimal | null,
+  ) {
+    const salary = profileSalary ?? employee.baseSalary;
     return {
       id: employee.id,
       firstName: employee.firstName,
       lastName: employee.lastName,
       position: employee.position,
       level: employee.level,
-      baseSalary: employee.baseSalary?.toString() ?? null,
+      baseSalary: salary?.toString() ?? null,
       roleName: employee.role.name,
     };
   }

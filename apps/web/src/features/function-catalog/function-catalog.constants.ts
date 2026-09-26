@@ -8,7 +8,7 @@ export const FUNCTION_CATALOG_OTHER_ID = 'other' as const;
 export const FUNCTION_CATALOG_RAIL_GRID_CLASS = 'grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]';
 
 export const FUNCTION_CATALOG_CARD_GRID_CLASS =
-  'grid w-full content-start grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3';
+  'grid w-full min-w-0 content-start grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0';
 
 export const FUNCTION_CATALOG_SHEET_CARD_GRID_CLASS =
   'grid w-full auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';

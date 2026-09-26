@@ -134,6 +134,15 @@
     "checklistDetailFull": "{completedChecklists}/{totalChecklists} готово, {reviewed}/{total} проверено",
     "checklistDetailReviewed": "{reviewed}/{total} проверено"
   },
+  "sheetHints": {
+    "plan": "Срок, продукт и заметки, по которым работает команда.",
+    "extension": "Что делает это расширение и к какому сроку.",
+    "access": "Доступы, без которых продукт не запускается.",
+    "team": "Кто ведёт поставку и кто её продал.",
+    "files": "Оффер, договор и файлы этой поставки.",
+    "readiness": "Что ещё должно быть готово до следующего этапа.",
+    "commercial": "Клиент, сделка и заказ этой поставки."
+  },
   "plan": {
     "deliveryTitle": "План поставки",
     "extensionTitle": "План Extension",
@@ -159,6 +168,7 @@
     "title": "Клиент и заказ",
     "client": "Клиент",
     "company": "Компания",
+    "order": "Заказ",
     "deal": "Сделка",
     "project": "Проект",
     "product": "Продукт",

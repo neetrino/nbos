@@ -44,6 +44,13 @@ export class CompensationProfilesController {
     return this.service.activate(id, { approvedById: body.approvedById ?? null });
   }
 
+  @Get('compensation-profile-summaries')
+  @RequirePermission('COMPANY', 'VIEW')
+  @ApiOperation({ summary: 'Active minimum salary and bonus/KPI rules per employee' })
+  listActive() {
+    return this.service.listActiveSummaries();
+  }
+
   @Get('compensation-profiles/:id')
   @RequirePermission('COMPANY', 'VIEW')
   @ApiOperation({ summary: 'Get compensation profile by id' })

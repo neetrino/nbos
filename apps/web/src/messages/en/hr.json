@@ -34,12 +34,17 @@
     "phone": "Phone",
     "sipId": "SIP ID",
     "telegram": "Telegram",
-    "employment": "Employment"
+    "employment": "Employment",
+    "profileHint": "Name, birthday, level, and the job title shown on the team.",
+    "contactsHint": "How to reach this person at work.",
+    "employmentHint": "Status, start date, and the role that controls access."
   },
   "employment": {
     "status": "Status",
     "hireDate": "Hire date",
-    "platformRole": "Platform role"
+    "platformRole": "Platform role",
+    "salaryHint": "Minimum salary and bonus rules are set separately.",
+    "salaryLink": "Set salary"
   },
   "sheet": {
     "loading": "Loading…",
@@ -61,6 +66,8 @@
     "photoTooLarge": "Photo must be at most 2 MB."
   },
   "securityAdmin": {
+    "sectionTitle": "Account access",
+    "sectionHint": "The employee sets their own password. You can send a reset link or end sessions.",
     "resetLinkTitle": "Password reset link",
     "resetLinkDescription": "Send the standard reset email to {email}. The employee chooses the new password; nobody else sees it.",
     "resetLinkAction": "Send link",
@@ -81,6 +88,8 @@
   },
   "departments": {
     "title": "Department assignments",
+    "hint": "Where this person sits, and which department is primary.",
+    "addHint": "Choose a department and the role inside it.",
     "empty": "No departments assigned yet",
     "primary": "Primary",
     "setPrimaryAria": "Set as primary",
@@ -203,6 +212,8 @@
   },
   "create": {
     "title": "Add employee",
+    "personHint": "The name and how they sign in.",
+    "placeHint": "Role, level, department, and job title.",
     "description": "Create a profile, then copy the one-time link so they can set a password.",
     "metaFailed": "Could not load roles or departments",
     "workEmail": "Work email",
@@ -369,7 +380,68 @@
     "team": "Team",
     "departments": "Departments",
     "rolesSeats": "Roles & Seats",
+    "salaries": "Salaries",
+    "bonus": "Bonus",
+    "bonusPolicies": "Bonus policies",
+    "salesBonus": "Sales rates",
+    "kpi": "KPI",
+    "kpiScorecard": "Scorecard",
+    "kpiGate": "KPI gate",
+    "checklists": "Checklists",
+    "checklistTemplates": "Templates",
+    "checklistRules": "Delivery rules",
+    "sop": "SOP",
+    "subtabsAria": "Section pages",
     "coreFunction": "Core & Function"
+  },
+  "salaries": {
+    "search": "Search people",
+    "all": "All",
+    "missing": "Salary not set",
+    "set": "Salary set",
+    "notSet": "Not set",
+    "bonusOff": "No bonus rule",
+    "kpiOff": "No KPI",
+    "emptyTitle": "No people",
+    "emptyDescription": "No employees match this search.",
+    "sheetHint": "Minimum salary plus the bonus rule. KPI only for sales.",
+    "activate": "Activate",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirmSave": "Activate now",
+    "confirmTitle": "Activate the new salary?",
+    "confirmBody": "The new salary and bonus rule become active immediately. Previous versions stay in History.",
+    "invalidSalary": "Enter a valid minimum salary.",
+    "saveFailed": "Could not save the salary.",
+    "tabGeneral": "Salary",
+    "tabHistory": "History",
+    "noHistory": "No salary changes yet.",
+    "historyFrom": "From {date}",
+    "sectionSalary": "Minimum salary",
+    "sectionBonus": "Bonus and KPI",
+    "amount": "Amount",
+    "effectiveFrom": "Effective from",
+    "bonusRule": "Bonus rule",
+    "kpiGate": "KPI",
+    "none": "None",
+    "scorecard": "Scorecard: {metrics}",
+    "activeSalary": "Active salary: {amount}",
+    "activeKpi": "Active KPI: {name}",
+    "activeBonus": "Active bonus: {name}",
+    "salesKpiHint": "Sales bonuses are not scaled until you attach a KPI gate.",
+    "salesHintBefore": "Percentages are edited under",
+    "salesHintLink": "Sales bonus policies",
+    "deliveryHint": "Delivery bonuses release when the product is Done and payments fund the pool. Leave KPI empty for developers.",
+    "manualHint": "No automatic accrual. Bonuses are created manually in Finance.",
+    "plannedHint": "Create bonus entries on Finance → Bonus board. Automated accrual is not wired yet.",
+    "status": {
+      "DRAFT": "Draft",
+      "REVIEW": "Review",
+      "ACTIVE": "Active",
+      "ARCHIVED": "Archived"
+    },
+    "loadFailed": "Could not load salaries.",
+    "counts": "{configured} of {total} have a salary"
   },
   "functionCatalog": {
     "title": "Function catalog",
@@ -438,9 +510,13 @@
     "pricingHidden": "Pricing is available only to Owner and CEO.",
     "normativeMissing": "Normative not configured",
     "ratesTitle": "Delivery role rates",
-    "ratesSubtitle": "Same-role AMD tariffs. Employee salary is never used.",
+    "ratesSubtitle": "AMD per unit for delivery bonuses. This is not an employee's minimum salary.",
     "profilesTitle": "Delivery base profiles",
     "legacySkip": "This product stays on the previous delivery model until Owner adopts v2.",
+    "adoptV2": "Adopt v2 composition",
+    "adoptingV2": "Adopting…",
+    "adoptFailed": "Could not adopt v2 composition.",
+    "adoptNeedsOrder": "Link an order before adopting v2.",
     "includedBadge": "Included in base",
     "readiness": {
       "CONFIGURATION_INCOMPLETE": "Finish function setup and confirm scope before Development.",
@@ -1038,7 +1114,7 @@
       "title": "Foundation guardrails",
       "subtitle": "These are intentionally explicit so Finance, KPI and RBAC do not rely on incomplete data.",
       "seats": "Business seats are separate from technical roles, with source-aware access grants.",
-      "compensation": "Compensation, KPI and bonus policies are visible as module areas but not payroll sources yet.",
+      "compensation": "Minimum salary is set under Salaries. Payroll reads the active profile. KPI scales sales bonuses only.",
       "orgChart": "The Departments org chart uses explicit seat assignments with zoom, search, collapse, and a member drawer."
     },
     "recent": {
@@ -1060,36 +1136,24 @@
         "description": "Business seats and accountabilities, separated from technical permissions."
       },
       "compensation": {
-        "title": "Compensation",
-        "description": "Compensation profiles, bonus policies, and payroll-facing rules."
+        "title": "Salaries",
+        "description": "Minimum salary for each employee, plus the bonus rule. KPI only for sales."
       },
-      "bonusPolicies": {
-        "title": "Bonus policies",
-        "description": "Bonus rule bundles (sales, delivery, manual) for compensation profiles."
-      },
-      "salesBonus": {
-        "title": "Sales bonus policies",
-        "description": "Seller and assistant rates by From category and Classic vs subscription first invoice."
+      "bonus": {
+        "title": "Bonus",
+        "description": "Bonus rule bundles, plus seller and assistant rates for sales."
       },
       "kpi": {
-        "title": "KPI / Scorecard",
-        "description": "Company, department, and employee KPI policies and scorecards."
-      },
-      "kpiGate": {
-        "title": "KPI gate policies",
-        "description": "Attainment thresholds and payout % for payroll (linked via compensation profiles)."
+        "title": "KPI",
+        "description": "Scorecard signals and the attainment thresholds that scale a sales bonus."
       },
       "sop": {
         "title": "SOP & Templates",
         "description": "SOP documents, process templates, and operational runs."
       },
       "checklists": {
-        "title": "Checklist templates",
-        "description": "Versioned checklist builders for delivery, QA, maintenance, and SOP."
-      },
-      "checklistRules": {
-        "title": "Delivery checklist rules",
-        "description": "Bind published templates to Product / Extension stages; instances on stage entry."
+        "title": "Checklists",
+        "description": "Checklist templates, and the delivery rules that create them when a stage starts."
       }
     }
   }

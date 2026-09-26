@@ -1,15 +1,8 @@
 'use client';
 
+import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import type { KpiGateBandDraft } from './kpi-gate-band-utils';
 
 export function KpiGateBandEditor({
@@ -25,72 +18,108 @@ export function KpiGateBandEditor({
     onChange(bands.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   };
 
-  const addRow = () => {
-    onChange([...bands, { minAttainmentPct: '0', payoutPercent: '0' }]);
-  };
-
-  const removeRow = (index: number) => {
-    if (bands.length <= 1) {
-      return;
-    }
-    onChange(bands.filter((_, i) => i !== index));
-  };
-
   return (
     <div className="space-y-2">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Min attainment %</TableHead>
-            <TableHead>Payout %</TableHead>
-            <TableHead className="w-[4rem]" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {bands.map((row, index) => (
-            <TableRow key={`band-${index}`}>
-              <TableCell>
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={row.minAttainmentPct}
-                  disabled={disabled}
-                  onChange={(e) => updateRow(index, { minAttainmentPct: e.target.value })}
-                />
-              </TableCell>
-              <TableCell>
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={row.payoutPercent}
-                  disabled={disabled}
-                  onChange={(e) => updateRow(index, { payoutPercent: e.target.value })}
-                />
-              </TableCell>
-              <TableCell>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={disabled || bands.length <= 1}
-                  onClick={() => removeRow(index)}
-                >
-                  Remove
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={addRow}>
-        Add band
+      <ul className="flex flex-col gap-1">
+        {bands.map((row, index) => (
+          <BandStep
+            key={`band-${index}`}
+            index={index}
+            row={row}
+            disabled={disabled}
+            canRemove={bands.length > 1}
+            onPatch={(patch) => updateRow(index, patch)}
+            onRemove={() => onChange(bands.filter((_, i) => i !== index))}
+          />
+        ))}
+      </ul>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={disabled}
+        onClick={() => onChange([...bands, { minAttainmentPct: '0', payoutPercent: '0' }])}
+      >
+        <Plus size={14} />
+        Add step
       </Button>
-      <p className="text-muted-foreground text-xs leading-snug">
-        Evaluated top-down: first band where plan attainment % is ≥ min applies. Used at payroll
-        attach for SALES bonuses when this policy is on the employee compensation profile.
-      </p>
     </div>
+  );
+}
+
+function BandStep({
+  index,
+  row,
+  disabled,
+  canRemove,
+  onPatch,
+  onRemove,
+}: {
+  index: number;
+  row: KpiGateBandDraft;
+  disabled?: boolean;
+  canRemove: boolean;
+  onPatch: (patch: Partial<KpiGateBandDraft>) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <li className="flex items-end gap-2 rounded-xl px-1 py-1.5">
+      <span className="text-primary mb-2 w-6 shrink-0 text-xs font-semibold tabular-nums">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <PercentStepField
+        label="Result at least"
+        value={row.minAttainmentPct}
+        disabled={disabled}
+        onChange={(minAttainmentPct) => onPatch({ minAttainmentPct })}
+      />
+      <PercentStepField
+        label="Bonus pays"
+        value={row.payoutPercent}
+        disabled={disabled}
+        onChange={(payoutPercent) => onPatch({ payoutPercent })}
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="mb-0.5 shrink-0"
+        disabled={disabled || !canRemove}
+        aria-label={`Remove step ${index + 1}`}
+        onClick={onRemove}
+      >
+        <Trash2 size={14} />
+      </Button>
+    </li>
+  );
+}
+
+function PercentStepField({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="min-w-0 flex-1 space-y-1">
+      <span className="text-muted-foreground block text-[11px] font-medium">{label}</span>
+      <span className="flex items-center gap-1">
+        <Input
+          type="number"
+          min={0}
+          max={100}
+          className="h-8"
+          value={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+        />
+        <span className="text-muted-foreground text-xs">%</span>
+      </span>
+    </label>
   );
 }

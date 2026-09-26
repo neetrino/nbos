@@ -297,6 +297,35 @@ export const RELATION_PICKER_CHIP_SHELL_CLASS = [
   'flex h-10 w-full min-w-0 items-center gap-1 rounded-xl pl-3.5 pr-1.5 text-sm',
 ].join(' ');
 
+/**
+ * Employee / contact chip — no left padding; outline is a fading stroke
+ * (not a closed box). Pair with {@link RELATION_PICKER_PERSON_CHIP_AVATAR_CLASS}.
+ * Mask: invisible at the avatar, fully visible from ~40% of the width (past mid-name).
+ */
+export const RELATION_PICKER_PERSON_CHIP_SHELL_CLASS = [
+  DETAIL_SHEET_FIELD_SHELL_GROUP_CLASS,
+  'relative flex h-10 w-full min-w-0 items-center gap-1 overflow-visible rounded-xl py-0 pl-0 pr-1.5 text-sm',
+  'bg-transparent shadow-none transition-[background-color,box-shadow]',
+  'hover:bg-sky-50 dark:hover:bg-sky-950/40',
+  'focus-within:bg-sky-50 dark:focus-within:bg-sky-950/40',
+  'active:bg-sky-50 dark:active:bg-sky-950/40',
+  "after:pointer-events-none after:absolute after:inset-0 after:rounded-xl after:border after:border-border/60 after:content-['']",
+  'after:transition-[border-color]',
+  'hover:after:border-border/70 focus-within:after:border-border/70',
+  'after:[mask-image:linear-gradient(to_right,transparent_0,transparent_2.25rem,black_40%,black_100%)]',
+  'after:[-webkit-mask-image:linear-gradient(to_right,transparent_0,transparent_2.25rem,black_40%,black_100%)]',
+].join(' ');
+
+/**
+ * Flush-left person avatar (size-9). Sky ring on hover/focus/press matches
+ * departments person rows (`ORG_PERSON_AVATAR_WRAP_CLASS`).
+ */
+export const RELATION_PICKER_PERSON_CHIP_AVATAR_CLASS = [
+  'relative z-[1] size-9 shrink-0 rounded-full after:hidden',
+  'ring-2 ring-transparent transition-[box-shadow]',
+  'group-hover/open:ring-sky-400 group-focus-within/open:ring-sky-400 group-active/open:ring-sky-400',
+].join(' ');
+
 /** Vertical stack for multi-select relation chips (symmetric full-width rows). */
 export const RELATION_PICKER_CHIP_STACK_CLASS = 'flex w-full flex-col gap-2';
 

@@ -1,21 +1,22 @@
 'use client';
 
+import Link from 'next/link';
 import { Building2, Calendar, Mail, Phone, Send, User } from 'lucide-react';
 import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
   DetailSheetOptionalDescription,
-  DetailSheetSection,
   InlineField,
+  InsightSheetSection,
 } from '@/components/shared';
 import { EMPLOYEE_LEVELS, EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
 import {
   TEAM_SHEET_BODY_CLASS,
   TEAM_SHEET_FIELD_GRID_CLASS,
-  TEAM_SHEET_SECTION_CLASS,
 } from '@/features/hr/constants/team-sheet-layout';
 import type { RoleItem } from '@/lib/api/employees';
 import type { EmployeeGeneralDraft } from './employee-general-form-state';
 import { useTranslations } from 'next-intl';
+import { usePermission } from '@/lib/permissions';
 
 export interface EmployeeSheetScrollBodyProps {
   employeeId: string;
@@ -43,6 +44,8 @@ export function EmployeeSheetScrollBody({
   const tStatus = useTranslations('hr.status');
   const tLevel = useTranslations('hr.level');
   const tForms = useTranslations('forms');
+  const { can } = usePermission();
+  const canSetSalary = can('VIEW', 'FINANCE_SALARY');
   const levelOptions = EMPLOYEE_LEVELS.map((l) => ({
     value: l.value,
     label: tLevel(l.value),
@@ -62,11 +65,7 @@ export function EmployeeSheetScrollBody({
         </p>
       ) : null}
 
-      <DetailSheetSection
-        title={t('profile')}
-        icon={<User size={12} />}
-        className={TEAM_SHEET_SECTION_CLASS}
-      >
+      <InsightSheetSection icon={<User size={15} />} title={t('profile')} hint={t('profileHint')}>
         <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
@@ -119,13 +118,9 @@ export function EmployeeSheetScrollBody({
             onValueChange={(v) => patchDraft({ position: v })}
           />
         </div>
-      </DetailSheetSection>
+      </InsightSheetSection>
 
-      <DetailSheetSection
-        title={t('contacts')}
-        icon={<Mail size={12} />}
-        className={TEAM_SHEET_SECTION_CLASS}
-      >
+      <InsightSheetSection icon={<Mail size={15} />} title={t('contacts')} hint={t('contactsHint')}>
         <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
             variant="controlled"
@@ -170,12 +165,12 @@ export function EmployeeSheetScrollBody({
             onValueChange={(v) => patchDraft({ telegram: v })}
           />
         </div>
-      </DetailSheetSection>
+      </InsightSheetSection>
 
-      <DetailSheetSection
+      <InsightSheetSection
+        icon={<Calendar size={15} />}
         title={t('employment')}
-        icon={<Calendar size={12} />}
-        className={TEAM_SHEET_SECTION_CLASS}
+        hint={t('employmentHint')}
       >
         <div className={TEAM_SHEET_FIELD_GRID_CLASS}>
           <InlineField
@@ -208,7 +203,18 @@ export function EmployeeSheetScrollBody({
             onValueChange={(v) => patchDraft({ roleId: v ?? draft.roleId })}
           />
         </div>
-      </DetailSheetSection>
+        {canSetSalary ? (
+          <p className="text-muted-foreground text-sm">
+            {tEmp('salaryHint')}{' '}
+            <Link
+              href={`/my-company/compensation?employee=${employeeId}`}
+              className="text-primary font-medium hover:underline"
+            >
+              {tEmp('salaryLink')}
+            </Link>
+          </p>
+        ) : null}
+      </InsightSheetSection>
 
       <DetailSheetOptionalDescription
         entityType="generic"

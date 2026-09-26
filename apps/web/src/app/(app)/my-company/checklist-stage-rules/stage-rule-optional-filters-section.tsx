@@ -1,18 +1,9 @@
 'use client';
 
-import { Filter } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { InlineField } from '@/components/shared';
 import { PRODUCT_CATEGORIES, PRODUCT_TYPES } from '@/features/projects/constants/projects';
 import type { DeliveryChecklistTarget } from '@/lib/api/checklist-templates';
-import { FILTER_ANY, SELECT_TRIGGER_FORM } from './delivery-stage-rule-options';
-import { selectOptionLabel } from './stage-rules-select-helpers';
+import { FILTER_ANY } from './delivery-stage-rule-options';
 
 type Props = {
   target: DeliveryChecklistTarget;
@@ -36,29 +27,14 @@ function RuleFilterSelect({
   options: readonly { value: string; label: string }[];
 }) {
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <Select
-        value={value}
-        onValueChange={(next) => {
-          if (next) onChange(next);
-        }}
-      >
-        <SelectTrigger className={SELECT_TRIGGER_FORM}>
-          <SelectValue>
-            {(current: string | null) => selectOptionLabel(current, options, FILTER_ANY) ?? null}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={FILTER_ANY}>{anyLabel}</SelectItem>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <InlineField
+      variant="controlled"
+      type="select"
+      label={label}
+      value={value}
+      options={[{ value: FILTER_ANY, label: anyLabel }, ...options]}
+      onValueChange={onChange}
+    />
   );
 }
 
@@ -97,10 +73,6 @@ export function StageRuleOptionalFiltersSection({
 }: Props) {
   return (
     <div className="space-y-3">
-      <div className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-wide uppercase">
-        <Filter className="size-3.5" aria-hidden />
-        Optional filters
-      </div>
       {target === 'PRODUCT' ? (
         <ProductOptionalFilters
           filterCategory={filterCategory}

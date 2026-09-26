@@ -9,17 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
-  DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS,
-  DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
-  DETAIL_SHEET_OUTLINED_LABEL_CLASS,
-} from '@/components/shared/detail-sheet-classes';
 import { cn } from '@/lib/utils';
 import {
-  ROLE_KIND_SHELL_CLASS,
+  ROLE_KIND_TONE_CLASS,
+  ROLE_KIND_TRIGGER_CLASS,
   ROLE_MESSAGE_KEYS,
-  ROLE_UNITS_INPUT_SHELL_CLASS,
+  ROLE_UNITS_INPUT_CLASS,
+  ROLE_UNIT_AMOUNT_CLASS,
+  ROLE_UNIT_DIVIDER_CLASS,
+  ROLE_UNIT_NAME_CLASS,
   ROLE_UNIT_ROW_CLASS,
 } from './delivery-norms.constants';
 import type { RoleUnitDraftRow } from './role-units-draft';
@@ -29,11 +27,6 @@ const KIND_LABEL_KEYS = {
   OPTIONAL: 'roleUnits.ifPresent',
   NOT_REQUIRED: 'roleUnits.unused',
 } as const;
-
-const KIND_TRIGGER_CLASS = [
-  'h-8 w-full border-0 bg-transparent px-2 shadow-none',
-  'hover:bg-transparent data-[size=sm]:h-8 data-[size=sm]:min-h-8',
-].join(' ');
 
 export function RoleUnitField({
   row,
@@ -46,54 +39,53 @@ export function RoleUnitField({
 }) {
   const t = useTranslations('hr.deliveryNorms');
   const unused = row.unitKind === 'NOT_REQUIRED';
+  const roleName = t(ROLE_MESSAGE_KEYS[row.roleKey]);
+
   return (
-    <div
-      className={cn(
-        DETAIL_SHEET_OUTLINED_FIELD_WRAP_CLASS,
-        disabled && 'pointer-events-none opacity-60',
-      )}
-    >
-      <span className={DETAIL_SHEET_OUTLINED_LABEL_CLASS}>{t(ROLE_MESSAGE_KEYS[row.roleKey])}</span>
-      <div className={ROLE_UNIT_ROW_CLASS}>
-        <div className={cn(DETAIL_SHEET_OUTLINED_FIELD_SHELL_CLASS, ROLE_UNITS_INPUT_SHELL_CLASS)}>
-          <RoleUnitsInput row={row} disabled={disabled || unused} onChange={onChange} />
-        </div>
-        <div className={ROLE_KIND_SHELL_CLASS}>
-          <RoleKindSelect
-            value={row.unitKind}
-            disabled={disabled}
-            label={t('roleUnits.kindAria')}
-            labels={kindLabels(t)}
-            onChange={(unitKind) => onChange({ unitKind })}
-          />
-        </div>
+    <div className={cn(ROLE_UNIT_ROW_CLASS, disabled && 'pointer-events-none opacity-60')}>
+      <div className={ROLE_UNIT_AMOUNT_CLASS}>
+        <RoleUnitsInput
+          row={row}
+          label={roleName}
+          disabled={disabled || unused}
+          onChange={onChange}
+        />
       </div>
+      <span className={ROLE_UNIT_DIVIDER_CLASS} aria-hidden />
+      <p className={ROLE_UNIT_NAME_CLASS}>{roleName}</p>
+      <span className={ROLE_UNIT_DIVIDER_CLASS} aria-hidden />
+      <RoleKindSelect
+        value={row.unitKind}
+        disabled={disabled}
+        label={t('roleUnits.kindAria')}
+        labels={kindLabels(t)}
+        onChange={(unitKind) => onChange({ unitKind })}
+      />
     </div>
   );
 }
 
 function RoleUnitsInput({
   row,
+  label,
   disabled,
   onChange,
 }: {
   row: RoleUnitDraftRow;
+  label: string;
   disabled?: boolean;
   onChange: (patch: Partial<Omit<RoleUnitDraftRow, 'roleKey'>>) => void;
 }) {
-  const t = useTranslations('hr.deliveryNorms');
   const unused = row.unitKind === 'NOT_REQUIRED';
   return (
     <input
       type="text"
       inputMode="decimal"
       disabled={disabled}
+      aria-label={label}
       value={unused ? '' : row.unitsInput}
-      placeholder={t('roleUnits.placeholder')}
-      className={cn(
-        DETAIL_SHEET_FIELD_INNER_CONTROL_CLASS,
-        'min-w-0 text-center text-sm tabular-nums',
-      )}
+      placeholder="—"
+      className={ROLE_UNITS_INPUT_CLASS}
       onChange={(event) => onChange({ unitsInput: event.target.value })}
     />
   );
@@ -131,7 +123,11 @@ function RoleKindSelect({
         onChange(next as DeliveryRoleUnitKind);
       }}
     >
-      <SelectTrigger size="sm" aria-label={label} className={KIND_TRIGGER_CLASS}>
+      <SelectTrigger
+        size="sm"
+        aria-label={label}
+        className={cn(ROLE_KIND_TRIGGER_CLASS, ROLE_KIND_TONE_CLASS[value])}
+      >
         <SelectValue>{() => labels[value]}</SelectValue>
       </SelectTrigger>
       <SelectContent>

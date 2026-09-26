@@ -2,10 +2,11 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
+import { Tag } from 'lucide-react';
 import { DELIVERY_COMPENSATION_CURRENCY } from '@nbos/shared';
 import {
   DETAIL_SHEET_TAB_BODY_STRETCH_CLASS,
-  DetailSheetSection,
+  InsightSheetSection,
   MoneyInput,
 } from '@/components/shared';
 import { formatGroupedNumber, parseMoneyAmount } from '@/lib/format/money';
@@ -35,10 +36,13 @@ export function SalePriceSheetEditor({
 
   return (
     <div className={`${DETAIL_SHEET_TAB_BODY_STRETCH_CLASS} gap-4`}>
-      {extra}
-      <DetailSheetSection title={t('salePrices.amountPerUnitShort')}>
+      <InsightSheetSection
+        icon={<Tag size={15} />}
+        title={t('salePrices.amountPerUnitShort')}
+        hint={hint}
+      >
         <div className="space-y-4">
-          <p className="text-muted-foreground text-xs">{hint}</p>
+          {extra}
           <div className="grid gap-4 sm:grid-cols-2">
             <MoneyReadout label={t('rates.current')} amount={published} empty={t('none')} />
             <label className="space-y-1.5">
@@ -57,7 +61,7 @@ export function SalePriceSheetEditor({
             <NormativeStatusBadge status={status} label={t(normativeStatusLabelKey(status))} />
           ) : null}
         </div>
-      </DetailSheetSection>
+      </InsightSheetSection>
     </div>
   );
 }

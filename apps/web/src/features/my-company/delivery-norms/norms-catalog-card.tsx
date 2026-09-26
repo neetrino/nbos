@@ -7,11 +7,9 @@ import { UNIT_SUM_EMPTY } from './format-unit-sum';
 import { NormativeStatusBadge } from './normative-status-badge';
 
 const CARD_BUTTON_CLASS = [
-  'flex h-full w-full flex-col gap-4 p-4 text-left',
+  'flex h-full w-full min-w-0 flex-col gap-4 p-4 text-left',
   'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
 ].join(' ');
-
-const METRIC_COL_CLASS = 'flex min-w-[7.5rem] shrink-0 flex-col justify-end gap-1.5';
 
 export function NormsCatalogCard({
   title,
@@ -51,7 +49,7 @@ export function NormsCatalogCard({
       padding="none"
       baseShadow="sm"
       hoverShadow="md"
-      className={cn('h-full', !canOpen && 'opacity-70')}
+      className={cn('h-full min-w-0', !canOpen && 'opacity-70')}
     >
       <button
         type="button"
@@ -102,7 +100,7 @@ function CardHeader({
       <span className="flex min-w-0 items-start gap-2">
         {icon}
         <span className="min-w-0">
-          <span className="text-foreground line-clamp-2 min-h-10 text-sm leading-snug font-bold">
+          <span className="text-foreground line-clamp-2 text-sm leading-snug font-bold">
             {title}
           </span>
           {description ? (
@@ -130,7 +128,7 @@ function CardLead({
   metrics: readonly CardMetric[];
 }) {
   return (
-    <span className="flex items-end justify-between gap-4">
+    <span className="mt-auto flex items-end justify-between gap-3">
       <span className="min-w-0">
         <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
           {caption}
@@ -140,7 +138,7 @@ function CardLead({
         </span>
       </span>
       {metrics.length > 0 ? (
-        <span className={METRIC_COL_CLASS}>
+        <span className="flex shrink-0 flex-col items-end gap-1">
           {metrics.map((metric) => (
             <MetricRow key={metric.caption} {...metric} />
           ))}
@@ -173,13 +171,13 @@ function cardMetrics(input: {
 
 function MetricRow({ value, caption, muted }: CardMetric) {
   return (
-    <span className="flex items-baseline justify-between gap-3">
+    <span className="flex items-baseline justify-end gap-2">
       <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.14em] uppercase">
         {caption}
       </span>
       <span
         className={cn(
-          'truncate text-xs font-medium tabular-nums',
+          'text-sm font-semibold tabular-nums',
           muted ? 'text-muted-foreground' : 'text-foreground',
         )}
       >

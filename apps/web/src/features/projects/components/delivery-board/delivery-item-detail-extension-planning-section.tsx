@@ -149,11 +149,12 @@ export function ExtensionPlanningSection({
 
   return (
     <DetailSheetCollapsibleSection
+      appearance="insight"
       title={t('plan.extensionTitle')}
-      icon={<ClipboardList size={12} />}
+      hint={t('sheetHints.extension')}
+      icon={<ClipboardList size={15} />}
       open={sectionOpen}
       onOpenChange={setSectionOpen}
-      className="shadow-sm"
     >
       <ExtensionPlanFields
         extension={extension}
