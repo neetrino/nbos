@@ -57,7 +57,7 @@ export function SalaryDirectoryPage() {
       setLoading(true);
       try {
         const [people, active] = await Promise.all([
-          employeesApi.getAll(salaryDirectoryListParams(requestScope)),
+          employeesApi.getAll({ ...salaryDirectoryListParams(requestScope) }),
           compensationProfilesApi.listActive(),
         ]);
         if (cancelled) return;
