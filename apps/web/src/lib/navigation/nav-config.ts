@@ -27,6 +27,10 @@ export type NavChildLinkDefinition = {
   /** Section id for modules with visit registry (href from last visited path). */
   navSection?: string;
   permission?: PermissionRequirement;
+  /** Active only on this path. Use for a module index that is also a prefix of siblings. */
+  exactMatch?: boolean;
+  /** Active on these routes or their children, same as the page hero tabs. */
+  matchHrefs?: readonly string[];
 };
 
 export type NavChildDefinition = NavChildGroupDefinition | NavChildLinkDefinition;
@@ -136,9 +140,25 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     permission: { module: 'COMPANY', action: 'VIEW' },
     children: [
       {
-        label: 'children.myCompany.coreFunction',
-        href: '/my-company/delivery-norms',
-        permission: CORE_FUNCTION_VIEW_REQUIREMENT,
+        label: 'children.myCompany.orgStructure',
+        href: '/my-company',
+        exactMatch: true,
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'children.myCompany.team',
+        href: '/my-company/team',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'children.myCompany.departments',
+        href: '/my-company/departments',
+        permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'children.myCompany.rolesSeats',
+        href: '/my-company/roles-seats',
+        permission: { module: 'COMPANY', action: 'VIEW' },
       },
       {
         label: 'children.myCompany.compensation',
@@ -146,19 +166,33 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         permission: { module: 'FINANCE_SALARY', action: 'VIEW' },
       },
       {
-        label: 'children.myCompany.kpi',
-        href: '/my-company/kpi',
-        permission: { module: 'DASHBOARDS', action: 'VIEW' },
+        label: 'children.myCompany.bonus',
+        href: '/my-company/bonus-policies',
+        matchHrefs: ['/my-company/bonus-policies', '/my-company/sales-bonus-policies'],
+        permission: { module: 'COMPANY', action: 'VIEW' },
       },
       {
-        label: 'children.myCompany.kpiPolicies',
-        href: '/my-company/kpi-policies',
+        label: 'children.myCompany.kpi',
+        href: '/my-company/kpi',
+        matchHrefs: ['/my-company/kpi', '/my-company/kpi-policies'],
         permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'children.myCompany.checklists',
+        href: '/my-company/checklist-templates',
+        matchHrefs: ['/my-company/checklist-templates', '/my-company/checklist-stage-rules'],
+        permission: { module: 'CHECKLIST_TEMPLATES', action: 'VIEW' },
       },
       {
         label: 'children.myCompany.sop',
         href: '/my-company/sop',
         permission: { module: 'COMPANY', action: 'VIEW' },
+      },
+      {
+        label: 'children.myCompany.coreFunction',
+        href: '/my-company/delivery-norms',
+        exactMatch: true,
+        permission: CORE_FUNCTION_VIEW_REQUIREMENT,
       },
     ],
   },

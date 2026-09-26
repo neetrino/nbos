@@ -16,6 +16,12 @@ import {
   EMPLOYEE_STATUSES,
   isEmployeeLevelValue,
 } from '@/features/hr/constants/hr';
+import {
+  EMPLOYEE_STATUS_TERMINATED,
+  isDefaultTeamDirectoryScope,
+  resolveTeamDirectoryStatusQuery,
+  TEAM_DIRECTORY_STATUS_EVERYONE,
+} from '@/features/hr/constants/team-directory-status';
 import { useTeamDirectoryAdd } from '@/features/hr/components/team-directory-add';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import { TeamEmployeeCard } from '@/features/hr/components/TeamEmployeeCard';
@@ -51,15 +57,23 @@ function TeamDirectoryPageContent() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const effectiveStatus = useMemo(() => {
-    if (quickStatus) return quickStatus;
-    if (filters.status && filters.status !== 'all') return filters.status;
-    if (showTerminated) return 'TERMINATED';
-    return undefined;
-  }, [quickStatus, filters.status, showTerminated]);
+  const statusQuery = useMemo(
+    () =>
+      resolveTeamDirectoryStatusQuery({
+        quickStatus,
+        filterStatus: filters.status,
+        showTerminated,
+      }),
+    [quickStatus, filters.status, showTerminated],
+  );
+  const defaultScope = isDefaultTeamDirectoryScope({
+    quickStatus,
+    filterStatus: filters.status,
+    showTerminated,
+  });
 
-  const { employees, total, roles, departments, loading, refreshing, error, refetch } =
-    useTeamDirectory(search, filters, effectiveStatus);
+  const { employees, roles, departments, loading, refreshing, statusTotals, error, refetch } =
+    useTeamDirectory(search, filters, statusQuery);
 
   const openFromLink = useCallback((emp: Employee) => {
     setSelectedEmployee(emp);
@@ -71,15 +85,8 @@ function TeamDirectoryPageContent() {
     openFromLink,
   );
 
-  const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const emp of employees) {
-      counts[emp.status] = (counts[emp.status] ?? 0) + 1;
-    }
-    return counts;
-  }, [employees]);
-
-  const activeCount = statusCounts.ACTIVE ?? 0;
+  const allCount =
+    (statusTotals.ACTIVE ?? 0) + (statusTotals.PROBATION ?? 0) + (statusTotals.ON_LEAVE ?? 0);
   const viewOptions = useMemo(() => buildTeamDirectoryViewOptions(t), [t]);
 
   const filterConfigs = useMemo(
@@ -105,10 +112,16 @@ function TeamDirectoryPageContent() {
       {
         key: 'status',
         label: t('directory.filters.status'),
-        options: EMPLOYEE_STATUSES.map((s) => ({
-          value: s.value,
-          label: t(`status.${s.value}`),
-        })),
+        options: [
+          ...EMPLOYEE_STATUSES.map((s) => ({
+            value: s.value,
+            label: t(`status.${s.value}`),
+          })),
+          {
+            value: TEAM_DIRECTORY_STATUS_EVERYONE,
+            label: t('directory.includeTerminated'),
+          },
+        ],
       },
     ],
     [roles, departments, t],
@@ -147,27 +160,9 @@ function TeamDirectoryPageContent() {
         />
       ),
       viewMode: <ViewModeSwitch value={view} onChange={setView} options={viewOptions} />,
-      trailing: (
-        <>
-          <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
-            {t('directory.counts', { active: activeCount, total })}
-          </span>
-          {add.menu}
-        </>
-      ),
+      trailing: add.menu,
     }),
-    [
-      activeCount,
-      add.menu,
-      filterConfigs,
-      filters,
-      search,
-      setFilters,
-      t,
-      total,
-      view,
-      viewOptions,
-    ],
+    [add.menu, filterConfigs, filters, search, setFilters, t, view, viewOptions],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -197,11 +192,13 @@ function TeamDirectoryPageContent() {
     <div className="flex flex-col gap-6 pb-6">
       <TeamStatusChips
         activeStatus={quickStatus}
+        defaultScopeActive={defaultScope}
         onStatusChange={handleQuickStatus}
-        counts={statusCounts}
+        counts={statusTotals}
         showTerminated={showTerminated}
         onToggleTerminated={handleToggleTerminated}
-        terminatedCount={statusCounts.TERMINATED ?? 0}
+        terminatedCount={statusTotals[EMPLOYEE_STATUS_TERMINATED] ?? 0}
+        allCount={allCount}
       />
 
       {showInitialLoading ? (

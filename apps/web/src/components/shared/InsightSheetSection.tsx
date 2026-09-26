@@ -9,6 +9,7 @@ export function InsightSheetSection({
   title,
   hint,
   trailing,
+  header,
   className,
   children,
 }: {
@@ -16,6 +17,8 @@ export function InsightSheetSection({
   title: string;
   hint?: string;
   trailing?: ReactNode;
+  /** Replaces the default title row when the card header must share a row grid. */
+  header?: ReactNode;
   className?: string;
   children: ReactNode;
 }) {
@@ -27,18 +30,20 @@ export function InsightSheetSection({
       )}
     >
       <div className="bg-primary/15 pointer-events-none absolute -top-12 -right-8 size-28 rounded-full blur-2xl" />
-      <div className="relative flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
-            {icon}
+      {header ?? (
+        <div className="relative flex items-start justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
+              {icon}
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-foreground text-sm font-semibold">{title}</h3>
+              {hint ? <p className="text-muted-foreground text-xs leading-snug">{hint}</p> : null}
+            </div>
           </div>
-          <div className="min-w-0">
-            <h3 className="text-foreground text-sm font-semibold">{title}</h3>
-            {hint ? <p className="text-muted-foreground text-xs leading-snug">{hint}</p> : null}
-          </div>
+          {trailing}
         </div>
-        {trailing}
-      </div>
+      )}
       <div className="relative mt-3">{children}</div>
     </section>
   );

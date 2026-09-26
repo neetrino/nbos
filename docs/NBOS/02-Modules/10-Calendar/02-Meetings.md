@@ -87,6 +87,10 @@ Reminder options:
 - 1 hour before;
 - 1 day before.
 
+## Optional Video Meetings integration (Module 22; implementation future V1)
+
+Existing `CalendarMeeting` is authoritative for client meeting **scheduling, conflicts and reminders**, not for managing video room sessions and recordings. An independent `VideoMeeting` may start instantly or be linked to a Deal/Project/Product/Contact **after** it ends, with no CalendarMeeting at all. When users explicitly opt in to Calendar or start from a calendar event, create a **nullable, validated connection** between the existing CalendarMeeting and VideoMeeting. Do not create duplicate events, automatically force all video calls into Calendar or infer recording completion from Calendar status. Reference: [Video Meetings module](../22-Video-Meetings/00-Video-Meetings-Overview.md).
+
 ## Conflict warning
 
 Для MVP достаточно предупреждения, не жёсткой блокировки.

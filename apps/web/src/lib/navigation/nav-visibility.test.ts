@@ -135,9 +135,15 @@ describe('getVisibleNavModules', () => {
       'href' in child && child.href ? [child.href] : [],
     );
 
-    expect(hrefs ?? []).not.toContain('/my-company/function-catalog');
-    expect(hrefs ?? []).not.toContain('/my-company/delivery-norms');
-    expect(hrefs ?? []).not.toContain('/my-company/compensation');
+    expect(hrefs).toEqual([
+      '/my-company',
+      '/my-company/team',
+      '/my-company/departments',
+      '/my-company/roles-seats',
+      '/my-company/bonus-policies',
+      '/my-company/kpi',
+      '/my-company/sop',
+    ]);
   });
 
   it('shows Core & Function without opening HR or Compensation', () => {

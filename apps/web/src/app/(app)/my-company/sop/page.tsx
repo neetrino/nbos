@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpenText, ClipboardList, RefreshCw } from 'lucide-react';
-import { StatusBadge, useModuleHeroSlots } from '@/components/shared';
-import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
+import { BookOpenText, ClipboardList } from 'lucide-react';
+import { StatusBadge } from '@/components/shared';
 import { CompanyStatCard } from '@/features/hr/components/MyCompanyHubCards';
 import { documentsApi, type DocumentListItem, type DocumentSection } from '@/lib/api/documents';
 
@@ -74,6 +74,7 @@ function daysFromNow(iso: string): number {
 }
 
 export default function SopPage() {
+  const t = useTranslations('hr');
   const [sections, setSections] = useState<DocumentSection[]>([]);
   const [docs, setDocs] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,26 +102,9 @@ export default function SopPage() {
     [docs],
   );
 
-  const trailing = useMemo(
-    () => (
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={() => void load()}
-        disabled={loading}
-      >
-        <RefreshCw size={14} aria-hidden />
-        Refresh
-      </Button>
-    ),
-    [load, loading],
-  );
-  const slots = useMemo(() => ({ trailing }), [trailing]);
-  useModuleHeroSlots(slots);
-
   return (
     <div className="flex flex-col gap-4">
+      <p className="text-muted-foreground text-sm">{t('sopPage.intro')}</p>
       <div className="grid gap-3 sm:grid-cols-3">
         <CompanyStatCard
           icon={<BookOpenText size={16} aria-hidden />}

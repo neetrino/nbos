@@ -21,6 +21,15 @@ describe('EmployeesService', () => {
         expect.objectContaining({ omit: { passwordHash: true } }),
       );
     });
+
+    it('excludes terminated employees when asked and no exact status is set', async () => {
+      prisma.employee.findMany.mockResolvedValue([]);
+      prisma.employee.count.mockResolvedValue(0);
+      await service.findAllWithFilters({ excludeStatus: 'TERMINATED' });
+      expect(prisma.employee.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { status: { not: 'TERMINATED' } } }),
+      );
+    });
   });
 
   describe('findAll', () => {

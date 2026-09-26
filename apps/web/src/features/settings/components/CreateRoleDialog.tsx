@@ -5,12 +5,10 @@ import { CreateFormDialog, InlineField } from '@/components/shared';
 export function CreateRoleDialog(props: {
   open: boolean;
   name: string;
-  slug: string;
   level: number;
   saving: boolean;
   onOpenChange: (open: boolean) => void;
   onNameChange: (name: string) => void;
-  onSlugChange: (slug: string) => void;
   onLevelChange: (level: number) => void;
   onCreate: () => void;
 }) {
@@ -36,14 +34,6 @@ export function CreateRoleDialog(props: {
         value={props.name}
         placeholder="e.g. Custom Manager"
         onValueChange={props.onNameChange}
-      />
-      <InlineField
-        variant="controlled"
-        label="Slug"
-        type="text"
-        value={props.slug}
-        placeholder="e.g. custom-manager"
-        onValueChange={props.onSlugChange}
       />
       <InlineField
         variant="controlled"
