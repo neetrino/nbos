@@ -173,3 +173,7 @@ Drive должен поддерживать `External Link File Asset`:
 - messenger file URL, если файл не перенесён.
 
 Для external link всё равно создаётся File Asset с metadata и связями. Если ссылка важная, позже можно сделать internal snapshot.
+
+## Video Meetings integration (Module 22)
+
+Video Meetings V1 creates private `MEETING_RECORDING` artifacts for **composite video plus individual participant audio**. Drive remains the file/storage authority; recording/session/participant metadata and consent belong to Video Meetings. An Egress-produced R2 object must be verified/finalized by Drive's **existing durable `FileArtifactOperation` contract** or an explicit compliant adapter, never ad hoc FileAsset writes. A recording stays restricted despite optional links to several business entities. See [Video Meetings architecture](../22-Video-Meetings/01-Architecture-and-Integrations.md).

@@ -250,6 +250,20 @@ Planning authority: `02-Modules/21-AI-Platform/42-Phase-2-Project-Intelligence-a
 | External sync | Google Calendar sync is later work.                                                                                                                                                                                                                                                                |
 | Scheduler UI  | Platform cron catalog in Settings → Scheduler (not Calendar). Code catalog + `SchedulerJobRuntime` + `SchedulerJobPolicy` (toggle, Run now). Cron schedule only in code/deploy. Kill switch: `SCHEDULER_ENABLED`. Alerts: ops backlog. See `02-Modules/16-Settings-Admin/05-Scheduler-Catalog.md`. |
 
+### Video Meetings (Module 22; approved, not implemented)
+
+| Area | Decision |
+| --- | --- |
+| Domain | Standalone Video Meetings with instant/unlinked meetings; Calendar only via explicit optional scheduling link; ATS Calls remain separate. |
+| Technology | Self-hosted, version-pinned LiveKit Server + React Components + separately scaled Egress; no required per-seat video SaaS. |
+| Recording | V1: manual consented composite video **plus separate participant audio**, time and identity continuity. |
+| Storage | Private R2 through **existing** Drive durable generated-file operation and `MEETING_RECORDING`, independently verified per output. |
+| Security | Dedicated Video Meetings RBAC, backend-issued scoped guest tokens and host admission; affirmative notice/consent and restricted playback. |
+| Lifecycle | Separate meeting/session/recording states, idempotent webhooks/reconciliation, authorized entity links after call. |
+| AI | V2 only with separately approved implementation after AI runtime readiness; summaries and Tasks suggestions require human review. |
+
+Canon: [Module 22](02-Modules/22-Video-Meetings/00-Video-Meetings-Overview.md) · [architecture](02-Modules/22-Video-Meetings/01-Architecture-and-Integrations.md) · [release gates](02-Modules/22-Video-Meetings/06-Technical-Validation-and-Operations.md).
+
 ### Dashboard And Reports
 
 | Area         | Decision                                                                                                                                  |
