@@ -76,6 +76,7 @@ Clients
 Partners
 Messenger
 Calls
+Video Meetings
 Calendar
 Drive
 Credentials
@@ -285,6 +286,10 @@ Calls
 ```
 
 Один список входящих и исходящих, новые сверху. Вкладки Calls на Lead / Deal / Contact остаются. UI: `14-Calls-Center.md`.
+
+### Video Meetings
+
+Dedicated top-level user module for instant/unlinked video meetings, secure guest invitations, room, recording history and optional business links. **Not** nested inside Calendar or Calls. Planned Video Meetings may opt into existing Calendar, but an instant call never requires a CalendarMeeting. [Module 22](../02-Modules/22-Video-Meetings/00-Video-Meetings-Overview.md) · [UI spec](16-Video-Meetings.md).
 
 ### Calendar
 

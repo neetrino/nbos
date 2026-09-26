@@ -450,6 +450,14 @@ Planning package:
 AI-owned send, approval-bound machine send, auto-send, broad company search,
 vector infrastructure and arbitrary domain writes are outside Phase 2.
 
+## Module 22 — Video Meetings (V1/V2 canon approved; implementation not started)
+
+**V1:** independent customer video meetings with instant/unlinked creation, external guest join, manual consented composite **and separate participant-audio recordings**, private verified Drive/R2 assets, accessible history and optional post-meeting Deal/Project/Product/Contact links; optional existing Calendar scheduling. No dependency on unfinished Internal AI Runtime.
+
+**V2:** transcription, speaker attribution, evidence-linked summaries and employee-approved task suggestions **only after** separate AI runtime/processing/security go/no-go. New module's implementation slices, status and negative tests: [Video Meetings register](02-Modules/22-Video-Meetings/99-Video-Meetings-Cleanup-Register.md). Future AI capability: [Meeting Intelligence](02-Modules/21-AI-Platform/90-Future-Capabilities/02-Meeting-Intelligence.md).
+
+This documents an approved future implementation; it does **not** reorder the existing active development queue, authorize production rollout or mark any functionality DONE.
+
 ## Final rule
 
 ```text
