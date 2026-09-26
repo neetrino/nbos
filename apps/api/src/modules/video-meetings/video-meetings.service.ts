@@ -15,10 +15,11 @@ import { PRISMA_TOKEN } from '../../database.module';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { assertVideoMeetingEntityAccessible } from './video-meetings-entity-access';
 import {
-  VIDEO_MEETING_DEFAULT_TITLE,
-  VIDEO_MEETING_LIST_DEFAULT_PAGE_SIZE,
-  VIDEO_MEETING_LIST_MAX_PAGE_SIZE,
-} from './video-meetings.constants';
+  accessibleVideoMeetingWhere,
+  isVideoMeetingAccessible,
+  parseVideoMeetingPage,
+} from './video-meetings-access-query';
+import { VIDEO_MEETING_DEFAULT_TITLE } from './video-meetings.constants';
 import { generateOpaqueLivekitRoomName } from './video-meetings-room-name';
 import { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
 import {
@@ -34,10 +35,17 @@ import type {
   ListVideoMeetingsQueryDto,
 } from './dto/video-meetings.dto';
 import { VideoMeetingStatusFilterDto } from './dto/video-meetings.dto';
+import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
+import type { VideoMeetingRecordingGroupDto } from './video-meetings-recording.serializer';
 
 const meetingCardInclude = {
   sessions: { orderBy: { createdAt: 'desc' as const } },
   entityLinks: { orderBy: { createdAt: 'asc' as const } },
+  recordings: {
+    orderBy: { createdAt: 'desc' as const },
+    take: 5,
+    include: { assets: true },
+  },
 } satisfies Prisma.VideoMeetingInclude;
 
 const meetingListInclude = {
@@ -56,6 +64,7 @@ export class VideoMeetingsService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly livekit: VideoMeetingsLivekitService,
+    private readonly recordings: VideoMeetingsRecordingService,
   ) {}
 
   /** Create an instant standalone meeting; host and owner are the authenticated employee. */
@@ -112,8 +121,8 @@ export class VideoMeetingsService {
   }
 
   async list(user: CurrentUserPayload, query: ListVideoMeetingsQueryDto): Promise<ListResult> {
-    const { page, pageSize } = parsePage(query);
-    const where = accessibleWhere(user.id, query.status);
+    const { page, pageSize } = parseVideoMeetingPage(query);
+    const where = accessibleVideoMeetingWhere(user.id, query.status);
     const [rows, total] = await Promise.all([
       this.prisma.videoMeeting.findMany({
         where,
@@ -143,7 +152,7 @@ export class VideoMeetingsService {
         participants: { select: { employeeId: true } },
       },
     });
-    if (!meeting || !isAccessible(meeting, user.id)) {
+    if (!meeting || !isVideoMeetingAccessible(meeting, user.id)) {
       throw new NotFoundException('Meeting not found');
     }
     return this.toCard(meeting, user.permissions);
@@ -155,6 +164,8 @@ export class VideoMeetingsService {
     if (meeting.status !== VideoMeetingStatus.ACTIVE) {
       throw new BadRequestException('Only an active meeting can be ended');
     }
+    // Stop capture if needed — never mark recording READY solely because meeting ended.
+    await this.recordings.stopIfRecordingOnMeetingEnd(meetingId);
     const now = new Date();
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.videoMeetingSession.updateMany({
@@ -168,6 +179,23 @@ export class VideoMeetingsService {
       });
     });
     return this.toCard(updated, user.permissions);
+  }
+
+  async getRecordingStatus(
+    user: CurrentUserPayload,
+    meetingId: string,
+  ): Promise<{ recording: VideoMeetingRecordingGroupDto | null }> {
+    const meeting = await this.prisma.videoMeeting.findUnique({
+      where: { id: meetingId },
+      include: { participants: { select: { employeeId: true } } },
+    });
+    if (!meeting || !isVideoMeetingAccessible(meeting, user.id)) {
+      throw new NotFoundException('Meeting not found');
+    }
+    const recording = await this.recordings.getActiveStatus(meetingId);
+    const payload = { recording };
+    assertSafeVideoMeetingPayload(payload);
+    return payload;
   }
 
   /** Soft-cancel a meeting that was never held. */
@@ -251,41 +279,4 @@ export class VideoMeetingsService {
     }
     return meeting;
   }
-}
-
-function parsePage(query: ListVideoMeetingsQueryDto): { page: number; pageSize: number } {
-  const page = Math.max(1, parseInt(query.page ?? '1', 10) || 1);
-  const rawSize =
-    parseInt(query.pageSize ?? String(VIDEO_MEETING_LIST_DEFAULT_PAGE_SIZE), 10) ||
-    VIDEO_MEETING_LIST_DEFAULT_PAGE_SIZE;
-  const pageSize = Math.min(VIDEO_MEETING_LIST_MAX_PAGE_SIZE, Math.max(1, rawSize));
-  return { page, pageSize };
-}
-
-function accessibleWhere(employeeId: string, status?: string): Prisma.VideoMeetingWhereInput {
-  const where: Prisma.VideoMeetingWhereInput = {
-    OR: [
-      { hostEmployeeId: employeeId },
-      { ownerEmployeeId: employeeId },
-      { participants: { some: { employeeId } } },
-    ],
-  };
-  if (status) {
-    where.status = status as VideoMeetingStatus;
-  }
-  return where;
-}
-
-function isAccessible(
-  meeting: {
-    hostEmployeeId: string;
-    ownerEmployeeId: string;
-    participants?: { employeeId: string | null }[];
-  },
-  employeeId: string,
-): boolean {
-  if (meeting.hostEmployeeId === employeeId || meeting.ownerEmployeeId === employeeId) {
-    return true;
-  }
-  return (meeting.participants ?? []).some((p) => p.employeeId === employeeId);
 }

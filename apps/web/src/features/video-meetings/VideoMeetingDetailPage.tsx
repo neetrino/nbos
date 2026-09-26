@@ -120,7 +120,11 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
         </div>
       </div>
 
-      <VideoMeetingRecordingIndicator />
+      <VideoMeetingRecordingIndicator
+        meetingId={meetingId}
+        canControl={canEdit && isHost}
+        initialRecording={card.recordings?.[0] ?? null}
+      />
 
       <section className="border-border rounded-lg border p-4">
         <h2 className="mb-2 text-sm font-medium">{t('detail.schedule')}</h2>

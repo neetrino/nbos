@@ -237,6 +237,13 @@ export class VideoMeetingsAdmissionService {
     };
   }
 
+  /** Resolve meeting id for an admissible guest invite (no secrets returned). */
+  async resolveGuestMeetingId(inviteToken: string): Promise<{ meetingId: string } | null> {
+    const invite = await this.invites.findAdmissibleBySecret(inviteToken);
+    if (!invite) return null;
+    return { meetingId: invite.meetingId };
+  }
+
   private async ensureEmployeeParticipant(
     meetingId: string,
     sessionId: string,

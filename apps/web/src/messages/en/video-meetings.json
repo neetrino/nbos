@@ -67,9 +67,18 @@
   "recording": {
     "label": "Recording",
     "notRecording": "Not recording",
-    "notAvailableYet": "Capture is not wired yet (coming in a later release).",
-    "startDisabled": "Start recording",
-    "stopDisabled": "Stop recording"
+    "recordingActive": "Recording in progress",
+    "start": "Start recording",
+    "stop": "Stop recording",
+    "loadError": "Could not load recording status.",
+    "actionError": "Recording action failed.",
+    "egressUnavailable": "Recording service is not configured.",
+    "consentRequired": "All participants must grant recording consent first.",
+    "consentGrant": "I consent to being recorded",
+    "consentDecline": "Decline recording",
+    "consentRevoke": "Withdraw consent",
+    "consentSaved": "Consent saved",
+    "consentError": "Could not save consent decision."
   },
   "room": {
     "title": "Meeting room",

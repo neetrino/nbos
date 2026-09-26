@@ -220,6 +220,8 @@ model VideoMeetingRecordingAsset {
   participantId String?                         @map("participant_id")
   livekitTrackId String?                        @map("livekit_track_id")
   egressId      String?                         @map("egress_id")
+  /// Intended private object key (R2 / S3 stand-in). Never expose in API serializers (S05).
+  objectKey     String?                         @map("object_key")
   /// Drive FileAsset id after S06 finalize; null until then.
   fileAssetId   String?                         @map("file_asset_id")
   rangeStartsAt DateTime?                       @map("range_starts_at")
@@ -233,6 +235,7 @@ model VideoMeetingRecordingAsset {
   @@index([recordingId])
   @@index([participantId])
   @@index([egressId])
+  @@index([objectKey])
   @@index([fileAssetId])
   @@index([status])
   @@map("video_meeting_recording_assets")

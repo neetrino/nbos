@@ -9,7 +9,8 @@
 | S01 commit            | `04b6ec6eb` — feat(video-meetings): add meeting domain schema and permission flags                          |
 | S02 commit            | `b28a49235` — feat(video-meetings): add flagged meeting metadata API                                        |
 | S03 commit            | `ae7e43680` — feat(video-meetings): add LiveKit room tokens and guest admission                             |
-| S04 commit            | `4c412a644` — feat(web): add video meetings list, room, and guest prejoin                                   |
+| S04 commit            | `21c631722` — feat(web): add video meetings list, room, and guest prejoin                                   |
+| S05 commit            | _(this commit)_ — feat(video-meetings): add consented composite and per-participant recording               |
 | Push                  | **Not pushed** (origin diverged; remote deleted `todo.md`)                                                  |
 | `todo.md` / `TODO.md` | Left **unstaged**; local wipe of prior checklist preserved dirty                                            |
 
@@ -21,141 +22,99 @@
 | S01   | **DONE**             | Prisma entities, VIDEO_MEETINGS RBAC (Owner/CEO only), feature flag default OFF, domain unit tests |
 | S02   | **DONE**             | Nest metadata API behind flag; create/start/list/card/history/links; no LiveKit                    |
 | S03   | **DONE**             | LiveKit compose + Nest tokens/invites/prejoin/admission/reconnect; see checks below                |
-| S04   | **DONE**             | Web list/detail/room/guest UI; LiveKit components pinned; recording UI disabled until S05          |
-| S05   | TODO                 | Prove multi-egress recording — **can start after S04**                                             |
-| S06   | TODO                 | Drive finalize                                                                                     |
+| S04   | **DONE**             | Web list/detail/room/guest UI; LiveKit components pinned; recording UI wired in S05                |
+| S05   | **DONE** (code)      | Consent + orchestrated RoomComposite + TrackEgress; live object proof **NOT RUN**                  |
+| S06   | TODO                 | Drive finalize — **can start** after this commit                                                   |
 | S07   | TODO                 | V1 gate                                                                                            |
 
-## What landed in S03
+## What landed in S05
 
-### Local infra
+### Behavior
 
-- `docker-compose.livekit.yml` — `livekit/livekit-server:v1.13.7` + dedicated Redis (`redis:7.4-alpine` on host **6380**).
-- Optional Egress `livekit/egress:v1.14.1` under compose profile `egress` (**not** started by default; no recording orchestration).
-- Config: `docker/livekit/livekit.yaml` with insecure local-dev keys `devkey`/`secret` (commented as local-only).
-- npm pin: `livekit-server-sdk@2.19.1` in `@nbos/api` only (no `@livekit/components-react` / `livekit-client`).
+- Host with `VIDEO_MEETINGS` **EDIT** can `POST .../recording/start|stop` when feature flag is ON (flag off → 404).
+- Consent gate: missing / UNKNOWN / DECLINED / REVOKED denies capture for that participant; **any** unknown among currently capturable room identities rejects the whole start (ADR-VM-003).
+- Notice version `pending-legal-v0` + placeholder copy (pending legal approval) — not binding wording / no retention invented.
+- Persist `VideoMeetingRecording` + expected `VideoMeetingRecordingAsset` rows (composite + consented published-audio tracks) **before** Egress calls; store intended `objectKey` + `egressId`; `fileAssetId` stays null (no Drive / FileArtifactOperation).
+- Late join: audio egress only after GRANTED; withdrawal stops that participant’s egress and closes the segment.
+- Stop/restart creates a **new** recording group; meeting ENDED never alone forces recording READY (ADR-VM-005).
+- Asset READY only after HeadObject with non-zero size; otherwise PENDING/FAILED; honest PARTIAL when mixed.
+- LiveKit egress webhooks verified with SDK `WebhookReceiver`; dedupe by egress id.
+- Employee card may show recording group status + per-asset kind/status/participant id — never keys / signed URLs / egress ids.
+- Guest consent + recording indicator status only (no CRM/Drive/playback).
+- Egress/storage not configured → start-recording **503**; module still boots.
 
 ### Additive schema
 
-- `VideoMeetingAdmissionStatus` (`WAITING` | `ADMITTED` | `REJECTED`).
-- `VideoMeetingParticipant.inviteId` (unique, nullable) + `admissionStatus` for guest↔invite reconnect identity.
+- `VideoMeetingRecordingAsset.objectKey` (nullable) + index — migration `20260926190000_video_meetings_recording_object_key`.
 
-### Endpoints (flag OFF → 404 on all; missing LiveKit env → 503 on token/ensure)
+### Endpoints (flag OFF → 404)
 
-**Employee** (`/api/video-meetings`, auth + `VIDEO_MEETINGS_*`):
+| Method | Path                      | Who                     | Notes                        |
+| ------ | ------------------------- | ----------------------- | ---------------------------- |
+| POST   | `/:id/recording/start`    | EDIT host/owner         | Consent + multi-egress start |
+| POST   | `/:id/recording/stop`     | EDIT host/owner         | Stop + HeadObject verify     |
+| GET    | `/:id/recording`          | VIEW                    | Latest group (safe fields)   |
+| POST   | `/:id/consent`            | VIEW (self participant) | GRANTED / DECLINED / REVOKED |
+| GET    | `/consent/notice`         | VIEW                    | Placeholder notice           |
+| POST   | `/guest/consent`          | Public invite           | Self only                    |
+| GET    | `/guest/consent/notice`   | Public                  | Placeholder notice           |
+| POST   | `/guest/recording-status` | Public invite           | `{ status }` only            |
+| POST   | `/livekit/webhook`        | Public + SDK auth       | egress/track events          |
 
-| Method | Path                                      | Permission | Behavior                                                 |
-| ------ | ----------------------------------------- | ---------- | -------------------------------------------------------- |
-| POST   | `/:id/start`                              | EDIT       | Session + opaque room; `CreateRoom` when LiveKit env set |
-| POST   | `/:id/token`                              | VIEW       | Employee JWT after admitted participant upsert           |
-| POST   | `/:id/invites`                            | EDIT       | Create invite; **raw token once**; digest persisted      |
-| GET    | `/:id/invites`                            | EDIT       | List invites (no secrets)                                |
-| POST   | `/:id/invites/:inviteId/revoke`           | EDIT       | Set `revokedAt`                                          |
-| GET    | `/:id/waiting`                            | EDIT       | Waiting guests                                           |
-| POST   | `/:id/participants/:participantId/admit`  | EDIT       | Admit guest                                              |
-| POST   | `/:id/participants/:participantId/reject` | EDIT       | Reject guest                                             |
+Recording destination: dedicated `VIDEO_MEETINGS_RECORDING_S3_*` or fallback to existing `R2_*`.
 
-(Plus S02 metadata routes unchanged.)
+## Checks run in S05
 
-**Guest** (`/api/video-meetings/guest`, `@Public`, no NBOS session):
+| Check                                                                                       | Result                                                                                                                                             |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Prettier on touched TS/JSON/YAML/MD                                                         | **PASS**                                                                                                                                           |
+| ESLint `apps/api/src/modules/video-meetings/**`                                             | **PASS** (0 errors)                                                                                                                                |
+| ESLint web video-meetings feature + API client                                              | **PASS**                                                                                                                                           |
+| Vitest `apps/api/src/modules/video-meetings` (47) from monorepo root                        | **PASS**                                                                                                                                           |
+| Vitest `apps/web/src/features/video-meetings` (2)                                           | **PASS**                                                                                                                                           |
+| `pnpm --filter @nbos/api typecheck`                                                         | **PASS**                                                                                                                                           |
+| `pnpm --filter @nbos/web typecheck`                                                         | **PASS**                                                                                                                                           |
+| `prisma migrate deploy` (additive object_key) on disposable/dev                             | **PASS**                                                                                                                                           |
+| Live recording proof: composite MP4 + ≥2 distinct participant audio objects in R2/MinIO     | **NOT RUN** — blocker: `LIVEKIT_*` unset in `.env.local`, LiveKit Egress profile not running, API/web not up for a two-participant capture session |
+| Browser: guest no sidebar; list honest empty/error; recording control live when flag+API on | **NOT RUN** — no listener on `:3000` / `:4000` in executor session                                                                                 |
+| Production migrate / push / origin merge                                                    | **NOT RUN** (forbidden)                                                                                                                            |
 
-| Method | Path       | Behavior                                                               |
-| ------ | ---------- | ---------------------------------------------------------------------- |
-| POST   | `/prejoin` | Invite secret + display name → waiting/admitted state; **no JWT**      |
-| POST   | `/token`   | Same invite → LiveKit JWT only if `ADMITTED`; cam+mic, no screen/admin |
+## Handoff to S06
 
-Guest responses: `admissionState`, `livekitUrl`, `token`, `roomName`, `participantId`, `displayName` only.
+**S06 can start** on this branch without pulling origin.
 
-### Rate limit
+S06 must:
 
-- **DECISION:** guest prejoin/token inherit global `ThrottlerGuard` (ttl 60s / limit 100). No Video Meetings-specific limit number invented (aligned with S02).
-
-### Token policy
-
-- Single-room grants; no `roomCreate` / `roomAdmin` / `roomRecord` / `recorder`.
-- Host/employee: cam+mic+screen. Guest: cam+mic only.
-- Reconnect reuses `VideoMeetingParticipant.id` (employee by `employeeId`; guest by `inviteId`).
-
-## Checks run in S03
-
-| Check                                                                | Result                                                         |
-| -------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Prettier on touched TS/MD/YAML/JSON                                  | **PASS**                                                       |
-| `eslint` on `apps/api/src/modules/video-meetings/**`                 | **PASS**                                                       |
-| Vitest `apps/api/src/modules/video-meetings` (39) from monorepo root | **PASS**                                                       |
-| `pnpm --filter @nbos/api typecheck`                                  | **PASS**                                                       |
-| `prisma validate` + generate                                         | **PASS**                                                       |
-| Docker compose LiveKit listen on `:7880` (HTTP 200, server v1.13.7)  | **PASS**                                                       |
-| Two browsers joined the same local room                              | **NOT RUN** (no interactive browser join; JWT unit tests only) |
-| Production migrate / push / origin merge                             | **NOT RUN** (forbidden)                                        |
-
-## What landed in S04
-
-### Web routes (flag `NEXT_PUBLIC_VIDEO_MEETINGS_V1_ENABLED` + API `VIDEO_MEETINGS_V1_ENABLED`; default OFF)
-
-| Route                              | Shell                                                                       |
-| ---------------------------------- | --------------------------------------------------------------------------- |
-| `/video-meetings`                  | Authenticated app — list (active / upcoming / history)                      |
-| `/video-meetings/[meetingId]`      | Detail — invites, entity links, start/end, recording status (not recording) |
-| `/video-meetings/[meetingId]/room` | LiveKit room (`VideoConference`); host waiting panel                        |
-| `/video-meetings/join?invite=`     | Guest-only page (`data-video-meeting-guest-shell`); no sidebar              |
-
-Pins: `@livekit/components-react@2.9.24`, `livekit-client@2.22.3` in `@nbos/web`.
-
-Recording start/stop buttons are visible but **disabled** with copy that S05 must wire egress APIs.
-
-### Local verification (enable flags in running dev env only)
-
-```bash
-# API + web dev (separate terminals; do not commit .env)
-VIDEO_MEETINGS_V1_ENABLED=true pnpm --filter @nbos/api dev
-NEXT_PUBLIC_VIDEO_MEETINGS_V1_ENABLED=true pnpm --filter @nbos/web dev
-```
-
-## Checks run in S04
-
-| Check                                                                  | Result                                                     |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------- |
-| Prettier on touched web/i18n/docs                                      | **PASS**                                                   |
-| `pnpm --filter @nbos/web typecheck`                                    | **PASS**                                                   |
-| ESLint on video-meetings feature + routes                              | **PASS**                                                   |
-| Vitest catalog parity + nav/guest gate tests (10)                      | **PASS**                                                   |
-| Browser: list/404 flag off, guest no sidebar, room token/LiveKit state | **NOT RUN** (no dev server on `:3000` in executor session) |
-| Two-browser media join on `:7880`                                      | **NOT RUN**                                                |
-
-## Handoff to S05
-
-**S05 can start** on this branch without pulling origin.
-
-S05 must wire:
-
-- Recording start/stop API + egress orchestration; enable room recording controls (currently disabled in `VideoMeetingRecordingIndicator`).
-- Consent gate before capture; update recording status on detail/room when API returns real states.
+- Drive `FileArtifactOperation` prepare → verify → COMPLETE for recording assets
+- Write `FileAsset` / version / link with purpose `MEETING_RECORDING`
+- Playback ACL + UI; keep honest PARTIAL/FAILED
+- Do not broaden ACL via entity links alone
 
 Still open (block production enablement later):
 
 - Legal notice / retention wording
 - Default RBAC role matrix beyond Owner/CEO
 - Capacity numbers on real hardware
-- Optional new `FileArtifactOperationSourceEnum` vs SYSTEM actor (decide in S06)
+- Optional new `FileArtifactOperationSourceEnum` vs SYSTEM actor
 
-## Files created / touched (S03)
+## Files created / touched (S05)
 
 ```text
-docker-compose.livekit.yml
-docker/livekit/livekit.yaml
-docker/livekit/egress.yaml
-apps/api/src/modules/video-meetings/* (tokens, invites, admission, guest controller, tests)
-apps/api/package.json (livekit-server-sdk@2.19.1)
-packages/database/prisma/schema/video-meetings.prisma
-packages/database/prisma/migrations/20260926180000_video_meetings_admission/
-packages/shared/src/video-meetings/invite.ts
+packages/database/prisma/schema/video-meetings.prisma  (+objectKey)
+packages/database/prisma/migrations/20260926190000_video_meetings_recording_object_key/
+apps/api/src/modules/video-meetings/video-meetings-recording*.ts
+apps/api/src/modules/video-meetings/video-meetings-consent.service.ts
+apps/api/src/modules/video-meetings/video-meetings-egress*.ts
+apps/api/src/modules/video-meetings/video-meetings-access-query.ts
+apps/web/src/features/video-meetings/VideoMeetingRecordingIndicator.tsx
+apps/web/src/features/video-meetings/VideoMeetingConsentActions.tsx
+apps/web/... guest/room/detail + messages + lib/api/video-meetings.ts
 .env.example
+docker/livekit/livekit.yaml (optional webhook comment)
 docs/implementation/video-meetings-v1/03-PHASES-AND-SLICES.md
-docs/implementation/video-meetings-v1/05-DEPLOYMENT-AND-RUNBOOK.md
 docs/implementation/video-meetings-v1/06-PROGRESS-AND-HANDOFF.md
 ```
 
 ## Prior slices
 
-S01–S02 summaries remain valid; S02 endpoints unchanged except `start` now ensures LiveKit room when configured.
+S01–S04 summaries remain valid; S04 recording controls are now wired to S05 APIs.

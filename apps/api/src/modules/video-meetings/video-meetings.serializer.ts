@@ -1,5 +1,9 @@
 import type { VideoMeetingStatus } from '@nbos/database';
 import { entityLinkGrantsVideoMeetingsAccess } from '@nbos/shared';
+import {
+  serializeRecordingGroup,
+  type VideoMeetingRecordingGroupDto,
+} from './video-meetings-recording.serializer';
 
 type MeetingSessionRow = {
   id: string;
@@ -14,6 +18,24 @@ type MeetingEntityLinkRow = {
   entityType: 'DEAL' | 'PROJECT' | 'PRODUCT' | 'CONTACT';
   entityId: string;
   createdAt: Date;
+};
+
+type MeetingRecordingRow = {
+  id: string;
+  status: VideoMeetingRecordingGroupDto['status'];
+  startedAt: Date | null;
+  stoppedAt: Date | null;
+  assets: Array<{
+    id: string;
+    kind: 'ROOM_COMPOSITE' | 'PARTICIPANT_AUDIO';
+    status: VideoMeetingRecordingGroupDto['assets'][number]['status'];
+    participantId: string | null;
+    rangeStartsAt: Date | null;
+    rangeEndsAt: Date | null;
+    objectKey?: string | null;
+    egressId?: string | null;
+    fileAssetId?: string | null;
+  }>;
 };
 
 type MeetingRow = {
@@ -31,6 +53,7 @@ type MeetingRow = {
   updatedAt: Date;
   sessions?: MeetingSessionRow[];
   entityLinks?: MeetingEntityLinkRow[];
+  recordings?: MeetingRecordingRow[];
 };
 
 export type VideoMeetingCardDto = {
@@ -48,6 +71,7 @@ export type VideoMeetingCardDto = {
   updatedAt: string;
   sessions: VideoMeetingSessionDto[];
   entityLinks: VideoMeetingEntityLinkDto[];
+  recordings: VideoMeetingRecordingGroupDto[];
 };
 
 export type VideoMeetingSessionDto = {
@@ -128,6 +152,7 @@ export function serializeVideoMeetingCard(
     updatedAt: meeting.updatedAt.toISOString(),
     sessions: (meeting.sessions ?? []).map(serializeSession),
     entityLinks: links.map(serializeEntityLink),
+    recordings: (meeting.recordings ?? []).map(serializeRecordingGroup),
   };
 }
 
@@ -156,6 +181,8 @@ export function assertSafeVideoMeetingPayload(payload: unknown): void {
     'inviteSecret',
     'recordingUrl',
     'r2Key',
+    'objectKey',
+    'egressId',
     'fileAssetId',
   ];
   for (const key of forbidden) {

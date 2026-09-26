@@ -37,6 +37,42 @@ export type VideoMeetingCard = VideoMeetingListItem & {
   calendarMeetingId: string | null;
   updatedAt: string;
   sessions: VideoMeetingSession[];
+  recordings?: VideoMeetingRecordingGroup[];
+};
+
+export type VideoMeetingRecordingStatus =
+  | 'PENDING'
+  | 'RECORDING'
+  | 'FINALIZING'
+  | 'READY'
+  | 'PARTIAL'
+  | 'FAILED';
+
+export type VideoMeetingRecordingAsset = {
+  id: string;
+  kind: 'ROOM_COMPOSITE' | 'PARTICIPANT_AUDIO';
+  status: 'PENDING' | 'READY' | 'FAILED' | 'MISSING';
+  participantId: string | null;
+  rangeStartsAt: string | null;
+  rangeEndsAt: string | null;
+};
+
+export type VideoMeetingRecordingGroup = {
+  id: string;
+  status: VideoMeetingRecordingStatus;
+  startedAt: string | null;
+  stoppedAt: string | null;
+  assets: VideoMeetingRecordingAsset[];
+};
+
+export type ConsentDecision = 'GRANTED' | 'DECLINED' | 'REVOKED';
+
+export type ConsentResult = {
+  participantId: string;
+  noticeVersion: string;
+  noticeCopy: string;
+  decision: ConsentDecision | 'UNKNOWN';
+  decidedAt: string | null;
 };
 
 export type PaginatedVideoMeetings = {
@@ -185,6 +221,36 @@ export const videoMeetingsApi = {
     );
     return resp.data;
   },
+
+  startRecording: async (meetingId: string): Promise<{ recording: VideoMeetingRecordingGroup }> => {
+    const resp = await api.post<{ recording: VideoMeetingRecordingGroup }>(
+      `/api/video-meetings/${meetingId}/recording/start`,
+    );
+    return resp.data;
+  },
+
+  stopRecording: async (meetingId: string): Promise<{ recording: VideoMeetingRecordingGroup }> => {
+    const resp = await api.post<{ recording: VideoMeetingRecordingGroup }>(
+      `/api/video-meetings/${meetingId}/recording/stop`,
+    );
+    return resp.data;
+  },
+
+  getRecording: async (
+    meetingId: string,
+  ): Promise<{ recording: VideoMeetingRecordingGroup | null }> => {
+    const resp = await api.get<{ recording: VideoMeetingRecordingGroup | null }>(
+      `/api/video-meetings/${meetingId}/recording`,
+    );
+    return resp.data;
+  },
+
+  decideConsent: async (meetingId: string, decision: ConsentDecision): Promise<ConsentResult> => {
+    const resp = await api.post<ConsentResult>(`/api/video-meetings/${meetingId}/consent`, {
+      decision,
+    });
+    return resp.data;
+  },
 };
 
 export async function guestPrejoin(
@@ -214,4 +280,39 @@ export async function guestToken(inviteToken: string, roomName?: string): Promis
   }
   const body = (await resp.json()) as { data?: GuestJoinResult } | GuestJoinResult;
   return 'data' in body && body.data ? body.data : (body as GuestJoinResult);
+}
+
+export async function guestDecideConsent(
+  inviteToken: string,
+  decision: ConsentDecision,
+): Promise<ConsentResult> {
+  const resp = await fetch('/api/bff/video-meetings/guest/consent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ inviteToken, decision }),
+  });
+  if (!resp.ok) {
+    throw new Error(`Guest consent failed (${resp.status})`);
+  }
+  const body = (await resp.json()) as { data?: ConsentResult } | ConsentResult;
+  return 'data' in body && body.data ? body.data : (body as ConsentResult);
+}
+
+export async function guestRecordingStatus(
+  inviteToken: string,
+): Promise<{ status: VideoMeetingRecordingStatus | 'NONE' }> {
+  const resp = await fetch('/api/bff/video-meetings/guest/recording-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ inviteToken }),
+  });
+  if (!resp.ok) {
+    throw new Error(`Guest recording status failed (${resp.status})`);
+  }
+  const body = (await resp.json()) as
+    | { data?: { status: VideoMeetingRecordingStatus | 'NONE' } }
+    | { status: VideoMeetingRecordingStatus | 'NONE' };
+  return 'data' in body && body.data
+    ? body.data
+    : (body as { status: VideoMeetingRecordingStatus | 'NONE' });
 }

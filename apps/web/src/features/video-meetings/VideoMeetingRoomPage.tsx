@@ -7,6 +7,7 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import { VideoMeetingLiveKitRoom } from './VideoMeetingLiveKitRoom';
 import { VideoMeetingWaitingHostPanel } from './VideoMeetingWaitingHostPanel';
+import { VideoMeetingConsentActions } from './VideoMeetingConsentActions';
 import { useVideoMeetingRoomConnect } from './use-video-meeting-room-connect';
 
 type VideoMeetingRoomPageProps = {
@@ -15,7 +16,7 @@ type VideoMeetingRoomPageProps = {
 
 export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
   const t = useTranslations('videoMeetings');
-  const { me } = usePermission();
+  const { me, can } = usePermission();
   const { phase, card, credentials, errorMessage, connect } = useVideoMeetingRoomConnect(
     meetingId,
     t('room.tokenError'),
@@ -29,6 +30,7 @@ export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
     () => Boolean(me && card && (me.id === card.hostEmployeeId || me.id === card.ownerEmployeeId)),
     [me, card],
   );
+  const canControlRecording = Boolean(isHost && can('EDIT', 'VIDEO_MEETINGS'));
 
   if (phase === 'loading') {
     return (
@@ -65,9 +67,12 @@ export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 lg:flex-row">
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <VideoMeetingConsentActions meetingId={meetingId} />
         <VideoMeetingLiveKitRoom
           credentials={credentials}
+          meetingId={meetingId}
+          canControlRecording={canControlRecording}
           onDisconnected={() => {
             void connect();
           }}

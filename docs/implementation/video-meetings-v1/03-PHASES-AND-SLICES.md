@@ -88,7 +88,7 @@ Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 | **Tests**                 | Consent unknown deny; late consent; mute/reconnect segment honesty; capacity reject path                                                                                            |
 | **Done criteria**         | Local proof: composite MP4 + distinct audio objects appear in R2 (or local S3 stand-in) with mapped participant ids — still may be pre-Drive finalize                               |
 | **Risks**                 | CPU starvation; treating AutoEgress as consent start; duplicate egress on retry                                                                                                     |
-| **Status**                | TODO                                                                                                                                                                                |
+| **Status**                | **DONE** (API + UI + unit tests; live composite/audio object proof **NOT RUN** — see handoff)                                                                                       |
 
 ---
 

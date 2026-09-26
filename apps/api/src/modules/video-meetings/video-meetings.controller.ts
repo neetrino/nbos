@@ -17,11 +17,14 @@ import {
   CreateVideoMeetingDto,
   CreateVideoMeetingInviteDto,
   ListVideoMeetingsQueryDto,
+  VideoMeetingConsentDecisionBodyDto,
   VideoMeetingTokenRequestDto,
 } from './dto/video-meetings.dto';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
+import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
+import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
 @ApiTags('Video Meetings')
@@ -33,6 +36,8 @@ export class VideoMeetingsController {
     private readonly videoMeetingsService: VideoMeetingsService,
     private readonly invitesService: VideoMeetingsInvitesService,
     private readonly admissionService: VideoMeetingsAdmissionService,
+    private readonly recordingService: VideoMeetingsRecordingService,
+    private readonly consentService: VideoMeetingsConsentService,
   ) {}
 
   @Post()
@@ -54,6 +59,13 @@ export class VideoMeetingsController {
   @ApiOperation({ summary: 'List ended video meetings (history)' })
   history(@CurrentUser() user: CurrentUserPayload, @Query() query: ListVideoMeetingsQueryDto) {
     return this.videoMeetingsService.history(user, query);
+  }
+
+  @Get('consent/notice')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Recording notice version + placeholder copy' })
+  consentNotice() {
+    return this.consentService.getNotice();
   }
 
   @Get(':id')
@@ -153,6 +165,42 @@ export class VideoMeetingsController {
   @ApiOperation({ summary: 'Cancel a meeting that was never held (soft)' })
   cancel(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.videoMeetingsService.cancel(user, id);
+  }
+
+  @Post(':id/recording/start')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Start consented room composite + per-participant audio recording' })
+  startRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.recordingService.start(user, id);
+  }
+
+  @Post(':id/recording/stop')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Stop active recording and verify objects (no Drive finalize)' })
+  stopRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.recordingService.stop(user, id);
+  }
+
+  @Get(':id/recording')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Latest recording group status (no keys or playback URLs)' })
+  getRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.videoMeetingsService.getRecordingStatus(user, id);
+  }
+
+  @Post(':id/consent')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Employee records own recording consent decision' })
+  async decideConsent(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: VideoMeetingConsentDecisionBodyDto,
+  ) {
+    const result = await this.consentService.decideForEmployee(user, id, body.decision);
+    if (body.decision === 'REVOKED' || body.decision === 'DECLINED') {
+      await this.recordingService.stopParticipantAudioOnWithdrawal(id, result.participantId);
+    }
+    return result;
   }
 
   @Post(':id/entity-links')

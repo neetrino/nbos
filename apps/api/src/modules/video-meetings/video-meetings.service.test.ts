@@ -58,9 +58,14 @@ describe('VideoMeetingsService', () => {
       isConfigured: vi.fn().mockReturnValue(false),
       ensureRoom: vi.fn().mockResolvedValue(undefined),
     };
+    const recordings = {
+      stopIfRecordingOnMeetingEnd: vi.fn().mockResolvedValue(undefined),
+      getActiveStatus: vi.fn().mockResolvedValue(null),
+    };
     service = new VideoMeetingsService(
       prisma as never,
       livekit as unknown as VideoMeetingsLivekitService,
+      recordings as never,
     );
   });
 

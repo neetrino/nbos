@@ -43,6 +43,8 @@ export function assertSafeGuestPayload(payload: unknown): void {
     'recordingUrl',
     'fileAssetId',
     'r2Key',
+    'objectKey',
+    'egressId',
     'tokenDigest',
   ];
   for (const key of forbidden) {

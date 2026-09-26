@@ -67,9 +67,18 @@
   "recording": {
     "label": "Granacum",
     "notRecording": "Granacum chi katarvum",
-    "notAvailableYet": "Granacum@ kmiatsvi hajord pghum.",
-    "startDisabled": "Sksel granacum",
-    "stopDisabled": "Kangnetsnel granacum"
+    "recordingActive": "Granacum@ ynthacum e",
+    "start": "Sksel granacum",
+    "stop": "Kangnetsnel granacum",
+    "loadError": "Chhajoghvets beladrel granacman status@",
+    "actionError": "Granacman gortsoxutyun@ chhajoghvets.",
+    "egressUnavailable": "Granacman tsarayutyun@ kargavorvats che.",
+    "consentRequired": "Bolor masnakitsner@ petk e hamadzaynen granacman.",
+    "consentGrant": "Hamadzayn em granacman@",
+    "consentDecline": "Mertsel granacum@",
+    "consentRevoke": "Het kanchvel hamadzaynutyun@",
+    "consentSaved": "Hamadzaynutyun@ pahpanvel e",
+    "consentError": "Chhajoghvets pahpanel voroshum@"
   },
   "room": {
     "title": "Handipman senyak",

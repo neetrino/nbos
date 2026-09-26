@@ -7,7 +7,7 @@
 #   docker compose -f docker-compose.livekit.yml up -d
 # Stop:
 #   docker compose -f docker-compose.livekit.yml down
-# Optional Egress stub (NOT started by default; recording is S05):
+# Optional Egress for S05 recording (not started by default):
 #   docker compose -f docker-compose.livekit.yml --profile egress up -d
 
 services:

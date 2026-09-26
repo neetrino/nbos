@@ -15,11 +15,13 @@ import { IS_PUBLIC_KEY, type CurrentUserPayload } from '../../common/decorators'
 import { PermissionGuard } from '../../common/guards/permission.guard';
 import { VIDEO_MEETINGS_FEATURE_ENABLED_TOKEN } from './video-meetings.constants';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
+import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsController } from './video-meetings.controller';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsFeatureService } from './video-meetings-feature.service';
 import { VideoMeetingsGuestController } from './video-meetings-guest.controller';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
+import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
 const BASE = '/api/video-meetings';
@@ -66,6 +68,7 @@ type MockService = {
   cancel: ReturnType<typeof vi.fn>;
   attachEntityLink: ReturnType<typeof vi.fn>;
   detachEntityLink: ReturnType<typeof vi.fn>;
+  getRecordingStatus: ReturnType<typeof vi.fn>;
 };
 
 async function bootApp(featureEnabled: boolean): Promise<{
@@ -83,6 +86,7 @@ async function bootApp(featureEnabled: boolean): Promise<{
     cancel: vi.fn().mockResolvedValue({ id: 'm1' }),
     attachEntityLink: vi.fn().mockResolvedValue({ id: 'm1' }),
     detachEntityLink: vi.fn().mockResolvedValue({ id: 'm1' }),
+    getRecordingStatus: vi.fn().mockResolvedValue({ recording: null }),
   };
   const admission = {
     guestPrejoin: vi.fn().mockResolvedValue({
@@ -102,11 +106,26 @@ async function bootApp(featureEnabled: boolean): Promise<{
     listWaiting: vi.fn(),
     admit: vi.fn(),
     reject: vi.fn(),
+    resolveGuestMeetingId: vi.fn().mockResolvedValue(null),
   };
   const invites = {
     create: vi.fn(),
     list: vi.fn(),
     revoke: vi.fn(),
+  };
+  const recordings = {
+    start: vi.fn(),
+    stop: vi.fn(),
+    getActiveStatus: vi.fn().mockResolvedValue(null),
+    stopParticipantAudioOnWithdrawal: vi.fn(),
+  };
+  const consent = {
+    getNotice: vi.fn().mockReturnValue({
+      noticeVersion: 'pending-legal-v0',
+      noticeCopy: 'PLACEHOLDER',
+    }),
+    decideForEmployee: vi.fn(),
+    decideForGuest: vi.fn(),
   };
 
   const moduleRef = await Test.createTestingModule({
@@ -115,6 +134,8 @@ async function bootApp(featureEnabled: boolean): Promise<{
       { provide: VideoMeetingsService, useValue: service },
       { provide: VideoMeetingsAdmissionService, useValue: admission },
       { provide: VideoMeetingsInvitesService, useValue: invites },
+      { provide: VideoMeetingsRecordingService, useValue: recordings },
+      { provide: VideoMeetingsConsentService, useValue: consent },
       { provide: ConfigService, useValue: { get: () => undefined } },
       { provide: VIDEO_MEETINGS_FEATURE_ENABLED_TOKEN, useValue: featureEnabled },
       VideoMeetingsFeatureService,

@@ -85,3 +85,24 @@ export class GuestTokenDto {
   @MaxLength(200)
   roomName?: string;
 }
+
+export enum VideoMeetingConsentDecisionDto {
+  GRANTED = 'GRANTED',
+  DECLINED = 'DECLINED',
+  REVOKED = 'REVOKED',
+}
+
+export class VideoMeetingConsentDecisionBodyDto {
+  @IsEnum(VideoMeetingConsentDecisionDto)
+  decision!: VideoMeetingConsentDecisionDto;
+}
+
+export class GuestConsentDto {
+  @IsString()
+  @MinLength(16)
+  @MaxLength(256)
+  inviteToken!: string;
+
+  @IsEnum(VideoMeetingConsentDecisionDto)
+  decision!: VideoMeetingConsentDecisionDto;
+}
