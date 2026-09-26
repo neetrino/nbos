@@ -1,0 +1,243 @@
+// ─── VIDEO MEETINGS (Module 22) ───────────────────────────
+// Isolated domain: no CALLS / AtsCallEvent coupling.
+// CalendarMeeting and Drive FileAsset links are optional string refs (nullable);
+// entity links do not imply media ACL. Drive finalize is S06.
+
+enum VideoMeetingStatus {
+  CREATED
+  WAITING
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
+enum VideoMeetingParticipantKind {
+  EMPLOYEE
+  GUEST
+}
+
+/// Affirmative consent only. UNKNOWN / missing never counts as granted (ADR-VM-003).
+enum VideoMeetingConsentDecision {
+  UNKNOWN
+  GRANTED
+  DECLINED
+  REVOKED
+}
+
+enum VideoMeetingRecordingStatus {
+  PENDING
+  RECORDING
+  FINALIZING
+  READY
+  PARTIAL
+  FAILED
+}
+
+/// Per-asset status is independent of meeting and recording-group status (ADR-VM-005).
+enum VideoMeetingRecordingAssetStatus {
+  PENDING
+  READY
+  FAILED
+  MISSING
+}
+
+enum VideoMeetingRecordingAssetKind {
+  ROOM_COMPOSITE
+  PARTICIPANT_AUDIO
+}
+
+enum VideoMeetingEntityLinkType {
+  DEAL
+  PROJECT
+  PRODUCT
+  CONTACT
+}
+
+/// Logical meeting identity. Status machine is independent of recording status.
+model VideoMeeting {
+  id                String             @id @default(uuid())
+  title             String
+  status            VideoMeetingStatus @default(CREATED)
+  /// Host employee id (application-validated). Not a CalendarMeeting requirement.
+  hostEmployeeId    String             @map("host_employee_id")
+  /// Owner employee id; may equal host. Application-validated.
+  ownerEmployeeId   String             @map("owner_employee_id")
+  /// Optional schedule window; standalone instant meetings leave these null.
+  scheduledStartsAt DateTime?          @map("scheduled_starts_at")
+  scheduledEndsAt   DateTime?          @map("scheduled_ends_at")
+  endedAt           DateTime?          @map("ended_at")
+  cancelledAt       DateTime?          @map("cancelled_at")
+  /// Optional link to an existing CalendarMeeting. Never auto-created from video meetings.
+  calendarMeetingId String?            @map("calendar_meeting_id")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  sessions     VideoMeetingSession[]
+  participants VideoMeetingParticipant[]
+  invites      VideoMeetingInvite[]
+  consents     VideoMeetingConsent[]
+  recordings   VideoMeetingRecording[]
+  entityLinks  VideoMeetingEntityLink[]
+
+  @@index([status])
+  @@index([hostEmployeeId])
+  @@index([ownerEmployeeId])
+  @@index([calendarMeetingId])
+  @@index([createdAt])
+  @@map("video_meetings")
+}
+
+/// Actual room run. One logical meeting may have several sessions.
+model VideoMeetingSession {
+  id              String    @id @default(uuid())
+  meetingId       String    @map("meeting_id")
+  /// LiveKit room name / id reference (opaque to other modules).
+  livekitRoomName String    @map("livekit_room_name")
+  livekitRoomSid  String?   @map("livekit_room_sid")
+  startedAt       DateTime? @map("started_at")
+  endedAt         DateTime? @map("ended_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  meeting      VideoMeeting             @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participants VideoMeetingParticipant[]
+  consents     VideoMeetingConsent[]
+  recordings   VideoMeetingRecording[]
+
+  @@index([meetingId])
+  @@index([livekitRoomName])
+  @@map("video_meeting_sessions")
+}
+
+/// Stable opaque server-generated participant identity. Display name is not verified identity.
+model VideoMeetingParticipant {
+  id          String                      @id @default(uuid())
+  meetingId   String                      @map("meeting_id")
+  /// Session where the participant currently/last connected; reconnect keeps the same row.
+  sessionId   String?                     @map("session_id")
+  kind        VideoMeetingParticipantKind
+  employeeId  String?                     @map("employee_id")
+  displayName String                      @map("display_name")
+  joinedAt    DateTime?                   @map("joined_at")
+  leftAt      DateTime?                   @map("left_at")
+  /// Segment timeline for mute/unpublish/reconnect (S05 fills; structure is free-form JSON).
+  trackTimeline Json?                     @map("track_timeline")
+  createdAt   DateTime                    @default(now()) @map("created_at")
+  updatedAt   DateTime                    @updatedAt @map("updated_at")
+
+  meeting    VideoMeeting                  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  session    VideoMeetingSession?          @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  consents   VideoMeetingConsent[]
+  assets     VideoMeetingRecordingAsset[]
+
+  @@index([meetingId])
+  @@index([sessionId])
+  @@index([employeeId])
+  @@map("video_meeting_participants")
+}
+
+/// Single-room guest invite. Store token DIGEST only — never plaintext (ADR-VM-004).
+model VideoMeetingInvite {
+  id                  String    @id @default(uuid())
+  meetingId           String    @map("meeting_id")
+  tokenDigest         String    @unique @map("token_digest")
+  expiresAt           DateTime  @map("expires_at")
+  revokedAt           DateTime? @map("revoked_at")
+  createdByEmployeeId String    @map("created_by_employee_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  meeting VideoMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@index([expiresAt])
+  @@map("video_meeting_invites")
+}
+
+/// Notice version + affirmative consent/revocation by participant (and optional session).
+model VideoMeetingConsent {
+  id              String                       @id @default(uuid())
+  meetingId       String                       @map("meeting_id")
+  participantId   String                       @map("participant_id")
+  sessionId       String?                      @map("session_id")
+  noticeVersion   String                       @map("notice_version")
+  decision        VideoMeetingConsentDecision  @default(UNKNOWN)
+  decidedAt       DateTime?                    @map("decided_at")
+  createdAt       DateTime                     @default(now()) @map("created_at")
+  updatedAt       DateTime                     @updatedAt @map("updated_at")
+
+  meeting     VideoMeeting            @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participant VideoMeetingParticipant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  session     VideoMeetingSession?    @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([meetingId])
+  @@index([participantId])
+  @@index([sessionId])
+  @@index([decision])
+  @@map("video_meeting_consents")
+}
+
+/// Recording group / composite job. Status independent of meeting lifecycle (ADR-VM-005).
+model VideoMeetingRecording {
+  id         String                     @id @default(uuid())
+  meetingId  String                     @map("meeting_id")
+  sessionId  String?                    @map("session_id")
+  status     VideoMeetingRecordingStatus @default(PENDING)
+  startedAt  DateTime?                  @map("started_at")
+  stoppedAt  DateTime?                  @map("stopped_at")
+  createdAt  DateTime                   @default(now()) @map("created_at")
+  updatedAt  DateTime                   @updatedAt @map("updated_at")
+
+  meeting  VideoMeeting                 @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  session  VideoMeetingSession?         @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  assets   VideoMeetingRecordingAsset[]
+
+  @@index([meetingId])
+  @@index([sessionId])
+  @@index([status])
+  @@map("video_meeting_recordings")
+}
+
+/// Individual video/audio output. Drive file id is nullable until S06 finalize.
+model VideoMeetingRecordingAsset {
+  id            String                          @id @default(uuid())
+  recordingId   String                          @map("recording_id")
+  kind          VideoMeetingRecordingAssetKind
+  status        VideoMeetingRecordingAssetStatus @default(PENDING)
+  participantId String?                         @map("participant_id")
+  livekitTrackId String?                        @map("livekit_track_id")
+  egressId      String?                         @map("egress_id")
+  /// Drive FileAsset id after S06 finalize; null until then.
+  fileAssetId   String?                         @map("file_asset_id")
+  rangeStartsAt DateTime?                       @map("range_starts_at")
+  rangeEndsAt   DateTime?                       @map("range_ends_at")
+  createdAt     DateTime                        @default(now()) @map("created_at")
+  updatedAt     DateTime                        @updatedAt @map("updated_at")
+
+  recording   VideoMeetingRecording    @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  participant VideoMeetingParticipant? @relation(fields: [participantId], references: [id], onDelete: SetNull)
+
+  @@index([recordingId])
+  @@index([participantId])
+  @@index([egressId])
+  @@index([fileAssetId])
+  @@index([status])
+  @@map("video_meeting_recording_assets")
+}
+
+/// Optional validated business-entity references. Editable after the meeting. Not media ACL.
+model VideoMeetingEntityLink {
+  id         String                   @id @default(uuid())
+  meetingId  String                   @map("meeting_id")
+  entityType VideoMeetingEntityLinkType @map("entity_type")
+  /// Target entity id; validated by application against Deal/Project/Product/Contact.
+  entityId   String                   @map("entity_id")
+  createdAt  DateTime                 @default(now()) @map("created_at")
+  updatedAt  DateTime                 @updatedAt @map("updated_at")
+
+  meeting VideoMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, entityType, entityId])
+  @@index([entityType, entityId])
+  @@map("video_meeting_entity_links")
+}

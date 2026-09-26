@@ -224,6 +224,8 @@ export * from './messenger-client-permissions';
 export * from './messenger-ws';
 export * from './checklist-template-item-evidence';
 export * from './checklist-evidence-file-ids';
+export * from './video-meetings-permissions';
+export * from './video-meetings-feature-flag';
 export * from '../delivery-compensation';
 
 export const BONUS_PERCENTAGES = {

@@ -32,7 +32,7 @@ Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 | **Tests**                 | Domain/unit tests for status invariants, invite digest, consent unknown→deny recording; permission negative fixtures                                                                                                                                    |
 | **Done criteria**         | `prisma validate` / generate; migration applies on disposable DB; no production migrate; CALLS/Finance untouched                                                                                                                                        |
 | **Risks**                 | Over-coupling to CalendarMeeting; reusing CALLS permissions                                                                                                                                                                                             |
-| **Status**                | TODO                                                                                                                                                                                                                                                    |
+| **Status**                | **DONE** (schema + RBAC + domain tests; feature flag default off)                                                                                                                                                                                       |
 
 ---
 
