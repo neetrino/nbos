@@ -14,12 +14,16 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { IS_PUBLIC_KEY, type CurrentUserPayload } from '../../common/decorators';
 import { PermissionGuard } from '../../common/guards/permission.guard';
 import { VIDEO_MEETINGS_FEATURE_ENABLED_TOKEN } from './video-meetings.constants';
+import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
 import { VideoMeetingsController } from './video-meetings.controller';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsFeatureService } from './video-meetings-feature.service';
+import { VideoMeetingsGuestController } from './video-meetings-guest.controller';
+import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
 const BASE = '/api/video-meetings';
+const GUEST_BASE = '/api/video-meetings/guest';
 
 let currentUser: CurrentUserPayload | null = null;
 
@@ -67,6 +71,7 @@ type MockService = {
 async function bootApp(featureEnabled: boolean): Promise<{
   app: INestApplication;
   service: MockService;
+  admission: { guestPrejoin: ReturnType<typeof vi.fn>; guestToken: ReturnType<typeof vi.fn> };
 }> {
   const service: MockService = {
     create: vi.fn().mockResolvedValue({ id: 'm1', title: 'Instant meeting' }),
@@ -79,11 +84,37 @@ async function bootApp(featureEnabled: boolean): Promise<{
     attachEntityLink: vi.fn().mockResolvedValue({ id: 'm1' }),
     detachEntityLink: vi.fn().mockResolvedValue({ id: 'm1' }),
   };
+  const admission = {
+    guestPrejoin: vi.fn().mockResolvedValue({
+      admissionState: 'WAITING',
+      participantId: 'p1',
+      displayName: 'Guest',
+    }),
+    guestToken: vi.fn().mockResolvedValue({
+      admissionState: 'ADMITTED',
+      livekitUrl: 'ws://127.0.0.1:7880',
+      token: 'jwt',
+      roomName: 'vm_x',
+      participantId: 'p1',
+      displayName: 'Guest',
+    }),
+    employeeToken: vi.fn(),
+    listWaiting: vi.fn(),
+    admit: vi.fn(),
+    reject: vi.fn(),
+  };
+  const invites = {
+    create: vi.fn(),
+    list: vi.fn(),
+    revoke: vi.fn(),
+  };
 
   const moduleRef = await Test.createTestingModule({
-    controllers: [VideoMeetingsController],
+    controllers: [VideoMeetingsController, VideoMeetingsGuestController],
     providers: [
       { provide: VideoMeetingsService, useValue: service },
+      { provide: VideoMeetingsAdmissionService, useValue: admission },
+      { provide: VideoMeetingsInvitesService, useValue: invites },
       { provide: ConfigService, useValue: { get: () => undefined } },
       { provide: VIDEO_MEETINGS_FEATURE_ENABLED_TOKEN, useValue: featureEnabled },
       VideoMeetingsFeatureService,
@@ -96,7 +127,7 @@ async function bootApp(featureEnabled: boolean): Promise<{
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
   await app.listen(0, '127.0.0.1');
-  return { app, service };
+  return { app, service, admission };
 }
 
 describe('VideoMeetings HTTP', () => {
@@ -133,8 +164,18 @@ describe('VideoMeetings HTTP', () => {
     }
   });
 
-  it('returns 404 for all routes when feature flag is off', async () => {
+  it('returns 404 for employee routes when feature flag is off', async () => {
     const response = await fetch(new URL(BASE, disabledBase), { method: 'GET' });
+    expect(response.status).toBe(HttpStatus.NOT_FOUND);
+  });
+
+  it('returns 404 for guest routes when feature flag is off', async () => {
+    currentUser = null;
+    const response = await fetch(new URL(`${GUEST_BASE}/prejoin`, disabledBase), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ inviteToken: 'x'.repeat(20), displayName: 'G' }),
+    });
     expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 
@@ -161,24 +202,19 @@ describe('VideoMeetings HTTP', () => {
     expect(service.create).toHaveBeenCalled();
   });
 
-  it('guest / public join paths are absent — controller is not @Public', () => {
+  it('employee controller is not @Public; guest handlers are', () => {
     expect(Reflect.getMetadata(IS_PUBLIC_KEY, VideoMeetingsController)).not.toBe(true);
-    for (const key of Object.getOwnPropertyNames(VideoMeetingsController.prototype)) {
-      if (key === 'constructor') continue;
-      const handler = VideoMeetingsController.prototype[key as keyof VideoMeetingsController];
-      expect(Reflect.getMetadata(IS_PUBLIC_KEY, handler)).not.toBe(true);
-    }
+    expect(Reflect.getMetadata(IS_PUBLIC_KEY, VideoMeetingsGuestController.prototype.prejoin)).toBe(
+      true,
+    );
+    expect(Reflect.getMetadata(IS_PUBLIC_KEY, VideoMeetingsGuestController.prototype.token)).toBe(
+      true,
+    );
   });
 
-  it('unauthenticated request is rejected (401)', async () => {
+  it('unauthenticated employee request is rejected (401)', async () => {
     currentUser = null;
     const response = await fetch(new URL(BASE, enabledBase), { method: 'GET' });
     expect(response.status).toBe(HttpStatus.UNAUTHORIZED);
-  });
-
-  it('probe of guest join path returns 404', async () => {
-    currentUser = userWith({ VIDEO_MEETINGS_VIEW: 'ALL' });
-    const response = await fetch(new URL(`${BASE}/guest/join`, enabledBase), { method: 'GET' });
-    expect(response.status).toBe(HttpStatus.NOT_FOUND);
   });
 });

@@ -7,10 +7,13 @@ import {
   isRecordingGroupReady,
 } from './status';
 import {
+  digestVideoMeetingInviteToken,
+  generateVideoMeetingInviteToken,
   inviteStoresDigestOnly,
   isInviteAdmissible,
   isInviteExpired,
   isInviteRevoked,
+  matchesVideoMeetingInviteDigest,
 } from './invite';
 import {
   deniesRecordingEligibility,
@@ -94,6 +97,17 @@ describe('video meeting invite digest rules', () => {
         revokedAt: null,
       }),
     ).toBe(true);
+  });
+
+  it('generates unpredictable tokens and stable digests', () => {
+    const a = generateVideoMeetingInviteToken();
+    const b = generateVideoMeetingInviteToken();
+    expect(a).not.toBe(b);
+    expect(a.length).toBeGreaterThan(20);
+    const digest = digestVideoMeetingInviteToken(a);
+    expect(digest).toHaveLength(64);
+    expect(matchesVideoMeetingInviteDigest(a, digest)).toBe(true);
+    expect(matchesVideoMeetingInviteDigest(b, digest)).toBe(false);
   });
 });
 

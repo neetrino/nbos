@@ -20,6 +20,7 @@ import {
   VIDEO_MEETING_LIST_MAX_PAGE_SIZE,
 } from './video-meetings.constants';
 import { generateOpaqueLivekitRoomName } from './video-meetings-room-name';
+import { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
 import {
   assertSafeVideoMeetingPayload,
   serializeVideoMeetingCard,
@@ -52,7 +53,10 @@ type ListResult = {
 
 @Injectable()
 export class VideoMeetingsService {
-  constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
+  constructor(
+    @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
+    private readonly livekit: VideoMeetingsLivekitService,
+  ) {}
 
   /** Create an instant standalone meeting; host and owner are the authenticated employee. */
   async create(user: CurrentUserPayload, dto: CreateVideoMeetingDto): Promise<VideoMeetingCardDto> {
@@ -70,7 +74,10 @@ export class VideoMeetingsService {
     return this.toCard(meeting, user.permissions);
   }
 
-  /** Start metadata-only: session + opaque room name (no LiveKit network call). */
+  /**
+   * Start meeting: persist session + opaque room name.
+   * When LiveKit env is configured, ensure the room server-side (never trust the browser).
+   */
   async start(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {
     const meeting = await this.requireHostOrOwner(meetingId, user.id);
     if (
@@ -83,11 +90,12 @@ export class VideoMeetingsService {
       throw new BadRequestException('Meeting is already active');
     }
     const now = new Date();
+    const livekitRoomName = generateOpaqueLivekitRoomName();
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.videoMeetingSession.create({
         data: {
           meetingId,
-          livekitRoomName: generateOpaqueLivekitRoomName(),
+          livekitRoomName,
           startedAt: now,
         },
       });
@@ -97,6 +105,9 @@ export class VideoMeetingsService {
         include: meetingCardInclude,
       });
     });
+    if (this.livekit.isConfigured()) {
+      await this.livekit.ensureRoom(livekitRoomName);
+    }
     return this.toCard(updated, user.permissions);
   }
 

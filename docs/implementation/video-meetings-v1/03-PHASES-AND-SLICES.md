@@ -60,7 +60,7 @@ Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 | **Tests**                 | Token scope (wrong room rejected); revoke/expire invite; employee vs guest grants                                                                                                                                             |
 | **Done criteria**         | Two browsers can join a room on **local** stack; documented env example only                                                                                                                                                  |
 | **Risks**                 | Using production Redis for LiveKit; embedding API secrets in web                                                                                                                                                              |
-| **Status**                | TODO                                                                                                                                                                                                                          |
+| **Status**                | **DONE** (compose + Nest tokens/invites/admission; two-browser join: see handoff)                                                                                                                                             |
 
 ---
 

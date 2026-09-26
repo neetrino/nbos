@@ -1,0 +1,9 @@
+# Optional LiveKit Egress stub (compose profile "egress"). Recording orchestration is S05.
+# Placeholders only — do not put real R2 credentials here.
+
+api_key: devkey
+api_secret: secret_local_dev_only_not_for_prod_use
+ws_url: ws://livekit-server:7880
+redis:
+  address: livekit-redis:6379
+insecure: true

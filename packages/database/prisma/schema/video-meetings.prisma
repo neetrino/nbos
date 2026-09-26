@@ -16,6 +16,13 @@ enum VideoMeetingParticipantKind {
   GUEST
 }
 
+/// Host admission for guests (and optional employee wait). Token mint requires ADMITTED.
+enum VideoMeetingAdmissionStatus {
+  WAITING
+  ADMITTED
+  REJECTED
+}
+
 /// Affirmative consent only. UNKNOWN / missing never counts as granted (ADR-VM-003).
 enum VideoMeetingConsentDecision {
   UNKNOWN
@@ -111,28 +118,33 @@ model VideoMeetingSession {
 
 /// Stable opaque server-generated participant identity. Display name is not verified identity.
 model VideoMeetingParticipant {
-  id          String                      @id @default(uuid())
-  meetingId   String                      @map("meeting_id")
+  id              String                       @id @default(uuid())
+  meetingId       String                       @map("meeting_id")
   /// Session where the participant currently/last connected; reconnect keeps the same row.
-  sessionId   String?                     @map("session_id")
-  kind        VideoMeetingParticipantKind
-  employeeId  String?                     @map("employee_id")
-  displayName String                      @map("display_name")
-  joinedAt    DateTime?                   @map("joined_at")
-  leftAt      DateTime?                   @map("left_at")
+  sessionId       String?                      @map("session_id")
+  kind            VideoMeetingParticipantKind
+  employeeId      String?                      @map("employee_id")
+  /// Guest invite that created this participant; null for employees. Reconnect reuses the row.
+  inviteId        String?                      @unique @map("invite_id")
+  displayName     String                       @map("display_name")
+  admissionStatus VideoMeetingAdmissionStatus  @default(WAITING) @map("admission_status")
+  joinedAt        DateTime?                    @map("joined_at")
+  leftAt          DateTime?                    @map("left_at")
   /// Segment timeline for mute/unpublish/reconnect (S05 fills; structure is free-form JSON).
-  trackTimeline Json?                     @map("track_timeline")
-  createdAt   DateTime                    @default(now()) @map("created_at")
-  updatedAt   DateTime                    @updatedAt @map("updated_at")
+  trackTimeline   Json?                        @map("track_timeline")
+  createdAt       DateTime                     @default(now()) @map("created_at")
+  updatedAt       DateTime                     @updatedAt @map("updated_at")
 
   meeting    VideoMeeting                  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   session    VideoMeetingSession?          @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  invite     VideoMeetingInvite?           @relation(fields: [inviteId], references: [id], onDelete: SetNull)
   consents   VideoMeetingConsent[]
   assets     VideoMeetingRecordingAsset[]
 
   @@index([meetingId])
   @@index([sessionId])
   @@index([employeeId])
+  @@index([meetingId, admissionStatus])
   @@map("video_meeting_participants")
 }
 
@@ -147,7 +159,8 @@ model VideoMeetingInvite {
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  meeting VideoMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meeting      VideoMeeting              @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  participants VideoMeetingParticipant[]
 
   @@index([meetingId])
   @@index([expiresAt])

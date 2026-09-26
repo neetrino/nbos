@@ -15,6 +15,10 @@ export type {
 } from './status';
 
 export {
+  VIDEO_MEETING_INVITE_TOKEN_BYTES,
+  generateVideoMeetingInviteToken,
+  digestVideoMeetingInviteToken,
+  matchesVideoMeetingInviteDigest,
   inviteStoresDigestOnly,
   isInviteRevoked,
   isInviteExpired,

@@ -7,6 +7,7 @@ import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma'
 import { VideoMeetingsService } from './video-meetings.service';
 import { assertSafeVideoMeetingPayload } from './video-meetings.serializer';
 import { VideoMeetingEntityLinkTypeDto } from './dto/video-meetings.dto';
+import type { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
 
 const HOST: CurrentUserPayload = {
   id: 'emp-host',
@@ -49,10 +50,18 @@ function meetingRow(overrides: Record<string, unknown> = {}) {
 describe('VideoMeetingsService', () => {
   let service: VideoMeetingsService;
   let prisma: MockPrisma;
+  let livekit: { isConfigured: ReturnType<typeof vi.fn>; ensureRoom: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     prisma = createMockPrisma();
-    service = new VideoMeetingsService(prisma as never);
+    livekit = {
+      isConfigured: vi.fn().mockReturnValue(false),
+      ensureRoom: vi.fn().mockResolvedValue(undefined),
+    };
+    service = new VideoMeetingsService(
+      prisma as never,
+      livekit as unknown as VideoMeetingsLivekitService,
+    );
   });
 
   it('creates an unlinked instant meeting with caller as host and owner', async () => {
@@ -76,7 +85,7 @@ describe('VideoMeetingsService', () => {
     assertSafeVideoMeetingPayload(card);
   });
 
-  it('start creates a session row with opaque room name and never calls LiveKit', async () => {
+  it('start creates a session with opaque room name; skips LiveKit when not configured', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
     prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue(meetingRow());
     prisma.videoMeetingSession.create = vi.fn().mockResolvedValue({
@@ -100,22 +109,52 @@ describe('VideoMeetingsService', () => {
         ],
       }),
     );
+    prisma.$transaction = vi
+      .fn()
+      .mockImplementation(async (fn: (tx: MockPrisma) => unknown) => fn(prisma));
 
     const card = await service.start(HOST, meetingRow().id);
 
-    expect(prisma.videoMeetingSession.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          livekitRoomName: expect.stringMatching(/^vm_/),
-          startedAt: expect.any(Date),
-        }),
+    expect(card.status).toBe(VideoMeetingStatus.ACTIVE);
+    expect(livekit.ensureRoom).not.toHaveBeenCalled();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
+
+  it('start ensures LiveKit room when configured', async () => {
+    livekit.isConfigured.mockReturnValue(true);
+    prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue(meetingRow());
+    prisma.videoMeetingSession.create = vi.fn().mockImplementation(({ data }) =>
+      Promise.resolve({
+        id: 'sess-1',
+        livekitRoomName: data.livekitRoomName,
+        startedAt: new Date(),
+        endedAt: null,
+        createdAt: new Date(),
       }),
     );
-    expect(fetchSpy).not.toHaveBeenCalled();
-    expect(card.status).toBe(VideoMeetingStatus.ACTIVE);
-    expect(card.sessions[0]?.livekitRoomName).toMatch(/^vm_/);
-    assertSafeVideoMeetingPayload(card);
-    fetchSpy.mockRestore();
+    prisma.videoMeeting.update = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        meetingRow({
+          status: VideoMeetingStatus.ACTIVE,
+          sessions: [
+            {
+              id: 'sess-1',
+              livekitRoomName: 'vm_test',
+              startedAt: new Date(),
+              endedAt: null,
+              createdAt: new Date(),
+            },
+          ],
+        }),
+      ),
+    );
+    prisma.$transaction = vi
+      .fn()
+      .mockImplementation(async (fn: (tx: MockPrisma) => unknown) => fn(prisma));
+
+    await service.start(HOST, meetingRow().id);
+    expect(livekit.ensureRoom).toHaveBeenCalledWith(expect.stringMatching(/^vm_/));
   });
 
   it('attach rejects when caller lacks target-object authorization', async () => {

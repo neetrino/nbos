@@ -15,9 +15,13 @@ import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../c
 import {
   AttachVideoMeetingEntityLinkDto,
   CreateVideoMeetingDto,
+  CreateVideoMeetingInviteDto,
   ListVideoMeetingsQueryDto,
+  VideoMeetingTokenRequestDto,
 } from './dto/video-meetings.dto';
+import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
+import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
 @ApiTags('Video Meetings')
@@ -25,11 +29,15 @@ import { VideoMeetingsService } from './video-meetings.service';
 @UseGuards(VideoMeetingsFeatureGuard)
 @Controller('video-meetings')
 export class VideoMeetingsController {
-  constructor(private readonly videoMeetingsService: VideoMeetingsService) {}
+  constructor(
+    private readonly videoMeetingsService: VideoMeetingsService,
+    private readonly invitesService: VideoMeetingsInvitesService,
+    private readonly admissionService: VideoMeetingsAdmissionService,
+  ) {}
 
   @Post()
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'ADD')
-  @ApiOperation({ summary: 'Create an instant standalone video meeting (metadata only)' })
+  @ApiOperation({ summary: 'Create an instant standalone video meeting' })
   create(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateVideoMeetingDto) {
     return this.videoMeetingsService.create(user, body);
   }
@@ -57,9 +65,80 @@ export class VideoMeetingsController {
 
   @Post(':id/start')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Start meeting (metadata session; no LiveKit call)' })
+  @ApiOperation({
+    summary: 'Start meeting; ensure LiveKit room when configured',
+  })
   start(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.videoMeetingsService.start(user, id);
+  }
+
+  @Post(':id/token')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Mint LiveKit join token for an admitted employee' })
+  employeeToken(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: VideoMeetingTokenRequestDto,
+  ) {
+    return this.admissionService.employeeToken(user, id, body.roomName);
+  }
+
+  @Post(':id/invites')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Create guest invite; raw token returned once' })
+  createInvite(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: CreateVideoMeetingInviteDto,
+  ) {
+    return this.invitesService.create(user, id, new Date(body.expiresAt));
+  }
+
+  @Get(':id/invites')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'List invites (no raw secrets)' })
+  listInvites(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.invitesService.list(user, id);
+  }
+
+  @Post(':id/invites/:inviteId/revoke')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Revoke a guest invite' })
+  revokeInvite(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('inviteId', ParseUUIDPipe) inviteId: string,
+  ) {
+    return this.invitesService.revoke(user, id, inviteId);
+  }
+
+  @Get(':id/waiting')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'List waiting guest participants' })
+  listWaiting(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    return this.admissionService.listWaiting(user, id);
+  }
+
+  @Post(':id/participants/:participantId/admit')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Admit a waiting guest' })
+  admit(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('participantId', ParseUUIDPipe) participantId: string,
+  ) {
+    return this.admissionService.admit(user, id, participantId);
+  }
+
+  @Post(':id/participants/:participantId/reject')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Reject a waiting guest' })
+  reject(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('participantId', ParseUUIDPipe) participantId: string,
+  ) {
+    return this.admissionService.reject(user, id, participantId);
   }
 
   @Post(':id/end')
@@ -78,7 +157,7 @@ export class VideoMeetingsController {
 
   @Post(':id/entity-links')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Attach Deal/Project/Product/Contact link (auth re-check)' })
+  @ApiOperation({ summary: 'Attach Deal/Project/Product/Contact link' })
   attachEntityLink(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id', ParseUUIDPipe) id: string,
