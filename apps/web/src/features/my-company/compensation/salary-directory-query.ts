@@ -12,7 +12,7 @@ export interface SalaryDirectoryListParams {
 /** Default salary board is every employee except terminated. */
 export function salaryDirectoryListParams(
   filter: SalaryDirectoryFilter,
-): SalaryDirectoryListParams {
+): SalaryDirectoryListParams & Record<string, unknown> {
   const page = { page: 1, pageSize: SALARY_DIRECTORY_PAGE_SIZE };
   if (filter === 'terminated') return { ...page, status: 'TERMINATED' };
   if (filter === 'everyone') return page;
