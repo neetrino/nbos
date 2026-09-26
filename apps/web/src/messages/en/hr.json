@@ -193,6 +193,7 @@
     "loadFailed": "Employees could not be loaded. Check your connection and try again.",
     "notFound": "Employee not found or you cannot open this profile.",
     "all": "All",
+    "includeTerminated": "All, including terminated",
     "terminatedChip": "Terminated · {count}",
     "filters": {
       "department": "Department",
@@ -394,9 +395,14 @@
     "subtabsAria": "Section pages",
     "coreFunction": "Core & Function"
   },
+  "sopPage": {
+    "intro": "SOP is the company library of standard procedures: how to repeat the same work the same way, even when someone leaves."
+  },
   "salaries": {
     "search": "Search people",
     "all": "All",
+    "terminated": "Terminated",
+    "everyone": "All, including terminated",
     "missing": "Salary not set",
     "set": "Salary set",
     "notSet": "Not set",
@@ -1147,13 +1153,17 @@
         "title": "KPI",
         "description": "Scorecard signals and the attainment thresholds that scale a sales bonus."
       },
-      "sop": {
-        "title": "SOP & Templates",
-        "description": "SOP documents, process templates, and operational runs."
-      },
       "checklists": {
         "title": "Checklists",
         "description": "Checklist templates, and the delivery rules that create them when a stage starts."
+      },
+      "sop": {
+        "title": "SOP",
+        "description": "SOP documents, process templates, and operational runs."
+      },
+      "coreFunction": {
+        "title": "Core & Function",
+        "description": "Product core, the function catalog, and role rates."
       }
     }
   }

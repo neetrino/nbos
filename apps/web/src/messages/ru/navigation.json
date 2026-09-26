@@ -26,13 +26,19 @@
   },
   "children": {
     "myCompany": {
+      "orgStructure": "Оргструктура",
+      "team": "Команда",
+      "departments": "Отделы",
+      "rolesSeats": "Роли и должности",
+      "compensation": "Зарплаты",
+      "bonus": "Бонусы",
+      "kpi": "KPI",
+      "checklists": "Чеклисты",
+      "sop": "SOP",
       "coreFunction": "Ядро и функции",
       "functionCatalog": "Каталог функций",
       "deliveryNorms": "Нормы поставки",
-      "compensation": "Зарплаты",
-      "kpi": "KPI / Сводка показателей",
-      "kpiPolicies": "Политики KPI",
-      "sop": "SOP и шаблоны"
+      "kpiPolicies": "Политики KPI"
     },
     "messenger": {
       "all": "Все",

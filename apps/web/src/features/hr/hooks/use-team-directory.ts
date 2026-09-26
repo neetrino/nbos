@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import type { DepartmentItem, Employee, RoleItem } from '@/lib/api/employees';
+import type { TeamDirectoryStatusQuery } from '@/features/hr/constants/team-directory-status';
+import {
+  employeesApi,
+  type DepartmentItem,
+  type Employee,
+  type RoleItem,
+} from '@/lib/api/employees';
 import {
   loadTeamFilterMeta,
   loadTeamList,
@@ -10,16 +16,19 @@ import {
   type TeamListQuery,
 } from '@/lib/employees/team-directory-cache';
 
+const TERMINATED_COUNT_PAGE_SIZE = 1;
+
 function buildTeamListQuery(
   search: string,
   filters: Record<string, string>,
-  effectiveStatus: string | undefined,
+  statusQuery: TeamDirectoryStatusQuery,
 ): TeamListQuery {
   return {
     search: search.trim() || undefined,
     roleId: filters.role && filters.role !== 'all' ? filters.role : undefined,
     level: filters.level && filters.level !== 'all' ? filters.level : undefined,
-    status: effectiveStatus,
+    status: statusQuery.status,
+    excludeStatus: statusQuery.excludeStatus,
     departmentId:
       filters.department && filters.department !== 'all' ? filters.department : undefined,
   };
@@ -28,11 +37,11 @@ function buildTeamListQuery(
 export function useTeamDirectory(
   search: string,
   filters: Record<string, string>,
-  effectiveStatus: string | undefined,
+  statusQuery: TeamDirectoryStatusQuery,
 ) {
   const listQuery = useMemo(
-    () => buildTeamListQuery(search, filters, effectiveStatus),
-    [search, filters, effectiveStatus],
+    () => buildTeamListQuery(search, filters, statusQuery),
+    [search, filters, statusQuery],
   );
 
   const t = useTranslations('hr');
@@ -43,6 +52,7 @@ export function useTeamDirectory(
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [terminatedTotal, setTerminatedTotal] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,6 +93,26 @@ export function useTeamDirectory(
     };
   }, [listQuery]);
 
+  const refreshTerminatedTotal = useCallback(async () => {
+    try {
+      const result = await employeesApi.getAll({
+        pageSize: TERMINATED_COUNT_PAGE_SIZE,
+        search: listQuery.search,
+        roleId: listQuery.roleId,
+        level: listQuery.level,
+        departmentId: listQuery.departmentId,
+        status: 'TERMINATED',
+      });
+      setTerminatedTotal(result.meta.total);
+    } catch {
+      setTerminatedTotal(0);
+    }
+  }, [listQuery.search, listQuery.roleId, listQuery.level, listQuery.departmentId]);
+
+  useEffect(() => {
+    void refreshTerminatedTotal();
+  }, [refreshTerminatedTotal]);
+
   useEffect(() => {
     let active = true;
     void loadTeamFilterMeta()
@@ -108,13 +138,14 @@ export function useTeamDirectory(
       setEmployees(entry.items);
       setTotal(entry.total);
       setFailed(false);
+      await refreshTerminatedTotal();
     } catch {
       setFailed(true);
     } finally {
       setRefreshing(false);
       setLoading(false);
     }
-  }, [listQuery]);
+  }, [listQuery, refreshTerminatedTotal]);
 
   return {
     employees,
@@ -123,6 +154,7 @@ export function useTeamDirectory(
     departments,
     loading,
     refreshing,
+    terminatedTotal,
     error: failed ? t('directory.loadFailed') : null,
     refetch,
   };

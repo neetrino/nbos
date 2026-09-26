@@ -26,13 +26,19 @@
   },
   "children": {
     "myCompany": {
+      "orgStructure": "Org Structure",
+      "team": "Team",
+      "departments": "Departments",
+      "rolesSeats": "Roles & Seats",
+      "compensation": "Salaries",
+      "bonus": "Bonus",
+      "kpi": "KPI",
+      "checklists": "Checklists",
+      "sop": "SOP",
       "coreFunction": "Core & Function",
       "functionCatalog": "Function catalog",
       "deliveryNorms": "Delivery norms",
-      "compensation": "Salaries",
-      "kpi": "KPI / Scorecard",
-      "kpiPolicies": "KPI gate policies",
-      "sop": "SOP & Templates"
+      "kpiPolicies": "KPI gate policies"
     },
     "messenger": {
       "all": "All",

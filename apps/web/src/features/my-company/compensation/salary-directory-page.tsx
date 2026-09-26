@@ -22,8 +22,14 @@ import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
 import { cn } from '@/lib/utils';
 import { SalaryEmployeeCard } from './salary-employee-card';
 import { SalaryProfileSheet } from './salary-profile-sheet';
+import {
+  salaryDirectoryListParams,
+  salaryDirectoryRequestScope,
+  salaryDirectoryShowsMissingOnly,
+  type SalaryDirectoryFilter,
+} from './salary-directory-query';
 
-type SalaryFilter = 'all' | 'missing';
+type SalaryFilter = SalaryDirectoryFilter;
 
 function hasSalary(employee: Employee, summary: ActiveCompensationSummary | undefined): boolean {
   const salary = summary?.baseSalary ?? employee.baseSalary;
@@ -43,24 +49,32 @@ export function SalaryDirectoryPage() {
   const [selected, setSelected] = useState<Employee | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
+  const requestScope = salaryDirectoryRequestScope(filter);
+
   useEffect(() => {
+    let cancelled = false;
     void (async () => {
       setLoading(true);
       try {
         const [people, active] = await Promise.all([
-          employeesApi.getAll({ page: 1, pageSize: 500 }),
+          employeesApi.getAll(salaryDirectoryListParams(requestScope)),
           compensationProfilesApi.listActive(),
         ]);
+        if (cancelled) return;
         setEmployees(people.items);
         setSummaries(active.items);
         setError(null);
       } catch (caught) {
+        if (cancelled) return;
         setError(getApiErrorMessage(caught, t('loadFailed')));
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, [t]);
+    return () => {
+      cancelled = true;
+    };
+  }, [requestScope, t]);
 
   const byEmployee = useMemo(() => {
     const map = new Map<string, ActiveCompensationSummary>();
@@ -72,7 +86,7 @@ export function SalaryDirectoryPage() {
     const query = search.trim().toLowerCase();
     return employees.filter((employee) => {
       const summary = byEmployee.get(employee.id);
-      if (filter === 'missing' && hasSalary(employee, summary)) return false;
+      if (salaryDirectoryShowsMissingOnly(filter) && hasSalary(employee, summary)) return false;
       if (!query) return true;
       const name = `${employee.firstName} ${employee.lastName}`.toLowerCase();
       return name.includes(query) || employee.role.name.toLowerCase().includes(query);
@@ -129,6 +143,16 @@ export function SalaryDirectoryPage() {
           active={filter === 'missing'}
           label={t('missing')}
           onClick={() => setFilter('missing')}
+        />
+        <FilterChip
+          active={filter === 'terminated'}
+          label={t('terminated')}
+          onClick={() => setFilter('terminated')}
+        />
+        <FilterChip
+          active={filter === 'everyone'}
+          label={t('everyone')}
+          onClick={() => setFilter('everyone')}
         />
       </div>
       {visible.length === 0 ? (

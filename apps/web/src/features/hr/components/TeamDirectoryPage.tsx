@@ -16,6 +16,11 @@ import {
   EMPLOYEE_STATUSES,
   isEmployeeLevelValue,
 } from '@/features/hr/constants/hr';
+import {
+  isDefaultTeamDirectoryScope,
+  resolveTeamDirectoryStatusQuery,
+  TEAM_DIRECTORY_STATUS_EVERYONE,
+} from '@/features/hr/constants/team-directory-status';
 import { useTeamDirectoryAdd } from '@/features/hr/components/team-directory-add';
 import { EmployeeSheet } from '@/features/hr/components/EmployeeSheet';
 import { TeamEmployeeCard } from '@/features/hr/components/TeamEmployeeCard';
@@ -51,15 +56,32 @@ function TeamDirectoryPageContent() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const effectiveStatus = useMemo(() => {
-    if (quickStatus) return quickStatus;
-    if (filters.status && filters.status !== 'all') return filters.status;
-    if (showTerminated) return 'TERMINATED';
-    return undefined;
-  }, [quickStatus, filters.status, showTerminated]);
+  const statusQuery = useMemo(
+    () =>
+      resolveTeamDirectoryStatusQuery({
+        quickStatus,
+        filterStatus: filters.status,
+        showTerminated,
+      }),
+    [quickStatus, filters.status, showTerminated],
+  );
+  const defaultScope = isDefaultTeamDirectoryScope({
+    quickStatus,
+    filterStatus: filters.status,
+    showTerminated,
+  });
 
-  const { employees, total, roles, departments, loading, refreshing, error, refetch } =
-    useTeamDirectory(search, filters, effectiveStatus);
+  const {
+    employees,
+    total,
+    roles,
+    departments,
+    loading,
+    refreshing,
+    terminatedTotal,
+    error,
+    refetch,
+  } = useTeamDirectory(search, filters, statusQuery);
 
   const openFromLink = useCallback((emp: Employee) => {
     setSelectedEmployee(emp);
@@ -105,10 +127,16 @@ function TeamDirectoryPageContent() {
       {
         key: 'status',
         label: t('directory.filters.status'),
-        options: EMPLOYEE_STATUSES.map((s) => ({
-          value: s.value,
-          label: t(`status.${s.value}`),
-        })),
+        options: [
+          ...EMPLOYEE_STATUSES.map((s) => ({
+            value: s.value,
+            label: t(`status.${s.value}`),
+          })),
+          {
+            value: TEAM_DIRECTORY_STATUS_EVERYONE,
+            label: t('directory.includeTerminated'),
+          },
+        ],
       },
     ],
     [roles, departments, t],
@@ -197,11 +225,12 @@ function TeamDirectoryPageContent() {
     <div className="flex flex-col gap-6 pb-6">
       <TeamStatusChips
         activeStatus={quickStatus}
+        defaultScopeActive={defaultScope}
         onStatusChange={handleQuickStatus}
         counts={statusCounts}
         showTerminated={showTerminated}
         onToggleTerminated={handleToggleTerminated}
-        terminatedCount={statusCounts.TERMINATED ?? 0}
+        terminatedCount={terminatedTotal}
       />
 
       {showInitialLoading ? (

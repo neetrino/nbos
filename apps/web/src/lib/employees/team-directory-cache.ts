@@ -17,6 +17,7 @@ export type TeamListQuery = {
   roleId?: string;
   level?: string;
   status?: string;
+  excludeStatus?: string;
   departmentId?: string;
 };
 
@@ -43,6 +44,7 @@ function teamListCacheKey(query: TeamListQuery): string {
     roleId: query.roleId,
     level: query.level,
     status: query.status,
+    excludeStatus: query.excludeStatus,
     departmentId: query.departmentId,
   });
 }
@@ -58,6 +60,7 @@ async function fetchTeamList(query: TeamListQuery): Promise<TeamListCacheEntry> 
     roleId: query.roleId,
     level: query.level,
     status: query.status,
+    excludeStatus: query.excludeStatus,
     departmentId: query.departmentId,
   });
   return { items, total: meta.total, fetchedAt: Date.now() };
@@ -131,8 +134,8 @@ export async function loadTeamFilterMeta(): Promise<TeamFilterMetaCache> {
   return filterMetaPromise;
 }
 
-/** Warm default team directory (no filters) after sign-in. Best-effort — never throws. */
+/** Warm default team directory (everyone except terminated) after sign-in. Best-effort. */
 export function prefetchTeamDirectoryDefaultPage(): void {
-  void loadTeamList({}).catch(() => undefined);
+  void loadTeamList({ excludeStatus: 'TERMINATED' }).catch(() => undefined);
   void loadTeamFilterMeta().catch(() => undefined);
 }

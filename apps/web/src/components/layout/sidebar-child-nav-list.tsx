@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { isNavChildGroup, type NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
-import { getPathFromHref } from '@/lib/navigation/nav-route-utils';
+import { isNavChildLinkActive } from '@/lib/navigation/nav-route-utils';
 import { ModuleSectionNavLink } from './ModuleSectionNavLink';
 import {
   SIDEBAR_NAV_CHILD_LINK_CLASS,
@@ -54,8 +54,7 @@ export function SidebarChildNavList({
             />
           );
         }
-        const childPath = getPathFromHref(child.href);
-        const childActive = pathname === childPath || pathname.startsWith(`${childPath}/`);
+        const childActive = isNavChildLinkActive(pathname, child, item.key);
         return (
           <li key={child.href}>
             <Link

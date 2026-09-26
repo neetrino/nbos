@@ -26,13 +26,19 @@
   },
   "children": {
     "myCompany": {
+      "orgStructure": "Կազմակերպական կառուցվածք",
+      "team": "Թիմ",
+      "departments": "Բաժիններ",
+      "rolesSeats": "Դերեր և տեղեր",
+      "compensation": "Աշխատավարձ",
+      "bonus": "Բոնուսներ",
+      "kpi": "KPI",
+      "checklists": "Ստուգաթերթեր",
+      "sop": "SOP",
       "coreFunction": "Միջուկ և ֆունկցիաներ",
       "functionCatalog": "Ֆունկցիաների կատալոգ",
       "deliveryNorms": "Առաքման նորմեր",
-      "compensation": "Աշխատավարձ",
-      "kpi": "KPI / ցուցանիշներ",
-      "kpiPolicies": "KPI կանոններ",
-      "sop": "SOP և ձևանմուշներ"
+      "kpiPolicies": "KPI կանոններ"
     },
     "messenger": {
       "all": "Բոլորը",

@@ -20,7 +20,11 @@ import {
   FoundationGuardrails,
   RecentTeamContext,
 } from '@/features/hr/components/MyCompanyHubInsights';
-import { MY_COMPANY_HUB_SECTIONS } from '@/features/hr/constants/my-company-hub-sections';
+import {
+  isMyCompanyNavVisible,
+  myCompanyHubSections,
+  type MyCompanyHubSection,
+} from '@/features/hr/constants/my-company-module-nav';
 import {
   departmentsApi,
   employeesApi,
@@ -70,9 +74,8 @@ export default function MyCompanyPage() {
   const activeEmployees = countActiveEmployees(employees);
   const assignedEmployees = employees.filter((employee) => employee.departments.length > 0).length;
   const systemRoles = roles.filter((role) => role.isSystem).length;
-  const visibleHubSections = MY_COMPANY_HUB_SECTIONS.filter(
-    (section) =>
-      permsLoading || !section.require || can(section.require.action, section.require.module),
+  const visibleHubSections = myCompanyHubSections().filter(
+    (section) => permsLoading || isMyCompanyNavVisible(section.gate, can),
   );
   const hasData = employees.length > 0 || departments.length > 0 || roles.length > 0;
   const hub = (
@@ -114,7 +117,7 @@ type HubLoadedProps = {
   assignedEmployees: number;
   rolesCount: number;
   systemRoles: number;
-  visibleHubSections: typeof MY_COMPANY_HUB_SECTIONS;
+  visibleHubSections: MyCompanyHubSection[];
 };
 
 function MyCompanyHubLoaded({
@@ -236,7 +239,7 @@ function OrgFoundationColumn({
   );
 }
 
-function HubSectionGrid({ sections }: { sections: typeof MY_COMPANY_HUB_SECTIONS }) {
+function HubSectionGrid({ sections }: { sections: MyCompanyHubSection[] }) {
   const t = useTranslations('hr');
   return (
     <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -253,11 +256,11 @@ function HubSectionGrid({ sections }: { sections: typeof MY_COMPANY_HUB_SECTIONS
                 <Icon size={14} />
               </div>
               <h3 className="text-foreground truncate text-sm font-semibold">
-                {t(`hub.sections.${section.key}.title` as never)}
+                {t(section.labelKey)}
               </h3>
             </div>
             <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-              {t(`hub.sections.${section.key}.description` as never)}
+              {t(section.descriptionKey)}
             </p>
           </Link>
         );

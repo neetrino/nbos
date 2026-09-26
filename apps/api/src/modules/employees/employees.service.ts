@@ -2,12 +2,14 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import type { UpdateOwnProfileDto } from './dto/update-own-profile.dto';
+import { resolveEmployeeListStatusFilter } from './employee-list-status';
 import { buildOwnProfileUpdateData } from './employee-own-profile';
 
 interface EmployeeQueryParams {
   search?: string;
   roleId?: string;
   status?: string;
+  excludeStatus?: string;
   level?: string;
   departmentId?: string;
   page?: number;
@@ -44,7 +46,16 @@ export class EmployeesService {
   }
 
   async findAllWithFilters(params: EmployeeQueryParams) {
-    const { search, roleId, status, level, departmentId, page = 1, pageSize = 50 } = params;
+    const {
+      search,
+      roleId,
+      status,
+      excludeStatus,
+      level,
+      departmentId,
+      page = 1,
+      pageSize = 50,
+    } = params;
     const where: Prisma.EmployeeWhereInput = {};
 
     if (search) {
@@ -55,7 +66,8 @@ export class EmployeesService {
       ];
     }
     if (roleId) where.roleId = roleId;
-    if (status) where.status = status as Prisma.EmployeeWhereInput['status'];
+    const statusFilter = resolveEmployeeListStatusFilter(status, excludeStatus);
+    if (statusFilter) where.status = statusFilter;
     if (level) where.level = level as Prisma.EmployeeWhereInput['level'];
     if (departmentId) {
       where.departments = { some: { departmentId } };

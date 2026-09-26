@@ -54,6 +54,11 @@ export class EmployeesController {
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'roleId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({
+    name: 'excludeStatus',
+    required: false,
+    description: 'Omit this status when `status` is unset. Used to hide terminated employees.',
+  })
   @ApiQuery({ name: 'level', required: false })
   @ApiQuery({ name: 'departmentId', required: false })
   @ApiQuery({ name: 'page', required: false })
@@ -62,6 +67,7 @@ export class EmployeesController {
     @Query('search') search?: string,
     @Query('roleId') roleId?: string,
     @Query('status') status?: string,
+    @Query('excludeStatus') excludeStatus?: string,
     @Query('level') level?: string,
     @Query('departmentId') departmentId?: string,
     @Query('page') page?: string,
@@ -71,6 +77,7 @@ export class EmployeesController {
       search,
       roleId,
       status,
+      excludeStatus,
       level,
       departmentId,
       page: page ? parseInt(page, 10) : undefined,

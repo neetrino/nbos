@@ -7,6 +7,7 @@ import { EMPLOYEE_STATUSES } from '@/features/hr/constants/hr';
 
 export interface TeamStatusChipsProps {
   activeStatus: string | null;
+  defaultScopeActive: boolean;
   onStatusChange: (status: string | null) => void;
   counts: Record<string, number>;
   showTerminated: boolean;
@@ -16,6 +17,7 @@ export interface TeamStatusChipsProps {
 
 export function TeamStatusChips({
   activeStatus,
+  defaultScopeActive,
   onStatusChange,
   counts,
   showTerminated,
@@ -29,7 +31,7 @@ export function TeamStatusChips({
       <Button
         type="button"
         size="sm"
-        variant={activeStatus === null ? 'default' : 'outline'}
+        variant={defaultScopeActive ? 'default' : 'outline'}
         className={cn('h-7 rounded-full px-3 text-xs')}
         onClick={() => onStatusChange(null)}
       >

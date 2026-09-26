@@ -29,6 +29,11 @@ export function isNavChildLinkActive(
   if (child.navSection && isRegisteredModuleKey(moduleKey)) {
     return isPathInModuleSection(moduleKey, pathname, child.navSection);
   }
+  const path = getPathFromHref(child.href);
+  if (child.exactMatch) return pathname === path;
+  if (child.matchHrefs !== undefined) {
+    return child.matchHrefs.some((href) => isChildRouteActive(pathname, href));
+  }
   return isChildRouteActive(pathname, child.href);
 }
 
