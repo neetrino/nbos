@@ -208,7 +208,7 @@ Decision sequence, adjusted after the Owner's first answer:
 
 1. Q-01 salary changes: record monthly effective terms and future scheduling (BR-01/02); do not continue asking for ordinary midmonth proration.
 2. Q-02 new hires: record the normal next-month salary setup and conditional current-open-month correction request (BR-03). Do not combine this with termination.
-3. Q-03 termination/final salary calculation: a separate open decision (BD-08/12).
+3. Q-03 termination/final salary calculation: Owner selected option A; record BR-04 (BD-08/12).
 4. Q-04 meaning of an unpaid month eligible for correction: no employee payment versus partially paid, plus the required approval/closed-period boundary (BD-07/12).
 5. Remaining salary inputs: leave/unpaid absence and launch currencies (BD-08/06).
 6. Bonus calculation controls: missing KPI and zero-Fix cap (BD-02/03).
@@ -224,8 +224,8 @@ Present only two or three related questions at a time. The register in section 6
 | Proposal ID | Subject                                               | Recommendation                                                                                                                                                                                                                     | Reason / tradeoff                                                                                                        | Status                                                                                         |
 | ----------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | P-SAL-01    | Ordinary midmonth salary changes                      | Calendar-day proration                                                                                                                                                                                                             | Earlier proposal assumed day-based changes                                                                               | Superseded for ordinary salary changes by Owner's monthly effective-date model; never approved |
-| P-SAL-02    | Combined hire/termination proration                   | Calendar-day proration for both events                                                                                                                                                                                             | Earlier proposal combined two distinct business cases                                                                    | Not approved; new-hire setup is BR-03; termination is separately open as Q-03                  |
-| P-TERM-01   | Final salary on termination                           | Record the manually entered last employment day and an explicitly approved final fixed-salary amount, with reason; no guessed automatic proration                                                                                  | Avoids inventing a formula where none is agreed; adds manual work and requires review                                    | Proposed only; Q-03 unanswered                                                                 |
+| P-SAL-02    | Combined hire/termination proration                   | Calendar-day proration for both events                                                                                                                                                                                             | Earlier proposal combined two distinct business cases                                                                    | Not approved; new-hire setup is BR-03; termination resolved separately by BR-04                |
+| P-TERM-01   | Final salary on termination                           | Record the manually entered last employment day and an explicitly approved final fixed-salary amount, with reason; no guessed automatic proration                                                                                  | Avoids inventing a formula where none is agreed; adds manual work and requires review                                    | Selected by Owner as option A; see BR-04                                                       |
 | P-CORR-01   | Eligibility for ordinary past-month salary correction | Permit controlled correction only when that employee has no payment recorded for the service month and the relevant payroll/posting period is not closed; approved amounts require renewed approval and consistent expense updates | Preserves payment history and bounds implementation complexity; partially paid cases need a separate adjustment workflow | Proposed only; Q-04 unanswered; not existing implemented functionality                         |
 
 Recommendations remain separate from approved rules. No recommendation establishes jurisdictional or contractual compliance; that scope remains under BD-13. No additional implementation investigation was performed to record this answer.
@@ -234,15 +234,17 @@ Recommendations remain separate from approved rules. No recommendation establish
 
 **Owner answer recorded on 2026-09-26.** The user described monthly salary effective dates and payment timing rather than selecting the previously proposed calendar-day formula. The records below distinguish approved direction from conditional requests and unanswered boundaries. No application functionality has changed.
 
-#### BR-01 — salary service month and payout window
+#### BR-01 — service month and non-blocking usual payout window
 
-- **Source / related questions:** Owner's first answer; Q-01, BD-07, period terminology detail in section 6.
-- **Approved rule:** fixed salary for a service month is paid during days 1–15 of the following month. The month whose salary is being earned must be distinguishable from the month in which money is paid.
-- **Illustration of the approved timing:** salary effective for October is used for October compensation, normally paid November 1–15. Changing October terms does not change September compensation paid during October 1–15.
-- **Scope:** this answer establishes salary timing. It does not by itself change the documented bonus payout window or approve a new bonus-period mapping.
-- **History:** the answer establishes the intended operating rule; treatment of existing records with a different payroll-month interpretation still requires an explicit migration/correction design and authorization.
-- **Open details:** who prepares/approves payroll, whether calendar-day deadline exceptions are needed, and the effect on existing payroll labels/records were not selected. Do not infer a new payday, statutory rule or bonus deadline.
-- **Implementation / validation:** M-02/M-10/M-11; V-02/V-17. Approved business rule, not implemented or independently verified behavior.
+- **Source / related questions:** Owner's first answer and subsequent explicit clarification; Q-01, BD-07 and period terminology.
+- **Approved rule:** the current month's ordinary payroll pays the **previous service month's fixed salary and bonuses**, using the fixed-salary terms applicable to that previous month. Keep the service/earned month distinct from actual payment dates and internal payroll labels.
+- **Usual schedule, not a hard gate:** days 1–15 of the following month are company practice. Do not prohibit recording or making an otherwise authorized payment before day 1 or after day 15 merely because of that window. This clarification supersedes any interpretation of BR-01 as a mandatory system date restriction. It also applies to the described combined salary-and-bonus payroll cycle; do not impose a competing hard bonus-day cutoff from older text.
+- **Illustration:** October fixed salary and October bonuses normally enter the November payout process. A salary change effective November must not change the October fixed salary in that payment. Paying late must not cause the system to select a later salary rate or erase an old bonus entitlement.
+- **Payment flexibility:** retain partial, deferred and not-yet-paid amounts; fixed salary is usually paid in full, but that practice must not prohibit other scenarios. The Owner particularly emphasized flexible bonus payout amounts. Choosing how much to pay now is distinct from changing the earned entitlement; no automatic cancellation of an unpaid debt was approved.
+- **Scope boundary:** the request removes the 1–15 calendar gate, not authentication, approval, balance integrity or closed-history correction controls. It does not authorize real financial operations or rewriting paid history.
+- **Audit evidence:** payment recording and partial-payment paths exist. The completed audit did not identify a specific 1–15 hard date gate; no new deployment verification is claimed. Posting-period and workflow checks do exist and must not be confused with a payday-window restriction.
+- **Open details:** mapping existing payroll-month labels/records to service month requires implementation care; first-launch migration/correction design, exact approval roles and exception attribution are not decided by this answer.
+- **Implementation / validation:** M-02/M-05/M-10/M-11; V-02/V-10/V-12/V-17. Explicitly test authorized payments outside days 1–15, late payment of prior obligations and rate stability. Approved rule, not implemented/verified completion.
 
 #### BR-02 — month-based salary changes and future scheduling
 
@@ -264,14 +266,24 @@ Recommendations remain separate from approved rules. No recommendation establish
 - **Not yet approved/defined:** the exception's calculation if the employee actually started midmonth; whether current-month setup means a full monthly salary in every such case; required factual hire date; already approved/partially paid cases; rehire and absence treatment. Do not infer these from the late-record-entry example.
 - **Implementation / validation:** M-02/M-10; V-01/V-02/V-16. Normal month-based setup recorded; current-open-month exception remains conditional. No initial-salary formula was invented.
 
-#### Termination — Owner intent recorded, calculation not yet selected
+#### BR-04 — termination: manually entered date and final fixed-salary amount
 
-- **Source / related questions:** Q-03, BD-08/12.
-- **Confirmed distinction:** termination is a separate business case from hiring. Final fixed salary may cover part of a month; the Owner states there is no established calculation model.
-- **Requested capability under discussion:** manually control the relevant termination date (past, current or future) and/or final salary amount. Examples include entering an actual termination ten days late or scheduling the end of employment for the end of the month.
-- **Not selected:** manual final amount versus automatic date-based calculation; calendar versus working days; date inclusivity; authority for overrides; relationship between employment date and account access deactivation. Do not assume that recording a financial date authorizes delayed or retrospective access changes.
-- **Preserved existing rule:** Active bonuses remain payable after termination; this decision concerns the fixed-salary amount and settlement mechanics, not cancellation of valid bonus obligations.
-- **Next step:** present Q-03 with realistic options and recommendation P-TERM-01. M-02/M-05/M-07; V-11/V-16.
+- **Source / related questions:** Owner explicitly selected **Q-03 option A**; BD-08/12.
+- **Approved rule:** record the last employment day and a manually determined, explicitly approved fixed-salary amount for the final month, with an explanation. Do not invent calendar-day or working-day automatic proration. This is separate from new-hire salary setup.
+- **Dates:** the Owner's earlier examples include a past date entered late, a current date and a scheduled future end of employment. Capture the factual date separately from the record-entry date; do not silently rewrite payment history when a past date is entered.
+- **Preserved obligations:** valid bonuses and other already owed amounts remain separate from the final fixed-salary amount. Active bonuses remain payable after termination under existing canon.
+- **Open details:** exact approver permissions, correction if the final month was already partially/fully paid, settlement timing and relationship to account access deactivation remain to be resolved. No employment date alone authorizes retroactive access changes or restoration.
+- **Implementation / validation:** M-02/M-05/M-07/M-08; V-11/V-12/V-16. Test past/current/future factual dates, reason/approval, preservation of valid bonus debt and payment history. Approved business rule, not a completed implementation.
+
+#### BR-05 — requested monthly payroll preparation automation
+
+- **Source:** Owner's clarification of payout timing and preparation workflow.
+- **Requested product direction:** on the first day of each month, automatically prepare a payroll for the preceding service month. Operators then review and edit as needed, approve the final per-employee fixed-salary-plus-bonus amounts, and record payouts through the normal controlled workflow. The request does not authorize automatic approval or actual payment.
+- **Initial status:** **DRAFT** is the recommended implementation default because the existing lifecycle supports editable preparation before review/approval. The Owner requested a correct preparatory status, suggesting draft; the status choice is recorded here as an implementation recommendation, not a separately selected business rule.
+- **Audit baseline:** manual payroll creation exists; a monthly payroll-creation scheduler was not established by the completed audit. Do not describe this automation as already implemented.
+- **Required implementation properties:** idempotent creation per intended period, no duplicate when Finance already created a run, no overwrite of human edits/approved records, period-correct salary/bonuses, and visible handling of incomplete inputs. These are implementation safeguards, not permission to guess missing compensation.
+- **Not decided:** whether automation is mandatory for first launch or a later convenience; business timezone/execution time, catch-up after a missed run and operational owner. Do not invent a deployment schedule from the request. Date flexibility under BR-01 remains even if automatic preparation runs on day 1.
+- **Implementation / validation:** M-02/M-05/M-09/M-10/M-11; V-01/V-02/V-10/V-13/V-14/V-17. Add scheduler-specific tests when implementation is authorized. Documentation only; no scheduler, Codex automation or application behavior changed.
 
 ### Recording subsequent answers
 
@@ -289,7 +301,7 @@ Only the three approved audit documents may be created or updated within the aut
 | Full general policy hierarchy                               | Conditional on actual agreements and BD-10; not applicable as employee-rate overrides to Delivery v2   | Deterministic precedence and audited reasons/effective dates                               |
 | Multiple currencies or explicit FX conversion               | Conditional on BD-06; an AMD-only restriction still needs enforcement                                  | Reproducible currency/rate history and correct expense/report units                        |
 | Statutory/net-pay processing, payslips, bank execution      | Separate scope under BD-13, with authoritative jurisdiction-specific requirements                      | Dedicated verified requirements and acceptance; not implied by gross-pay approval          |
-| Automatic monthly preparation                               | Only if approved operating scope requires it                                                           | Idempotent run creation, approved inclusion rules and owned failure handling               |
+| Automatic monthly preparation                               | Requested direction in BR-05; first-launch priority remains undecided                                  | Idempotent run creation, approved inclusion rules and owned failure handling               |
 
 ## 9. Completion criteria
 
