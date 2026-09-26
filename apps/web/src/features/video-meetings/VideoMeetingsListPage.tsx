@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataView, EmptyState, PageHero } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import { videoMeetingsApi, type VideoMeetingListItem } from '@/lib/api/video-meetings';
+import { resolveVideoMeetingDisplayTitle } from './video-meeting-title';
 
 type ListTab = 'active' | 'upcoming' | 'history';
 
@@ -60,7 +61,7 @@ export function VideoMeetingsListPage() {
   const handleCreate = async () => {
     setCreating(true);
     try {
-      const meeting = await videoMeetingsApi.create();
+      const meeting = await videoMeetingsApi.create(t('defaultTitle'));
       router.push(`/video-meetings/${meeting.id}`);
     } catch {
       setError(true);
@@ -112,7 +113,9 @@ export function VideoMeetingsListPage() {
               {items.map((item) => (
                 <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <div className="min-w-0">
-                    <p className="truncate font-medium">{item.title}</p>
+                    <p className="truncate font-medium">
+                      {resolveVideoMeetingDisplayTitle(item.title, t('defaultTitle'))}
+                    </p>
                     <p className="text-muted-foreground text-xs">
                       {t('list.status')}: {t(`status.${item.status}`)} · {t('list.created')}{' '}
                       {format(new Date(item.createdAt), 'PPp')}

@@ -1,6 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
+import { useState } from 'react';
 import type { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,32 +22,50 @@ export type VideoMeetingsDetailT = ReturnType<typeof useTranslations<'videoMeeti
 
 export function VideoMeetingInviteSection({
   invites,
-  freshSecret,
+  freshJoinUrl,
   onCreate,
   onRevoke,
   t,
 }: {
   invites: InviteListItem[];
-  freshSecret: string | null;
+  freshJoinUrl: string | null;
   onCreate: () => Promise<void>;
   onRevoke: (inviteId: string) => Promise<void>;
   t: VideoMeetingsDetailT;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyJoinUrl = async () => {
+    if (!freshJoinUrl) return;
+    try {
+      await navigator.clipboard.writeText(freshJoinUrl);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
+
   return (
-    <section className="border-border rounded-lg border p-4">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-medium">{t('detail.invites')}</h2>
+    <section className="bg-card/40 border-border/80 space-y-3 rounded-xl border p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-medium">{t('detail.invites')}</h2>
+          <p className="text-muted-foreground mt-1 text-xs">{t('detail.guestInviteHint')}</p>
+        </div>
         <Button type="button" size="sm" onClick={() => void onCreate()}>
           {t('actions.createInvite')}
         </Button>
       </div>
-      {freshSecret && (
-        <div className="bg-muted/50 mb-3 rounded-md p-3 text-sm">
-          <p className="font-medium">{t('detail.inviteSecretTitle')}</p>
+      {freshJoinUrl ? (
+        <div className="bg-muted/50 space-y-2 rounded-md p-3 text-sm">
+          <p className="font-medium">{t('detail.inviteLinkTitle')}</p>
           <p className="text-muted-foreground text-xs">{t('detail.inviteSecretHint')}</p>
-          <code className="mt-2 block break-all">{freshSecret}</code>
+          <code className="block text-xs break-all">{freshJoinUrl}</code>
+          <Button type="button" size="sm" variant="outline" onClick={() => void copyJoinUrl()}>
+            {copied ? t('actions.copied') : t('actions.copyInviteLink')}
+          </Button>
         </div>
-      )}
+      ) : null}
       {invites.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('detail.noInvites')}</p>
       ) : (
@@ -57,7 +76,7 @@ export function VideoMeetingInviteSection({
                 {t('detail.inviteExpires')}: {format(new Date(invite.expiresAt), 'PPp')}
                 {invite.revokedAt ? ` · ${t('detail.inviteRevoked')}` : ''}
               </span>
-              {!invite.revokedAt && (
+              {!invite.revokedAt ? (
                 <Button
                   type="button"
                   size="sm"
@@ -66,7 +85,7 @@ export function VideoMeetingInviteSection({
                 >
                   {t('actions.revokeInvite')}
                 </Button>
-              )}
+              ) : null}
             </li>
           ))}
         </ul>
@@ -95,10 +114,12 @@ export function VideoMeetingEntityLinksSection({
   t: VideoMeetingsDetailT;
 }) {
   return (
-    <section className="border-border rounded-lg border p-4">
-      <h2 className="mb-1 text-sm font-medium">{t('detail.entityLinks')}</h2>
-      <p className="text-muted-foreground mb-3 text-xs">{t('detail.entityLinksHint')}</p>
-      <div className="mb-3 flex flex-wrap gap-2">
+    <section className="bg-muted/20 border-border/70 space-y-3 rounded-xl border border-dashed p-4">
+      <div>
+        <h2 className="text-sm font-medium">{t('detail.entityLinks')}</h2>
+        <p className="text-muted-foreground mt-1 text-xs">{t('detail.entityLinksHint')}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
         <Select
           value={entityType}
           onValueChange={(value) => onEntityType(value as VideoMeetingEntityLinkType)}
@@ -120,7 +141,7 @@ export function VideoMeetingEntityLinksSection({
           placeholder={t('detail.entityId')}
           className="max-w-xs"
         />
-        <Button type="button" size="sm" onClick={() => void onAttach()}>
+        <Button type="button" size="sm" variant="secondary" onClick={() => void onAttach()}>
           {t('actions.attachLink')}
         </Button>
       </div>

@@ -123,13 +123,13 @@ function GuestJoinContent() {
         {consentMessage && <p className="text-muted-foreground text-xs">{consentMessage}</p>}
         <VideoMeetingLiveKitRoom
           credentials={join}
-          guestInviteToken={inviteToken}
           onDisconnected={() => {
             setJoin(null);
             setPhase('waiting');
             void pollForToken();
           }}
         />
+        <VideoMeetingRecordingIndicator guestInviteToken={inviteToken} compact />
       </div>
     );
   }

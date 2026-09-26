@@ -196,6 +196,52 @@ describe('VideoMeetingsAdmissionService', () => {
     );
   });
 
+  it('declined or waiting employee does not receive a publish token', async () => {
+    prisma.videoMeetingSession.findFirst = vi.fn().mockResolvedValue({
+      id: 's1',
+      livekitRoomName: 'vm_room',
+      endedAt: null,
+    });
+    prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue({
+      id: 'm1',
+      status: VideoMeetingStatus.ACTIVE,
+      hostEmployeeId: HOST.id,
+      ownerEmployeeId: HOST.id,
+      participants: [
+        {
+          id: 'p-waiting',
+          admissionStatus: VideoMeetingAdmissionStatus.WAITING,
+          employeeId: 'emp-colleague',
+        },
+      ],
+    });
+    const colleague: CurrentUserPayload = {
+      ...HOST,
+      id: 'emp-colleague',
+      email: 'c@nbos.test',
+      firstName: 'Col',
+      lastName: 'League',
+    };
+    await expect(service.employeeToken(colleague, 'm1')).rejects.toBeInstanceOf(ForbiddenException);
+    expect(livekit.mintJoinToken).not.toHaveBeenCalled();
+
+    prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue({
+      id: 'm1',
+      status: VideoMeetingStatus.ACTIVE,
+      hostEmployeeId: HOST.id,
+      ownerEmployeeId: HOST.id,
+      participants: [
+        {
+          id: 'p-declined',
+          admissionStatus: VideoMeetingAdmissionStatus.REJECTED,
+          employeeId: 'emp-colleague',
+        },
+      ],
+    });
+    await expect(service.employeeToken(colleague, 'm1')).rejects.toBeInstanceOf(ForbiddenException);
+    expect(livekit.mintJoinToken).not.toHaveBeenCalled();
+  });
+
   it('revoked invite cannot prejoin', async () => {
     invites.findAdmissibleBySecret.mockResolvedValue(null);
     await expect(service.guestPrejoin('bad', 'Name')).rejects.toBeInstanceOf(NotFoundException);

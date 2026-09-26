@@ -159,7 +159,7 @@ export class VideoMeetingsController {
   @Post(':id/end')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
   @ApiOperation({
-    summary: 'End an active video meeting (soft); Calendar cancel only with explicit confirm',
+    summary: 'End meeting; Calendar cancel only with confirm',
   })
   end(
     @CurrentUser() user: CurrentUserPayload,
@@ -172,7 +172,7 @@ export class VideoMeetingsController {
   @Post(':id/cancel')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
   @ApiOperation({
-    summary: 'Cancel a meeting never held; Calendar cancel only with explicit confirm',
+    summary: 'Cancel meeting; Calendar cancel only with confirm',
   })
   cancel(
     @CurrentUser() user: CurrentUserPayload,
@@ -184,21 +184,21 @@ export class VideoMeetingsController {
 
   @Post(':id/recording/start')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Start consented room composite + per-participant audio recording' })
+  @ApiOperation({ summary: 'Start consented recording' })
   startRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.recordingService.start(user, id);
   }
 
   @Post(':id/recording/stop')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Stop active recording and Drive-finalize verified objects' })
+  @ApiOperation({ summary: 'Stop recording and finalize' })
   stopRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.recordingService.stop(user, id);
   }
 
   @Get(':id/recording')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Latest recording group status (no keys or playback URLs)' })
+  @ApiOperation({ summary: 'Latest recording status' })
   getRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.videoMeetingsService.getRecordingStatus(user, id);
   }
@@ -206,7 +206,7 @@ export class VideoMeetingsController {
   @Get(':id/recording/playback')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
   @ApiOperation({
-    summary: 'Short-lived signed URL for composite playback (host/owner/participant only)',
+    summary: 'Signed composite playback URL',
   })
   getRecordingPlayback(
     @CurrentUser() user: CurrentUserPayload,
@@ -217,7 +217,7 @@ export class VideoMeetingsController {
 
   @Post(':id/consent')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Employee records own recording consent decision' })
+  @ApiOperation({ summary: 'Record employee consent decision' })
   async decideConsent(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id', ParseUUIDPipe) id: string,

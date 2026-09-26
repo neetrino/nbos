@@ -29,7 +29,9 @@
     "attachLink": "Привязать",
     "detachLink": "Удалить",
     "admit": "Допустить",
-    "reject": "Отклонить"
+    "reject": "Отклонить",
+    "inviteColleagues": "Пригласить коллег",
+    "copyInviteLink": "Скопировать ссылку"
   },
   "list": {
     "host": "Ведущий",
@@ -62,7 +64,20 @@
     "inviteSecretTitle": "Одноразовый секрет",
     "inviteSecretHint": "Скопируйте сейчас — больше не будет показан.",
     "inviteExpires": "Истекает",
-    "inviteRevoked": "Отозвано"
+    "inviteRevoked": "Отозвано",
+    "colleagueInvites": "Пригласить коллег",
+    "colleagueInvitesHint": "Найдите сотрудников по имени. Они получат приглашение в NBOS с кнопками Принять/Отклонить — без гостевой комнаты ожидания.",
+    "colleagueSearch": "Коллеги",
+    "colleagueSearchPlaceholder": "Поиск по имени…",
+    "colleagueInviteError": "Не удалось отправить приглашения коллегам.",
+    "noColleagueInvites": "Коллеги ещё не приглашены.",
+    "guestInviteHint": "Для клиентов и тех, у кого нет аккаунта NBOS — поделитесь ссылкой для входа.",
+    "inviteLinkTitle": "Ссылка для гостя",
+    "colleagueStatus": {
+      "WAITING": "Ожидает",
+      "ADMITTED": "Принято",
+      "REJECTED": "Отклонено"
+    }
   },
   "recording": {
     "label": "Запись",
@@ -112,7 +127,11 @@
     "leave": "Покинуть комнату",
     "waitingGuests": "Ожидают допуска",
     "noWaiting": "Никто не ожидает.",
-    "controlsAria": "Управление в комнате"
+    "controlsAria": "Управление в комнате",
+    "mic": "Микрофон",
+    "camera": "Камера",
+    "shareScreen": "Демонстрация экрана",
+    "chat": "Чат"
   },
   "guest": {
     "title": "Вход на видеовстречу",
@@ -138,5 +157,12 @@
     "meetingTitle": "Встреча — {label}",
     "actionError": "Не удалось начать или привязать видеовстречу.",
     "noEndedMeetings": "Нет завершённых встреч для привязки."
+  },
+  "defaultTitle": "Мгновенная встреча",
+  "colleaguePrompt": {
+    "title": "Приглашение на видеовстречу",
+    "body": "{inviter} приглашает вас на «{meeting}».",
+    "accept": "Принять",
+    "decline": "Отклонить"
   }
 }

@@ -78,7 +78,7 @@ async function bootApp(featureEnabled: boolean): Promise<{
   admission: { guestPrejoin: ReturnType<typeof vi.fn>; guestToken: ReturnType<typeof vi.fn> };
 }> {
   const service: MockService = {
-    create: vi.fn().mockResolvedValue({ id: 'm1', title: 'Instant meeting' }),
+    create: vi.fn().mockResolvedValue({ id: 'm1', title: 'Мгновенная встреча' }),
     list: vi.fn().mockResolvedValue({ items: [], meta: { page: 1, pageSize: 20, total: 0 } }),
     history: vi.fn().mockResolvedValue({ items: [], meta: { page: 1, pageSize: 20, total: 0 } }),
     getCard: vi.fn().mockResolvedValue({ id: 'm1' }),

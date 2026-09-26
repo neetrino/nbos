@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { ErrorState, LoadingState } from '@/components/shared';
+import { APP_MAIN_CONTENT_FILL_HEIGHT_CLASS } from '@/components/layout/app-layout-constants';
 import { usePermission } from '@/lib/permissions';
-import { VideoMeetingLiveKitRoom } from './VideoMeetingLiveKitRoom';
-import { VideoMeetingWaitingHostPanel } from './VideoMeetingWaitingHostPanel';
 import { VideoMeetingConsentActions } from './VideoMeetingConsentActions';
+import { VideoMeetingLiveKitRoom } from './VideoMeetingLiveKitRoom';
+import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
+import { VideoMeetingWaitingHostPanel } from './VideoMeetingWaitingHostPanel';
 import { useVideoMeetingRoomConnect } from './use-video-meeting-room-connect';
 
 type VideoMeetingRoomPageProps = {
@@ -66,13 +68,20 @@ export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 lg:flex-row">
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <VideoMeetingConsentActions meetingId={meetingId} />
+    <div
+      className={`flex min-h-0 flex-col gap-3 lg:flex-row ${APP_MAIN_CONTENT_FILL_HEIGHT_CLASS}`}
+    >
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+        <div className="border-border/70 bg-card/50 flex shrink-0 flex-wrap items-center gap-2 rounded-lg border px-3 py-2">
+          <VideoMeetingRecordingIndicator
+            compact
+            meetingId={meetingId}
+            canControl={canControlRecording}
+          />
+          <VideoMeetingConsentActions meetingId={meetingId} />
+        </div>
         <VideoMeetingLiveKitRoom
           credentials={credentials}
-          meetingId={meetingId}
-          canControlRecording={canControlRecording}
           onDisconnected={() => {
             void connect();
           }}

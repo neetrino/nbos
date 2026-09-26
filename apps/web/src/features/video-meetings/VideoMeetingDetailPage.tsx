@@ -9,17 +9,20 @@ import { ErrorState, LoadingState } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import {
   videoMeetingsApi,
+  type ColleagueInviteListItem,
   type InviteListItem,
   type VideoMeetingCard,
   type VideoMeetingEntityLinkType,
 } from '@/lib/api/video-meetings';
 import { VIDEO_MEETING_INVITE_DEFAULT_TTL_HOURS } from './constants';
+import { VideoMeetingColleagueInviteSection } from './VideoMeetingColleagueInviteSection';
 import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
 import { VideoMeetingRecordingPlayback } from './VideoMeetingRecordingPlayback';
 import {
   VideoMeetingEntityLinksSection,
   VideoMeetingInviteSection,
 } from './video-meeting-detail-sections';
+import { buildGuestInviteJoinUrl, resolveVideoMeetingDisplayTitle } from './video-meeting-title';
 import { videoMeetingStatusLabel } from './video-meeting-status-label';
 
 type VideoMeetingDetailPageProps = {
@@ -37,9 +40,10 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
   const { me, can } = usePermission();
   const [card, setCard] = useState<VideoMeetingCard | null>(null);
   const [invites, setInvites] = useState<InviteListItem[]>([]);
+  const [colleagues, setColleagues] = useState<ColleagueInviteListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [freshSecret, setFreshSecret] = useState<string | null>(null);
+  const [freshJoinUrl, setFreshJoinUrl] = useState<string | null>(null);
   const [entityType, setEntityType] = useState<VideoMeetingEntityLinkType>('DEAL');
   const [entityId, setEntityId] = useState('');
   const [busy, setBusy] = useState(false);
@@ -57,9 +61,17 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
       const nextCard = await videoMeetingsApi.getCard(meetingId);
       setCard(nextCard);
       if (canEdit) {
-        setInvites(await videoMeetingsApi.listInvites(meetingId));
+        const [nextInvites, nextColleagues] = await Promise.all([
+          videoMeetingsApi.listInvites(meetingId),
+          videoMeetingsApi
+            .listColleagueInvites(meetingId)
+            .catch(() => [] as ColleagueInviteListItem[]),
+        ]);
+        setInvites(nextInvites);
+        setColleagues(nextColleagues);
       } else {
         setInvites([]);
+        setColleagues([]);
       }
     } catch {
       setError(true);
@@ -84,133 +96,126 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
     }
   };
 
-  if (loading) {
-    return <LoadingState />;
-  }
+  if (loading) return <LoadingState />;
   if (error || !card) {
     return <ErrorState description={t('loadError')} onRetry={() => void load()} />;
   }
 
+  const title = resolveVideoMeetingDisplayTitle(card.title, t('defaultTitle'));
   const hostLabel =
     me?.id === card.hostEmployeeId ? t('detail.youAreHost') : card.hostEmployeeId.slice(0, 8);
+  const isLive = card.status === 'ACTIVE';
 
   return (
-    <div className="flex flex-col gap-6 pb-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{card.title}</h1>
-          <p className="text-muted-foreground text-sm">
-            {videoMeetingStatusLabel(card.status, t)} · {t('detail.host')}: {hostLabel}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8">
+      <header className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+            <p className="text-muted-foreground text-sm">
+              {videoMeetingStatusLabel(card.status, t)} · {t('detail.host')}: {hostLabel}
+            </p>
+            <p className="text-muted-foreground text-xs">
+              {card.scheduledStartsAt
+                ? format(new Date(card.scheduledStartsAt), 'PPp')
+                : t('detail.notScheduled')}
+            </p>
+          </div>
           <Link
             href="/video-meetings"
-            className="border-border hover:bg-muted/90 inline-flex h-7 items-center rounded-lg border px-2.5 text-sm"
+            className="border-border hover:bg-muted/90 inline-flex h-9 items-center rounded-lg border px-3 text-sm"
           >
             {t('actions.backToList')}
           </Link>
-          {card.status === 'ACTIVE' && (
-            <Link
-              href={`/video-meetings/${meetingId}/room`}
-              className="bg-primary text-primary-foreground inline-flex h-7 items-center rounded-lg px-2.5 text-sm"
-            >
-              {t('actions.joinRoom')}
-            </Link>
-          )}
         </div>
-      </div>
+        {isLive ? (
+          <Link
+            href={`/video-meetings/${meetingId}/room`}
+            className="bg-primary text-primary-foreground inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-medium sm:w-auto sm:px-6"
+          >
+            {t('actions.joinRoom')}
+          </Link>
+        ) : null}
+        {canEdit && isHost ? (
+          <div className="flex flex-wrap gap-2">
+            {card.status !== 'ACTIVE' && card.status !== 'ENDED' && card.status !== 'CANCELLED' ? (
+              <Button
+                type="button"
+                disabled={busy}
+                onClick={() => void runAction(() => videoMeetingsApi.start(meetingId))}
+              >
+                {t('actions.startMeeting')}
+              </Button>
+            ) : null}
+            {card.status === 'ACTIVE' ? (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={busy}
+                onClick={() => void runAction(() => videoMeetingsApi.end(meetingId))}
+              >
+                {t('actions.endMeeting')}
+              </Button>
+            ) : null}
+            {card.status === 'CREATED' || card.status === 'WAITING' ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={busy}
+                onClick={() => void runAction(() => videoMeetingsApi.cancel(meetingId))}
+              >
+                {t('actions.cancelMeeting')}
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+      </header>
 
-      <VideoMeetingRecordingIndicator
-        meetingId={meetingId}
-        canControl={canEdit && isHost}
-        initialRecording={card.recordings?.[0] ?? null}
-      />
+      {canEdit && isHost ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <VideoMeetingColleagueInviteSection
+            meetingId={meetingId}
+            excludeEmployeeId={me?.id}
+            initialInvites={colleagues}
+          />
+          <VideoMeetingInviteSection
+            invites={invites}
+            freshJoinUrl={freshJoinUrl}
+            onCreate={async () => {
+              const created = await videoMeetingsApi.createInvite(meetingId, inviteExpiryIso());
+              setFreshJoinUrl(
+                created.joinUrl.startsWith('http')
+                  ? created.joinUrl
+                  : buildGuestInviteJoinUrl(created.token),
+              );
+              setInvites(await videoMeetingsApi.listInvites(meetingId));
+            }}
+            onRevoke={async (inviteId) => {
+              await videoMeetingsApi.revokeInvite(meetingId, inviteId);
+              setInvites(await videoMeetingsApi.listInvites(meetingId));
+            }}
+            t={t}
+          />
+        </div>
+      ) : null}
 
-      <VideoMeetingRecordingPlayback
-        meetingId={meetingId}
-        recording={card.recordings?.[0] ?? null}
-        isHost={isHost}
-      />
-
-      <section className="border-border rounded-lg border p-4">
-        <h2 className="mb-2 text-sm font-medium">{t('detail.schedule')}</h2>
-        <p className="text-muted-foreground text-sm">
-          {card.scheduledStartsAt
-            ? format(new Date(card.scheduledStartsAt), 'PPp')
-            : t('detail.notScheduled')}
-        </p>
-      </section>
-
-      {canEdit && isHost && (
-        <section className="flex flex-wrap gap-2">
-          {card.status !== 'ACTIVE' && card.status !== 'ENDED' && card.status !== 'CANCELLED' && (
-            <Button
-              type="button"
-              disabled={busy}
-              onClick={() => void runAction(() => videoMeetingsApi.start(meetingId))}
-            >
-              {t('actions.startMeeting')}
-            </Button>
-          )}
-          {card.status === 'ACTIVE' && (
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={busy}
-              onClick={() => void runAction(() => videoMeetingsApi.end(meetingId))}
-            >
-              {t('actions.endMeeting')}
-            </Button>
-          )}
-          {(card.status === 'CREATED' || card.status === 'WAITING') && (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={() => void runAction(() => videoMeetingsApi.cancel(meetingId))}
-            >
-              {t('actions.cancelMeeting')}
-            </Button>
-          )}
-        </section>
-      )}
-
-      <section className="border-border rounded-lg border p-4">
-        <h2 className="mb-2 text-sm font-medium">{t('detail.sessions')}</h2>
-        {card.sessions.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{t('detail.noSessions')}</p>
-        ) : (
-          <ul className="text-muted-foreground space-y-1 text-sm">
-            {card.sessions.map((session) => (
-              <li key={session.id}>
-                {session.livekitRoomName} ·{' '}
-                {session.startedAt ? format(new Date(session.startedAt), 'PPp') : '—'}
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="text-muted-foreground mt-2 text-xs">{t('detail.participantsHint')}</p>
-      </section>
-
-      {canEdit && isHost && (
-        <VideoMeetingInviteSection
-          invites={invites}
-          freshSecret={freshSecret}
-          onCreate={async () => {
-            const created = await videoMeetingsApi.createInvite(meetingId, inviteExpiryIso());
-            setFreshSecret(created.token);
-            setInvites(await videoMeetingsApi.listInvites(meetingId));
-          }}
-          onRevoke={async (inviteId) => {
-            await videoMeetingsApi.revokeInvite(meetingId, inviteId);
-            setInvites(await videoMeetingsApi.listInvites(meetingId));
-          }}
-          t={t}
+      <section className="space-y-3">
+        <h2 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+          {t('recording.label')}
+        </h2>
+        <VideoMeetingRecordingIndicator
+          meetingId={meetingId}
+          canControl={canEdit && isHost}
+          initialRecording={card.recordings?.[0] ?? null}
         />
-      )}
+        <VideoMeetingRecordingPlayback
+          meetingId={meetingId}
+          recording={card.recordings?.[0] ?? null}
+          isHost={isHost}
+        />
+      </section>
 
-      {canEdit && isHost && (
+      {canEdit && isHost ? (
         <VideoMeetingEntityLinksSection
           card={card}
           entityType={entityType}
@@ -229,10 +234,10 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
           }}
           t={t}
         />
-      )}
+      ) : null}
 
-      {!canEdit && card.entityLinks.length > 0 && (
-        <section className="border-border rounded-lg border p-4">
+      {!canEdit && card.entityLinks.length > 0 ? (
+        <section className="border-border/80 rounded-xl border p-4">
           <h2 className="mb-2 text-sm font-medium">{t('detail.entityLinks')}</h2>
           <ul className="text-sm">
             {card.entityLinks.map((link) => (
@@ -242,7 +247,7 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
             ))}
           </ul>
         </section>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -1,5 +1,15 @@
 /** Default title for an instant standalone meeting (no Calendar / entity). */
-export const VIDEO_MEETING_DEFAULT_TITLE = 'Instant meeting' as const;
+export const VIDEO_MEETING_DEFAULT_TITLE = 'Мгновенная встреча' as const;
+
+/** Legacy English default — map to localized UI title when still stored. */
+export const VIDEO_MEETING_LEGACY_DEFAULT_TITLE = 'Instant meeting' as const;
+
+/** In-app notification type for colleague video-meeting invites. */
+export const VIDEO_MEETING_COLLEAGUE_INVITE_NOTIFICATION_TYPE =
+  'video_meeting.colleague_invite' as const;
+
+/** Max colleagues invited in one host request. */
+export const VIDEO_MEETING_COLLEAGUE_INVITE_MAX_BATCH = 20 as const;
 
 /** Opaque LiveKit room-name placeholder prefix. */
 export const VIDEO_MEETING_ROOM_NAME_PREFIX = 'vm_' as const;

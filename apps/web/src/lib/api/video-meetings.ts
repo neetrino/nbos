@@ -85,6 +85,7 @@ export type CreateInviteResult = {
   meetingId: string;
   expiresAt: string;
   token: string;
+  joinUrl: string;
   revokedAt: null;
 };
 
@@ -94,6 +95,31 @@ export type InviteListItem = {
   expiresAt: string;
   revokedAt: string | null;
   createdAt: string;
+};
+
+export type ColleagueInviteListItem = {
+  participantId: string;
+  employeeId: string;
+  displayName: string;
+  admissionStatus: 'WAITING' | 'ADMITTED' | 'REJECTED';
+  createdAt: string;
+};
+
+export type PendingColleagueInvite = {
+  meetingId: string;
+  meetingTitle: string;
+  meetingStatus: VideoMeetingStatus;
+  participantId: string;
+  invitedByEmployeeId: string;
+  invitedByDisplayName: string;
+  createdAt: string;
+};
+
+export type ColleagueInviteActionResult = {
+  meetingId: string;
+  participantId: string;
+  admissionStatus: 'ADMITTED' | 'REJECTED';
+  meetingStatus: VideoMeetingStatus;
 };
 
 export type WaitingParticipant = {
@@ -180,6 +206,45 @@ export const videoMeetingsApi = {
   revokeInvite: async (meetingId: string, inviteId: string): Promise<InviteListItem> => {
     const resp = await api.post<InviteListItem>(
       `/api/video-meetings/${meetingId}/invites/${inviteId}/revoke`,
+    );
+    return resp.data;
+  },
+
+  inviteColleagues: async (
+    meetingId: string,
+    employeeIds: string[],
+  ): Promise<ColleagueInviteListItem[]> => {
+    const resp = await api.post<ColleagueInviteListItem[]>(
+      `/api/video-meetings/${meetingId}/colleague-invites`,
+      { employeeIds },
+    );
+    return resp.data;
+  },
+
+  listColleagueInvites: async (meetingId: string): Promise<ColleagueInviteListItem[]> => {
+    const resp = await api.get<ColleagueInviteListItem[]>(
+      `/api/video-meetings/${meetingId}/colleague-invites`,
+    );
+    return resp.data;
+  },
+
+  listPendingColleagueInvites: async (): Promise<PendingColleagueInvite[]> => {
+    const resp = await api.get<PendingColleagueInvite[]>(
+      '/api/video-meetings/colleague-invites/pending',
+    );
+    return resp.data;
+  },
+
+  acceptColleagueInvite: async (meetingId: string): Promise<ColleagueInviteActionResult> => {
+    const resp = await api.post<ColleagueInviteActionResult>(
+      `/api/video-meetings/${meetingId}/colleague-invites/accept`,
+    );
+    return resp.data;
+  },
+
+  declineColleagueInvite: async (meetingId: string): Promise<ColleagueInviteActionResult> => {
+    const resp = await api.post<ColleagueInviteActionResult>(
+      `/api/video-meetings/${meetingId}/colleague-invites/decline`,
     );
     return resp.data;
   },

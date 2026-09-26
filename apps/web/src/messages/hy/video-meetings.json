@@ -29,7 +29,9 @@
     "attachLink": "Կapել",
     "detachLink": "Հեռացնել",
     "admit": "Թույլ տal",
-    "reject": "Մերժել"
+    "reject": "Մերժել",
+    "inviteColleagues": "Հրավիրել գործընկերների",
+    "copyInviteLink": "Պատճենել միանալու հղումը"
   },
   "list": {
     "host": "Հոստ",
@@ -62,7 +64,20 @@
     "inviteSecretTitle": "Mekangamy secret",
     "inviteSecretHint": "Patcheneq hima.",
     "inviteExpires": "Verj",
-    "inviteRevoked": "Kasetsvats"
+    "inviteRevoked": "Kasetsvats",
+    "colleagueInvites": "Հրավիրել գործընկերների",
+    "colleagueInvitesHint": "Որոնեք աշխատակիցներին անունով։ Նրանք կստանան NBOS հրավեր՝ Ընդունել/Մերժել կոճակներով՝ առանց հյուրի սպասասրահի։",
+    "colleagueSearch": "Գործընկերներ",
+    "colleagueSearchPlaceholder": "Որոնել անունով…",
+    "colleagueInviteError": "Չհաջողվեց ուղարկել գործընկերների հրավերները։",
+    "noColleagueInvites": "Գործընկերներ դեռ հրավիրված չեն։",
+    "guestInviteHint": "Հաճախորդների և NBOS հաշիվ չունեցողների համար՝ կիսվեք միանալու հղումով։",
+    "inviteLinkTitle": "Հյուրի միանալու հղում",
+    "colleagueStatus": {
+      "WAITING": "Սպասում է",
+      "ADMITTED": "Ընդունված",
+      "REJECTED": "Մերժված"
+    }
   },
   "recording": {
     "label": "Granacum",
@@ -112,7 +127,11 @@
     "leave": "Durs gal",
     "waitingGuests": "Spasum en",
     "noWaiting": "Spasoghner chkan.",
-    "controlsAria": "Senyaki karavarum"
+    "controlsAria": "Senyaki karavarum",
+    "mic": "Խոսափող",
+    "camera": "Տեսախցիկ",
+    "shareScreen": "Էկրանի ցուցադրում",
+    "chat": "Զրույց"
   },
   "guest": {
     "title": "Mtnel tesahandipum",
@@ -138,5 +157,12 @@
     "meetingTitle": "Handipum — {label}",
     "actionError": "Chhajoghvets skseł kam kaparvel tesahandipum.",
     "noEndedMeetings": "Avartvats handipumner chkan."
+  },
+  "defaultTitle": "Ակնթարթային հանդիպում",
+  "colleaguePrompt": {
+    "title": "Տեսահանդիպման հրավեր",
+    "body": "{inviter}-ը հրավիրում է ձեզ «{meeting}».",
+    "accept": "Ընդունել",
+    "decline": "Մերժել"
   }
 }

@@ -29,7 +29,7 @@ function meetingRow(overrides: Record<string, unknown> = {}) {
   const now = new Date('2026-09-26T12:00:00.000Z');
   return {
     id: '11111111-1111-4111-8111-111111111111',
-    title: 'Instant meeting',
+    title: 'Мгновенная встреча',
     status: VideoMeetingStatus.CREATED,
     hostEmployeeId: HOST.id,
     ownerEmployeeId: HOST.id,

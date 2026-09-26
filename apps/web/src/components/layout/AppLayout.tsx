@@ -19,6 +19,7 @@ import { AppEntityRelationProvider } from '@/components/shared/relation-picker/A
 import { UnsortedTaskCreateProvider } from '@/features/tasks/components/UnsortedTaskCreateProvider';
 import { GlobalSearchProvider } from '@/features/global-search/GlobalSearchProvider';
 import { ActiveCallProvider } from '@/features/crm/calls/ActiveCallProvider';
+import { VideoMeetingColleagueInvitePrompt } from '@/features/video-meetings/VideoMeetingColleagueInvitePrompt';
 import { EmployeeDirectoryWarmup } from '@/lib/employees';
 
 interface AppLayoutProps {
@@ -46,7 +47,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isDocumentsRoute = pathname.startsWith('/documents');
   const isMessengerRoute = pathname.startsWith('/messenger');
   const isDepartmentsOrgChartRoute = pathname === ORG_CHART_PAGE_HREF;
-  const isCanvasRoute = isMessengerRoute || isDepartmentsOrgChartRoute;
+  const isVideoMeetingRoomRoute = /\/video-meetings\/[^/]+\/room\/?$/.test(pathname);
+  const isCanvasRoute = isMessengerRoute || isDepartmentsOrgChartRoute || isVideoMeetingRoomRoute;
 
   useEffect(() => {
     if (isMobileViewport) return;
@@ -86,6 +88,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <UnsortedTaskCreateProvider>
                     <ActiveCallProvider>
                       <EmployeeDirectoryWarmup />
+                      <VideoMeetingColleagueInvitePrompt />
                       <HeaderContextDockRegistrar />
                       <div
                         className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"

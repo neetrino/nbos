@@ -22,6 +22,8 @@ export type CreateInviteResult = {
   expiresAt: string;
   /** Raw invite secret — returned ONCE; never persisted. */
   token: string;
+  /** Absolute or path join URL for guests without an NBOS account. */
+  joinUrl: string;
   revokedAt: null;
 };
 
@@ -61,6 +63,7 @@ export class VideoMeetingsInvitesService {
       meetingId: invite.meetingId,
       expiresAt: invite.expiresAt.toISOString(),
       token,
+      joinUrl: buildGuestJoinUrl(token),
       revokedAt: null,
     };
   }
@@ -138,4 +141,11 @@ function serializeInvite(invite: VideoMeetingInviteRow): InviteListItemDto {
     revokedAt: invite.revokedAt ? invite.revokedAt.toISOString() : null,
     createdAt: invite.createdAt.toISOString(),
   };
+}
+
+/** Prefer APP_URL when set; otherwise return a relative path the web client can absolutize. */
+function buildGuestJoinUrl(token: string): string {
+  const path = `/video-meetings/join?invite=${encodeURIComponent(token)}`;
+  const base = process.env.APP_URL?.trim().replace(/\/$/, '') ?? '';
+  return base ? `${base}${path}` : path;
 }

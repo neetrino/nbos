@@ -29,7 +29,9 @@
     "attachLink": "Attach link",
     "detachLink": "Remove",
     "admit": "Admit",
-    "reject": "Reject"
+    "reject": "Reject",
+    "inviteColleagues": "Invite colleagues",
+    "copyInviteLink": "Copy join link"
   },
   "list": {
     "host": "Host",
@@ -62,7 +64,20 @@
     "inviteSecretTitle": "One-time guest secret",
     "inviteSecretHint": "Copy this now. It will not be shown again.",
     "inviteExpires": "Expires",
-    "inviteRevoked": "Revoked"
+    "inviteRevoked": "Revoked",
+    "colleagueInvites": "Invite colleagues",
+    "colleagueInvitesHint": "Search employees by name. They get an in-app Accept/Decline prompt — no guest waiting room.",
+    "colleagueSearch": "Colleagues",
+    "colleagueSearchPlaceholder": "Search by name…",
+    "colleagueInviteError": "Could not send colleague invites.",
+    "noColleagueInvites": "No colleagues invited yet.",
+    "guestInviteHint": "For clients and anyone without an NBOS account — share a join link.",
+    "inviteLinkTitle": "Guest join link",
+    "colleagueStatus": {
+      "WAITING": "Pending",
+      "ADMITTED": "Accepted",
+      "REJECTED": "Declined"
+    }
   },
   "recording": {
     "label": "Recording",
@@ -112,7 +127,11 @@
     "leave": "Leave room",
     "waitingGuests": "Waiting to join",
     "noWaiting": "No guests waiting.",
-    "controlsAria": "In-room controls"
+    "controlsAria": "In-room controls",
+    "mic": "Microphone",
+    "camera": "Camera",
+    "shareScreen": "Share screen",
+    "chat": "Chat"
   },
   "guest": {
     "title": "Join video meeting",
@@ -138,5 +157,12 @@
     "meetingTitle": "Meeting — {label}",
     "actionError": "Could not start or link a video meeting.",
     "noEndedMeetings": "No ended meetings available to link."
+  },
+  "defaultTitle": "Instant meeting",
+  "colleaguePrompt": {
+    "title": "Video meeting invite",
+    "body": "{inviter} invited you to “{meeting}”.",
+    "accept": "Accept",
+    "decline": "Decline"
   }
 }
