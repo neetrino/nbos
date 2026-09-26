@@ -85,27 +85,17 @@ export class VideoMeetingsRecordingLifecycleService {
     }
   }
 
-  async stopParticipantAudioOnWithdrawal(meetingId: string, participantId: string): Promise<void> {
+  /**
+   * Consent withdrawal (REVOKED/DECLINED) while RECORDING stops the whole group
+   * (ADR-VM-003 step 6): room-composite + all track egresses, then finalize.
+   * Host restart remains a new recording group.
+   */
+  async stopCaptureOnConsentWithdrawal(meetingId: string): Promise<void> {
     const recording = await this.findActiveRecording(meetingId);
-    if (!recording) return;
-    const active = recording.assets.filter(
-      (a) =>
-        a.participantId === participantId &&
-        a.kind === VideoMeetingRecordingAssetKind.PARTICIPANT_AUDIO &&
-        a.egressId &&
-        a.status === VideoMeetingRecordingAssetStatus.PENDING,
-    );
-    for (const asset of active) {
-      if (asset.egressId && this.egress?.isConfigured()) {
-        await this.egress.stopEgress(asset.egressId);
-      }
-      await this.prisma.videoMeetingRecordingAsset.update({
-        where: { id: asset.id },
-        data: { rangeEndsAt: new Date() },
-      });
-      await this.finalize.finalizeAsset(asset.id);
+    if (!recording || recording.status !== VideoMeetingRecordingStatus.RECORDING) {
+      return;
     }
-    await this.finalize.refreshGroupStatus(recording.id);
+    await this.finalizeRecording(recording.id);
   }
 
   async closeSegmentForTrack(egressId: string | null, trackId: string): Promise<void> {

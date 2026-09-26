@@ -118,7 +118,7 @@ async function bootApp(featureEnabled: boolean): Promise<{
     start: vi.fn(),
     stop: vi.fn(),
     getActiveStatus: vi.fn().mockResolvedValue(null),
-    stopParticipantAudioOnWithdrawal: vi.fn(),
+    stopCaptureOnConsentWithdrawal: vi.fn(),
   };
   const playback = {
     getCompositePlayback: vi.fn(),

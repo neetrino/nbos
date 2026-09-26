@@ -225,7 +225,7 @@ export class VideoMeetingsController {
   ) {
     const result = await this.consentService.decideForEmployee(user, id, body.decision);
     if (body.decision === 'REVOKED' || body.decision === 'DECLINED') {
-      await this.recordingService.stopParticipantAudioOnWithdrawal(id, result.participantId);
+      await this.recordingService.stopCaptureOnConsentWithdrawal(id);
     }
     return result;
   }

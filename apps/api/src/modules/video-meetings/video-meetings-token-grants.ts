@@ -3,14 +3,34 @@ import { TrackSource } from 'livekit-server-sdk';
 
 export type VideoMeetingTokenRole = 'host' | 'guest';
 
+export type VideoMeetingVideoGrantOptions = {
+  /** True when a recording group for this meeting is currently RECORDING. */
+  recordingActive?: boolean;
+  /** Latest consent for this participant is GRANTED. */
+  consentGranted?: boolean;
+};
+
 /**
  * Least-privilege LiveKit video grant for a single room.
  * Never sets roomCreate, roomAdmin, roomRecord, recorder, or ingressAdmin.
+ * While recording is active, unknown/non-GRANTED consent cannot publish media.
  */
 export function buildVideoMeetingVideoGrant(
   roomName: string,
   role: VideoMeetingTokenRole,
+  options?: VideoMeetingVideoGrantOptions,
 ): VideoGrant {
+  const mayPublish = !options?.recordingActive || options.consentGranted === true;
+  if (!mayPublish) {
+    return {
+      room: roomName,
+      roomJoin: true,
+      canPublish: false,
+      canSubscribe: true,
+      canPublishData: true,
+    };
+  }
+
   const sources =
     role === 'host'
       ? [

@@ -230,8 +230,8 @@ export class VideoMeetingsRecordingService {
     roomName: string;
   }) => this.lifecycle.startAudioSegmentForTrack(input);
 
-  stopParticipantAudioOnWithdrawal = (meetingId: string, participantId: string) =>
-    this.lifecycle.stopParticipantAudioOnWithdrawal(meetingId, participantId);
+  stopCaptureOnConsentWithdrawal = (meetingId: string) =>
+    this.lifecycle.stopCaptureOnConsentWithdrawal(meetingId);
 
   closeSegmentForTrack = (egressId: string | null, trackId: string) =>
     this.lifecycle.closeSegmentForTrack(egressId, trackId);

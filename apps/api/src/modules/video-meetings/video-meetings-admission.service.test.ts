@@ -9,6 +9,7 @@ import { digestVideoMeetingInviteToken } from '@nbos/shared';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
+import type { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { assertSafeGuestPayload } from './video-meetings-guest-safety';
 import type { VideoMeetingsInvitesService } from './video-meetings-invites.service';
 import type { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
@@ -34,6 +35,10 @@ describe('VideoMeetingsAdmissionService', () => {
     isConfigured: ReturnType<typeof vi.fn>;
     mintJoinToken: ReturnType<typeof vi.fn>;
   };
+  let consent: {
+    getLatestForParticipant: ReturnType<typeof vi.fn>;
+    isGranted: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     prisma = createMockPrisma();
@@ -46,10 +51,18 @@ describe('VideoMeetingsAdmissionService', () => {
         roomName: 'vm_room',
       }),
     };
+    consent = {
+      getLatestForParticipant: vi.fn().mockResolvedValue(null),
+      isGranted: vi.fn((d) => d === 'GRANTED'),
+    };
+    prisma.videoMeetingRecording = {
+      findFirst: vi.fn().mockResolvedValue(null),
+    } as never;
     service = new VideoMeetingsAdmissionService(
       prisma as never,
       invites as unknown as VideoMeetingsInvitesService,
       livekit as unknown as VideoMeetingsLivekitService,
+      consent as unknown as VideoMeetingsConsentService,
     );
   });
 
@@ -103,7 +116,12 @@ describe('VideoMeetingsAdmissionService', () => {
     });
     assertSafeGuestPayload(result);
     expect(livekit.mintJoinToken).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'guest', participantId: 'p-guest' }),
+      expect.objectContaining({
+        role: 'guest',
+        participantId: 'p-guest',
+        recordingActive: false,
+        consentGranted: false,
+      }),
     );
   });
 
@@ -169,7 +187,12 @@ describe('VideoMeetingsAdmissionService', () => {
     expect(first.participantId).toBe('p-emp-stable');
     expect(second.participantId).toBe('p-emp-stable');
     expect(livekit.mintJoinToken).toHaveBeenCalledWith(
-      expect.objectContaining({ role: 'host', participantId: 'p-emp-stable' }),
+      expect.objectContaining({
+        role: 'host',
+        participantId: 'p-emp-stable',
+        recordingActive: false,
+        consentGranted: false,
+      }),
     );
   });
 

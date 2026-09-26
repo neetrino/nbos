@@ -173,28 +173,60 @@ describe('VideoMeetingsRecordingService (S05)', () => {
     expect(egress.startTrackAudio).not.toHaveBeenCalled();
   });
 
-  it('stops participant egress on consent withdrawal', async () => {
+  it('stops composite and audio egress on consent withdrawal', async () => {
+    const assets = [
+      {
+        id: 'asset-comp',
+        participantId: null,
+        kind: 'ROOM_COMPOSITE',
+        egressId: 'EG_comp',
+        status: VideoMeetingRecordingAssetStatus.PENDING,
+        objectKey: 'composite-key',
+      },
+      {
+        id: 'asset-a',
+        participantId: P1,
+        kind: 'PARTICIPANT_AUDIO',
+        egressId: 'EG_a',
+        status: VideoMeetingRecordingAssetStatus.PENDING,
+        objectKey: 'audio-key',
+      },
+    ];
     prisma.videoMeetingRecording.findFirst = vi.fn().mockResolvedValue({
       id: 'rec-1',
       status: VideoMeetingRecordingStatus.RECORDING,
-      assets: [
-        {
-          id: 'asset-a',
-          participantId: P1,
-          kind: 'PARTICIPANT_AUDIO',
-          egressId: 'EG_a',
-          status: VideoMeetingRecordingAssetStatus.PENDING,
-          objectKey: 'audio-key',
-        },
-      ],
+      assets,
     });
+    prisma.videoMeetingRecording.findUniqueOrThrow = vi.fn().mockResolvedValue({
+      id: 'rec-1',
+      assets,
+    });
+    prisma.videoMeetingRecordingAsset.findMany = vi
+      .fn()
+      .mockResolvedValue([
+        { status: VideoMeetingRecordingAssetStatus.PENDING },
+        { status: VideoMeetingRecordingAssetStatus.PENDING },
+      ]);
     prisma.videoMeetingRecordingAsset.update = vi.fn().mockResolvedValue({});
     finalize.finalizeAsset.mockResolvedValue(VideoMeetingRecordingAssetStatus.PENDING);
+    prisma.videoMeetingRecording.update = vi.fn().mockResolvedValue({
+      id: 'rec-1',
+      status: VideoMeetingRecordingStatus.FINALIZING,
+      startedAt: new Date(),
+      stoppedAt: new Date(),
+      assets,
+    });
 
-    await service.stopParticipantAudioOnWithdrawal(MEETING_ID, P1);
+    await service.stopCaptureOnConsentWithdrawal(MEETING_ID);
 
+    expect(egress.stopEgress).toHaveBeenCalledWith('EG_comp');
     expect(egress.stopEgress).toHaveBeenCalledWith('EG_a');
+    expect(finalize.finalizeAsset).toHaveBeenCalledWith('asset-comp');
     expect(finalize.finalizeAsset).toHaveBeenCalledWith('asset-a');
+    const readyUpdate = (
+      prisma.videoMeetingRecording.update as ReturnType<typeof vi.fn>
+    ).mock.calls.find((call) => call[0]?.data?.status === VideoMeetingRecordingStatus.READY);
+    expect(readyUpdate).toBeUndefined();
   });
 
   it('does not mark recording READY when meeting ends alone', async () => {

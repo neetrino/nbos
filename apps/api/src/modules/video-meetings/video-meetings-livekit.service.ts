@@ -58,6 +58,8 @@ export class VideoMeetingsLivekitService {
     displayName: string;
     role: VideoMeetingTokenRole;
     requestedRoomName?: string;
+    recordingActive?: boolean;
+    consentGranted?: boolean;
   }): Promise<LiveKitJoinCredentials> {
     const env = this.requireEnv();
     try {
@@ -65,7 +67,10 @@ export class VideoMeetingsLivekitService {
     } catch {
       throw new BadRequestException('Requested room name does not match the meeting session');
     }
-    const grant = buildVideoMeetingVideoGrant(input.roomName, input.role);
+    const grant = buildVideoMeetingVideoGrant(input.roomName, input.role, {
+      recordingActive: input.recordingActive,
+      consentGranted: input.consentGranted,
+    });
     assertLeastPrivilegeVideoGrant(grant, input.roomName);
     const token = await this.signToken({
       apiKey: env.apiKey,

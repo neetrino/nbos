@@ -62,10 +62,7 @@ export class VideoMeetingsGuestController {
     if (body.decision === 'REVOKED' || body.decision === 'DECLINED') {
       const invite = await this.admission.resolveGuestMeetingId(body.inviteToken);
       if (invite) {
-        await this.recordings.stopParticipantAudioOnWithdrawal(
-          invite.meetingId,
-          result.participantId,
-        );
+        await this.recordings.stopCaptureOnConsentWithdrawal(invite.meetingId);
       }
     }
     assertSafeGuestPayload(result);

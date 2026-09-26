@@ -46,4 +46,38 @@ describe('video-meetings-token-grants', () => {
     const create = { ...buildVideoMeetingVideoGrant('r', 'host'), roomCreate: true };
     expect(() => assertLeastPrivilegeVideoGrant(create, 'r')).toThrow(/roomCreate/);
   });
+
+  it('denies publish while recording is active and consent is not GRANTED', () => {
+    const grant = buildVideoMeetingVideoGrant('vm_room', 'guest', {
+      recordingActive: true,
+      consentGranted: false,
+    });
+    expect(grant.canPublish).toBe(false);
+    expect(grant.canPublishSources).toBeUndefined();
+    expect(grant.roomJoin).toBe(true);
+    expect(grant.canSubscribe).toBe(true);
+  });
+
+  it('allows publish while recording is active and consent is GRANTED', () => {
+    const grant = buildVideoMeetingVideoGrant('vm_room', 'host', {
+      recordingActive: true,
+      consentGranted: true,
+    });
+    expect(grant.canPublish).toBe(true);
+    expect(grant.canPublishSources).toEqual([
+      TrackSource.CAMERA,
+      TrackSource.MICROPHONE,
+      TrackSource.SCREEN_SHARE,
+      TrackSource.SCREEN_SHARE_AUDIO,
+    ]);
+  });
+
+  it('allows publish when no recording is active even without consent', () => {
+    const grant = buildVideoMeetingVideoGrant('vm_room', 'guest', {
+      recordingActive: false,
+      consentGranted: false,
+    });
+    expect(grant.canPublish).toBe(true);
+    expect(grant.canPublishSources).toEqual([TrackSource.CAMERA, TrackSource.MICROPHONE]);
+  });
 });

@@ -11,10 +11,17 @@ import {
   VideoMeetingAdmissionStatus,
   VideoMeetingParticipantKind,
   VideoMeetingStatus,
-  type Prisma,
+  type VideoMeetingConsentDecision,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import type { CurrentUserPayload } from '../../common/decorators';
+import {
+  ensureEmployeeParticipant,
+  requireActiveSession,
+  requireGuestParticipant,
+  requireHostOrOwner,
+} from './video-meetings-admission-guards';
+import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import {
   buildEmployeeDisplayName,
   isMeetingAccessible,
@@ -22,8 +29,7 @@ import {
 } from './video-meetings-guest-safety';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
 import { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
-
-type VideoMeetingSessionRow = Prisma.VideoMeetingSessionGetPayload<object>;
+import { loadVideoMeetingPublishGate } from './video-meetings-publish-gate';
 
 export type WaitingParticipantDto = {
   participantId: string;
@@ -61,10 +67,11 @@ export class VideoMeetingsAdmissionService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly invites: VideoMeetingsInvitesService,
     private readonly livekit: VideoMeetingsLivekitService,
+    private readonly consent: VideoMeetingsConsentService,
   ) {}
 
   async listWaiting(user: CurrentUserPayload, meetingId: string): Promise<WaitingParticipantDto[]> {
-    await this.requireHostOrOwner(meetingId, user.id);
+    await requireHostOrOwner(this.prisma, meetingId, user.id);
     const rows = await this.prisma.videoMeetingParticipant.findMany({
       where: {
         meetingId,
@@ -86,8 +93,8 @@ export class VideoMeetingsAdmissionService {
     meetingId: string,
     participantId: string,
   ): Promise<{ participantId: string; admissionStatus: 'ADMITTED' }> {
-    await this.requireHostOrOwner(meetingId, user.id);
-    const participant = await this.requireGuestParticipant(meetingId, participantId);
+    await requireHostOrOwner(this.prisma, meetingId, user.id);
+    const participant = await requireGuestParticipant(this.prisma, meetingId, participantId);
     if (participant.admissionStatus === VideoMeetingAdmissionStatus.REJECTED) {
       throw new BadRequestException('Cannot admit a rejected participant');
     }
@@ -106,8 +113,8 @@ export class VideoMeetingsAdmissionService {
     meetingId: string,
     participantId: string,
   ): Promise<{ participantId: string; admissionStatus: 'REJECTED' }> {
-    await this.requireHostOrOwner(meetingId, user.id);
-    await this.requireGuestParticipant(meetingId, participantId);
+    await requireHostOrOwner(this.prisma, meetingId, user.id);
+    await requireGuestParticipant(this.prisma, meetingId, participantId);
     const updated = await this.prisma.videoMeetingParticipant.update({
       where: { id: participantId },
       data: {
@@ -124,7 +131,7 @@ export class VideoMeetingsAdmissionService {
     if (!displayName) throw new BadRequestException('Display name is required');
     const invite = await this.invites.findAdmissibleBySecret(inviteToken);
     if (!invite) throw new NotFoundException('Invite not found or not admissible');
-    const session = await this.requireActiveSession(invite.meetingId);
+    const session = await requireActiveSession(this.prisma, invite.meetingId);
     const existing = await this.prisma.videoMeetingParticipant.findUnique({
       where: { inviteId: invite.id },
     });
@@ -175,8 +182,9 @@ export class VideoMeetingsAdmissionService {
     if (participant.admissionStatus !== VideoMeetingAdmissionStatus.ADMITTED) {
       throw new ForbiddenException('Guest is not admitted');
     }
-    const session = await this.requireActiveSession(invite.meetingId);
-    const creds = await this.livekit.mintJoinToken({
+    const session = await requireActiveSession(this.prisma, invite.meetingId);
+    const creds = await this.mintWithPublishGate({
+      meetingId: invite.meetingId,
       roomName: session.livekitRoomName,
       participantId: participant.id,
       displayName: participant.displayName,
@@ -212,16 +220,18 @@ export class VideoMeetingsAdmissionService {
     if (meeting.status !== VideoMeetingStatus.ACTIVE) {
       throw new BadRequestException('Meeting is not active');
     }
-    const session = await this.requireActiveSession(meetingId);
+    const session = await requireActiveSession(this.prisma, meetingId);
     const displayName = buildEmployeeDisplayName(user);
-    const participant = await this.ensureEmployeeParticipant(
+    const participant = await ensureEmployeeParticipant(
+      this.prisma,
       meetingId,
       session.id,
       user.id,
       displayName,
       meeting.participants[0] ?? null,
     );
-    const creds = await this.livekit.mintJoinToken({
+    const creds = await this.mintWithPublishGate({
+      meetingId,
       roomName: session.livekitRoomName,
       participantId: participant.id,
       displayName,
@@ -244,59 +254,32 @@ export class VideoMeetingsAdmissionService {
     return { meetingId: invite.meetingId };
   }
 
-  private async ensureEmployeeParticipant(
-    meetingId: string,
-    sessionId: string,
-    employeeId: string,
-    displayName: string,
-    existing: { id: string; admissionStatus: VideoMeetingAdmissionStatus } | null,
-  ) {
-    if (!existing) {
-      return this.prisma.videoMeetingParticipant.create({
-        data: {
-          meetingId,
-          sessionId,
-          kind: VideoMeetingParticipantKind.EMPLOYEE,
-          employeeId,
-          displayName,
-          admissionStatus: VideoMeetingAdmissionStatus.ADMITTED,
-          joinedAt: new Date(),
-        },
-      });
-    }
-    if (existing.admissionStatus !== VideoMeetingAdmissionStatus.ADMITTED) {
-      throw new ForbiddenException('Employee is not admitted');
-    }
-    await this.prisma.videoMeetingParticipant.update({
-      where: { id: existing.id },
-      data: { sessionId, displayName, leftAt: null },
+  private async mintWithPublishGate(input: {
+    meetingId: string;
+    roomName: string;
+    participantId: string;
+    displayName: string;
+    role: 'host' | 'guest';
+    requestedRoomName?: string;
+  }) {
+    const gate = await loadVideoMeetingPublishGate(
+      this.prisma.videoMeetingRecording,
+      {
+        getLatestForParticipant: (id) => this.consent.getLatestForParticipant(id),
+        isGranted: (decision) =>
+          this.consent.isGranted(decision as VideoMeetingConsentDecision | null),
+      },
+      input.meetingId,
+      input.participantId,
+    );
+    return this.livekit.mintJoinToken({
+      roomName: input.roomName,
+      participantId: input.participantId,
+      displayName: input.displayName,
+      role: input.role,
+      requestedRoomName: input.requestedRoomName,
+      recordingActive: gate.recordingActive,
+      consentGranted: gate.consentGranted,
     });
-    return existing;
-  }
-
-  private async requireGuestParticipant(meetingId: string, participantId: string) {
-    const participant = await this.prisma.videoMeetingParticipant.findFirst({
-      where: { id: participantId, meetingId, kind: VideoMeetingParticipantKind.GUEST },
-    });
-    if (!participant) throw new NotFoundException('Participant not found');
-    return participant;
-  }
-
-  private async requireHostOrOwner(meetingId: string, employeeId: string) {
-    const meeting = await this.prisma.videoMeeting.findUnique({ where: { id: meetingId } });
-    if (!meeting) throw new NotFoundException('Meeting not found');
-    if (meeting.hostEmployeeId !== employeeId && meeting.ownerEmployeeId !== employeeId) {
-      throw new ForbiddenException('Only host or owner may manage admission');
-    }
-    return meeting;
-  }
-
-  private async requireActiveSession(meetingId: string): Promise<VideoMeetingSessionRow> {
-    const session = await this.prisma.videoMeetingSession.findFirst({
-      where: { meetingId, endedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
-    if (!session) throw new BadRequestException('Meeting has no active session');
-    return session;
   }
 }

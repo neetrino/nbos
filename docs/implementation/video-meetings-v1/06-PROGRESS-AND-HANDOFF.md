@@ -83,6 +83,8 @@ See `04-TEST-AND-ACCEPTANCE.md` results table. Summary:
 
 - `@livekit/components-react@2.9.24` no longer exports `styles.css`. Web room imported a dead path → `pnpm build` failed (Turbopack module-not-found).
 - Fix: add pinned `@livekit/components-styles@1.2.0` and import `@livekit/components-styles` in `VideoMeetingLiveKitRoom.tsx`.
+- Consent withdrawal while RECORDING now stops the whole recording group (room-composite + per-participant audio egress), then finalizes to PARTIAL/FINALIZING — not READY (ADR-VM-003).
+- Late-join tokens minted during an active RECORDING without GRANTED consent keep roomJoin/subscribe but set canPublish false (no camera/mic/screen sources); normal meetings without active recording keep prior publish grants.
 
 ### CI commands (this session)
 
