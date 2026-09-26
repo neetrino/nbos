@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { APP_MAIN_CONTENT_FILL_HEIGHT_CLASS } from '@/components/layout/app-layout-constants';
+import { videoMeetingsApi } from '@/lib/api/video-meetings';
 import { usePermission } from '@/lib/permissions';
 import { VideoMeetingConsentActions } from './VideoMeetingConsentActions';
 import { VideoMeetingLiveKitRoom } from './VideoMeetingLiveKitRoom';
@@ -18,11 +20,20 @@ type VideoMeetingRoomPageProps = {
 
 export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
   const t = useTranslations('videoMeetings');
+  const router = useRouter();
+  const leavingRef = useRef(false);
   const { me, can } = usePermission();
   const { phase, card, credentials, errorMessage, connect } = useVideoMeetingRoomConnect(
     meetingId,
     t('room.tokenError'),
   );
+  const leaveRoom = useCallback(() => {
+    leavingRef.current = true;
+    router.push(`/video-meetings/${meetingId}`);
+  }, [meetingId, router]);
+  const endMeeting = useCallback(async () => {
+    await videoMeetingsApi.end(meetingId);
+  }, [meetingId]);
 
   useEffect(() => {
     void connect();
@@ -72,7 +83,7 @@ export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
       className={`flex min-h-0 flex-col gap-3 lg:flex-row ${APP_MAIN_CONTENT_FILL_HEIGHT_CLASS}`}
     >
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-        <div className="border-border/70 bg-card/50 flex shrink-0 flex-wrap items-center gap-2 rounded-lg border px-3 py-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 px-1">
           <VideoMeetingRecordingIndicator
             compact
             meetingId={meetingId}
@@ -82,7 +93,11 @@ export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
         </div>
         <VideoMeetingLiveKitRoom
           credentials={credentials}
+          canEnd={canControlRecording}
+          onLeave={leaveRoom}
+          onEnd={endMeeting}
           onDisconnected={() => {
+            if (leavingRef.current) return;
             void connect();
           }}
         />

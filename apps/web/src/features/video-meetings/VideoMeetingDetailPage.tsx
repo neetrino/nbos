@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
 import { ErrorState, LoadingState } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import {
@@ -16,6 +16,7 @@ import {
 } from '@/lib/api/video-meetings';
 import { VIDEO_MEETING_INVITE_DEFAULT_TTL_HOURS } from './constants';
 import { VideoMeetingColleagueInviteSection } from './VideoMeetingColleagueInviteSection';
+import { VideoMeetingDetailActions } from './VideoMeetingDetailActions';
 import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
 import { VideoMeetingRecordingPlayback } from './VideoMeetingRecordingPlayback';
 import {
@@ -23,6 +24,7 @@ import {
   VideoMeetingInviteSection,
 } from './video-meeting-detail-sections';
 import { buildGuestInviteJoinUrl, resolveVideoMeetingDisplayTitle } from './video-meeting-title';
+import { VideoMeetingTitleField } from './VideoMeetingTitleField';
 import { videoMeetingStatusLabel } from './video-meeting-status-label';
 
 type VideoMeetingDetailPageProps = {
@@ -37,6 +39,7 @@ function inviteExpiryIso(): string {
 
 export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProps) {
   const t = useTranslations('videoMeetings');
+  const router = useRouter();
   const { me, can } = usePermission();
   const [card, setCard] = useState<VideoMeetingCard | null>(null);
   const [invites, setInvites] = useState<InviteListItem[]>([]);
@@ -104,14 +107,19 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
   const title = resolveVideoMeetingDisplayTitle(card.title, t('defaultTitle'));
   const hostLabel =
     me?.id === card.hostEmployeeId ? t('detail.youAreHost') : card.hostEmployeeId.slice(0, 8);
-  const isLive = card.status === 'ACTIVE';
-
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 pb-8">
       <header className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+            <VideoMeetingTitleField
+              title={title}
+              canEdit={canEdit && isHost}
+              busy={busy}
+              onSave={async (nextTitle) => {
+                setCard(await videoMeetingsApi.rename(meetingId, nextTitle));
+              }}
+            />
             <p className="text-muted-foreground text-sm">
               {videoMeetingStatusLabel(card.status, t)} · {t('detail.host')}: {hostLabel}
             </p>
@@ -121,54 +129,25 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
                 : t('detail.notScheduled')}
             </p>
           </div>
-          <Link
-            href="/video-meetings"
-            className="border-border hover:bg-muted/90 inline-flex h-9 items-center rounded-lg border px-3 text-sm"
-          >
+          <Link href="/video-meetings" className="text-muted-foreground text-sm hover:underline">
             {t('actions.backToList')}
           </Link>
         </div>
-        {isLive ? (
-          <Link
-            href={`/video-meetings/${meetingId}/room`}
-            className="bg-primary text-primary-foreground inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-medium sm:w-auto sm:px-6"
-          >
-            {t('actions.joinRoom')}
-          </Link>
-        ) : null}
-        {canEdit && isHost ? (
-          <div className="flex flex-wrap gap-2">
-            {card.status !== 'ACTIVE' && card.status !== 'ENDED' && card.status !== 'CANCELLED' ? (
-              <Button
-                type="button"
-                disabled={busy}
-                onClick={() => void runAction(() => videoMeetingsApi.start(meetingId))}
-              >
-                {t('actions.startMeeting')}
-              </Button>
-            ) : null}
-            {card.status === 'ACTIVE' ? (
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={busy}
-                onClick={() => void runAction(() => videoMeetingsApi.end(meetingId))}
-              >
-                {t('actions.endMeeting')}
-              </Button>
-            ) : null}
-            {card.status === 'CREATED' || card.status === 'WAITING' ? (
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy}
-                onClick={() => void runAction(() => videoMeetingsApi.cancel(meetingId))}
-              >
-                {t('actions.cancelMeeting')}
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
+        <VideoMeetingDetailActions
+          meetingId={meetingId}
+          status={card.status}
+          canManage={canEdit && isHost}
+          busy={busy}
+          onStart={() =>
+            void runAction(async () => {
+              const started = await videoMeetingsApi.start(meetingId);
+              router.push(`/video-meetings/${meetingId}/room`);
+              return started;
+            })
+          }
+          onEnd={() => void runAction(() => videoMeetingsApi.end(meetingId))}
+          onCancel={() => void runAction(() => videoMeetingsApi.cancel(meetingId))}
+        />
       </header>
 
       {canEdit && isHost ? (

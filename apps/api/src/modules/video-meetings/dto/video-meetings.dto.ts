@@ -15,6 +15,13 @@ import {
 } from 'class-validator';
 import { VIDEO_MEETING_COLLEAGUE_INVITE_MAX_BATCH } from '../video-meetings.constants';
 
+export class RenameVideoMeetingDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  title!: string;
+}
+
 export class CreateVideoMeetingDto {
   @IsOptional()
   @IsString()

@@ -169,6 +169,11 @@ export const videoMeetingsApi = {
     return resp.data;
   },
 
+  rename: async (meetingId: string, title: string): Promise<VideoMeetingCard> => {
+    const resp = await api.patch<VideoMeetingCard>(`/api/video-meetings/${meetingId}`, { title });
+    return resp.data;
+  },
+
   start: async (meetingId: string): Promise<VideoMeetingCard> => {
     const resp = await api.post<VideoMeetingCard>(`/api/video-meetings/${meetingId}/start`);
     return resp.data;

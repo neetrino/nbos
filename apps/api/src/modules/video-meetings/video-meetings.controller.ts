@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -16,6 +17,7 @@ import {
   AttachVideoMeetingEntityLinkDto,
   CreateVideoMeetingDto,
   CreateVideoMeetingInviteDto,
+  RenameVideoMeetingDto,
   ListVideoMeetingsQueryDto,
   VideoMeetingConsentDecisionBodyDto,
   VideoMeetingLifecycleConfirmDto,
@@ -76,6 +78,17 @@ export class VideoMeetingsController {
   @ApiOperation({ summary: 'Get video meeting card / detail' })
   getCard(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.videoMeetingsService.getCard(user, id);
+  }
+
+  @Patch(':id')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Rename a meeting the caller hosts or owns' })
+  rename(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: RenameVideoMeetingDto,
+  ) {
+    return this.videoMeetingsService.rename(user, id, body.title);
   }
 
   @Post(':id/start')

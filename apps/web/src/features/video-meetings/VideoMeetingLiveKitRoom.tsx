@@ -14,6 +14,9 @@ import { VideoMeetingRoomControls } from './VideoMeetingRoomControls';
 
 type VideoMeetingLiveKitRoomProps = {
   credentials: LiveKitJoinCredentials;
+  canEnd: boolean;
+  onLeave: () => void;
+  onEnd: () => Promise<void>;
   onDisconnected: () => void;
 };
 
@@ -38,6 +41,9 @@ function VideoMeetingStage() {
 
 export function VideoMeetingLiveKitRoom({
   credentials,
+  canEnd,
+  onLeave,
+  onEnd,
   onDisconnected,
 }: VideoMeetingLiveKitRoomProps) {
   return (
@@ -53,7 +59,7 @@ export function VideoMeetingLiveKitRoom({
         className="flex min-h-0 flex-1 flex-col"
       >
         <VideoMeetingStage />
-        <VideoMeetingRoomControls />
+        <VideoMeetingRoomControls canEnd={canEnd} onLeave={onLeave} onEnd={onEnd} />
       </LiveKitRoom>
     </div>
   );

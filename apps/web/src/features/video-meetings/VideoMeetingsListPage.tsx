@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DataView, EmptyState, PageHero } from '@/components/shared';
 import { usePermission } from '@/lib/permissions';
 import { videoMeetingsApi, type VideoMeetingListItem } from '@/lib/api/video-meetings';
+import { VideoMeetingCreateDialog } from './VideoMeetingCreateDialog';
 import { resolveVideoMeetingDisplayTitle } from './video-meeting-title';
 
 type ListTab = 'active' | 'upcoming' | 'history';
@@ -40,6 +41,7 @@ export function VideoMeetingsListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const refresh = useCallback(async (nextTab: ListTab) => {
     setLoading(true);
@@ -58,10 +60,11 @@ export function VideoMeetingsListPage() {
     void refresh(tab);
   }, [refresh, tab]);
 
-  const handleCreate = async () => {
+  const handleCreate = async (title: string) => {
     setCreating(true);
     try {
-      const meeting = await videoMeetingsApi.create(t('defaultTitle'));
+      const meeting = await videoMeetingsApi.create(title);
+      setCreateOpen(false);
       router.push(`/video-meetings/${meeting.id}`);
     } catch {
       setError(true);
@@ -79,12 +82,18 @@ export function VideoMeetingsListPage() {
         title={t('title')}
         trailing={
           can('ADD', 'VIDEO_MEETINGS') ? (
-            <Button type="button" onClick={() => void handleCreate()} disabled={creating}>
+            <Button type="button" onClick={() => setCreateOpen(true)} disabled={creating}>
               <Plus className="size-4" aria-hidden />
               {creating ? t('actions.creating') : t('actions.newMeeting')}
             </Button>
           ) : undefined
         }
+      />
+      <VideoMeetingCreateDialog
+        open={createOpen}
+        creating={creating}
+        onOpenChange={setCreateOpen}
+        onCreate={handleCreate}
       />
       <Tabs
         value={tab}

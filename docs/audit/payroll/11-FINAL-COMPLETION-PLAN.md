@@ -213,8 +213,8 @@ Decision sequence, adjusted after the Owner's first answer:
 5. Remaining salary inputs: leave/unpaid absence and launch currencies (BD-08/06).
 6. Bonus calculation controls: missing KPI and zero-Fix cap (BD-02/03).
 7. Sales events: partial Classic trigger and historical rate/version details (BD-01/11).
-8. Partial payments and corrections: attribution, remaining retro correction and clawback details (BD-12/07/04).
-9. Authority and exceptions: maker/checker and failed-accrual operations (BD-05/14).
+8. Q-13 A resolves fixed-salary-first partial-payment allocation (BR-15); remaining cross-period/bonus-entry attribution, retro correction and clawback details stay open (BD-12/07/04).
+9. Q-14 A resolves maker/checker separation and the discussed Finance/Director/Owner approval population (BR-16); remaining failed-accrual ownership details stay open (BD-14).
 10. Launch scope and reporting: gross/net/statutory/bank responsibilities, departments/policy hierarchy, cost attribution and remaining operating responsibilities (BD-13/10/09).
 
 Present only two or three related questions at a time. The register in section 6 remains the audit's unresolved-question inventory; approved subparts below take precedence for future implementation planning. A partially resolved BD must not be marked fully resolved. Documents 09 and 10 describe the completed audit baseline; later decisions do not retroactively establish implemented behavior or readiness.
@@ -285,7 +285,7 @@ Recommendations remain separate from approved rules. No recommendation establish
 - **Not decided:** whether automation is mandatory for first launch or a later convenience; business timezone/execution time, catch-up after a missed run and operational owner. Do not invent a deployment schedule from the request. Date flexibility under BR-01 remains even if automatic preparation runs on day 1.
 - **Implementation / validation:** M-02/M-05/M-09/M-10/M-11; V-01/V-02/V-10/V-13/V-14/V-17. Add scheduler-specific tests when implementation is authorized. Documentation only; no scheduler, Codex automation or application behavior changed.
 
-### Subsequent approved decisions — conversation record through Q-12
+### Subsequent approved decisions — conversation record through Q-17
 
 The current file did not retain the previously recorded BR-06–BR-13 sections. This section restores the explicit Owner answers from the conversation and records Q-12 A. These approved subparts supersede earlier unanswered labels and proposals; remaining subparts are not automatically resolved. Decisions are requirements, not evidence of implemented functionality. No application changes or new audit were performed.
 
@@ -329,6 +329,46 @@ The first qualifying product invoice must be at least the combined Seller and As
 - **History boundary:** this rule concerns unpaid erroneous duplicates. Removal/reversal of an already paid or bonus-triggering invoice is a financial correction under M-07/BD-04, not ordinary duplicate cleanup. No destructive deletion of financial history is authorized. Preventing duplicate billing remains a separate integrity concern.
 - **Evidence and dependencies:** the precise duplicate/replacement behavior was not established by the completed audit. Required dependencies are reliable product/order attribution, combined-bonus coverage and idempotent entitlement tracking per product/order rather than only per invoice. Handle legitimate Seller and Assistant entitlements, including one employee in both roles, without losing either amount.
 - **Validation / acceptance:** M-04/M-08/M-09/M-10; V-04/V-05/V-13/V-14/V-17. Test both approved removal scenarios, domain/additional-service exclusion, partial payment, threshold equality, repeat and concurrent qualifying events, and paid-invoice corrections separately. Exactly one complete one-time entitlement must remain for the relevant product/order. Approval of this rule does not prove readiness or authorize implementation.
+
+#### BR-15 — Q-13 A: partial payments settle fixed salary first
+
+- **Explicit approval:** Owner selected Q-13 A; partial-payment allocation portion of BD-12.
+- **Approved rule:** allocate each employee payment to the remaining fixed-salary obligation first, then to bonus obligations. No operator override or proportional allocation was selected. This determines allocation of an actual payout, not the earned entitlement or the amount that must be paid now.
+- **Example presented:** fixed salary 300,000 AMD plus bonuses 100,000 AMD, payout 200,000 AMD → fixed salary remaining 100,000 AMD and bonuses remaining 100,000 AMD. Subsequent payments continue from the remaining balances without re-paying fixed salary already settled.
+- **Boundaries / open details:** preserve BR-01 partial/deferred payment flexibility and BR-06 historical corrections. Allocation between individual bonus entries, across different service months, and reversal attribution still needs detailed validation/remaining decisions. Do not infer authority to deduct bonus clawback from fixed salary or overwrite historical payment attribution.
+- **Implementation / validation:** M-06/M-07/M-10; V-09/V-11/V-12/V-17. Verify payments below/equal/above remaining fixed salary, multiple installments, no premature bonus-paid status, total component allocation equal to actual payout, and reconciled history after correction/reversal. Existing integration defects remain unresolved by documentation.
+
+#### BR-16 — Q-14 A: one authorized operator may prepare and approve
+
+- **Explicit approval:** Owner selected Q-14 A and specified that one Finance operator normally performs the whole workflow; a Director or the Owner may substitute and act alone. This resolves the discussed maker/checker separation and operational approval population under BD-05.
+- **Approved rule:** a Finance operator, Director or Owner with the applicable financial permissions may independently prepare and approve salary changes, manual bonuses, financial corrections and payroll runs. No mandatory second person, owner-only self-approval exception, or explanation solely because the actor approves their own preparation is required.
+- **Controls preserved:** retain explicit workflow approval steps where applicable, genuine authenticated actor attribution, permission checks, required reasons for the underlying correction/exception, and immutable financial history. The decision does not permit supplying another person's identity as approver or granting unrelated roles financial powers. Map Director to the actual authorized application role during implementation; do not infer rights merely from a job-title string.
+- **Scope / remaining responsibilities:** this does not silently appoint owners of missing KPI data, failed-accrual escalation or external statutory processes. Unresolved correction/closed-period rules still apply even when one person can authorize the operation.
+- **Implementation / validation:** M-01/M-08/M-10; V-12/V-15/V-17. Each permitted role can independently complete the authorized workflow; unauthorized roles are denied; approvals always record the actual actor; forged approver IDs cannot impersonate another employee; no unintended second-person requirement blocks these roles. No permissions or application behavior were changed in this documentation task.
+
+#### BR-17 — Q-15 clarification: simple manual correction in the current month
+
+- **Owner decision:** these cases are very rare. Handle increases/decreases manually in the current month through the bonus/manual-adjustment workflow. Do not reopen or edit the old closed calculation and do not build a dedicated historical-correction feature, separate screen or elaborate process for this scenario.
+- **Implementation constraint:** reuse the existing manual path wherever it can faithfully record the intended adjustment. This answer is a simplicity/scope decision, not proof that negative adjustments or all historical balances currently work. Any demonstrated integrity gap requires the smallest necessary correction in a later authorized implementation task, not a new general correction subsystem.
+- **Preserved evidence:** retain original accrual/payment records and the actual actor. Use the existing reason/comment to explain the correction and the original month when applicable; no new structured reference field or extra approval chain is mandated. A correction entered through a bonus UI must not silently erase an existing salary obligation or be counted twice. It is not a new performance-bonus formula or a tax classification decision.
+- **Remaining boundaries:** decreases exceeding available unpaid bonus, employee departure with residual debt and bonus-cap treatment of a salary-related manual adjustment are not settled by this answer. Do not invent deductions from fixed salary or automatic debt forgiveness. BR-16 permits one authorized Finance/Director/Owner operator.
+- **Validation:** M-06/M-07/M-08/M-10; V-09/V-11/V-12/V-17. Demonstrate manual increase and decrease in the current month, unchanged prior closed records, reason/actor visibility, correct payable/paid/remaining balances and no duplicate effect. Identify any unsupported signed adjustment explicitly. This supersedes proposals for mandatory period reopening or a dedicated retro-correction workflow.
+
+#### BR-18 — Q-16 A: rare client-return cases reviewed manually
+
+- **Owner decision:** Finance manually determines the bonus correction with an explanation; keep this rare-case process simple. No automatic proportional-return formula or dedicated complex return/bonus subsystem is requested.
+- **Approved treatment:** review the reason and effect of the client return, then enter the justified adjustment through the manual path. A zero correction is permitted where the bonus entitlement is unchanged, with explanation. Do not equate every returned payment with a cancellation of the same proportion of the sale.
+- **Existing protections retained:** original financial history remains visible; already paid bonus recovery follows existing future-bonus-only canon, not fixed-salary deduction. BR-16 allows Finance, Director or Owner to perform the authorized process alone. This decision does not approve a recovery schedule, automatic deduction percentage, termination debt write-off or direct alteration of old paid records.
+- **Implementation scope:** reuse existing entry and reason mechanisms. Correct proven reconciliation gaps only as needed for reliable manual handling; no unsupported claim that current payment deletion already reverses bonus/KPI/ledger effects. Actual receipt/refund records and manual adjustments must reconcile without duplicate recovery.
+- **Validation:** M-07/M-08/M-10; V-11/V-12/V-16/V-17. Cover a partial return changing entitlement, a returned overpayment with no bonus change, correction before and after employee payout, preservation of fixed salary, and repeated handling without a second adjustment. Residual recovery details remain open. No functionality was changed.
+
+#### BR-19 — Q-17 A: internal payroll ledger; external accounting and bank execution
+
+- **Explicit approval:** Owner selected Q-17 A. First-launch NBOS calculates fixed salary and bonuses and records employee payouts; statutory/accounting calculations and actual bank transfers are performed separately outside NBOS.
+- **Scope:** do not make an internal tax engine or automated bank transfer integration a mandatory first-launch feature. Recorded payment status still requires the proper evidence and controls; creating an internal expense or approving payroll is not proof that a bank transfer occurred.
+- **Unresolved amount semantics:** the Owner has not yet specified whether salary amounts entered in NBOS are before or after taxes, or how external deductions are reflected when reconciling NBOS entitlements with actual employee receipts. Do not infer gross/net treatment from this scope choice. External reconciliation responsibility/details remain to be agreed.
+- **Implementation / validation:** M-08/M-10/M-11; V-12/V-17. Demonstrate accurate internal entitlements, payout records and balances for the agreed amount basis, distinguish approval from actual payout, and reconcile an example with external accounting/payment evidence. No tax/legal compliance claim, bank execution or application change follows from this decision.
+- **Next question status:** Q-18 Marketing/Support first-launch bonus handling remains unanswered; the Owner requested a simpler explanation. Do not treat the recommended manual approach as approved.
 
 ### Recording subsequent answers
 

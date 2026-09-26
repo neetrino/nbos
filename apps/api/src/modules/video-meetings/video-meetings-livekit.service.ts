@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AccessToken, RoomServiceClient, type VideoGrant } from 'livekit-server-sdk';
 import {
@@ -35,6 +40,7 @@ type LiveKitEnv = {
  */
 @Injectable()
 export class VideoMeetingsLivekitService {
+  private readonly logger = new Logger(VideoMeetingsLivekitService.name);
   private roomClient: RoomServiceClient | null = null;
 
   constructor(private readonly config: ConfigService) {}
@@ -50,6 +56,16 @@ export class VideoMeetingsLivekitService {
       name: roomName,
       emptyTimeout: VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
     });
+  }
+
+  /** Delete the LiveKit room so every participant is disconnected. */
+  async closeRoom(roomName: string): Promise<void> {
+    try {
+      await this.getRoomClient().deleteRoom(roomName);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown';
+      this.logger.warn(`livekit_close_room_failed room=${roomName} ${message}`);
+    }
   }
 
   async mintJoinToken(input: {

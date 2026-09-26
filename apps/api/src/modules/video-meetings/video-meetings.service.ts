@@ -16,6 +16,7 @@ import {
 } from './video-meetings-access-query';
 import { VIDEO_MEETING_DEFAULT_TITLE } from './video-meetings.constants';
 import { generateOpaqueLivekitRoomName } from './video-meetings-room-name';
+import { closeOpenMeetingRoom } from './video-meetings-close-room';
 import { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
 import {
   assertSafeVideoMeetingPayload,
@@ -54,7 +55,6 @@ export class VideoMeetingsService {
     private readonly calendarLink: VideoMeetingsCalendarLinkService,
   ) {}
 
-  /** Create an instant meeting; optional Calendar link only when explicitly requested. */
   async create(user: CurrentUserPayload, dto: CreateVideoMeetingDto): Promise<VideoMeetingCardDto> {
     const title = dto.title?.trim() || VIDEO_MEETING_DEFAULT_TITLE;
     const calendarMeetingId = await this.calendarLink.resolveCalendarMeetingIdForCreate(
@@ -75,10 +75,18 @@ export class VideoMeetingsService {
     return this.toCard(meeting, user.permissions);
   }
 
-  /**
-   * Start meeting: persist session + opaque room name.
-   * When LiveKit env is configured, ensure the room server-side (never trust the browser).
-   */
+  async rename(user: CurrentUserPayload, meetingId: string, title: string) {
+    await this.requireHostOrOwner(meetingId, user.id);
+    const trimmed = title.trim();
+    if (!trimmed) throw new BadRequestException('Title is required');
+    const updated = await this.prisma.videoMeeting.update({
+      where: { id: meetingId },
+      data: { title: trimmed },
+      include: videoMeetingCardInclude,
+    });
+    return this.toCard(updated, user.permissions);
+  }
+
   async start(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {
     const meeting = await this.requireHostOrOwner(meetingId, user.id);
     if (
@@ -161,6 +169,7 @@ export class VideoMeetingsService {
       throw new BadRequestException('Only an active meeting can be ended');
     }
     await this.recordings.stopIfRecordingOnMeetingEnd(meetingId);
+    await closeOpenMeetingRoom(this.prisma, this.livekit, meetingId);
     const now = new Date();
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.videoMeetingSession.updateMany({

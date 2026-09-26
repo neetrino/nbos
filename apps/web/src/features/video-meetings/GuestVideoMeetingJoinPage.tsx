@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ function GuestJoinContent() {
   const [error, setError] = useState('');
   const [consentBusy, setConsentBusy] = useState(false);
   const [consentMessage, setConsentMessage] = useState<string | null>(null);
+  const leavingRef = useRef(false);
 
   const consentBody = useMemo(() => {
     const override = process.env.NEXT_PUBLIC_VIDEO_MEETINGS_CONSENT_DISCLOSURE?.trim();
@@ -123,7 +124,15 @@ function GuestJoinContent() {
         {consentMessage && <p className="text-muted-foreground text-xs">{consentMessage}</p>}
         <VideoMeetingLiveKitRoom
           credentials={join}
+          canEnd={false}
+          onLeave={() => {
+            leavingRef.current = true;
+            setJoin(null);
+            setPhase('form');
+          }}
+          onEnd={async () => undefined}
           onDisconnected={() => {
+            if (leavingRef.current) return;
             setJoin(null);
             setPhase('waiting');
             void pollForToken();
