@@ -35,7 +35,7 @@ const MODEL_COPY: Record<
   },
 };
 
-interface RowDraft {
+export interface RowDraft {
   sellerPercent: string;
   assistantPercent: string;
   isActive: boolean;

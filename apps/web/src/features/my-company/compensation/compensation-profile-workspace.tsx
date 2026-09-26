@@ -43,7 +43,7 @@ export function CompensationProfileWorkspace({
   const t = useTranslations('hr.salaries');
   const [tab, setTab] = useState('general');
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(initialEmployeeId);
+  const selectedId = initialEmployeeId;
   const [profiles, setProfiles] = useState<CompensationProfileRow[]>([]);
   const [bonusPolicies, setBonusPolicies] = useState<BonusPolicyRow[]>([]);
   const [kpiPolicies, setKpiPolicies] = useState<KpiPolicyRow[]>([]);
@@ -94,6 +94,12 @@ export function CompensationProfileWorkspace({
       setKpiPolicies(kpi.items);
     });
   }, []);
+
+  useEffect(() => {
+    setTab('general');
+    setConfirmOpen(false);
+    setError(null);
+  }, [selectedId]);
 
   useEffect(() => {
     if (!selectedId) {
