@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { Component, createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 import { VideoMeetingCallDock } from './VideoMeetingCallDock';
 
 type VideoMeetingCallContextValue = {
@@ -31,15 +31,37 @@ export function VideoMeetingCallProvider({ children }: { children: ReactNode }) 
     <VideoMeetingCallContext.Provider value={{ open }}>
       {children}
       {meetingId ? (
-        <VideoMeetingCallDock
-          key={meetingId}
-          meetingId={meetingId}
-          expanded={expanded}
-          onMinimize={() => setExpanded(false)}
-          onExpand={() => setExpanded(true)}
-          onDismiss={dismiss}
-        />
+        <VideoMeetingCallBoundary onDismiss={dismiss}>
+          <VideoMeetingCallDock
+            key={meetingId}
+            meetingId={meetingId}
+            expanded={expanded}
+            onMinimize={() => setExpanded(false)}
+            onExpand={() => setExpanded(true)}
+            onDismiss={dismiss}
+          />
+        </VideoMeetingCallBoundary>
       ) : null}
     </VideoMeetingCallContext.Provider>
   );
+}
+
+class VideoMeetingCallBoundary extends Component<
+  { onDismiss: () => void; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  componentDidCatch(): void {
+    this.props.onDismiss();
+  }
+
+  render(): ReactNode {
+    if (this.state.failed) return null;
+    return this.props.children;
+  }
 }

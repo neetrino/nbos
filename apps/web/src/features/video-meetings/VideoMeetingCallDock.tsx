@@ -41,6 +41,7 @@ export function VideoMeetingCallDock(props: VideoMeetingCallDockProps) {
     <div className={shellClass}>
       <VideoMeetingLiveKitRoom
         credentials={dock.credentials}
+        self={{ name: dock.credentials.displayName, avatarUrl: dock.avatarUrl }}
         title={dock.card?.title}
         meetingId={props.meetingId}
         canEnd={dock.canManage}
@@ -50,7 +51,9 @@ export function VideoMeetingCallDock(props: VideoMeetingCallDockProps) {
         minimized={!props.expanded}
         onMinimize={dock.minimize}
         onExpand={props.onExpand}
+        onArmLeave={dock.armLeave}
         onLeave={dock.finish}
+        onAbortLeave={dock.abortLeave}
         onEnd={dock.endMeeting}
         onConnected={dock.markConnected}
         onDisconnected={dock.handleDisconnected}
@@ -71,17 +74,11 @@ function useVideoMeetingCallDock({ meetingId, onMinimize, onDismiss }: VideoMeet
     t('room.tokenError'),
   );
   const leaveRoomRoute = useLeaveRoomRoute(meetingId, pathname, router);
-  const exit = useCallExit(meetingId, leavingRef, onMinimize, onDismiss, leaveRoomRoute);
+  const exit = useCallExit(meetingId, leavingRef, connect, onMinimize, onDismiss, leaveRoomRoute);
   const markConnected = useCallback(() => {
     reconnectingRef.current = false;
   }, []);
-  const handleDisconnected = useDropHandler(
-    leavingRef,
-    reconnectingRef,
-    connect,
-    onDismiss,
-    leaveRoomRoute,
-  );
+  const handleDisconnected = useDropHandler(leavingRef, reconnectingRef, connect);
   useConnectLifecycle(connect, phase, leavingRef, onDismiss);
 
   const isHost = Boolean(
@@ -94,6 +91,7 @@ function useVideoMeetingCallDock({ meetingId, onMinimize, onDismiss }: VideoMeet
     credentials,
     connect,
     isHost,
+    avatarUrl: me?.avatar,
     canManage: isHost && can('EDIT', 'VIDEO_MEETINGS'),
     ...exit,
     markConnected,
@@ -125,19 +123,12 @@ function useDropHandler(
   leavingRef: MutableRefObject<boolean>,
   reconnectingRef: MutableRefObject<boolean>,
   connect: () => Promise<void>,
-  onDismiss: () => void,
-  leaveRoomRoute: () => void,
 ) {
   return useCallback(() => {
-    if (leavingRef.current) {
-      onDismiss();
-      leaveRoomRoute();
-      return;
-    }
-    if (reconnectingRef.current) return;
+    if (leavingRef.current || reconnectingRef.current) return;
     reconnectingRef.current = true;
     void connect();
-  }, [connect, leaveRoomRoute, leavingRef, onDismiss, reconnectingRef]);
+  }, [connect, leavingRef, reconnectingRef]);
 }
 
 function useLeaveRoomRoute(
@@ -155,15 +146,24 @@ function useLeaveRoomRoute(
 function useCallExit(
   meetingId: string,
   leavingRef: MutableRefObject<boolean>,
+  connect: () => Promise<void>,
   onMinimize: () => void,
   onDismiss: () => void,
   leaveRoomRoute: () => void,
 ) {
-  const finish = useCallback(() => {
+  const armLeave = useCallback(() => {
     leavingRef.current = true;
+  }, [leavingRef]);
+
+  const abortLeave = useCallback(() => {
+    leavingRef.current = false;
+    void connect();
+  }, [connect, leavingRef]);
+
+  const finish = useCallback(() => {
     onDismiss();
     leaveRoomRoute();
-  }, [leaveRoomRoute, leavingRef, onDismiss]);
+  }, [leaveRoomRoute, onDismiss]);
 
   const minimize = useCallback(() => {
     onMinimize();
@@ -171,16 +171,10 @@ function useCallExit(
   }, [leaveRoomRoute, onMinimize]);
 
   const endMeeting = useCallback(async () => {
-    leavingRef.current = true;
-    try {
-      await videoMeetingsApi.end(meetingId);
-    } catch (error) {
-      leavingRef.current = false;
-      throw error;
-    }
-  }, [leavingRef, meetingId]);
+    await videoMeetingsApi.end(meetingId);
+  }, [meetingId]);
 
-  return { finish, minimize, endMeeting };
+  return { armLeave, abortLeave, finish, minimize, endMeeting };
 }
 
 function callStatusText(

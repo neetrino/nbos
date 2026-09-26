@@ -139,7 +139,11 @@
     "chatTitle": "Chat",
     "minimize": "Minimize",
     "expand": "Return to call",
-    "callEnded": "The call has ended."
+    "callEnded": "The call has ended.",
+    "mediaBlocked": "The browser blocked the camera and microphone on this page. Allow them in the site settings, then try the buttons again.",
+    "chatEmpty": "No messages yet.",
+    "chatPlaceholder": "Message",
+    "chatSend": "Send"
   },
   "guest": {
     "title": "Join video meeting",

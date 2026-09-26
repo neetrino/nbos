@@ -65,7 +65,7 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
       setCard(nextCard);
       if (canEdit) {
         const [nextInvites, nextColleagues] = await Promise.all([
-          videoMeetingsApi.listInvites(meetingId),
+          videoMeetingsApi.listInvites(meetingId).catch(() => [] as InviteListItem[]),
           videoMeetingsApi
             .listColleagueInvites(meetingId)
             .catch(() => [] as ColleagueInviteListItem[]),

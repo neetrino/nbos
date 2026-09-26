@@ -124,11 +124,18 @@ function GuestJoinContent() {
         {consentMessage && <p className="text-muted-foreground text-xs">{consentMessage}</p>}
         <VideoMeetingLiveKitRoom
           credentials={join}
+          self={{ name: join.displayName }}
           canEnd={false}
+          onArmLeave={() => {
+            leavingRef.current = true;
+          }}
           onLeave={() => {
             leavingRef.current = true;
             setJoin(null);
             setPhase('form');
+          }}
+          onAbortLeave={() => {
+            leavingRef.current = false;
           }}
           onEnd={async () => undefined}
           onDisconnected={() => {

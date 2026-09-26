@@ -89,7 +89,7 @@ export class VideoMeetingsInvitesService {
   }
 
   async list(user: CurrentUserPayload, meetingId: string): Promise<InviteListItemDto[]> {
-    await this.requireHostOrOwner(meetingId, user.id);
+    await this.requireHostOrOwner(meetingId, user.id, { allowClosed: true });
     const rows = await this.prisma.videoMeetingInvite.findMany({
       where: { meetingId },
       orderBy: { createdAt: 'desc' },
@@ -117,16 +117,20 @@ export class VideoMeetingsInvitesService {
     return invite;
   }
 
-  private async requireHostOrOwner(meetingId: string, employeeId: string) {
+  private async requireHostOrOwner(
+    meetingId: string,
+    employeeId: string,
+    options?: { allowClosed?: boolean },
+  ) {
     const meeting = await this.prisma.videoMeeting.findUnique({ where: { id: meetingId } });
     if (!meeting) throw new NotFoundException('Meeting not found');
     if (meeting.hostEmployeeId !== employeeId && meeting.ownerEmployeeId !== employeeId) {
       throw new ForbiddenException('Only host or owner may manage invites');
     }
-    if (
+    const closed =
       meeting.status === VideoMeetingStatus.ENDED ||
-      meeting.status === VideoMeetingStatus.CANCELLED
-    ) {
+      meeting.status === VideoMeetingStatus.CANCELLED;
+    if (closed && !options?.allowClosed) {
       throw new BadRequestException('Cannot manage invites for an ended or cancelled meeting');
     }
     return meeting;

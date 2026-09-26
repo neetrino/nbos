@@ -1,26 +1,28 @@
 'use client';
 
 import '@livekit/components-styles';
-import {
-  GridLayout,
-  LiveKitRoom,
-  ParticipantTile,
-  RoomAudioRenderer,
-  useTracks,
-} from '@livekit/components-react';
-import { Track } from 'livekit-client';
+import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { LiveKitJoinCredentials } from '@/lib/api/video-meetings';
 import { VideoMeetingCallHeader } from './VideoMeetingCallHeader';
 import { VideoMeetingChatPanel } from './VideoMeetingChatPanel';
 import { VideoMeetingMiniBar, VideoMeetingRoomControls } from './VideoMeetingRoomControls';
+import {
+  VideoMeetingDeviceNotice,
+  VideoMeetingStage,
+  type CallSelfPresence,
+} from './VideoMeetingStage';
 import { VideoMeetingWaitingHostPanel } from './VideoMeetingWaitingHostPanel';
+import { VIDEO_MEETING_ROOM_OPTIONS } from './video-meeting-room-options';
 
 type VideoMeetingLiveKitRoomProps = {
   credentials: LiveKitJoinCredentials;
+  self: CallSelfPresence;
   canEnd: boolean;
+  onArmLeave: () => void;
   onLeave: () => void;
+  onAbortLeave: () => void;
   onEnd: () => Promise<void>;
   onDisconnected: () => void;
   onConnected?: () => void;
@@ -34,73 +36,15 @@ type VideoMeetingLiveKitRoomProps = {
   framed?: boolean;
 };
 
-function VideoMeetingStage() {
-  const tracks = useTracks(
-    [
-      { source: Track.Source.Camera, withPlaceholder: true },
-      { source: Track.Source.ScreenShare, withPlaceholder: false },
-    ],
-    { onlySubscribed: false },
-  );
-
-  return (
-    <div className="bg-muted/40 relative min-h-0 min-w-0 flex-1" data-lk-theme="default">
-      <GridLayout tracks={tracks} className="h-full">
-        <ParticipantTile />
-      </GridLayout>
-    </div>
-  );
-}
-
-function VideoMeetingCallSurface({
-  title,
-  meetingId,
-  canEnd,
-  canControlRecording,
-  isHost,
-  onLeave,
-  onEnd,
-  onMinimize,
-}: Omit<
-  VideoMeetingLiveKitRoomProps,
-  'credentials' | 'onDisconnected' | 'minimized' | 'onExpand' | 'framed'
->) {
-  const [chatOpen, setChatOpen] = useState(false);
-
-  return (
-    <>
-      <VideoMeetingCallHeader title={title ?? ''} meetingId={meetingId} onMinimize={onMinimize} />
-      <div className="relative flex min-h-0 flex-1">
-        <VideoMeetingStage />
-        {meetingId ? (
-          <div className="absolute top-3 left-3 z-10">
-            <VideoMeetingWaitingHostPanel meetingId={meetingId} enabled={Boolean(isHost)} />
-          </div>
-        ) : null}
-        <VideoMeetingChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
-      </div>
-      <VideoMeetingRoomControls
-        canEnd={canEnd}
-        onLeave={onLeave}
-        onEnd={onEnd}
-        chatOpen={chatOpen}
-        onToggleChat={() => setChatOpen((open) => !open)}
-        meetingId={meetingId}
-        canControlRecording={canControlRecording}
-      />
-    </>
-  );
-}
-
 function roomFrameClass(framed: boolean, minimized: boolean): string {
   return cn(
     'flex min-h-0 flex-col',
-    framed && 'border-border/80 overflow-hidden rounded-2xl border',
+    framed && 'border-border/80 overflow-hidden rounded-3xl border',
     !minimized && 'flex-1',
   );
 }
 
-/** Connected room. `audio` and `video` stay off until the participant turns them on. */
+/** Connected room. Camera and microphone stay off until the participant turns them on. */
 export function VideoMeetingLiveKitRoom(props: VideoMeetingLiveKitRoomProps) {
   const { credentials, onDisconnected, onConnected, minimized = false, framed = true } = props;
 
@@ -112,6 +56,7 @@ export function VideoMeetingLiveKitRoom(props: VideoMeetingLiveKitRoomProps) {
         connect
         audio={false}
         video={false}
+        options={VIDEO_MEETING_ROOM_OPTIONS}
         onDisconnected={onDisconnected}
         onConnected={onConnected}
         className={cn('flex min-h-0 flex-col', !minimized && 'flex-1')}
@@ -123,40 +68,76 @@ export function VideoMeetingLiveKitRoom(props: VideoMeetingLiveKitRoomProps) {
   );
 }
 
-function CallRoomBody({
-  canEnd,
-  onLeave,
-  onEnd,
-  title,
-  meetingId,
-  canControlRecording,
-  isHost,
-  minimized,
-  onMinimize,
-  onExpand,
-}: VideoMeetingLiveKitRoomProps) {
-  if (minimized && onExpand) {
-    return (
-      <VideoMeetingMiniBar
-        title={title ?? ''}
-        onExpand={onExpand}
-        canEnd={canEnd}
-        onLeave={onLeave}
-        onEnd={onEnd}
-      />
-    );
-  }
+function CallRoomBody(props: VideoMeetingLiveKitRoomProps) {
+  const collapsed = Boolean(props.minimized && props.onExpand);
 
   return (
-    <VideoMeetingCallSurface
-      title={title}
-      meetingId={meetingId}
-      canEnd={canEnd}
-      canControlRecording={canControlRecording}
-      isHost={isHost}
-      onLeave={onLeave}
-      onEnd={onEnd}
-      onMinimize={onMinimize}
-    />
+    <>
+      <div className={collapsed ? 'hidden' : 'flex min-h-0 flex-1 flex-col'}>
+        <VideoMeetingCallSurface {...props} />
+      </div>
+      {collapsed && props.onExpand ? (
+        <VideoMeetingMiniBar
+          title={props.title ?? ''}
+          onExpand={props.onExpand}
+          canEnd={props.canEnd}
+          onArmLeave={props.onArmLeave}
+          onLeave={props.onLeave}
+          onAbortLeave={props.onAbortLeave}
+          onEnd={props.onEnd}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function VideoMeetingCallSurface({
+  title,
+  meetingId,
+  self,
+  canEnd,
+  canControlRecording,
+  isHost,
+  onArmLeave,
+  onLeave,
+  onAbortLeave,
+  onEnd,
+  onMinimize,
+}: VideoMeetingLiveKitRoomProps) {
+  const [chatOpen, setChatOpen] = useState(false);
+
+  return (
+    <>
+      <VideoMeetingCallHeader title={title ?? ''} onMinimize={onMinimize} />
+      <div className="relative flex min-h-0 flex-1">
+        <VideoMeetingStage self={self} />
+        <VideoMeetingDeviceNotice />
+        {meetingId ? (
+          <div className="absolute top-3 left-3 z-10">
+            <VideoMeetingWaitingHostPanel meetingId={meetingId} enabled={Boolean(isHost)} />
+          </div>
+        ) : null}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center pb-5">
+          <div className="pointer-events-auto">
+            <VideoMeetingRoomControls
+              canEnd={canEnd}
+              onArmLeave={onArmLeave}
+              onLeave={onLeave}
+              onAbortLeave={onAbortLeave}
+              onEnd={onEnd}
+              chatOpen={chatOpen}
+              onToggleChat={() => setChatOpen((open) => !open)}
+              meetingId={meetingId}
+              canControlRecording={canControlRecording}
+            />
+          </div>
+        </div>
+        <VideoMeetingChatPanel
+          open={chatOpen}
+          onClose={() => setChatOpen(false)}
+          meetingId={meetingId}
+        />
+      </div>
+    </>
   );
 }
