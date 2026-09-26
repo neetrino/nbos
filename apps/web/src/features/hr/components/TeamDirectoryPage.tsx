@@ -17,6 +17,7 @@ import {
   isEmployeeLevelValue,
 } from '@/features/hr/constants/hr';
 import {
+  EMPLOYEE_STATUS_TERMINATED,
   isDefaultTeamDirectoryScope,
   resolveTeamDirectoryStatusQuery,
   TEAM_DIRECTORY_STATUS_EVERYONE,
@@ -71,17 +72,8 @@ function TeamDirectoryPageContent() {
     showTerminated,
   });
 
-  const {
-    employees,
-    total,
-    roles,
-    departments,
-    loading,
-    refreshing,
-    terminatedTotal,
-    error,
-    refetch,
-  } = useTeamDirectory(search, filters, statusQuery);
+  const { employees, roles, departments, loading, refreshing, statusTotals, error, refetch } =
+    useTeamDirectory(search, filters, statusQuery);
 
   const openFromLink = useCallback((emp: Employee) => {
     setSelectedEmployee(emp);
@@ -93,15 +85,8 @@ function TeamDirectoryPageContent() {
     openFromLink,
   );
 
-  const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const emp of employees) {
-      counts[emp.status] = (counts[emp.status] ?? 0) + 1;
-    }
-    return counts;
-  }, [employees]);
-
-  const activeCount = statusCounts.ACTIVE ?? 0;
+  const allCount =
+    (statusTotals.ACTIVE ?? 0) + (statusTotals.PROBATION ?? 0) + (statusTotals.ON_LEAVE ?? 0);
   const viewOptions = useMemo(() => buildTeamDirectoryViewOptions(t), [t]);
 
   const filterConfigs = useMemo(
@@ -175,27 +160,9 @@ function TeamDirectoryPageContent() {
         />
       ),
       viewMode: <ViewModeSwitch value={view} onChange={setView} options={viewOptions} />,
-      trailing: (
-        <>
-          <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
-            {t('directory.counts', { active: activeCount, total })}
-          </span>
-          {add.menu}
-        </>
-      ),
+      trailing: add.menu,
     }),
-    [
-      activeCount,
-      add.menu,
-      filterConfigs,
-      filters,
-      search,
-      setFilters,
-      t,
-      total,
-      view,
-      viewOptions,
-    ],
+    [add.menu, filterConfigs, filters, search, setFilters, t, view, viewOptions],
   );
 
   useModuleHeroSlots(moduleHeroSlots);
@@ -227,10 +194,11 @@ function TeamDirectoryPageContent() {
         activeStatus={quickStatus}
         defaultScopeActive={defaultScope}
         onStatusChange={handleQuickStatus}
-        counts={statusCounts}
+        counts={statusTotals}
         showTerminated={showTerminated}
         onToggleTerminated={handleToggleTerminated}
-        terminatedCount={terminatedTotal}
+        terminatedCount={statusTotals[EMPLOYEE_STATUS_TERMINATED] ?? 0}
+        allCount={allCount}
       />
 
       {showInitialLoading ? (

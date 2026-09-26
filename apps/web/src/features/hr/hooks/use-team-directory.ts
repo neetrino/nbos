@@ -16,7 +16,8 @@ import {
   type TeamListQuery,
 } from '@/lib/employees/team-directory-cache';
 
-const TERMINATED_COUNT_PAGE_SIZE = 1;
+const STATUS_COUNT_PAGE_SIZE = 1;
+const DIRECTORY_STATUS_KEYS = ['ACTIVE', 'PROBATION', 'ON_LEAVE', 'TERMINATED'] as const;
 
 function buildTeamListQuery(
   search: string,
@@ -52,7 +53,7 @@ export function useTeamDirectory(
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [terminatedTotal, setTerminatedTotal] = useState(0);
+  const [statusTotals, setStatusTotals] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -93,25 +94,33 @@ export function useTeamDirectory(
     };
   }, [listQuery]);
 
-  const refreshTerminatedTotal = useCallback(async () => {
+  const refreshStatusTotals = useCallback(async () => {
     try {
-      const result = await employeesApi.getAll({
-        pageSize: TERMINATED_COUNT_PAGE_SIZE,
-        search: listQuery.search,
-        roleId: listQuery.roleId,
-        level: listQuery.level,
-        departmentId: listQuery.departmentId,
-        status: 'TERMINATED',
+      const results = await Promise.all(
+        DIRECTORY_STATUS_KEYS.map((status) =>
+          employeesApi.getAll({
+            pageSize: STATUS_COUNT_PAGE_SIZE,
+            search: listQuery.search,
+            roleId: listQuery.roleId,
+            level: listQuery.level,
+            departmentId: listQuery.departmentId,
+            status,
+          }),
+        ),
+      );
+      const next: Record<string, number> = {};
+      DIRECTORY_STATUS_KEYS.forEach((status, index) => {
+        next[status] = results[index]?.meta.total ?? 0;
       });
-      setTerminatedTotal(result.meta.total);
+      setStatusTotals(next);
     } catch {
-      setTerminatedTotal(0);
+      setStatusTotals({});
     }
   }, [listQuery.search, listQuery.roleId, listQuery.level, listQuery.departmentId]);
 
   useEffect(() => {
-    void refreshTerminatedTotal();
-  }, [refreshTerminatedTotal]);
+    void refreshStatusTotals();
+  }, [refreshStatusTotals]);
 
   useEffect(() => {
     let active = true;
@@ -138,14 +147,14 @@ export function useTeamDirectory(
       setEmployees(entry.items);
       setTotal(entry.total);
       setFailed(false);
-      await refreshTerminatedTotal();
+      await refreshStatusTotals();
     } catch {
       setFailed(true);
     } finally {
       setRefreshing(false);
       setLoading(false);
     }
-  }, [listQuery, refreshTerminatedTotal]);
+  }, [listQuery, refreshStatusTotals]);
 
   return {
     employees,
@@ -154,7 +163,7 @@ export function useTeamDirectory(
     departments,
     loading,
     refreshing,
-    terminatedTotal,
+    statusTotals,
     error: failed ? t('directory.loadFailed') : null,
     refetch,
   };
