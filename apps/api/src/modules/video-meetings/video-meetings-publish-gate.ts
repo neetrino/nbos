@@ -5,8 +5,16 @@ export type VideoMeetingPublishGate = {
   consentGranted: boolean;
 };
 
+type RecordingFindFirstArgs = {
+  where: {
+    meetingId: string;
+    status: (typeof VideoMeetingRecordingStatus)['RECORDING'];
+  };
+  select: { status: true };
+};
+
 type RecordingFinder = {
-  findFirst: (args: unknown) => Promise<{ status: string } | null>;
+  findFirst: (args: RecordingFindFirstArgs) => Promise<{ status: string } | null>;
 };
 
 type ConsentSource = {
