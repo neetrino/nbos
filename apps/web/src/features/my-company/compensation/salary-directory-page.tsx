@@ -17,15 +17,15 @@ import {
   type ActiveCompensationSummary,
 } from '@/lib/api/compensation-profiles';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { DirectoryCountChip } from '@/features/hr/components/TeamStatusChips';
 import { teamDirectoryCardGridClass } from '@/features/hr/constants/team-directory';
 import { useAppSidebarCollapsed } from '@/hooks/use-app-sidebar-collapsed';
-import { cn } from '@/lib/utils';
 import { SalaryEmployeeCard } from './salary-employee-card';
 import { SalaryProfileSheet } from './salary-profile-sheet';
 import {
+  salaryDirectoryChipCounts,
   salaryDirectoryListParams,
-  salaryDirectoryRequestScope,
-  salaryDirectoryShowsMissingOnly,
+  salaryEmployeeVisible,
   type SalaryDirectoryFilter,
 } from './salary-directory-query';
 
@@ -49,15 +49,13 @@ export function SalaryDirectoryPage() {
   const [selected, setSelected] = useState<Employee | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const requestScope = salaryDirectoryRequestScope(filter);
-
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       setLoading(true);
       try {
         const [people, active] = await Promise.all([
-          employeesApi.getAll({ ...salaryDirectoryListParams(requestScope) }),
+          employeesApi.getAll(salaryDirectoryListParams('everyone')),
           compensationProfilesApi.listActive(),
         ]);
         if (cancelled) return;
@@ -74,7 +72,7 @@ export function SalaryDirectoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [requestScope, t]);
+  }, [t]);
 
   const byEmployee = useMemo(() => {
     const map = new Map<string, ActiveCompensationSummary>();
@@ -82,16 +80,37 @@ export function SalaryDirectoryPage() {
     return map;
   }, [summaries]);
 
-  const visible = useMemo(() => {
+  const searched = useMemo(() => {
     const query = search.trim().toLowerCase();
+    if (!query) return employees;
     return employees.filter((employee) => {
-      const summary = byEmployee.get(employee.id);
-      if (salaryDirectoryShowsMissingOnly(filter) && hasSalary(employee, summary)) return false;
-      if (!query) return true;
       const name = `${employee.firstName} ${employee.lastName}`.toLowerCase();
       return name.includes(query) || employee.role.name.toLowerCase().includes(query);
     });
-  }, [byEmployee, employees, filter, search]);
+  }, [employees, search]);
+
+  const chipCounts = useMemo(
+    () =>
+      salaryDirectoryChipCounts(
+        searched.map((employee) => ({
+          status: employee.status,
+          hasSalary: hasSalary(employee, byEmployee.get(employee.id)),
+        })),
+      ),
+    [byEmployee, searched],
+  );
+
+  const visible = useMemo(
+    () =>
+      searched.filter((employee) =>
+        salaryEmployeeVisible(
+          filter,
+          employee.status,
+          hasSalary(employee, byEmployee.get(employee.id)),
+        ),
+      ),
+    [byEmployee, filter, searched],
+  );
 
   useModuleHeroSlots(
     useMemo(
@@ -103,18 +122,8 @@ export function SalaryDirectoryPage() {
             searchPlaceholder={t('search')}
           />
         ),
-        trailing: (
-          <span className="text-muted-foreground hidden text-xs tabular-nums sm:inline">
-            {t('counts', {
-              configured: employees.filter((employee) =>
-                hasSalary(employee, byEmployee.get(employee.id)),
-              ).length,
-              total: employees.length,
-            })}
-          </span>
-        ),
       }),
-      [byEmployee, employees, search, t],
+      [search, t],
     ),
   );
 
@@ -137,21 +146,29 @@ export function SalaryDirectoryPage() {
 
   return (
     <div className="flex flex-col gap-6 pb-6">
-      <div className="flex flex-wrap gap-2">
-        <FilterChip active={filter === 'all'} label={t('all')} onClick={() => setFilter('all')} />
-        <FilterChip
+      <div className="flex flex-wrap items-center gap-2">
+        <DirectoryCountChip
+          active={filter === 'all'}
+          label={t('all')}
+          count={chipCounts.all}
+          onClick={() => setFilter('all')}
+        />
+        <DirectoryCountChip
           active={filter === 'missing'}
           label={t('missing')}
+          count={chipCounts.missing}
           onClick={() => setFilter('missing')}
         />
-        <FilterChip
+        <DirectoryCountChip
           active={filter === 'terminated'}
           label={t('terminated')}
+          count={chipCounts.terminated}
           onClick={() => setFilter('terminated')}
         />
-        <FilterChip
+        <DirectoryCountChip
           active={filter === 'everyone'}
           label={t('everyone')}
+          count={chipCounts.everyone}
           onClick={() => setFilter('everyone')}
         />
       </div>
@@ -183,30 +200,5 @@ export function SalaryDirectoryPage() {
         onSalaryActivated={() => refreshSummaries()}
       />
     </div>
-  );
-}
-
-function FilterChip({
-  active,
-  label,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'rounded-full border px-3 py-1 text-sm',
-        active
-          ? 'border-primary bg-primary/10 text-primary'
-          : 'border-border text-muted-foreground',
-      )}
-    >
-      {label}
-    </button>
   );
 }
