@@ -1,16 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Shield } from 'lucide-react';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { EmptyState, ErrorState, LoadingState, PageHero } from '@/components/shared';
+import { ErrorState, LoadingState, PageHero } from '@/components/shared';
 import { toast } from 'sonner';
-import { SETTINGS_RBAC_MODULE } from '@nbos/shared/constants';
-import { PermissionGate } from '@/lib/permissions';
 import { CreateRoleDialog } from '@/features/settings/components/CreateRoleDialog';
 import { RolePermissionsSheet } from '@/features/settings/components/RolePermissionsSheet';
-import { RolesTable } from '@/features/settings/components/RolesTable';
+import { RolesBoard } from '@/features/settings/components/roles-board';
+import { RolesInsights } from '@/features/settings/components/roles-insights';
 import {
   buildRoleMatrixScopes,
   rolePermissionScopeKey,
@@ -33,7 +30,6 @@ export default function RolesPage() {
   const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [createName, setCreateName] = useState('');
-  const [createSlug, setCreateSlug] = useState('');
   const [createLevel, setCreateLevel] = useState(10);
   const [createSaving, setCreateSaving] = useState(false);
   const [retiringRoleId, setRetiringRoleId] = useState<string | null>(null);
@@ -158,18 +154,20 @@ export default function RolesPage() {
 
   const handleCreateRole = async () => {
     const name = createName.trim();
-    const slug = createSlug.trim().toLowerCase().replace(/\s+/g, '-');
-    if (!name || !slug) {
-      toast.error('Name and slug are required');
+    if (!name) {
+      toast.error('Name is required');
       return;
     }
+    const slug = roleSlugFromName(
+      name,
+      roles.map((role) => role.slug),
+    );
     setCreateSaving(true);
     try {
       await api.post('/api/roles', { name, slug, level: createLevel });
       toast.success('Role created');
       setCreateDialogOpen(false);
       setCreateName('');
-      setCreateSlug('');
       setCreateLevel(10);
       void fetchRoles();
     } catch (err) {
@@ -180,53 +178,33 @@ export default function RolesPage() {
   };
 
   return (
-    <div className="flex h-full flex-col gap-5">
-      <PageHero
-        title="Roles"
-        trailing={
-          <PermissionGate module={SETTINGS_RBAC_MODULE} action="ADD">
-            <Button type="button" size="sm" onClick={() => setCreateDialogOpen(true)}>
-              <Plus size={16} aria-hidden />
-              Create Role
-            </Button>
-          </PermissionGate>
-        }
-      />
-      <p className="text-muted-foreground text-sm">
-        Click a role to open its permissions and change access.
-      </p>
-
-      <div className="border-border bg-card flex flex-col gap-4 rounded-xl border p-4">
-        <h3 className="text-foreground flex items-center gap-2 text-sm font-medium">
-          <Shield size={16} />
-          Roles
-        </h3>
-        {loadError ? (
-          <ErrorState
-            description={loadError}
-            onRetry={() => {
-              void fetchRoles();
-              void fetchPermissions();
-            }}
-          />
-        ) : loadingRoles ? (
-          <LoadingState count={3} />
-        ) : roles.length === 0 ? (
-          <EmptyState
-            icon={Shield}
-            title="No roles configured"
-            description="Create a role before editing permissions."
-          />
-        ) : (
-          <RolesTable
+    <div className="flex flex-col gap-5 pb-8">
+      <PageHero title="Roles" />
+      {loadError ? (
+        <ErrorState
+          description={loadError}
+          onRetry={() => {
+            void fetchRoles();
+            void fetchPermissions();
+          }}
+        />
+      ) : loadingRoles ? (
+        <LoadingState count={3} />
+      ) : (
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
+          <div className="lg:sticky lg:top-4 lg:self-start">
+            <RolesInsights roles={roles} />
+          </div>
+          <RolesBoard
             roles={roles}
             busyRoleId={retiringRoleId}
             onSelect={handleSelectRole}
             onArchive={(role) => void handleRetirement(role, 'archive')}
             onRestore={(role) => void handleRetirement(role, 'restore')}
+            onCreate={() => setCreateDialogOpen(true)}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       <RolePermissionsSheet
         open={openRoleId !== null}
@@ -250,18 +228,34 @@ export default function RolesPage() {
       <CreateRoleDialog
         open={createDialogOpen}
         name={createName}
-        slug={createSlug}
         level={createLevel}
         saving={createSaving}
         onOpenChange={setCreateDialogOpen}
-        onNameChange={(name) => {
-          setCreateName(name);
-          if (!createSlug) setCreateSlug(name.trim().toLowerCase().replace(/\s+/g, '-'));
-        }}
-        onSlugChange={setCreateSlug}
+        onNameChange={setCreateName}
         onLevelChange={setCreateLevel}
         onCreate={() => void handleCreateRole()}
       />
     </div>
   );
+}
+
+const RESERVED_ROLE_SLUG = 'owner';
+
+function roleSlugFromName(name: string, taken: string[]): string {
+  const base =
+    name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'role';
+  const used = new Set(taken.map((slug) => slug.toLowerCase()));
+  used.add(RESERVED_ROLE_SLUG);
+  const root = base === RESERVED_ROLE_SLUG ? 'role' : base;
+  let slug = root;
+  let suffix = 2;
+  while (used.has(slug)) {
+    slug = `${root}-${suffix}`;
+    suffix += 1;
+  }
+  return slug;
 }
