@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { ListChecks } from 'lucide-react';
 import { StatusBadge } from '@/components/shared';
 import {
@@ -28,11 +27,18 @@ function versionLabel(row: ChecklistTemplateListItem): string {
   return 'Not published';
 }
 
-export function ChecklistTemplateCard({ row }: { row: ChecklistTemplateListItem }) {
+export function ChecklistTemplateCard({
+  row,
+  onOpen,
+}: {
+  row: ChecklistTemplateListItem;
+  onOpen: (id: string) => void;
+}) {
   return (
     <li className="flex min-w-0">
-      <Link
-        href={`/my-company/checklist-templates/${row.id}`}
+      <button
+        type="button"
+        onClick={() => onOpen(row.id)}
         className={cn(
           'border-border bg-card hover:border-primary/40 flex h-full w-full min-w-0 flex-col gap-3 rounded-2xl border p-4 text-left transition-colors',
           row.status === 'ARCHIVED' && 'opacity-70',
@@ -62,7 +68,7 @@ export function ChecklistTemplateCard({ row }: { row: ChecklistTemplateListItem 
         <p className="text-muted-foreground mt-auto text-xs">
           {CHECKLIST_OWNER_MODULE_LABELS[row.ownerModule]} · {versionLabel(row)}
         </p>
-      </Link>
+      </button>
     </li>
   );
 }

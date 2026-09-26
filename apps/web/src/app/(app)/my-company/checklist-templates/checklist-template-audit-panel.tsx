@@ -28,9 +28,15 @@ type Props = {
   templateId: string;
   /** When true, omit outer card and use denser typography (parent provides layout). */
   embedded?: boolean;
+  /** Let the parent sheet scroll instead of clipping the list. */
+  unbounded?: boolean;
 };
 
-export function ChecklistTemplateAuditPanel({ templateId, embedded = false }: Props) {
+export function ChecklistTemplateAuditPanel({
+  templateId,
+  embedded = false,
+  unbounded = false,
+}: Props) {
   const [rows, setRows] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,16 +79,21 @@ export function ChecklistTemplateAuditPanel({ templateId, embedded = false }: Pr
       {!loading && rows.length > 0 ? (
         <ul
           className={cn(
-            'divide-border divide-y overflow-y-auto',
-            embedded ? 'max-h-44 text-xs' : 'max-h-72 text-sm',
+            'flex flex-col gap-1',
+            !unbounded && (embedded ? 'max-h-44 overflow-y-auto' : 'max-h-72 overflow-y-auto'),
           )}
         >
           {rows.map((row) => (
-            <li key={row.id} className={cn('py-2 pr-1', embedded && 'py-1.5')}>
-              <p className={cn('font-medium', embedded && 'text-xs')}>{formatAction(row.action)}</p>
-              <p className="text-muted-foreground text-[0.6875rem] leading-snug">
-                {new Date(row.createdAt).toLocaleString()} · {formatActor(row)}
-              </p>
+            <li key={row.id} className="flex items-center gap-2.5 rounded-xl px-1.5 py-1.5">
+              <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                {formatAction(row.action).slice(0, 2).toUpperCase()}
+              </span>
+              <div className="min-w-0">
+                <p className="text-foreground text-sm font-medium">{formatAction(row.action)}</p>
+                <p className="text-muted-foreground text-xs">
+                  {new Date(row.createdAt).toLocaleString()} · {formatActor(row)}
+                </p>
+              </div>
             </li>
           ))}
         </ul>
