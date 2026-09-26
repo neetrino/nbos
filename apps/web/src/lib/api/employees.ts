@@ -180,7 +180,7 @@ export interface EmployeeSessionRevokeResult {
 }
 
 export const employeesApi = {
-  async getAll(params?: Record<string, unknown>): Promise<ListData<Employee>> {
+  async getAll<TParams extends object>(params?: TParams): Promise<ListData<Employee>> {
     const resp = await api.get<ListData<Employee>>('/api/employees', { params });
     return resp.data;
   },
