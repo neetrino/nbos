@@ -100,7 +100,7 @@ Scope определяет границу доступа:
 - Секция со своим модулем открывается по своему праву, без `SETTINGS.VIEW`: `/settings/audit-log` — по `AUDIT_LOGS VIEW`, `/settings/roles` и `/settings/access-policies` — по `SETTINGS_RBAC VIEW`, `/settings/scheduler` — по `SETTINGS_SCHEDULER VIEW`. Так Finance Director по матрице читает Audit Log и не видит остальную админку; на хабе ему показывается только эта плитка.
 - `SETTINGS.DELETE` — только деструктивные платформенные действия (retention purge), не удаление списков.
 - По умолчанию все четыре action выданы **только** Platform Owner / Founder (legacy `owner`) и CEO. Остальные роли начинают с `NONE` и получают доступ явно через Settings → Permissions / RBAC.
-- Матрица в UI строится из `GET /permissions`, поэтому новые модули появляются в ней автоматически.
+- Матрица в UI строится из `GET /permissions`, поэтому новые модули появляются в ней автоматически. Исключение: legacy-модуль `CRM_CALL_RECORDINGS` в матрице не показывается. Прослушивание — `CALLS_PLAY`; запись `CRM_CALL_RECORDINGS_PLAY` остаётся в каталоге и сохраняется при сохранении роли.
 
 Одно сознательное исключение: `GET /roles` остаётся на `COMPANY VIEW`, потому что список ролей нужен формам сотрудников и приглашений в `My Company`. Он возвращает полные строки роли (slug, level, флаги, счётчик сотрудников), но не права: начинка роли (`GET /roles/:id`) и каталог прав (`GET /permissions`) закрыты `SETTINGS_RBAC VIEW`, поэтому scope и матрица по `COMPANY VIEW` недоступны.
 

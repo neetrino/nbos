@@ -128,7 +128,7 @@ function RoleRow({
     <li
       className={cn(
         ROLE_COLUMNS,
-        'border-border/70 hover:bg-muted/50 border-b py-2 transition-colors last:border-b-0',
+        'hover:bg-muted/50 py-2 shadow-[inset_0_-1px_0_0_color-mix(in_oklch,var(--border)_40%,transparent)] transition-colors last:shadow-none hover:rounded-xl',
         archived && 'opacity-60',
       )}
     >
@@ -166,9 +166,13 @@ function RoleRow({
 }
 
 function RoleStatus({ role }: { role: RoleListItem }) {
-  if (role.archivedAt) return <StatusBadge label="Archived" variant="gray" className="shrink-0" />;
-  if (role.isSystem) return <StatusBadge label="System" variant="blue" className="shrink-0" />;
-  return <StatusBadge label="Active" variant="green" className="shrink-0" />;
+  if (role.archivedAt) {
+    return <StatusBadge label="Archived" variant="gray" className="shrink-0 self-center" />;
+  }
+  if (role.isSystem) {
+    return <StatusBadge label="System" variant="blue" className="shrink-0 self-center" />;
+  }
+  return <StatusBadge label="Active" variant="green" className="shrink-0 self-center" />;
 }
 
 function RoleActionCell({

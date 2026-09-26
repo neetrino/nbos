@@ -191,18 +191,20 @@ export default function RolesPage() {
       ) : loadingRoles ? (
         <LoadingState count={3} />
       ) : (
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
-          <div className="lg:sticky lg:top-4 lg:self-start">
+        <div className="grid items-start gap-4 2xl:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
+          <div className="order-2 2xl:sticky 2xl:top-4 2xl:order-1 2xl:self-start">
             <RolesInsights roles={roles} />
           </div>
-          <RolesBoard
-            roles={roles}
-            busyRoleId={retiringRoleId}
-            onSelect={handleSelectRole}
-            onArchive={(role) => void handleRetirement(role, 'archive')}
-            onRestore={(role) => void handleRetirement(role, 'restore')}
-            onCreate={() => setCreateDialogOpen(true)}
-          />
+          <div className="order-1 2xl:order-2">
+            <RolesBoard
+              roles={roles}
+              busyRoleId={retiringRoleId}
+              onSelect={handleSelectRole}
+              onArchive={(role) => void handleRetirement(role, 'archive')}
+              onRestore={(role) => void handleRetirement(role, 'restore')}
+              onCreate={() => setCreateDialogOpen(true)}
+            />
+          </div>
         </div>
       )}
 
