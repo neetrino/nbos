@@ -26,6 +26,9 @@ import { PermissionGate } from '@/lib/permissions';
 
 type LinkMode = 'open' | 'setup' | 'email';
 
+/** Fits the longest action label, without the extra width of a fixed minimum. */
+const TEAM_ADD_MENU_CLASS = 'w-max! whitespace-nowrap';
+
 export function browserAcceptInviteUrl(token: string): string {
   return `${window.location.origin}/accept-invite?token=${encodeURIComponent(token)}`;
 }
@@ -128,7 +131,7 @@ function TeamAddMenu({
             </Button>
           )}
         />
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className={TEAM_ADD_MENU_CLASS}>
           <DropdownMenuItem onClick={onCreate}>
             <Users2 className="mr-2 size-4" />
             {t('directory.createEmployee')}
