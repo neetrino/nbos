@@ -1,6 +1,6 @@
 'use client';
 
-import '@livekit/components-react/styles.css';
+import '@livekit/components-styles';
 import { LiveKitRoom, VideoConference } from '@livekit/components-react';
 import { useTranslations } from 'next-intl';
 import type { LiveKitJoinCredentials } from '@/lib/api/video-meetings';

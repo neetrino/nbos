@@ -12,7 +12,8 @@
 | S04 commit            | `21c631722` — feat(web): add video meetings list, room, and guest prejoin                                   |
 | S05 commit            | `7e15d481c` — feat(video-meetings): add consented composite and per-participant recording                   |
 | S06 commit            | _(prior)_ — feat(video-meetings): finalize recordings through Drive artifact operations                     |
-| S07 commit            | _(this commit)_ — feat(video-meetings): add optional calendar link and acceptance record                    |
+| S07 commit            | `743e0bdc` — feat(video-meetings): add optional calendar link and acceptance record                         |
+| Final-gate fix        | _(this commit)_ — fix(video-meetings): close final-gate defects (LiveKit styles import)                     |
 | Push                  | **Not pushed** (origin diverged; remote deleted `todo.md`)                                                  |
 | `todo.md` / `TODO.md` | Left **unstaged**; do not commit                                                                            |
 
@@ -75,6 +76,26 @@ See `04-TEST-AND-ACCEPTANCE.md` results table. Summary:
 | `pnpm --filter @nbos/web typecheck`                            | **PASS**                                            |
 | Two-browser media / live MP4 / live Drive finalize / load/TURN | **NOT RUN**                                         |
 | Production migrate / push / origin merge / PR                  | **NOT RUN** (forbidden)                             |
+
+## Final-gate (post-S07)
+
+### Defect fixed
+
+- `@livekit/components-react@2.9.24` no longer exports `styles.css`. Web room imported a dead path → `pnpm build` failed (Turbopack module-not-found).
+- Fix: add pinned `@livekit/components-styles@1.2.0` and import `@livekit/components-styles` in `VideoMeetingLiveKitRoom.tsx`.
+
+### CI commands (this session)
+
+| Command                                                    | Result                                                                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `pnpm format:check`                                        | **PASS**                                                                                         |
+| `pnpm lint`                                                | **PASS** (0 errors; pre-existing warnings outside video-meetings — baseline)                     |
+| `pnpm typecheck`                                           | **PASS** (`NODE_OPTIONS=--max-old-space-size=8192`)                                              |
+| `pnpm test`                                                | **PASS** (1623 files / 8100 tests; targeted video-meetings API 70 + web/shared 20 also **PASS**) |
+| `pnpm build`                                               | **PASS** (after styles fix; previously FAIL on LiveKit CSS import)                               |
+| Prisma validate                                            | **PASS**                                                                                         |
+| Two-browser / real MP4 / live Drive finalize / load / TURN | **NOT RUN**                                                                                      |
+| Push / PR / origin merge / production migrate              | **NOT RUN** (forbidden)                                                                          |
 
 ## Gate statuses (end of S07)
 

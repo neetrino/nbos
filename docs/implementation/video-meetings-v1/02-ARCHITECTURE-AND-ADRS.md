@@ -35,6 +35,7 @@ Canon requires pinned compatible LiveKit Server, Egress, and React Components. P
 | LiveKit Egress   | **v1.14.1**                          | `livekit/egress:v1.14.1`         | https://github.com/livekit/egress/releases/tag/v1.14.1 · self-host https://docs.livekit.io/transport/self-hosting/egress/ · overview https://docs.livekit.io/transport/media/ingress-egress/egress/ |
 | Node server SDK  | **livekit-server-sdk@2.19.1**        | npm                              | https://www.npmjs.com/package/livekit-server-sdk                                                                                                                                                    |
 | React Components | **@livekit/components-react@2.9.24** | npm                              | https://www.npmjs.com/package/@livekit/components-react (peer `livekit-client` ^2.20.1)                                                                                                             |
+| React Styles     | **@livekit/components-styles@1.2.0** | npm                              | https://www.npmjs.com/package/@livekit/components-styles (import `@livekit/components-styles`; no `styles.css` export on components-react 2.9)                                                      |
 | Client SDK       | **livekit-client@2.22.3**            | npm                              | https://www.npmjs.com/package/livekit-client                                                                                                                                                        |
 
 ### Compatibility notes
