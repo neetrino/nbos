@@ -69,6 +69,10 @@ describe('product and delivery functions hide sale price', () => {
       path.join(catalogRoot, 'product-functions-workspace.tsx'),
       'utf8',
     );
+    const composition = readFileSync(
+      path.join(catalogRoot, 'product-functions-composition.tsx'),
+      'utf8',
+    );
     const hiddenMoney = readFileSync(
       path.join(catalogRoot, 'product-functions-volume.tsx'),
       'utf8',
@@ -82,13 +86,14 @@ describe('product and delivery functions hide sale price', () => {
       path.join(deliveryRoot, 'DeliveryItemDetailSecondaryPanels.tsx'),
       'utf8',
     );
-    for (const source of [workspace, trigger, data, panels, hiddenMoney]) {
+    for (const source of [workspace, composition, trigger, data, panels, hiddenMoney]) {
       expect(source).not.toContain('salePriceCardLabels');
     }
-    expect(workspace).toContain('MoneyHiddenComposition');
+    expect(workspace).toContain('ProductFunctionsComposition');
+    expect(composition).toContain('MoneyHiddenComposition');
     expect(hiddenMoney).toContain('showSalePrice={false}');
-    expect(workspace).toContain('AddFunctionTrigger');
-    expect(workspace).toContain('RemoveExtraDialog');
+    expect(composition).toContain('AddFunctionTrigger');
+    expect(composition).toContain('RemoveExtraDialog');
     expect(trigger).toContain('salePriceByFunctionId={new Map()}');
     expect(trigger).toContain('FunctionCatalogSheet');
     expect(data).toContain('getByExtension');
