@@ -15,6 +15,7 @@ import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { productsApi, type FullProduct, type Product } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
+import { EntityVideoMeetingAction } from '@/features/video-meetings/EntityVideoMeetingAction';
 
 export interface ProductDetailHeaderProps {
   product: FullProduct;
@@ -92,6 +93,11 @@ export function ProductDetailHeader({
             {switcher}
           </div>
           {stageBadge}
+          <EntityVideoMeetingAction
+            entityType="PRODUCT"
+            entityId={product.id}
+            entityLabel={product.name}
+          />
         </div>
       </div>
     );
@@ -112,6 +118,11 @@ export function ProductDetailHeader({
           />
           {stageBadge}
           {switcher}
+          <EntityVideoMeetingAction
+            entityType="PRODUCT"
+            entityId={product.id}
+            entityLabel={product.name}
+          />
         </div>
         <Link
           href={projectHref}

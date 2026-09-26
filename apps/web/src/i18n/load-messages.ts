@@ -27,6 +27,7 @@ export type InterfaceMessages = {
   quick: AbstractIntlMessages;
   checklist: AbstractIntlMessages;
   marketing: AbstractIntlMessages;
+  videoMeetings: AbstractIntlMessages;
 };
 
 async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<InterfaceMessages> {
@@ -59,6 +60,7 @@ async function loadMessagesUncached(locale: WritableInterfaceLocale): Promise<In
     quick: mergeMessages(en.quick, localized.quick),
     checklist: mergeMessages(en.checklist, localized.checklist),
     marketing: mergeMessages(en.marketing, localized.marketing),
+    videoMeetings: mergeMessages(en.videoMeetings, localized.videoMeetings),
   };
 }
 
@@ -96,6 +98,7 @@ async function readLocaleCatalogs(locale: WritableInterfaceLocale): Promise<Inte
     quick,
     checklist,
     marketing,
+    videoMeetings,
   ] = await Promise.all([
     import(`../messages/${locale}/common.json`),
     import(`../messages/${locale}/account.json`),
@@ -119,6 +122,7 @@ async function readLocaleCatalogs(locale: WritableInterfaceLocale): Promise<Inte
     import(`../messages/${locale}/quick.json`),
     import(`../messages/${locale}/checklist.json`),
     import(`../messages/${locale}/marketing.json`),
+    import(`../messages/${locale}/video-meetings.json`),
   ]);
   return {
     common: common.default,
@@ -143,5 +147,6 @@ async function readLocaleCatalogs(locale: WritableInterfaceLocale): Promise<Inte
     quick: quick.default,
     checklist: checklist.default,
     marketing: marketing.default,
+    videoMeetings: videoMeetings.default,
   };
 }

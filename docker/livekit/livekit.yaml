@@ -1,0 +1,27 @@
+# Local-only LiveKit Server config (S03).
+# Keys below are the published LiveKit insecure local-dev pair — NEVER use in production.
+# See docs/implementation/video-meetings-v1/05-DEPLOYMENT-AND-RUNBOOK.md
+
+port: 7880
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  use_external_ip: false
+
+redis:
+  address: livekit-redis:6379
+
+# INSECURE local-dev only — replace via env / secret store outside this file for real deploys.
+# Secret length ≥ 32 characters required by LiveKit Server v1.13.x validation.
+keys:
+  devkey: secret_local_dev_only_not_for_prod_use
+
+logging:
+  level: info
+
+# Optional: LiveKit → NBOS egress/track webhooks (S05). host.docker.internal reaches the
+# host API from containers on Docker Desktop. Feature flag must be ON for the route.
+# webhook:
+#   api_key: devkey
+#   urls:
+#     - http://host.docker.internal:4000/api/video-meetings/livekit/webhook

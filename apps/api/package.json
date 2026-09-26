@@ -47,6 +47,7 @@
     "ipaddr.js": "^2.5.0",
     "isomorphic-dompurify": "^3.16.0",
     "jsonwebtoken": "^9.0.2",
+    "livekit-server-sdk": "2.19.1",
     "mailparser": "^3.9.9",
     "nestjs-pino": "^4.6.1",
     "nodemailer": "^9.1.1",

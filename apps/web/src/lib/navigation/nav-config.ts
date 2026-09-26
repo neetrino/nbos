@@ -231,6 +231,12 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
     permission: { module: 'CALLS', action: 'VIEW' },
   },
   {
+    key: 'video-meetings',
+    label: 'modules.video-meetings',
+    href: '/video-meetings',
+    permission: { module: 'VIDEO_MEETINGS', action: 'VIEW' },
+  },
+  {
     key: 'calendar',
     label: 'modules.calendar',
     href: '/calendar',

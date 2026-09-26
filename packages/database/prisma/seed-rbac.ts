@@ -59,6 +59,10 @@ const MODULES = [
   'MAIL',
   'CALENDAR',
   'CALLS',
+  // Video Meetings (Module 22): dedicated module — never reuse CALLS.
+  // Default grants beyond Owner/CEO are a DECISION still open for Product+Security;
+  // seed grants Owner/CEO via Object.fromEntries(MODULES → F) only. Other roles stay NONE.
+  'VIDEO_MEETINGS',
   'COMPANY',
   // Settings / Admin is deliberately separate from COMPANY (My Company).
   // Only role-owner and role-ceo receive these below; every other role stays NONE.

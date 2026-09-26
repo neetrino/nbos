@@ -14,7 +14,11 @@
 
 > **Активный бэклог** до полного канона: что делаем и что отложено. Закрытые срезы и история — `[IMPLEMENTATION_DONE.md](./IMPLEMENTATION_DONE.md)`. Детальное поведение — в `docs/NBOS/02-Modules/*`, cleanup registers, тестах и git.
 
-**Обновлено:** 2026-05-09
+**Обновлено:** 2026-09-26
+
+### Video Meetings V1 (Module 22) — code on branch, not staging-verified
+
+S00–S07 code complete on `feature/video-meetings-v1` (flag default OFF). Honest acceptance: A01/A02/A07/A08 **NOT RUN** (live media). **CODE COMPLETE** / **STAGING VERIFIED: no** / **PRODUCTION BLOCKED** (Hetzner/DNS/TURN, secrets, legal, RBAC matrix, measured load, flag enablement). Plan: `[implementation/video-meetings-v1/](implementation/video-meetings-v1/)`.
 
 ---
 
