@@ -6,7 +6,8 @@
 | --------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Branch                | `feature/video-meetings-v1` (based on docs S00 @ `465584f06`; **do not** merge/rebase onto diverged origin) |
 | S00 commit            | `465584f06` — docs: add video meetings V1 gap analysis and implementation plan                              |
-| S01 commit            | this branch HEAD after S01 (`feat(video-meetings): add meeting domain schema and permission flags`)         |
+| S01 commit            | `04b6ec6eb` — feat(video-meetings): add meeting domain schema and permission flags                          |
+| S02 commit            | this branch HEAD after S02 (`feat(video-meetings): add flagged meeting metadata API`)                       |
 | Push                  | **Not pushed** (origin diverged; remote deleted `todo.md`)                                                  |
 | `todo.md` / `TODO.md` | Left **unstaged**; local wipe of prior checklist preserved dirty                                            |
 
@@ -16,76 +17,88 @@
 | ----- | -------------------- | ---------------------------------------------------------------------------------------------------- |
 | S00   | **DONE** (docs only) | Gap analysis, ADRs, pins, recording feasibility, plan. LiveKit local: **NOT RUN** — do not mark PASS |
 | S01   | **DONE**             | Prisma entities, VIDEO_MEETINGS RBAC (Owner/CEO only), feature flag default OFF, domain unit tests   |
-| S02   | TODO                 | Nest API next                                                                                        |
+| S02   | **DONE**             | Nest metadata API behind flag; create/start/list/card/history/links; no LiveKit                      |
 | S03   | TODO                 | First LiveKit local bring-up                                                                         |
 | S04   | TODO                 |                                                                                                      |
 | S05   | TODO                 | Prove multi-egress recording                                                                         |
 | S06   | TODO                 | Drive finalize                                                                                       |
 | S07   | TODO                 | V1 gate                                                                                              |
 
-## What landed in S01
+## What landed in S02
 
-- Additive Prisma schema `packages/database/prisma/schema/video-meetings.prisma` (meeting, session, participant, invite digest, consent, recording, asset, entity link; optional nullable `calendarMeetingId` string — no CalendarMeeting auto-create).
-- Migration `20260926170000_video_meetings_v1_schema` (enums + tables + FKs within module + permission rows).
-- Shared constants: `VIDEO_MEETINGS` VIEW/EDIT/ADD/DELETE; feature flag key `video_meetings_v1` default `false`.
-- Domain rules module `packages/shared/src/video-meetings/*` + vitest coverage.
-- `seed-rbac` MODULES includes `VIDEO_MEETINGS` (Owner/CEO via `Object.fromEntries` → F). Upsert script for catch-up DBs.
-- **Default RBAC beyond Owner/CEO:** documented as open Product+Security **DECISION** — not invented.
+### Endpoints (all under `/api/video-meetings`, auth + `VIDEO_MEETINGS_*` required)
 
-### Schema decisions vs ADR (non-blocking)
+| Method | Path                        | Permission | Behavior                                                                         |
+| ------ | --------------------------- | ---------- | -------------------------------------------------------------------------------- |
+| POST   | `/`                         | ADD        | Instant standalone meeting; host=owner=caller; `calendarMeetingId=null`          |
+| GET    | `/`                         | VIEW       | List meetings caller may access (host/owner/participant); optional status filter |
+| GET    | `/history`                  | VIEW       | Same as list with `status=ENDED`                                                 |
+| GET    | `/:id`                      | VIEW       | Card/detail (sessions + entity links; no recordings/invites)                     |
+| POST   | `/:id/start`                | EDIT       | Metadata session + opaque `livekitRoomName` placeholder; **no LiveKit**          |
+| POST   | `/:id/end`                  | EDIT       | Soft-end active meeting                                                          |
+| POST   | `/:id/cancel`               | EDIT       | Soft-cancel CREATED/WAITING                                                      |
+| POST   | `/:id/entity-links`         | EDIT       | Attach Deal/Project/Product/Contact after entity VIEW re-check                   |
+| DELETE | `/:id/entity-links/:linkId` | EDIT       | Detach link (not meeting delete)                                                 |
 
-- Cross-module refs (`hostEmployeeId`, `ownerEmployeeId`, `calendarMeetingId`, `fileAssetId`, entity `entityId`) are **string ids without Prisma FK** to Employee/Calendar/Drive/CRM models — matches CalendarMeeting soft-ref style and keeps Module 22 isolated. Application validates in S02+.
-- Canon fine-grained verbs (JOIN/HOST/RECORD/…) map to platform **VIEW/EDIT/ADD/DELETE** for Settings → Roles catalog consistency; finer gates stay for later API slices.
-- Feature Flags Settings page is still a placeholder → code constant default OFF (not DB-backed).
+### Feature flag
 
-## Checks run in S01
+- Gate: `VideoMeetingsFeatureGuard` → **404** when `isVideoMeetingsFeatureEnabled(VIDEO_MEETINGS_V1_ENABLED)` is false.
+- Default remains **OFF** (`VIDEO_MEETINGS_FEATURE_ENABLED_DEFAULT === false`).
+- Tests inject `VIDEO_MEETINGS_FEATURE_ENABLED_TOKEN = true`; production wiring must omit the override.
 
-| Check                                                                           | Result                                      |
-| ------------------------------------------------------------------------------- | ------------------------------------------- |
-| Migration risk classification                                                   | **LOW** (additive tables/enums/permissions) |
-| Generated/hand-written SQL inspected                                            | **Yes** — no DROP/ALTER of existing tables  |
-| `prisma validate`                                                               | **PASS**                                    |
-| `prisma generate`                                                               | **PASS**                                    |
-| `prisma migrate deploy` on non-prod Neon (`DATABASE_URL` ≠ `DATABASE_URL_PROD`) | **PASS**                                    |
-| Production migrate / `DATABASE_URL_PROD`                                        | **NOT RUN** (forbidden)                     |
-| Vitest domain + migration tests (14)                                            | **PASS**                                    |
-| `pnpm --filter @nbos/database typecheck`                                        | **PASS**                                    |
-| `pnpm --filter @nbos/shared typecheck`                                          | **PASS**                                    |
-| Prettier on touched files                                                       | **PASS** (run before commit)                |
-| LiveKit / Nest API / Next UI                                                    | **NOT RUN** (out of S01 scope)              |
+### Rate limit
 
-## Handoff to S02
+- **DECISION:** no new per-module limiter. Platform `ThrottlerGuard` (global APP_GUARD, ttl 60s / limit 100) already applies. Do not invent a Video Meetings-specific number.
 
-**S02 can start immediately** on this branch without pulling origin.
+### Serializers / negatives
 
-S02 notes:
+- Responses omit recording assets, R2 keys, invite digests/plaintext, playback URLs.
+- Entity links never widen media ACL (`entityLinkGrantsVideoMeetingsAccess` still false without VIDEO_MEETINGS).
+- CALLS permissions do not open Video Meetings routes.
+- No guest/`@Public` routes in this module.
 
-- Nest module behind `isVideoMeetingsFeatureEnabled` / `VIDEO_MEETINGS_FEATURE_ENABLED_DEFAULT === false`.
-- Create instant meeting, list/filter, detail/card, history, attach/detach Deal/Project/Product/Contact with auth re-check.
-- Serializers must never leak recording URLs.
-- Permission negatives: CALLS must not open Video Meetings; entity links must not widen media ACL.
-- Do not force-create CalendarMeeting; do not start LiveKit yet (S03).
+## Checks run in S02
 
-Still open (do **not** block S02; block production enablement later):
+| Check                                                                      | Result                                        |
+| -------------------------------------------------------------------------- | --------------------------------------------- |
+| Prettier on touched files                                                  | **PASS**                                      |
+| `eslint` on `src/modules/video-meetings/**` + `app.module.ts`              | **PASS**                                      |
+| Vitest `apps/api/src/modules/video-meetings` (15)                          | **PASS**                                      |
+| `pnpm --filter @nbos/api typecheck` (`tsc --noEmit`, NODE_OPTIONS heap 8G) | **PASS**                                      |
+| Integration DB / e2e against real Postgres                                 | **NOT RUN** (unit + HTTP contract with mocks) |
+| LiveKit SDK / room create / JWT mint                                       | **NOT RUN** (S03)                             |
+| Full monorepo build                                                        | **NOT RUN**                                   |
+| Production migrate / push / origin merge                                   | **NOT RUN** (forbidden)                       |
+
+## Handoff to S03
+
+**S03 can start immediately** on this branch without pulling origin.
+
+S03 notes:
+
+- Wire self-hosted LiveKit (pinned versions from ADR-VM-001); replace opaque room placeholder with real `CreateRoom`.
+- Mint AccessTokens only after admission; guest invite routes start here (digest-only storage).
+- Do not change S02 link/auth semantics; do not enable feature flag by default.
+- Keep serializers free of playback URLs until S05/S06.
+
+Still open (do **not** block S03; block production enablement later):
 
 - Legal notice / retention wording
 - Default RBAC role matrix beyond Owner/CEO
 - Capacity numbers on real hardware
 - Optional new `FileArtifactOperationSourceEnum` vs SYSTEM actor (decide in S06)
 
-## Files created / touched (S01)
+## Files created / touched (S02)
 
 ```text
-packages/database/prisma/schema/video-meetings.prisma
-packages/database/prisma/migrations/20260926170000_video_meetings_v1_schema/migration.sql
-packages/database/prisma/video-meetings-v1.migration.test.ts
-packages/database/prisma/seed-rbac.ts
-packages/database/scripts/upsert-video-meetings-permissions.ts
-packages/shared/src/constants/video-meetings-permissions.ts
-packages/shared/src/constants/video-meetings-feature-flag.ts
-packages/shared/src/constants/index.ts
-packages/shared/src/video-meetings/*
-packages/shared/src/index.ts
+apps/api/src/modules/video-meetings/*
+apps/api/src/app.module.ts
+apps/api/src/test-utils/mock-prisma.ts
 docs/implementation/video-meetings-v1/03-PHASES-AND-SLICES.md
 docs/implementation/video-meetings-v1/06-PROGRESS-AND-HANDOFF.md
 ```
+
+## What landed in S01 (summary)
+
+- Additive Prisma schema + migration; VIDEO_MEETINGS RBAC; feature flag default OFF; domain unit tests.
+- See prior handoff section history / S01 commit for details.

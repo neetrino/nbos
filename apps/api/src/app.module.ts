@@ -49,6 +49,7 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { OrgSeatsModule } from './modules/org-seats/org-seats.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { ChecklistTemplatesModule } from './modules/checklist-templates/checklist-templates.module';
+import { VideoMeetingsModule } from './modules/video-meetings/video-meetings.module';
 import { PlatformAccessModule } from './modules/platform-access/platform-access.module';
 import { PlatformOwnershipModule } from './modules/platform-ownership/platform-ownership.module';
 import { PlatformLifecycleModule } from './modules/platform-lifecycle/platform-lifecycle.module';
@@ -119,6 +120,7 @@ import { QueueWorkersModule } from './runtime/queue-workers.module';
     OrgSeatsModule,
     InvitationsModule,
     ChecklistTemplatesModule,
+    VideoMeetingsModule,
     PlatformAccessModule,
     PlatformLifecycleModule,
     PlatformAppearanceModule,

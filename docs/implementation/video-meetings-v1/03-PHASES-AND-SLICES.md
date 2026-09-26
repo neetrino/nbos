@@ -46,7 +46,7 @@ Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 | **Tests**                 | API permission negatives; link validation; guest endpoints absent                                                                                                                                                                                               |
 | **Done criteria**         | Authorized employee can create unlinked meeting metadata and manage links without media                                                                                                                                                                         |
 | **Risks**                 | Accidental Calendar force-create; mass-assignment of links                                                                                                                                                                                                      |
-| **Status**                | TODO                                                                                                                                                                                                                                                            |
+| **Status**                | **DONE** (flagged Nest metadata API; no LiveKit)                                                                                                                                                                                                                |
 
 ---
 
