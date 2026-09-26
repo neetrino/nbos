@@ -60,3 +60,13 @@ export const VIDEO_MEETING_RECORDING_RECONCILE_BATCH_SIZE = 25 as const;
 
 export const VIDEO_MEETING_COMPOSITE_MIME = 'video/mp4' as const;
 export const VIDEO_MEETING_AUDIO_MIME = 'audio/ogg' as const;
+
+/**
+ * Env: max concurrent recording groups (PENDING + RECORDING) across the tenant.
+ * Default is a **dev safety valve only** — not a measured production Hetzner budget.
+ */
+export const VIDEO_MEETINGS_MAX_CONCURRENT_RECORDING_GROUPS_ENV =
+  'VIDEO_MEETINGS_MAX_CONCURRENT_RECORDING_GROUPS' as const;
+
+/** Default when env unset. Dev safety valve; owners must measure real capacity before raising. */
+export const VIDEO_MEETINGS_MAX_CONCURRENT_RECORDING_GROUPS_DEFAULT = 2 as const;

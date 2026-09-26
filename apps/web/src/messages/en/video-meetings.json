@@ -130,5 +130,13 @@
     "prejoinError": "Could not complete prejoin.",
     "tokenError": "Could not join the room yet.",
     "livekitUnavailable": "Video service is temporarily unavailable."
+  },
+  "crossModule": {
+    "actionLabel": "Video meeting",
+    "startNew": "Start new video meeting",
+    "linkExisting": "Link latest ended meeting",
+    "meetingTitle": "Meeting — {label}",
+    "actionError": "Could not start or link a video meeting.",
+    "noEndedMeetings": "No ended meetings available to link."
   }
 }

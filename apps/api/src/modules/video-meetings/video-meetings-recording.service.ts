@@ -8,6 +8,7 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   PrismaClient,
   VideoMeetingRecordingAssetKind,
@@ -31,6 +32,7 @@ import type {
   VideoMeetingsEgressClient,
   VideoMeetingsRecordingObjectStore,
 } from './video-meetings-egress.types';
+import { assertRecordingCapacityAvailable } from './video-meetings-recording-capacity';
 import { VideoMeetingsRecordingLifecycleService } from './video-meetings-recording-lifecycle.service';
 import {
   serializeRecordingGroup,
@@ -45,6 +47,7 @@ export class VideoMeetingsRecordingService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly consent: VideoMeetingsConsentService,
     private readonly lifecycle: VideoMeetingsRecordingLifecycleService,
+    private readonly config: ConfigService,
     @Optional()
     @Inject(VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN)
     private readonly egress: VideoMeetingsEgressClient | null,
@@ -62,6 +65,7 @@ export class VideoMeetingsRecordingService {
     if (meeting.status !== VideoMeetingStatus.ACTIVE) {
       throw new BadRequestException('Meeting must be ACTIVE to start recording');
     }
+    await assertRecordingCapacityAvailable(this.prisma, this.config);
     const session = await this.prisma.videoMeetingSession.findFirst({
       where: { meetingId, endedAt: null },
       orderBy: { createdAt: 'desc' },

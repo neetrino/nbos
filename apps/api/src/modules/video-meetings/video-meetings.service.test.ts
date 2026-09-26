@@ -62,10 +62,15 @@ describe('VideoMeetingsService', () => {
       stopIfRecordingOnMeetingEnd: vi.fn().mockResolvedValue(undefined),
       getActiveStatus: vi.fn().mockResolvedValue(null),
     };
+    const calendarLink = {
+      resolveCalendarMeetingIdForCreate: vi.fn().mockResolvedValue(null),
+      maybeCancelLinkedCalendar: vi.fn().mockResolvedValue(undefined),
+    };
     service = new VideoMeetingsService(
       prisma as never,
       livekit as unknown as VideoMeetingsLivekitService,
       recordings as never,
+      calendarLink as never,
     );
   });
 

@@ -36,3 +36,6 @@ export const LIVEKIT_PUBLIC_URL_ENV_KEY = 'LIVEKIT_PUBLIC_URL' as const;
 
 export const LIVEKIT_API_KEY_ENV_KEY = 'LIVEKIT_API_KEY' as const;
 export const LIVEKIT_API_SECRET_ENV_KEY = 'LIVEKIT_API_SECRET' as const;
+
+/** Default CalendarMeeting window when createCalendarMeeting is requested without times. */
+export const VIDEO_MEETING_CALENDAR_DEFAULT_DURATION_MS = 3_600_000;

@@ -116,7 +116,7 @@ Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 | **Tests**                 | Full acceptance from `04-TEST-AND-ACCEPTANCE.md`; security negatives                                                                                                                                                  |
 | **Done criteria**         | V1 gate checklist green on **non-prod** target infra; feature flag still default off for production until explicit owner enable                                                                                       |
 | **Risks**                 | Declaring production-ready without legal/capacity gates                                                                                                                                                               |
-| **Status**                | TODO                                                                                                                                                                                                                  |
+| **Status**                | **DONE** (code + acceptance record; live media/staging gates remain NOT RUN — see handoff)                                                                                                                            |
 
 ---
 

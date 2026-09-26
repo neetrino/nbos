@@ -111,6 +111,7 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       prisma as never,
       consent as unknown as VideoMeetingsConsentService,
       lifecycle,
+      { get: () => undefined } as never,
       egress,
       objectStore,
     );
@@ -121,6 +122,7 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       meetingId: MEETING_ID,
     });
     prisma.videoMeetingRecording.findFirst = vi.fn().mockResolvedValue(null);
+    prisma.videoMeetingRecording.count = vi.fn().mockResolvedValue(0);
     prisma.videoMeetingRecording.create = vi.fn().mockResolvedValue({
       id: 'rec-1',
       meetingId: MEETING_ID,

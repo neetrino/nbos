@@ -18,6 +18,7 @@ import {
   CreateVideoMeetingInviteDto,
   ListVideoMeetingsQueryDto,
   VideoMeetingConsentDecisionBodyDto,
+  VideoMeetingLifecycleConfirmDto,
   VideoMeetingTokenRequestDto,
 } from './dto/video-meetings.dto';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
@@ -157,16 +158,28 @@ export class VideoMeetingsController {
 
   @Post(':id/end')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'End an active video meeting (soft)' })
-  end(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
-    return this.videoMeetingsService.end(user, id);
+  @ApiOperation({
+    summary: 'End an active video meeting (soft); Calendar cancel only with explicit confirm',
+  })
+  end(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body?: VideoMeetingLifecycleConfirmDto,
+  ) {
+    return this.videoMeetingsService.end(user, id, body);
   }
 
   @Post(':id/cancel')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Cancel a meeting that was never held (soft)' })
-  cancel(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
-    return this.videoMeetingsService.cancel(user, id);
+  @ApiOperation({
+    summary: 'Cancel a meeting never held; Calendar cancel only with explicit confirm',
+  })
+  cancel(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body?: VideoMeetingLifecycleConfirmDto,
+  ) {
+    return this.videoMeetingsService.cancel(user, id, body);
   }
 
   @Post(':id/recording/start')

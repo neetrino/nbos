@@ -130,5 +130,13 @@
     "prejoinError": "Не удалось выполнить prejoin.",
     "tokenError": "Пока нельзя войти в комнату.",
     "livekitUnavailable": "Видеосервис временно недоступен."
+  },
+  "crossModule": {
+    "actionLabel": "Видеовстреча",
+    "startNew": "Начать новую видеовстречу",
+    "linkExisting": "Привязать последнюю завершённую",
+    "meetingTitle": "Встреча — {label}",
+    "actionError": "Не удалось начать или привязать видеовстречу.",
+    "noEndedMeetings": "Нет завершённых встреч для привязки."
   }
 }

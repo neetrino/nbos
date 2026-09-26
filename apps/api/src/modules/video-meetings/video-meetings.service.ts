@@ -5,12 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  PrismaClient,
-  VideoMeetingStatus,
-  type Prisma,
-  type VideoMeetingEntityLinkType,
-} from '@nbos/database';
+import { PrismaClient, VideoMeetingStatus, type VideoMeetingEntityLinkType } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { assertVideoMeetingEntityAccessible } from './video-meetings-entity-access';
@@ -33,26 +28,17 @@ import type {
   AttachVideoMeetingEntityLinkDto,
   CreateVideoMeetingDto,
   ListVideoMeetingsQueryDto,
+  VideoMeetingLifecycleConfirmDto,
 } from './dto/video-meetings.dto';
 import { VideoMeetingStatusFilterDto } from './dto/video-meetings.dto';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import type { VideoMeetingRecordingGroupDto } from './video-meetings-recording.serializer';
-
-const meetingCardInclude = {
-  sessions: { orderBy: { createdAt: 'desc' as const } },
-  entityLinks: { orderBy: { createdAt: 'asc' as const } },
-  recordings: {
-    orderBy: { createdAt: 'desc' as const },
-    take: 5,
-    include: { assets: true },
-  },
-} satisfies Prisma.VideoMeetingInclude;
-
-const meetingListInclude = {
-  entityLinks: { orderBy: { createdAt: 'asc' as const } },
-} satisfies Prisma.VideoMeetingInclude;
-
-type MeetingCardRow = Prisma.VideoMeetingGetPayload<{ include: typeof meetingCardInclude }>;
+import { VideoMeetingsCalendarLinkService } from './video-meetings-calendar-link.service';
+import {
+  videoMeetingCardInclude,
+  videoMeetingListInclude,
+  type VideoMeetingCardRow,
+} from './video-meetings-includes';
 
 type ListResult = {
   items: VideoMeetingListItemDto[];
@@ -65,20 +51,26 @@ export class VideoMeetingsService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly livekit: VideoMeetingsLivekitService,
     private readonly recordings: VideoMeetingsRecordingService,
+    private readonly calendarLink: VideoMeetingsCalendarLinkService,
   ) {}
 
-  /** Create an instant standalone meeting; host and owner are the authenticated employee. */
+  /** Create an instant meeting; optional Calendar link only when explicitly requested. */
   async create(user: CurrentUserPayload, dto: CreateVideoMeetingDto): Promise<VideoMeetingCardDto> {
     const title = dto.title?.trim() || VIDEO_MEETING_DEFAULT_TITLE;
+    const calendarMeetingId = await this.calendarLink.resolveCalendarMeetingIdForCreate(
+      user,
+      dto,
+      title,
+    );
     const meeting = await this.prisma.videoMeeting.create({
       data: {
         title,
         status: VideoMeetingStatus.CREATED,
         hostEmployeeId: user.id,
         ownerEmployeeId: user.id,
-        calendarMeetingId: null,
+        calendarMeetingId,
       },
-      include: meetingCardInclude,
+      include: videoMeetingCardInclude,
     });
     return this.toCard(meeting, user.permissions);
   }
@@ -111,7 +103,7 @@ export class VideoMeetingsService {
       return tx.videoMeeting.update({
         where: { id: meetingId },
         data: { status: VideoMeetingStatus.ACTIVE },
-        include: meetingCardInclude,
+        include: videoMeetingCardInclude,
       });
     });
     if (this.livekit.isConfigured()) {
@@ -126,7 +118,7 @@ export class VideoMeetingsService {
     const [rows, total] = await Promise.all([
       this.prisma.videoMeeting.findMany({
         where,
-        include: meetingListInclude,
+        include: videoMeetingListInclude,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -148,7 +140,7 @@ export class VideoMeetingsService {
     const meeting = await this.prisma.videoMeeting.findUnique({
       where: { id: meetingId },
       include: {
-        ...meetingCardInclude,
+        ...videoMeetingCardInclude,
         participants: { select: { employeeId: true } },
       },
     });
@@ -159,12 +151,15 @@ export class VideoMeetingsService {
   }
 
   /** Soft-end an active meeting (no hard delete of business history). */
-  async end(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {
+  async end(
+    user: CurrentUserPayload,
+    meetingId: string,
+    confirm?: VideoMeetingLifecycleConfirmDto,
+  ): Promise<VideoMeetingCardDto> {
     const meeting = await this.requireHostOrOwner(meetingId, user.id);
     if (meeting.status !== VideoMeetingStatus.ACTIVE) {
       throw new BadRequestException('Only an active meeting can be ended');
     }
-    // Stop capture if needed — never mark recording READY solely because meeting ended.
     await this.recordings.stopIfRecordingOnMeetingEnd(meetingId);
     const now = new Date();
     const updated = await this.prisma.$transaction(async (tx) => {
@@ -175,9 +170,14 @@ export class VideoMeetingsService {
       return tx.videoMeeting.update({
         where: { id: meetingId },
         data: { status: VideoMeetingStatus.ENDED, endedAt: now },
-        include: meetingCardInclude,
+        include: videoMeetingCardInclude,
       });
     });
+    await this.calendarLink.maybeCancelLinkedCalendar(
+      user,
+      meeting.calendarMeetingId,
+      confirm?.alsoCancelCalendarMeeting,
+    );
     return this.toCard(updated, user.permissions);
   }
 
@@ -199,7 +199,11 @@ export class VideoMeetingsService {
   }
 
   /** Soft-cancel a meeting that was never held. */
-  async cancel(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {
+  async cancel(
+    user: CurrentUserPayload,
+    meetingId: string,
+    confirm?: VideoMeetingLifecycleConfirmDto,
+  ): Promise<VideoMeetingCardDto> {
     const meeting = await this.requireHostOrOwner(meetingId, user.id);
     if (
       meeting.status !== VideoMeetingStatus.CREATED &&
@@ -210,8 +214,13 @@ export class VideoMeetingsService {
     const updated = await this.prisma.videoMeeting.update({
       where: { id: meetingId },
       data: { status: VideoMeetingStatus.CANCELLED, cancelledAt: new Date() },
-      include: meetingCardInclude,
+      include: videoMeetingCardInclude,
     });
+    await this.calendarLink.maybeCancelLinkedCalendar(
+      user,
+      meeting.calendarMeetingId,
+      confirm?.alsoCancelCalendarMeeting,
+    );
     return this.toCard(updated, user.permissions);
   }
 
@@ -261,7 +270,7 @@ export class VideoMeetingsService {
   }
 
   private toCard(
-    meeting: MeetingCardRow,
+    meeting: VideoMeetingCardRow,
     permissions: Readonly<Record<string, string>>,
   ): VideoMeetingCardDto {
     const card = serializeVideoMeetingCard(meeting, permissions);

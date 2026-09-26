@@ -1,4 +1,14 @@
-import { IsEnum, IsISO8601, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsISO8601,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
 
 export class CreateVideoMeetingDto {
   @IsOptional()
@@ -6,6 +16,40 @@ export class CreateVideoMeetingDto {
   @MinLength(1)
   @MaxLength(200)
   title?: string;
+
+  /** Attach an existing CalendarMeeting. Mutually exclusive with createCalendarMeeting. */
+  @IsOptional()
+  @IsUUID()
+  calendarMeetingId?: string;
+
+  /**
+   * Explicitly request CalendarService.createMeeting. Standalone create omits this.
+   * If Calendar throws, the video meeting is still created with calendarMeetingId null.
+   */
+  @IsOptional()
+  @IsBoolean()
+  createCalendarMeeting?: boolean;
+
+  @ValidateIf((o: CreateVideoMeetingDto) => o.createCalendarMeeting === true)
+  @IsOptional()
+  @IsISO8601()
+  calendarStartsAt?: string;
+
+  @ValidateIf((o: CreateVideoMeetingDto) => o.createCalendarMeeting === true)
+  @IsOptional()
+  @IsISO8601()
+  calendarEndsAt?: string;
+}
+
+/** Optional confirm when ending/cancelling a calendar-linked video meeting. */
+export class VideoMeetingLifecycleConfirmDto {
+  /**
+   * When true and the meeting has calendarMeetingId, also cancel that CalendarMeeting.
+   * Default false — Calendar cancel and video-room end stay separate (no hidden cascade).
+   */
+  @IsOptional()
+  @IsBoolean()
+  alsoCancelCalendarMeeting?: boolean;
 }
 
 export enum VideoMeetingEntityLinkTypeDto {

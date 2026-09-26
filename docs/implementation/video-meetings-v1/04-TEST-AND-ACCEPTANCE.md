@@ -1,8 +1,27 @@
 # 04 — Test and acceptance (V1)
 
-Derived from Module 22 operations canon and V1 product requirements. Execute in S03–S07 as noted. **None of these are claimed PASS by S00.**
+Derived from Module 22 operations canon and V1 product requirements. Execute in S03–S07 as noted.
 
-## Acceptance scenarios
+## Acceptance results (S07 session)
+
+| ID  | Scenario                          | Result  | Evidence / blocker                                                                                                      |
+| --- | --------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| A01 | Instant unlinked meeting + guest  | NOT RUN | Two browsers joined and conversed — not performed in this session                                                       |
+| A02 | Composite + per-participant audio | NOT RUN | Real composite MP4 + distinct participant audio objects — not performed                                                 |
+| A03 | Post-meeting link                 | PASS    | Unit: `video-meetings-recording-finalize.service.test.ts` (entity link alone → playback 403); attach API S02 unit tests |
+| A04 | Optional Calendar                 | PASS    | Unit: `video-meetings-s07.service.test.ts` (standalone null; Calendar create failure degrades; no hidden cascade)       |
+| A05 | Security negatives                | PASS    | HTTP + unit: forged/flag-off 404, CALLS≠VIDEO_MEETINGS, wrong-room token, non-host, unauthorized playback (prior+S07)   |
+| A06 | Consent                           | PASS    | Unit: `video-meetings-recording.service.test.ts` (unknown consent denies start)                                         |
+| A07 | Recovery                          | NOT RUN | Live Drive finalize of a real egress object — not performed; unit reconcile/idempotency covered in S06 tests            |
+| A08 | Media resilience                  | NOT RUN | TURN / poor-network / live browser preflight — not performed; path documented in runbook only                           |
+| A09 | Capacity                          | PASS    | Unit: `video-meetings-s07-capacity-isolation.test.ts` (cap reject; meeting left ACTIVE); default = **dev safety valve** |
+| A10 | Audit                             | PASS    | Unit: Drive finalize uses correlated operation/asset ids; guest/payload serializers strip secrets (S05–S06 tests)       |
+| A11 | Isolation                         | PASS    | Unit: LiveKit missing → mint 503; Calendar create still works (`video-meetings-s07-capacity-isolation.test.ts`)         |
+| A12 | ATS separation                    | PASS    | Unit: create/start never call `atsCallEvent.create/update` (`video-meetings-s07.service.test.ts`)                       |
+
+**Honesty notes:** UI browser click-through, load test on real hardware, and staging media host verification were **NOT RUN**. Do not treat this table as staging or production gate green.
+
+## Acceptance scenarios (canonical definitions)
 
 | ID  | Scenario                          | Pass condition                                                                                                           | Primary slice |
 | --- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------- |

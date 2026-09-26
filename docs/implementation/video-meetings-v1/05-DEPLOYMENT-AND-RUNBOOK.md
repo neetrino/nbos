@@ -63,13 +63,28 @@ Commented placeholders also live in repo-root `.env.example`.
 | Rollback plan (flag off, drain rooms, stop egress)                                             | Eng + ops          | Safe disable without DB wipe                                          |
 | Security review of guest tokens, webhooks, Drive finalize                                      | Security           | External guest attack surface                                         |
 
-### Rollback (planned)
+### Rollback (actual flag-off path)
 
-1. Disable feature flag.
-2. Stop admitting new rooms; revoke open invites.
-3. Stop Egress workers accepting new jobs.
-4. Leave historical Drive assets; follow approved retention (legal).
+1. Set `VIDEO_MEETINGS_V1_ENABLED=false` (and `NEXT_PUBLIC_VIDEO_MEETINGS_V1_ENABLED=false` on web). Employee + guest video HTTP routes return **404** via `VideoMeetingsFeatureGuard`; nav item is hidden. No DB wipe required.
+2. Stop admitting new rooms; revoke open invites (`POST .../invites/:id/revoke`) for any still-active meetings if needed.
+3. Stop Egress workers accepting new jobs (compose profile / host process). In-flight recordings may finish FINALIZING/PARTIAL/FAILED honestly — do not force READY.
+4. Leave historical Drive `MEETING_RECORDING` assets; follow approved retention (legal).
 5. Do **not** hard-delete production media without policy.
+6. Calendar cancel is **not** implied by flag-off or by video end/cancel — only the explicit `alsoCancelCalendarMeeting: true` confirm on end/cancel touches CalendarMeeting.
+
+### Capacity note
+
+`VIDEO_MEETINGS_MAX_CONCURRENT_RECORDING_GROUPS` (default **2**) is a **dev safety valve**. It is not a measured Hetzner or production concurrency budget. Over-limit recording start returns an honest 400 and leaves the meeting ACTIVE.
+
+### Calendar reminders
+
+Canon: CalendarMeeting reminders are owned by Scheduler → Notifications when linked. As of S07, **no runnable calendar reminder job exists** in this repo. Video Meetings does not invent a second notifier; linking alone does not enqueue notifications.
+
+### Media resilience (A08 — documented, not live-proven)
+
+- Local compose exposes LiveKit HTTP/WS on `127.0.0.1:7880` without production TURN.
+- Staging/production require public DNS, trusted TLS, ICE UDP/TCP ranges, and TURN/TLS fallback (owner gates above).
+- Poor-network and mobile browser proof remain **NOT RUN** until staging media host exists.
 
 References:
 

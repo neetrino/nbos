@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { CalendarModule } from '../calendar/calendar.module';
 import { DriveModule } from '../drive/drive.module';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
+import { VideoMeetingsCalendarLinkService } from './video-meetings-calendar-link.service';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsController } from './video-meetings.controller';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
@@ -24,7 +26,7 @@ import { VideoMeetingsRecordingWebhookService } from './video-meetings-recording
 import { VideoMeetingsService } from './video-meetings.service';
 
 @Module({
-  imports: [DriveModule],
+  imports: [DriveModule, CalendarModule],
   controllers: [
     VideoMeetingsController,
     VideoMeetingsGuestController,
@@ -32,6 +34,7 @@ import { VideoMeetingsService } from './video-meetings.service';
   ],
   providers: [
     VideoMeetingsService,
+    VideoMeetingsCalendarLinkService,
     VideoMeetingsFeatureService,
     VideoMeetingsFeatureGuard,
     VideoMeetingsLivekitService,

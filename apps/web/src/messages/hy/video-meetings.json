@@ -130,5 +130,13 @@
     "prejoinError": "Prejoin chhajoghvets.",
     "tokenError": "Der hnaravor che mtnel.",
     "livekitUnavailable": "Tesaservis@ anhasaneli e."
+  },
+  "crossModule": {
+    "actionLabel": "Tesahandipum",
+    "startNew": "Skseł nor tesahandipum",
+    "linkExisting": "Kaparvel verjin avartvats@",
+    "meetingTitle": "Handipum — {label}",
+    "actionError": "Chhajoghvets skseł kam kaparvel tesahandipum.",
+    "noEndedMeetings": "Avartvats handipumner chkan."
   }
 }
