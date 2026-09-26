@@ -12,15 +12,15 @@ Calendar remains an **optional** planning/reminder integration. CRM Calls/ATS te
 
 ## Release boundaries
 
-| V1 — required to launch | V2 — separate rollout |
-| --- | --- |
-| Own sidebar section, instant creation, room and history | Speech-to-text of the meeting |
-| Optional create-from Deal/Project/Product/Contact | Speaker-attributed transcript with timestamps |
-| Guest invitation without NBOS registration; host admission | AI summary, decisions, unresolved issues |
-| Camera, microphone, screen sharing and participant controls | Suggested follow-up Tasks requiring employee approval |
-| **Manual consented recording:** composite video **and per-participant audio** | Permission-filtered search/context across recordings |
-| Private R2 storage via Drive and integrated player | Human corrections and governance |
-| Post-meeting linking; optional Calendar scheduling | |
+| V1 — required to launch                                                       | V2 — separate rollout                                 |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Own sidebar section, instant creation, room and history                       | Speech-to-text of the meeting                         |
+| Optional create-from Deal/Project/Product/Contact                             | Speaker-attributed transcript with timestamps         |
+| Guest invitation without NBOS registration; host admission                    | AI summary, decisions, unresolved issues              |
+| Camera, microphone, screen sharing and participant controls                   | Suggested follow-up Tasks requiring employee approval |
+| **Manual consented recording:** composite video **and per-participant audio** | Permission-filtered search/context across recordings  |
+| Private R2 storage via Drive and integrated player                            | Human corrections and governance                      |
+| Post-meeting linking; optional Calendar scheduling                            |                                                       |
 
 Per-participant audio and the participant/track identity timeline are **V1 requirements**, even though automatic transcription is postponed. A claimed guest name is **not** proof of real-world identity; recordings cannot resolve two people talking into one microphone.
 

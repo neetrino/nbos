@@ -4,14 +4,14 @@
 
 ## Preliminary repo-to-canon comparison
 
-| Area | Observed baseline | Classification |
-| --- | --- | --- |
-| Calendar scheduled client Meeting | Existing calendar service/schema/UI | OK adjacent system; **not** the VideoMeeting owner |
-| Drive R2 durable generated files | Existing `FileArtifactOperation` and Drive lifecycle | PARTIAL: Egress async producer adapter unverified |
-| Drive `MEETING_RECORDING` | Existing file-purpose enum | OK adjacent foundation |
-| CRM ATS phone recordings | Existing phone-call storage/playback | OK separate workflow; do not reuse as video call entity |
-| Standalone video rooms / LiveKit / Egress | No confirmed module in inspected branch | MISSING |
-| AI meeting summary | Example idea in AI future docs, not runnable AI transcription | DEFER V2 |
+| Area                                      | Observed baseline                                             | Classification                                          |
+| ----------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------- |
+| Calendar scheduled client Meeting         | Existing calendar service/schema/UI                           | OK adjacent system; **not** the VideoMeeting owner      |
+| Drive R2 durable generated files          | Existing `FileArtifactOperation` and Drive lifecycle          | PARTIAL: Egress async producer adapter unverified       |
+| Drive `MEETING_RECORDING`                 | Existing file-purpose enum                                    | OK adjacent foundation                                  |
+| CRM ATS phone recordings                  | Existing phone-call storage/playback                          | OK separate workflow; do not reuse as video call entity |
+| Standalone video rooms / LiveKit / Egress | No confirmed module in inspected branch                       | MISSING                                                 |
+| AI meeting summary                        | Example idea in AI future docs, not runnable AI transcription | DEFER V2                                                |
 
 These are **preliminary** code/doc observations, not evidence of live production deployment.
 

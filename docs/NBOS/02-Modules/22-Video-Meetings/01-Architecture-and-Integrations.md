@@ -22,17 +22,17 @@ Media must **not** pass through ordinary NBOS API HTTP handlers. Treat media Red
 
 ## Proposed domain entities (schema contract to reconcile before coding)
 
-| Concept | Purpose |
-| --- | --- |
-| `VideoMeeting` | Logical identity, title, host/owner, lifecycle, optional schedule and optional external business links |
-| `VideoMeetingSession` | Actual room run, start/end, LiveKit room reference; one logical meeting may have several sessions |
-| `VideoMeetingParticipant` | Stable opaque session identity, employee **or unverified guest**, join/leave, track timeline |
-| `VideoMeetingInvite` | Single-room, expiring/revocable guest invitation; store token **digest**, never plaintext |
-| `VideoMeetingConsent` | Notice version and affirmative consent/revocation by participant/session |
-| `VideoMeetingRecording` | Recording group, composite job, start/stop and reconciliation/status |
+| Concept                      | Purpose                                                                                                           |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `VideoMeeting`               | Logical identity, title, host/owner, lifecycle, optional schedule and optional external business links            |
+| `VideoMeetingSession`        | Actual room run, start/end, LiveKit room reference; one logical meeting may have several sessions                 |
+| `VideoMeetingParticipant`    | Stable opaque session identity, employee **or unverified guest**, join/leave, track timeline                      |
+| `VideoMeetingInvite`         | Single-room, expiring/revocable guest invitation; store token **digest**, never plaintext                         |
+| `VideoMeetingConsent`        | Notice version and affirmative consent/revocation by participant/session                                          |
+| `VideoMeetingRecording`      | Recording group, composite job, start/stop and reconciliation/status                                              |
 | `VideoMeetingRecordingAsset` | Individual video/audio output, participant/track/time range, Egress id, Drive FileAsset id and independent status |
-| `VideoMeetingEntityLink` | Optional validated references to Deal/Project/Product/Contact, editable **after** the meeting |
-| `CalendarMeeting` | Existing scheduling record only where the user explicitly enables Calendar integration |
+| `VideoMeetingEntityLink`     | Optional validated references to Deal/Project/Product/Contact, editable **after** the meeting                     |
+| `CalendarMeeting`            | Existing scheduling record only where the user explicitly enables Calendar integration                            |
 
 Avoid representing session reconnect as a different person. A guest's display name is not a stable track key; backend mints opaque identities and persists participant/track mappings. Never infer verified Contact association just because a guest typed their name.
 

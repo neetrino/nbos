@@ -7,14 +7,14 @@
 
 For a **completed, access-authorized and processing-permitted** V1 recording, NBOS creates reviewable speaker-attributed transcripts, a useful meeting summary, extracted decisions/open questions and **suggested** follow-up tasks. Employees approve/edit results before any business action.
 
-| Capability | V2 behavior |
-| --- | --- |
-| Transcription | Timestamped multilingual speech-to-text of separate participant audio |
+| Capability          | V2 behavior                                                                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Transcription       | Timestamped multilingual speech-to-text of separate participant audio                                                              |
 | Speaker attribution | Prefer server-generated participant/track identity + time alignment; flag uncertain overlap, unverified names or shared microphone |
-| AI summary | Main discussion, decisions, open questions, action items with source/timestamp references |
-| Task proposals | Suggested title/assignee/due date **only if supported by speech**; employee validates and triggers authorized Tasks action |
-| Corrections | Human review/edit/approval, traceable source and revision |
-| Retrieval | Access-scoped search and optional authorized Project AI context; no cross-customer leakage |
+| AI summary          | Main discussion, decisions, open questions, action items with source/timestamp references                                          |
+| Task proposals      | Suggested title/assignee/due date **only if supported by speech**; employee validates and triggers authorized Tasks action         |
+| Corrections         | Human review/edit/approval, traceable source and revision                                                                          |
+| Retrieval           | Access-scoped search and optional authorized Project AI context; no cross-customer leakage                                         |
 
 ## Pipeline
 

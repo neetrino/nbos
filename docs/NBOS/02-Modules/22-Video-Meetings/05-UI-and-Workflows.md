@@ -24,13 +24,13 @@ Top-level **Video Meetings** is separate from Calendar and Calls. An Upcoming vi
 
 ## Required screens
 
-| Surface | Must show |
-| --- | --- |
-| List | New/Join, accessible meetings only, active/upcoming/history, date/status/entity filters and honest empty states |
-| Meeting detail | Title/host/time, invite revoke, session history, participants, optional entity links, recording status, restricted player |
-| Room | Mic/camera/screen share, responsive tiles, participant moderation, explicit record start/stop and **visible notice for everyone** |
-| External guest | Meeting-only branded join with display name, device preview, recording disclosure/consent and waiting-room status; **no NBOS sidebar** |
-| Source-card action | Lightweight Start/Link video meeting on permitted business cards; no independent per-module conference system |
+| Surface            | Must show                                                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| List               | New/Join, accessible meetings only, active/upcoming/history, date/status/entity filters and honest empty states                        |
+| Meeting detail     | Title/host/time, invite revoke, session history, participants, optional entity links, recording status, restricted player              |
+| Room               | Mic/camera/screen share, responsive tiles, participant moderation, explicit record start/stop and **visible notice for everyone**      |
+| External guest     | Meeting-only branded join with display name, device preview, recording disclosure/consent and waiting-room status; **no NBOS sidebar** |
+| Source-card action | Lightweight Start/Link video meeting on permitted business cards; no independent per-module conference system                          |
 
 Show recording state separately from meeting completion (`Recording`, `Processing`, `Ready`, `Partial`, `Failed`), clearly signal absent audio tracks and provide support diagnostics to authorized hosts. Individual raw audio is V2-ready secure media, not public download.
 

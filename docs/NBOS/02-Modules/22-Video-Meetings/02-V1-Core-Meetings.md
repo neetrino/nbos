@@ -8,15 +8,15 @@ An authorized NBOS employee can conduct a real **instant unlinked** meeting with
 
 ## Required journeys
 
-| Entry point | V1 experience |
-| --- | --- |
-| Video Meetings → New meeting | Creates instant/unlinked meeting and revocable join link |
-| Authorized business card | Opens a new meeting with optional Deal/Project/Product/Contact link |
-| Calendar (opt in only) | Schedules/launches linked conference; existing conflict and reminder rules stay in Calendar |
-| Guest link | Browser name entry, mic/camera preflight, recording notice, host admission, no NBOS login |
-| Meeting room | Video/mic, screen share, participant tiles, host moderation, visible recording state |
-| Completion | Session/attendance timeline; separate recording status and player |
-| History/detail | Search/filter accessible meetings, change valid business links **after** call, secure replay |
+| Entry point                  | V1 experience                                                                                |
+| ---------------------------- | -------------------------------------------------------------------------------------------- |
+| Video Meetings → New meeting | Creates instant/unlinked meeting and revocable join link                                     |
+| Authorized business card     | Opens a new meeting with optional Deal/Project/Product/Contact link                          |
+| Calendar (opt in only)       | Schedules/launches linked conference; existing conflict and reminder rules stay in Calendar  |
+| Guest link                   | Browser name entry, mic/camera preflight, recording notice, host admission, no NBOS login    |
+| Meeting room                 | Video/mic, screen share, participant tiles, host moderation, visible recording state         |
+| Completion                   | Session/attendance timeline; separate recording status and player                            |
+| History/detail               | Search/filter accessible meetings, change valid business links **after** call, secure replay |
 
 ## Status separation
 

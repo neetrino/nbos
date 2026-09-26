@@ -19,17 +19,17 @@ Capacity plan covers **simultaneous conferences + simultaneous composite recorde
 
 ## Required acceptance tests
 
-| Area | Pass condition |
-| --- | --- |
-| End-to-end | Unlinked employee + guest meeting, composite video **and per-participant audio** privately recorded, registered via Drive and playable |
-| Links | Attach/unlink **completed** meeting to permitted Project/Product/Deal/Contact with no duplicated files or access escalation |
-| Calendar | Optional linked event uses existing reminder/conflict logic; standalone call works if Calendar integration fails |
-| Security | Forged/replayed invite, wrong-room token, non-host record, guessed asset ids, webhook replay, unauthorized playback/export denied |
-| Consent | Decline, late join, withdrawal, mute, reconnect do not trigger covert capture |
-| Recovery | Egress failure, duplicate/missing/out-of-order webhook, partial R2 output, missing audio and crashed finalize produce truthful statuses/reconciliation |
-| Media | Device preflight, mobile browser, screen share, poor network, corporate firewall/TURN and parallel calls tested |
-| Capacity | Test target concurrency and separate Egress CPU/RAM budgets; record actual cost rather than promise free operations |
-| Audit | Correlation across meeting, session, recording job and Drive operation; secrets/media not dumped to logs |
+| Area       | Pass condition                                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| End-to-end | Unlinked employee + guest meeting, composite video **and per-participant audio** privately recorded, registered via Drive and playable                 |
+| Links      | Attach/unlink **completed** meeting to permitted Project/Product/Deal/Contact with no duplicated files or access escalation                            |
+| Calendar   | Optional linked event uses existing reminder/conflict logic; standalone call works if Calendar integration fails                                       |
+| Security   | Forged/replayed invite, wrong-room token, non-host record, guessed asset ids, webhook replay, unauthorized playback/export denied                      |
+| Consent    | Decline, late join, withdrawal, mute, reconnect do not trigger covert capture                                                                          |
+| Recovery   | Egress failure, duplicate/missing/out-of-order webhook, partial R2 output, missing audio and crashed finalize produce truthful statuses/reconciliation |
+| Media      | Device preflight, mobile browser, screen share, poor network, corporate firewall/TURN and parallel calls tested                                        |
+| Capacity   | Test target concurrency and separate Egress CPU/RAM budgets; record actual cost rather than promise free operations                                    |
+| Audit      | Correlation across meeting, session, recording job and Drive operation; secrets/media not dumped to logs                                               |
 
 Feature-flag V1 rollout; run negative/security tests before enabling public guest links. Recording failures must not crash CRM/Calendar/Finance/Tasks/Drive. Orphan cleanup must follow Drive's existing conservative durable-operation guarantees.
 
