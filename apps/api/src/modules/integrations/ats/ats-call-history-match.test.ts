@@ -5,6 +5,7 @@ import type { AtsHistoryCallRow } from './ats-history.parse';
 
 const ENDED: AtsHistoryCallRow = {
   uid: '1787582737.181871',
+  linkedId: null,
   disposition: 'ANSWERED',
   direction: 'Out Call',
   billsec: '20',

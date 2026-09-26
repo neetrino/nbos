@@ -60,6 +60,21 @@ describe('parseAtsHistoryBody', () => {
     expect(rows[0]?.startedAt?.toISOString()).toBe('2026-08-24T17:43:29.000Z');
   });
 
+  it('reads linkedid beside uniqueid without merging rows', () => {
+    const rows = parseAtsHistoryBody({
+      docs: [
+        { uniqueid: '1787593409.877072', linkedid: '1787593409.877071' },
+        { uniqueid: '1787593409.877071', linkedid: '1787593409.877071' },
+      ],
+    });
+
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => [row.uid, row.linkedId])).toEqual([
+      ['1787593409.877072', '1787593409.877071'],
+      ['1787593409.877071', '1787593409.877071'],
+    ]);
+  });
+
   it('treats a ringing row without end or disposition as not ended', () => {
     const rows = parseAtsHistoryBody([
       { uniqueid: 'open-1', in_num: '37443729201', start: '2026-08-24 21:30:22' },

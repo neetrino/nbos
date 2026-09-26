@@ -28,6 +28,8 @@ const TERMINAL_DISPOSITIONS = new Set([
 
 export type AtsHistoryCallRow = {
   uid: string;
+  /** ATS `linkedid` when the history row has one. Not a phone or time match. */
+  linkedId: string | null;
   disposition: string | null;
   direction: string | null;
   billsec: string | null;
@@ -75,6 +77,7 @@ function parseHistoryRecord(row: Record<string, unknown>): AtsHistoryCallRow | n
   const op = sanitizeAtsHistoryToken(readFirstString(row, OP_KEYS));
   return {
     uid,
+    linkedId: readFormString(row.linkedid) ?? readFormString(row.linkedId),
     disposition,
     direction,
     billsec: readFirstString(row, BILLSEC_KEYS),

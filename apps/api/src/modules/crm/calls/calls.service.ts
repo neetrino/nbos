@@ -61,6 +61,11 @@ export class CallsService {
     return mapCallResponse(mergeCallConversation(members));
   }
 
+  /**
+   * Every visible key is loaded before the page slice.
+   * Truncating that scan would publish a later connection as the card id.
+   * `meta.total` counts conversations. Only the current page is hydrated.
+   */
   private async listConversations(
     where: Prisma.AtsCallEventWhereInput,
     page: number,

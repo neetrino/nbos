@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import {
-  conversationAnchor,
   conversationPhase,
   conversationStatus,
   normalizeCallLid,
@@ -20,6 +19,7 @@ import {
   storedStateMatchesLifecycleEvent,
 } from './ats-call-realtime.phase';
 import type { ActiveCallPhase } from '../../realtime/call-realtime.types';
+import { accessibleConnection, resolveFinishedRecipients } from './ats-call-realtime.recipients';
 import { formatPersonName, resolveLifecycleTarget } from './ats-call-realtime.target';
 import type { AtsWebhookPayload } from './ats.types';
 
@@ -121,17 +121,45 @@ export class AtsCallRealtimePublisher {
       });
       return;
     }
+    if (eventName === CALL_SSE_EVENT.FINISHED) {
+      await this.publishFinished(payload, members, eventName);
+      return;
+    }
     const target = resolveLifecycleTarget(payload, call);
-    if (!target) {
+    const visible = target ? accessibleConnection(members, target.employeeId) : null;
+    if (!target || !visible) {
       this.logger.debug({ event: 'ats_call_sse_skipped', uid: payload.uid, sse: eventName });
       return;
     }
-    const anchor = conversationAnchor(members) ?? call;
+    await this.publishVisible(target.employeeId, visible, members, eventName);
+  }
+
+  private async publishFinished(
+    payload: AtsWebhookPayload,
+    members: LifecycleCallRow[],
+    eventName: CallLifecycleSseEventName,
+  ): Promise<void> {
+    const recipients = resolveFinishedRecipients(members);
+    if (recipients.length === 0) {
+      this.logger.debug({ event: 'ats_call_sse_skipped', uid: payload.uid, sse: eventName });
+      return;
+    }
+    for (const recipient of recipients) {
+      await this.publishVisible(recipient.employeeId, recipient.call, members, eventName);
+    }
+  }
+
+  private async publishVisible(
+    employeeId: string,
+    visible: LifecycleCallRow,
+    members: LifecycleCallRow[],
+    eventName: CallLifecycleSseEventName,
+  ): Promise<void> {
     await this.eventBus.publish({
       event: eventName,
       payload: {
-        employeeId: target.employeeId,
-        ...toSsePayload(conversationSseCall(anchor, members), eventName),
+        employeeId,
+        ...toSsePayload(conversationSseCall(visible, members), eventName),
       },
     });
   }

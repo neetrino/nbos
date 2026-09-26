@@ -119,4 +119,53 @@ describe('CallsService conversation grouping', () => {
       expect.objectContaining({ where: { AND: [ACCESS_WHERE, { lid: 'L-1' }] } }),
     );
   });
+
+  it('keeps a single visible connection when the sibling is outside access', async () => {
+    const { prisma, service } = createService();
+    const visible = connection('call-b', 'uid-b', 'L-1', '2026-09-26T10:00:04.000Z');
+    prisma.atsCallEvent.findMany.mockResolvedValue([visible]);
+
+    const result = await service.findAll({ leadId: 'lead-1', page: 1, pageSize: 20 }, OWN_ACTOR);
+
+    expect(prisma.atsCallEvent.findMany.mock.calls[0]?.[0]?.where).toEqual(LIST_WHERE);
+    expect(result.meta.total).toBe(1);
+    expect(result.items.map((item) => item.id)).toEqual(['call-b']);
+    expect(result.items[0]?.uid).toBe('uid-b');
+  });
+
+  it('pages a large history from every conversation key', async () => {
+    const { prisma, service } = createService();
+    const rows = largeHistory();
+    prisma.atsCallEvent.findMany.mockResolvedValue(rows);
+
+    const page = await service.findJournal(
+      { page: 2, pageSize: 20 },
+      { ...OWN_ACTOR, permissions: { ...OWN_ACTOR.permissions, CALLS_VIEW: 'ALL' } },
+    );
+
+    const keyQuery = prisma.atsCallEvent.findMany.mock.calls[0]?.[0];
+    expect(keyQuery?.select).toEqual({ id: true, lid: true, createdAt: true });
+    expect(keyQuery?.take).toBeUndefined();
+    expect(keyQuery?.skip).toBeUndefined();
+    expect(page.meta).toEqual({ total: 80, page: 2, pageSize: 20, totalPages: 4 });
+    expect(page.items[0]?.id).toBe('pair-L-19-a');
+    expect(page.items[19]?.id).toBe('pair-L-00-a');
+    expect(page.items.every((item) => item.uid.endsWith('-a'))).toBe(true);
+  });
 });
+
+function largeHistory() {
+  const rows: Array<ReturnType<typeof connection>> = [];
+  for (let index = 0; index < 40; index += 1) {
+    const lid = `L-${String(index).padStart(2, '0')}`;
+    const start = new Date(Date.UTC(2026, 0, 1, 0, index)).toISOString();
+    const later = new Date(Date.UTC(2026, 0, 1, 1, index)).toISOString();
+    rows.push(connection(`pair-${lid}-a`, `uid-${lid}-a`, lid, start));
+    rows.push(connection(`pair-${lid}-b`, `uid-${lid}-b`, lid, later));
+  }
+  for (let index = 0; index < 40; index += 1) {
+    const start = new Date(Date.UTC(2025, 0, 1, 0, index)).toISOString();
+    rows.push(connection(`solo-${index}`, `uid-solo-${index}`, null, start));
+  }
+  return rows;
+}

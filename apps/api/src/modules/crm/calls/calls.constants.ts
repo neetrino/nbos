@@ -5,6 +5,8 @@ export const CALLS_PAGE_SIZE_MAX = 100;
 export const CRM_ACTIVITY_TYPE_CALL = 'CALL' as const;
 
 export const CALL_SCREEN_RECENT_LIMIT = 5;
+/** Newest rows read before Recent Calls collapses connections that share a LID. */
+export const CALL_SCREEN_RECENT_SCAN_FACTOR = 8;
 export const CALL_NOTE_MAX_LENGTH = 4_000;
 export const CALL_VIEW_FORBIDDEN_MESSAGE = 'No permission to view this call';
 export const CALL_NOTE_EDIT_FORBIDDEN_MESSAGE = 'No permission to edit this call note';

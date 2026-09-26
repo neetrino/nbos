@@ -169,7 +169,7 @@ describe('AtsCallRealtimePublisher', () => {
     );
   });
 
-  it('reuses the first connection id when another UID shares the LID', async () => {
+  it('sends the answering employee the connection they can open', async () => {
     const trunk = {
       ...CALL_ROW,
       id: 'call-trunk',
@@ -205,8 +205,8 @@ describe('AtsCallRealtimePublisher', () => {
     expect(publish).toHaveBeenCalledWith({
       event: CALL_SSE_EVENT.ANSWERED,
       payload: expect.objectContaining({
-        callId: 'call-trunk',
-        uid: 'uid-trunk',
+        callId: 'call-agent',
+        uid: 'uid-agent',
         phase: 'answered',
         employeeId: 'emp-ans',
       }),
