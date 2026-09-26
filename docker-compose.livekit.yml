@@ -1,0 +1,57 @@
+# LiveKit local/dev stack for Video Meetings V1 (S03).
+# Dedicated Redis — do NOT point LiveKit at the app Upstash/BullMQ Redis.
+#
+# Pins (ADR-VM-001): livekit/livekit-server:v1.13.7, livekit/egress:v1.14.1
+#
+# Start (server + redis only):
+#   docker compose -f docker-compose.livekit.yml up -d
+# Stop:
+#   docker compose -f docker-compose.livekit.yml down
+# Optional Egress for S05 recording (not started by default):
+#   docker compose -f docker-compose.livekit.yml --profile egress up -d
+
+services:
+  livekit-redis:
+    image: redis:7.4-alpine
+    container_name: nbos-livekit-redis
+    ports:
+      - '6380:6379'
+    volumes:
+      - nbos_livekit_redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  livekit-server:
+    image: livekit/livekit-server:v1.13.7
+    container_name: nbos-livekit-server
+    depends_on:
+      livekit-redis:
+        condition: service_healthy
+    command: ['--config', '/etc/livekit.yaml', '--bind', '0.0.0.0']
+    ports:
+      - '7880:7880'
+      - '7881:7881'
+      - '7882:7882/udp'
+    volumes:
+      - ./docker/livekit/livekit.yaml:/etc/livekit.yaml:ro
+
+  # Optional stub for S05 — profile "egress" keeps it off by default.
+  livekit-egress:
+    profiles: ['egress']
+    image: livekit/egress:v1.14.1
+    container_name: nbos-livekit-egress
+    depends_on:
+      - livekit-server
+      - livekit-redis
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      EGRESS_CONFIG_FILE: /etc/egress.yaml
+    volumes:
+      - ./docker/livekit/egress.yaml:/etc/egress.yaml:ro
+
+volumes:
+  nbos_livekit_redis_data:

@@ -23,6 +23,7 @@ import { useDealWhatsAppHeaderActions } from '../hooks/use-deal-whatsapp-header-
 import { DealSheetActionsMenu } from './DealSheetActionsMenu';
 import { DealWhatsAppHeaderControl } from './DealWhatsAppHeaderControl';
 import type { CrmTranslate } from '../i18n/crm-copy';
+import { EntityVideoMeetingAction } from '@/features/video-meetings/EntityVideoMeetingAction';
 
 interface DealSheetQuickActionsProps {
   deal: Deal;
@@ -113,6 +114,11 @@ export function DealSheetQuickActions({
         busy={whatsapp.whatsappBusy}
         onBindOpenChange={whatsapp.setBindOpen}
         onBindSubmit={whatsapp.handleBindWhatsApp}
+      />
+      <EntityVideoMeetingAction
+        entityType="DEAL"
+        entityId={deal.id}
+        entityLabel={deal.name ?? deal.code}
       />
       <DealSheetActionsMenu actions={actions} />
     </>

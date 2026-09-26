@@ -16,6 +16,7 @@ import {
   Mail,
   Megaphone,
   Phone,
+  Video,
   MessageCircle,
   MessagesSquare,
   Settings,
@@ -92,6 +93,10 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
   calls: {
     Icon: Phone,
     iconClass: 'text-emerald-600 dark:text-emerald-400',
+  },
+  'video-meetings': {
+    Icon: Video,
+    iconClass: 'text-indigo-600 dark:text-indigo-400',
   },
   calendar: {
     Icon: CalendarDays,

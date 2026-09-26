@@ -20,6 +20,7 @@ import type enClientServices from '../messages/en/client-services.json';
 import type enQuick from '../messages/en/quick.json';
 import type enChecklist from '../messages/en/checklist.json';
 import type enMarketing from '../messages/en/marketing.json';
+import type enVideoMeetings from '../messages/en/video-meetings.json';
 
 type Messages = {
   common: typeof enCommon;
@@ -44,6 +45,7 @@ type Messages = {
   quick: typeof enQuick;
   checklist: typeof enChecklist;
   marketing: typeof enMarketing;
+  videoMeetings: typeof enVideoMeetings;
 };
 
 declare module 'next-intl' {

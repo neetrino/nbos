@@ -18,6 +18,7 @@ import {
 } from '@/features/crm/calls/click-to-call-status';
 import { ContactMergeDialog } from './ContactMergeDialog';
 import { isContactRestoreBlocked } from './contact-merge-wizard';
+import { EntityVideoMeetingAction } from '@/features/video-meetings/EntityVideoMeetingAction';
 
 interface ContactSheetHeaderActionsProps {
   contact: Contact;
@@ -91,12 +92,21 @@ export function ContactSheetHeaderActions({
         </>
       ) : null}
       {!isTrashView ? (
-        <ClientPortfolioQuickActionsHeader
-          variant="contact"
-          entityId={contact.id}
-          data={portfolioData}
-          loading={portfolioLoading}
-        />
+        <>
+          <EntityVideoMeetingAction
+            entityType="CONTACT"
+            entityId={contact.id}
+            entityLabel={
+              [contact.firstName, contact.lastName].filter(Boolean).join(' ') || undefined
+            }
+          />
+          <ClientPortfolioQuickActionsHeader
+            variant="contact"
+            entityId={contact.id}
+            data={portfolioData}
+            loading={portfolioLoading}
+          />
+        </>
       ) : null}
       {isTrashView && onRestore ? (
         <DetailSheetSettingsMenu>

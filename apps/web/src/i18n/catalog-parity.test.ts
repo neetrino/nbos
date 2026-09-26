@@ -21,6 +21,7 @@ import enTasks from '../messages/en/tasks.json';
 import enQuick from '../messages/en/quick.json';
 import enChecklist from '../messages/en/checklist.json';
 import enMarketing from '../messages/en/marketing.json';
+import enVideoMeetings from '../messages/en/video-meetings.json';
 import ruAccount from '../messages/ru/account.json';
 import ruCommon from '../messages/ru/common.json';
 import ruDashboard from '../messages/ru/dashboard.json';
@@ -65,6 +66,8 @@ import hyTasks from '../messages/hy/tasks.json';
 import hyQuick from '../messages/hy/quick.json';
 import hyChecklist from '../messages/hy/checklist.json';
 import hyMarketing from '../messages/hy/marketing.json';
+import ruVideoMeetings from '../messages/ru/video-meetings.json';
+import hyVideoMeetings from '../messages/hy/video-meetings.json';
 import { extractIcuArgNames } from './extract-icu-arg-names';
 import { flattenMessageEntries, flattenMessageKeys } from './flatten-messages';
 import { mergeMessages } from './merge-messages';
@@ -92,6 +95,7 @@ const COMPLETED_CATALOG_TRIPLES = [
   [enQuick, ruQuick, hyQuick],
   [enChecklist, ruChecklist, hyChecklist],
   [enMarketing, ruMarketing, hyMarketing],
+  [enVideoMeetings, ruVideoMeetings, hyVideoMeetings],
 ] as const;
 
 describe('completed i18n catalogs', () => {

@@ -17,6 +17,7 @@ import {
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { projectsApi, type FullProject } from '@/lib/api/projects';
+import { EntityVideoMeetingAction } from '@/features/video-meetings/EntityVideoMeetingAction';
 
 const PROJECTS_DIRECTORY_HREF = '/projects';
 
@@ -82,6 +83,13 @@ export function useProjectDetailHeader({
             <div className="flex w-full min-w-0 items-center gap-2">
               <div className="min-w-0 flex-1 overflow-hidden">{title}</div>
               {trashBadge}
+              {!inTrash ? (
+                <EntityVideoMeetingAction
+                  entityType="PROJECT"
+                  entityId={project.id}
+                  entityLabel={project.name}
+                />
+              ) : null}
             </div>
           </div>
         ),
@@ -94,6 +102,13 @@ export function useProjectDetailHeader({
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
           {title}
           {trashBadge}
+          {!inTrash ? (
+            <EntityVideoMeetingAction
+              entityType="PROJECT"
+              entityId={project.id}
+              entityLabel={project.name}
+            />
+          ) : null}
         </div>
       ),
     };

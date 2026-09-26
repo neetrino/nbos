@@ -7,6 +7,7 @@ import type { SidebarModuleKey } from '@nbos/shared/constants';
 import { cn } from '@/lib/utils';
 import { usePermission } from '@/lib/permissions';
 import { NAV_MODULE_DEFINITIONS } from '@/lib/navigation/nav-config';
+import { applyNavFeatureFlags } from '@/lib/navigation/nav-feature-flags';
 import {
   applySidebarPreferences,
   getSidebarFooterModule,
@@ -50,9 +51,11 @@ export function Sidebar({
     startTransition(() => setIsHovering(false));
   }, [pathname]);
 
+  const navDefinitions = useMemo(() => applyNavFeatureFlags(NAV_MODULE_DEFINITIONS), []);
+
   const visibleModules = useMemo(
-    () => getVisibleNavModules(can, permsLoading, NAV_MODULE_DEFINITIONS),
-    [can, permsLoading],
+    () => getVisibleNavModules(can, permsLoading, navDefinitions),
+    [can, permsLoading, navDefinitions],
   );
 
   const layout = useMemo(
