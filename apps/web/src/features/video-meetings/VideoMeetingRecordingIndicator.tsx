@@ -4,12 +4,14 @@ import { Circle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   guestRecordingStatus,
   videoMeetingsApi,
   type VideoMeetingRecordingGroup,
   type VideoMeetingRecordingStatus,
 } from '@/lib/api/video-meetings';
+import { CALL_ICON_BUTTON_CLASS } from './video-meeting-call-styles';
 
 type VideoMeetingRecordingIndicatorProps = {
   meetingId?: string;
@@ -17,6 +19,8 @@ type VideoMeetingRecordingIndicatorProps = {
   /** Guest invite secret — polls status only; no start/stop. */
   guestInviteToken?: string;
   compact?: boolean;
+  /** Round control for the in-call bar. */
+  appearance?: 'panel' | 'icon';
   initialRecording?: VideoMeetingRecordingGroup | null;
 };
 
@@ -30,6 +34,7 @@ export function VideoMeetingRecordingIndicator({
   canControl = false,
   guestInviteToken,
   compact,
+  appearance = 'panel',
   initialRecording = null,
 }: VideoMeetingRecordingIndicatorProps) {
   const t = useTranslations('videoMeetings.recording');
@@ -93,6 +98,27 @@ export function VideoMeetingRecordingIndicator({
     }
   };
 
+  if (appearance === 'icon') {
+    return (
+      <RecordingIconButton
+        active={active}
+        busy={busy}
+        enabled={showControls}
+        error={error}
+        startLabel={t('start')}
+        stopLabel={t('stop')}
+        onToggle={() => {
+          if (!meetingId) return;
+          void run(() =>
+            active
+              ? videoMeetingsApi.stopRecording(meetingId)
+              : videoMeetingsApi.startRecording(meetingId),
+          );
+        }}
+      />
+    );
+  }
+
   return (
     <div
       className={
@@ -139,5 +165,43 @@ export function VideoMeetingRecordingIndicator({
         </div>
       )}
     </div>
+  );
+}
+
+function RecordingIconButton({
+  active,
+  busy,
+  enabled,
+  error,
+  startLabel,
+  stopLabel,
+  onToggle,
+}: {
+  active: boolean;
+  busy: boolean;
+  enabled: boolean;
+  error: string | null;
+  startLabel: string;
+  stopLabel: string;
+  onToggle: () => void;
+}) {
+  if (!enabled && !active) return null;
+  const label = active ? stopLabel : startLabel;
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        CALL_ICON_BUTTON_CLASS,
+        active && 'bg-destructive hover:bg-destructive/90 border-transparent text-white',
+      )}
+      aria-label={label}
+      aria-pressed={active}
+      title={error ?? label}
+      disabled={!enabled || busy}
+      onClick={onToggle}
+    >
+      <Circle className={cn('size-3.5', active && 'fill-current')} aria-hidden />
+    </button>
   );
 }

@@ -1,108 +1,19 @@
 'use client';
 
-import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { ErrorState, LoadingState } from '@/components/shared';
-import { APP_MAIN_CONTENT_FILL_HEIGHT_CLASS } from '@/components/layout/app-layout-constants';
-import { videoMeetingsApi } from '@/lib/api/video-meetings';
-import { usePermission } from '@/lib/permissions';
-import { VideoMeetingConsentActions } from './VideoMeetingConsentActions';
-import { VideoMeetingLiveKitRoom } from './VideoMeetingLiveKitRoom';
-import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
-import { VideoMeetingWaitingHostPanel } from './VideoMeetingWaitingHostPanel';
-import { useVideoMeetingRoomConnect } from './use-video-meeting-room-connect';
+import { useEffect } from 'react';
+import { useVideoMeetingCall } from './video-meeting-call-session';
 
 type VideoMeetingRoomPageProps = {
   meetingId: string;
 };
 
+/** Opens the persistent call sheet. The room stays connected after this page unmounts. */
 export function VideoMeetingRoomPage({ meetingId }: VideoMeetingRoomPageProps) {
-  const t = useTranslations('videoMeetings');
-  const router = useRouter();
-  const leavingRef = useRef(false);
-  const { me, can } = usePermission();
-  const { phase, card, credentials, errorMessage, connect } = useVideoMeetingRoomConnect(
-    meetingId,
-    t('room.tokenError'),
-  );
-  const leaveRoom = useCallback(() => {
-    leavingRef.current = true;
-    router.push(`/video-meetings/${meetingId}`);
-  }, [meetingId, router]);
-  const endMeeting = useCallback(async () => {
-    await videoMeetingsApi.end(meetingId);
-  }, [meetingId]);
+  const { open } = useVideoMeetingCall();
 
   useEffect(() => {
-    void connect();
-  }, [connect]);
+    open(meetingId);
+  }, [meetingId, open]);
 
-  const isHost = useMemo(
-    () => Boolean(me && card && (me.id === card.hostEmployeeId || me.id === card.ownerEmployeeId)),
-    [me, card],
-  );
-  const canControlRecording = Boolean(isHost && can('EDIT', 'VIDEO_MEETINGS'));
-
-  if (phase === 'loading') {
-    return (
-      <div className="flex flex-col gap-3">
-        <LoadingState count={3} />
-        <p className="text-muted-foreground text-center text-sm">{t('room.connecting')}</p>
-      </div>
-    );
-  }
-
-  if (phase === 'inactive') {
-    return (
-      <div className="flex flex-col items-center gap-3">
-        <ErrorState description={t('room.notActive')} onRetry={() => void connect()} />
-        <Link href={`/video-meetings/${meetingId}`} className="text-primary text-sm underline">
-          {t('detail.title')}
-        </Link>
-      </div>
-    );
-  }
-
-  if (phase === 'unavailable' || phase === 'error') {
-    return (
-      <ErrorState
-        description={errorMessage || t('room.tokenError')}
-        onRetry={() => void connect()}
-      />
-    );
-  }
-
-  if (!credentials) {
-    return <ErrorState description={t('room.tokenError')} onRetry={() => void connect()} />;
-  }
-
-  return (
-    <div
-      className={`flex min-h-0 flex-col gap-3 lg:flex-row ${APP_MAIN_CONTENT_FILL_HEIGHT_CLASS}`}
-    >
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 px-1">
-          <VideoMeetingRecordingIndicator
-            compact
-            meetingId={meetingId}
-            canControl={canControlRecording}
-          />
-          <VideoMeetingConsentActions meetingId={meetingId} />
-        </div>
-        <VideoMeetingLiveKitRoom
-          credentials={credentials}
-          canEnd={canControlRecording}
-          onLeave={leaveRoom}
-          onEnd={endMeeting}
-          onDisconnected={() => {
-            if (leavingRef.current) return;
-            void connect();
-          }}
-        />
-      </div>
-      <VideoMeetingWaitingHostPanel meetingId={meetingId} enabled={isHost} />
-    </div>
-  );
+  return null;
 }

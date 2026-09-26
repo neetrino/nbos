@@ -1,104 +1,141 @@
 'use client';
 
-import { Chat, TrackToggle, useRoomContext } from '@livekit/components-react';
+import { TrackToggle, useRoomContext } from '@livekit/components-react';
 import { Track } from 'livekit-client';
+import { Maximize2, MessageSquare, Mic, MonitorUp, Phone, Video } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
+import { CALL_HANGUP_BUTTON_CLASS, CALL_ICON_BUTTON_CLASS } from './video-meeting-call-styles';
 
-type VideoMeetingRoomControlsProps = {
+type RoomExitProps = {
   canEnd: boolean;
   onLeave: () => void;
   onEnd: () => Promise<void>;
 };
 
-/** In-room controls. Leave exits this person. End call stops the meeting for everyone. */
+type VideoMeetingRoomControlsProps = RoomExitProps & {
+  chatOpen: boolean;
+  onToggleChat: () => void;
+  meetingId?: string;
+  canControlRecording?: boolean;
+};
+
+/** Bottom icon bar. The red handset ends the meeting for a host, or leaves for a guest. */
 export function VideoMeetingRoomControls({
   canEnd,
   onLeave,
   onEnd,
+  chatOpen,
+  onToggleChat,
+  meetingId,
+  canControlRecording = false,
 }: VideoMeetingRoomControlsProps) {
   const t = useTranslations('videoMeetings.room');
-  const [chatOpen, setChatOpen] = useState(false);
+  const { ending, hangUp } = useRoomExitActions({ canEnd, onLeave, onEnd });
 
   return (
-    <div className="border-border/80 bg-background/95 shrink-0 space-y-2 border-t px-3 py-3 backdrop-blur">
-      <div
-        className="flex flex-wrap items-center justify-between gap-3"
-        role="toolbar"
-        aria-label={t('controlsAria')}
-      >
-        <RoomMediaButtons
-          mic={t('mic')}
-          camera={t('camera')}
-          shareScreen={t('shareScreen')}
-          chat={t('chat')}
-          onChat={() => setChatOpen((open) => !open)}
+    <div
+      className="border-border/80 relative flex shrink-0 items-center justify-center px-4 py-4"
+      role="toolbar"
+      aria-label={t('controlsAria')}
+    >
+      <div className="flex items-center gap-2">
+        <TrackToggle
+          source={Track.Source.Microphone}
+          showIcon={false}
+          className={CALL_ICON_BUTTON_CLASS}
+        >
+          <Mic aria-hidden />
+          <span className="sr-only">{t('mic')}</span>
+        </TrackToggle>
+        <TrackToggle
+          source={Track.Source.Camera}
+          showIcon={false}
+          className={CALL_ICON_BUTTON_CLASS}
+        >
+          <Video aria-hidden />
+          <span className="sr-only">{t('camera')}</span>
+        </TrackToggle>
+        <TrackToggle
+          source={Track.Source.ScreenShare}
+          showIcon={false}
+          className={CALL_ICON_BUTTON_CLASS}
+        >
+          <MonitorUp aria-hidden />
+          <span className="sr-only">{t('shareScreen')}</span>
+        </TrackToggle>
+        <VideoMeetingRecordingIndicator
+          appearance="icon"
+          meetingId={meetingId}
+          canControl={canControlRecording}
         />
-        <RoomExitButtons
-          canEnd={canEnd}
-          leaveLabel={t('leave')}
-          endLabel={t('endCall')}
-          onLeave={onLeave}
-          onEnd={onEnd}
-        />
+        <button
+          type="button"
+          className={cn(CALL_ICON_BUTTON_CLASS, chatOpen && 'bg-foreground text-background')}
+          aria-pressed={chatOpen}
+          aria-label={t('chat')}
+          onClick={onToggleChat}
+        >
+          <MessageSquare aria-hidden />
+        </button>
       </div>
-      {chatOpen ? (
-        <div className="border-border max-h-56 overflow-hidden rounded-lg border">
-          <Chat />
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-const mediaButtonClass =
-  'border-border bg-muted/40 inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm';
-
-function RoomMediaButtons({
-  mic,
-  camera,
-  shareScreen,
-  chat,
-  onChat,
-}: {
-  mic: string;
-  camera: string;
-  shareScreen: string;
-  chat: string;
-  onChat: () => void;
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <TrackToggle source={Track.Source.Microphone} className={mediaButtonClass}>
-        {mic}
-      </TrackToggle>
-      <TrackToggle source={Track.Source.Camera} className={mediaButtonClass}>
-        {camera}
-      </TrackToggle>
-      <TrackToggle source={Track.Source.ScreenShare} className={mediaButtonClass}>
-        {shareScreen}
-      </TrackToggle>
-      <button type="button" className={mediaButtonClass} onClick={onChat}>
-        {chat}
+      <button
+        type="button"
+        className={cn(CALL_HANGUP_BUTTON_CLASS, 'absolute right-4')}
+        aria-label={canEnd ? t('endCall') : t('leave')}
+        disabled={ending}
+        onClick={() => void hangUp()}
+      >
+        <Phone className="rotate-[135deg]" aria-hidden />
       </button>
     </div>
   );
 }
 
-function RoomExitButtons({
+type VideoMeetingMiniBarProps = RoomExitProps & {
+  title: string;
+  onExpand: () => void;
+};
+
+/** Collapsed call. Audio stays connected because LiveKit remains mounted. */
+export function VideoMeetingMiniBar({
+  title,
+  onExpand,
   canEnd,
-  leaveLabel,
-  endLabel,
   onLeave,
   onEnd,
-}: {
-  canEnd: boolean;
-  leaveLabel: string;
-  endLabel: string;
-  onLeave: () => void;
-  onEnd: () => Promise<void>;
-}) {
+}: VideoMeetingMiniBarProps) {
+  const t = useTranslations('videoMeetings.room');
+  const { ending, hangUp } = useRoomExitActions({ canEnd, onLeave, onEnd });
+
+  return (
+    <div className="flex items-center gap-3 px-3 py-2.5">
+      <span className="bg-success size-2 shrink-0 rounded-full" aria-hidden />
+      <p className="min-w-0 flex-1 truncate text-sm font-medium">{title}</p>
+      <button
+        type="button"
+        className={cn(CALL_ICON_BUTTON_CLASS, 'size-9')}
+        aria-label={t('expand')}
+        onClick={onExpand}
+      >
+        <Maximize2 className="size-4" aria-hidden />
+      </button>
+      <button
+        type="button"
+        className={cn(CALL_HANGUP_BUTTON_CLASS, 'size-9')}
+        aria-label={canEnd ? t('endCall') : t('leave')}
+        disabled={ending}
+        onClick={() => void hangUp()}
+      >
+        <Phone className="size-4 rotate-[135deg]" aria-hidden />
+      </button>
+    </div>
+  );
+}
+
+function useRoomExitActions({ canEnd, onLeave, onEnd }: RoomExitProps) {
   const room = useRoomContext();
   const [ending, setEnding] = useState(false);
 
@@ -107,7 +144,11 @@ function RoomExitButtons({
     void room.disconnect(true);
   };
 
-  const endCall = async () => {
+  const hangUp = async () => {
+    if (!canEnd) {
+      leave();
+      return;
+    }
     setEnding(true);
     try {
       await onEnd();
@@ -117,23 +158,5 @@ function RoomExitButtons({
     }
   };
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button type="button" variant="outline" disabled={ending} onClick={leave}>
-        {leaveLabel}
-      </Button>
-      {canEnd ? (
-        <Button
-          type="button"
-          size="form"
-          variant="destructive"
-          className="bg-destructive hover:bg-destructive/90 text-white"
-          disabled={ending}
-          onClick={() => void endCall()}
-        >
-          {endLabel}
-        </Button>
-      ) : null}
-    </div>
-  );
+  return { ending, hangUp };
 }

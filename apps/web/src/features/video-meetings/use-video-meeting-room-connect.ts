@@ -28,7 +28,11 @@ export function useVideoMeetingRoomConnect(meetingId: string, tokenErrorLabel: s
   const [state, setState] = useState<RoomConnectState>(initialState);
 
   const connect = useCallback(async () => {
-    setState((current) => ({ ...current, phase: 'loading', errorMessage: '' }));
+    setState((current) => ({
+      ...current,
+      phase: current.credentials ? current.phase : 'loading',
+      errorMessage: '',
+    }));
     try {
       const meeting = await videoMeetingsApi.getCard(meetingId);
       if (meeting.status !== 'ACTIVE') {

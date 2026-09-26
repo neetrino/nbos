@@ -135,7 +135,11 @@
     "mic": "Microphone",
     "camera": "Camera",
     "shareScreen": "Share screen",
-    "chat": "Chat"
+    "chat": "Chat",
+    "chatTitle": "Chat",
+    "minimize": "Minimize",
+    "expand": "Return to call",
+    "callEnded": "The call has ended."
   },
   "guest": {
     "title": "Join video meeting",

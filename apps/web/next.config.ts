@@ -24,7 +24,7 @@ function buildContentSecurityPolicy(): string {
     `script-src ${scriptSrc.join(' ')}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
-    `media-src 'self'`,
+    `media-src 'self' blob: mediastream:`,
     `font-src 'self' data:`,
     `connect-src ${connectSrc.join(' ')}`,
     `frame-ancestors 'none'`,
@@ -42,7 +42,10 @@ function securityHeaders(): { key: string; value: string }[] {
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'X-Frame-Options', value: 'DENY' },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-    { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+    {
+      key: 'Permissions-Policy',
+      value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
+    },
     { key: 'X-DNS-Prefetch-Control', value: 'off' },
   ];
   // HSTS only in production: avoids pinning HTTPS on localhost during dev.

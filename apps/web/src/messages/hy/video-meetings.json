@@ -135,7 +135,11 @@
     "mic": "Խոսափող",
     "camera": "Տեսախցիկ",
     "shareScreen": "Էկրանի ցուցադրում",
-    "chat": "Զրույց"
+    "chat": "Զրույց",
+    "chatTitle": "Զրույց",
+    "minimize": "Ծալել",
+    "expand": "Վերադառնալ զանգին",
+    "callEnded": "Զանգն ավարտված է."
   },
   "guest": {
     "title": "Mtnel tesahandipum",
