@@ -102,7 +102,7 @@ Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 | **Tests**                 | Idempotent webhook; duplicate finalize; unauthorized playback; partial asset set                                                                                                                         |
 | **Done criteria**         | No FileAsset bypass; orphan cleanup follows Drive conservatism                                                                                                                                           |
 | **Risks**                 | Race between webhook and finalize; ACL broaden via entity links                                                                                                                                          |
-| **Status**                | TODO                                                                                                                                                                                                     |
+| **Status**                | **DONE** (Drive finalize + playback ACL + unit tests; live R2 finalize **NOT RUN** — see handoff)                                                                                                        |
 
 ---
 

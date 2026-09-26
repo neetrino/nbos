@@ -56,6 +56,7 @@ import { DriveInternalArtifactService } from './artifact-operation/drive-interna
     DriveAccessContextService,
     DriveTaskArtifactService,
     DriveArtifactOperationService,
+    DriveArtifactStorageAdapter,
     DriveInternalArtifactService,
   ],
 })

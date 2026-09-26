@@ -21,6 +21,7 @@ import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsFeatureService } from './video-meetings-feature.service';
 import { VideoMeetingsGuestController } from './video-meetings-guest.controller';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
+import { VideoMeetingsRecordingPlaybackService } from './video-meetings-recording-playback.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
@@ -119,6 +120,9 @@ async function bootApp(featureEnabled: boolean): Promise<{
     getActiveStatus: vi.fn().mockResolvedValue(null),
     stopParticipantAudioOnWithdrawal: vi.fn(),
   };
+  const playback = {
+    getCompositePlayback: vi.fn(),
+  };
   const consent = {
     getNotice: vi.fn().mockReturnValue({
       noticeVersion: 'pending-legal-v0',
@@ -135,6 +139,7 @@ async function bootApp(featureEnabled: boolean): Promise<{
       { provide: VideoMeetingsAdmissionService, useValue: admission },
       { provide: VideoMeetingsInvitesService, useValue: invites },
       { provide: VideoMeetingsRecordingService, useValue: recordings },
+      { provide: VideoMeetingsRecordingPlaybackService, useValue: playback },
       { provide: VideoMeetingsConsentService, useValue: consent },
       { provide: ConfigService, useValue: { get: () => undefined } },
       { provide: VIDEO_MEETINGS_FEATURE_ENABLED_TOKEN, useValue: featureEnabled },

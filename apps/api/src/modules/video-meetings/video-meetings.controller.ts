@@ -24,6 +24,7 @@ import { VideoMeetingsAdmissionService } from './video-meetings-admission.servic
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
+import { VideoMeetingsRecordingPlaybackService } from './video-meetings-recording-playback.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
@@ -38,6 +39,7 @@ export class VideoMeetingsController {
     private readonly admissionService: VideoMeetingsAdmissionService,
     private readonly recordingService: VideoMeetingsRecordingService,
     private readonly consentService: VideoMeetingsConsentService,
+    private readonly playbackService: VideoMeetingsRecordingPlaybackService,
   ) {}
 
   @Post()
@@ -176,7 +178,7 @@ export class VideoMeetingsController {
 
   @Post(':id/recording/stop')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Stop active recording and verify objects (no Drive finalize)' })
+  @ApiOperation({ summary: 'Stop active recording and Drive-finalize verified objects' })
   stopRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.recordingService.stop(user, id);
   }
@@ -186,6 +188,18 @@ export class VideoMeetingsController {
   @ApiOperation({ summary: 'Latest recording group status (no keys or playback URLs)' })
   getRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.videoMeetingsService.getRecordingStatus(user, id);
+  }
+
+  @Get(':id/recording/playback')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({
+    summary: 'Short-lived signed URL for composite playback (host/owner/participant only)',
+  })
+  getRecordingPlayback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.playbackService.getCompositePlayback(user, id);
   }
 
   @Post(':id/consent')

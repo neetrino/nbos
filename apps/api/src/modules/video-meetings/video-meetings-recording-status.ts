@@ -9,6 +9,8 @@ import { canMarkRecordingReadyFromMeetingEndedAlone } from '@nbos/shared';
 /**
  * Derive group status after independent asset verification (ADR-VM-005).
  * Meeting ENDED alone never forces READY.
+ * READY only when every asset is Drive-finalized READY; PARTIAL when some
+ * READY and some FAILED/MISSING (no pending left).
  */
 export function deriveRecordingGroupStatus(
   assets: ReadonlyArray<{ status: AssetStatus }>,
@@ -35,28 +37,27 @@ export function deriveRecordingGroupStatus(
   if (ready === assets.length) {
     return VideoMeetingRecordingStatus.READY;
   }
-  if (ready > 0 && (failed > 0 || pending > 0)) {
-    return VideoMeetingRecordingStatus.PARTIAL;
+  // Still waiting on objects / Drive finalize — not PARTIAL yet.
+  if (pending > 0) {
+    return VideoMeetingRecordingStatus.FINALIZING;
   }
   if (failed === assets.length) {
     return VideoMeetingRecordingStatus.FAILED;
   }
-  if (pending > 0) {
-    return VideoMeetingRecordingStatus.FINALIZING;
+  if (ready > 0 && failed > 0) {
+    return VideoMeetingRecordingStatus.PARTIAL;
   }
   return VideoMeetingRecordingStatus.PARTIAL;
 }
 
-/** Mark READY only when object exists with non-zero size. */
-export function assetStatusFromObjectHead(head: {
-  exists: boolean;
-  sizeBytes: number;
-}): AssetStatus {
-  if (head.exists && head.sizeBytes > 0) {
-    return VideoMeetingRecordingAssetStatus.READY;
+/** True when HeadObject proves a non-empty object ready for Drive finalize. */
+export function isNonEmptyObjectHead(head: {
+  exists?: boolean;
+  sizeBytes?: number;
+  contentLength?: number | null;
+}): boolean {
+  if (typeof head.contentLength === 'number') {
+    return head.contentLength > 0;
   }
-  if (!head.exists) {
-    return VideoMeetingRecordingAssetStatus.PENDING;
-  }
-  return VideoMeetingRecordingAssetStatus.FAILED;
+  return Boolean(head.exists) && (head.sizeBytes ?? 0) > 0;
 }

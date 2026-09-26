@@ -78,7 +78,30 @@
     "consentDecline": "Decline recording",
     "consentRevoke": "Withdraw consent",
     "consentSaved": "Consent saved",
-    "consentError": "Could not save consent decision."
+    "consentError": "Could not save consent decision.",
+    "playbackTitle": "Recording playback",
+    "playComposite": "Play composite recording",
+    "playbackLoading": "Loading playback…",
+    "playbackError": "Could not load playback URL.",
+    "compositeNotReady": "Composite recording is not ready yet.",
+    "audioAssetsTitle": "Per-participant audio",
+    "audioAssetsHint": "Listed for the host only. Raw audio is not available as a public download.",
+    "audioAssetParticipant": "Participant {id}",
+    "audioAssetUnknown": "Unknown participant",
+    "groupStatus": {
+      "PENDING": "Pending",
+      "RECORDING": "Recording",
+      "FINALIZING": "Finalizing",
+      "READY": "Ready",
+      "PARTIAL": "Partial — some assets failed or are missing",
+      "FAILED": "Failed"
+    },
+    "assetStatus": {
+      "PENDING": "Pending",
+      "READY": "Ready",
+      "FAILED": "Failed",
+      "MISSING": "Missing"
+    }
   },
   "room": {
     "title": "Meeting room",

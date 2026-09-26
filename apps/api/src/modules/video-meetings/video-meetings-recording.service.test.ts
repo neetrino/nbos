@@ -8,6 +8,7 @@ import {
 import type { CurrentUserPayload } from '../../common/decorators';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
+import { VideoMeetingsRecordingFinalizeService } from './video-meetings-recording-finalize.service';
 import { VideoMeetingsRecordingLifecycleService } from './video-meetings-recording-lifecycle.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import type {
@@ -46,6 +47,10 @@ describe('VideoMeetingsRecordingService (S05)', () => {
   let prisma: MockPrisma;
   let egress: VideoMeetingsEgressClient;
   let objectStore: VideoMeetingsRecordingObjectStore;
+  let finalize: {
+    finalizeAsset: ReturnType<typeof vi.fn>;
+    refreshGroupStatus: ReturnType<typeof vi.fn>;
+  };
   let consent: {
     listLatestByParticipantIds: ReturnType<typeof vi.fn>;
     isGranted: ReturnType<typeof vi.fn>;
@@ -82,6 +87,10 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       }),
       headObject: vi.fn().mockResolvedValue({ exists: true, sizeBytes: 1024 }),
     };
+    finalize = {
+      finalizeAsset: vi.fn().mockResolvedValue(VideoMeetingRecordingAssetStatus.READY),
+      refreshGroupStatus: vi.fn().mockResolvedValue(undefined),
+    };
     consent = {
       listLatestByParticipantIds: vi.fn().mockResolvedValue(
         new Map([
@@ -95,8 +104,8 @@ describe('VideoMeetingsRecordingService (S05)', () => {
     lifecycle = new VideoMeetingsRecordingLifecycleService(
       prisma as never,
       consent as unknown as VideoMeetingsConsentService,
+      finalize as unknown as VideoMeetingsRecordingFinalizeService,
       egress,
-      objectStore,
     );
     service = new VideoMeetingsRecordingService(
       prisma as never,
@@ -173,16 +182,17 @@ describe('VideoMeetingsRecordingService (S05)', () => {
           kind: 'PARTICIPANT_AUDIO',
           egressId: 'EG_a',
           status: VideoMeetingRecordingAssetStatus.PENDING,
-          objectKey: 'key-a',
+          objectKey: 'audio-key',
         },
       ],
     });
     prisma.videoMeetingRecordingAsset.update = vi.fn().mockResolvedValue({});
-    objectStore.headObject = vi.fn().mockResolvedValue({ exists: false, sizeBytes: 0 });
+    finalize.finalizeAsset.mockResolvedValue(VideoMeetingRecordingAssetStatus.PENDING);
 
     await service.stopParticipantAudioOnWithdrawal(MEETING_ID, P1);
 
     expect(egress.stopEgress).toHaveBeenCalledWith('EG_a');
+    expect(finalize.finalizeAsset).toHaveBeenCalledWith('asset-a');
   });
 
   it('does not mark recording READY when meeting ends alone', async () => {
@@ -213,7 +223,7 @@ describe('VideoMeetingsRecordingService (S05)', () => {
     prisma.videoMeetingRecordingAsset.findMany = vi
       .fn()
       .mockResolvedValue([{ status: VideoMeetingRecordingAssetStatus.PENDING }]);
-    objectStore.headObject = vi.fn().mockResolvedValue({ exists: false, sizeBytes: 0 });
+    finalize.finalizeAsset.mockResolvedValue(VideoMeetingRecordingAssetStatus.PENDING);
     prisma.videoMeetingRecording.update = vi.fn().mockResolvedValue({
       id: 'rec-1',
       status: VideoMeetingRecordingStatus.FINALIZING,
@@ -253,7 +263,7 @@ describe('VideoMeetingsRecordingService (S05)', () => {
     await service.applyEgressEnded('EG_a');
 
     expect(prisma.videoMeetingRecordingAsset.create).not.toHaveBeenCalled();
-    expect(objectStore.headObject).not.toHaveBeenCalled();
+    expect(finalize.finalizeAsset).not.toHaveBeenCalled();
   });
 
   it('does not mark asset READY when object is unverified / zero size', async () => {
@@ -264,23 +274,12 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       objectKey: 'key',
       recordingId: 'rec-1',
     });
-    objectStore.headObject = vi.fn().mockResolvedValue({ exists: true, sizeBytes: 0 });
-    prisma.videoMeetingRecording.findUnique = vi.fn().mockResolvedValue({
-      id: 'rec-1',
-      status: VideoMeetingRecordingStatus.FINALIZING,
-      assets: [{ status: VideoMeetingRecordingAssetStatus.FAILED }],
-    });
+    finalize.finalizeAsset.mockResolvedValue(VideoMeetingRecordingAssetStatus.FAILED);
 
     await service.applyEgressEnded('EG_a');
 
-    expect(prisma.videoMeetingRecordingAsset.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          status: VideoMeetingRecordingAssetStatus.FAILED,
-          fileAssetId: null,
-        }),
-      }),
-    );
+    expect(finalize.finalizeAsset).toHaveBeenCalledWith('asset-a');
+    expect(finalize.refreshGroupStatus).toHaveBeenCalledWith('rec-1');
   });
 
   it('returns 503 when egress is not configured', async () => {

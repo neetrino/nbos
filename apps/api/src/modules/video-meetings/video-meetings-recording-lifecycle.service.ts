@@ -8,19 +8,11 @@ import {
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
-import {
-  VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN,
-  VIDEO_MEETINGS_RECORDING_OBJECT_STORE_TOKEN,
-} from './video-meetings-recording.constants';
+import { VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN } from './video-meetings-recording.constants';
 import { buildParticipantAudioObjectKey } from './video-meetings-recording-keys';
-import {
-  assetStatusFromObjectHead,
-  deriveRecordingGroupStatus,
-} from './video-meetings-recording-status';
-import type {
-  VideoMeetingsEgressClient,
-  VideoMeetingsRecordingObjectStore,
-} from './video-meetings-egress.types';
+import { deriveRecordingGroupStatus } from './video-meetings-recording-status';
+import type { VideoMeetingsEgressClient } from './video-meetings-egress.types';
+import { VideoMeetingsRecordingFinalizeService } from './video-meetings-recording-finalize.service';
 import {
   serializeRecordingGroup,
   type VideoMeetingRecordingGroupDto,
@@ -30,7 +22,7 @@ type RecordingWithAssets = Prisma.VideoMeetingRecordingGetPayload<{
   include: { assets: true };
 }>;
 
-/** Late-join segments, consent withdrawal, egress-ended verification. */
+/** Late-join segments, consent withdrawal, egress-ended → Drive finalize. */
 @Injectable()
 export class VideoMeetingsRecordingLifecycleService {
   private readonly logger = new Logger(VideoMeetingsRecordingLifecycleService.name);
@@ -38,12 +30,10 @@ export class VideoMeetingsRecordingLifecycleService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly consent: VideoMeetingsConsentService,
+    private readonly finalize: VideoMeetingsRecordingFinalizeService,
     @Optional()
     @Inject(VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN)
     private readonly egress: VideoMeetingsEgressClient | null,
-    @Optional()
-    @Inject(VIDEO_MEETINGS_RECORDING_OBJECT_STORE_TOKEN)
-    private readonly objectStore: VideoMeetingsRecordingObjectStore | null,
   ) {}
 
   async startAudioSegmentForTrack(input: {
@@ -113,10 +103,9 @@ export class VideoMeetingsRecordingLifecycleService {
         where: { id: asset.id },
         data: { rangeEndsAt: new Date() },
       });
-      if (asset.objectKey) {
-        await this.verifyAssetObject(asset.id, asset.objectKey);
-      }
+      await this.finalize.finalizeAsset(asset.id);
     }
+    await this.finalize.refreshGroupStatus(recording.id);
   }
 
   async closeSegmentForTrack(egressId: string | null, trackId: string): Promise<void> {
@@ -153,8 +142,8 @@ export class VideoMeetingsRecordingLifecycleService {
       });
       return;
     }
-    await this.verifyAssetObject(asset.id, asset.objectKey);
-    await this.refreshGroupAfterAssetChange(asset.recordingId);
+    await this.finalize.finalizeAsset(asset.id);
+    await this.finalize.refreshGroupStatus(asset.recordingId);
   }
 
   async finalizeRecording(
@@ -179,7 +168,7 @@ export class VideoMeetingsRecordingLifecycleService {
         await this.egress.stopEgress(asset.egressId);
       }
       if (asset.objectKey) {
-        await this.verifyAssetObject(asset.id, asset.objectKey);
+        await this.finalize.finalizeAsset(asset.id);
       } else if (asset.status === VideoMeetingRecordingAssetStatus.PENDING) {
         await this.prisma.videoMeetingRecordingAsset.update({
           where: { id: asset.id },
@@ -200,47 +189,6 @@ export class VideoMeetingsRecordingLifecycleService {
       include: { assets: true },
     });
     return serializeRecordingGroup(updated);
-  }
-
-  async verifyAssetObject(assetId: string, objectKey: string): Promise<void> {
-    if (!this.objectStore?.isConfigured()) {
-      await this.prisma.videoMeetingRecordingAsset.update({
-        where: { id: assetId },
-        data: { status: VideoMeetingRecordingAssetStatus.PENDING },
-      });
-      return;
-    }
-    const head = await this.objectStore.headObject(objectKey);
-    const status = assetStatusFromObjectHead(head);
-    await this.prisma.videoMeetingRecordingAsset.update({
-      where: { id: assetId },
-      data: {
-        status,
-        rangeEndsAt: new Date(),
-        fileAssetId: null,
-      },
-    });
-  }
-
-  private async refreshGroupAfterAssetChange(recordingId: string): Promise<void> {
-    const recording = await this.prisma.videoMeetingRecording.findUnique({
-      where: { id: recordingId },
-      include: { assets: true },
-    });
-    if (!recording) return;
-    if (
-      recording.status === VideoMeetingRecordingStatus.RECORDING ||
-      recording.status === VideoMeetingRecordingStatus.PENDING
-    ) {
-      return;
-    }
-    const next = deriveRecordingGroupStatus(recording.assets);
-    if (next !== recording.status) {
-      await this.prisma.videoMeetingRecording.update({
-        where: { id: recordingId },
-        data: { status: next },
-      });
-    }
   }
 
   async findActiveRecording(meetingId: string): Promise<RecordingWithAssets | null> {

@@ -78,7 +78,30 @@
     "consentDecline": "Mertsel granacum@",
     "consentRevoke": "Het kanchvel hamadzaynutyun@",
     "consentSaved": "Hamadzaynutyun@ pahpanvel e",
-    "consentError": "Chhajoghvets pahpanel voroshum@"
+    "consentError": "Chhajoghvets pahpanel voroshum@",
+    "playbackTitle": "Forman nvagarkum",
+    "playComposite": "Nvagarkel composite forman@",
+    "playbackLoading": "Nvagarkman url-i bertsnum…",
+    "playbackError": "Chhajoghvets stanal nvagarkman url.",
+    "compositeNotReady": "Composite forman@ der patraschi chi.",
+    "audioAssetsTitle": "Masnakicneri audio",
+    "audioAssetsHint": "Miayn hosti hamar. Raw audio-n hraparakayin nerbernum chi.",
+    "audioAssetParticipant": "Masnakic {id}",
+    "audioAssetUnknown": "Anhayt masnakic",
+    "groupStatus": {
+      "PENDING": "Spasum",
+      "RECORDING": "Forman",
+      "FINALIZING": "Verjnakanatsum",
+      "READY": "Patrast e",
+      "PARTIAL": "Masnaki — vorosh asset-ner chi hashanvel",
+      "FAILED": "Chipoxvec"
+    },
+    "assetStatus": {
+      "PENDING": "Spasum",
+      "READY": "Patrast e",
+      "FAILED": "Chipoxvec",
+      "MISSING": "Batsaka"
+    }
   },
   "room": {
     "title": "Handipman senyak",

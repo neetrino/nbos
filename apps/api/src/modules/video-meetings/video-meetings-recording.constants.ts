@@ -34,3 +34,29 @@ export const VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN = 'VIDEO_MEETINGS_EGRESS_CLIENT'
 /** DI override for unit tests (fake object store). */
 export const VIDEO_MEETINGS_RECORDING_OBJECT_STORE_TOKEN =
   'VIDEO_MEETINGS_RECORDING_OBJECT_STORE' as const;
+
+/** DI override for Drive HeadObject/finalize storage (in-memory in unit tests). */
+export const VIDEO_MEETINGS_DRIVE_ARTIFACT_STORAGE_TOKEN =
+  'VIDEO_MEETINGS_DRIVE_ARTIFACT_STORAGE' as const;
+
+/**
+ * Dedicated SYSTEM actor for recording FileArtifactOperation rows.
+ * Scoped via systemArtifactAuth(actorId) — no new SourceEnum value.
+ */
+export const VIDEO_MEETINGS_RECORDING_SYSTEM_ACTOR_ID = 'video-meetings-recording-system' as const;
+
+export const VIDEO_MEETINGS_SOURCE_MODULE = 'VIDEO_MEETINGS' as const;
+
+/** FileLink / FileArtifactOperation entityType for meeting-owned recording assets. */
+export const VIDEO_MEETING_FILE_ENTITY_TYPE = 'VIDEO_MEETING' as const;
+
+/** Short-lived composite playback URL TTL (seconds). */
+export const VIDEO_MEETING_PLAYBACK_URL_TTL_SECONDS = 300 as const;
+
+/** Background reconcile interval when feature flag is on. */
+export const VIDEO_MEETING_RECORDING_RECONCILE_INTERVAL_MS = 60_000 as const;
+
+export const VIDEO_MEETING_RECORDING_RECONCILE_BATCH_SIZE = 25 as const;
+
+export const VIDEO_MEETING_COMPOSITE_MIME = 'video/mp4' as const;
+export const VIDEO_MEETING_AUDIO_MIME = 'audio/ogg' as const;

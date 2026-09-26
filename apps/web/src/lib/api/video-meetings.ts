@@ -245,6 +245,25 @@ export const videoMeetingsApi = {
     return resp.data;
   },
 
+  getRecordingPlayback: async (
+    meetingId: string,
+  ): Promise<{
+    assetId: string;
+    kind: 'ROOM_COMPOSITE';
+    url: string;
+    mimeType: string;
+    expiresInSeconds: number;
+  }> => {
+    const resp = await api.get<{
+      assetId: string;
+      kind: 'ROOM_COMPOSITE';
+      url: string;
+      mimeType: string;
+      expiresInSeconds: number;
+    }>(`/api/video-meetings/${meetingId}/recording/playback`);
+    return resp.data;
+  },
+
   decideConsent: async (meetingId: string, decision: ConsentDecision): Promise<ConsentResult> => {
     const resp = await api.post<ConsentResult>(`/api/video-meetings/${meetingId}/consent`, {
       decision,

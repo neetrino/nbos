@@ -15,6 +15,7 @@ import {
 } from '@/lib/api/video-meetings';
 import { VIDEO_MEETING_INVITE_DEFAULT_TTL_HOURS } from './constants';
 import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
+import { VideoMeetingRecordingPlayback } from './VideoMeetingRecordingPlayback';
 import {
   VideoMeetingEntityLinksSection,
   VideoMeetingInviteSection,
@@ -124,6 +125,12 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
         meetingId={meetingId}
         canControl={canEdit && isHost}
         initialRecording={card.recordings?.[0] ?? null}
+      />
+
+      <VideoMeetingRecordingPlayback
+        meetingId={meetingId}
+        recording={card.recordings?.[0] ?? null}
+        isHost={isHost}
       />
 
       <section className="border-border rounded-lg border p-4">

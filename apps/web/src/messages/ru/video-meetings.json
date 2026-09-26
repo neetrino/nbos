@@ -78,7 +78,30 @@
     "consentDecline": "Отклонить запись",
     "consentRevoke": "Отозвать согласие",
     "consentSaved": "Согласие сохранено",
-    "consentError": "Не удалось сохранить решение о согласии."
+    "consentError": "Не удалось сохранить решение о согласии.",
+    "playbackTitle": "Воспроизведение записи",
+    "playComposite": "Смотреть композитную запись",
+    "playbackLoading": "Загрузка воспроизведения…",
+    "playbackError": "Не удалось получить ссылку на воспроизведение.",
+    "compositeNotReady": "Композитная запись ещё не готова.",
+    "audioAssetsTitle": "Аудио участников",
+    "audioAssetsHint": "Только для хоста. Сырое аудио недоступно как публичная загрузка.",
+    "audioAssetParticipant": "Участник {id}",
+    "audioAssetUnknown": "Неизвестный участник",
+    "groupStatus": {
+      "PENDING": "Ожидание",
+      "RECORDING": "Идёт запись",
+      "FINALIZING": "Финализация",
+      "READY": "Готово",
+      "PARTIAL": "Частично — часть ассетов не удалась или отсутствует",
+      "FAILED": "Ошибка"
+    },
+    "assetStatus": {
+      "PENDING": "Ожидание",
+      "READY": "Готово",
+      "FAILED": "Ошибка",
+      "MISSING": "Отсутствует"
+    }
   },
   "room": {
     "title": "Комната встречи",

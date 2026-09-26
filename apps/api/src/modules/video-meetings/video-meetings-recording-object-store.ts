@@ -20,7 +20,8 @@ import type {
 
 /**
  * Private recording destination: dedicated S3-compatible env, or Drive R2 fallback.
- * Never writes FileAsset rows (S06 owns finalize).
+ * S06 Drive finalize verifies via DriveArtifactStorageAdapter (same R2 bucket).
+ * Prefer R2_* (or the same bucket as Drive) so egress keys are finalizable.
  */
 @Injectable()
 export class VideoMeetingsRecordingObjectStoreService implements VideoMeetingsRecordingObjectStore {
