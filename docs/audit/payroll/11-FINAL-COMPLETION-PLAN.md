@@ -226,7 +226,7 @@ Present only two or three related questions at a time. The register in section 6
 | P-SAL-01    | Ordinary midmonth salary changes                      | Calendar-day proration                                                                                                                                                                                                             | Earlier proposal assumed day-based changes                                                                               | Superseded for ordinary salary changes by Owner's monthly effective-date model; never approved |
 | P-SAL-02    | Combined hire/termination proration                   | Calendar-day proration for both events                                                                                                                                                                                             | Earlier proposal combined two distinct business cases                                                                    | Not approved; new-hire setup is BR-03; termination resolved separately by BR-04                |
 | P-TERM-01   | Final salary on termination                           | Record the manually entered last employment day and an explicitly approved final fixed-salary amount, with reason; no guessed automatic proration                                                                                  | Avoids inventing a formula where none is agreed; adds manual work and requires review                                    | Selected by Owner as option A; see BR-04                                                       |
-| P-CORR-01   | Eligibility for ordinary past-month salary correction | Permit controlled correction only when that employee has no payment recorded for the service month and the relevant payroll/posting period is not closed; approved amounts require renewed approval and consistent expense updates | Preserves payment history and bounds implementation complexity; partially paid cases need a separate adjustment workflow | Proposed only; Q-04 unanswered; not existing implemented functionality                         |
+| P-CORR-01   | Eligibility for ordinary past-month salary correction | Permit controlled correction only when that employee has no payment recorded for the service month and the relevant payroll/posting period is not closed; approved amounts require renewed approval and consistent expense updates | Preserves payment history and bounds implementation complexity; partially paid cases need a separate adjustment workflow | Payment boundary selected in BR-06; remaining approval/closed-period details are proposals     |
 
 Recommendations remain separate from approved rules. No recommendation establishes jurisdictional or contractual compliance; that scope remains under BD-13. No additional implementation investigation was performed to record this answer.
 
@@ -253,9 +253,9 @@ Recommendations remain separate from approved rules. No recommendation establish
 - **Operational intent:** most changes are scheduled for a future service month; that month's compensation is paid in the following month's payout window under BR-01. Earlier months keep their applicable terms.
 - **Conditional retrospective request:** the Owner wants to correct a prior **unpaid** service month when an agreed salary change was omitted from the system, provided this can be implemented safely without undue complexity or corrupting history. The payroll amount should then reflect the promised salary before payment.
 - **Example supplied by the Owner:** on the 13th, before paying the previous month's salary, discover that a promised salary increase was not entered and correct the previous month's unpaid salary.
-- **Not yet approved/defined:** whether unpaid includes partial payment; whether correction is allowed after payroll approval; treatment of a closed period; how other employees' already recorded payments affect the operation; exact correction/reapproval UX and authority. P-CORR-01 is a proposal addressing these boundaries, not the Owner's selected answer.
+- **Not yet approved/defined:** whether correction is allowed after payroll approval; treatment of a closed period; how other employees' already recorded payments affect the operation; exact correction/reapproval UX and authority. P-CORR-01 is a proposal addressing these boundaries, not the Owner's selected answer.
 - **History:** no permission to rewrite already paid history or apply a new rate to an earlier paid month follows from this answer.
-- **Implementation / validation:** M-02/M-07; V-02/V-11/V-17. Month selection/future scheduling is approved direction; retrospective correction remains conditional pending Q-04 and design/validation. No claim that this is a trivial existing capability.
+- **Implementation / validation:** M-02/M-07; V-02/V-11/V-17. Month selection/future scheduling is approved direction; BR-06 resolves the payment boundary; safe retrospective design/validation and remaining approval/closed-period decisions are still required. No claim that this is a trivial existing capability.
 
 #### BR-03 — initial salary for a new employee
 
@@ -284,6 +284,51 @@ Recommendations remain separate from approved rules. No recommendation establish
 - **Required implementation properties:** idempotent creation per intended period, no duplicate when Finance already created a run, no overwrite of human edits/approved records, period-correct salary/bonuses, and visible handling of incomplete inputs. These are implementation safeguards, not permission to guess missing compensation.
 - **Not decided:** whether automation is mandatory for first launch or a later convenience; business timezone/execution time, catch-up after a missed run and operational owner. Do not invent a deployment schedule from the request. Date flexibility under BR-01 remains even if automatic preparation runs on day 1.
 - **Implementation / validation:** M-02/M-05/M-09/M-10/M-11; V-01/V-02/V-10/V-13/V-14/V-17. Add scheduler-specific tests when implementation is authorized. Documentation only; no scheduler, Codex automation or application behavior changed.
+
+### Subsequent approved decisions — conversation record through Q-12
+
+The current file did not retain the previously recorded BR-06–BR-13 sections. This section restores the explicit Owner answers from the conversation and records Q-12 A. These approved subparts supersede earlier unanswered labels and proposals; remaining subparts are not automatically resolved. Decisions are requirements, not evidence of implemented functionality. No application changes or new audit were performed.
+
+#### BR-06 — Q-04 A: correction boundary
+
+Before the first employee payment for the service month, correct the calculation through the controlled workflow. After any payment, preserve original accrual/payment history and add a separate adjustment. Example: accrued 300,000, paid 100,000, corrected entitlement 350,000 → adjustment +50,000 and remaining payable 250,000. Approval roles, closed periods, shared payroll effects, overpayment recovery and salary/bonus attribution remain open. No bonus clawback from fixed salary is authorized. M-02/M-07/M-10; V-02/V-11/V-12/V-17 must verify balances, immutable original history and no duplicate adjustments.
+
+#### BR-07 — Q-05 A: manual absence adjustment
+
+Use monthly fixed salary by default; an authorized operator enters a manually calculated absence-related adjustment with explanation and approval. Apply BR-06 after payment. No automatic day-based formula or deduction merely from absence status is approved. Paid/unpaid absence entitlements, attendance ownership and roles remain open. M-02/M-07/M-10; V-02/V-11/V-16 must verify the correct month, reason/approval and reconciled historical balance.
+
+#### BR-08 — Q-06 A: AMD-only first launch
+
+Salary and bonuses use AMD only. Reject incompatible inputs before affected calculation; no implicit conversion or relabeling of foreign-currency amounts. Existing contractual terms/history require explicit resolution rather than silent rewriting. FX and multi-currency workflows are optional future scope. N-05 remains an implementation blocker until corrected. M-03/M-10; V-03 must verify units end to end and rejection without partial records.
+
+#### BR-09 — Q-07 A: missing KPI facts
+
+Hold only the affected Sales bonus pending clarification; do not default to full factor, write it off or mark it paid. Fixed salary and other confirmed amounts may proceed. Apply the existing KPI scale for the original earned month once facts are available. Missing data is distinct from actual zero performance. No manual override was approved. Ownership/escalation and closed-period handling remain open. M-04/M-05/M-08/M-10; V-08/V-10/V-12/V-17 must cover missing plan/actual/result, real zero results and later settlement without duplicates or loss.
+
+#### BR-10 — Q-08 A: no zero-base bonus-only compensation at launch
+
+Unsupported zero contracted fixed salary requires clarification before affected calculation; missing profile is not an approved zero salary. Do not invent a positive amount or permit unlimited bonuses through the existing cap bypass. Preserve old obligations and BR-01 partial/deferred payout flexibility. A zero payment now or a zero calculated final-settlement amount is distinct from a zero contracted base. M-02/M-06/M-08/M-10; V-01/V-09/V-16/V-17 must verify these distinctions. Future bonus-only support needs a new cap/exception decision.
+
+#### BR-11 — Q-09: fully paid product invoice
+
+One-time Classic Sales accrual requires full payment of a qualifying product/order invoice. Domain invoices do not qualify. Installments 100,000 + 100,000 on a 210,000 invoice are insufficient; 10,000 remains due. Keep the existing full-order Classic bonus base and independent Seller/Assistant rates. No repeat entitlement on later invoices and no bypass of KPI/cap/funding/approval at payout. Subscription formulas are not changed by inference. The audit confirmed the fully-PAID trigger, not all classification/replacement cases. BR-14 now resolves the earlier first-created-versus-first-paid ambiguity. M-04/M-08/M-10; V-04/V-05/V-14.
+
+#### BR-12 — Q-10 A: recover accrual independently
+
+Retain the recorded client payment when bonus processing fails. Surface the exception to a responsible operator and retry separately without duplicates, using the original event and historical terms. Resolve it before approval of the affected bonus calculation. Logging alone is not recovery. Responsible role, escalation and closed-period corrections remain open. M-04/M-09/M-10; V-04/V-13/V-14/V-17 must test persisted payment, visible exception, retry and concurrent/repeated recovery.
+
+#### BR-13 — Q-11 B: hard minimum at invoice creation
+
+The first qualifying product invoice must be at least the combined Seller and Assistant bonus amount under the applicable model/base/rates. Equality qualifies; 10 percent was illustrative, not a universal minimum. Include both roles even for one employee. Sales and Finance cannot create/save an insufficient first product invoice, including a draft, or issue/send it; show the minimum and explanation immediately. No “continue without bonus” bypass or cumulative-small-invoice activation was selected. This supersedes the earlier draft-allowed proposal. Domain invoices are excluded. Do not silently alter existing invoices, receipts or history. The audit did not establish this exact safeguard as implemented. Rate changes between creation/payment, existing insufficient invoices and rounding details require validation/remaining policy decisions. M-04/M-08/M-10; V-04/V-05/V-15/V-17 must cover below/equal/above threshold, all creation/edit paths, both roles and invoice purpose.
+
+#### BR-14 — Q-12 A: qualifying invoice survives unpaid duplicate removal
+
+- **Explicit approval:** Owner selected Q-12 option A. The first fully paid qualifying invoice for the same product/order can trigger the one-time bonus if its amount covers the combined Sales bonuses and that entitlement has not already accrued. Original creation order/number does not permanently reserve eligibility.
+- **Approved examples:** remove unpaid erroneous invoice 1 and pay qualifying invoice 2 → one accrual; remove unpaid erroneous invoice 2 and pay qualifying invoice 1 → one accrual. Repeat events or later paid invoices must never produce a second one-time entitlement.
+- **Product boundary:** domain and unrelated additional-service invoices do not trigger the main product's bonus. First launch uses separately identified product invoices; mixed-purpose qualification and cumulative small-payment activation are not required. BR-13 minimum protection remains mandatory; invoice replacement cannot bypass it.
+- **History boundary:** this rule concerns unpaid erroneous duplicates. Removal/reversal of an already paid or bonus-triggering invoice is a financial correction under M-07/BD-04, not ordinary duplicate cleanup. No destructive deletion of financial history is authorized. Preventing duplicate billing remains a separate integrity concern.
+- **Evidence and dependencies:** the precise duplicate/replacement behavior was not established by the completed audit. Required dependencies are reliable product/order attribution, combined-bonus coverage and idempotent entitlement tracking per product/order rather than only per invoice. Handle legitimate Seller and Assistant entitlements, including one employee in both roles, without losing either amount.
+- **Validation / acceptance:** M-04/M-08/M-09/M-10; V-04/V-05/V-13/V-14/V-17. Test both approved removal scenarios, domain/additional-service exclusion, partial payment, threshold equality, repeat and concurrent qualifying events, and paid-invoice corrections separately. Exactly one complete one-time entitlement must remain for the relevant product/order. Approval of this rule does not prove readiness or authorize implementation.
 
 ### Recording subsequent answers
 
