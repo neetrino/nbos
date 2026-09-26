@@ -104,4 +104,8 @@ export const EXPLICIT_ROUTE_PERMISSIONS: RoutePermissionEntry[] = [
     href: '/my-company/delivery-norms',
     permission: CORE_FUNCTION_VIEW_REQUIREMENT,
   },
+  {
+    href: '/video-meetings',
+    permission: { module: 'VIDEO_MEETINGS', action: 'VIEW' },
+  },
 ];

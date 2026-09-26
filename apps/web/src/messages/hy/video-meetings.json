@@ -1,0 +1,102 @@
+{
+  "title": "Տեսական հանդիպումներ",
+  "loading": "Հանդիպումները բեռնվում են…",
+  "loadError": "Չհաջողվեց բեռնել տեսական հանդիպումները։",
+  "empty": {
+    "active": "Ակտիվ հանդիպումներ չկան։",
+    "upcoming": "Պլանավորված հանդիպումներ չկան։",
+    "history": "Պատմությունը դեռ դատարկ է։"
+  },
+  "tabs": {
+    "active": "Ակտիվ",
+    "upcoming": "Սպասվող",
+    "history": "Պատմություն",
+    "aria": "Հանդիպումների ցանկեր"
+  },
+  "actions": {
+    "newMeeting": "Նոր հանդիպում",
+    "creating": "Ստեղծվում է…",
+    "openDetail": "Բացել",
+    "joinRoom": "Մտնել սենյակ",
+    "startMeeting": "Սկսել",
+    "endMeeting": "Ավարտել",
+    "cancelMeeting": "Չեղարկել",
+    "backToList": "Դեպի ցանկ",
+    "copyInviteSecret": "Պատճենել հրավeri կոդը",
+    "copied": "Պատճենված",
+    "createInvite": "Ստեղծել հրavեր",
+    "revokeInvite": "Կasեցնել",
+    "attachLink": "Կapել",
+    "detachLink": "Հեռացնել",
+    "admit": "Թույլ տal",
+    "reject": "Մերժել"
+  },
+  "list": {
+    "host": "Հոստ",
+    "status": "Կargavijak",
+    "created": "Սteghtsvats"
+  },
+  "status": {
+    "CREATED": "Պlanavorvats",
+    "WAITING": "Spasum",
+    "ACTIVE": "Kendani",
+    "ENDED": "Avartvats",
+    "CANCELLED": "Chegharkvats"
+  },
+  "detail": {
+    "title": "Handipman manramasn",
+    "host": "Host",
+    "youAreHost": "Duk",
+    "schedule": "Zhamanakacuyts",
+    "notScheduled": "Akntarayin",
+    "sessions": "Sesianer",
+    "noSessions": "Sesianer chkan.",
+    "participantsHint": "Masnakitsner@ erevum en miatsumic heto.",
+    "entityLinks": "Biznes kaper",
+    "entityLinksHint": "Mutqagreq ID, vorin uneq mutq.",
+    "entityType": "Tesak",
+    "entityId": "ID",
+    "noEntityLinks": "Kaper chkan.",
+    "invites": "Hyureri hraverner",
+    "noInvites": "Hraverner chkan.",
+    "inviteSecretTitle": "Mekangamy secret",
+    "inviteSecretHint": "Patcheneq hima.",
+    "inviteExpires": "Verj",
+    "inviteRevoked": "Kasetsvats"
+  },
+  "recording": {
+    "label": "Granacum",
+    "notRecording": "Granacum chi katarvum",
+    "notAvailableYet": "Granacum@ kmiatsvi hajord pghum.",
+    "startDisabled": "Sksel granacum",
+    "stopDisabled": "Kangnetsnel granacum"
+  },
+  "room": {
+    "title": "Handipman senyak",
+    "connecting": "Miatsum e senyakin…",
+    "livekitUnavailable": "LiveKit@ kargavorvats che serverum.",
+    "notActive": "Handipum@ aktiv che.",
+    "tokenError": "Chhajoghvets stanal token.",
+    "leave": "Durs gal",
+    "waitingGuests": "Spasum en",
+    "noWaiting": "Spasoghner chkan.",
+    "controlsAria": "Senyaki karavarum"
+  },
+  "guest": {
+    "title": "Mtnel tesahandipum",
+    "displayName": "Cuycadrvox anun",
+    "displayNamePlaceholder": "Dzer anuny",
+    "joinWaitingRoom": "Harcum mtnel",
+    "waitingTitle": "Spasum e hostin",
+    "waitingBody": "Mnatseq ejum.",
+    "rejectedTitle": "Merjvats",
+    "rejectedBody": "Host@ merjel e harcum@.",
+    "enterRoom": "Mtnel handipum",
+    "consentLabel": "Granacman zanuyts (pending)",
+    "consentBody": "Host@ kkaroxana granqel heto.",
+    "invalidInvite": "Hghum@ anvalid e.",
+    "prejoinError": "Prejoin chhajoghvets.",
+    "tokenError": "Der hnaravor che mtnel.",
+    "livekitUnavailable": "Tesaservis@ anhasaneli e."
+  }
+}

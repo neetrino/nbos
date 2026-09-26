@@ -8,7 +8,8 @@
 | S00 commit            | `465584f06` — docs: add video meetings V1 gap analysis and implementation plan                              |
 | S01 commit            | `04b6ec6eb` — feat(video-meetings): add meeting domain schema and permission flags                          |
 | S02 commit            | `b28a49235` — feat(video-meetings): add flagged meeting metadata API                                        |
-| S03 commit            | this branch HEAD after S03 (`feat(video-meetings): add LiveKit room tokens and guest admission`)            |
+| S03 commit            | `ae7e43680` — feat(video-meetings): add LiveKit room tokens and guest admission                             |
+| S04 commit            | `4c412a644` — feat(web): add video meetings list, room, and guest prejoin                                   |
 | Push                  | **Not pushed** (origin diverged; remote deleted `todo.md`)                                                  |
 | `todo.md` / `TODO.md` | Left **unstaged**; local wipe of prior checklist preserved dirty                                            |
 
@@ -20,8 +21,8 @@
 | S01   | **DONE**             | Prisma entities, VIDEO_MEETINGS RBAC (Owner/CEO only), feature flag default OFF, domain unit tests |
 | S02   | **DONE**             | Nest metadata API behind flag; create/start/list/card/history/links; no LiveKit                    |
 | S03   | **DONE**             | LiveKit compose + Nest tokens/invites/prejoin/admission/reconnect; see checks below                |
-| S04   | TODO                 | Next.js room UI (`@livekit/components-react` / `livekit-client`) — **can start immediately**       |
-| S05   | TODO                 | Prove multi-egress recording                                                                       |
+| S04   | **DONE**             | Web list/detail/room/guest UI; LiveKit components pinned; recording UI disabled until S05          |
+| S05   | TODO                 | Prove multi-egress recording — **can start after S04**                                             |
 | S06   | TODO                 | Drive finalize                                                                                     |
 | S07   | TODO                 | V1 gate                                                                                            |
 
@@ -88,17 +89,50 @@ Guest responses: `admissionState`, `livekitUrl`, `token`, `roomName`, `participa
 | Two browsers joined the same local room                              | **NOT RUN** (no interactive browser join; JWT unit tests only) |
 | Production migrate / push / origin merge                             | **NOT RUN** (forbidden)                                        |
 
-## Handoff to S04
+## What landed in S04
 
-**S04 can start immediately** on this branch without pulling origin.
+### Web routes (flag `NEXT_PUBLIC_VIDEO_MEETINGS_V1_ENABLED` + API `VIDEO_MEETINGS_V1_ENABLED`; default OFF)
 
-S04 notes:
+| Route                              | Shell                                                                       |
+| ---------------------------------- | --------------------------------------------------------------------------- |
+| `/video-meetings`                  | Authenticated app — list (active / upcoming / history)                      |
+| `/video-meetings/[meetingId]`      | Detail — invites, entity links, start/end, recording status (not recording) |
+| `/video-meetings/[meetingId]/room` | LiveKit room (`VideoConference`); host waiting panel                        |
+| `/video-meetings/join?invite=`     | Guest-only page (`data-video-meeting-guest-shell`); no sidebar              |
 
-- Add `@livekit/components-react@2.9.24` + `livekit-client@2.22.3` in web only; wire to S02/S03 APIs.
-- Sidebar Video Meetings + guest page without app chrome; EN/RU/HY.
-- Do not enable feature flag by default; do not start S05 recording.
+Pins: `@livekit/components-react@2.9.24`, `livekit-client@2.22.3` in `@nbos/web`.
 
-Still open (do **not** block S04; block production enablement later):
+Recording start/stop buttons are visible but **disabled** with copy that S05 must wire egress APIs.
+
+### Local verification (enable flags in running dev env only)
+
+```bash
+# API + web dev (separate terminals; do not commit .env)
+VIDEO_MEETINGS_V1_ENABLED=true pnpm --filter @nbos/api dev
+NEXT_PUBLIC_VIDEO_MEETINGS_V1_ENABLED=true pnpm --filter @nbos/web dev
+```
+
+## Checks run in S04
+
+| Check                                                                  | Result                                                     |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Prettier on touched web/i18n/docs                                      | **PASS**                                                   |
+| `pnpm --filter @nbos/web typecheck`                                    | **PASS**                                                   |
+| ESLint on video-meetings feature + routes                              | **PASS**                                                   |
+| Vitest catalog parity + nav/guest gate tests (10)                      | **PASS**                                                   |
+| Browser: list/404 flag off, guest no sidebar, room token/LiveKit state | **NOT RUN** (no dev server on `:3000` in executor session) |
+| Two-browser media join on `:7880`                                      | **NOT RUN**                                                |
+
+## Handoff to S05
+
+**S05 can start** on this branch without pulling origin.
+
+S05 must wire:
+
+- Recording start/stop API + egress orchestration; enable room recording controls (currently disabled in `VideoMeetingRecordingIndicator`).
+- Consent gate before capture; update recording status on detail/room when API returns real states.
+
+Still open (block production enablement later):
 
 - Legal notice / retention wording
 - Default RBAC role matrix beyond Owner/CEO

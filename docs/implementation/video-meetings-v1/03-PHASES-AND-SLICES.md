@@ -74,7 +74,7 @@ Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 | **Tests**                 | Component/route permission gates; i18n keys present                                                                                                                                                                                |
 | **Done criteria**         | Finished adaptive UI per `05-UI-and-Workflows.md` and UI spec; no V2 AI controls                                                                                                                                                   |
 | **Risks**                 | Cards/chrome inconsistent with NBOS; guest shell leaking nav                                                                                                                                                                       |
-| **Status**                | TODO                                                                                                                                                                                                                               |
+| **Status**                | **DONE** (Next.js list/detail/room/guest UI; recording controls disabled until S05)                                                                                                                                                |
 
 ---
 

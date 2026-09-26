@@ -1,0 +1,102 @@
+{
+  "title": "Video Meetings",
+  "loading": "Loading meetings…",
+  "loadError": "Could not load video meetings.",
+  "empty": {
+    "active": "No active meetings right now.",
+    "upcoming": "No upcoming meetings scheduled.",
+    "history": "No meeting history yet."
+  },
+  "tabs": {
+    "active": "Active",
+    "upcoming": "Upcoming",
+    "history": "History",
+    "aria": "Meeting lists"
+  },
+  "actions": {
+    "newMeeting": "New meeting",
+    "creating": "Creating…",
+    "openDetail": "Open",
+    "joinRoom": "Join room",
+    "startMeeting": "Start meeting",
+    "endMeeting": "End meeting",
+    "cancelMeeting": "Cancel meeting",
+    "backToList": "Back to list",
+    "copyInviteSecret": "Copy invite link token",
+    "copied": "Copied",
+    "createInvite": "Create guest invite",
+    "revokeInvite": "Revoke",
+    "attachLink": "Attach link",
+    "detachLink": "Remove",
+    "admit": "Admit",
+    "reject": "Reject"
+  },
+  "list": {
+    "host": "Host",
+    "status": "Status",
+    "created": "Created"
+  },
+  "status": {
+    "CREATED": "Scheduled",
+    "WAITING": "Waiting",
+    "ACTIVE": "Live",
+    "ENDED": "Ended",
+    "CANCELLED": "Cancelled"
+  },
+  "detail": {
+    "title": "Meeting detail",
+    "host": "Host",
+    "youAreHost": "You",
+    "schedule": "Schedule",
+    "notScheduled": "Instant — not scheduled",
+    "sessions": "Sessions",
+    "noSessions": "No sessions yet.",
+    "participantsHint": "Participant details appear after join.",
+    "entityLinks": "Business links",
+    "entityLinksHint": "Enter an entity ID you can access in CRM or Projects. This does not browse all records.",
+    "entityType": "Entity type",
+    "entityId": "Entity ID",
+    "noEntityLinks": "No linked entities.",
+    "invites": "Guest invites",
+    "noInvites": "No invites yet.",
+    "inviteSecretTitle": "One-time guest secret",
+    "inviteSecretHint": "Copy this now. It will not be shown again.",
+    "inviteExpires": "Expires",
+    "inviteRevoked": "Revoked"
+  },
+  "recording": {
+    "label": "Recording",
+    "notRecording": "Not recording",
+    "notAvailableYet": "Capture is not wired yet (coming in a later release).",
+    "startDisabled": "Start recording",
+    "stopDisabled": "Stop recording"
+  },
+  "room": {
+    "title": "Meeting room",
+    "connecting": "Connecting to the room…",
+    "livekitUnavailable": "LiveKit is not configured on the server. Start the local stack or set LIVEKIT_* env on the API.",
+    "notActive": "This meeting is not live. Start it from the detail page first.",
+    "tokenError": "Could not obtain a join token.",
+    "leave": "Leave room",
+    "waitingGuests": "Waiting to join",
+    "noWaiting": "No guests waiting.",
+    "controlsAria": "In-room controls"
+  },
+  "guest": {
+    "title": "Join video meeting",
+    "displayName": "Display name",
+    "displayNamePlaceholder": "Your name for this meeting",
+    "joinWaitingRoom": "Request to join",
+    "waitingTitle": "Waiting for the host",
+    "waitingBody": "Stay on this page. The host will admit you when ready.",
+    "rejectedTitle": "Not admitted",
+    "rejectedBody": "The host declined this join request.",
+    "enterRoom": "Enter meeting",
+    "consentLabel": "Recording notice (pending legal approval)",
+    "consentBody": "The host may start recording after consent workflows are approved. This text is not final legal copy.",
+    "invalidInvite": "This invite link is invalid or expired.",
+    "prejoinError": "Could not complete prejoin.",
+    "tokenError": "Could not join the room yet.",
+    "livekitUnavailable": "Video service is temporarily unavailable."
+  }
+}
