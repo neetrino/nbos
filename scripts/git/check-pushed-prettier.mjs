@@ -65,16 +65,19 @@ function collectPushedFiles(stdinText) {
   return selectFormatFiles([...names]);
 }
 
+const PRETTIER_BATCH_SIZE = 40;
+
 const files = collectPushedFiles(readStdinOrEmpty());
 if (files.length === 0) process.exit(0);
 
-const check = spawnSync(
-  'pnpm',
-  ['exec', 'prettier', '--check', '--ignore-path', '.prettierignore', ...files],
-  { stdio: 'inherit' },
-);
-
-if (check.status !== 0) {
+for (let index = 0; index < files.length; index += PRETTIER_BATCH_SIZE) {
+  const batch = files.slice(index, index + PRETTIER_BATCH_SIZE);
+  const check = spawnSync(
+    'pnpm',
+    ['exec', 'prettier', '--check', '--ignore-path', '.prettierignore', ...batch],
+    { stdio: 'inherit', shell: process.platform === 'win32' },
+  );
+  if (check.status === 0) continue;
   console.error(
     'husky(pre-push): Prettier would change files in this push. The pre-commit hook auto-formats on commit — restage the formatted files and push again.',
   );
