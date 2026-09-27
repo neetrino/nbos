@@ -2,7 +2,6 @@ import { ForbiddenException, NotFoundException, StreamableFile } from '@nestjs/c
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'node:stream';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CRM_CALL_RECORDINGS_PLAY_PERMISSION } from '@nbos/shared';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import { createMockPrisma } from '../../../test-utils/mock-prisma';
 import { CallAccessPolicyService } from './call-access-policy.service';
@@ -14,8 +13,6 @@ const READY_CALL = {
   recordingStatus: 'READY',
   recordingFileAssetId: 'file-1',
 };
-
-const PLAY = { [CRM_CALL_RECORDINGS_PLAY_PERMISSION]: 'ALL' } as const;
 
 function playbackUser(
   permissions: Record<string, string>,
@@ -37,25 +34,19 @@ function playbackUser(
 const SELLER_PERMS = {
   CRM_LEADS_VIEW: 'OWN',
   CRM_DEALS_VIEW: 'OWN',
-  ...PLAY,
-  DRIVE_VIEW: 'OWN',
 };
 const MARKETING_DEFAULT_PERMS = {
   CRM_LEADS_VIEW: 'ALL',
   CRM_DEALS_VIEW: 'OWN',
-  DRIVE_VIEW: 'OWN',
 };
 const LEADER_PERMS = {
   CRM_LEADS_VIEW: 'ALL',
   CRM_DEALS_VIEW: 'ALL',
-  ...PLAY,
-  DRIVE_VIEW: 'ALL',
 };
 
 describe('CallsRecordingService', () => {
   const send = vi.fn();
   const r2 = { bucket: 'recordings', ensureS3: vi.fn(() => ({ send })) };
-  const driveAccess = { fromRequest: vi.fn() };
   let prisma: ReturnType<typeof createMockPrisma>;
   let service: CallsRecordingService;
 
@@ -63,11 +54,6 @@ describe('CallsRecordingService', () => {
     vi.clearAllMocks();
     prisma = createMockPrisma();
     r2.ensureS3.mockReturnValue({ send });
-    driveAccess.fromRequest.mockResolvedValue({
-      employeeId: ACTOR_ID,
-      departmentIds: OWN_ACTOR.departmentIds,
-      driveScope: 'OWN',
-    });
     prisma.fileAsset.findFirst.mockResolvedValue({
       storageKey: 'calls/rec.ogg',
       mimeType: 'audio/ogg',
@@ -78,7 +64,6 @@ describe('CallsRecordingService', () => {
       prisma as never,
       r2 as never,
       new CallAccessPolicyService(prisma as never),
-      driveAccess as never,
     );
   });
 
@@ -94,12 +79,11 @@ describe('CallsRecordingService', () => {
 
   function expectNoFileOrR2(): void {
     expect(prisma.fileAsset.findFirst).not.toHaveBeenCalled();
-    expect(driveAccess.fromRequest).not.toHaveBeenCalled();
     expect(r2.ensureS3).not.toHaveBeenCalled();
     expect(send).not.toHaveBeenCalled();
   }
 
-  it('allows playback when Call view, PLAY, and confidential file access pass', async () => {
+  it('allows playback when the actor can see the Call, without PLAY or DRIVE_VIEW', async () => {
     allowView();
     const result = await service.streamRecording('call-1', playbackUser(SELLER_PERMS));
     expect(result.kind).toBe('stream');
@@ -128,18 +112,7 @@ describe('CallsRecordingService', () => {
     expect((send.mock.calls[0]?.[0] as GetObjectCommand).input.Range).toBeUndefined();
   });
 
-  it('denies when the actor can see the Call but PLAY is missing', async () => {
-    allowView();
-    await expect(
-      service.streamRecording(
-        'call-1',
-        playbackUser({ CRM_LEADS_VIEW: 'OWN', CRM_DEALS_VIEW: 'OWN', DRIVE_VIEW: 'OWN' }),
-      ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    expectNoFileOrR2();
-  });
-
-  it('denies when PLAY is present but the actor cannot see the Call', async () => {
+  it('denies when the actor cannot see the Call', async () => {
     denyViewKnownCall();
     await expect(
       service.streamRecording('call-1', playbackUser(SELLER_PERMS)),
@@ -156,29 +129,17 @@ describe('CallsRecordingService', () => {
     expect(r2.ensureS3).not.toHaveBeenCalled();
   });
 
-  it('denies Marketing default permissions', async () => {
+  it('allows Marketing when that actor can see the Call', async () => {
     allowView();
     await expect(
       service.streamRecording(
         'call-1',
         playbackUser(MARKETING_DEFAULT_PERMS, { role: 'marketing' }),
       ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    expectNoFileOrR2();
+    ).resolves.toMatchObject({ kind: 'stream' });
   });
 
-  it('denies a custom role without PLAY', async () => {
-    allowView();
-    await expect(
-      service.streamRecording(
-        'call-1',
-        playbackUser({ CRM_LEADS_VIEW: 'OWN', DRIVE_VIEW: 'OWN' }, { role: 'ops-custom' }),
-      ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    expectNoFileOrR2();
-  });
-
-  it('allows a custom role with PLAY plus object and file access', async () => {
+  it('allows a custom role that can see the Call without PLAY or DRIVE_VIEW', async () => {
     allowView();
     const result = await service.streamRecording(
       'call-1',
@@ -189,14 +150,14 @@ describe('CallsRecordingService', () => {
     expect(r2.ensureS3).toHaveBeenCalledTimes(1);
   });
 
-  it('allows a Seller with PLAY on their own Call', async () => {
+  it('allows a Seller on their own Call', async () => {
     allowView();
     await expect(
       service.streamRecording('call-1', playbackUser(SELLER_PERMS, { role: 'seller' })),
     ).resolves.toMatchObject({ kind: 'stream' });
   });
 
-  it('denies a Seller with PLAY on another employee Call', async () => {
+  it('denies a Seller on another employee Call', async () => {
     denyViewKnownCall();
     await expect(
       service.streamRecording('call-1', playbackUser(SELLER_PERMS, { role: 'seller' })),
@@ -237,7 +198,7 @@ describe('CallsRecordingService', () => {
     expectNoFileOrR2();
   });
 
-  it('streams for a non-owner when Call view, PLAY, and DRIVE_VIEW pass', async () => {
+  it('streams for a non-owner when Call view passes', async () => {
     allowView();
     await expect(
       service.streamRecording('call-1', playbackUser(LEADER_PERMS, { id: 'ceo-1', role: 'ceo' })),
@@ -245,22 +206,18 @@ describe('CallsRecordingService', () => {
     expect(prisma.fileAsset.findFirst).toHaveBeenCalled();
   });
 
-  it('does not stream when DRIVE_VIEW is missing', async () => {
+  it('streams when DRIVE_VIEW and CALLS_PLAY are absent', async () => {
     allowView();
     await expect(
       service.streamRecording(
         'call-1',
-        playbackUser({
-          CRM_LEADS_VIEW: 'ALL',
-          CRM_DEALS_VIEW: 'ALL',
-          [CRM_CALL_RECORDINGS_PLAY_PERMISSION]: 'ALL',
-        }),
+        playbackUser({ CRM_LEADS_VIEW: 'ALL', CRM_DEALS_VIEW: 'ALL' }),
       ),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-    expectNoFileOrR2();
+    ).resolves.toMatchObject({ kind: 'stream' });
+    expect(r2.ensureS3).toHaveBeenCalledTimes(1);
   });
 
-  it('calls R2 GetObject only after view, PLAY, READY, and Drive checks', async () => {
+  it('calls R2 GetObject only after view and READY checks', async () => {
     allowView();
     await service.streamRecording('call-1', playbackUser(SELLER_PERMS));
     const viewOrder = prisma.atsCallEvent.findFirst.mock.invocationCallOrder[0] ?? 0;
@@ -268,6 +225,5 @@ describe('CallsRecordingService', () => {
     const r2Order = r2.ensureS3.mock.invocationCallOrder[0] ?? 0;
     expect(viewOrder).toBeLessThan(fileOrder);
     expect(fileOrder).toBeLessThan(r2Order);
-    expect(driveAccess.fromRequest).toHaveBeenCalled();
   });
 });

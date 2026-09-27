@@ -13,10 +13,10 @@ export const TASK_SHEET_WIDTH_CLASS =
 export const TASK_SHEET_RAIL_ANCHOR_CLASS = `${SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS} sm:right-[80vw]`;
 
 export const TASK_SHEET_DETAIL_COLUMN_CLASS =
-  'flex min-h-0 flex-1 flex-col border-border/50 bg-muted/25 xl:min-w-0 xl:border-r dark:bg-muted/15';
+  'flex min-h-0 flex-1 flex-col border-border/50 bg-muted/25 xl:min-w-0 dark:bg-muted/15';
 
 export const TASK_SHEET_CHAT_COLUMN_CLASS =
-  'relative flex min-h-[min(70vh,28rem)] flex-1 flex-col overflow-hidden border-border/60 border-t xl:min-h-0 xl:min-w-0 xl:border-t-0 xl:border-l';
+  'relative flex min-h-[min(70vh,28rem)] flex-1 flex-col overflow-hidden border-border/60 border-t xl:min-h-0 xl:min-w-0 xl:border-t-0';
 
 /** Stacked cards on the muted sheet canvas (Bitrix task detail). */
 export const TASK_SHEET_CARD_CLASS =

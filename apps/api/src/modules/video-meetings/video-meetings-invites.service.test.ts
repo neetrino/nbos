@@ -49,6 +49,8 @@ describe('VideoMeetingsInvitesService', () => {
     const result = await service.create(HOST, 'm1', expiresAt);
 
     expect(result.token.length).toBeGreaterThan(16);
+    expect(result.joinUrl).toContain('/video-meetings/join?invite=');
+    expect(result.joinUrl).toContain(encodeURIComponent(result.token));
     expect(result).not.toHaveProperty('tokenDigest');
     expect(prisma.videoMeetingInvite.create).toHaveBeenCalledWith(
       expect.objectContaining({

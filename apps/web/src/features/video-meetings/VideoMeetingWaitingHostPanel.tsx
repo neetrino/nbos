@@ -39,42 +39,35 @@ export function VideoMeetingWaitingHostPanel({
     };
   }, [enabled, meetingId]);
 
-  if (!enabled) return null;
+  if (!enabled || waiting.length === 0) return null;
 
   return (
     <aside className="border-border bg-card w-full max-w-xs rounded-lg border p-3 lg:w-72">
       <h2 className="mb-2 text-sm font-medium">{t('room.waitingGuests')}</h2>
-      {waiting.length === 0 ? (
-        <p className="text-muted-foreground text-xs">{t('room.noWaiting')}</p>
-      ) : (
-        <ul className="space-y-2">
-          {waiting.map((guest) => (
-            <li
-              key={guest.participantId}
-              className="flex items-center justify-between gap-2 text-sm"
-            >
-              <span className="truncate">{guest.displayName}</span>
-              <div className="flex shrink-0 gap-1">
-                <Button
-                  type="button"
-                  size="xs"
-                  onClick={() => void videoMeetingsApi.admit(meetingId, guest.participantId)}
-                >
-                  {t('actions.admit')}
-                </Button>
-                <Button
-                  type="button"
-                  size="xs"
-                  variant="outline"
-                  onClick={() => void videoMeetingsApi.reject(meetingId, guest.participantId)}
-                >
-                  {t('actions.reject')}
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className="space-y-2">
+        {waiting.map((guest) => (
+          <li key={guest.participantId} className="flex items-center justify-between gap-2 text-sm">
+            <span className="truncate">{guest.displayName}</span>
+            <div className="flex shrink-0 gap-1">
+              <Button
+                type="button"
+                size="xs"
+                onClick={() => void videoMeetingsApi.admit(meetingId, guest.participantId)}
+              >
+                {t('actions.admit')}
+              </Button>
+              <Button
+                type="button"
+                size="xs"
+                variant="outline"
+                onClick={() => void videoMeetingsApi.reject(meetingId, guest.participantId)}
+              >
+                {t('actions.reject')}
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </aside>
   );
 }

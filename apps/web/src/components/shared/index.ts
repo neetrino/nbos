@@ -153,6 +153,7 @@ export {
   useContactRelationSearch,
   useCompanyRelationSearch,
   useProjectRelationSearch,
+  useDealRelationSearch,
   useProductRelationSearch,
   useAccessSlotCredentialSearch,
 } from './relation-picker';

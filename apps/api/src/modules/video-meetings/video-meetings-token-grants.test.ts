@@ -47,13 +47,13 @@ describe('video-meetings-token-grants', () => {
     expect(() => assertLeastPrivilegeVideoGrant(create, 'r')).toThrow(/roomCreate/);
   });
 
-  it('denies publish while recording is active and consent is not GRANTED', () => {
+  it('keeps publish while recording is active without a consent grant', () => {
     const grant = buildVideoMeetingVideoGrant('vm_room', 'guest', {
       recordingActive: true,
       consentGranted: false,
     });
-    expect(grant.canPublish).toBe(false);
-    expect(grant.canPublishSources).toBeUndefined();
+    expect(grant.canPublish).toBe(true);
+    expect(grant.canPublishSources).toEqual([TrackSource.CAMERA, TrackSource.MICROPHONE]);
     expect(grant.roomJoin).toBe(true);
     expect(grant.canSubscribe).toBe(true);
   });

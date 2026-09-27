@@ -51,16 +51,43 @@ export class VideoMeetingsRecordingPlaybackService {
         recording: { meetingId },
       },
       orderBy: { createdAt: 'desc' },
-      include: {
-        recording: { select: { meetingId: true } },
-      },
     });
     if (!asset?.fileAssetId) {
       throw new NotFoundException('Composite recording is not ready');
     }
 
+    return this.signCompositeAsset(asset.id, asset.fileAssetId);
+  }
+
+  async getRecordingCompositePlayback(
+    user: CurrentUserPayload,
+    meetingId: string,
+    recordingId: string,
+  ): Promise<VideoMeetingPlaybackDto> {
+    await this.requireMeetingViewer(meetingId, user.id);
+
+    const asset = await this.prisma.videoMeetingRecordingAsset.findFirst({
+      where: {
+        kind: VideoMeetingRecordingAssetKind.ROOM_COMPOSITE,
+        status: VideoMeetingRecordingAssetStatus.READY,
+        fileAssetId: { not: null },
+        recording: { id: recordingId, meetingId },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!asset?.fileAssetId) {
+      throw new NotFoundException('Composite recording is not ready');
+    }
+
+    return this.signCompositeAsset(asset.id, asset.fileAssetId);
+  }
+
+  private async signCompositeAsset(
+    assetId: string,
+    fileAssetId: string,
+  ): Promise<VideoMeetingPlaybackDto> {
     const file = await this.prisma.fileAsset.findFirst({
-      where: { id: asset.fileAssetId, deletedAt: null },
+      where: { id: fileAssetId, deletedAt: null },
       include: {
         versions: { where: { isCurrent: true }, take: 1, orderBy: { versionNumber: 'desc' } },
       },
@@ -85,7 +112,7 @@ export class VideoMeetingsRecordingPlaybackService {
     }
 
     return {
-      assetId: asset.id,
+      assetId,
       kind: 'ROOM_COMPOSITE',
       url,
       mimeType: file.mimeType ?? 'video/mp4',

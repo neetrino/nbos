@@ -23,6 +23,7 @@ Ship an executable plan so slices S01–S07 can implement Module 22 V1 without i
    4. [04-TEST-AND-ACCEPTANCE.md](04-TEST-AND-ACCEPTANCE.md)
    5. [05-DEPLOYMENT-AND-RUNBOOK.md](05-DEPLOYMENT-AND-RUNBOOK.md)
    6. [06-PROGRESS-AND-HANDOFF.md](06-PROGRESS-AND-HANDOFF.md)
+   7. [07-DURATION-GUARD-DECISIONS.md](07-DURATION-GUARD-DECISIONS.md) — accepted 2026-09-27, not implemented yet
 3. Implement **S01** next. Do not start S01 until S00 commit is on the feature branch.
 4. Stack remains NestJS + Next.js + Prisma + pnpm per [`docs/TECH_CARD.md`](../../TECH_CARD.md).
 
@@ -36,7 +37,8 @@ Active implementation packages live under `docs/implementation/<feature>/`. An a
 - Do not mix with ATS Calls / CALLS journal. Do not change Finance/Payroll or unrelated modules.
 - Backend mints least-privilege LiveKit tokens. Guests get no NBOS API, Drive, or CRM data.
 - Explicit recording start/stop, visible indicator, affirmative consent; unknown consent → recording forbidden. Retention/notice wording need legal approval before production (do not invent binding periods).
-- Separate statuses: logical meeting, live session, recording job, each file. Meeting `ENDED` ≠ recording `READY`.
+- Separate statuses: logical room, live session, recording job, each file. Room `IDLE` ≠ recording `READY`.
+- Durable room and persisted thread are approved canon and are **not** part of S00–S07: [07-Durable-Room-and-Thread.md](../../NBOS/02-Modules/22-Video-Meetings/07-Durable-Room-and-Thread.md). Implement that slice from the canon, not from the old terminal-`ENDED` behavior.
 - Private R2; business links do not auto-grant media access. Extend `FileArtifactOperation` minimally; never bypass Drive.
 - Feature-flagged until full release gate. No production deploy/migration/data deletion; no secrets in git.
 - LiveKit/Egress failure must not break other NBOS modules.

@@ -7,7 +7,9 @@ export const VIDEO_MEETING_RECORDING_NOTICE_VERSION = 'pending-legal-v0' as cons
 export const VIDEO_MEETING_RECORDING_NOTICE_COPY =
   'PLACEHOLDER — pending legal approval. This text is not final legal notice, does not define retention, and must not be treated as binding consent language.' as const;
 
-/** Private object-key prefix inside the recording bucket. */
+/** Page LiveKit Egress Chrome loads so recording starts with no published tracks. */
+export const VIDEO_MEETINGS_RECORDING_TEMPLATE_URL_ENV =
+  'VIDEO_MEETINGS_RECORDING_TEMPLATE_URL' as const;
 export const VIDEO_MEETING_RECORDING_OBJECT_PREFIX = 'video-meetings' as const;
 
 /** Env: when "false"/unset with missing storage, start-recording returns 503. */

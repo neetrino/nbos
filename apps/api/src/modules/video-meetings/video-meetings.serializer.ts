@@ -1,5 +1,6 @@
 import type { VideoMeetingStatus } from '@nbos/database';
 import { entityLinkGrantsVideoMeetingsAccess } from '@nbos/shared';
+import { videoMeetingLastActivityAt } from './video-meetings-activity';
 import {
   serializeRecordingGroup,
   type VideoMeetingRecordingGroupDto,
@@ -54,6 +55,8 @@ type MeetingRow = {
   sessions?: MeetingSessionRow[];
   entityLinks?: MeetingEntityLinkRow[];
   recordings?: MeetingRecordingRow[];
+  messages?: { createdAt: Date }[];
+  _count?: { recordings: number };
 };
 
 export type VideoMeetingCardDto = {
@@ -97,6 +100,8 @@ export type VideoMeetingListItemDto = {
   ownerEmployeeId: string;
   endedAt: string | null;
   createdAt: string;
+  lastActivityAt: string;
+  recordingCount: number;
   entityLinks: VideoMeetingEntityLinkDto[];
 };
 
@@ -165,6 +170,8 @@ export function serializeVideoMeetingListItem(meeting: MeetingRow): VideoMeeting
     ownerEmployeeId: meeting.ownerEmployeeId,
     endedAt: toIso(meeting.endedAt),
     createdAt: meeting.createdAt.toISOString(),
+    lastActivityAt: videoMeetingLastActivityAt(meeting).toISOString(),
+    recordingCount: meeting._count?.recordings ?? 0,
     entityLinks: (meeting.entityLinks ?? []).map(serializeEntityLink),
   };
 }

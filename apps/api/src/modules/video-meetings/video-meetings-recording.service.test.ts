@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { ForbiddenException, ServiceUnavailableException } from '@nestjs/common';
 import {
   VideoMeetingRecordingAssetStatus,
   VideoMeetingRecordingStatus,
@@ -7,7 +7,6 @@ import {
 } from '@nbos/database';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
-import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsRecordingFinalizeService } from './video-meetings-recording-finalize.service';
 import { VideoMeetingsRecordingLifecycleService } from './video-meetings-recording-lifecycle.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
@@ -51,11 +50,6 @@ describe('VideoMeetingsRecordingService (S05)', () => {
     finalizeAsset: ReturnType<typeof vi.fn>;
     refreshGroupStatus: ReturnType<typeof vi.fn>;
   };
-  let consent: {
-    listLatestByParticipantIds: ReturnType<typeof vi.fn>;
-    isGranted: ReturnType<typeof vi.fn>;
-    getLatestForParticipant: ReturnType<typeof vi.fn>;
-  };
   let service: VideoMeetingsRecordingService;
   let lifecycle: VideoMeetingsRecordingLifecycleService;
 
@@ -91,31 +85,25 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       finalizeAsset: vi.fn().mockResolvedValue(VideoMeetingRecordingAssetStatus.READY),
       refreshGroupStatus: vi.fn().mockResolvedValue(undefined),
     };
-    consent = {
-      listLatestByParticipantIds: vi.fn().mockResolvedValue(
-        new Map([
-          [P1, { decision: 'GRANTED' }],
-          [P2, { decision: 'GRANTED' }],
-        ]),
-      ),
-      isGranted: vi.fn((d) => d === 'GRANTED'),
-      getLatestForParticipant: vi.fn().mockResolvedValue({ decision: 'UNKNOWN' }),
-    };
     lifecycle = new VideoMeetingsRecordingLifecycleService(
       prisma as never,
-      consent as unknown as VideoMeetingsConsentService,
       finalize as unknown as VideoMeetingsRecordingFinalizeService,
       egress,
     );
     service = new VideoMeetingsRecordingService(
       prisma as never,
-      consent as unknown as VideoMeetingsConsentService,
       lifecycle,
       { get: () => undefined } as never,
       egress,
       objectStore,
     );
     prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue(meetingRow());
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue({
+      id: P1,
+      employeeId: HOST.id,
+      kind: 'EMPLOYEE',
+      leftAt: null,
+    });
     prisma.videoMeetingSession.findFirst = vi.fn().mockResolvedValue({
       id: 'sess-1',
       livekitRoomName: 'vm_room',
@@ -143,20 +131,32 @@ describe('VideoMeetingsRecordingService (S05)', () => {
     });
   });
 
-  it('rejects start when any capturable participant has unknown consent', async () => {
-    consent.listLatestByParticipantIds.mockResolvedValue(
-      new Map([
-        [P1, { decision: 'GRANTED' }],
-        // P2 missing → unknown
-      ]),
-    );
+  it('rejects an employee who is not in the meeting', async () => {
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue(null);
 
-    await expect(service.start(HOST, MEETING_ID)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.start(HOST, MEETING_ID)).rejects.toBeInstanceOf(ForbiddenException);
     expect(egress.startRoomComposite).not.toHaveBeenCalled();
   });
 
-  it('does not open late-join audio egress before consent is GRANTED', async () => {
-    consent.getLatestForParticipant.mockResolvedValue({ decision: 'UNKNOWN' });
+  it('rejects recording when the teammate is not in the room', async () => {
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue({
+      id: 'not-in-room',
+      employeeId: HOST.id,
+      kind: 'EMPLOYEE',
+      leftAt: null,
+    });
+
+    await expect(service.start(HOST, MEETING_ID)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(egress.startRoomComposite).not.toHaveBeenCalled();
+  });
+
+  it('starts recording without per-participant consent', async () => {
+    await service.start(HOST, MEETING_ID);
+
+    expect(egress.startRoomComposite).toHaveBeenCalled();
+  });
+
+  it('opens late-join audio egress without a consent row', async () => {
     prisma.videoMeetingRecording.findFirst = vi.fn().mockResolvedValue({
       id: 'rec-1',
       status: VideoMeetingRecordingStatus.RECORDING,
@@ -170,7 +170,7 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       roomName: 'vm_room',
     });
 
-    expect(egress.startTrackAudio).not.toHaveBeenCalled();
+    expect(egress.startTrackAudio).toHaveBeenCalled();
   });
 
   it('stops composite and audio egress on consent withdrawal', async () => {

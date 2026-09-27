@@ -15,11 +15,15 @@
   },
   "actions": {
     "newMeeting": "Новая встреча",
+    "createMeeting": "Создать встречу",
+    "saveTitle": "Сохранить название",
+    "editTitle": "Нажмите, чтобы изменить название",
     "creating": "Создание…",
     "openDetail": "Открыть",
     "joinRoom": "Войти в комнату",
     "startMeeting": "Начать встречу",
-    "endMeeting": "Завершить",
+    "videoCall": "Видеозвонок",
+    "endMeeting": "Завершить звонок",
     "cancelMeeting": "Отменить",
     "backToList": "К списку",
     "copyInviteSecret": "Скопировать токен приглашения",
@@ -29,17 +33,32 @@
     "attachLink": "Привязать",
     "detachLink": "Удалить",
     "admit": "Допустить",
-    "reject": "Отклонить"
+    "reject": "Отклонить",
+    "inviteColleagues": "Пригласить коллег",
+    "copyInviteLink": "Скопировать ссылку"
   },
   "list": {
     "host": "Ведущий",
     "status": "Статус",
-    "created": "Создано"
+    "created": "Создано",
+    "search": "Поиск встреч",
+    "lastActivity": "Последняя активность",
+    "recordingCount": "{count, plural, =0 {Нет записей} one {# запись} few {# записи} many {# записей} other {# записи}}"
+  },
+  "thread": {
+    "title": "Лента комнаты",
+    "loading": "Загрузка ленты…",
+    "empty": "Пока нет сообщений и сессий.",
+    "composerPlaceholder": "Сообщение в комнату",
+    "sessionMarker": "Звонок",
+    "sessionDuration": "{duration}",
+    "sessionTimeUnknown": "Время неизвестно"
   },
   "status": {
     "CREATED": "Запланирована",
     "WAITING": "Ожидание",
     "ACTIVE": "В эфире",
+    "IDLE": "Не в эфире",
     "ENDED": "Завершена",
     "CANCELLED": "Отменена"
   },
@@ -53,7 +72,11 @@
     "noSessions": "Сессий пока нет.",
     "participantsHint": "Участники отображаются после подключения.",
     "entityLinks": "Бизнес-связи",
-    "entityLinksHint": "Укажите ID сущности, к которой у вас есть доступ. Обзор всех записей недоступен.",
+    "entityLinksHint": "Найдите сделку или проект, к которым у вас есть доступ.",
+    "dealLabel": "Сделка",
+    "projectLabel": "Проект",
+    "pickDeal": "Поиск сделки",
+    "pickProject": "Поиск проекта",
     "entityType": "Тип сущности",
     "entityId": "ID сущности",
     "noEntityLinks": "Связей нет.",
@@ -62,13 +85,36 @@
     "inviteSecretTitle": "Одноразовый секрет",
     "inviteSecretHint": "Скопируйте сейчас — больше не будет показан.",
     "inviteExpires": "Истекает",
-    "inviteRevoked": "Отозвано"
+    "inviteRevoked": "Отозвано",
+    "colleagueInvites": "Пригласить коллег",
+    "colleagueInvitesHint": "Найдите сотрудников по имени. Они получат приглашение в NBOS с кнопками Принять/Отклонить — без гостевой комнаты ожидания.",
+    "copyGuestLink": "Скопировать ссылку",
+    "colleagueSearch": "Коллеги",
+    "colleagueSearchPlaceholder": "Поиск по имени…",
+    "colleagueInviteError": "Не удалось отправить приглашения коллегам.",
+    "actionError": "Не удалось выполнить действие.",
+    "noColleagueInvites": "Коллеги ещё не приглашены.",
+    "guestInviteHint": "Для клиентов и тех, у кого нет аккаунта NBOS — поделитесь ссылкой для входа.",
+    "inviteLinkTitle": "Ссылка для гостя",
+    "colleagueStatus": {
+      "WAITING": "Ожидает",
+      "ADMITTED": "Принято",
+      "REJECTED": "Отклонено"
+    }
   },
   "recording": {
     "label": "Запись",
     "notRecording": "Запись не идёт",
     "recordingActive": "Идёт запись",
+    "elapsedAria": "Время записи {time}",
+    "openRecording": "Смотреть запись",
+    "previewAria": "Смотреть запись, {time}",
+    "fullscreen": "На весь экран",
+    "saving": "Сохраняем запись",
     "start": "Начать запись",
+    "reminder": "Запись выключена",
+    "reminderStart": "Включить",
+    "reminderDismiss": "Скрыть напоминание о записи",
     "stop": "Остановить запись",
     "loadError": "Не удалось загрузить статус записи.",
     "actionError": "Действие записи не выполнено.",
@@ -109,10 +155,31 @@
     "livekitUnavailable": "LiveKit не настроен на сервере.",
     "notActive": "Встреча не активна. Сначала начните её на странице деталей.",
     "tokenError": "Не удалось получить токен входа.",
-    "leave": "Покинуть комнату",
+    "leave": "Выйти",
+    "endCall": "Завершить звонок",
+    "endFailed": "Не удалось завершить звонок",
     "waitingGuests": "Ожидают допуска",
     "noWaiting": "Никто не ожидает.",
-    "controlsAria": "Управление в комнате"
+    "controlsAria": "Управление в комнате",
+    "mic": "Микрофон",
+    "micOn": "Микрофон включён",
+    "micOff": "Микрофон выключен",
+    "camera": "Камера",
+    "cameraOn": "Камера включена",
+    "cameraOff": "Камера выключена",
+    "shareScreen": "Демонстрация экрана",
+    "shareOn": "Демонстрация включена",
+    "shareOff": "Демонстрация выключена",
+    "chat": "Чат",
+    "chatTitle": "Чат",
+    "minimize": "Свернуть",
+    "expand": "Вернуться к звонку",
+    "callEnded": "Звонок завершён.",
+    "mediaBlocked": "Браузер запретил камеру и микрофон на этой странице. Разрешите их в настройках сайта и нажмите кнопки ещё раз.",
+    "chatEmpty": "Сообщений пока нет.",
+    "chatLoading": "Загрузка сообщений…",
+    "chatPlaceholder": "Сообщение",
+    "chatSend": "Отправить"
   },
   "guest": {
     "title": "Вход на видеовстречу",
@@ -133,10 +200,25 @@
   },
   "crossModule": {
     "actionLabel": "Видеовстреча",
-    "startNew": "Начать новую видеовстречу",
-    "linkExisting": "Привязать последнюю завершённую",
+    "openRoom": "Открыть видеокомнату",
+    "startNew": "Создать ещё одну комнату",
     "meetingTitle": "Встреча — {label}",
-    "actionError": "Не удалось начать или привязать видеовстречу.",
-    "noEndedMeetings": "Нет завершённых встреч для привязки."
+    "actionError": "Не удалось открыть или создать видеокомнату."
+  },
+  "defaultTitle": "Мгновенная встреча",
+  "suggestedTitlePrefix": "Встреча",
+  "titleLabel": "Название встречи",
+  "durationGuard": {
+    "title": "Продолжаем встречу?",
+    "hint": "Если никто не нажмёт, встреча завершится",
+    "continue": "Продолжить",
+    "continueFailed": "Не удалось продолжить. Нажмите ещё раз.",
+    "countdownAria": "Осталось {time}"
+  },
+  "colleaguePrompt": {
+    "title": "Приглашение на видеовстречу",
+    "body": "{inviter} приглашает вас на «{meeting}».",
+    "accept": "Принять",
+    "decline": "Отклонить"
   }
 }

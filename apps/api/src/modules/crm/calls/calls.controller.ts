@@ -85,7 +85,7 @@ export class CallsController {
   @Get(':id/recording')
   @SkipTransform()
   @Header('Cache-Control', 'private, no-store')
-  @ApiOperation({ summary: 'Stream a call recording when Call view, PLAY, and Drive access pass' })
+  @ApiOperation({ summary: 'Stream a call recording when the actor can view that call' })
   async streamRecording(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id', ParseUUIDPipe) id: string,

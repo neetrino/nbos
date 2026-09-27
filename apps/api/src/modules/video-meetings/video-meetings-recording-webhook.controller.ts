@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   Controller,
+  Get,
+  Header,
   Headers,
   HttpCode,
   Logger,
@@ -12,10 +14,11 @@ import {
 import { ApiExcludeController } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { WebhookReceiver } from 'livekit-server-sdk';
-import { Public } from '../../common/decorators';
+import { Public, SkipTransform } from '../../common/decorators';
 import { LIVEKIT_API_KEY_ENV_KEY, LIVEKIT_API_SECRET_ENV_KEY } from './video-meetings.constants';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsRecordingWebhookService } from './video-meetings-recording-webhook.service';
+import { VIDEO_MEETING_RECORDING_TEMPLATE_HTML } from './video-meetings-recording-template';
 
 type RawBodyRequest = {
   rawBody?: Buffer;
@@ -37,6 +40,14 @@ export class VideoMeetingsRecordingWebhookController {
     private readonly config: ConfigService,
     private readonly webhooks: VideoMeetingsRecordingWebhookService,
   ) {}
+
+  @Get('template')
+  @Public()
+  @SkipTransform()
+  @Header('content-type', 'text/html; charset=utf-8')
+  template(): string {
+    return VIDEO_MEETING_RECORDING_TEMPLATE_HTML;
+  }
 
   @Post('webhook')
   @Public()

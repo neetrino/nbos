@@ -146,6 +146,7 @@ export function createMockPrisma() {
     videoMeetingRecording: createModelMock(),
     videoMeetingRecordingAsset: createModelMock(),
     videoMeetingEntityLink: createModelMock(),
+    videoMeetingMessage: createModelMock(),
     personalCalendarEvent: createModelMock(),
     messengerChannel: createModelMock(),
     messengerDirectThread: createModelMock(),

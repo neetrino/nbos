@@ -7,7 +7,6 @@ import {
   type Prisma,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
-import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN } from './video-meetings-recording.constants';
 import { buildParticipantAudioObjectKey } from './video-meetings-recording-keys';
 import { deriveRecordingGroupStatus } from './video-meetings-recording-status';
@@ -29,7 +28,6 @@ export class VideoMeetingsRecordingLifecycleService {
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly consent: VideoMeetingsConsentService,
     private readonly finalize: VideoMeetingsRecordingFinalizeService,
     @Optional()
     @Inject(VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN)
@@ -43,11 +41,6 @@ export class VideoMeetingsRecordingLifecycleService {
     roomName: string;
   }): Promise<void> {
     if (!this.egress?.isConfigured()) return;
-    const latest = await this.consent.getLatestForParticipant(input.participantId);
-    if (!this.consent.isGranted(latest?.decision)) {
-      this.logger.log(`Skipping audio egress for ${input.participantId}: consent not GRANTED`);
-      return;
-    }
     const recording = await this.findActiveRecording(input.meetingId);
     if (!recording || recording.status !== VideoMeetingRecordingStatus.RECORDING) return;
 

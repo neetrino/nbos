@@ -19,6 +19,8 @@ import { AppEntityRelationProvider } from '@/components/shared/relation-picker/A
 import { UnsortedTaskCreateProvider } from '@/features/tasks/components/UnsortedTaskCreateProvider';
 import { GlobalSearchProvider } from '@/features/global-search/GlobalSearchProvider';
 import { ActiveCallProvider } from '@/features/crm/calls/ActiveCallProvider';
+import { VideoMeetingColleagueInvitePrompt } from '@/features/video-meetings/VideoMeetingColleagueInvitePrompt';
+import { VideoMeetingCallProvider } from '@/features/video-meetings/video-meeting-call-session';
 import { EmployeeDirectoryWarmup } from '@/lib/employees';
 
 interface AppLayoutProps {
@@ -46,7 +48,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isDocumentsRoute = pathname.startsWith('/documents');
   const isMessengerRoute = pathname.startsWith('/messenger');
   const isDepartmentsOrgChartRoute = pathname === ORG_CHART_PAGE_HREF;
-  const isCanvasRoute = isMessengerRoute || isDepartmentsOrgChartRoute;
+  const isVideoMeetingRoomRoute = /\/video-meetings\/[^/]+\/room\/?$/.test(pathname);
+  const isCanvasRoute = isMessengerRoute || isDepartmentsOrgChartRoute || isVideoMeetingRoomRoute;
 
   useEffect(() => {
     if (isMobileViewport) return;
@@ -85,39 +88,42 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <GlobalSearchProvider>
                   <UnsortedTaskCreateProvider>
                     <ActiveCallProvider>
-                      <EmployeeDirectoryWarmup />
-                      <HeaderContextDockRegistrar />
-                      <div
-                        className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
-                        style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
-                      >
-                        <Sidebar
-                          collapsed={sidebarCollapsed}
-                          onCollapsedChange={setSidebarCollapsed}
-                          mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
-                          onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
-                        />
-                        <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
-                          <Topbar />
-                          <main
-                            className={cn(
-                              'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
-                              isCanvasRoute
-                                ? 'overflow-hidden'
-                                : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
-                              APP_MAIN_CONTENT_INSET,
-                            )}
-                          >
-                            {children}
-                          </main>
-                          {isMobileViewport ? (
-                            <MobileBottomNav
-                              menuOpen={mobileNavOpen}
-                              onMoreClick={() => setMobileNavOpen((open) => !open)}
-                            />
-                          ) : null}
+                      <VideoMeetingCallProvider>
+                        <EmployeeDirectoryWarmup />
+                        <VideoMeetingColleagueInvitePrompt />
+                        <HeaderContextDockRegistrar />
+                        <div
+                          className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
+                          style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
+                        >
+                          <Sidebar
+                            collapsed={sidebarCollapsed}
+                            onCollapsedChange={setSidebarCollapsed}
+                            mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
+                            onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
+                          />
+                          <div className="flex min-h-0 min-w-0 flex-col overflow-hidden">
+                            <Topbar />
+                            <main
+                              className={cn(
+                                'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
+                                isCanvasRoute
+                                  ? 'overflow-hidden'
+                                  : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
+                                APP_MAIN_CONTENT_INSET,
+                              )}
+                            >
+                              {children}
+                            </main>
+                            {isMobileViewport ? (
+                              <MobileBottomNav
+                                menuOpen={mobileNavOpen}
+                                onMoreClick={() => setMobileNavOpen((open) => !open)}
+                              />
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
+                      </VideoMeetingCallProvider>
                     </ActiveCallProvider>
                   </UnsortedTaskCreateProvider>
                 </GlobalSearchProvider>

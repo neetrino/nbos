@@ -1,8 +1,10 @@
 import { api } from '../api';
+import { videoMeetingThreadApi } from './video-meetings-thread';
 
 export type VideoMeetingEntityLinkType = 'DEAL' | 'PROJECT' | 'PRODUCT' | 'CONTACT';
 
-export type VideoMeetingStatus = 'CREATED' | 'WAITING' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+/** `ENDED` is legacy (backfilled to `IDLE`); kept because the DB enum still has it. */
+export type VideoMeetingStatus = 'CREATED' | 'WAITING' | 'ACTIVE' | 'IDLE' | 'ENDED' | 'CANCELLED';
 
 export type VideoMeetingEntityLink = {
   id: string;
@@ -27,10 +29,12 @@ export type VideoMeetingListItem = {
   ownerEmployeeId: string;
   endedAt: string | null;
   createdAt: string;
+  lastActivityAt: string;
+  recordingCount: number;
   entityLinks: VideoMeetingEntityLink[];
 };
 
-export type VideoMeetingCard = VideoMeetingListItem & {
+export type VideoMeetingCard = Omit<VideoMeetingListItem, 'lastActivityAt' | 'recordingCount'> & {
   scheduledStartsAt: string | null;
   scheduledEndsAt: string | null;
   cancelledAt: string | null;
@@ -85,6 +89,7 @@ export type CreateInviteResult = {
   meetingId: string;
   expiresAt: string;
   token: string;
+  joinUrl: string;
   revokedAt: null;
 };
 
@@ -94,6 +99,31 @@ export type InviteListItem = {
   expiresAt: string;
   revokedAt: string | null;
   createdAt: string;
+};
+
+export type ColleagueInviteListItem = {
+  participantId: string;
+  employeeId: string;
+  displayName: string;
+  admissionStatus: 'WAITING' | 'ADMITTED' | 'REJECTED';
+  createdAt: string;
+};
+
+export type PendingColleagueInvite = {
+  meetingId: string;
+  meetingTitle: string;
+  meetingStatus: VideoMeetingStatus;
+  participantId: string;
+  invitedByEmployeeId: string;
+  invitedByDisplayName: string;
+  createdAt: string;
+};
+
+export type ColleagueInviteActionResult = {
+  meetingId: string;
+  participantId: string;
+  admissionStatus: 'ADMITTED' | 'REJECTED';
+  meetingStatus: VideoMeetingStatus;
 };
 
 export type WaitingParticipant = {
@@ -129,6 +159,8 @@ async function getList(path: string, status?: VideoMeetingStatus): Promise<Pagin
 }
 
 export const videoMeetingsApi = {
+  ...videoMeetingThreadApi,
+
   create: async (title?: string): Promise<VideoMeetingCard> => {
     const resp = await api.post<VideoMeetingCard>('/api/video-meetings', title ? { title } : {});
     return resp.data;
@@ -140,6 +172,11 @@ export const videoMeetingsApi = {
 
   getCard: async (meetingId: string): Promise<VideoMeetingCard> => {
     const resp = await api.get<VideoMeetingCard>(`/api/video-meetings/${meetingId}`);
+    return resp.data;
+  },
+
+  rename: async (meetingId: string, title: string): Promise<VideoMeetingCard> => {
+    const resp = await api.patch<VideoMeetingCard>(`/api/video-meetings/${meetingId}`, { title });
     return resp.data;
   },
 
@@ -180,6 +217,45 @@ export const videoMeetingsApi = {
   revokeInvite: async (meetingId: string, inviteId: string): Promise<InviteListItem> => {
     const resp = await api.post<InviteListItem>(
       `/api/video-meetings/${meetingId}/invites/${inviteId}/revoke`,
+    );
+    return resp.data;
+  },
+
+  inviteColleagues: async (
+    meetingId: string,
+    employeeIds: string[],
+  ): Promise<ColleagueInviteListItem[]> => {
+    const resp = await api.post<ColleagueInviteListItem[]>(
+      `/api/video-meetings/${meetingId}/colleague-invites`,
+      { employeeIds },
+    );
+    return resp.data;
+  },
+
+  listColleagueInvites: async (meetingId: string): Promise<ColleagueInviteListItem[]> => {
+    const resp = await api.get<ColleagueInviteListItem[]>(
+      `/api/video-meetings/${meetingId}/colleague-invites`,
+    );
+    return resp.data;
+  },
+
+  listPendingColleagueInvites: async (): Promise<PendingColleagueInvite[]> => {
+    const resp = await api.get<PendingColleagueInvite[]>(
+      '/api/video-meetings/colleague-invites/pending',
+    );
+    return resp.data;
+  },
+
+  acceptColleagueInvite: async (meetingId: string): Promise<ColleagueInviteActionResult> => {
+    const resp = await api.post<ColleagueInviteActionResult>(
+      `/api/video-meetings/${meetingId}/colleague-invites/accept`,
+    );
+    return resp.data;
+  },
+
+  declineColleagueInvite: async (meetingId: string): Promise<ColleagueInviteActionResult> => {
+    const resp = await api.post<ColleagueInviteActionResult>(
+      `/api/video-meetings/${meetingId}/colleague-invites/decline`,
     );
     return resp.data;
   },

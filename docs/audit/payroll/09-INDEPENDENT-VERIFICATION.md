@@ -8,6 +8,8 @@ This document records the completed investigation; its creation did not restart 
 
 This is not evidence that production employees have actually been underpaid or overpaid. No production or staging database, real financial operation, external payout provider, or deployed exploit was used.
 
+**Later decision status (2026-09-27):** the audit evidence below remains the historical 2026-09-26 baseline. The Owner subsequently resolved the bounded launch rules and delegated small technical defaults; current decisions are consolidated in document 11 and readiness in document 10. Older “unresolved” classifications below describe the audit date, not unanswered questions today. No fixes or fresh end-to-end verification are implied. See section 7 for the narrowly requested cap clarification.
+
 Related documents:
 
 - [Previous functionality inventory](01-EXISTING-FUNCTIONALITY.md)
@@ -295,3 +297,18 @@ One initial matrix probe attempt stopped on an unstubbed import before its asser
 No current production salary, policy, employee, database migration state, grant, queue, external transfer, deployment or browser state was inspected. Database partial indexes and transactions require real isolated-database validation. No real-world discrepancy amount or impacted employee was established.
 
 The completed investigation was read-only. Documents 09–11 are separately authorized audit outputs; no implementation, production migration, deployment, or correction of financial data is authorized by them. Launch conditions are in document 10, and required actions, dependencies, scenarios and unresolved Owner decisions are in document 11.
+
+## 7. Post-audit Owner decisions and focused cap clarification — 2026-09-27
+
+The original audit was not restarted. During the decision discussion, the Owner specifically asked what the salary-linked ceiling does and whether a 300,000 AMD order maximum exists. A focused read-only source check established:
+
+- `apps/api/src/modules/payroll-runs/payroll-bonus-cap.constants.ts`: default monthly salary multiplier **2**, permitted policy range **1–3**. `packages/database/prisma/schema/compensation.prisma` stores `bonusCapBaseSalaryMultiplier` with default2.
+- `payroll-bonus-cap.ts`: ceiling is fixed salary times multiplier minus bonus amounts already included; excess becomes carry. Base <=0 bypasses that ceiling. `resolve-compensation-payroll-policy.ts` chooses configured active policy or default; actual live values were not queried.
+- `payroll-bonus-release-attach.ts`: the cap call is outside the SALES-only readiness branch. It is not merely a Probation-specific KPI gate.
+- `apps/api/src/modules/bonus/sales-bonus-accrual-rows.ts`: inspected Sales amounts use base times independent percentages without a 300,000 clamp. Searches across relevant API bonus/Delivery/policy paths, schema and canon did not establish a universal enforced 300,000 order ceiling. Numeric examples or tests containing 300,000 are not enforcement evidence. This does not prove absence in every deployment or path.
+
+**Owner decision superseding old policy:** remove the salary-linked monthly ceiling. One shared Sales accrual envelope per order is at most300,000 AMD, allocated by Seller/Assistant proportions before each employee KPI payout gate; the same person may fill both mandatory roles. The subscription ceiling is cumulative across first/recurring accrual for that order. Several orders can produce a monthly amount above any salary multiple. This is a changed/clarified requirement, not a retroactive alteration of the original audit's evidence or test results.
+
+**Current scope:** full chosen salary months; monthly individually configured Sales KPI for active/Probation; discretionary Owner/CEO hiring; AMD employee take-home; manual project-selected payments including hired Development before completion; manual extra bonuses/corrections; single authorized operator approval; external taxes/accounting/transfers; manual payroll creation. New rules begin at a selected cutover month and old unpaid balances are reviewed manually. See document11 section0/6 for the full controlling specification and direct-versus-delegated decision provenance.
+
+**Remaining verification limits:** no source fixes, production data queries/writes, installed-setting checks, financial operations, fresh application tests or deployment occurred in this decision/documentation phase. Historical 646 tests and 11 probes remain bounded audit evidence. Targeted source-policy conflicts, first-invoice protection, probation workflow and all M/V acceptance items must be implemented/verified in a separate authorized phase. Original evidence IDs D/N/P remain stable for traceability; documentation closure is not payroll readiness.

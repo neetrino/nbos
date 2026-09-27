@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import {
+  Briefcase,
   Building2,
   FolderKanban,
   Handshake,
@@ -30,6 +31,7 @@ const ENTITY_ICON_COMPONENTS: Record<RelationEntityKind, typeof User> = {
   product: Layers,
   employee: UserCog,
   order: Receipt,
+  deal: Briefcase,
   credential: KeyRound,
 };
 

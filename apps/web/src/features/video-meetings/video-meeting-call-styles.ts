@@ -1,0 +1,26 @@
+/** Round in-call controls. Shared so the bar and the record button match. */
+export const CALL_ICON_BUTTON_CLASS =
+  'inline-flex size-11 items-center justify-center rounded-full border border-border/70 bg-background text-foreground shadow-sm transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-5';
+
+/** Media control when the device is off: muted tile and a slash icon. */
+export const CALL_MEDIA_OFF_CLASS =
+  'rounded-xl bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground';
+
+/**
+ * Pressed control. Hover keeps the same contrast in light and dark themes:
+ * the fill stays the foreground color and the icon stays the background color.
+ */
+export const CALL_CONTROL_ON_CLASS =
+  'border-transparent bg-foreground text-background hover:bg-foreground/90 hover:text-background';
+
+/** Media control when the device is on: solid tile so the state reads at a glance. */
+export const CALL_MEDIA_ON_CLASS = `rounded-xl ${CALL_CONTROL_ON_CLASS}`;
+
+export const CALL_HANGUP_BUTTON_CLASS =
+  'inline-flex size-12 items-center justify-center rounded-full bg-destructive text-white shadow-sm transition-colors hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-40';
+
+export const EXPANDED_CALL_SHELL_CLASS =
+  'fixed inset-4 z-[70] flex flex-col overflow-hidden rounded-3xl border border-border/80 bg-background shadow-2xl md:inset-8';
+
+export const MINIMIZED_CALL_SHELL_CLASS =
+  'fixed right-4 bottom-4 z-[70] w-[min(22rem,calc(100%-2rem))] overflow-hidden rounded-2xl border border-border bg-background shadow-xl';

@@ -14,7 +14,10 @@ import {
   LIVEKIT_API_SECRET_ENV_KEY,
   LIVEKIT_URL_ENV_KEY,
 } from './video-meetings.constants';
-import { VIDEO_MEETINGS_RECORDING_OBJECT_STORE_TOKEN } from './video-meetings-recording.constants';
+import {
+  VIDEO_MEETINGS_RECORDING_OBJECT_STORE_TOKEN,
+  VIDEO_MEETINGS_RECORDING_TEMPLATE_URL_ENV,
+} from './video-meetings-recording.constants';
 import type {
   VideoMeetingPublishedAudioTrack,
   VideoMeetingsEgressClient,
@@ -74,7 +77,12 @@ export class VideoMeetingsLivekitEgressClient implements VideoMeetingsEgressClie
       filepath: objectKey,
       output: { case: 's3', value: this.buildS3Upload() },
     });
-    const info = await egress.startRoomCompositeEgress(roomName, output);
+    const templateUrl = this.templateUrl();
+    const info = await egress.startRoomCompositeEgress(
+      roomName,
+      output,
+      templateUrl ? { customBaseUrl: templateUrl } : undefined,
+    );
     return { egressId: info.egressId };
   }
 
@@ -98,6 +106,11 @@ export class VideoMeetingsLivekitEgressClient implements VideoMeetingsEgressClie
     } catch (error) {
       this.logger.warn(`stopEgress ${egressId} failed: ${String(error)}`);
     }
+  }
+
+  private templateUrl(): string | undefined {
+    const url = this.config.get<string>(VIDEO_MEETINGS_RECORDING_TEMPLATE_URL_ENV)?.trim();
+    return url && url.length > 0 ? url : undefined;
   }
 
   private buildS3Upload(): S3Upload {

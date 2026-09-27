@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -16,17 +17,21 @@ import {
   AttachVideoMeetingEntityLinkDto,
   CreateVideoMeetingDto,
   CreateVideoMeetingInviteDto,
+  RenameVideoMeetingDto,
   ListVideoMeetingsQueryDto,
   VideoMeetingConsentDecisionBodyDto,
   VideoMeetingLifecycleConfirmDto,
   VideoMeetingTokenRequestDto,
 } from './dto/video-meetings.dto';
+import { VideoMeetingByEntityQueryDto } from './dto/video-meetings-thread.dto';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
+import { VideoMeetingsColleagueInvitesService } from './video-meetings-colleague-invites.service';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
 import { VideoMeetingsRecordingPlaybackService } from './video-meetings-recording-playback.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
+import { VideoMeetingsListService } from './video-meetings-list.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
 @ApiTags('Video Meetings')
@@ -36,11 +41,13 @@ import { VideoMeetingsService } from './video-meetings.service';
 export class VideoMeetingsController {
   constructor(
     private readonly videoMeetingsService: VideoMeetingsService,
+    private readonly colleagueInvites: VideoMeetingsColleagueInvitesService,
     private readonly invitesService: VideoMeetingsInvitesService,
     private readonly admissionService: VideoMeetingsAdmissionService,
     private readonly recordingService: VideoMeetingsRecordingService,
     private readonly consentService: VideoMeetingsConsentService,
     private readonly playbackService: VideoMeetingsRecordingPlaybackService,
+    private readonly listService: VideoMeetingsListService,
   ) {}
 
   @Post()
@@ -54,14 +61,21 @@ export class VideoMeetingsController {
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'List video meetings accessible to the caller' })
   list(@CurrentUser() user: CurrentUserPayload, @Query() query: ListVideoMeetingsQueryDto) {
-    return this.videoMeetingsService.list(user, query);
+    return this.listService.list(user, query);
   }
 
   @Get('history')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'List ended video meetings (history)' })
+  @ApiOperation({ summary: 'List idle rooms that were held at least once (history)' })
   history(@CurrentUser() user: CurrentUserPayload, @Query() query: ListVideoMeetingsQueryDto) {
-    return this.videoMeetingsService.history(user, query);
+    return this.listService.history(user, query);
+  }
+
+  @Get('by-entity')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Latest non-cancelled room linked to a business record, or null' })
+  byEntity(@CurrentUser() user: CurrentUserPayload, @Query() query: VideoMeetingByEntityQueryDto) {
+    return this.listService.byEntity(user, query);
   }
 
   @Get('consent/notice')
@@ -78,13 +92,26 @@ export class VideoMeetingsController {
     return this.videoMeetingsService.getCard(user, id);
   }
 
+  @Patch(':id')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @ApiOperation({ summary: 'Rename a meeting the caller hosts or owns' })
+  rename(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: RenameVideoMeetingDto,
+  ) {
+    return this.videoMeetingsService.rename(user, id, body.title);
+  }
+
   @Post(':id/start')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
   @ApiOperation({
     summary: 'Start meeting; ensure LiveKit room when configured',
   })
-  start(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
-    return this.videoMeetingsService.start(user, id);
+  async start(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    const card = await this.videoMeetingsService.start(user, id);
+    await this.colleagueInvites.releaseWaitingInvites(user, id);
+    return card;
   }
 
   @Post(':id/token')
@@ -157,9 +184,9 @@ export class VideoMeetingsController {
   }
 
   @Post(':id/end')
-  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
   @ApiOperation({
-    summary: 'End an active video meeting (soft); Calendar cancel only with explicit confirm',
+    summary: 'Last teammate ends the meeting; Calendar cancel only for host with confirm',
   })
   end(
     @CurrentUser() user: CurrentUserPayload,
@@ -172,7 +199,7 @@ export class VideoMeetingsController {
   @Post(':id/cancel')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
   @ApiOperation({
-    summary: 'Cancel a meeting never held; Calendar cancel only with explicit confirm',
+    summary: 'Cancel meeting; Calendar cancel only with confirm',
   })
   cancel(
     @CurrentUser() user: CurrentUserPayload,
@@ -183,22 +210,22 @@ export class VideoMeetingsController {
   }
 
   @Post(':id/recording/start')
-  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Start consented room composite + per-participant audio recording' })
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Start recording; any teammate in the meeting' })
   startRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.recordingService.start(user, id);
   }
 
   @Post(':id/recording/stop')
-  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Stop active recording and Drive-finalize verified objects' })
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Stop recording and finalize; any teammate in the meeting' })
   stopRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.recordingService.stop(user, id);
   }
 
   @Get(':id/recording')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Latest recording group status (no keys or playback URLs)' })
+  @ApiOperation({ summary: 'Latest recording status' })
   getRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.videoMeetingsService.getRecordingStatus(user, id);
   }
@@ -206,7 +233,7 @@ export class VideoMeetingsController {
   @Get(':id/recording/playback')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
   @ApiOperation({
-    summary: 'Short-lived signed URL for composite playback (host/owner/participant only)',
+    summary: 'Signed composite playback URL (latest READY composite)',
   })
   getRecordingPlayback(
     @CurrentUser() user: CurrentUserPayload,
@@ -215,9 +242,20 @@ export class VideoMeetingsController {
     return this.playbackService.getCompositePlayback(user, id);
   }
 
+  @Get(':id/recordings/:recordingId/playback')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Signed ROOM_COMPOSITE playback URL for one recording group' })
+  getRecordingGroupPlayback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('recordingId', ParseUUIDPipe) recordingId: string,
+  ) {
+    return this.playbackService.getRecordingCompositePlayback(user, id, recordingId);
+  }
+
   @Post(':id/consent')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'Employee records own recording consent decision' })
+  @ApiOperation({ summary: 'Record employee consent decision' })
   async decideConsent(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id', ParseUUIDPipe) id: string,

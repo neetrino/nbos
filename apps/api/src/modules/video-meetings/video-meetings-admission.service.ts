@@ -136,14 +136,18 @@ export class VideoMeetingsAdmissionService {
       where: { inviteId: invite.id },
     });
     if (existing) {
-      if (existing.displayName !== displayName) {
+      const newSession = existing.sessionId !== session.id;
+      const admissionStatus = newSession
+        ? VideoMeetingAdmissionStatus.WAITING
+        : existing.admissionStatus;
+      if (newSession || existing.displayName !== displayName) {
         await this.prisma.videoMeetingParticipant.update({
           where: { id: existing.id },
-          data: { displayName, sessionId: session.id },
+          data: { displayName, sessionId: session.id, admissionStatus, leftAt: null },
         });
       }
       return {
-        admissionState: mapAdmissionStatus(existing.admissionStatus),
+        admissionState: mapAdmissionStatus(admissionStatus),
         participantId: existing.id,
         displayName,
       };
@@ -183,6 +187,9 @@ export class VideoMeetingsAdmissionService {
       throw new ForbiddenException('Guest is not admitted');
     }
     const session = await requireActiveSession(this.prisma, invite.meetingId);
+    if (participant.sessionId !== session.id) {
+      throw new ForbiddenException('Guest is not admitted to the current session');
+    }
     const creds = await this.mintWithPublishGate({
       meetingId: invite.meetingId,
       roomName: session.livekitRoomName,

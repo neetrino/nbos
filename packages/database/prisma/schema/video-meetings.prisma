@@ -3,12 +3,15 @@
 // CalendarMeeting and Drive FileAsset links are optional string refs (nullable);
 // entity links do not imply media ACL. Drive finalize is S06.
 
+/// Durable room lifecycle. `IDLE` = last session ended; room can start again.
+/// `ENDED` is legacy (backfilled to IDLE); kept only because Postgres cannot drop enum values.
 enum VideoMeetingStatus {
   CREATED
   WAITING
   ACTIVE
   ENDED
   CANCELLED
+  IDLE
 }
 
 enum VideoMeetingParticipantKind {
@@ -85,6 +88,7 @@ model VideoMeeting {
   consents     VideoMeetingConsent[]
   recordings   VideoMeetingRecording[]
   entityLinks  VideoMeetingEntityLink[]
+  messages     VideoMeetingMessage[]
 
   @@index([status])
   @@index([hostEmployeeId])
@@ -103,6 +107,10 @@ model VideoMeetingSession {
   livekitRoomSid  String?   @map("livekit_room_sid")
   startedAt       DateTime? @map("started_at")
   endedAt         DateTime? @map("ended_at")
+  /// Checkpoint the team accepted. Null until the first Continue. Not the age of the room card.
+  durationContinuedThrough     DateTime? @map("duration_continued_through")
+  durationContinuedAt          DateTime? @map("duration_continued_at")
+  durationContinuedByEmployeeId String?  @map("duration_continued_by_employee_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
@@ -110,6 +118,7 @@ model VideoMeetingSession {
   participants VideoMeetingParticipant[]
   consents     VideoMeetingConsent[]
   recordings   VideoMeetingRecording[]
+  messages     VideoMeetingMessage[]
 
   @@index([meetingId])
   @@index([livekitRoomName])
@@ -140,6 +149,7 @@ model VideoMeetingParticipant {
   invite     VideoMeetingInvite?           @relation(fields: [inviteId], references: [id], onDelete: SetNull)
   consents   VideoMeetingConsent[]
   assets     VideoMeetingRecordingAsset[]
+  messages   VideoMeetingMessage[]
 
   @@index([meetingId])
   @@index([sessionId])
@@ -256,4 +266,26 @@ model VideoMeetingEntityLink {
   @@unique([meetingId, entityType, entityId])
   @@index([entityType, entityId])
   @@map("video_meeting_entity_links")
+}
+
+/// Persisted plain-text room chat. LiveKit chat is transport only; this table is the record.
+/// `sessionId` is the open session when sent in-call, null between sessions.
+model VideoMeetingMessage {
+  id                  String   @id @default(uuid())
+  meetingId           String   @map("meeting_id")
+  sessionId           String?  @map("session_id")
+  authorParticipantId String?  @map("author_participant_id")
+  employeeId          String?  @map("employee_id")
+  /// Display name captured at send time (guest names are not verified identity).
+  authorDisplayName   String   @map("author_display_name")
+  body                String
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  meeting           VideoMeeting             @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  session           VideoMeetingSession?     @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  authorParticipant VideoMeetingParticipant? @relation(fields: [authorParticipantId], references: [id], onDelete: SetNull)
+
+  @@index([meetingId, createdAt])
+  @@index([sessionId])
+  @@map("video_meeting_messages")
 }

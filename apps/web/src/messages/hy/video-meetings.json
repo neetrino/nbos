@@ -15,11 +15,15 @@
   },
   "actions": {
     "newMeeting": "Նոր հանդիպում",
+    "createMeeting": "Ստեղծել հանդիպում",
+    "saveTitle": "Պահել անունը",
+    "editTitle": "Սեղմեք՝ անունը փոխելու համար",
     "creating": "Ստեղծվում է…",
     "openDetail": "Բացել",
     "joinRoom": "Մտնել սենյակ",
     "startMeeting": "Սկսել",
-    "endMeeting": "Ավարտել",
+    "videoCall": "Վիդեոզանգ",
+    "endMeeting": "Ավարտել զանգը",
     "cancelMeeting": "Չեղարկել",
     "backToList": "Դեպի ցանկ",
     "copyInviteSecret": "Պատճենել հրավeri կոդը",
@@ -29,17 +33,32 @@
     "attachLink": "Կapել",
     "detachLink": "Հեռացնել",
     "admit": "Թույլ տal",
-    "reject": "Մերժել"
+    "reject": "Մերժել",
+    "inviteColleagues": "Հրավիրել գործընկերների",
+    "copyInviteLink": "Պատճենել միանալու հղումը"
   },
   "list": {
     "host": "Հոստ",
     "status": "Կargavijak",
-    "created": "Սteghtsvats"
+    "created": "Ստեղծված",
+    "search": "Որոնել հանդիպումներ",
+    "lastActivity": "Verjin aktivutyun",
+    "recordingCount": "{count, plural, =0 {Granacum chka} one {# granacum} other {# granacum}}"
+  },
+  "thread": {
+    "title": "Senyaki lenta",
+    "loading": "Lent@ bertsnum e…",
+    "empty": "Der chka haghordagrutyunner kam sessionner.",
+    "composerPlaceholder": "Haghordagrutyun senyakum",
+    "sessionMarker": "Zang",
+    "sessionDuration": "{duration}",
+    "sessionTimeUnknown": "Jamanak@ anhayt e"
   },
   "status": {
     "CREATED": "Պlanavorvats",
     "WAITING": "Spasum",
     "ACTIVE": "Kendani",
+    "IDLE": "Eteric durs",
     "ENDED": "Avartvats",
     "CANCELLED": "Chegharkvats"
   },
@@ -52,8 +71,12 @@
     "sessions": "Sesianer",
     "noSessions": "Sesianer chkan.",
     "participantsHint": "Masnakitsner@ erevum en miatsumic heto.",
-    "entityLinks": "Biznes kaper",
-    "entityLinksHint": "Mutqagreq ID, vorin uneq mutq.",
+    "entityLinks": "Կապեր",
+    "entityLinksHint": "Գտեք գործարք կամ նախագիծ, որին ունեք մուտք։",
+    "dealLabel": "Գործարք",
+    "projectLabel": "Նախագիծ",
+    "pickDeal": "Որոնել գործարք",
+    "pickProject": "Որոնել նախագիծ",
     "entityType": "Tesak",
     "entityId": "ID",
     "noEntityLinks": "Kaper chkan.",
@@ -62,13 +85,36 @@
     "inviteSecretTitle": "Mekangamy secret",
     "inviteSecretHint": "Patcheneq hima.",
     "inviteExpires": "Verj",
-    "inviteRevoked": "Kasetsvats"
+    "inviteRevoked": "Kasetsvats",
+    "colleagueInvites": "Հրավիրել գործընկերների",
+    "colleagueInvitesHint": "Որոնեք աշխատակիցներին անունով։ Նրանք կստանան NBOS հրավեր՝ Ընդունել/Մերժել կոճակներով՝ առանց հյուրի սպասասրահի։",
+    "copyGuestLink": "Պատճենել հղումը",
+    "colleagueSearch": "Գործընկերներ",
+    "colleagueSearchPlaceholder": "Որոնել անունով…",
+    "colleagueInviteError": "Չհաջողվեց ուղարկել գործընկերների հրավերները։",
+    "actionError": "Չհաջողվեց կատարել գործողությունը։",
+    "noColleagueInvites": "Գործընկերներ դեռ հրավիրված չեն։",
+    "guestInviteHint": "Հաճախորդների և NBOS հաշիվ չունեցողների համար՝ կիսվեք միանալու հղումով։",
+    "inviteLinkTitle": "Հյուրի միանալու հղում",
+    "colleagueStatus": {
+      "WAITING": "Սպասում է",
+      "ADMITTED": "Ընդունված",
+      "REJECTED": "Մերժված"
+    }
   },
   "recording": {
     "label": "Granacum",
     "notRecording": "Granacum chi katarvum",
     "recordingActive": "Granacum@ ynthacum e",
+    "elapsedAria": "Granacman zhamanak@ {time}",
+    "openRecording": "Ditarkel granacum@",
+    "previewAria": "Ditarkel granacum@, {time}",
+    "fullscreen": "Li ekran",
+    "saving": "Granacum@ pahpanvum e",
     "start": "Sksel granacum",
+    "reminder": "Granacum@ anjatvac e",
+    "reminderStart": "Miacnel",
+    "reminderDismiss": "Taqtsnel granacman hushum@",
     "stop": "Kangnetsnel granacum",
     "loadError": "Chhajoghvets beladrel granacman status@",
     "actionError": "Granacman gortsoxutyun@ chhajoghvets.",
@@ -109,10 +155,31 @@
     "livekitUnavailable": "LiveKit@ kargavorvats che serverum.",
     "notActive": "Handipum@ aktiv che.",
     "tokenError": "Chhajoghvets stanal token.",
-    "leave": "Durs gal",
+    "leave": "Դուրս գալ",
+    "endCall": "Ավարտել զանգը",
+    "endFailed": "Չհաջողվեց ավարտել զանգը",
     "waitingGuests": "Spasum en",
     "noWaiting": "Spasoghner chkan.",
-    "controlsAria": "Senyaki karavarum"
+    "controlsAria": "Senyaki karavarum",
+    "mic": "Խոսափող",
+    "micOn": "Խոսափողը միացված է",
+    "micOff": "Խոսափողն անջատված է",
+    "camera": "Տեսախցիկ",
+    "cameraOn": "Տեսախցիկը միացված է",
+    "cameraOff": "Տեսախցիկն անջատված է",
+    "shareScreen": "Էկրանի ցուցադրում",
+    "shareOn": "Ցուցադրումը միացված է",
+    "shareOff": "Ցուցադրումն անջատված է",
+    "chat": "Զրույց",
+    "chatTitle": "Զրույց",
+    "minimize": "Ծալել",
+    "expand": "Վերադառնալ զանգին",
+    "callEnded": "Զանգն ավարտված է.",
+    "mediaBlocked": "Դիտարկիչը արգելել է տեսախցիկն ու խոսափողը այս էջում։ Թույլատրեք դրանք կայքի կարգավորումներում և սեղմեք կրկին։",
+    "chatEmpty": "Հաղորդագրություններ դեռ չկան։",
+    "chatLoading": "Haghordagrutyunner@ bertsnum en…",
+    "chatPlaceholder": "Հաղորդագրություն",
+    "chatSend": "Ուղարկել"
   },
   "guest": {
     "title": "Mtnel tesahandipum",
@@ -133,10 +200,25 @@
   },
   "crossModule": {
     "actionLabel": "Tesahandipum",
-    "startNew": "Skseł nor tesahandipum",
-    "linkExisting": "Kaparvel verjin avartvats@",
+    "openRoom": "Batsel tesahandipman senyak@",
+    "startNew": "Sksel urish senyak",
     "meetingTitle": "Handipum — {label}",
-    "actionError": "Chhajoghvets skseł kam kaparvel tesahandipum.",
-    "noEndedMeetings": "Avartvats handipumner chkan."
+    "actionError": "Chhajoghvets batsel kam stegtsel tesahandipman senyak@."
+  },
+  "defaultTitle": "Ակնթարթային հանդիպում",
+  "suggestedTitlePrefix": "Հանդիպում",
+  "titleLabel": "Հանդիպման անուն",
+  "durationGuard": {
+    "title": "Շարունակե՞նք հանդիպումը",
+    "hint": "Եթե ոչ ոք չսեղմի, հանդիպումը կավարտվի",
+    "continue": "Շարունակել",
+    "continueFailed": "Չհաջողվեց շարունակել։ Կրկին սեղմեք։",
+    "countdownAria": "Մնացել է {time}"
+  },
+  "colleaguePrompt": {
+    "title": "Տեսահանդիպման հրավեր",
+    "body": "{inviter}-ը հրավիրում է ձեզ «{meeting}».",
+    "accept": "Ընդունել",
+    "decline": "Մերժել"
   }
 }

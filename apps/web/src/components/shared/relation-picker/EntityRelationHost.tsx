@@ -199,7 +199,7 @@ export function EntityRelationHost({
       context?: RelationCreateContext,
     ) => {
       if (kind === 'employee') return;
-      if (kind === 'order') return;
+      if (kind === 'order' || kind === 'deal') return;
       if (kind === 'credential') {
         const prefill = buildRelationCreatePrefill(kind, searchQuery, context, intent);
         setCreatePrefill(prefill);
