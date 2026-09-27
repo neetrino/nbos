@@ -75,6 +75,7 @@
     "inviteRevoked": "Kasetsvats",
     "colleagueInvites": "Հրավիրել գործընկերների",
     "colleagueInvitesHint": "Որոնեք աշխատակիցներին անունով։ Նրանք կստանան NBOS հրավեր՝ Ընդունել/Մերժել կոճակներով՝ առանց հյուրի սպասասրահի։",
+    "copyGuestLink": "Պատճենել հղումը",
     "colleagueSearch": "Գործընկերներ",
     "colleagueSearchPlaceholder": "Որոնել անունով…",
     "colleagueInviteError": "Չհաջողվեց ուղարկել գործընկերների հրավերները։",

@@ -75,6 +75,7 @@
     "inviteRevoked": "Revoked",
     "colleagueInvites": "Invite colleagues",
     "colleagueInvitesHint": "Search employees by name. They get an in-app Accept/Decline prompt — no guest waiting room.",
+    "copyGuestLink": "Copy guest link",
     "colleagueSearch": "Colleagues",
     "colleagueSearchPlaceholder": "Search by name…",
     "colleagueInviteError": "Could not send colleague invites.",

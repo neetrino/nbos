@@ -147,6 +147,52 @@ describe('VideoMeetingsColleagueInvitesService', () => {
     );
   });
 
+  it('does not notify while the meeting has not started', async () => {
+    prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue({
+      id: 'm1',
+      title: 'Meeting 1',
+      hostEmployeeId: HOST.id,
+      ownerEmployeeId: HOST.id,
+      status: VideoMeetingStatus.CREATED,
+    });
+    prisma.employee.findMany = vi.fn().mockResolvedValue([
+      {
+        id: COLLEAGUE.id,
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: COLLEAGUE.email,
+      },
+    ]);
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue(null);
+    prisma.videoMeetingParticipant.create = vi.fn().mockResolvedValue({
+      id: 'p-colleague',
+      employeeId: COLLEAGUE.id,
+      displayName: 'Ada Lovelace',
+      admissionStatus: VideoMeetingAdmissionStatus.WAITING,
+      createdAt: new Date('2026-09-26T12:00:00.000Z'),
+    });
+
+    await service.invite(HOST, 'm1', [COLLEAGUE.id]);
+
+    expect(notifications.create).not.toHaveBeenCalled();
+  });
+
+  it('releases waiting invites once the meeting is live', async () => {
+    prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue({
+      title: 'Meeting 1',
+      status: VideoMeetingStatus.ACTIVE,
+    });
+    prisma.videoMeetingParticipant.findMany = vi
+      .fn()
+      .mockResolvedValue([{ employeeId: COLLEAGUE.id }]);
+
+    await service.releaseWaitingInvites(HOST, 'm1');
+
+    expect(notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientId: COLLEAGUE.id, entityId: 'm1' }),
+    );
+  });
+
   it('rejects invite from a non-host', async () => {
     prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue({
       id: 'm1',

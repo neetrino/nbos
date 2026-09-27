@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   EmployeeStatusEnum,
   PrismaClient,
@@ -11,7 +11,10 @@ import type { CurrentUserPayload } from '../../common/decorators';
 import { NotificationService } from '../notifications/notification.service';
 import { requireHostOrOwner } from './video-meetings-admission-guards';
 import { buildEmployeeDisplayName } from './video-meetings-guest-safety';
-import { VIDEO_MEETING_COLLEAGUE_INVITE_NOTIFICATION_TYPE } from './video-meetings.constants';
+import {
+  notifyColleagueInvite,
+  releaseWaitingColleagueInvites,
+} from './video-meetings-colleague-release';
 
 export type ColleagueInviteListItemDto = {
   participantId: string;
@@ -40,8 +43,6 @@ export type ColleagueInviteActionResult = {
 
 @Injectable()
 export class VideoMeetingsColleagueInvitesService {
-  private readonly logger = new Logger(VideoMeetingsColleagueInvitesService.name);
-
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly notifications: NotificationService,
@@ -66,11 +67,13 @@ export class VideoMeetingsColleagueInvitesService {
       throw new BadRequestException('One or more employees were not found or are inactive');
     }
     const inviterName = buildEmployeeDisplayName(user);
+    const notifyNow = meeting.status === VideoMeetingStatus.ACTIVE;
     const results: ColleagueInviteListItemDto[] = [];
     for (const employee of employees) {
       const row = await this.upsertWaitingColleague(meetingId, employee);
       results.push(serializeColleague(row));
-      await this.notifyColleague({
+      if (!notifyNow) continue;
+      await notifyColleagueInvite(this.notifications, {
         recipientId: employee.id,
         meetingId,
         meetingTitle: meeting.title,
@@ -78,6 +81,11 @@ export class VideoMeetingsColleagueInvitesService {
       });
     }
     return results;
+  }
+
+  /** Popup invites go out when the meeting becomes live, not while it is still scheduled. */
+  async releaseWaitingInvites(user: CurrentUserPayload, meetingId: string): Promise<void> {
+    await releaseWaitingColleagueInvites(this.prisma, this.notifications, user, meetingId);
   }
 
   async listForMeeting(
@@ -104,11 +112,7 @@ export class VideoMeetingsColleagueInvitesService {
         employeeId: user.id,
         kind: VideoMeetingParticipantKind.EMPLOYEE,
         admissionStatus: VideoMeetingAdmissionStatus.WAITING,
-        meeting: {
-          status: {
-            notIn: [VideoMeetingStatus.ENDED, VideoMeetingStatus.CANCELLED],
-          },
-        },
+        meeting: { status: VideoMeetingStatus.ACTIVE },
       },
       include: {
         meeting: { select: { id: true, title: true, status: true, hostEmployeeId: true } },
@@ -228,33 +232,6 @@ export class VideoMeetingsColleagueInvitesService {
         leftAt: null,
       },
     });
-  }
-
-  private async notifyColleague(params: {
-    recipientId: string;
-    meetingId: string;
-    meetingTitle: string;
-    inviterName: string;
-  }): Promise<void> {
-    try {
-      await this.notifications.create({
-        recipientId: params.recipientId,
-        type: VIDEO_MEETING_COLLEAGUE_INVITE_NOTIFICATION_TYPE,
-        sourceModule: 'VIDEO_MEETINGS',
-        title: params.meetingTitle,
-        body: `${params.inviterName} invited you to a video meeting`,
-        link: `/video-meetings/${params.meetingId}`,
-        actionLabel: 'Respond',
-        entityType: 'VIDEO_MEETING',
-        entityId: params.meetingId,
-        category: 'collaboration',
-        priority: 'high',
-        dedupeKey: `${VIDEO_MEETING_COLLEAGUE_INVITE_NOTIFICATION_TYPE}:${params.meetingId}:${params.recipientId}`,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Colleague invite notification failed: ${message}`);
-    }
   }
 }
 

@@ -75,6 +75,7 @@
     "inviteRevoked": "Отозвано",
     "colleagueInvites": "Пригласить коллег",
     "colleagueInvitesHint": "Найдите сотрудников по имени. Они получат приглашение в NBOS с кнопками Принять/Отклонить — без гостевой комнаты ожидания.",
+    "copyGuestLink": "Скопировать ссылку",
     "colleagueSearch": "Коллеги",
     "colleagueSearchPlaceholder": "Поиск по имени…",
     "colleagueInviteError": "Не удалось отправить приглашения коллегам.",

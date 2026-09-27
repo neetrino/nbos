@@ -24,6 +24,7 @@ import {
   VideoMeetingTokenRequestDto,
 } from './dto/video-meetings.dto';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
+import { VideoMeetingsColleagueInvitesService } from './video-meetings-colleague-invites.service';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
@@ -38,6 +39,7 @@ import { VideoMeetingsService } from './video-meetings.service';
 export class VideoMeetingsController {
   constructor(
     private readonly videoMeetingsService: VideoMeetingsService,
+    private readonly colleagueInvites: VideoMeetingsColleagueInvitesService,
     private readonly invitesService: VideoMeetingsInvitesService,
     private readonly admissionService: VideoMeetingsAdmissionService,
     private readonly recordingService: VideoMeetingsRecordingService,
@@ -96,8 +98,10 @@ export class VideoMeetingsController {
   @ApiOperation({
     summary: 'Start meeting; ensure LiveKit room when configured',
   })
-  start(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
-    return this.videoMeetingsService.start(user, id);
+  async start(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
+    const card = await this.videoMeetingsService.start(user, id);
+    await this.colleagueInvites.releaseWaitingInvites(user, id);
+    return card;
   }
 
   @Post(':id/token')
