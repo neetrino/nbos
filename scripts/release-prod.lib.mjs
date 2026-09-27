@@ -9,11 +9,7 @@ export function parseReleaseProdArgs(argv) {
   const help = argv.includes('--help') || argv.includes('-h');
   const deployArgs = argv.filter(
     (arg) =>
-      arg !== '--' &&
-      arg !== '--status' &&
-      arg !== '--dry-run' &&
-      arg !== '--help' &&
-      arg !== '-h',
+      arg !== '--' && arg !== '--status' && arg !== '--dry-run' && arg !== '--help' && arg !== '-h',
   );
   return { statusOnly, help, deployArgs };
 }

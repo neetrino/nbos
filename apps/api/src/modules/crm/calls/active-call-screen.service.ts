@@ -1,17 +1,40 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { mapCallDirection, parseDurationSec } from './call-response.map';
+import {
+  buildRecentConversationCards,
+  lidsOfGroups,
+  pickRecentConversationGroups,
+  type RecentConnection,
+} from './active-call-recent';
+import { conversationDurationSec, conversationPhase, normalizeCallLid } from './call-conversation';
 import { CallAccessPolicyService } from './call-access-policy.service';
 import type { CallAccessActor } from './call-access.types';
-import { CALL_SCREEN_RECENT_LIMIT } from './calls.constants';
+import { CALL_SCREEN_RECENT_LIMIT, CALL_SCREEN_RECENT_SCAN_FACTOR } from './calls.constants';
 import { mapActiveCallScreen, type ActiveCallScreenSnapshot } from './active-call-screen.map';
-import { mapAtsStateToPhase } from '../../integrations/ats/ats-call-realtime.phase';
 import { AtsClickToCallLiveReconcileService } from '../../integrations/ats/ats-click-to-call-live-reconcile.service';
+
+const SCREEN_LEG_SELECT = {
+  state: true,
+  billsec: true,
+  disposition: true,
+} as const;
+
+const RECENT_CONNECTION_SELECT = {
+  id: true,
+  lid: true,
+  calldirect: true,
+  state: true,
+  createdAt: true,
+  billsec: true,
+} as const;
+
+const ANSWERED_DISPOSITION = 'ANSWERED';
 
 const SCREEN_SELECT = {
   id: true,
   uid: true,
+  lid: true,
   calldirect: true,
   state: true,
   phone: true,
@@ -62,12 +85,15 @@ export class ActiveCallScreenService {
       select: SCREEN_SELECT,
     });
     if (!row) throw new NotFoundException(`Call ${callId} not found`);
-    const [projectName, productName, recentCalls] = await Promise.all([
+    const lid = normalizeCallLid(row.lid);
+    const [projectName, productName, recentCalls, legs] = await Promise.all([
       this.resolveProjectName(row.deal?.projectId ?? null),
       Promise.resolve(row.deal?.existingProduct?.name ?? null),
-      this.findRecentCalls(row.phone ?? row.clid, row.id, accessWhere),
+      this.findRecentCalls(row.phone ?? row.clid, row.id, accessWhere, lid),
+      this.findConversationLegs(lid, accessWhere),
     ]);
-    return mapActiveCallScreen(row, { projectName, productName, recentCalls });
+    const snapshot = mapActiveCallScreen(row, { projectName, productName, recentCalls });
+    return overlayConversationScreen(snapshot, legs);
   }
 
   private async resolveProjectName(projectId: string | null): Promise<string | null> {
@@ -79,24 +105,82 @@ export class ActiveCallScreenService {
     return project?.name ?? null;
   }
 
+  private async findConversationLegs(
+    lid: string | null,
+    accessWhere: Prisma.AtsCallEventWhereInput,
+  ) {
+    if (!lid) return [];
+    return this.prisma.atsCallEvent.findMany({
+      where: { AND: [accessWhere, { lid }] },
+      select: SCREEN_LEG_SELECT,
+    });
+  }
+
   private async findRecentCalls(
     phone: string | null,
     callId: string,
     accessWhere: Prisma.AtsCallEventWhereInput,
+    lid: string | null,
   ) {
     if (!phone) return [];
-    const rows = await this.prisma.atsCallEvent.findMany({
-      where: { AND: [{ phone, id: { not: callId } }, accessWhere] },
-      orderBy: { createdAt: 'desc' },
-      take: CALL_SCREEN_RECENT_LIMIT,
-      select: { id: true, calldirect: true, state: true, createdAt: true, billsec: true },
-    });
-    return rows.map((row) => ({
-      id: row.id,
-      direction: mapCallDirection(row.calldirect),
-      phase: mapAtsStateToPhase(row.state),
-      createdAt: row.createdAt,
-      durationSec: parseDurationSec(row.billsec),
-    }));
+    const scanned = await this.loadRecentScan(phone, callId, accessWhere, lid);
+    const picked = pickRecentConversationGroups(scanned, CALL_SCREEN_RECENT_LIMIT);
+    const legs = await this.loadRecentLidLegs(picked, accessWhere, callId);
+    return buildRecentConversationCards(picked, legs);
   }
+
+  private loadRecentScan(
+    phone: string,
+    callId: string,
+    accessWhere: Prisma.AtsCallEventWhereInput,
+    lid: string | null,
+  ): Promise<RecentConnection[]> {
+    return this.prisma.atsCallEvent.findMany({
+      where: recentCallWhere(phone, callId, accessWhere, lid),
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: CALL_SCREEN_RECENT_LIMIT * CALL_SCREEN_RECENT_SCAN_FACTOR,
+      select: RECENT_CONNECTION_SELECT,
+    });
+  }
+
+  private async loadRecentLidLegs(
+    picked: ReadonlyArray<readonly RecentConnection[]>,
+    accessWhere: Prisma.AtsCallEventWhereInput,
+    callId: string,
+  ): Promise<RecentConnection[]> {
+    const lids = lidsOfGroups(picked);
+    if (lids.length === 0) return [];
+    return this.prisma.atsCallEvent.findMany({
+      where: { AND: [accessWhere, { lid: { in: lids } }, { id: { not: callId } }] },
+      select: RECENT_CONNECTION_SELECT,
+    });
+  }
+}
+
+function recentCallWhere(
+  phone: string,
+  callId: string,
+  accessWhere: Prisma.AtsCallEventWhereInput,
+  lid: string | null,
+): Prisma.AtsCallEventWhereInput {
+  const phoneWhere = { phone, id: { not: callId } };
+  if (!lid) return { AND: [phoneWhere, accessWhere] };
+  return {
+    AND: [phoneWhere, { OR: [{ lid: null }, { lid: { not: lid } }] }, accessWhere],
+  };
+}
+
+function overlayConversationScreen(
+  snapshot: ActiveCallScreenSnapshot,
+  legs: ReadonlyArray<{ state: string | null; billsec: string | null; disposition: string | null }>,
+): ActiveCallScreenSnapshot {
+  if (legs.length <= 1) return snapshot;
+  const durationSec = conversationDurationSec(legs);
+  const answered = legs.some((leg) => leg.disposition === ANSWERED_DISPOSITION);
+  return {
+    ...snapshot,
+    phase: conversationPhase(legs),
+    durationSec: durationSec ?? snapshot.durationSec,
+    disposition: answered ? ANSWERED_DISPOSITION : snapshot.disposition,
+  };
 }

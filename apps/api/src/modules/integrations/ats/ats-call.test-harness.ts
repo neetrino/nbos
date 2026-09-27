@@ -28,6 +28,7 @@ export interface AtsIngestEventRow {
   createdAt: Date;
   responsibleEmployeeId: string | null;
   answeredEmployeeId: string | null;
+  lid: string | null;
 }
 
 export interface AtsIngestTestState {
@@ -130,6 +131,7 @@ function createEventMocks(state: AtsIngestTestState) {
             createdAt: data.createdAt ?? new Date(),
             responsibleEmployeeId: data.responsibleEmployeeId ?? null,
             answeredEmployeeId: data.answeredEmployeeId ?? null,
+            lid: data.lid ?? null,
           };
           state.events.set(data.uid, row);
           return row;

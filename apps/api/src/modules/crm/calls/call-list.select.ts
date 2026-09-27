@@ -1,6 +1,13 @@
+export const CALL_CONVERSATION_KEY_SELECT = {
+  id: true,
+  lid: true,
+  createdAt: true,
+} as const;
+
 export const CALL_LIST_SELECT = {
   id: true,
   uid: true,
+  lid: true,
   calldirect: true,
   phone: true,
   clid: true,
@@ -13,6 +20,7 @@ export const CALL_LIST_SELECT = {
   dealId: true,
   responsibleEmployeeId: true,
   answeredEmployeeId: true,
+  initiatedByEmployeeId: true,
   note: true,
   recordingStatus: true,
   createdAt: true,

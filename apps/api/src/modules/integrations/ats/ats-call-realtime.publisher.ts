@@ -1,6 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  conversationPhase,
+  conversationStatus,
+  normalizeCallLid,
+} from '../../crm/calls/call-conversation';
 import { mapCallDirection } from '../../crm/calls/call-response.map';
 import {
   CALL_SSE_EVENT,
@@ -13,12 +18,16 @@ import {
   resolveCallLifecycleEvent,
   storedStateMatchesLifecycleEvent,
 } from './ats-call-realtime.phase';
+import type { ActiveCallPhase } from '../../realtime/call-realtime.types';
+import { accessibleConnection, resolveFinishedRecipients } from './ats-call-realtime.recipients';
 import { formatPersonName, resolveLifecycleTarget } from './ats-call-realtime.target';
 import type { AtsWebhookPayload } from './ats.types';
 
 const LIFECYCLE_SELECT = {
   id: true,
   uid: true,
+  lid: true,
+  createdAt: true,
   phone: true,
   clid: true,
   state: true,
@@ -42,6 +51,8 @@ export type AtsCallIngestMeta = {
 type LifecycleCallRow = {
   id: string;
   uid: string;
+  lid: string | null;
+  createdAt: Date;
   phone: string | null;
   clid: string | null;
   state: string | null;
@@ -101,7 +112,8 @@ export class AtsCallRealtimePublisher {
   ): Promise<void> {
     const call = await this.loadCall(callId);
     if (!call) return;
-    if (!storedStateMatchesLifecycleEvent(call.state, eventName)) {
+    const members = await this.loadConversation(call);
+    if (!eventMatchesConversation(eventName, conversationPhase(members))) {
       this.logger.debug({
         event: 'ats_call_sse_skipped_stale',
         uid: payload.uid,
@@ -109,14 +121,46 @@ export class AtsCallRealtimePublisher {
       });
       return;
     }
+    if (eventName === CALL_SSE_EVENT.FINISHED) {
+      await this.publishFinished(payload, members, eventName);
+      return;
+    }
     const target = resolveLifecycleTarget(payload, call);
-    if (!target) {
+    const visible = target ? accessibleConnection(members, target.employeeId) : null;
+    if (!target || !visible) {
       this.logger.debug({ event: 'ats_call_sse_skipped', uid: payload.uid, sse: eventName });
       return;
     }
+    await this.publishVisible(target.employeeId, visible, members, eventName);
+  }
+
+  private async publishFinished(
+    payload: AtsWebhookPayload,
+    members: LifecycleCallRow[],
+    eventName: CallLifecycleSseEventName,
+  ): Promise<void> {
+    const recipients = resolveFinishedRecipients(members);
+    if (recipients.length === 0) {
+      this.logger.debug({ event: 'ats_call_sse_skipped', uid: payload.uid, sse: eventName });
+      return;
+    }
+    for (const recipient of recipients) {
+      await this.publishVisible(recipient.employeeId, recipient.call, members, eventName);
+    }
+  }
+
+  private async publishVisible(
+    employeeId: string,
+    visible: LifecycleCallRow,
+    members: LifecycleCallRow[],
+    eventName: CallLifecycleSseEventName,
+  ): Promise<void> {
     await this.eventBus.publish({
       event: eventName,
-      payload: { employeeId: target.employeeId, ...toSsePayload(call, eventName) },
+      payload: {
+        employeeId,
+        ...toSsePayload(conversationSseCall(visible, members), eventName),
+      },
     });
   }
 
@@ -126,6 +170,42 @@ export class AtsCallRealtimePublisher {
       select: LIFECYCLE_SELECT,
     });
   }
+
+  private async loadConversation(call: LifecycleCallRow): Promise<LifecycleCallRow[]> {
+    const lid = normalizeCallLid(call.lid);
+    if (!lid) return [call];
+    const rows = await this.prisma.atsCallEvent.findMany({
+      where: { lid },
+      select: LIFECYCLE_SELECT,
+    });
+    return rows.length > 0 ? rows : [call];
+  }
+}
+
+function eventMatchesConversation(
+  eventName: CallLifecycleSseEventName,
+  phase: ActiveCallPhase,
+): boolean {
+  if (eventName === CALL_SSE_EVENT.STARTED) return phase === 'ringing';
+  if (eventName === CALL_SSE_EVENT.ANSWERED) return phase === 'answered';
+  return phase === 'ended';
+}
+
+function conversationSseCall(
+  anchor: LifecycleCallRow,
+  members: LifecycleCallRow[],
+): LifecycleCallRow {
+  const withPhone = members.find((member) => member.phone ?? member.clid) ?? anchor;
+  const withName = members.find((member) => member.contact || member.lead) ?? anchor;
+  return {
+    ...anchor,
+    state: conversationStatus(members),
+    phone: withPhone.phone ?? anchor.phone,
+    clid: withPhone.clid ?? anchor.clid,
+    calldirect: withPhone.calldirect ?? anchor.calldirect,
+    contact: withName.contact ?? anchor.contact,
+    lead: withName.lead ?? anchor.lead,
+  };
 }
 
 export function toSsePayload(

@@ -107,4 +107,86 @@ describe('ActiveCallScreenService recent-call filter', () => {
       }),
     );
   });
+
+  it('shows one live conversation when another UID shares the LID', async () => {
+    const { prisma, service } = createService();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({
+      ...SCREEN_ROW,
+      lid: 'L-1',
+      state: 'start',
+      billsec: '1',
+    });
+    prisma.atsCallEvent.findFirst.mockResolvedValue({ id: 'call-1' });
+    prisma.atsCallEvent.findMany.mockImplementation(async (args: { select?: { id?: boolean } }) => {
+      if (args.select?.id) return [];
+      return [
+        { state: 'start', billsec: '1', disposition: null },
+        { state: 'status', billsec: '40', disposition: 'ANSWERED' },
+      ];
+    });
+
+    const snapshot = await service.getScreen('call-1', OWN_ACTOR);
+
+    expect(snapshot.callId).toBe('call-1');
+    expect(snapshot.uid).toBe('uid-1');
+    expect(snapshot.phase).toBe('answered');
+    expect(snapshot.durationSec).toBe(40);
+    expect(snapshot.noteVersion).toBe(4);
+    expect(snapshot.recordingStatus).toBeNull();
+    expect(prisma.atsCallEvent.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          AND: [
+            { phone: '+37499123456', id: { not: 'call-1' } },
+            { OR: [{ lid: null }, { lid: { not: 'L-1' } }] },
+            expect.any(Object),
+          ],
+        },
+      }),
+    );
+  });
+
+  it('returns one recent card per LID and keeps the access predicate', async () => {
+    const { prisma, service } = createService();
+    prisma.atsCallEvent.findUnique.mockResolvedValue({ ...SCREEN_ROW, lid: 'L-current' });
+    prisma.atsCallEvent.findFirst.mockResolvedValue({ id: 'call-1' });
+    const newer = recentRow('call-new', 'L-9', '2026-09-26T09:05:00.000Z', '40');
+    const older = recentRow('call-old', 'L-9', '2026-09-26T09:00:00.000Z', '12');
+    const other = recentRow('call-other', null, '2026-09-26T08:00:00.000Z', '3');
+    prisma.atsCallEvent.findMany.mockImplementation(async (args: { select?: { id?: boolean } }) => {
+      if (args.select?.id) return [newer, older, other];
+      return [];
+    });
+
+    const snapshot = await service.getScreen('call-1', OWN_ACTOR);
+
+    expect(snapshot.recentCalls.map((item) => item.id)).toEqual(['call-old', 'call-other']);
+    expect(snapshot.recentCalls[0]?.durationSec).toBe(40);
+    const recentQuery = prisma.atsCallEvent.findMany.mock.calls.find(
+      (call) => call[0]?.select?.id && call[0]?.take,
+    );
+    expect(recentQuery?.[0]?.where).toEqual({
+      AND: [
+        { phone: '+37499123456', id: { not: 'call-1' } },
+        { OR: [{ lid: null }, { lid: { not: 'L-current' } }] },
+        await new CallAccessPolicyService(prisma as never).resolveAccessWhere(OWN_ACTOR),
+      ],
+    });
+    expect(
+      prisma.atsCallEvent.findMany.mock.calls.some(
+        (call) => call[0]?.where?.AND?.[1]?.lid?.in?.[0] === 'L-9',
+      ),
+    ).toBe(true);
+  });
 });
+
+function recentRow(id: string, lid: string | null, createdAt: string, billsec: string) {
+  return {
+    id,
+    lid,
+    calldirect: '0',
+    state: 'finish',
+    createdAt: new Date(createdAt),
+    billsec,
+  };
+}
