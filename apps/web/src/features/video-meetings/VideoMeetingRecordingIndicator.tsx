@@ -15,6 +15,7 @@ import {
 } from '@/lib/api/video-meetings';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CALL_ICON_BUTTON_CLASS } from './video-meeting-call-styles';
+import { VideoMeetingRecordingElapsed } from './VideoMeetingRecordingElapsed';
 
 type VideoMeetingRecordingIndicatorProps = {
   meetingId?: string;
@@ -127,22 +128,25 @@ export function VideoMeetingRecordingIndicator({
 
   if (appearance === 'icon') {
     return (
-      <RecordingIconButton
-        active={active}
-        busy={busy}
-        enabled={showControls}
-        error={error}
-        startLabel={t('start')}
-        stopLabel={t('stop')}
-        onToggle={() => {
-          if (!meetingId) return;
-          void run(() =>
-            active
-              ? videoMeetingsApi.stopRecording(meetingId)
-              : videoMeetingsApi.startRecording(meetingId),
-          );
-        }}
-      />
+      <>
+        <VideoMeetingRecordingElapsed startedAt={recording?.startedAt ?? null} running={active} />
+        <RecordingIconButton
+          active={active}
+          busy={busy}
+          enabled={showControls}
+          error={error}
+          startLabel={t('start')}
+          stopLabel={t('stop')}
+          onToggle={() => {
+            if (!meetingId) return;
+            void run(() =>
+              active
+                ? videoMeetingsApi.stopRecording(meetingId)
+                : videoMeetingsApi.startRecording(meetingId),
+            );
+          }}
+        />
+      </>
     );
   }
 
@@ -165,6 +169,7 @@ export function VideoMeetingRecordingIndicator({
         />
         <span className="font-medium">{t('label')}</span>
         <span className="text-muted-foreground">{statusLabel}</span>
+        <VideoMeetingRecordingElapsed startedAt={recording?.startedAt ?? null} running={active} />
       </div>
       {error && <p className="text-destructive text-xs">{error}</p>}
       {showControls && (
