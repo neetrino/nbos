@@ -85,7 +85,9 @@ export enum VideoMeetingStatusFilterDto {
   CREATED = 'CREATED',
   WAITING = 'WAITING',
   ACTIVE = 'ACTIVE',
+  /** Legacy alias; filters to the same rooms as IDLE. */
   ENDED = 'ENDED',
+  IDLE = 'IDLE',
   CANCELLED = 'CANCELLED',
 }
 

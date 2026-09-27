@@ -2,12 +2,14 @@ import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../../common/decorators';
 import { GuestConsentDto, GuestPrejoinDto, GuestTokenDto } from './dto/video-meetings.dto';
+import { GuestPostMessageDto, GuestThreadDto } from './dto/video-meetings-thread.dto';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { assertSafeGuestPayload } from './video-meetings-guest-safety';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import { serializeGuestRecordingIndicator } from './video-meetings-recording.serializer';
+import { VideoMeetingsThreadService } from './video-meetings-thread.service';
 
 /**
  * Guest surface — no NBOS employee session.
@@ -22,6 +24,7 @@ export class VideoMeetingsGuestController {
     private readonly admission: VideoMeetingsAdmissionService,
     private readonly consent: VideoMeetingsConsentService,
     private readonly recordings: VideoMeetingsRecordingService,
+    private readonly threadService: VideoMeetingsThreadService,
   ) {}
 
   @Post('prejoin')
@@ -84,5 +87,21 @@ export class VideoMeetingsGuestController {
     const payload = serializeGuestRecordingIndicator(recording);
     assertSafeGuestPayload(payload);
     return payload;
+  }
+
+  /** POST keeps the invite secret out of URLs and access logs. */
+  @Post('thread')
+  @Public()
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Room messages for a guest admitted to the live session' })
+  getThread(@Body() body: GuestThreadDto) {
+    return this.threadService.guestThread(body.inviteToken);
+  }
+
+  @Post('messages')
+  @Public()
+  @ApiOperation({ summary: 'Guest posts a message while admitted to the live session' })
+  postMessage(@Body() body: GuestPostMessageDto) {
+    return this.threadService.guestPostMessage(body.inviteToken, body.body);
   }
 }

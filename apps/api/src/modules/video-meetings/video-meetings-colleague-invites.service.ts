@@ -236,8 +236,8 @@ export class VideoMeetingsColleagueInvitesService {
 }
 
 function assertMeetingOpenForInvites(status: VideoMeetingStatus): void {
-  if (status === VideoMeetingStatus.ENDED || status === VideoMeetingStatus.CANCELLED) {
-    throw new BadRequestException('Cannot manage invites for an ended or cancelled meeting');
+  if (status === VideoMeetingStatus.CANCELLED) {
+    throw new BadRequestException('Cannot manage invites for a cancelled meeting');
   }
 }
 

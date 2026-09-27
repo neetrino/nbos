@@ -23,6 +23,7 @@ import {
   VideoMeetingLifecycleConfirmDto,
   VideoMeetingTokenRequestDto,
 } from './dto/video-meetings.dto';
+import { VideoMeetingByEntityQueryDto } from './dto/video-meetings-thread.dto';
 import { VideoMeetingsAdmissionService } from './video-meetings-admission.service';
 import { VideoMeetingsColleagueInvitesService } from './video-meetings-colleague-invites.service';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
@@ -30,6 +31,7 @@ import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
 import { VideoMeetingsRecordingPlaybackService } from './video-meetings-recording-playback.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
+import { VideoMeetingsListService } from './video-meetings-list.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
 @ApiTags('Video Meetings')
@@ -45,6 +47,7 @@ export class VideoMeetingsController {
     private readonly recordingService: VideoMeetingsRecordingService,
     private readonly consentService: VideoMeetingsConsentService,
     private readonly playbackService: VideoMeetingsRecordingPlaybackService,
+    private readonly listService: VideoMeetingsListService,
   ) {}
 
   @Post()
@@ -58,14 +61,21 @@ export class VideoMeetingsController {
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
   @ApiOperation({ summary: 'List video meetings accessible to the caller' })
   list(@CurrentUser() user: CurrentUserPayload, @Query() query: ListVideoMeetingsQueryDto) {
-    return this.videoMeetingsService.list(user, query);
+    return this.listService.list(user, query);
   }
 
   @Get('history')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
-  @ApiOperation({ summary: 'List ended video meetings (history)' })
+  @ApiOperation({ summary: 'List idle rooms that were held at least once (history)' })
   history(@CurrentUser() user: CurrentUserPayload, @Query() query: ListVideoMeetingsQueryDto) {
-    return this.videoMeetingsService.history(user, query);
+    return this.listService.history(user, query);
+  }
+
+  @Get('by-entity')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Latest non-cancelled room linked to a business record, or null' })
+  byEntity(@CurrentUser() user: CurrentUserPayload, @Query() query: VideoMeetingByEntityQueryDto) {
+    return this.listService.byEntity(user, query);
   }
 
   @Get('consent/notice')

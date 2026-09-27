@@ -55,7 +55,7 @@ export function VideoMeetingLaunchAction({
 }: Omit<VideoMeetingDetailActionsProps, 'onEnd' | 'onCancel'>) {
   const t = useTranslations('videoMeetings');
   const live = status === 'ACTIVE';
-  const canStart = canManage && !live && status !== 'ENDED' && status !== 'CANCELLED';
+  const canStart = canManage && !live && status !== 'CANCELLED';
   if (!canStart && !live) return null;
 
   return (

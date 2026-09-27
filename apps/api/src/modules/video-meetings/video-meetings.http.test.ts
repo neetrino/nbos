@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Injectable,
   UnauthorizedException,
+  ValidationPipe,
   type INestApplication,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -24,6 +25,10 @@ import { VideoMeetingsInvitesService } from './video-meetings-invites.service';
 import { VideoMeetingsRecordingPlaybackService } from './video-meetings-recording-playback.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import { VideoMeetingsService } from './video-meetings.service';
+import { VideoMeetingsColleagueInvitesService } from './video-meetings-colleague-invites.service';
+import { VideoMeetingsListService } from './video-meetings-list.service';
+import { VideoMeetingsThreadController } from './video-meetings-thread.controller';
+import { VideoMeetingsThreadService } from './video-meetings-thread.service';
 
 const BASE = '/api/video-meetings';
 const GUEST_BASE = '/api/video-meetings/guest';
@@ -61,8 +66,6 @@ function userWith(permissions: Record<string, string>): CurrentUserPayload {
 
 type MockService = {
   create: ReturnType<typeof vi.fn>;
-  list: ReturnType<typeof vi.fn>;
-  history: ReturnType<typeof vi.fn>;
   getCard: ReturnType<typeof vi.fn>;
   start: ReturnType<typeof vi.fn>;
   end: ReturnType<typeof vi.fn>;
@@ -72,15 +75,36 @@ type MockService = {
   getRecordingStatus: ReturnType<typeof vi.fn>;
 };
 
+const emptyPage = { items: [], meta: { page: 1, pageSize: 20, total: 0 } };
+
+function createListMock() {
+  return {
+    list: vi.fn().mockResolvedValue(emptyPage),
+    history: vi.fn().mockResolvedValue(emptyPage),
+    byEntity: vi.fn().mockResolvedValue(null),
+  };
+}
+
+function createThreadMock() {
+  return {
+    getThread: vi.fn().mockResolvedValue({ meetingId: 'm1', items: [] }),
+    postMessage: vi.fn().mockResolvedValue({ id: 'msg-1' }),
+    guestThread: vi.fn().mockResolvedValue({ items: [] }),
+    guestPostMessage: vi.fn().mockResolvedValue({ id: 'msg-2' }),
+  };
+}
+
 async function bootApp(featureEnabled: boolean): Promise<{
   app: INestApplication;
   service: MockService;
+  listService: ReturnType<typeof createListMock>;
+  threadService: ReturnType<typeof createThreadMock>;
   admission: { guestPrejoin: ReturnType<typeof vi.fn>; guestToken: ReturnType<typeof vi.fn> };
 }> {
+  const listService = createListMock();
+  const threadService = createThreadMock();
   const service: MockService = {
     create: vi.fn().mockResolvedValue({ id: 'm1', title: 'Мгновенная встреча' }),
-    list: vi.fn().mockResolvedValue({ items: [], meta: { page: 1, pageSize: 20, total: 0 } }),
-    history: vi.fn().mockResolvedValue({ items: [], meta: { page: 1, pageSize: 20, total: 0 } }),
     getCard: vi.fn().mockResolvedValue({ id: 'm1' }),
     start: vi.fn().mockResolvedValue({ id: 'm1', sessions: [] }),
     end: vi.fn().mockResolvedValue({ id: 'm1' }),
@@ -133,9 +157,19 @@ async function bootApp(featureEnabled: boolean): Promise<{
   };
 
   const moduleRef = await Test.createTestingModule({
-    controllers: [VideoMeetingsController, VideoMeetingsGuestController],
+    controllers: [
+      VideoMeetingsController,
+      VideoMeetingsThreadController,
+      VideoMeetingsGuestController,
+    ],
     providers: [
       { provide: VideoMeetingsService, useValue: service },
+      { provide: VideoMeetingsListService, useValue: listService },
+      { provide: VideoMeetingsThreadService, useValue: threadService },
+      {
+        provide: VideoMeetingsColleagueInvitesService,
+        useValue: { releaseWaitingInvites: vi.fn() },
+      },
       { provide: VideoMeetingsAdmissionService, useValue: admission },
       { provide: VideoMeetingsInvitesService, useValue: invites },
       { provide: VideoMeetingsRecordingService, useValue: recordings },
@@ -152,8 +186,11 @@ async function bootApp(featureEnabled: boolean): Promise<{
 
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+  );
   await app.listen(0, '127.0.0.1');
-  return { app, service, admission };
+  return { app, service, listService, threadService, admission };
 }
 
 describe('VideoMeetings HTTP', () => {
@@ -162,11 +199,15 @@ describe('VideoMeetings HTTP', () => {
   let enabledBase = '';
   let disabledBase = '';
   let service: MockService;
+  let listService: ReturnType<typeof createListMock>;
+  let threadService: ReturnType<typeof createThreadMock>;
 
   beforeAll(async () => {
     const enabled = await bootApp(true);
     enabledApp = enabled.app;
     service = enabled.service;
+    listService = enabled.listService;
+    threadService = enabled.threadService;
     enabledBase = await enabledApp.getUrl();
 
     const disabled = await bootApp(false);
@@ -185,7 +226,7 @@ describe('VideoMeetings HTTP', () => {
       VIDEO_MEETINGS_ADD: 'ALL',
       VIDEO_MEETINGS_EDIT: 'ALL',
     });
-    for (const fn of Object.values(service)) {
+    for (const fn of [service, listService, threadService].flatMap((m) => Object.values(m))) {
       fn.mockClear();
     }
   });
@@ -215,7 +256,39 @@ describe('VideoMeetings HTTP', () => {
     currentUser = userWith({ CALLS_VIEW: 'ALL', CALLS_PLAY: 'ALL' });
     const response = await fetch(new URL(BASE, enabledBase), { method: 'GET' });
     expect(response.status).toBe(HttpStatus.FORBIDDEN);
-    expect(service.list).not.toHaveBeenCalled();
+    expect(listService.list).not.toHaveBeenCalled();
+  });
+
+  it('by-entity resolves before the :id route', async () => {
+    const url = new URL(`${BASE}/by-entity?entityType=CONTACT&entityId=c-1`, enabledBase);
+    const response = await fetch(url);
+    expect(response.status).toBe(HttpStatus.OK);
+    expect(listService.byEntity).toHaveBeenCalled();
+    expect(service.getCard).not.toHaveBeenCalled();
+  });
+
+  it('employee message post validates the body and reaches the thread service', async () => {
+    const url = new URL(`${BASE}/11111111-1111-4111-8111-111111111111/messages`, enabledBase);
+    const post = (body: unknown) =>
+      fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    expect((await post({})).status).toBe(HttpStatus.BAD_REQUEST);
+    expect((await post({ body: 'Hello' })).status).toBe(HttpStatus.CREATED);
+    expect(threadService.postMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('guest thread routes are public and take the invite secret in the body', async () => {
+    currentUser = null;
+    const response = await fetch(new URL(`${GUEST_BASE}/thread`, enabledBase), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ inviteToken: 'x'.repeat(20) }),
+    });
+    expect(response.status).toBe(HttpStatus.OK);
+    expect(threadService.guestThread).toHaveBeenCalledWith('x'.repeat(20));
   });
 
   it('authorized create reaches the service', async () => {

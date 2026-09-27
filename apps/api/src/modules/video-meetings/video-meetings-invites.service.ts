@@ -127,11 +127,9 @@ export class VideoMeetingsInvitesService {
     if (meeting.hostEmployeeId !== employeeId && meeting.ownerEmployeeId !== employeeId) {
       throw new ForbiddenException('Only host or owner may manage invites');
     }
-    const closed =
-      meeting.status === VideoMeetingStatus.ENDED ||
-      meeting.status === VideoMeetingStatus.CANCELLED;
+    const closed = meeting.status === VideoMeetingStatus.CANCELLED;
     if (closed && !options?.allowClosed) {
-      throw new BadRequestException('Cannot manage invites for an ended or cancelled meeting');
+      throw new BadRequestException('Cannot manage invites for a cancelled meeting');
     }
     return meeting;
   }

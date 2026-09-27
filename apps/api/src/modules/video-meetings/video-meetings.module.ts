@@ -26,18 +26,24 @@ import { VideoMeetingsRecordingReconcileService } from './video-meetings-recordi
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import { VideoMeetingsRecordingWebhookController } from './video-meetings-recording-webhook.controller';
 import { VideoMeetingsRecordingWebhookService } from './video-meetings-recording-webhook.service';
+import { VideoMeetingsListService } from './video-meetings-list.service';
+import { VideoMeetingsThreadController } from './video-meetings-thread.controller';
+import { VideoMeetingsThreadService } from './video-meetings-thread.service';
 import { VideoMeetingsService } from './video-meetings.service';
 
 @Module({
   imports: [DriveModule, CalendarModule, NotificationModule],
   controllers: [
     VideoMeetingsController,
+    VideoMeetingsThreadController,
     VideoMeetingsColleagueInvitesController,
     VideoMeetingsGuestController,
     VideoMeetingsRecordingWebhookController,
   ],
   providers: [
     VideoMeetingsService,
+    VideoMeetingsListService,
+    VideoMeetingsThreadService,
     VideoMeetingsCalendarLinkService,
     VideoMeetingsFeatureService,
     VideoMeetingsFeatureGuard,

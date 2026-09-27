@@ -1,6 +1,6 @@
 # Video Meetings — durable room and thread
 
-**Status:** approved product behavior (2026-09-27). **Not implemented.** Conferencing V1 still ends the room (`ENDED` rejects a new start) and keeps chat only inside the live LiveKit session. This file is the contract for the next implementation. It does not add a company messenger or V2 AI.
+**Status:** approved product behavior (2026-09-27). **Backend implemented** (idle lifecycle, `ENDED` → `IDLE` backfill, persisted `VideoMeetingMessage`, thread / messages / by-entity API, guest live-session thread). **UI thread pending.** It does not add a company messenger or V2 AI.
 
 ## What a room is
 

@@ -46,6 +46,7 @@
     "CREATED": "Scheduled",
     "WAITING": "Waiting",
     "ACTIVE": "Live",
+    "IDLE": "Idle",
     "ENDED": "Ended",
     "CANCELLED": "Cancelled"
   },

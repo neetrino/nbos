@@ -9,6 +9,7 @@ export const VIDEO_MEETING_STATUSES = [
   'ACTIVE',
   'ENDED',
   'CANCELLED',
+  'IDLE',
 ] as const;
 
 export type VideoMeetingStatusValue = (typeof VIDEO_MEETING_STATUSES)[number];

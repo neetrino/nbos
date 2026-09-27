@@ -1,8 +1,10 @@
 import { api } from '../api';
+import { videoMeetingThreadApi } from './video-meetings-thread';
 
 export type VideoMeetingEntityLinkType = 'DEAL' | 'PROJECT' | 'PRODUCT' | 'CONTACT';
 
-export type VideoMeetingStatus = 'CREATED' | 'WAITING' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+/** `ENDED` is legacy (backfilled to `IDLE`); kept because the DB enum still has it. */
+export type VideoMeetingStatus = 'CREATED' | 'WAITING' | 'ACTIVE' | 'IDLE' | 'ENDED' | 'CANCELLED';
 
 export type VideoMeetingEntityLink = {
   id: string;
@@ -27,10 +29,12 @@ export type VideoMeetingListItem = {
   ownerEmployeeId: string;
   endedAt: string | null;
   createdAt: string;
+  lastActivityAt: string;
+  recordingCount: number;
   entityLinks: VideoMeetingEntityLink[];
 };
 
-export type VideoMeetingCard = VideoMeetingListItem & {
+export type VideoMeetingCard = Omit<VideoMeetingListItem, 'lastActivityAt' | 'recordingCount'> & {
   scheduledStartsAt: string | null;
   scheduledEndsAt: string | null;
   cancelledAt: string | null;
@@ -155,6 +159,8 @@ async function getList(path: string, status?: VideoMeetingStatus): Promise<Pagin
 }
 
 export const videoMeetingsApi = {
+  ...videoMeetingThreadApi,
+
   create: async (title?: string): Promise<VideoMeetingCard> => {
     const resp = await api.post<VideoMeetingCard>('/api/video-meetings', title ? { title } : {});
     return resp.data;

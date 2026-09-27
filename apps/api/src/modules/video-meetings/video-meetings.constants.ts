@@ -23,6 +23,15 @@ export const VIDEO_MEETING_LIST_MAX_PAGE_SIZE = 100 as const;
 /** Default page size for list / history. */
 export const VIDEO_MEETING_LIST_DEFAULT_PAGE_SIZE = 20 as const;
 
+/** Max characters in one persisted room chat message (after trim). */
+export const VIDEO_MEETING_MESSAGE_MAX_LENGTH = 4000 as const;
+
+/** Most recent messages returned in one room thread payload. */
+export const VIDEO_MEETING_THREAD_MAX_MESSAGES = 500 as const;
+
+/** Linked rooms scanned when resolving the latest room for a business entity. */
+export const VIDEO_MEETING_BY_ENTITY_SCAN_LIMIT = 50 as const;
+
 /** LiveKit AccessToken TTL for join JWTs (seconds). */
 export const VIDEO_MEETING_LIVEKIT_TOKEN_TTL_SECONDS = 3600 as const;
 

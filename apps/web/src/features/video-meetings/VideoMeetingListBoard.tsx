@@ -13,6 +13,7 @@ const STATUS_TONE: Record<VideoMeetingStatus, string> = {
   ACTIVE: 'bg-success/15 text-success',
   CREATED: 'bg-primary/10 text-primary',
   WAITING: 'bg-primary/10 text-primary',
+  IDLE: 'bg-muted text-muted-foreground',
   ENDED: 'bg-muted text-muted-foreground',
   CANCELLED: 'bg-muted text-muted-foreground',
 };
