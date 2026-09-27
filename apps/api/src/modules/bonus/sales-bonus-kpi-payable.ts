@@ -5,8 +5,7 @@ import { isValidPayrollMonth } from '../payroll-runs/payroll-runs.constants';
 import { syncSalesKpiForEarnedPeriodEmployee } from '../payroll-runs/sync-sales-kpi-line';
 import {
   applyPayableSnapshotToBonusEntry,
-  computeAutoPayable,
-  computePayableAmount,
+  buildPayableSnapshotFields,
   resolveBonusPayoutFactor,
 } from './bonus-payable-snapshot';
 import { decimalFrom } from './bonus-pool-decimal';
@@ -82,17 +81,13 @@ export async function refreshSalesBonusesForEarnedMonth(
   });
 
   for (const entry of entries) {
-    const amount = decimalFrom(entry.amount);
-    const adjustment = decimalFrom(entry.payableAdjustment);
-    const autoPayable = computeAutoPayable(amount, factor);
-    const payableAmount = computePayableAmount(autoPayable, adjustment);
     await db.bonusEntry.update({
       where: { id: entry.id },
-      data: {
-        kpiPayoutFactor: factor,
-        payableAmount,
-        kpiGatePassed: factor.gt(0),
-      },
+      data: buildPayableSnapshotFields({
+        amount: decimalFrom(entry.amount),
+        adjustment: decimalFrom(entry.payableAdjustment),
+        factor,
+      }),
     });
   }
 }

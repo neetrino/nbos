@@ -47,6 +47,11 @@ import {
 import type { FinancePayActor } from '../compensation-profiles/finance-pay-access';
 import { seedPayrollRunSalaryLines } from './seed-payroll-run-salary-lines';
 import { querySalaryLineMonthDetail } from './salary-line-month-detail';
+import {
+  assignEmployeeSalesKpiPlan,
+  type AssignEmployeeSalesKpiPlanInput,
+  type AssignedEmployeeSalesKpiPlan,
+} from './assign-employee-sales-kpi-plan';
 import type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
 import {
   assertPayrollWriteAccess,
@@ -119,6 +124,13 @@ export class PayrollRunsService {
   ): Promise<SalaryLineMonthDetailDto> {
     await assertSalaryLineReadable(this.prisma, actor, salaryLineId);
     return querySalaryLineMonthDetail(this.prisma, salaryLineId);
+  }
+
+  async assignEmployeeSalesKpiPlan(
+    actor: FinancePayActor,
+    body: AssignEmployeeSalesKpiPlanInput,
+  ): Promise<AssignedEmployeeSalesKpiPlan> {
+    return assignEmployeeSalesKpiPlan(this.prisma, actor, body);
   }
 
   async findById(actor: FinancePayActor, id: string) {

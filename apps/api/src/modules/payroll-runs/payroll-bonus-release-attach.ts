@@ -72,6 +72,7 @@ export async function attachBonusReleasesToPayrollRun(
       amount: true,
       status: true,
       payrollRunId: true,
+      releaseType: true,
       bonusEntry: {
         select: { id: true, type: true, order: { select: { code: true } } },
       },
@@ -140,6 +141,8 @@ export async function attachBonusReleasesToPayrollRun(
       await assertSalesBonusReadyForPayrollAttach(tx, {
         bonusEntryId: rel.bonusEntry.id,
         payrollMonth: run.payrollMonth,
+        releaseAmount: rel.amount,
+        releaseType: rel.releaseType,
       });
     }
 

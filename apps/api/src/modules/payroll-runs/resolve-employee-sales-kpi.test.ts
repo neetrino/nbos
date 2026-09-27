@@ -40,7 +40,16 @@ describe('salesKpiPayoutFactorFromSnapshot', () => {
       },
       DEFAULT_KPI_GATE_RULES,
     );
-    expect(f.toString()).toBe('0.5');
+    expect(f?.toString()).toBe('0.5');
+  });
+
+  it('holds when plan or actual is missing', () => {
+    expect(
+      salesKpiPayoutFactorFromSnapshot(
+        { kpiSalesPlanAmount: null, kpiSalesActualAmount: new Decimal(600) },
+        DEFAULT_KPI_GATE_RULES,
+      ),
+    ).toBeNull();
   });
 });
 

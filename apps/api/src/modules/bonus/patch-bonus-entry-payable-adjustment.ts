@@ -84,6 +84,11 @@ export async function patchBonusEntryPayableAdjustment(
     employeeId: entry.employeeId,
     earnedPeriod: entry.earnedPeriod,
   });
+  if (factor == null) {
+    throw new BadRequestException(
+      'Sales bonus is held pending KPI plan and actual; payable cannot be adjusted until facts are stored.',
+    );
+  }
   const autoPayable = computeAutoPayable(decimalFrom(entry.amount), factor);
   const nextPayable = computePayableAmount(autoPayable, nextAdjustment);
   if (nextPayable.lt(releasedTotal)) {

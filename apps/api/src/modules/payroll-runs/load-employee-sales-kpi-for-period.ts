@@ -7,6 +7,7 @@ import {
 } from '../compensation-profiles/compensation-profile-payroll-month';
 import { buildEmployeeSalesKpiDetailFromResult } from './employee-sales-kpi-month-detail';
 import { earnedSalesPeriodForPayoutMonth } from './earned-sales-kpi-period';
+import { pickUniqueEmployeePeriodKpiResult } from './sales-kpi-period-result';
 import type {
   EmployeeSalesKpiDetailDto,
   SalaryBoardSalesKpiSummaryDto,
@@ -60,27 +61,12 @@ async function findKpiResultForEarnedPeriod(
   params: {
     employeeId: string;
     earnedPeriod: string;
-    kpiPolicyId: string;
-    salaryLineId?: string;
-    payrollRunId?: string;
   },
 ): Promise<KpiResultRow | null> {
-  const orClause =
-    params.salaryLineId != null || params.payrollRunId != null
-      ? {
-          OR: [
-            ...(params.salaryLineId != null ? [{ salaryLineId: params.salaryLineId }] : []),
-            ...(params.payrollRunId != null ? [{ payrollRunId: params.payrollRunId }] : []),
-          ],
-        }
-      : {};
-
-  return db.kpiResult.findFirst({
+  const rows = await db.kpiResult.findMany({
     where: {
       employeeId: params.employeeId,
       period: params.earnedPeriod,
-      kpiPolicyId: params.kpiPolicyId,
-      ...orClause,
     },
     select: {
       planAmount: true,
@@ -89,6 +75,7 @@ async function findKpiResultForEarnedPeriod(
       payoutFactor: true,
     },
   });
+  return pickUniqueEmployeePeriodKpiResult(rows);
 }
 
 /** Resolves Sales KPI snapshot for a payout payroll month (earned period = prior month). */
@@ -118,9 +105,6 @@ export async function resolveEmployeeSalesKpiForPayoutMonth(
   const result = await findKpiResultForEarnedPeriod(db, {
     employeeId: params.employeeId,
     earnedPeriod,
-    kpiPolicyId: payrollPolicy.kpiPolicyId,
-    salaryLineId: params.salaryLineId,
-    payrollRunId: params.payrollRunId,
   });
   const detail = buildEmployeeSalesKpiDetailFromResult({
     kpiPolicyId: payrollPolicy.kpiPolicyId,
@@ -202,21 +186,9 @@ export async function batchSalaryBoardSalesKpiSummaries(
       continue;
     }
     const earnedPeriod = earnedSalesPeriodForPayoutMonth(cell.payoutMonth);
-    const result =
-      kpiResults.find(
-        (r) =>
-          r.employeeId === cell.employeeId &&
-          r.period === earnedPeriod &&
-          r.kpiPolicyId === profile.kpiPolicyId &&
-          (r.salaryLineId === cell.salaryLineId || r.payrollRunId === cell.payrollRunId),
-      ) ??
-      kpiResults.find(
-        (r) =>
-          r.employeeId === cell.employeeId &&
-          r.period === earnedPeriod &&
-          r.kpiPolicyId === profile.kpiPolicyId,
-      ) ??
-      null;
+    const result = pickUniqueEmployeePeriodKpiResult(
+      kpiResults.filter((row) => row.employeeId === cell.employeeId && row.period === earnedPeriod),
+    );
 
     const detail = buildEmployeeSalesKpiDetailFromResult({
       kpiPolicyId: profile.kpiPolicyId,

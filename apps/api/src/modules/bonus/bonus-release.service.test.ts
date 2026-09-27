@@ -31,8 +31,24 @@ const sampleEntry = {
   employeeId: 'emp1',
   orderId: 'o1',
   projectId: 'p1',
+  type: 'DELIVERY',
   amount: new Decimal(100),
-  order: { productId: 'prod1', extensionId: null as string | null },
+  payableAmount: null as Decimal | null,
+  order: { productId: 'prod1', extensionId: null as string | null, code: 'ORD-1' },
+};
+
+const salesEntryHeld = {
+  ...sampleEntry,
+  type: 'SALES',
+  amount: new Decimal(200_000),
+  payableAmount: null,
+};
+
+const salesEntryPayable100k = {
+  ...sampleEntry,
+  type: 'SALES',
+  amount: new Decimal(200_000),
+  payableAmount: new Decimal(100_000),
 };
 
 describe('BonusReleaseService', () => {
@@ -394,5 +410,96 @@ describe('BonusReleaseService', () => {
         data: expect.objectContaining({ status: 'DRAFT' }),
       }),
     );
+  });
+
+  it('createForEntry rejects a Sales release above the stored payable', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(salesEntryPayable100k);
+    prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
+
+    await expect(
+      service.createForEntry(ALL, 'be1', { amount: 200_000, releaseType: 'MANUAL' }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
+  });
+
+  it('createForEntry rejects a Sales release when payable is null', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(salesEntryHeld);
+
+    await expect(
+      service.createForEntry(ALL, 'be1', { amount: 200_000, releaseType: 'MANUAL' }),
+    ).rejects.toThrow(/held pending KPI/);
+    expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
+  });
+
+  it('createForEntry rejects EXTRA while Sales payable is null', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(salesEntryHeld);
+
+    await expect(
+      service.createForEntry(ALL, 'be1', {
+        amount: 200_000,
+        releaseType: 'EXTRA',
+        reason: 'exception',
+      }),
+    ).rejects.toThrow(/held pending KPI/);
+    expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
+  });
+
+  it('createForEntry rejects a positive Sales release when payable is 0', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue({
+      ...salesEntryPayable100k,
+      payableAmount: new Decimal(0),
+    });
+    prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
+
+    await expect(
+      service.createForEntry(ALL, 'be1', { amount: 200_000, releaseType: 'MANUAL' }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
+  });
+
+  it('createForEntry allows Delivery up to entry amount when payable is null', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue({
+      ...sampleEntry,
+      type: 'DELIVERY',
+      amount: new Decimal(200_000),
+      payableAmount: null,
+    });
+    prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
+    prisma.bonusRelease.create.mockResolvedValue({ id: 'rel-delivery' });
+    prisma.order.findUnique.mockResolvedValue({
+      id: 'o1',
+      projectId: 'p1',
+      productId: 'prod1',
+      extensionId: null,
+    });
+    prisma.bonusEntry.aggregate
+      .mockResolvedValueOnce({ _sum: { amount: new Decimal(200_000) } })
+      .mockResolvedValueOnce({ _sum: { amount: new Decimal(0) } });
+    prisma.productBonusPool.upsert.mockResolvedValue({});
+
+    await service.createForEntry(ALL, 'be1', { amount: 200_000, releaseType: 'MANUAL' });
+
+    expect(prisma.bonusRelease.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ amount: new Decimal(200_000) }),
+      }),
+    );
+  });
+
+  it('patchForEntry rejects a Sales increase above the stored payable', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(salesEntryPayable100k);
+    prisma.bonusRelease.findUnique.mockResolvedValue({
+      id: 'r1',
+      bonusEntryId: 'be1',
+      amount: new Decimal(50_000),
+      status: 'APPROVED',
+      releaseType: 'MANUAL',
+    });
+    prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
+
+    await expect(
+      service.patchForEntry(ALL, 'be1', 'r1', { amount: 200_000, reason: 'full entry' }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.bonusRelease.update).not.toHaveBeenCalled();
   });
 });

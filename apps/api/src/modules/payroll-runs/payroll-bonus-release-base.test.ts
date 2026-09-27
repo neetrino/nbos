@@ -51,6 +51,48 @@ describe('payrollBonusReleaseBase', () => {
     ).toBe('55000');
   });
 
+  it('holds Sales at zero when payableAmount is missing', () => {
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'SALES',
+          amount: new Decimal(100_000),
+          payableAmount: null,
+          earnedPeriod: '2026-04',
+        },
+        '2026-05',
+      ).toString(),
+    ).toBe('0');
+  });
+
+  it('uses an explicit Sales payable of zero as real performance, not a hold', () => {
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'SALES',
+          amount: new Decimal(100_000),
+          payableAmount: new Decimal(0),
+          earnedPeriod: '2026-04',
+        },
+        '2026-05',
+      ).toString(),
+    ).toBe('0');
+  });
+
+  it('uses a stored Sales payable of 40000', () => {
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'SALES',
+          amount: new Decimal(100_000),
+          payableAmount: new Decimal(40_000),
+          earnedPeriod: '2026-04',
+        },
+        '2026-05',
+      ).toString(),
+    ).toBe('40000');
+  });
+
   it('falls back to amount when payableAmount is missing', () => {
     expect(
       payrollBonusReleaseBase(

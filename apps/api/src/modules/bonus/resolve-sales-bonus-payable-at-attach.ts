@@ -1,10 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
-import { Prisma, type PrismaClient } from '@nbos/database';
+import { Decimal, Prisma, type PrismaClient } from '@nbos/database';
 
 import { earnedSalesPeriodForPayoutMonth } from '../payroll-runs/earned-sales-kpi-period';
 import { isSalesBonusEligibleForPayrollMonth } from '../payroll-runs/payroll-bonus-release-base';
+import {
+  assertOrdinaryCountingWithinSalesPayable,
+  isSalesExceptionReleaseType,
+  sumOrdinaryCountingReleases,
+} from './bonus-release-entry-cap';
 
-type AttachDb = Pick<InstanceType<typeof PrismaClient>, 'bonusEntry'>;
+type AttachDb = Pick<InstanceType<typeof PrismaClient>, 'bonusEntry' | 'bonusRelease'>;
 
 const entrySelect = {
   id: true,
@@ -32,12 +37,26 @@ function formatSalesBonusAttachLabel(entry: SalesBonusAttachEntry): string {
   return employeeName ? `${bonusLabel} (${employeeName})` : bonusLabel;
 }
 
+export function assertSalesReleaseAmountWithinPayable(
+  releaseAmount: Decimal,
+  payableAmount: Decimal,
+  bonusLabel: string,
+): void {
+  if (releaseAmount.gt(payableAmount)) {
+    throw new BadRequestException(
+      `${bonusLabel} release exceeds the Sales KPI payable of ${payableAmount.toFixed(2)}.`,
+    );
+  }
+}
+
 /** Payroll attach reads frozen bonus payable snapshots only — no KPI sync here. */
 export async function assertSalesBonusReadyForPayrollAttach(
   db: AttachDb,
   params: {
     bonusEntryId: string;
     payrollMonth: string;
+    releaseAmount: Decimal;
+    releaseType: string;
   },
 ): Promise<void> {
   const entry = await db.bonusEntry.findUnique({
@@ -64,4 +83,10 @@ export async function assertSalesBonusReadyForPayrollAttach(
         `Sync Sales KPI for earned month ${entry.earnedPeriod ?? '—'}, then retry.`,
     );
   }
+  assertSalesReleaseAmountWithinPayable(params.releaseAmount, entry.payableAmount, bonusLabel);
+  if (isSalesExceptionReleaseType(params.releaseType)) {
+    return;
+  }
+  const ordinaryTotal = await sumOrdinaryCountingReleases(db, entry.id);
+  assertOrdinaryCountingWithinSalesPayable(ordinaryTotal, entry.payableAmount, bonusLabel);
 }

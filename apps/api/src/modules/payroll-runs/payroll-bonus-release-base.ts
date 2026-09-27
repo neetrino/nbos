@@ -41,6 +41,9 @@ export function payrollBonusReleaseBase(
   if (entry.payableAmount != null) {
     return decimalFrom(entry.payableAmount);
   }
+  if (entry.type === 'SALES') {
+    return BONUS_POOL_ZERO;
+  }
   return decimalFrom(entry.amount);
 }
 

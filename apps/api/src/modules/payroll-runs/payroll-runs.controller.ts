@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Put, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
 import { FINANCE_SALARY_MODULE } from '../compensation-profiles/finance-pay-access';
@@ -116,6 +116,20 @@ export class PayrollRunsController {
     @Query('payrollMonthTo') payrollMonthTo?: string,
   ) {
     return this.payrollRunsService.getSalaryBoard(user, { payrollMonthFrom, payrollMonthTo });
+  }
+
+  @Put('sales-kpi-plans')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
+  @ApiOperation({
+    summary: 'Assign an individual monthly Sales KPI plan',
+    description:
+      'Stores KpiResult.planAmount for one employee and YYYY-MM. Does not copy the policy template target. Paid salary-linked plans cannot be overwritten.',
+  })
+  async assignSalesKpiPlan(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: { employeeId: string; period: string; planAmount: number },
+  ) {
+    return this.payrollRunsService.assignEmployeeSalesKpiPlan(user, body);
   }
 
   @Get('salary-lines/:salaryLineId/month-detail')

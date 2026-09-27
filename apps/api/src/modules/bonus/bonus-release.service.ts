@@ -23,6 +23,7 @@ import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
 import { resolveDirectBonusReleaseCreateStatus } from './bonus-release-create-status';
+import { assertBonusReleaseWithinEntryCap } from './bonus-release-entry-cap';
 
 const REASON_REQUIRED_TYPES: BonusReleaseTypeEnum[] = [
   'EARLY',
@@ -52,7 +53,9 @@ type BonusEntryForRelease = {
   employeeId: string;
   orderId: string;
   projectId: string;
+  type: string;
   amount: Decimal;
+  payableAmount: Decimal | null;
   order: { productId: string | null; extensionId: string | null; code: string };
 };
 
@@ -134,7 +137,7 @@ export class BonusReleaseService {
     await this.assertPayrollRunExists(input.payrollRunId);
 
     const status = resolveDirectBonusReleaseCreateStatus(input.status);
-    if (status !== 'DRAFT') {
+    if (entry.type === 'SALES' || status !== 'DRAFT') {
       await this.assertWithinEntryCap(entry, input.amount, input.releaseType);
     }
 
@@ -243,7 +246,9 @@ export class BonusReleaseService {
         employeeId: true,
         orderId: true,
         projectId: true,
+        type: true,
         amount: true,
+        payableAmount: true,
         order: { select: { productId: true, extensionId: true, code: true } },
       },
     });
@@ -299,9 +304,6 @@ export class BonusReleaseService {
     addAmount: number,
     releaseType: BonusReleaseTypeEnum,
   ): Promise<void> {
-    if (releaseType === 'EXTRA' || releaseType === 'OVER_FUNDING') {
-      return;
-    }
     const agg = await this.prisma.bonusRelease.aggregate({
       where: {
         bonusEntryId: entry.id,
@@ -309,13 +311,12 @@ export class BonusReleaseService {
       },
       _sum: { amount: true },
     });
-    const prior = decimalFrom(agg._sum.amount);
-    const cap = new Decimal(entry.amount);
-    if (prior.plus(addAmount).gt(cap)) {
-      throw new BadRequestException(
-        'Release amount exceeds remaining planned amount for this bonus entry',
-      );
-    }
+    assertBonusReleaseWithinEntryCap({
+      entry,
+      priorCounting: decimalFrom(agg._sum.amount),
+      addAmount: new Decimal(addAmount),
+      releaseType,
+    });
   }
 
   private async assertWithinEntryCapOnUpdate(
@@ -324,9 +325,6 @@ export class BonusReleaseService {
     newAmount: number,
     releaseType: BonusReleaseTypeEnum,
   ): Promise<void> {
-    if (releaseType === 'EXTRA' || releaseType === 'OVER_FUNDING') {
-      return;
-    }
     const agg = await this.prisma.bonusRelease.aggregate({
       where: {
         bonusEntryId: entry.id,
@@ -335,13 +333,12 @@ export class BonusReleaseService {
       },
       _sum: { amount: true },
     });
-    const priorOthers = decimalFrom(agg._sum.amount);
-    const cap = new Decimal(entry.amount);
-    if (priorOthers.plus(newAmount).gt(cap)) {
-      throw new BadRequestException(
-        'Release amount exceeds remaining planned amount for this bonus entry',
-      );
-    }
+    assertBonusReleaseWithinEntryCap({
+      entry,
+      priorCounting: decimalFrom(agg._sum.amount),
+      addAmount: new Decimal(newAmount),
+      releaseType,
+    });
   }
 }
 
