@@ -3,7 +3,7 @@
 **Updated:** 2026-09-27  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
 **Active slice:** P2-S2
-**Next step:** Close the Sales KPI hold so a missing plan does not pay the full bonus, and reject non-AMD amounts. Browser checks use the dev database only after those paths exist.
+**Next step:** Grok 4.6 High is capping a direct Sales release at the payable amount and adding one employee's monthly plan. AMD slice is committed.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -46,7 +46,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P1-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed. API typecheck not obtained (OOM). No browser.                              | `b1664e362` | Early recheck closed. Direct PAID rejected. Exception reasons required. |
 | P2-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 10 files, 60 passed. No browser. No PostgreSQL race. Recheck closed four findings. | `cb48c47bf` | Directory 409 if legacy overlaps is display-only                        |
 | P2-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           | Individual monthly KPI and Probation/Active history                     |
-| P2-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 32 passed. No browser.                                                    | this commit | USD/EUR/blank rejected at seed and approval. No FX.                     |
+| P2-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 32 passed. No browser.                                                    | `2ea6c9c2f` | USD/EUR/blank rejected at seed and approval. No FX.                     |
 | P3-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           |                                                                         |
 | P3-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           |                                                                         |
 | P3-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           |                                                                         |
