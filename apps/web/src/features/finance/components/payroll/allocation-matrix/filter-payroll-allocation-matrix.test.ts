@@ -68,6 +68,7 @@ const baseMatrix: PayrollAllocationMatrix = {
       releaseThisMonth: '0',
       warning: null,
       reasonRequired: false,
+      bonusType: null,
       editable: true,
     },
     {
@@ -88,6 +89,7 @@ const baseMatrix: PayrollAllocationMatrix = {
       releaseThisMonth: '0',
       warning: null,
       reasonRequired: false,
+      bonusType: null,
       editable: true,
     },
   ],

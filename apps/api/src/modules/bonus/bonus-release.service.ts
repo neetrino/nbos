@@ -22,6 +22,7 @@ import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
+import { resolveDirectBonusReleaseCreateStatus } from './bonus-release-create-status';
 
 const REASON_REQUIRED_TYPES: BonusReleaseTypeEnum[] = [
   'EARLY',
@@ -132,7 +133,7 @@ export class BonusReleaseService {
     this.assertPayrollRunAttachAccess(actor, input.payrollRunId);
     await this.assertPayrollRunExists(input.payrollRunId);
 
-    const status = input.status ?? 'APPROVED';
+    const status = resolveDirectBonusReleaseCreateStatus(input.status);
     if (status !== 'DRAFT') {
       await this.assertWithinEntryCap(entry, input.amount, input.releaseType);
     }

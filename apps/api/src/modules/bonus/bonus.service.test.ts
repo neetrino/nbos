@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Decimal } from '@nbos/database';
 import { BonusService } from './bonus.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { NotificationService } from '../notifications/notification.service';
 import type { AuditService } from '../audit/audit.service';
 
@@ -73,12 +73,27 @@ describe('BonusService', () => {
       expect(result.type).toBe('SALES');
       expect(prisma.productBonusPool.upsert).toHaveBeenCalled();
     });
+
+    it('rejects PAID without payout evidence', async () => {
+      await expect(
+        service.create(ALL, {
+          employeeId: 'e1',
+          orderId: 'o1',
+          projectId: 'p1',
+          type: 'SALES',
+          amount: 25000,
+          percent: 10,
+          status: 'PAID',
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.bonusEntry.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('updateStatus', () => {
     it('updates status', async () => {
       prisma.bonusEntry.findUnique.mockResolvedValue({ id: '1', orderId: 'o1', employeeId: 'e1' });
-      prisma.bonusEntry.update.mockResolvedValue({ id: '1', status: 'PAID' });
+      prisma.bonusEntry.update.mockResolvedValue({ id: '1', status: 'ACTIVE' });
       prisma.order.findUnique.mockResolvedValue({
         id: 'o1',
         projectId: 'p1',
@@ -90,8 +105,14 @@ describe('BonusService', () => {
         .mockResolvedValueOnce({ _sum: { amount: new Decimal(100) } });
       prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
       prisma.productBonusPool.upsert.mockResolvedValue({});
-      const result = await service.updateStatus(ALL, '1', 'PAID');
-      expect(result.status).toBe('PAID');
+      const result = await service.updateStatus(ALL, '1', 'ACTIVE');
+      expect(result.status).toBe('ACTIVE');
+    });
+
+    it('rejects PAID without payout evidence', async () => {
+      prisma.bonusEntry.findUnique.mockResolvedValue({ id: '1', orderId: 'o1', employeeId: 'e1' });
+      await expect(service.updateStatus(ALL, '1', 'PAID')).rejects.toThrow(BadRequestException);
+      expect(prisma.bonusEntry.update).not.toHaveBeenCalled();
     });
   });
 

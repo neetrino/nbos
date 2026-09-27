@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-27  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P1-S2  
-**Next step:** Grok 4.6 High implements payment evidence, exception reasons, and the PAID boundary. Direct PAID without a payout and reasonless extra awards are still open.
+**Active slice:** P2-S1
+**Next step:** Grok 4.6 High implements month-effective salary: the chosen month pays the full amount, a future profile does not change today, and missing terms block inclusion instead of becoming zero.
 
 ## Workspace
 
@@ -17,10 +17,10 @@
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P1-S1 done; P1-S2 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P1-S2 done; P2-S1 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P1-S1 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P1-S2 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -29,38 +29,41 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | ---------- | --------------------------- | ---------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | 2026-09-27 | P1-S1 authorization review  | Claude Opus 5.5 Medium | Opus 5.5 High is not available. One other-family review of the money-access diff. | Uncommitted payroll permission diff only                            |
 | 2026-09-27 | Recheck two confirmed leaks | Claude Opus 5.5 Medium | Same reviewer, only the two money-scope defects and their tests.                  | `payroll-run-detail`, `payroll-run-access`, `bonus-release.service` |
+| 2026-09-27 | P1-S2 PAID and reasons      | Claude Opus 5.5 Medium | Money-status boundary. Opus 5.5 High is unavailable.                              | Uncommitted diff since `b06e6667e` only                             |
+| 2026-09-27 | Recheck early release       | Claude Opus 5.5 Medium | Same reviewer, only the PROGRESS/EARLY reason defect.                             | Matrix write, materialize, and the reason helper                    |
 
 ## Slice log
 
-| Slice | Status        | Executor          | Reviewer               | Checks                                                                                         | Commit      | Notes                                                             |
-| ----- | ------------- | ----------------- | ---------------------- | ---------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------- |
-| P1-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed; web typecheck passed; API typecheck still fails on unrelated CRM `lid` | `b06e6667e` | Department totals and payroll-run attachment rechecked and closed |
-| P1-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | PAID evidence and exception reasons                               |
-| P2-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P2-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P2-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P3-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P3-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P3-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P3-S4 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | Historical carry must survive                                     |
-| P4-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P4-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P4-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P5-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P5-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P5-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                   |
-| P6-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | Blocked for live data until a separate authorization              |
-| P6-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | Needs isolated environment                                        |
-| P6-S3 | `PLANNED`     | Composer 2.5 Fast | Grok 4.6 High          | —                                                                                              | —           | Canon text only, after behavior is verified                       |
+| Slice | Status        | Executor          | Reviewer               | Checks                                                                                         | Commit      | Notes                                                                   |
+| ----- | ------------- | ----------------- | ---------------------- | ---------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------- |
+| P1-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed; web typecheck passed; API typecheck still fails on unrelated CRM `lid` | `b06e6667e` | Department totals and payroll-run attachment rechecked and closed       |
+| P1-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed. API typecheck not obtained (OOM). No browser.                          | this commit | Early recheck closed. Direct PAID rejected. Exception reasons required. |
+| P2-S1 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | Month-effective salary and missing-profile block                        |
+| P2-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P2-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P3-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P3-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P3-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P3-S4 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | Historical carry must survive                                           |
+| P4-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P4-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P4-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P5-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P5-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P5-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           |                                                                         |
+| P6-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | Blocked for live data until a separate authorization                    |
+| P6-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                              | —           | Needs isolated environment                                              |
+| P6-S3 | `PLANNED`     | Composer 2.5 Fast | Grok 4.6 High          | —                                                                                              | —           | Canon text only, after behavior is verified                             |
 
 ## Review findings
 
-| ID       | Status | Finding                                                                        |
-| -------- | ------ | ------------------------------------------------------------------------------ |
-| P1-S1-R1 | Closed | Dashboard `payrollRuns` is null unless salary VIEW is ALL.                     |
-| P1-S1-R2 | Closed | KPI and bonus policy reads require ALL.                                        |
-| P1-S1-R3 | Closed | Department detail totals come from scoped lines. Recheck passed.               |
-| P1-S1-R4 | Closed | Attaching a release to a payroll run requires salary EDIT ALL. Recheck passed. |
+| ID       | Status | Finding                                                                                                        |
+| -------- | ------ | -------------------------------------------------------------------------------------------------------------- |
+| P1-S1-R1 | Closed | Dashboard `payrollRuns` is null unless salary VIEW is ALL.                                                     |
+| P1-S1-R2 | Closed | KPI and bonus policy reads require ALL.                                                                        |
+| P1-S1-R3 | Closed | Department detail totals come from scoped lines. Recheck passed.                                               |
+| P1-S1-R4 | Closed | Attaching a release to a payroll run requires salary EDIT ALL. Recheck passed.                                 |
+| P1-S2-R1 | Closed | Non-sales PROGRESS requires a reason and materializes as EARLY. Sales PROGRESS stays ordinary. Recheck passed. |
 
 ## External blockers
 

@@ -138,7 +138,7 @@ describe('BonusReleaseService', () => {
     expect(created).toEqual({ id: 'rel1' });
     expect(prisma.bonusRelease.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ approvedById: 'emp1' }),
+        data: expect.objectContaining({ approvedById: 'emp1', status: 'APPROVED' }),
       }),
     );
     expect(prisma.productBonusPool.upsert).toHaveBeenCalled();
@@ -320,6 +320,78 @@ describe('BonusReleaseService', () => {
           reason: 'rebalance per CEO',
           approvedById: 'emp1',
         }),
+      }),
+    );
+  });
+
+  it.each(['PAID', 'INCLUDED_IN_PAYROLL', 'CANCELLED'] as const)(
+    'createForEntry rejects %s status before create',
+    async (status) => {
+      prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+      await expect(
+        service.createForEntry(ALL, 'be1', {
+          amount: 10,
+          releaseType: 'MANUAL',
+          status,
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it('createForEntry still inserts nothing when PAID is sent twice', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    const paid = {
+      amount: 10,
+      releaseType: 'MANUAL' as const,
+      status: 'PAID' as const,
+    };
+    await expect(service.createForEntry(ALL, 'be1', paid)).rejects.toThrow(BadRequestException);
+    await expect(service.createForEntry(ALL, 'be1', paid)).rejects.toThrow(BadRequestException);
+    expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
+  });
+
+  it('createForEntry keeps missing status as APPROVED', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.aggregate
+      .mockResolvedValueOnce({ _sum: { amount: null } })
+      .mockResolvedValueOnce({ _sum: { amount: new Decimal(10) } });
+    prisma.bonusRelease.create.mockResolvedValue({ id: 'rel-approved' });
+    prisma.order.findUnique.mockResolvedValue({
+      id: 'o1',
+      projectId: 'p1',
+      productId: 'prod1',
+      extensionId: null,
+    });
+    prisma.bonusEntry.aggregate
+      .mockResolvedValueOnce({ _sum: { amount: new Decimal(100) } })
+      .mockResolvedValueOnce({ _sum: { amount: new Decimal(0) } });
+    prisma.productBonusPool.upsert.mockResolvedValue({});
+
+    await service.createForEntry(ALL, 'be1', { amount: 10, releaseType: 'MANUAL' });
+
+    expect(prisma.bonusRelease.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'APPROVED' }),
+      }),
+    );
+  });
+
+  it('createForEntry accepts DRAFT status', async () => {
+    prisma.bonusEntry.findUnique.mockResolvedValue(sampleEntry);
+    prisma.bonusRelease.create.mockResolvedValue({ id: 'rel-draft' });
+    prisma.order.findUnique.mockResolvedValue(null);
+
+    await service.createForEntry(ALL, 'be1', {
+      amount: 10,
+      releaseType: 'MANUAL',
+      status: 'DRAFT',
+    });
+
+    expect(prisma.bonusRelease.aggregate).not.toHaveBeenCalled();
+    expect(prisma.bonusRelease.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'DRAFT' }),
       }),
     );
   });

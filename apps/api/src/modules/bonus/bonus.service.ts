@@ -1,4 +1,5 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { assertBonusEntryStatusNotPaidWithoutPayout } from './bonus-entry-direct-status';
 import {
   PrismaClient,
   type Prisma,
@@ -185,9 +186,9 @@ export class BonusService {
   async create(actor: FinancePayActor, data: CreateBonusDto) {
     const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'ADD');
     assertBonusEmployeeAccess(data.employeeId, accessible);
-    const actorUserId = actor.id;
     const title = data.title?.trim();
     const reason = data.reason?.trim();
+    assertBonusEntryStatusNotPaidWithoutPayout(data.status);
     const created = await this.prisma.bonusEntry.create({
       data: {
         title: title && title.length > 0 ? title : null,
@@ -212,12 +213,12 @@ export class BonusService {
     await syncProductBonusPoolForOrder(this.prisma, data.orderId, this.notifications);
     await applyPayableSnapshotToBonusEntry(this.prisma, created.id);
 
-    if (actorUserId && reason && reason.length > 0) {
+    if (reason && reason.length > 0) {
       await this.audit.log({
         entityType: 'BonusEntry',
         entityId: created.id,
         action: 'MANUAL_BONUS_CREATED',
-        userId: actorUserId,
+        userId: actor.id,
         projectId: data.projectId,
         changes: {
           employeeId: data.employeeId,
@@ -237,6 +238,7 @@ export class BonusService {
     const existing = await this.findById(actor, id);
     const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'EDIT');
     assertBonusEmployeeAccess(existing.employeeId, accessible);
+    assertBonusEntryStatusNotPaidWithoutPayout(status);
     const updated = await this.prisma.bonusEntry.update({
       where: { id },
       data: { status: status as BonusStatusEnum },

@@ -12,6 +12,10 @@ import { earnedBonusPeriodForPayoutMonth } from './earned-sales-kpi-period';
 import { attachBonusReleasesToPayrollRun } from './payroll-bonus-release-attach';
 import { payrollBonusReleaseBase } from './payroll-bonus-release-base';
 import { sumBonusEntryReleasedBefore } from './payroll-bonus-entry-released-before';
+import {
+  assertPayrollAllocationExceptionReason,
+  isEarlyProgressAllocation,
+} from './payroll-allocation-exception-reason';
 import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
 
 type MaterializeTx = TransactionClient;
@@ -21,10 +25,11 @@ export type PayrollBonusAllocationMaterializeResult = {
   carryNotifyEvents: PayrollAttachNotifyEvent[];
 };
 
-function releaseTypeForKind(kind: string): BonusReleaseTypeEnum {
+function releaseTypeForAllocation(kind: string, entryType: string): BonusReleaseTypeEnum {
   if (kind === 'EXTRA_BONUS') return 'EXTRA';
   if (kind === 'OVER_FUNDING') return 'OVER_FUNDING';
   if (kind === 'MANUAL_BONUS') return 'MANUAL';
+  if (isEarlyProgressAllocation(kind, entryType)) return 'EARLY';
   return 'MANUAL';
 }
 
@@ -59,6 +64,15 @@ async function ensureDraftBonusEntry(
   });
   await applyPayableSnapshotToBonusEntry(tx as InstanceType<typeof PrismaClient>, created.id);
   return created.id;
+}
+
+async function readBonusEntryType(tx: MaterializeTx, bonusEntryId: string): Promise<string> {
+  const entry = await tx.bonusEntry.findUnique({
+    where: { id: bonusEntryId },
+    select: { type: true },
+  });
+  if (!entry) throw new BadRequestException('Draft bonus entry not found');
+  return entry.type;
 }
 
 async function assertWithinRemaining(
@@ -113,45 +127,78 @@ export async function materializePayrollBonusAllocationDrafts(
   let carryNotifyEvents: PayrollAttachNotifyEvent[] = [];
 
   for (const draft of drafts) {
-    const amount = decimalFrom(draft.amount);
-    if (amount.lte(BONUS_POOL_ZERO)) continue;
-    const bonusEntryId = await ensureDraftBonusEntry(tx, draft, params.payrollMonth);
-    await assertWithinRemaining(tx, {
-      bonusEntryId,
-      payrollRunId: params.payrollRunId,
-      payrollMonth: params.payrollMonth,
-      amount,
-      kind: draft.kind,
-    });
-    const order = await tx.order.findUnique({
-      where: { id: draft.orderId },
-      select: { productId: true, extensionId: true },
-    });
-    const release = await tx.bonusRelease.create({
-      data: {
-        bonusEntryId,
-        employeeId: draft.employeeId,
-        projectId: draft.projectId,
-        productId: order?.productId ?? null,
-        extensionId: order?.extensionId ?? null,
-        amount,
-        releaseType: releaseTypeForKind(draft.kind),
-        reason: draft.reason,
-        approvedById: draft.kind === 'OVER_FUNDING' ? params.actorUserId : null,
-        status: 'APPROVED',
-      },
-    });
-    releaseIds.push(release.id);
-    carryNotifyEvents = carryNotifyEvents.concat(
-      await attachBonusReleasesToPayrollRun(tx, {
-        payrollRunId: params.payrollRunId,
-        releaseIds: [release.id],
-      }),
-    );
+    const materialized = await materializeOnePayrollBonusAllocationDraft(tx, draft, params);
+    if (materialized == null) continue;
+    releaseIds.push(materialized.releaseId);
+    carryNotifyEvents = carryNotifyEvents.concat(materialized.events);
   }
 
   await tx.payrollBonusAllocationDraft.deleteMany({
     where: { payrollRunId: params.payrollRunId },
   });
   return { releaseIds, carryNotifyEvents };
+}
+
+async function materializeOnePayrollBonusAllocationDraft(
+  tx: MaterializeTx,
+  draft: Awaited<ReturnType<MaterializeTx['payrollBonusAllocationDraft']['findMany']>>[number],
+  params: { payrollRunId: string; payrollMonth: string; actorUserId: string },
+): Promise<{ releaseId: string; events: PayrollAttachNotifyEvent[] } | null> {
+  const amount = decimalFrom(draft.amount);
+  if (amount.lte(BONUS_POOL_ZERO)) return null;
+  const bonusEntryId = await ensureDraftBonusEntry(tx, draft, params.payrollMonth);
+  await assertWithinRemaining(tx, {
+    bonusEntryId,
+    payrollRunId: params.payrollRunId,
+    payrollMonth: params.payrollMonth,
+    amount,
+    kind: draft.kind,
+  });
+  const entryType = draft.kind === 'PROGRESS' ? await readBonusEntryType(tx, bonusEntryId) : '';
+  assertPayrollAllocationExceptionReason(draft.kind, draft.reason, entryType || null);
+  const releaseType = releaseTypeForAllocation(draft.kind, entryType);
+  assertPayrollAllocationExceptionReason(releaseType, draft.reason, entryType || null);
+  return createApprovedAllocationRelease(tx, draft, {
+    bonusEntryId,
+    amount,
+    releaseType,
+    actorUserId: params.actorUserId,
+    payrollRunId: params.payrollRunId,
+  });
+}
+
+async function createApprovedAllocationRelease(
+  tx: MaterializeTx,
+  draft: Awaited<ReturnType<MaterializeTx['payrollBonusAllocationDraft']['findMany']>>[number],
+  params: {
+    bonusEntryId: string;
+    amount: Decimal;
+    releaseType: BonusReleaseTypeEnum;
+    actorUserId: string;
+    payrollRunId: string;
+  },
+): Promise<{ releaseId: string; events: PayrollAttachNotifyEvent[] }> {
+  const order = await tx.order.findUnique({
+    where: { id: draft.orderId },
+    select: { productId: true, extensionId: true },
+  });
+  const release = await tx.bonusRelease.create({
+    data: {
+      bonusEntryId: params.bonusEntryId,
+      employeeId: draft.employeeId,
+      projectId: draft.projectId,
+      productId: order?.productId ?? null,
+      extensionId: order?.extensionId ?? null,
+      amount: params.amount,
+      releaseType: params.releaseType,
+      reason: draft.reason,
+      approvedById: draft.kind === 'OVER_FUNDING' ? params.actorUserId : null,
+      status: 'APPROVED',
+    },
+  });
+  const events = await attachBonusReleasesToPayrollRun(tx, {
+    payrollRunId: params.payrollRunId,
+    releaseIds: [release.id],
+  });
+  return { releaseId: release.id, events };
 }
