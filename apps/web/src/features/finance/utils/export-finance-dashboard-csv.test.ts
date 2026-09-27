@@ -61,5 +61,15 @@ describe('buildFinanceDashboardCsvContent', () => {
     expect(csv).toContain('recent_payment,pay-1');
     expect(csv).toContain('upcoming_invoice,inv-1');
     expect(csv).toContain('May 1 (3d)');
+    expect(csv).toContain('payroll_runs,runCount,1');
+  });
+
+  it('omits payroll figures when payrollRuns is null', () => {
+    const csv = buildFinanceDashboardCsvContent(
+      { ...minimalDashboard(), payrollRuns: null },
+      { period: 'month' },
+    );
+    expect(csv).not.toContain('payroll_runs');
+    expect(csv).toContain('kpi,totalRevenue,100.00');
   });
 });

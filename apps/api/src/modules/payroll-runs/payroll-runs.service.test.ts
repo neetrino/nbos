@@ -10,6 +10,16 @@ vi.mock('./payroll-bonus-allocation-materialize', () => ({
   materializePayrollBonusAllocationDrafts: vi.fn(),
 }));
 
+const ALL = {
+  id: 'emp-1',
+  permissions: {
+    FINANCE_SALARY_VIEW: 'ALL',
+    FINANCE_SALARY_ADD: 'ALL',
+    FINANCE_SALARY_EDIT: 'ALL',
+  },
+  departmentIds: [] as string[],
+};
+
 describe('PayrollRunsService', () => {
   let service: PayrollRunsService;
   let prisma: MockPrisma;
@@ -27,7 +37,7 @@ describe('PayrollRunsService', () => {
       ]);
       prisma.payrollRun.count.mockResolvedValue(1);
       prisma.salaryLine.groupBy.mockResolvedValue([]);
-      const result = await service.findAll({});
+      const result = await service.findAll(ALL, {});
       expect(result.meta.page).toBe(1);
       expect(result.meta.total).toBe(1);
       expect(result.items).toHaveLength(1);
@@ -46,7 +56,7 @@ describe('PayrollRunsService', () => {
       prisma.payrollRun.findMany.mockResolvedValue([]);
       prisma.payrollRun.count.mockResolvedValue(0);
       prisma.salaryLine.groupBy.mockResolvedValue([]);
-      await service.findAll({
+      await service.findAll(ALL, {
         payrollMonthFrom: '2026-01',
         payrollMonthTo: '2026-03',
       });
@@ -66,7 +76,7 @@ describe('PayrollRunsService', () => {
       ]);
       prisma.payrollRun.count.mockResolvedValue(2);
       prisma.salaryLine.groupBy.mockResolvedValue([{ payrollRunId: 'r1', _count: { _all: 3 } }]);
-      const result = await service.findAll({});
+      const result = await service.findAll(ALL, {});
       expect(result.items[0].materializedExpenseLineCount).toBe(3);
       expect(result.items[1].materializedExpenseLineCount).toBe(0);
     });
@@ -91,7 +101,7 @@ describe('PayrollRunsService', () => {
         },
       ]);
 
-      const result = await service.getStats({ status: 'APPROVED' });
+      const result = await service.getStats(ALL, { status: 'APPROVED' });
 
       expect(result.runCount).toBe(2);
       expect(result.totals.totalPayable).toBe('90.50');
@@ -120,7 +130,7 @@ describe('PayrollRunsService', () => {
       });
       prisma.payrollRun.groupBy.mockResolvedValue([]);
 
-      const result = await service.getStats({});
+      const result = await service.getStats(ALL, {});
 
       expect(result.totals.totalRemaining).toBe('-15.00');
     });
@@ -148,7 +158,7 @@ describe('PayrollRunsService', () => {
         },
       ]);
 
-      const result = await service.getStats({});
+      const result = await service.getStats(ALL, {});
 
       expect(result.byStatus.map((r) => r.status)).toEqual(['DRAFT', 'CLOSED']);
       expect(result.byStatus[0].totalRemaining).toBe('40.00');
@@ -161,7 +171,7 @@ describe('PayrollRunsService', () => {
       prisma.employee.findMany.mockResolvedValue([]);
       prisma.payrollRun.findMany.mockResolvedValue([]);
       prisma.salaryLine.findMany.mockResolvedValue([]);
-      const result = await service.getSalaryBoard({
+      const result = await service.getSalaryBoard(ALL, {
         payrollMonthFrom: '2026-02',
         payrollMonthTo: '2026-02',
       });
@@ -172,7 +182,7 @@ describe('PayrollRunsService', () => {
 
   describe('findById', () => {
     it('throws NotFoundException when missing', async () => {
-      await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
+      await expect(service.findById(ALL, 'missing')).rejects.toThrow(NotFoundException);
     });
 
     it('returns journal derived from durable timestamps', async () => {
@@ -185,10 +195,10 @@ describe('PayrollRunsService', () => {
             id: 'p1',
             payrollMonth: '2026-04',
             status: 'CLOSED',
-            totalBaseSalary: 0,
-            totalBonuses: 0,
-            totalPayable: 0,
-            totalPaid: 0,
+            totalBaseSalary: new Decimal('5000.00'),
+            totalBonuses: new Decimal('800.00'),
+            totalPayable: new Decimal('5800.00'),
+            totalPaid: new Decimal('1000.00'),
             createdAt: new Date('2026-04-01T10:00:00.000Z'),
             updatedAt: new Date('2026-04-10T10:00:00.000Z'),
             approvedAt: new Date('2026-04-05T12:00:00.000Z'),
@@ -200,10 +210,12 @@ describe('PayrollRunsService', () => {
         }
         return Promise.resolve(null);
       });
-      const result = await service.findById('p1');
+      const result = await service.findById(ALL, 'p1');
       expect(result).not.toHaveProperty('kpiSalesPlanAmount');
       expect(result).not.toHaveProperty('kpiSalesActualSuggestedAmount');
       expect(result.materializedExpenseLineCount).toBe(2);
+      expect(new Decimal(result.totalBaseSalary).eq(new Decimal('5000.00'))).toBe(true);
+      expect(new Decimal(result.totalPayable).eq(new Decimal('5800.00'))).toBe(true);
       expect(result.journal).toHaveLength(3);
       expect(result.journal.map((j: { kind: string }) => j.kind)).toEqual([
         'CREATED',
@@ -211,18 +223,93 @@ describe('PayrollRunsService', () => {
         'CLOSED',
       ]);
     });
+
+    it('replaces stored company totals with scoped salary-line sums for DEPARTMENT', async () => {
+      const DEPT = {
+        id: 'emp-head',
+        permissions: { FINANCE_SALARY_VIEW: 'DEPARTMENT' },
+        departmentIds: ['dept-sales'],
+      };
+      const outsideBase = new Decimal('8000.00');
+      const outsideBonus = new Decimal('1500.00');
+      const outsidePayable = new Decimal('9500.00');
+      const outsidePaid = new Decimal('4000.00');
+      const inBase = new Decimal('2000.00');
+      const inBonus = new Decimal('300.00');
+      const inPayable = new Decimal('2300.00');
+      const inPaid = new Decimal('500.00');
+
+      prisma.employeeDepartment.findMany.mockResolvedValue([
+        { employeeId: 'emp-in' },
+        { employeeId: 'emp-head' },
+      ]);
+      prisma.auditLog.findMany.mockResolvedValue([]);
+      prisma.bonusRelease.count.mockResolvedValue(0);
+      prisma.salaryLine.groupBy.mockResolvedValue([{ payrollRunId: 'p1', _count: { _all: 2 } }]);
+      prisma.payrollRun.findUnique.mockResolvedValue({
+        id: 'p1',
+        payrollMonth: '2026-04',
+        status: 'REVIEW',
+        totalBaseSalary: inBase.plus(outsideBase),
+        totalBonuses: inBonus.plus(outsideBonus),
+        totalPayable: inPayable.plus(outsidePayable),
+        totalPaid: inPaid.plus(outsidePaid),
+        createdAt: new Date('2026-04-01T10:00:00.000Z'),
+        updatedAt: new Date('2026-04-01T10:00:00.000Z'),
+        approvedAt: null,
+        closedAt: null,
+        salaryLines: [
+          {
+            employeeId: 'emp-in',
+            baseSalary: inBase,
+            bonusesTotal: inBonus,
+            totalPayable: inPayable,
+            paidAmount: inPaid,
+            expenseId: 'exp-in',
+            employee: { id: 'emp-in', firstName: 'In', lastName: 'Dept', email: 'in@x' },
+            expense: { id: 'exp-in', name: 'In', amount: 2300, status: 'APPROVED' },
+          },
+          {
+            employeeId: 'emp-out',
+            baseSalary: outsideBase,
+            bonusesTotal: outsideBonus,
+            totalPayable: outsidePayable,
+            paidAmount: outsidePaid,
+            expenseId: 'exp-out',
+            employee: { id: 'emp-out', firstName: 'Out', lastName: 'Dept', email: 'out@x' },
+            expense: { id: 'exp-out', name: 'Out', amount: 9500, status: 'APPROVED' },
+          },
+        ],
+        createdBy: null,
+        approvedBy: null,
+      });
+
+      const result = await service.findById(DEPT, 'p1');
+
+      expect(result.salaryLines.map((line: { employeeId: string }) => line.employeeId)).toEqual([
+        'emp-in',
+      ]);
+      expect(new Decimal(result.totalBaseSalary).eq(inBase)).toBe(true);
+      expect(new Decimal(result.totalBonuses).eq(inBonus)).toBe(true);
+      expect(new Decimal(result.totalPayable).eq(inPayable)).toBe(true);
+      expect(new Decimal(result.totalPaid).eq(inPaid)).toBe(true);
+      expect(result.materializedExpenseLineCount).toBe(1);
+      expect(new Decimal(result.totalPayable).eq(inPayable.plus(outsidePayable))).toBe(false);
+      expect(String(result.totalPayable)).not.toContain('9500');
+      expect(String(result.totalBaseSalary)).not.toContain('8000');
+    });
   });
 
   describe('create', () => {
     it('rejects invalid month', async () => {
-      await expect(service.create({ payrollMonth: '2026-13' }, 'emp-1')).rejects.toThrow(
+      await expect(service.create(ALL, { payrollMonth: '2026-13' })).rejects.toThrow(
         BadRequestException,
       );
     });
 
     it('rejects duplicate month', async () => {
       prisma.payrollRun.findUnique.mockResolvedValue({ id: 'existing', payrollMonth: '2026-03' });
-      await expect(service.create({ payrollMonth: '2026-03' }, 'emp-1')).rejects.toThrow(
+      await expect(service.create(ALL, { payrollMonth: '2026-03' })).rejects.toThrow(
         ConflictException,
       );
     });
@@ -266,7 +353,7 @@ describe('PayrollRunsService', () => {
     });
 
     it('does not materialize draft allocations when moving Draft to Review', async () => {
-      await service.updateStatus('run-1', 'REVIEW', { actorUserId: 'emp-1' });
+      await service.updateStatus(ALL, 'run-1', 'REVIEW');
 
       expect(materializePayrollBonusAllocationDrafts).not.toHaveBeenCalled();
       expect(prisma.payrollRun.update).toHaveBeenCalledWith({
@@ -303,10 +390,7 @@ describe('PayrollRunsService', () => {
       prisma.salaryLine.update.mockResolvedValue({});
       prisma.expense.create.mockResolvedValue({ id: 'expense-1' });
 
-      await service.updateStatus('run-1', 'APPROVED', {
-        actorUserId: 'emp-1',
-        approvedById: 'emp-1',
-      });
+      await service.updateStatus(ALL, 'run-1', 'APPROVED');
 
       expect(materializePayrollBonusAllocationDrafts).toHaveBeenCalledWith(
         expect.anything(),

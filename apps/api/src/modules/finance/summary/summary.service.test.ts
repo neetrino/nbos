@@ -4,6 +4,24 @@ import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-pris
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+const SALARY_VIEW_ALL = {
+  id: 'emp-salary-all',
+  permissions: { FINANCE_SALARY_VIEW: 'ALL' },
+  departmentIds: [] as string[],
+};
+
+const INVOICE_VIEW_ONLY = {
+  id: 'emp-invoice',
+  permissions: { FINANCE_INVOICES_VIEW: 'ALL' },
+  departmentIds: [] as string[],
+};
+
+const SALARY_VIEW_DEPARTMENT = {
+  id: 'emp-salary-dept',
+  permissions: { FINANCE_SALARY_VIEW: 'DEPARTMENT' },
+  departmentIds: ['d1'],
+};
+
 function emptyPayrollRunStats() {
   return {
     runCount: 0,
@@ -112,7 +130,7 @@ describe('FinanceSummaryService', () => {
       },
     ]);
 
-    const result = await service.getDashboardSummary();
+    const result = await service.getDashboardSummary(SALARY_VIEW_ALL);
 
     expect(result.kpis).toEqual({
       totalRevenue: 120000,
@@ -154,7 +172,7 @@ describe('FinanceSummaryService', () => {
       company: { id: 'comp-2', name: 'Globex' },
     });
     expect(result.payrollRuns).toEqual(emptyPayrollRunStats());
-    expect(payrollMock.getStats).toHaveBeenCalledWith({});
+    expect(payrollMock.getStats).toHaveBeenCalledWith(SALARY_VIEW_ALL, {});
   });
 
   it('applies date filters to period-aware dashboard reads', async () => {
@@ -168,7 +186,7 @@ describe('FinanceSummaryService', () => {
     prisma.invoice.findMany.mockResolvedValue([]);
     prisma.order.findMany.mockResolvedValue([]);
 
-    await service.getDashboardSummary({
+    await service.getDashboardSummary(SALARY_VIEW_ALL, {
       dateFrom: '2026-04-01T00:00:00.000Z',
       dateTo: '2026-04-30T23:59:59.999Z',
     });
@@ -193,7 +211,28 @@ describe('FinanceSummaryService', () => {
         }),
       }),
     );
-    expect(payrollMock.getStats).toHaveBeenCalledWith({});
+    expect(payrollMock.getStats).toHaveBeenCalledWith(SALARY_VIEW_ALL, {});
+  });
+
+  it.each([
+    ['invoice view only', INVOICE_VIEW_ONLY],
+    ['salary DEPARTMENT', SALARY_VIEW_DEPARTMENT],
+  ] as const)('omits workspace payroll totals when actor is %s', async (_label, actor) => {
+    prisma.invoice.count.mockResolvedValue(0);
+    prisma.invoice.groupBy.mockResolvedValue([]);
+    prisma.payment.aggregate.mockResolvedValue({ _sum: { amount: 0 } });
+    prisma.expense.findMany.mockResolvedValue([]);
+    prisma.subscription.aggregate.mockResolvedValue({ _sum: { monthlyEquivalentAmount: 0 } });
+    prisma.subscription.count.mockResolvedValue(0);
+    prisma.payment.findMany.mockResolvedValue([]);
+    prisma.invoice.findMany.mockResolvedValue([]);
+    prisma.order.findMany.mockResolvedValue([]);
+
+    const result = await service.getDashboardSummary(actor);
+
+    expect(result.payrollRuns).toBeNull();
+    expect(payrollMock.getStats).not.toHaveBeenCalled();
+    expect(result.kpis.totalRevenue).toBe(0);
   });
 });
 

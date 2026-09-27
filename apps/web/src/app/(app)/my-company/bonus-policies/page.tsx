@@ -8,6 +8,7 @@ import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/c
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { BonusPolicyCard } from '@/features/my-company/bonus-policies/bonus-policy-card';
 import { BonusPolicySheet } from '@/features/my-company/bonus-policies/bonus-policy-sheet';
+import { PermissionGate } from '@/lib/permissions';
 import { bonusPoliciesApi, type BonusPolicyRow } from '@/lib/api/bonus-policies';
 
 const STATUS_RANK: Record<BonusPolicyRow['status'], number> = {
@@ -76,18 +77,20 @@ export default function BonusPoliciesPage() {
           </Link>
           .
         </p>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => {
-            setEditing(null);
-            setCreating(true);
-            setSheetOpen(true);
-          }}
-        >
-          <Plus className="size-4" aria-hidden />
-          New policy
-        </Button>
+        <PermissionGate module="FINANCE_BONUSES" action="ADD">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              setEditing(null);
+              setCreating(true);
+              setSheetOpen(true);
+            }}
+          >
+            <Plus className="size-4" aria-hidden />
+            New policy
+          </Button>
+        </PermissionGate>
       </div>
       {error && hasData ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />

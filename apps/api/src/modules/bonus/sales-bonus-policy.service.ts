@@ -1,6 +1,11 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  FINANCE_BONUSES_MODULE,
+  assertCompanyWideFinanceAccess,
+  type FinancePayActor,
+} from '../compensation-profiles/finance-pay-access';
 
 export interface UpdateSalesBonusPolicyDto {
   sellerPercent?: number;
@@ -12,13 +17,15 @@ export interface UpdateSalesBonusPolicyDto {
 export class SalesBonusPolicyService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async listAll() {
+  async listAll(actor: FinancePayActor) {
+    assertCompanyWideFinanceAccess(actor, FINANCE_BONUSES_MODULE, 'VIEW');
     return this.prisma.salesBonusPolicy.findMany({
       orderBy: [{ fromCategory: 'asc' }, { paymentModel: 'asc' }, { effectiveFrom: 'desc' }],
     });
   }
 
-  async update(id: string, data: UpdateSalesBonusPolicyDto) {
+  async update(actor: FinancePayActor, id: string, data: UpdateSalesBonusPolicyDto) {
+    assertCompanyWideFinanceAccess(actor, FINANCE_BONUSES_MODULE, 'EDIT');
     const row = await this.prisma.salesBonusPolicy.findUnique({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Sales bonus policy ${id} not found`);

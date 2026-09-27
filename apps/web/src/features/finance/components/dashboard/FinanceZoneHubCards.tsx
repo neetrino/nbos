@@ -63,22 +63,24 @@ export function FinanceZoneHubCards({ metrics }: FinanceZoneHubCardsProps) {
             },
           ]}
         />
-        <ZoneHubCard
-          theme={FINANCE_ZONE_HUB_CARD_THEMES.payroll}
-          title="Payroll"
-          description="Payroll runs, salary, bonus pools"
-          icon={Banknote}
-          primaryLabel="Open runs"
-          primaryValue={String(metrics.payroll.runCount)}
-          secondaryLabel="Remaining"
-          secondaryValue={formatAmount(metrics.payroll.remainingPayable)}
-          actions={[
-            {
-              href: '/finance/bonuses',
-              label: 'Open Bonus',
-            },
-          ]}
-        />
+        {metrics.payroll ? (
+          <ZoneHubCard
+            theme={FINANCE_ZONE_HUB_CARD_THEMES.payroll}
+            title="Payroll"
+            description="Payroll runs, salary, bonus pools"
+            icon={Banknote}
+            primaryLabel="Open runs"
+            primaryValue={String(metrics.payroll.runCount)}
+            secondaryLabel="Remaining"
+            secondaryValue={formatAmount(metrics.payroll.remainingPayable)}
+            actions={[
+              {
+                href: '/finance/bonuses',
+                label: 'Open Bonus',
+              },
+            ]}
+          />
+        ) : null}
       </div>
     </section>
   );

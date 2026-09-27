@@ -6,6 +6,17 @@ import {
   type BonusReleaseTypeEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  FINANCE_SALARY_MODULE,
+  assertCompanyWideFinanceAccess,
+  bindAuthenticatedApprover,
+  type FinancePayActor,
+} from '../compensation-profiles/finance-pay-access';
+import {
+  assertBonusEmployeeAccess,
+  resolveBonusReadAccess,
+  resolveBonusWriteAccess,
+} from './bonus-access';
 import { notifyBonusReleaseCorrected } from '../employees/employee-wallet-notify.ops';
 import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
@@ -58,6 +69,7 @@ export class BonusReleaseService {
    * Page/size are clamped to protect the API from abuse.
    */
   async listForEntry(
+    actor: FinancePayActor,
     bonusEntryId: string,
     opts?: { page?: number; pageSize?: number },
   ): Promise<{
@@ -66,11 +78,13 @@ export class BonusReleaseService {
   }> {
     const entry = await this.prisma.bonusEntry.findUnique({
       where: { id: bonusEntryId },
-      select: { id: true },
+      select: { id: true, employeeId: true },
     });
     if (!entry) {
       throw new NotFoundException(`Bonus entry ${bonusEntryId} not found`);
     }
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
+    assertBonusEmployeeAccess(entry.employeeId, accessible);
 
     const rawPage = opts?.page;
     const rawSize = opts?.pageSize;
@@ -101,10 +115,21 @@ export class BonusReleaseService {
     };
   }
 
-  async createForEntry(bonusEntryId: string, input: CreateBonusReleaseInput) {
+  async createForEntry(
+    actor: FinancePayActor,
+    bonusEntryId: string,
+    input: CreateBonusReleaseInput,
+  ) {
     const entry = await this.loadEntryForRelease(bonusEntryId);
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'ADD');
+    assertBonusEmployeeAccess(entry.employeeId, accessible);
+    input = {
+      ...input,
+      approvedById: bindAuthenticatedApprover(actor.id, input.approvedById),
+    };
     this.validateAmount(input.amount);
     this.validateReasonAndApproval(input);
+    this.assertPayrollRunAttachAccess(actor, input.payrollRunId);
     await this.assertPayrollRunExists(input.payrollRunId);
 
     const status = input.status ?? 'APPROVED';
@@ -133,8 +158,19 @@ export class BonusReleaseService {
     return created;
   }
 
-  async patchForEntry(bonusEntryId: string, releaseId: string, input: PatchBonusReleaseInput) {
+  async patchForEntry(
+    actor: FinancePayActor,
+    bonusEntryId: string,
+    releaseId: string,
+    input: PatchBonusReleaseInput,
+  ) {
     const entry = await this.loadEntryForRelease(bonusEntryId);
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'EDIT');
+    assertBonusEmployeeAccess(entry.employeeId, accessible);
+    input = {
+      ...input,
+      approvedById: bindAuthenticatedApprover(actor.id, input.approvedById),
+    };
     const release = await this.prisma.bonusRelease.findUnique({
       where: { id: releaseId },
       select: {
@@ -235,6 +271,14 @@ export class BonusReleaseService {
         throw new BadRequestException('approvedById is required for OVER_FUNDING releases');
       }
     }
+  }
+
+  private assertPayrollRunAttachAccess(
+    actor: FinancePayActor,
+    payrollRunId: string | undefined,
+  ): void {
+    if (!payrollRunId?.trim()) return;
+    assertCompanyWideFinanceAccess(actor, FINANCE_SALARY_MODULE, 'EDIT');
   }
 
   private async assertPayrollRunExists(payrollRunId: string | undefined): Promise<void> {

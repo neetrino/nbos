@@ -3,6 +3,16 @@ import { NotFoundException } from '@nestjs/common';
 
 import { BonusPoliciesService } from './bonus-policies.service';
 
+const ALL = {
+  id: 'emp-1',
+  permissions: {
+    FINANCE_BONUSES_VIEW: 'ALL',
+    FINANCE_BONUSES_ADD: 'ALL',
+    FINANCE_BONUSES_EDIT: 'ALL',
+  },
+  departmentIds: [] as string[],
+};
+
 describe('BonusPoliciesService', () => {
   it('lists policies with profile counts', async () => {
     const prisma = {
@@ -26,7 +36,7 @@ describe('BonusPoliciesService', () => {
       },
     };
     const service = new BonusPoliciesService(prisma as never);
-    const result = await service.list();
+    const result = await service.list(ALL);
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.linkedProfileCount).toBe(2);
   });
@@ -37,7 +47,7 @@ describe('BonusPoliciesService', () => {
       compensationProfile: { count: vi.fn() },
     };
     const service = new BonusPoliciesService(prisma as never);
-    await expect(service.findById('missing')).rejects.toThrow(NotFoundException);
+    await expect(service.findById(ALL, 'missing')).rejects.toThrow(NotFoundException);
   });
 
   it('creates policy with validated template code', async () => {
@@ -60,7 +70,7 @@ describe('BonusPoliciesService', () => {
       compensationProfile: { groupBy: vi.fn(), count: vi.fn() },
     };
     const service = new BonusPoliciesService(prisma as never);
-    const created = await service.create({
+    const created = await service.create(ALL, {
       name: 'Delivery team',
       templateCode: 'DELIVERY_PROPORTIONAL_FUNDING',
       scope: 'DELIVERY',
@@ -101,7 +111,7 @@ describe('BonusPoliciesService', () => {
       },
     };
     const service = new BonusPoliciesService(prisma as never);
-    const updated = await service.update('bp1', {
+    const updated = await service.update(ALL, 'bp1', {
       name: 'Renamed',
       status: 'ARCHIVED',
       notes: 'Retired',

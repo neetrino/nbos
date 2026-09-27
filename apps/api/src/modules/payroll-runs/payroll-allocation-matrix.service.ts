@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   Decimal,
   PayrollMatrixViewModeEnum,
@@ -6,7 +12,18 @@ import {
   type PayrollBonusAllocationKindEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { hasCallerPermission } from '../../common/authorization/caller-permission';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
+import {
+  FINANCE_BONUSES_MODULE,
+  assertEmployeeAccessible,
+  type FinancePayActor,
+} from '../compensation-profiles/finance-pay-access';
+import {
+  assertPayrollWriteAccess,
+  filterSalaryLinesByAccess,
+  resolvePayrollReadAccess,
+} from './payroll-run-access';
 import {
   validatePayrollMatrixForApproval,
   type PayrollMatrixValidationIssue,
@@ -104,7 +121,11 @@ function allocationKindFromCellState(
 export class PayrollAllocationMatrixService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async getValidation(payrollRunId: string): Promise<{ issues: PayrollMatrixValidationIssue[] }> {
+  async getValidation(
+    payrollRunId: string,
+    actor: FinancePayActor,
+  ): Promise<{ issues: PayrollMatrixValidationIssue[] }> {
+    await resolvePayrollReadAccess(this.prisma, actor);
     const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
     if (!run) throw new NotFoundException('Payroll run not found');
     const issues = await validatePayrollMatrixForApproval(this.prisma, payrollRunId);
@@ -113,9 +134,11 @@ export class PayrollAllocationMatrixService {
 
   async getMatrix(
     payrollRunId: string,
-    userId: string,
+    actor: FinancePayActor,
     viewMode: PayrollMatrixViewModeEnum = 'EMPLOYEE_MATRIX',
   ): Promise<PayrollAllocationMatrixDto> {
+    const accessible = await resolvePayrollReadAccess(this.prisma, actor);
+    const userId = actor.id;
     const run = await this.prisma.payrollRun.findUnique({
       where: { id: payrollRunId },
       include: {
@@ -129,6 +152,7 @@ export class PayrollAllocationMatrixService {
       },
     });
     if (!run) throw new NotFoundException('Payroll run not found');
+    const salaryLines = filterSalaryLinesByAccess(run.salaryLines, accessible);
 
     const layout = await loadPayrollMatrixLayout(this.prisma, userId, payrollRunId, viewMode);
     const deliveryUnits = await resolveDeliveryPayableUnits(
@@ -207,7 +231,7 @@ export class PayrollAllocationMatrixService {
       }
     }
 
-    const employeeRows = run.salaryLines.map((line) => {
+    const employeeRows = salaryLines.map((line) => {
       const baseSalary = decimalFrom(line.baseSalary);
       const bonusesTotal =
         draftBonusesByEmployee.get(line.employee.id) ?? decimalFrom(line.bonusesTotal);
@@ -344,9 +368,17 @@ export class PayrollAllocationMatrixService {
 
     const draftBonusTotal = DRAFT_PREVIEW_STATUSES.has(run.status)
       ? sumMoney(cells.map((cell) => cell.releaseThisMonth))
-      : decimalFrom(run.totalBonuses);
-    const totalBaseSalary = decimalFrom(run.totalBaseSalary);
-    const totalPaid = decimalFrom(run.totalPaid);
+      : accessible === 'ALL'
+        ? decimalFrom(run.totalBonuses)
+        : sumMoney(employeeRows.map((row) => row.bonusTotalThisRun));
+    const totalBaseSalary =
+      accessible === 'ALL'
+        ? decimalFrom(run.totalBaseSalary)
+        : sumMoney(employeeRows.map((row) => row.baseSalary));
+    const totalPaid =
+      accessible === 'ALL'
+        ? decimalFrom(run.totalPaid)
+        : sumMoney(salaryLines.map((line) => decimalFrom(line.paidAmount).toFixed(2)));
     const totalPayable = totalBaseSalary.plus(draftBonusTotal);
 
     return {
@@ -370,22 +402,25 @@ export class PayrollAllocationMatrixService {
 
   async patchLayout(
     payrollRunId: string,
-    userId: string,
+    actor: FinancePayActor,
     body: PatchPayrollMatrixLayoutBody,
   ): Promise<PayrollAllocationMatrixDto> {
-    await savePayrollMatrixLayout(this.prisma, userId, payrollRunId, body.viewMode, {
+    assertPayrollWriteAccess(actor, 'EDIT');
+    await savePayrollMatrixLayout(this.prisma, actor.id, payrollRunId, body.viewMode, {
       rowOrder: body.rowOrder,
       columnOrder: body.columnOrder,
       pinnedUnitIds: body.pinnedUnitIds,
     });
-    return this.getMatrix(payrollRunId, userId, body.viewMode);
+    return this.getMatrix(payrollRunId, actor, body.viewMode);
   }
 
   async patchCell(
     payrollRunId: string,
-    userId: string,
+    actor: FinancePayActor,
     body: PatchPayrollMatrixCellBody,
   ): Promise<PayrollAllocationMatrixDto> {
+    assertPayrollWriteAccess(actor, 'EDIT');
+    const userId = actor.id;
     const run = await this.prisma.payrollRun.findUnique({
       where: { id: payrollRunId },
       select: { id: true, status: true, payrollMonth: true },
@@ -401,7 +436,7 @@ export class PayrollAllocationMatrixService {
       await this.prisma.payrollBonusAllocationDraft.deleteMany({
         where: { payrollRunId, employeeId: body.employeeId, orderId: body.orderId },
       });
-      return this.getMatrix(payrollRunId, userId);
+      return this.getMatrix(payrollRunId, actor);
     }
 
     const order = await this.prisma.order.findUnique({
@@ -513,27 +548,33 @@ export class PayrollAllocationMatrixService {
       },
     });
 
-    return this.getMatrix(payrollRunId, userId);
+    return this.getMatrix(payrollRunId, actor);
   }
 
   async resetLayout(
     payrollRunId: string,
-    userId: string,
+    actor: FinancePayActor,
     viewMode: PayrollMatrixViewModeEnum,
   ): Promise<PayrollAllocationMatrixDto> {
-    await savePayrollMatrixLayout(this.prisma, userId, payrollRunId, viewMode, {
+    assertPayrollWriteAccess(actor, 'EDIT');
+    await savePayrollMatrixLayout(this.prisma, actor.id, payrollRunId, viewMode, {
       rowOrder: [],
       columnOrder: [],
       pinnedUnitIds: [],
     });
-    return this.getMatrix(payrollRunId, userId, viewMode);
+    return this.getMatrix(payrollRunId, actor, viewMode);
   }
 
   async createManualBonus(
     payrollRunId: string,
-    userId: string,
+    actor: FinancePayActor,
     body: CreatePayrollMatrixManualBonusBody,
   ): Promise<PayrollAllocationMatrixDto> {
+    assertPayrollWriteAccess(actor, 'EDIT');
+    if (!hasCallerPermission(actor.permissions, FINANCE_BONUSES_MODULE, 'ADD')) {
+      throw new ForbiddenException(`No permission: ${FINANCE_BONUSES_MODULE}.ADD`);
+    }
+    const userId = actor.id;
     const run = await this.prisma.payrollRun.findUnique({ where: { id: payrollRunId } });
     if (!run) throw new NotFoundException('Payroll run not found');
     if (!EDITABLE_STATUSES.has(run.status)) {
@@ -584,7 +625,7 @@ export class PayrollAllocationMatrixService {
       },
     });
 
-    return this.getMatrix(payrollRunId, userId);
+    return this.getMatrix(payrollRunId, actor);
   }
 
   private async resolveHistoryDeliveryUnits(
@@ -602,18 +643,30 @@ export class PayrollAllocationMatrixService {
 
   async getEmployeeBonusHistoryMeta(
     payrollRunId: string,
-    userId: string,
+    actor: FinancePayActor,
   ): Promise<PayrollEmployeeBonusHistoryMetaDto> {
-    const deliveryUnits = await this.resolveHistoryDeliveryUnits(payrollRunId, userId);
-    return queryPayrollEmployeeBonusHistoryMeta(this.prisma, payrollRunId, deliveryUnits);
+    const accessible = await resolvePayrollReadAccess(this.prisma, actor);
+    const deliveryUnits = await this.resolveHistoryDeliveryUnits(payrollRunId, actor.id);
+    const meta = await queryPayrollEmployeeBonusHistoryMeta(
+      this.prisma,
+      payrollRunId,
+      deliveryUnits,
+    );
+    if (accessible === 'ALL') return meta;
+    return {
+      ...meta,
+      employees: meta.employees.filter((employee) => accessible.includes(employee.employeeId)),
+    };
   }
 
   async getEmployeeBonusHistorySlice(
     payrollRunId: string,
-    userId: string,
+    actor: FinancePayActor,
     employeeId: string,
   ): Promise<PayrollEmployeeBonusHistorySliceDto> {
-    const deliveryUnits = await this.resolveHistoryDeliveryUnits(payrollRunId, userId);
+    const accessible = await resolvePayrollReadAccess(this.prisma, actor);
+    assertEmployeeAccessible(employeeId, accessible);
+    const deliveryUnits = await this.resolveHistoryDeliveryUnits(payrollRunId, actor.id);
     return queryPayrollEmployeeBonusHistorySlice(
       this.prisma,
       payrollRunId,

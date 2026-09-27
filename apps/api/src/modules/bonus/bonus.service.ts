@@ -34,6 +34,18 @@ import {
 import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
+import {
+  employeeIdWhere,
+  type AccessibleEmployeeIds,
+  type FinancePayActor,
+} from '../compensation-profiles/finance-pay-access';
+import {
+  assertBonusEmployeeAccess,
+  assertCompanyBonusAccess,
+  mergeBonusEmployeeFilter,
+  resolveBonusReadAccess,
+  resolveBonusWriteAccess,
+} from './bonus-access';
 
 const BONUS_SORT_FIELDS = new Set([
   'createdAt',
@@ -80,7 +92,7 @@ export class BonusService {
     private readonly audit: AuditService,
   ) {}
 
-  async findAll(params: BonusQueryParams) {
+  async findAll(actor: FinancePayActor, params: BonusQueryParams) {
     const {
       page: rawPage,
       pageSize: rawPageSize,
@@ -102,7 +114,8 @@ export class BonusService {
         ? Math.min(200, Math.floor(rawPageSize))
         : 20;
 
-    const where = this.buildWhere({ employeeId, orderId, projectId, status, type });
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
+    const where = this.buildWhere({ employeeId, orderId, projectId, status, type }, accessible);
     const searchTrimmed = params.search?.trim();
     const listWhere: Prisma.BonusEntryWhereInput = searchTrimmed
       ? {
@@ -154,7 +167,7 @@ export class BonusService {
     };
   }
 
-  async findById(id: string) {
+  async findById(actor: FinancePayActor, id: string) {
     const bonus = await this.prisma.bonusEntry.findUnique({
       where: { id },
       include: {
@@ -164,10 +177,15 @@ export class BonusService {
       },
     });
     if (!bonus) throw new NotFoundException(`Bonus entry ${id} not found`);
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
+    assertBonusEmployeeAccess(bonus.employeeId, accessible);
     return bonus;
   }
 
-  async create(data: CreateBonusDto, actorUserId?: string) {
+  async create(actor: FinancePayActor, data: CreateBonusDto) {
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'ADD');
+    assertBonusEmployeeAccess(data.employeeId, accessible);
+    const actorUserId = actor.id;
     const title = data.title?.trim();
     const reason = data.reason?.trim();
     const created = await this.prisma.bonusEntry.create({
@@ -215,8 +233,10 @@ export class BonusService {
     return created;
   }
 
-  async updateStatus(id: string, status: string) {
-    const existing = await this.findById(id);
+  async updateStatus(actor: FinancePayActor, id: string, status: string) {
+    const existing = await this.findById(actor, id);
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'EDIT');
+    assertBonusEmployeeAccess(existing.employeeId, accessible);
     const updated = await this.prisma.bonusEntry.update({
       where: { id },
       data: { status: status as BonusStatusEnum },
@@ -226,10 +246,14 @@ export class BonusService {
   }
 
   async patchPlannedAmount(
+    actor: FinancePayActor,
     bonusEntryId: string,
     params: Omit<PatchBonusEntryPlannedAmountParams, 'bonusEntryId'>,
-    actorUserId: string,
   ) {
+    const existing = await this.findById(actor, bonusEntryId);
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'EDIT');
+    assertBonusEmployeeAccess(existing.employeeId, accessible);
+    const actorUserId = actor.id;
     const result = await patchBonusEntryPlannedAmount(this.prisma, {
       bonusEntryId,
       ...params,
@@ -252,14 +276,18 @@ export class BonusService {
       },
     });
 
-    return this.findById(bonusEntryId);
+    return this.findById(actor, bonusEntryId);
   }
 
   async patchPayableAdjustment(
+    actor: FinancePayActor,
     bonusEntryId: string,
     params: Omit<PatchBonusEntryPayableAdjustmentParams, 'bonusEntryId'>,
-    actorUserId: string,
   ) {
+    const existing = await this.findById(actor, bonusEntryId);
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'EDIT');
+    assertBonusEmployeeAccess(existing.employeeId, accessible);
+    const actorUserId = actor.id;
     const result = await patchBonusEntryPayableAdjustment(this.prisma, {
       bonusEntryId,
       ...params,
@@ -283,24 +311,29 @@ export class BonusService {
       },
     });
 
-    return this.findById(bonusEntryId);
+    return this.findById(actor, bonusEntryId);
   }
 
-  async getStats() {
+  async getStats(actor: FinancePayActor) {
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
+    const scopeWhere = employeeIdWhere(accessible);
     const [byStatus, totalAmount] = await Promise.all([
       this.prisma.bonusEntry.groupBy({
         by: ['status'],
+        where: scopeWhere,
         _count: true,
         _sum: { amount: true },
       }),
-      this.prisma.bonusEntry.aggregate({ _sum: { amount: true } }),
+      this.prisma.bonusEntry.aggregate({ where: scopeWhere, _sum: { amount: true } }),
     ]);
     return { byStatus, totalAmount: totalAmount._sum.amount };
   }
 
-  async getProductPools(): Promise<BonusProductPoolRow[]> {
+  async getProductPools(actor: FinancePayActor): Promise<BonusProductPoolRow[]> {
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
     const raw = await this.prisma.bonusEntry.groupBy({
       by: ['orderId', 'status'] as const,
+      where: employeeIdWhere(accessible),
       _count: true,
       _sum: { amount: true },
     });
@@ -328,32 +361,61 @@ export class BonusService {
     if (folded.length === 0) {
       return [];
     }
-    const withLedgers = await this.mergeProductPoolLedgers(folded);
-    return this.attachPoolEmployeeCounts(withLedgers);
+    const withLedgers = accessible === 'ALL' ? await this.mergeProductPoolLedgers(folded) : folded;
+    return this.attachPoolEmployeeCounts(withLedgers, accessible);
   }
 
-  async getProductPoolEmployeeLines(poolKey: string) {
-    return queryBonusPoolEmployeeLines(this.prisma, poolKey);
+  async getProductPoolEmployeeLines(actor: FinancePayActor, poolKey: string) {
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
+    const result = await queryBonusPoolEmployeeLines(this.prisma, poolKey);
+    if (accessible === 'ALL') return result;
+    return {
+      ...result,
+      lines: result.lines.filter((line) => accessible.includes(line.employeeId)),
+    };
   }
 
-  async getProductPoolTimeline(poolKey: string) {
-    return queryBonusPoolTimeline(this.prisma, poolKey);
+  async getProductPoolTimeline(actor: FinancePayActor, poolKey: string) {
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
+    const result = await queryBonusPoolTimeline(this.prisma, poolKey);
+    if (accessible === 'ALL') return result;
+    return {
+      ...result,
+      events: result.events.filter(
+        (event) =>
+          event.kind !== 'RELEASE_OUT' ||
+          event.employeeId == null ||
+          accessible.includes(event.employeeId),
+      ),
+    };
   }
 
-  async triggerProductPoolAutoRelease(poolKey: string) {
+  async triggerProductPoolAutoRelease(actor: FinancePayActor, poolKey: string) {
+    assertCompanyBonusAccess(actor, 'EDIT');
     return triggerPoolProportionalAutoRelease(this.prisma, poolKey);
   }
 
-  async syncProductPoolLedger(poolKey: string) {
+  async syncProductPoolLedger(actor: FinancePayActor, poolKey: string) {
+    assertCompanyBonusAccess(actor, 'EDIT');
     return syncProductBonusPoolForPoolKey(this.prisma, poolKey);
   }
 
-  async getProductPoolEmployeeLinesBatch(poolKeysRaw: string): Promise<{
+  async getProductPoolEmployeeLinesBatch(
+    actor: FinancePayActor,
+    poolKeysRaw: string,
+  ): Promise<{
     items: BonusPoolEmployeeLinesBatchDto[];
   }> {
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
     const poolKeys = parsePoolKeysQuery(poolKeysRaw);
     const items = await queryBonusPoolEmployeeLinesBatch(this.prisma, poolKeys);
-    return { items };
+    if (accessible === 'ALL') return { items };
+    return {
+      items: items.map((item) => ({
+        ...item,
+        lines: item.lines.filter((line) => accessible.includes(line.employeeId)),
+      })),
+    };
   }
 
   private async mergeProductPoolLedgers(
@@ -410,13 +472,14 @@ export class BonusService {
 
   private async attachPoolEmployeeCounts(
     rows: BonusProductPoolRow[],
+    accessible: AccessibleEmployeeIds,
   ): Promise<BonusProductPoolRow[]> {
     const allOrderIds = [...new Set(rows.flatMap((r) => r.orderIds))];
     if (allOrderIds.length === 0) {
       return rows;
     }
     const entries = await this.prisma.bonusEntry.findMany({
-      where: { orderId: { in: allOrderIds } },
+      where: { orderId: { in: allOrderIds }, ...employeeIdWhere(accessible) },
       select: { orderId: true, employeeId: true },
     });
     const orderToPool = new Map<string, string>();
@@ -441,9 +504,11 @@ export class BonusService {
 
   private buildWhere(
     filters: Omit<BonusQueryParams, 'page' | 'pageSize' | 'search' | 'sortBy' | 'sortOrder'>,
+    accessible: AccessibleEmployeeIds,
   ): Prisma.BonusEntryWhereInput {
-    const where: Prisma.BonusEntryWhereInput = {};
-    if (filters.employeeId) where.employeeId = filters.employeeId;
+    const where: Prisma.BonusEntryWhereInput = {
+      ...mergeBonusEmployeeFilter(filters.employeeId, accessible),
+    };
     if (filters.orderId) where.orderId = filters.orderId;
     if (filters.projectId) where.projectId = filters.projectId;
     if (filters.status) where.status = filters.status as BonusStatusEnum;

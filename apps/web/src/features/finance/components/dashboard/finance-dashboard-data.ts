@@ -26,7 +26,7 @@ export interface FinanceDashboardData {
   invoiceStatusItems: InvoiceStatusItem[];
   recentPayments: RecentPaymentItem[];
   upcomingInvoices: UpcomingInvoiceItem[];
-  payrollRuns: FinanceDashboardPayrollRunsSummary;
+  payrollRuns: FinanceDashboardPayrollRunsSummary | null;
 }
 
 export interface FinanceKpi {
@@ -110,12 +110,19 @@ export function buildFinanceDashboardData(summary: FinanceDashboardSummary): Fin
     invoiceStatusItems: buildInvoiceStatusItems(summary),
     recentPayments: buildRecentPayments(summary),
     upcomingInvoices: buildUpcomingInvoices(summary),
-    payrollRuns: {
-      runCount: pr.runCount,
-      totalPayable: toAmount(pr.totals.totalPayable),
-      totalPaid: toAmount(pr.totals.totalPaid),
-      totalRemaining: toAmount(pr.totals.totalRemaining),
-    },
+    payrollRuns: mapPayrollRuns(pr),
+  };
+}
+
+function mapPayrollRuns(
+  payrollRuns: FinanceDashboardSummary['payrollRuns'],
+): FinanceDashboardPayrollRunsSummary | null {
+  if (!payrollRuns) return null;
+  return {
+    runCount: payrollRuns.runCount,
+    totalPayable: toAmount(payrollRuns.totals.totalPayable),
+    totalPaid: toAmount(payrollRuns.totals.totalPaid),
+    totalRemaining: toAmount(payrollRuns.totals.totalRemaining),
   };
 }
 

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { CurrentUser, type CurrentUserPayload } from '../../common/decorators';
+import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
+import { FINANCE_SALARY_MODULE } from '../compensation-profiles/finance-pay-access';
 import { PayrollAllocationMatrixService } from './payroll-allocation-matrix.service';
 import type {
   CreatePayrollMatrixManualBonusBody,
@@ -19,6 +20,7 @@ export class PayrollRunsController {
   ) {}
 
   @Get()
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'List payroll runs (paged)',
     description:
@@ -44,6 +46,7 @@ export class PayrollRunsController {
   @ApiQuery({ name: 'sortBy', required: false })
   @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('status') status?: string,
@@ -52,7 +55,7 @@ export class PayrollRunsController {
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'asc' | 'desc',
   ) {
-    return this.payrollRunsService.findAll({
+    return this.payrollRunsService.findAll(user, {
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       status,
@@ -64,6 +67,7 @@ export class PayrollRunsController {
   }
 
   @Get('stats')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Aggregate payroll run totals for list filters',
     description:
@@ -77,11 +81,12 @@ export class PayrollRunsController {
   @ApiQuery({ name: 'payrollMonthFrom', required: false })
   @ApiQuery({ name: 'payrollMonthTo', required: false })
   async getStats(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('status') status?: string,
     @Query('payrollMonthFrom') payrollMonthFrom?: string,
     @Query('payrollMonthTo') payrollMonthTo?: string,
   ) {
-    return this.payrollRunsService.getStats({
+    return this.payrollRunsService.getStats(user, {
       status,
       payrollMonthFrom,
       payrollMonthTo,
@@ -89,6 +94,7 @@ export class PayrollRunsController {
   }
 
   @Get('salary-board')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Salary Board grid (employees × payroll months)',
     description:
@@ -105,29 +111,39 @@ export class PayrollRunsController {
     description: 'Inclusive YYYY-MM upper bound.',
   })
   async getSalaryBoard(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('payrollMonthFrom') payrollMonthFrom?: string,
     @Query('payrollMonthTo') payrollMonthTo?: string,
   ) {
-    return this.payrollRunsService.getSalaryBoard({ payrollMonthFrom, payrollMonthTo });
+    return this.payrollRunsService.getSalaryBoard(user, { payrollMonthFrom, payrollMonthTo });
   }
 
   @Get('salary-lines/:salaryLineId/month-detail')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Employee month compensation detail (salary line)',
     description:
       'Summary, bonus breakdown, expense payments, and payout phase for one employee/month salary line. Used by Finance Salary Board sheet and Wallet.',
   })
-  async getSalaryLineMonthDetail(@Param('salaryLineId') salaryLineId: string) {
-    return this.payrollRunsService.getSalaryLineMonthDetail(salaryLineId);
+  async getSalaryLineMonthDetail(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('salaryLineId') salaryLineId: string,
+  ) {
+    return this.payrollRunsService.getSalaryLineMonthDetail(user, salaryLineId);
   }
 
   @Get(':id/allocation-matrix/validation')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Validate payroll matrix before review/approval' })
-  async getAllocationMatrixValidation(@Param('id') id: string) {
-    return this.payrollAllocationMatrixService.getValidation(id);
+  async getAllocationMatrixValidation(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+  ) {
+    return this.payrollAllocationMatrixService.getValidation(id, user);
   }
 
   @Get(':id/employee-bonus-history/meta')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Employee bonus history shared context (no matrix)',
     description: 'Employees, month columns, and delivery units — load once per payroll run view.',
@@ -136,10 +152,11 @@ export class PayrollRunsController {
     @Param('id') id: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollAllocationMatrixService.getEmployeeBonusHistoryMeta(id, user.id);
+    return this.payrollAllocationMatrixService.getEmployeeBonusHistoryMeta(id, user);
   }
 
   @Get(':id/employee-bonus-history/slice')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Employee bonus history slice (12-month amounts, no matrix)',
     description:
@@ -151,14 +168,11 @@ export class PayrollRunsController {
     @Query('employeeId') employeeId: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollAllocationMatrixService.getEmployeeBonusHistorySlice(
-      id,
-      user.id,
-      employeeId,
-    );
+    return this.payrollAllocationMatrixService.getEmployeeBonusHistorySlice(id, user, employeeId);
   }
 
   @Get(':id/allocation-matrix')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Payroll allocation matrix (employees × delivery payable units)',
     description:
@@ -174,82 +188,82 @@ export class PayrollRunsController {
     @Query('viewMode') viewMode: 'EMPLOYEE_MATRIX' | 'ORDER_MATRIX' | undefined,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollAllocationMatrixService.getMatrix(
-      id,
-      user.id,
-      viewMode ?? 'EMPLOYEE_MATRIX',
-    );
+    return this.payrollAllocationMatrixService.getMatrix(id, user, viewMode ?? 'EMPLOYEE_MATRIX');
   }
 
   @Patch(':id/allocation-matrix/layout')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Persist payroll matrix row/column order and pinned units' })
   async patchAllocationMatrixLayout(
     @Param('id') id: string,
     @Body() body: PatchPayrollMatrixLayoutBody,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollAllocationMatrixService.patchLayout(id, user.id, body);
+    return this.payrollAllocationMatrixService.patchLayout(id, user, body);
   }
 
   @Patch(':id/allocation-matrix/cells')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update bonus release amount for a matrix cell' })
   async patchAllocationMatrixCell(
     @Param('id') id: string,
     @Body() body: PatchPayrollMatrixCellBody,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollAllocationMatrixService.patchCell(id, user.id, body);
+    return this.payrollAllocationMatrixService.patchCell(id, user, body);
   }
 
   @Post(':id/allocation-matrix/manual-bonus')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Create manual bonus from a gray matrix cell' })
   async createAllocationMatrixManualBonus(
     @Param('id') id: string,
     @Body() body: CreatePayrollMatrixManualBonusBody,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollAllocationMatrixService.createManualBonus(id, user.id, body);
+    return this.payrollAllocationMatrixService.createManualBonus(id, user, body);
   }
 
   @Post(':id/allocation-matrix/layout/reset')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Reset matrix row/column order and pinned units for current view' })
   async resetAllocationMatrixLayout(
     @Param('id') id: string,
     @Body() body: { viewMode: 'EMPLOYEE_MATRIX' | 'ORDER_MATRIX' },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollAllocationMatrixService.resetLayout(id, user.id, body.viewMode);
+    return this.payrollAllocationMatrixService.resetLayout(id, user, body.viewMode);
   }
 
   @Get(':id')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({
     summary: 'Get payroll run with salary lines',
     description:
       'Includes materializedExpenseLineCount, `journal` (milestone timestamps), and `auditTrail` (`audit_logs` for this run: create + status changes).',
   })
-  async findOne(@Param('id') id: string) {
-    return this.payrollRunsService.findById(id);
+  async findOne(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.payrollRunsService.findById(user, id);
   }
 
   @Post()
+  @RequirePermission(FINANCE_SALARY_MODULE, 'ADD')
   @ApiOperation({ summary: 'Create draft payroll run for a month (optional salary line seed)' })
   async create(
     @Body() body: { payrollMonth: string; seedLines?: boolean },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollRunsService.create(body, user.id);
+    return this.payrollRunsService.create(user, body);
   }
 
   @Patch(':id/status')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update payroll run status (NBOS workflow)' })
   async updateStatus(
     @Param('id') id: string,
     @Body() body: { status: string },
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.payrollRunsService.updateStatus(id, body.status, {
-      actorUserId: user.id,
-      approvedById: user.id,
-    });
+    return this.payrollRunsService.updateStatus(user, id, body.status);
   }
 }

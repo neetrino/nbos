@@ -10,6 +10,14 @@ import type {
   CreateCompensationProfileBody,
   PatchCompensationProfileDraftBody,
 } from './compensation-profiles.types';
+import {
+  FINANCE_SALARY_MODULE,
+  assertEmployeeAccessible,
+  assertFinancePayScope,
+  bindAuthenticatedApprover,
+  resolveAccessibleEmployeeIds,
+  type FinancePayActor,
+} from './finance-pay-access';
 
 const PROFILE_STATUSES: CompensationProfileStatusEnum[] = ['DRAFT', 'REVIEW', 'ACTIVE', 'ARCHIVED'];
 const include = compensationProfileInclude();
@@ -18,7 +26,8 @@ const include = compensationProfileInclude();
 export class CompensationProfilesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async listForEmployee(employeeId: string) {
+  async listForEmployee(actor: FinancePayActor, employeeId: string) {
+    await this.assertProfileAccess(actor, 'VIEW', employeeId);
     await this.assertEmployeeExists(employeeId);
     const rows = await this.prisma.compensationProfile.findMany({
       where: { employeeId },
@@ -28,7 +37,12 @@ export class CompensationProfilesService {
     return { items: rows.map(serializeCompensationProfile) };
   }
 
-  async createDraft(employeeId: string, body: CreateCompensationProfileBody) {
+  async createDraft(
+    actor: FinancePayActor,
+    employeeId: string,
+    body: CreateCompensationProfileBody,
+  ) {
+    await this.assertProfileAccess(actor, 'EDIT', employeeId);
     await this.assertEmployeeExists(employeeId);
     const effectiveFrom = parseDateOnly(body.effectiveFrom, 'effectiveFrom');
     if (!Number.isFinite(body.baseSalary) || body.baseSalary < 0) {
@@ -63,11 +77,16 @@ export class CompensationProfilesService {
     return serializeCompensationProfile(row);
   }
 
-  async patchDraft(profileId: string, body: PatchCompensationProfileDraftBody) {
+  async patchDraft(
+    actor: FinancePayActor,
+    profileId: string,
+    body: PatchCompensationProfileDraftBody,
+  ) {
     const profile = await this.prisma.compensationProfile.findUnique({ where: { id: profileId } });
     if (!profile) {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
+    await this.assertProfileAccess(actor, 'EDIT', profile.employeeId);
     if (profile.status !== 'DRAFT') {
       throw new BadRequestException('Only DRAFT compensation profiles can be edited');
     }
@@ -110,17 +129,19 @@ export class CompensationProfilesService {
     return serializeCompensationProfile(row);
   }
 
-  async activate(profileId: string, meta: ActivateCompensationProfileMeta) {
+  async activate(actor: FinancePayActor, profileId: string, meta: ActivateCompensationProfileMeta) {
     const profile = await this.prisma.compensationProfile.findUnique({ where: { id: profileId } });
     if (!profile) {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
+    await this.assertProfileAccess(actor, 'EDIT', profile.employeeId);
+    const approvedById = bindAuthenticatedApprover(actor.id, meta.approvedById);
     if (profile.status === 'ARCHIVED') {
       throw new BadRequestException('Archived compensation profiles cannot be activated');
     }
     if (profile.status === 'ACTIVE') {
       await this.copyBaseSalaryToEmployee(profile.employeeId, profile.baseSalary);
-      return this.findById(profileId);
+      return this.findById(actor, profileId);
     }
     if (!PROFILE_STATUSES.includes(profile.status)) {
       throw new BadRequestException(`Unsupported profile status: ${profile.status}`);
@@ -145,7 +166,7 @@ export class CompensationProfilesService {
         where: { id: profileId },
         data: {
           status: 'ACTIVE',
-          approvedById: meta.approvedById ?? undefined,
+          approvedById,
           approvedAt: now,
         },
         include,
@@ -160,9 +181,13 @@ export class CompensationProfilesService {
     return serializeCompensationProfile(updated);
   }
 
-  async listActiveSummaries() {
+  async listActiveSummaries(actor: FinancePayActor) {
+    const accessible = await this.resolveCompensationAccess(actor, 'VIEW');
     const rows = await this.prisma.compensationProfile.findMany({
-      where: { status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+        ...(accessible === 'ALL' ? {} : { employeeId: { in: accessible } }),
+      },
       orderBy: { effectiveFrom: 'desc' },
       select: {
         employeeId: true,
@@ -184,7 +209,7 @@ export class CompensationProfilesService {
     };
   }
 
-  async findById(profileId: string) {
+  async findById(actor: FinancePayActor, profileId: string) {
     const row = await this.prisma.compensationProfile.findUnique({
       where: { id: profileId },
       include,
@@ -192,7 +217,26 @@ export class CompensationProfilesService {
     if (!row) {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
+    await this.assertProfileAccess(actor, 'VIEW', row.employeeId);
     return serializeCompensationProfile(row);
+  }
+
+  private async resolveCompensationAccess(actor: FinancePayActor, action: 'VIEW' | 'EDIT') {
+    const scope = assertFinancePayScope(actor, FINANCE_SALARY_MODULE, action, [
+      'ALL',
+      'DEPARTMENT',
+      'OWN',
+    ]);
+    return resolveAccessibleEmployeeIds(this.prisma, actor, scope);
+  }
+
+  private async assertProfileAccess(
+    actor: FinancePayActor,
+    action: 'VIEW' | 'EDIT',
+    employeeId: string,
+  ) {
+    const accessible = await this.resolveCompensationAccess(actor, action);
+    assertEmployeeAccessible(employeeId, accessible);
   }
 
   private async copyBaseSalaryToEmployee(employeeId: string, baseSalary: { toString(): string }) {

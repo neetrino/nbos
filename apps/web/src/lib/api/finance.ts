@@ -499,7 +499,7 @@ export interface FinanceDashboardSummary {
     company: { id: string; name: string } | null;
     projectId: string;
   }>;
-  payrollRuns: FinanceDashboardPayrollRuns;
+  payrollRuns: FinanceDashboardPayrollRuns | null;
 }
 
 export const invoicesApi = {

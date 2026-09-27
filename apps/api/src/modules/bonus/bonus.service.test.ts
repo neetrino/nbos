@@ -6,6 +6,16 @@ import { NotFoundException } from '@nestjs/common';
 import type { NotificationService } from '../notifications/notification.service';
 import type { AuditService } from '../audit/audit.service';
 
+const ALL = {
+  id: 'emp-1',
+  permissions: {
+    FINANCE_BONUSES_VIEW: 'ALL',
+    FINANCE_BONUSES_ADD: 'ALL',
+    FINANCE_BONUSES_EDIT: 'ALL',
+  },
+  departmentIds: [] as string[],
+};
+
 describe('BonusService', () => {
   let service: BonusService;
   let prisma: MockPrisma;
@@ -22,19 +32,19 @@ describe('BonusService', () => {
 
   describe('findAll', () => {
     it('returns paginated result', async () => {
-      const result = await service.findAll({});
+      const result = await service.findAll(ALL, {});
       expect(result.meta.page).toBe(1);
     });
 
     it('applies filters', async () => {
-      await service.findAll({ employeeId: 'e1', status: 'ACTIVE', type: 'SALES' });
+      await service.findAll(ALL, { employeeId: 'e1', status: 'ACTIVE', type: 'SALES' });
       expect(prisma.bonusEntry.findMany).toHaveBeenCalled();
     });
   });
 
   describe('findById', () => {
     it('throws NotFoundException', async () => {
-      await expect(service.findById('x')).rejects.toThrow(NotFoundException);
+      await expect(service.findById(ALL, 'x')).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -52,7 +62,7 @@ describe('BonusService', () => {
         .mockResolvedValueOnce({ _sum: { amount: new Decimal(0) } });
       prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
       prisma.productBonusPool.upsert.mockResolvedValue({});
-      const result = await service.create({
+      const result = await service.create(ALL, {
         employeeId: 'e1',
         orderId: 'o1',
         projectId: 'p1',
@@ -67,7 +77,7 @@ describe('BonusService', () => {
 
   describe('updateStatus', () => {
     it('updates status', async () => {
-      prisma.bonusEntry.findUnique.mockResolvedValue({ id: '1', orderId: 'o1' });
+      prisma.bonusEntry.findUnique.mockResolvedValue({ id: '1', orderId: 'o1', employeeId: 'e1' });
       prisma.bonusEntry.update.mockResolvedValue({ id: '1', status: 'PAID' });
       prisma.order.findUnique.mockResolvedValue({
         id: 'o1',
@@ -80,14 +90,14 @@ describe('BonusService', () => {
         .mockResolvedValueOnce({ _sum: { amount: new Decimal(100) } });
       prisma.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: null } });
       prisma.productBonusPool.upsert.mockResolvedValue({});
-      const result = await service.updateStatus('1', 'PAID');
+      const result = await service.updateStatus(ALL, '1', 'PAID');
       expect(result.status).toBe('PAID');
     });
   });
 
   describe('getStats', () => {
     it('returns stats', async () => {
-      const stats = await service.getStats();
+      const stats = await service.getStats(ALL);
       expect(stats).toHaveProperty('byStatus');
     });
   });
@@ -95,7 +105,7 @@ describe('BonusService', () => {
   describe('getProductPools', () => {
     it('returns empty when no bonus rows', async () => {
       prisma.bonusEntry.groupBy.mockResolvedValue([]);
-      const rows = await service.getProductPools();
+      const rows = await service.getProductPools(ALL);
       expect(rows).toEqual([]);
       expect(prisma.order.findMany).not.toHaveBeenCalled();
     });
@@ -132,7 +142,7 @@ describe('BonusService', () => {
         { orderId: 'o1', employeeId: 'e1' },
         { orderId: 'o1', employeeId: 'e2' },
       ]);
-      const rows = await service.getProductPools();
+      const rows = await service.getProductPools(ALL);
       expect(rows).toHaveLength(1);
       expect(rows[0].poolKey).toBe('product:prod1');
       expect(rows[0].sumPaidAmount).toBe('50.00');
