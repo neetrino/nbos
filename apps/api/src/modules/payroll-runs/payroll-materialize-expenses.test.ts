@@ -12,18 +12,34 @@ function payableLine(params: {
   id: string;
   currency: string | null;
   totalPayable?: string;
+  baseSalary?: string;
+  bonusesTotal?: string;
 }): Record<string, unknown> {
+  const hasProfile = params.currency != null;
   return {
     id: params.id,
     payrollRunId: 'run-1',
     expenseId: null,
-    compensationProfileId: params.currency == null ? null : `cp-${params.id}`,
+    compensationProfileId: hasProfile ? `cp-${params.id}` : null,
     totalPayable: new Decimal(params.totalPayable ?? '120000'),
-    baseSalary: new Decimal('100000'),
-    bonusesTotal: new Decimal('20000'),
+    baseSalary: new Decimal(params.baseSalary ?? '100000'),
+    bonusesTotal: new Decimal(params.bonusesTotal ?? '20000'),
     employee: { firstName: 'Ada', lastName: 'Lovelace' },
-    compensationProfile:
-      params.currency == null ? null : { id: `cp-${params.id}`, currency: params.currency },
+    compensationProfile: hasProfile ? { id: `cp-${params.id}`, currency: params.currency } : null,
+  };
+}
+
+function octoberSettlementLine(): Record<string, unknown> {
+  return {
+    id: 'sl-settle',
+    payrollRunId: 'pr-oct',
+    expenseId: null,
+    compensationProfileId: null,
+    totalPayable: new Decimal('40000.00'),
+    baseSalary: new Decimal('0.00'),
+    bonusesTotal: new Decimal('40000.00'),
+    employee: { firstName: 'Ada', lastName: 'Lovelace' },
+    compensationProfile: null,
   };
 }
 
@@ -149,6 +165,82 @@ describe('materializePayrollExpensesForApprovedRun', () => {
       materializePayrollExpensesForApprovedRun(tx as never, {
         payrollRunId: 'run-1',
         payrollMonth: '2026-04',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(expenseCreate).not.toHaveBeenCalled();
+    expect(salaryLineUpdate).not.toHaveBeenCalled();
+  });
+
+  it('creates one 40000 BONUS expense for a post-fire settlement line with no profile', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([octoberSettlementLine()]);
+
+    const result = await materializePayrollExpensesForApprovedRun(tx as never, {
+      payrollRunId: 'pr-oct',
+      payrollMonth: '2026-10',
+    });
+
+    expect(result.createdExpenseIds).toEqual(['exp-1']);
+    expect(expenseCreate).toHaveBeenCalledTimes(1);
+    const created = expenseCreate.mock.calls[0]?.[0].data as Record<string, unknown>;
+    expect(created.amount).toEqual(new Decimal('40000.00'));
+    expect(created.category).toBe('BONUS');
+    expect(created).not.toHaveProperty('currency');
+    expect(salaryLineUpdate).toHaveBeenCalledWith({
+      where: { id: 'sl-settle' },
+      data: { expenseId: 'exp-1', status: 'APPROVED' },
+    });
+    expect(salaryLineUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ baseSalary: expect.anything() }),
+      }),
+    );
+  });
+
+  it('rejects a blank profile currency on an ordinary salary line', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([
+      payableLine({ id: 'line-blank', currency: '' }),
+    ]);
+
+    await expect(
+      materializePayrollExpensesForApprovedRun(tx as never, {
+        payrollRunId: 'run-1',
+        payrollMonth: '2026-10',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(expenseCreate).not.toHaveBeenCalled();
+    expect(salaryLineUpdate).not.toHaveBeenCalled();
+  });
+
+  it('rejects a missing profile on an ordinary salary line with a real base salary', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([
+      payableLine({ id: 'line-no-profile', currency: null, baseSalary: '300000' }),
+    ]);
+
+    await expect(
+      materializePayrollExpensesForApprovedRun(tx as never, {
+        payrollRunId: 'run-1',
+        payrollMonth: '2026-10',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(expenseCreate).not.toHaveBeenCalled();
+    expect(salaryLineUpdate).not.toHaveBeenCalled();
+  });
+
+  it('rejects a zero-salary line that still has a USD profile', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([
+      payableLine({
+        id: 'line-usd-zero',
+        currency: 'USD',
+        baseSalary: '0',
+        bonusesTotal: '40000',
+        totalPayable: '40000',
+      }),
+    ]);
+
+    await expect(
+      materializePayrollExpensesForApprovedRun(tx as never, {
+        payrollRunId: 'run-1',
+        payrollMonth: '2026-10',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(expenseCreate).not.toHaveBeenCalled();

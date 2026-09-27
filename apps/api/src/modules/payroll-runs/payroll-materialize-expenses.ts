@@ -1,5 +1,6 @@
 import { Decimal, type ExpenseCategoryEnum, type TransactionClient } from '@nbos/database';
 import { assertEmployeeTakeHomeCurrency } from '../compensation-profiles/compensation-profile-currency';
+import { isZeroSalaryBonusSettlementLine } from './payroll-bonus-settlement-salary-line';
 
 /** Machine-readable trace for support / reconciliation (not shown as user-facing copy). */
 export function formatPayrollExpenseNotes(
@@ -55,6 +56,9 @@ type PayableSalaryLine = {
 
 function assertPayableLinesAreAmd(lines: readonly PayableSalaryLine[]): void {
   for (const line of lines) {
+    if (isZeroSalaryBonusSettlementLine(line)) {
+      continue;
+    }
     assertEmployeeTakeHomeCurrency(line.compensationProfile?.currency, `Salary line ${line.id}`);
   }
 }

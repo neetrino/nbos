@@ -73,7 +73,7 @@ export async function assertSalesBonusReadyForPayrollAttach(
   if (!isSalesBonusEligibleForPayrollMonth(entry, params.payrollMonth)) {
     throw new BadRequestException(
       `${bonusLabel} is not eligible for payroll month ${params.payrollMonth}. ` +
-        `Only bonuses earned in ${expectedEarnedPeriod} can be included.`,
+        `Only bonuses already earned through ${expectedEarnedPeriod} can be included.`,
     );
   }
 

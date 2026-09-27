@@ -16,6 +16,7 @@ import {
 import { computePayrollIncludedBonusAmount } from './sales-kpi-payroll-payout';
 import type { PayrollAttachNotifyEvent } from './payroll-attach-notify.types';
 import { computeSalaryLineTotalPayable } from './payroll-salary-line-total-payable';
+import { loadOrCreateBonusSettlementSalaryLine } from './payroll-bonus-settlement-salary-line';
 
 const ATTACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
@@ -26,6 +27,7 @@ export type BonusReleaseAttachTx = Pick<
   | 'bonusRelease'
   | 'bonusEntry'
   | 'salaryLine'
+  | 'employee'
   | 'compensationProfile'
   | 'kpiPolicy'
   | 'kpiResult'
@@ -82,24 +84,13 @@ async function loadSalaryLineForAttach(
   tx: BonusReleaseAttachTx,
   payrollRunId: string,
   employeeId: string,
+  payrollMonth: string,
 ): Promise<SalaryLineAttachSnapshot> {
-  const line = await tx.salaryLine.findUnique({
-    where: {
-      payrollRunId_employeeId: { payrollRunId, employeeId },
-    },
-    select: {
-      id: true,
-      baseSalary: true,
-      bonusesTotal: true,
-      paidAmount: true,
-    },
+  return loadOrCreateBonusSettlementSalaryLine(tx, {
+    payrollRunId,
+    employeeId,
+    payrollMonth,
   });
-  if (!line) {
-    throw new BadRequestException(
-      `No salary line for employee ${employeeId} in this payroll run; seed or add the line first.`,
-    );
-  }
-  return line;
 }
 
 async function includeReleaseOnSalaryLine(
@@ -194,7 +185,7 @@ async function attachOneApprovedRelease(
   payrollMonth: string,
   rel: AttachReleaseRow,
 ): Promise<void> {
-  const line = await loadSalaryLineForAttach(tx, payrollRunId, rel.employeeId);
+  const line = await loadSalaryLineForAttach(tx, payrollRunId, rel.employeeId, payrollMonth);
 
   if (rel.bonusEntry.type === 'SALES') {
     await assertSalesBonusReadyForPayrollAttach(tx, {

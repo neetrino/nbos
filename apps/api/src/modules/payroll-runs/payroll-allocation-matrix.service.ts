@@ -57,6 +57,7 @@ import {
   type PayrollMatrixCellSourceAggregate,
 } from './payroll-allocation-matrix-cell-sources';
 import { writePayrollMatrixCellDraft } from './payroll-allocation-matrix-cell-write';
+import { appendAccessibleBonusOnlyPayees } from './payroll-allocation-matrix-unpaid-payees';
 
 export { resolvePayrollMatrixCellState } from './payroll-allocation-matrix-cell-state';
 
@@ -239,7 +240,7 @@ export class PayrollAllocationMatrixService {
       }
     }
 
-    const employeeRows = salaryLines.map((line) => {
+    const salaryEmployeeRows = salaryLines.map((line) => {
       const baseSalary = decimalFrom(line.baseSalary);
       const bonusesTotal =
         draftBonusesByEmployee.get(line.employee.id) ?? decimalFrom(line.bonusesTotal);
@@ -254,6 +255,24 @@ export class PayrollAllocationMatrixService {
         bonusTotalThisRun: bonusesTotal.toFixed(2),
         payableTotal: baseSalary.plus(bonusesTotal).toFixed(2),
       };
+    });
+    const employeeRows = await appendAccessibleBonusOnlyPayees({
+      findEmployees: (ids) =>
+        this.prisma.employee.findMany({
+          where: { id: { in: ids } },
+          select: { id: true, firstName: true, lastName: true, position: true },
+        }),
+      rows: salaryEmployeeRows,
+      entries: orders.flatMap((order) => order.bonusEntries),
+      releases: releases.map((release) => ({
+        ...release,
+        bonusEntryId: release.bonusEntry.id,
+      })),
+      payrollMonth: run.payrollMonth,
+      payrollRunId,
+      draftEmployeeIds: draftAllocations.map((draft) => draft.employeeId),
+      draftBonusesByEmployee,
+      accessible,
     });
 
     const orderedEmployees = applyCustomOrder(

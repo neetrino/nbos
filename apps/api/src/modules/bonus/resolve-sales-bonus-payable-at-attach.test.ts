@@ -58,12 +58,12 @@ describe('assertSalesBonusReadyForPayrollAttach', () => {
     ).rejects.toThrow(/not ready for payroll/);
   });
 
-  it('throws when earned period does not match payroll month minus one', async () => {
+  it('throws when earned period is still in the payroll month', async () => {
     const db = {
       bonusEntry: {
         findUnique: vi.fn().mockResolvedValue({
           ...entryRow,
-          earnedPeriod: '2026-03',
+          earnedPeriod: '2026-05',
         }),
       },
     };
@@ -76,6 +76,31 @@ describe('assertSalesBonusReadyForPayrollAttach', () => {
         releaseType: 'MANUAL',
       }),
     ).rejects.toThrow(/not eligible for payroll month/);
+  });
+
+  it('passes an older unpaid Sales payable of 40000 in a later payroll month', async () => {
+    const db = {
+      bonusEntry: {
+        findUnique: vi.fn().mockResolvedValue({
+          ...entryRow,
+          amount: new Decimal('40000.00'),
+          payableAmount: new Decimal('40000.00'),
+          earnedPeriod: '2026-08',
+        }),
+      },
+      bonusRelease: {
+        aggregate: vi.fn().mockResolvedValue({ _sum: { amount: new Decimal('40000.00') } }),
+      },
+    };
+
+    await expect(
+      assertSalesBonusReadyForPayrollAttach(db as never, {
+        bonusEntryId: 'be1',
+        payrollMonth: '2026-10',
+        releaseAmount: new Decimal('40000.00'),
+        releaseType: 'MANUAL',
+      }),
+    ).resolves.toBeUndefined();
   });
 
   it('throws when the release amount exceeds the stored Sales payable', async () => {

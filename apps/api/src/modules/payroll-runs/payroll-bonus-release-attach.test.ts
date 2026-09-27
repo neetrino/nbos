@@ -57,6 +57,10 @@ function createTxMock() {
       findUnique: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
       aggregate: vi.fn(),
+      create: vi.fn(),
+    },
+    employee: {
+      findUnique: vi.fn(),
     },
     compensationProfile: {
       findFirst: vi.fn().mockResolvedValue(null),
