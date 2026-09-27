@@ -92,6 +92,7 @@
     "colleagueSearch": "Գործընկերներ",
     "colleagueSearchPlaceholder": "Որոնել անունով…",
     "colleagueInviteError": "Չհաջողվեց ուղարկել գործընկերների հրավերները։",
+    "actionError": "Չհաջողվեց կատարել գործողությունը։",
     "noColleagueInvites": "Գործընկերներ դեռ հրավիրված չեն։",
     "guestInviteHint": "Հաճախորդների և NBOS հաշիվ չունեցողների համար՝ կիսվեք միանալու հղումով։",
     "inviteLinkTitle": "Հյուրի միանալու հղում",

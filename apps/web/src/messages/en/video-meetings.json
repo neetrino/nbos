@@ -92,6 +92,7 @@
     "colleagueSearch": "Colleagues",
     "colleagueSearchPlaceholder": "Search by name…",
     "colleagueInviteError": "Could not send colleague invites.",
+    "actionError": "The action could not be completed.",
     "noColleagueInvites": "No colleagues invited yet.",
     "guestInviteHint": "For clients and anyone without an NBOS account — share a join link.",
     "inviteLinkTitle": "Guest join link",

@@ -81,24 +81,30 @@ export class VideoMeetingsService {
     }
     const now = new Date();
     const livekitRoomName = generateOpaqueLivekitRoomName();
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.videoMeetingSession.create({
-        data: {
-          meetingId,
-          livekitRoomName,
-          startedAt: now,
-        },
-      });
-      return tx.videoMeeting.update({
-        where: { id: meetingId },
-        data: { status: VideoMeetingStatus.ACTIVE },
-        include: videoMeetingCardInclude,
-      });
-    });
-    if (this.livekit.isConfigured()) {
+    const liveKitConfigured = this.livekit.isConfigured();
+    if (liveKitConfigured) {
       await this.livekit.ensureRoom(livekitRoomName);
     }
-    return this.toCard(updated, user.permissions);
+    try {
+      const updated = await this.prisma.$transaction(async (tx) => {
+        await tx.videoMeetingSession.create({
+          data: {
+            meetingId,
+            livekitRoomName,
+            startedAt: now,
+          },
+        });
+        return tx.videoMeeting.update({
+          where: { id: meetingId },
+          data: { status: VideoMeetingStatus.ACTIVE },
+          include: videoMeetingCardInclude,
+        });
+      });
+      return this.toCard(updated, user.permissions);
+    } catch (error) {
+      if (liveKitConfigured) await this.livekit.closeRoom(livekitRoomName);
+      throw error;
+    }
   }
 
   async getCard(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {

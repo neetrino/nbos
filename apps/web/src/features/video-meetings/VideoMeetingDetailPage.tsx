@@ -16,6 +16,8 @@ import {
   TASK_SHEET_WIDTH_CLASS,
 } from '@/features/tasks/components/task-sheet-classes';
 import { TaskSheetSplitLayout } from '@/features/tasks/components/TaskSheetSplitLayout';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { usePermission } from '@/lib/permissions';
 import {
   videoMeetingsApi,
@@ -80,8 +82,9 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
     setBusy(true);
     try {
       setCard(await action());
-    } catch {
-      setError(true);
+    } catch (caught) {
+      toast.error(getApiErrorMessage(caught, t('detail.actionError')));
+      await refreshMeetingCard(meetingId, setCard, setError);
     } finally {
       setBusy(false);
     }
@@ -173,6 +176,18 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
       />
     </VideoMeetingDetailShell>
   );
+}
+
+async function refreshMeetingCard(
+  meetingId: string,
+  setCard: (card: VideoMeetingCard) => void,
+  setLoadFailed: (failed: boolean) => void,
+): Promise<void> {
+  try {
+    setCard(await videoMeetingsApi.getCard(meetingId));
+  } catch {
+    setLoadFailed(true);
+  }
 }
 
 function VideoMeetingDetailShell({

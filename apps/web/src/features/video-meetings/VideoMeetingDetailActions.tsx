@@ -55,10 +55,22 @@ export function VideoMeetingLaunchAction({
   const live = status === 'ACTIVE';
   if (canManage && live) {
     return (
-      <Button type="button" variant="destructive" className="gap-2" disabled={busy} onClick={onEnd}>
-        <VideoOff className="size-4" aria-hidden />
-        {t('actions.endMeeting')}
-      </Button>
+      <>
+        <Link href={`/video-meetings/${meetingId}/room`} className={cn(buttonVariants(), 'gap-2')}>
+          <Video className="size-4" aria-hidden />
+          {t('actions.joinRoom')}
+        </Link>
+        <Button
+          type="button"
+          variant="destructive"
+          className="gap-2"
+          disabled={busy}
+          onClick={onEnd}
+        >
+          <VideoOff className="size-4" aria-hidden />
+          {t('actions.endMeeting')}
+        </Button>
+      </>
     );
   }
 

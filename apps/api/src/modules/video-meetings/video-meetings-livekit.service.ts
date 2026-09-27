@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   Logger,
   ServiceUnavailableException,
@@ -51,11 +52,17 @@ export class VideoMeetingsLivekitService {
 
   /** Create or ensure a LiveKit room for the opaque session room name. */
   async ensureRoom(roomName: string): Promise<void> {
-    const client = this.getRoomClient();
-    await client.createRoom({
-      name: roomName,
-      emptyTimeout: VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
-    });
+    try {
+      await this.getRoomClient().createRoom({
+        name: roomName,
+        emptyTimeout: VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
+      });
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      const message = error instanceof Error ? error.message : 'unknown';
+      this.logger.warn(`livekit_ensure_room_failed room=${roomName} ${message}`);
+      throw new ServiceUnavailableException('LiveKit is not available');
+    }
   }
 
   /** Delete the LiveKit room so every participant is disconnected. */

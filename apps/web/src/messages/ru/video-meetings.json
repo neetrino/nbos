@@ -92,6 +92,7 @@
     "colleagueSearch": "Коллеги",
     "colleagueSearchPlaceholder": "Поиск по имени…",
     "colleagueInviteError": "Не удалось отправить приглашения коллегам.",
+    "actionError": "Не удалось выполнить действие.",
     "noColleagueInvites": "Коллеги ещё не приглашены.",
     "guestInviteHint": "Для клиентов и тех, у кого нет аккаунта NBOS — поделитесь ссылкой для входа.",
     "inviteLinkTitle": "Ссылка для гостя",
