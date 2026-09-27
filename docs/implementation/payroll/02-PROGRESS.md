@@ -3,7 +3,9 @@
 **Updated:** 2026-09-27  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
 **Active slice:** P2-S2
-**Next step:** Grok 4.6 High implements individual monthly KPI: one scale for Probation and Active, no proration, and a status change does not duplicate accruals.
+**Next step:** Close the Sales KPI hold so a missing plan does not pay the full bonus, and reject non-AMD amounts. Browser checks use the dev database only after those paths exist.
+
+Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
 ## Workspace
 
@@ -33,6 +35,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-27 | Recheck early release          | Claude Opus 5.5 Medium | Same reviewer, only the PROGRESS/EARLY reason defect.                             | Matrix write, materialize, and the reason helper                    |
 | 2026-09-27 | P2-S1 salary month review      | Claude Opus 5.5 Medium | Money-period boundary. Opus 5.5 High is unavailable.                              | Uncommitted diff since `68a882727` only                             |
 | 2026-09-27 | P2-S1 recheck of four findings | Claude Opus 5.5 Medium | Same reviewer, only termination, directory, gap, and past start.                  | Those four paths in the uncommitted salary diff                     |
+| 2026-09-27 | P2-S2 Sales KPI review         | Claude Opus 5.5 Medium | KPI hold and factor. Opus 5.5 High is unavailable.                                | KPI files only, not the currency diff                               |
+| 2026-09-27 | P2-S3 AMD currency review      | Claude Opus 5.5 Medium | Take-home currency boundary. Opus 5.5 High is unavailable.                        | Currency and expense materialization only                           |
 
 ## Slice log
 
@@ -42,7 +46,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P1-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed. API typecheck not obtained (OOM). No browser.                              | `b1664e362` | Early recheck closed. Direct PAID rejected. Exception reasons required. |
 | P2-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 10 files, 60 passed. No browser. No PostgreSQL race. Recheck closed four findings. | `cb48c47bf` | Directory 409 if legacy overlaps is display-only                        |
 | P2-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           | Individual monthly KPI and Probation/Active history                     |
-| P2-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           |                                                                         |
+| P2-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 32 passed. No browser.                                                    | this commit | USD/EUR/blank rejected at seed and approval. No FX.                     |
 | P3-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           |                                                                         |
 | P3-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           |                                                                         |
 | P3-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                  | —           |                                                                         |

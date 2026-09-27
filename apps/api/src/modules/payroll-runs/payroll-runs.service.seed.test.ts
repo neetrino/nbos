@@ -174,7 +174,66 @@ describe('seedPayrollRunSalaryLines', () => {
     };
     expect(created.data.baseSalary.toString()).toBe('0');
   });
+
+  it('rejects a USD 1000 covering profile and does not insert a salary line', async () => {
+    const tx = seedTx({
+      employees: [employee('e1', 'ACTIVE')],
+      profiles: [{ ...CURRENT, currency: 'USD', baseSalary: { toString: () => '1000' } }],
+    });
+
+    await expect(seedPayrollRunSalaryLines(tx as never, 'run-1', '2026-09')).rejects.toThrow(
+      /Ada Lovelace \(e1\).*AMD, not USD/,
+    );
+    expect(tx.salaryLine.create).not.toHaveBeenCalled();
+  });
+
+  it('inserts one salary line for an AMD covering profile', async () => {
+    const tx = seedTx({
+      employees: [employee('e1', 'ACTIVE')],
+      profiles: [CURRENT],
+    });
+
+    await seedPayrollRunSalaryLines(tx as never, 'run-1', '2026-09');
+
+    expect(tx.salaryLine.create).toHaveBeenCalledTimes(1);
+    const created = tx.salaryLine.create.mock.calls[0]?.[0] as {
+      data: { employeeId: string; compensationProfileId: string; baseSalary: Decimal };
+    };
+    expect(created.data.employeeId).toBe('e1');
+    expect(created.data.compensationProfileId).toBe('p-current');
+    expect(created.data.baseSalary.toString()).toBe('100000');
+  });
+
+  it('rejects a blank covering currency and does not insert any salary line', async () => {
+    const tx = seedTx({
+      employees: [employee('e1', 'ACTIVE'), employee('e2', 'ACTIVE', 'Lin', 'Term')],
+      profiles: [
+        CURRENT,
+        {
+          ...CURRENT,
+          id: 'p-blank',
+          employeeId: 'e2',
+          currency: '',
+          baseSalary: { toString: () => '1000' },
+        },
+      ],
+    });
+
+    await expect(seedPayrollRunSalaryLines(tx as never, 'run-1', '2026-09')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(tx.salaryLine.create).not.toHaveBeenCalled();
+  });
 });
+
+function seedTx(params: { employees: ReturnType<typeof employee>[]; profiles: unknown[] }) {
+  return {
+    $queryRaw: vi.fn().mockResolvedValue([]),
+    employee: { findMany: vi.fn().mockResolvedValue(params.employees) },
+    compensationProfile: { findMany: vi.fn().mockResolvedValue(params.profiles) },
+    salaryLine: { create: vi.fn().mockResolvedValue({ id: 'sl-1' }) },
+  };
+}
 
 function employee(
   id: string,

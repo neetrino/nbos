@@ -29,6 +29,11 @@ import {
   APPROVED_COMPENSATION_PROFILE_STATUS,
   uniqueCoveringProfilePerEmployee,
 } from './resolve-active-compensation-profile';
+import {
+  assertEmployeeTakeHomeCurrency,
+  resolveCreateCompensationProfileCurrency,
+  resolvePatchCompensationProfileCurrency,
+} from './compensation-profile-currency';
 
 const PROFILE_STATUSES: CompensationProfileStatusEnum[] = ['DRAFT', 'REVIEW', 'ACTIVE', 'ARCHIVED'];
 const include = compensationProfileInclude();
@@ -59,6 +64,7 @@ export class CompensationProfilesService {
     if (!Number.isFinite(body.baseSalary) || body.baseSalary < 0) {
       throw new BadRequestException('baseSalary must be a non-negative number');
     }
+    const currency = resolveCreateCompensationProfileCurrency(body.currency);
 
     const bonusPolicyId = body.bonusPolicyId?.trim() || null;
     if (bonusPolicyId != null) {
@@ -74,7 +80,7 @@ export class CompensationProfilesService {
       data: {
         employeeId,
         baseSalary: body.baseSalary,
-        currency: body.currency?.trim() || 'AMD',
+        currency,
         payoutSchedule: body.payoutSchedule,
         bonusPolicyId,
         kpiPolicyId,
@@ -101,22 +107,13 @@ export class CompensationProfilesService {
     if (profile.status !== 'DRAFT') {
       throw new BadRequestException('Only DRAFT compensation profiles can be edited');
     }
-
-    let bonusPolicyId: string | null | undefined;
-    if (body.bonusPolicyId !== undefined) {
-      bonusPolicyId = body.bonusPolicyId?.trim() || null;
-      if (bonusPolicyId != null) {
-        await this.assertActiveBonusPolicyExists(bonusPolicyId);
-      }
-    }
-
-    let kpiPolicyId: string | null | undefined;
-    if (body.kpiPolicyId !== undefined) {
-      kpiPolicyId = body.kpiPolicyId?.trim() || null;
-      if (kpiPolicyId != null) {
-        await this.assertActiveKpiPolicyExists(kpiPolicyId);
-      }
-    }
+    const currency = resolvePatchCompensationProfileCurrency(body.currency);
+    const bonusPolicyId = await resolveOptionalPolicyId(body.bonusPolicyId, (id) =>
+      this.assertActiveBonusPolicyExists(id),
+    );
+    const kpiPolicyId = await resolveOptionalPolicyId(body.kpiPolicyId, (id) =>
+      this.assertActiveKpiPolicyExists(id),
+    );
 
     if (body.baseSalary != null && (!Number.isFinite(body.baseSalary) || body.baseSalary < 0)) {
       throw new BadRequestException('baseSalary must be a non-negative number');
@@ -126,7 +123,7 @@ export class CompensationProfilesService {
       where: { id: profileId },
       data: {
         baseSalary: body.baseSalary,
-        currency: body.currency?.trim(),
+        currency,
         bonusPolicyId,
         kpiPolicyId,
         effectiveFrom:
@@ -150,6 +147,7 @@ export class CompensationProfilesService {
     if (profile.status === 'ARCHIVED') {
       throw new BadRequestException('Archived compensation profiles cannot be activated');
     }
+    assertEmployeeTakeHomeCurrency(profile.currency, `Compensation profile ${profile.id}`);
     if (profile.status === 'ACTIVE') {
       if (approvedProfileCoversPayrollMonth(profile, payrollMonthForInstant(new Date()))) {
         await this.copyBaseSalaryToEmployee(profile.employeeId, profile.baseSalary);
@@ -275,4 +273,18 @@ function parseDateOnly(value: string, field: string): Date {
     throw new BadRequestException(`${field} must be a valid ISO date`);
   }
   return d;
+}
+
+async function resolveOptionalPolicyId(
+  raw: string | null | undefined,
+  assertActiveExists: (id: string) => Promise<void>,
+): Promise<string | null | undefined> {
+  if (raw === undefined) {
+    return undefined;
+  }
+  const policyId = raw?.trim() || null;
+  if (policyId != null) {
+    await assertActiveExists(policyId);
+  }
+  return policyId;
 }

@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { describe, it, expect, vi } from 'vitest';
 import { Decimal } from '@nbos/database';
 import {
@@ -6,6 +7,38 @@ import {
   pickPayrollExpenseCategory,
   materializePayrollExpensesForApprovedRun,
 } from './payroll-materialize-expenses';
+
+function payableLine(params: {
+  id: string;
+  currency: string | null;
+  totalPayable?: string;
+}): Record<string, unknown> {
+  return {
+    id: params.id,
+    payrollRunId: 'run-1',
+    expenseId: null,
+    compensationProfileId: params.currency == null ? null : `cp-${params.id}`,
+    totalPayable: new Decimal(params.totalPayable ?? '120000'),
+    baseSalary: new Decimal('100000'),
+    bonusesTotal: new Decimal('20000'),
+    employee: { firstName: 'Ada', lastName: 'Lovelace' },
+    compensationProfile:
+      params.currency == null ? null : { id: `cp-${params.id}`, currency: params.currency },
+  };
+}
+
+function materializeTx(lines: unknown[]) {
+  const expenseCreate = vi.fn().mockResolvedValue({ id: 'exp-1' });
+  const salaryLineUpdate = vi.fn().mockResolvedValue({});
+  return {
+    expenseCreate,
+    salaryLineUpdate,
+    tx: {
+      salaryLine: { findMany: vi.fn().mockResolvedValue(lines), update: salaryLineUpdate },
+      expense: { create: expenseCreate },
+    },
+  };
+}
 
 describe('payroll-materialize-expenses helpers', () => {
   it('endOfPayrollMonthUtc returns last UTC day of month', () => {
@@ -52,25 +85,10 @@ describe('payroll-materialize-expenses helpers', () => {
 });
 
 describe('materializePayrollExpensesForApprovedRun', () => {
-  it('creates expense and links salary line', async () => {
-    const line = {
-      id: 'line-1',
-      payrollRunId: 'run-1',
-      expenseId: null,
-      totalPayable: new Decimal('120000'),
-      baseSalary: new Decimal('100000'),
-      bonusesTotal: new Decimal('20000'),
-      employee: { firstName: 'Ada', lastName: 'Lovelace' },
-    };
-
-    const expenseCreate = vi.fn().mockResolvedValue({ id: 'exp-1' });
-    const salaryLineUpdate = vi.fn().mockResolvedValue({});
-    const salaryLineFindMany = vi.fn().mockResolvedValue([line]);
-
-    const tx = {
-      salaryLine: { findMany: salaryLineFindMany, update: salaryLineUpdate },
-      expense: { create: expenseCreate },
-    };
+  it('creates one unlabeled AMD expense for an AMD payable line', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([
+      payableLine({ id: 'line-1', currency: 'AMD' }),
+    ]);
 
     const result = await materializePayrollExpensesForApprovedRun(tx as never, {
       payrollRunId: 'run-1',
@@ -79,17 +97,66 @@ describe('materializePayrollExpensesForApprovedRun', () => {
 
     expect(result.createdExpenseIds).toEqual(['exp-1']);
     expect(expenseCreate).toHaveBeenCalledTimes(1);
-    expect(expenseCreate.mock.calls[0][0].data.name).toContain('2026-04');
-    expect(expenseCreate.mock.calls[0][0].data.name).toContain('Ada');
-    expect(expenseCreate.mock.calls[0][0].data.status).toBe('DUE_NOW');
+    const created = expenseCreate.mock.calls[0][0].data as Record<string, unknown>;
+    expect(created.amount).toEqual(new Decimal('120000'));
+    expect(created).not.toHaveProperty('currency');
+    expect(created.name).toContain('2026-04');
+    expect(created.name).toContain('Ada');
+    expect(created.status).toBe('DUE_NOW');
     expect(salaryLineUpdate).toHaveBeenCalledWith({
       where: { id: 'line-1' },
       data: { expenseId: 'exp-1', status: 'APPROVED' },
     });
   });
 
+  it('rejects a USD profile and creates no expense', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([
+      payableLine({ id: 'line-usd', currency: 'USD', totalPayable: '1000' }),
+    ]);
+
+    await expect(
+      materializePayrollExpensesForApprovedRun(tx as never, {
+        payrollRunId: 'run-1',
+        payrollMonth: '2026-04',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(expenseCreate).not.toHaveBeenCalled();
+    expect(salaryLineUpdate).not.toHaveBeenCalled();
+  });
+
+  it('rejects a EUR profile and creates no expense', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([
+      payableLine({ id: 'line-eur', currency: 'EUR' }),
+    ]);
+
+    await expect(
+      materializePayrollExpensesForApprovedRun(tx as never, {
+        payrollRunId: 'run-1',
+        payrollMonth: '2026-04',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(expenseCreate).not.toHaveBeenCalled();
+    expect(salaryLineUpdate).not.toHaveBeenCalled();
+  });
+
+  it('rejects mixed AMD and USD lines before creating any expense', async () => {
+    const { tx, expenseCreate, salaryLineUpdate } = materializeTx([
+      payableLine({ id: 'line-amd', currency: 'AMD' }),
+      payableLine({ id: 'line-usd', currency: 'USD' }),
+    ]);
+
+    await expect(
+      materializePayrollExpensesForApprovedRun(tx as never, {
+        payrollRunId: 'run-1',
+        payrollMonth: '2026-04',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(expenseCreate).not.toHaveBeenCalled();
+    expect(salaryLineUpdate).not.toHaveBeenCalled();
+  });
+
   it('skips non-positive payable lines', async () => {
-    const salaryLineFindMany = vi.fn().mockResolvedValue([
+    const { tx, expenseCreate } = materializeTx([
       {
         id: 'line-0',
         payrollRunId: 'run-1',
@@ -98,13 +165,9 @@ describe('materializePayrollExpensesForApprovedRun', () => {
         baseSalary: new Decimal(0),
         bonusesTotal: new Decimal(0),
         employee: { firstName: 'X', lastName: 'Y' },
+        compensationProfile: { id: 'cp-0', currency: 'USD' },
       },
     ]);
-    const expenseCreate = vi.fn();
-    const tx = {
-      salaryLine: { findMany: salaryLineFindMany, update: vi.fn() },
-      expense: { create: expenseCreate },
-    };
 
     const result = await materializePayrollExpensesForApprovedRun(tx as never, {
       payrollRunId: 'run-1',

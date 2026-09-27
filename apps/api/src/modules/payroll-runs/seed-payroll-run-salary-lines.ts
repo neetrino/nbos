@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Decimal, type TransactionClient } from '@nbos/database';
 import { payrollMonthForInstant } from '../compensation-profiles/compensation-profile-payroll-month';
+import { assertEmployeeTakeHomeCurrency } from '../compensation-profiles/compensation-profile-currency';
 import {
   coveringApprovedProfiles,
   hasApprovedProfileStartingAfterPayrollMonth,
@@ -92,7 +93,7 @@ function planEmployeeSalaryLine(
   if (employee.status === TERMINATED_EMPLOYEE_STATUS) {
     return planTerminatedSalaryLine(employee, profiles, payrollMonth);
   }
-  const coveringLine = coveringSalaryLine(employee.id, profiles, payrollMonth);
+  const coveringLine = coveringSalaryLine(employee, profiles, payrollMonth);
   if (coveringLine != null) {
     return coveringLine;
   }
@@ -114,21 +115,25 @@ function planTerminatedSalaryLine(
   if (payrollMonthForInstant(employee.fireDate) < payrollMonth) {
     return null;
   }
-  return coveringSalaryLine(employee.id, profiles, payrollMonth);
+  return coveringSalaryLine(employee, profiles, payrollMonth);
 }
 
 function coveringSalaryLine(
-  employeeId: string,
+  employee: SeedEmployeeRow,
   profiles: ApprovedCompensationProfileRange[],
   payrollMonth: string,
 ): PlannedSalaryLine | null {
-  const covering = coveringApprovedProfiles(profiles, employeeId, payrollMonth);
-  const profile = pickSingleCoveringApprovedProfile(covering, employeeId, payrollMonth);
+  const covering = coveringApprovedProfiles(profiles, employee.id, payrollMonth);
+  const profile = pickSingleCoveringApprovedProfile(covering, employee.id, payrollMonth);
   if (profile == null) {
     return null;
   }
+  assertEmployeeTakeHomeCurrency(
+    profile.currency,
+    `Cannot seed payroll ${payrollMonth} for ${employee.firstName} ${employee.lastName} (${employee.id})`,
+  );
   return {
-    employeeId,
+    employeeId: employee.id,
     compensationProfileId: profile.id,
     baseSalary: new Decimal(profile.baseSalary.toString()),
   };

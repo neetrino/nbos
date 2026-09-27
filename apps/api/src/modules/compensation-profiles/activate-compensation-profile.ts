@@ -13,6 +13,7 @@ import {
   approvedProfileCoversPayrollMonth,
 } from './compensation-profile-payroll-month';
 import { APPROVED_COMPENSATION_PROFILE_STATUS } from './resolve-active-compensation-profile';
+import { assertEmployeeTakeHomeCurrency } from './compensation-profile-currency';
 
 export type ActivateCompensationProfileTx = Pick<
   TransactionClient,
@@ -23,6 +24,7 @@ export interface ActivateCompensationProfileInput {
   id: string;
   employeeId: string;
   baseSalary: { toString(): string };
+  currency: string;
   effectiveFrom: Date;
   effectiveTo: Date | null;
 }
@@ -50,6 +52,7 @@ export async function activateCompensationProfileInTransaction(
   approvedById: string,
   now: Date,
 ): Promise<CompensationProfileDbRow> {
+  assertEmployeeTakeHomeCurrency(profile.currency, `Compensation profile ${profile.id}`);
   await lockEmployeeForCompensationWrite(tx, profile.employeeId);
   const others = await tx.compensationProfile.findMany({
     where: {

@@ -248,6 +248,7 @@ function setupActivate(params: {
     employeeId: string;
     status: string;
     baseSalary: { toString(): string };
+    currency?: string;
     effectiveFrom: Date;
     effectiveTo: Date | null;
   };
@@ -273,7 +274,10 @@ function setupActivate(params: {
   };
   const prisma = {
     compensationProfile: {
-      findUnique: vi.fn().mockResolvedValue(params.draft),
+      findUnique: vi.fn().mockResolvedValue({
+        currency: 'AMD',
+        ...params.draft,
+      }),
     },
     employee: { update: vi.fn() },
     $transaction: vi.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
