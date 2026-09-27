@@ -1,13 +1,28 @@
 'use client';
 
-import { TrackToggle, useRoomContext } from '@livekit/components-react';
+import { useRoomContext, useTrackToggle } from '@livekit/components-react';
 import { Track } from 'livekit-client';
-import { Maximize2, MessageSquare, Mic, MonitorUp, Phone, Video } from 'lucide-react';
+import {
+  Maximize2,
+  MessageSquare,
+  Mic,
+  MicOff,
+  MonitorOff,
+  MonitorUp,
+  Phone,
+  Video,
+  VideoOff,
+  type LucideIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
-import { CALL_HANGUP_BUTTON_CLASS, CALL_ICON_BUTTON_CLASS } from './video-meeting-call-styles';
+import {
+  CALL_HANGUP_BUTTON_CLASS,
+  CALL_ICON_BUTTON_CLASS,
+  CALL_MEDIA_OFF_CLASS,
+  CALL_MEDIA_ON_CLASS,
+} from './video-meeting-call-styles';
 
 type RoomExitProps = {
   canEnd: boolean;
@@ -20,8 +35,6 @@ type RoomExitProps = {
 type VideoMeetingRoomControlsProps = RoomExitProps & {
   chatOpen: boolean;
   onToggleChat: () => void;
-  meetingId?: string;
-  canControlRecording?: boolean;
 };
 
 /** Bottom icon bar. The red handset ends the meeting for a host, or leaves for a guest. */
@@ -33,8 +46,6 @@ export function VideoMeetingRoomControls({
   onEnd,
   chatOpen,
   onToggleChat,
-  meetingId,
-  canControlRecording = false,
 }: VideoMeetingRoomControlsProps) {
   const t = useTranslations('videoMeetings.room');
   const { ending, hangUp } = useRoomExitActions({
@@ -51,12 +62,7 @@ export function VideoMeetingRoomControls({
       role="toolbar"
       aria-label={t('controlsAria')}
     >
-      <CallMediaButtons
-        chatOpen={chatOpen}
-        onToggleChat={onToggleChat}
-        meetingId={meetingId}
-        canControlRecording={canControlRecording}
-      />
+      <CallMediaButtons chatOpen={chatOpen} onToggleChat={onToggleChat} />
       <CallHangupButton canEnd={canEnd} ending={ending} onHangUp={() => void hangUp()} />
     </div>
   );
@@ -65,40 +71,31 @@ export function VideoMeetingRoomControls({
 function CallMediaButtons({
   chatOpen,
   onToggleChat,
-  meetingId,
-  canControlRecording,
-}: Pick<
-  VideoMeetingRoomControlsProps,
-  'chatOpen' | 'onToggleChat' | 'meetingId' | 'canControlRecording'
->) {
+}: Pick<VideoMeetingRoomControlsProps, 'chatOpen' | 'onToggleChat'>) {
   const t = useTranslations('videoMeetings.room');
 
   return (
     <>
-      <TrackToggle
+      <MediaToggle
         source={Track.Source.Microphone}
-        showIcon={false}
-        className={CALL_ICON_BUTTON_CLASS}
-      >
-        <Mic aria-hidden />
-        <span className="sr-only">{t('mic')}</span>
-      </TrackToggle>
-      <TrackToggle source={Track.Source.Camera} showIcon={false} className={CALL_ICON_BUTTON_CLASS}>
-        <Video aria-hidden />
-        <span className="sr-only">{t('camera')}</span>
-      </TrackToggle>
-      <TrackToggle
+        enabledIcon={Mic}
+        disabledIcon={MicOff}
+        labelOn={t('micOn')}
+        labelOff={t('micOff')}
+      />
+      <MediaToggle
+        source={Track.Source.Camera}
+        enabledIcon={Video}
+        disabledIcon={VideoOff}
+        labelOn={t('cameraOn')}
+        labelOff={t('cameraOff')}
+      />
+      <MediaToggle
         source={Track.Source.ScreenShare}
-        showIcon={false}
-        className={CALL_ICON_BUTTON_CLASS}
-      >
-        <MonitorUp aria-hidden />
-        <span className="sr-only">{t('shareScreen')}</span>
-      </TrackToggle>
-      <VideoMeetingRecordingIndicator
-        appearance="icon"
-        meetingId={meetingId}
-        canControl={canControlRecording}
+        enabledIcon={MonitorUp}
+        disabledIcon={MonitorOff}
+        labelOn={t('shareOn')}
+        labelOff={t('shareOff')}
       />
       <button
         type="button"
@@ -110,6 +107,36 @@ function CallMediaButtons({
         <MessageSquare aria-hidden />
       </button>
     </>
+  );
+}
+
+function MediaToggle({
+  source,
+  enabledIcon: EnabledIcon,
+  disabledIcon: DisabledIcon,
+  labelOn,
+  labelOff,
+}: {
+  source: Track.Source;
+  enabledIcon: LucideIcon;
+  disabledIcon: LucideIcon;
+  labelOn: string;
+  labelOff: string;
+}) {
+  const { buttonProps, enabled } = useTrackToggle({ source });
+  const Icon = enabled ? EnabledIcon : DisabledIcon;
+
+  return (
+    <button
+      type="button"
+      aria-pressed={buttonProps['aria-pressed']}
+      aria-label={enabled ? labelOn : labelOff}
+      disabled={buttonProps.disabled}
+      onClick={buttonProps.onClick}
+      className={cn(CALL_ICON_BUTTON_CLASS, enabled ? CALL_MEDIA_ON_CLASS : CALL_MEDIA_OFF_CLASS)}
+    >
+      <Icon aria-hidden />
+    </button>
   );
 }
 

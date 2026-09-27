@@ -2,6 +2,7 @@
 
 import {
   isTrackReference,
+  useLocalParticipant,
   useRoomContext,
   useTracks,
   VideoTrack,
@@ -35,21 +36,18 @@ export function VideoMeetingStage({ self }: { self: CallSelfPresence }) {
   const tiles = [...screens, ...cameras];
   const solo = tiles.length === 1 ? tiles[0] : undefined;
 
-  if (solo && !hasLiveVideo(solo)) {
-    return (
-      <div className={STAGE_CLASS}>
-        <VideoMeetingPortrait track={solo} self={self} />
-      </div>
-    );
-  }
-
   return (
     <div className={STAGE_CLASS}>
-      <ul className={gridClass(tiles.length)}>
-        {tiles.map((track) => (
-          <VideoMeetingTile key={tileKey(track)} track={track} self={self} />
-        ))}
-      </ul>
+      {solo && !hasLiveVideo(solo) ? (
+        <VideoMeetingPortrait track={solo} self={self} />
+      ) : (
+        <ul className={gridClass(tiles.length)}>
+          {tiles.map((track) => (
+            <VideoMeetingTile key={tileKey(track)} track={track} self={self} />
+          ))}
+        </ul>
+      )}
+      <VideoMeetingMediaStatus />
     </div>
   );
 }
@@ -74,6 +72,40 @@ export function VideoMeetingDeviceNotice() {
     <p className="bg-background/95 text-foreground absolute top-4 left-1/2 z-20 max-w-md -translate-x-1/2 rounded-full px-4 py-2 text-center text-xs shadow-lg">
       {t('mediaBlocked')}
     </p>
+  );
+}
+
+function VideoMeetingMediaStatus() {
+  const { isMicrophoneEnabled, isCameraEnabled, isScreenShareEnabled } = useLocalParticipant();
+  const t = useTranslations('videoMeetings.room');
+
+  return (
+    <ul className="pointer-events-none absolute inset-x-0 bottom-28 z-10 flex flex-wrap justify-center gap-2 px-4">
+      <MediaStateChip on={isMicrophoneEnabled} onLabel={t('micOn')} offLabel={t('micOff')} />
+      <MediaStateChip on={isCameraEnabled} onLabel={t('cameraOn')} offLabel={t('cameraOff')} />
+      <MediaStateChip on={isScreenShareEnabled} onLabel={t('shareOn')} offLabel={t('shareOff')} />
+    </ul>
+  );
+}
+
+function MediaStateChip({
+  on,
+  onLabel,
+  offLabel,
+}: {
+  on: boolean;
+  onLabel: string;
+  offLabel: string;
+}) {
+  return (
+    <li
+      className={cn(
+        'rounded-full px-3 py-1 text-xs font-medium shadow-sm',
+        on ? 'bg-foreground text-background' : 'bg-background/95 text-muted-foreground',
+      )}
+    >
+      {on ? onLabel : offLabel}
+    </li>
   );
 }
 

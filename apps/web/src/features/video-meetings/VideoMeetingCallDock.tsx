@@ -45,7 +45,6 @@ export function VideoMeetingCallDock(props: VideoMeetingCallDockProps) {
         title={dock.card?.title}
         meetingId={props.meetingId}
         canEnd={dock.canManage}
-        canControlRecording={dock.canManage}
         isHost={dock.isHost}
         framed={false}
         minimized={!props.expanded}
