@@ -5,7 +5,6 @@ import { Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
-import { DetailSheetSection } from '@/components/shared';
 import type { VideoMeetingStatus } from '@/lib/api/video-meetings';
 import type { VideoMeetingThreadItem } from '@/lib/api/video-meetings-thread';
 import { cn } from '@/lib/utils';
@@ -29,36 +28,36 @@ export function VideoMeetingDetailThread({
   const showComposer = roomStatus !== 'CANCELLED';
 
   return (
-    <DetailSheetSection title={t('thread.title')}>
-      <div className="flex max-h-[min(28rem,50vh)] flex-col gap-3">
-        <ol className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
-          {loading ? (
-            <li className="text-muted-foreground text-sm">{t('thread.loading')}</li>
-          ) : items.length === 0 ? (
-            <li className="text-muted-foreground text-sm">{t('thread.empty')}</li>
-          ) : (
-            items.map((item) => (
-              <ThreadRow
-                key={`${item.type}-${item.type === 'message' ? item.id : item.id}`}
-                item={item}
-                meetingId={meetingId}
-                employeeId={employeeId}
-                t={t}
-              />
-            ))
-          )}
-          <li ref={bottomRef} aria-hidden className="h-px shrink-0" />
-        </ol>
-        {showComposer ? (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ol className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
+        {loading ? (
+          <li className="text-muted-foreground text-sm">{t('thread.loading')}</li>
+        ) : items.length === 0 ? (
+          <li className="text-muted-foreground text-sm">{t('thread.empty')}</li>
+        ) : (
+          items.map((item) => (
+            <ThreadRow
+              key={`${item.type}-${item.id}`}
+              item={item}
+              meetingId={meetingId}
+              employeeId={employeeId}
+              t={t}
+            />
+          ))
+        )}
+        <li ref={bottomRef} aria-hidden className="h-px shrink-0" />
+      </ol>
+      {showComposer ? (
+        <div className="border-border/60 shrink-0 border-t px-5 py-3">
           <ThreadComposer
             busy={posting}
             onPost={(body) => void postMessage(body)}
             placeholder={t('thread.composerPlaceholder')}
             sendLabel={t('room.chatSend')}
           />
-        ) : null}
-      </div>
-    </DetailSheetSection>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

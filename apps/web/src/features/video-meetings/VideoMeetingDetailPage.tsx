@@ -6,17 +6,19 @@ import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { Sheet } from '@/components/ui/sheet';
 import { EntityDetailSheetContent, ErrorState, LoadingState } from '@/components/shared';
-import { TEAM_SHEET_BODY_CLASS } from '@/features/hr/constants/team-sheet-layout';
+import {
+  TASK_SHEET_RAIL_ANCHOR_CLASS,
+  TASK_SHEET_WIDTH_CLASS,
+} from '@/features/tasks/components/task-sheet-classes';
+import { TaskSheetSplitLayout } from '@/features/tasks/components/TaskSheetSplitLayout';
 import { usePermission } from '@/lib/permissions';
 import {
   videoMeetingsApi,
   type ColleagueInviteListItem,
   type VideoMeetingCard,
 } from '@/lib/api/video-meetings';
-import { VideoMeetingColleagueInviteSection } from './VideoMeetingColleagueInviteSection';
 import { VideoMeetingCornerAction, VideoMeetingLaunchAction } from './VideoMeetingDetailActions';
-import { VideoMeetingGuestLinkButton } from './VideoMeetingGuestLinkButton';
-import { VideoMeetingEntityLinksSection } from './video-meeting-detail-sections';
+import { VideoMeetingRoomSidePane } from './VideoMeetingRoomSidePane';
 import { resolveVideoMeetingDisplayTitle } from './video-meeting-title';
 import { VideoMeetingTitleField } from './VideoMeetingTitleField';
 import { videoMeetingStatusLabel } from './video-meeting-status-label';
@@ -96,73 +98,77 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
   const hostLabel =
     me?.id === card.hostEmployeeId ? t('detail.youAreHost') : card.hostEmployeeId.slice(0, 8);
 
+  const canManage = canEdit && isHost;
+
   return (
     <VideoMeetingDetailShell meetingId={meetingId} onClose={() => router.push('/video-meetings')}>
-      <div className="relative min-h-0 flex-1 overflow-y-auto">
-        <VideoMeetingCornerAction
-          status={card.status}
-          canManage={canEdit && isHost}
+      <header className="shrink-0 space-y-2 px-7 pt-5 pb-3">
+        <VideoMeetingTitleField
+          title={title}
+          canEdit={canManage}
           busy={busy}
-          onEnd={() => void runAction(() => videoMeetingsApi.end(meetingId))}
-          onCancel={() => void runAction(() => videoMeetingsApi.cancel(meetingId))}
+          onSave={async (nextTitle) => {
+            setCard(await videoMeetingsApi.rename(meetingId, nextTitle));
+          }}
         />
-        <div className={TEAM_SHEET_BODY_CLASS}>
-          <header className="space-y-2 pr-24">
-            <VideoMeetingTitleField
-              title={title}
-              canEdit={canEdit && isHost}
-              busy={busy}
-              onSave={async (nextTitle) => {
-                setCard(await videoMeetingsApi.rename(meetingId, nextTitle));
-              }}
-            />
-            <p className="text-muted-foreground text-sm">
-              {videoMeetingStatusLabel(card.status, t)} · {t('detail.host')}: {hostLabel}
-            </p>
-            <p className="text-muted-foreground text-xs">
-              {card.scheduledStartsAt
-                ? format(new Date(card.scheduledStartsAt), 'PPp')
-                : t('detail.notScheduled')}
-            </p>
-          </header>
-          {canEdit && isHost ? (
-            <VideoMeetingColleagueInviteSection
-              meetingId={meetingId}
-              excludeEmployeeId={me?.id}
-              initialInvites={colleagues}
-              trailing={<VideoMeetingGuestLinkButton meetingId={meetingId} />}
-            />
-          ) : null}
-          {canEdit && isHost ? (
-            <VideoMeetingEntityLinksSection
-              card={card}
-              onAttach={async (entityType, entityId) => {
-                setCard(await videoMeetingsApi.attachEntityLink(meetingId, entityType, entityId));
-              }}
-              onDetach={async (linkId) => {
-                setCard(await videoMeetingsApi.detachEntityLink(meetingId, linkId));
-              }}
-              t={t}
-            />
-          ) : null}
-          <VideoMeetingDetailThread
+        <p className="text-muted-foreground text-sm">
+          {videoMeetingStatusLabel(card.status, t)} · {t('detail.host')}: {hostLabel}
+        </p>
+        <p className="text-muted-foreground text-xs">
+          {card.scheduledStartsAt
+            ? format(new Date(card.scheduledStartsAt), 'PPp')
+            : t('detail.notScheduled')}
+        </p>
+      </header>
+      <TaskSheetSplitLayout
+        detail={
+          <VideoMeetingRoomSidePane
             meetingId={meetingId}
-            roomStatus={card.status}
-            employeeId={me?.id ?? null}
+            card={card}
+            canManage={canManage}
+            excludeEmployeeId={me?.id}
+            colleagues={colleagues}
+            onAttach={async (entityType, entityId) => {
+              setCard(await videoMeetingsApi.attachEntityLink(meetingId, entityType, entityId));
+            }}
+            onDetach={async (linkId) => {
+              setCard(await videoMeetingsApi.detachEntityLink(meetingId, linkId));
+            }}
           />
-        </div>
-      </div>
-      <VideoMeetingLaunchAction
-        meetingId={meetingId}
-        status={card.status}
-        canManage={canEdit && isHost}
-        busy={busy}
-        onStart={() =>
-          void runAction(async () => {
-            const started = await videoMeetingsApi.start(meetingId);
-            router.push(`/video-meetings/${meetingId}/room`);
-            return started;
-          })
+        }
+        chat={
+          <div className="flex h-full min-h-0 flex-col">
+            <div className="border-border/60 flex shrink-0 items-center justify-between gap-3 border-b px-5 py-3">
+              <h2 className="text-sm font-semibold">{t('thread.title')}</h2>
+              <div className="flex items-center gap-2">
+                <VideoMeetingCornerAction
+                  status={card.status}
+                  canManage={canManage}
+                  busy={busy}
+                  onEnd={() => void runAction(() => videoMeetingsApi.end(meetingId))}
+                  onCancel={() => void runAction(() => videoMeetingsApi.cancel(meetingId))}
+                />
+                <VideoMeetingLaunchAction
+                  meetingId={meetingId}
+                  status={card.status}
+                  canManage={canManage}
+                  busy={busy}
+                  onStart={() =>
+                    void runAction(async () => {
+                      const started = await videoMeetingsApi.start(meetingId);
+                      router.push(`/video-meetings/${meetingId}/room`);
+                      return started;
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <VideoMeetingDetailThread
+              meetingId={meetingId}
+              roomStatus={card.status}
+              employeeId={me?.id ?? null}
+            />
+          </div>
         }
       />
     </VideoMeetingDetailShell>
@@ -187,7 +193,8 @@ function VideoMeetingDetailShell({
     >
       <EntityDetailSheetContent
         open
-        layout="auxiliary"
+        contentClassName={TASK_SHEET_WIDTH_CLASS}
+        railAnchorClassName={TASK_SHEET_RAIL_ANCHOR_CLASS}
         showRailActions={false}
         sourcePageHref={`/video-meetings/${meetingId}`}
       >

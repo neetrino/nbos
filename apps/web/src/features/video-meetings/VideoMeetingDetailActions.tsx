@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Video } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -16,9 +17,7 @@ type VideoMeetingDetailActionsProps = {
   onCancel: () => void;
 };
 
-const CORNER_BUTTON_CLASS = 'h-7 px-2 text-xs';
-
-/** Small dismiss action in the sheet corner: cancel before start, end once live. */
+/** Quiet dismiss next to the call button: cancel before start, end once live. */
 export function VideoMeetingCornerAction({
   status,
   canManage,
@@ -36,7 +35,7 @@ export function VideoMeetingCornerAction({
       type="button"
       variant="ghost"
       size="sm"
-      className={cn(CORNER_BUTTON_CLASS, 'text-muted-foreground absolute top-3 right-4 z-10')}
+      className="text-muted-foreground h-8 px-2 text-xs"
       disabled={busy}
       onClick={canEnd ? onEnd : onCancel}
     >
@@ -45,7 +44,7 @@ export function VideoMeetingCornerAction({
   );
 }
 
-/** Full-width launch pinned to the bottom of the sheet. */
+/** Compact call control for the chat header. */
 export function VideoMeetingLaunchAction({
   meetingId,
   status,
@@ -58,26 +57,21 @@ export function VideoMeetingLaunchAction({
   const canStart = canManage && !live && status !== 'CANCELLED';
   if (!canStart && !live) return null;
 
+  const label = t('actions.videoCall');
+
+  if (live) {
+    return (
+      <Link href={`/video-meetings/${meetingId}/room`} className={cn(buttonVariants(), 'gap-2')}>
+        <Video className="size-4" aria-hidden />
+        {label}
+      </Link>
+    );
+  }
+
   return (
-    <footer className="border-border shrink-0 border-t px-5 py-4">
-      {live ? (
-        <Link
-          href={`/video-meetings/${meetingId}/room`}
-          className={cn(buttonVariants({ size: 'form' }), 'h-11 w-full text-base')}
-        >
-          {t('actions.joinRoom')}
-        </Link>
-      ) : (
-        <Button
-          type="button"
-          size="form"
-          className="h-11 w-full text-base"
-          disabled={busy}
-          onClick={onStart}
-        >
-          {t('actions.startMeeting')}
-        </Button>
-      )}
-    </footer>
+    <Button type="button" className="gap-2" disabled={busy} onClick={onStart}>
+      <Video className="size-4" aria-hidden />
+      {label}
+    </Button>
   );
 }
