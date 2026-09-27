@@ -38,7 +38,14 @@ export function VideoMeetingGuestLinkButton({ meetingId }: { meetingId: string }
   };
 
   return (
-    <Button type="button" size="sm" className="w-fit" disabled={busy} onClick={() => void copy()}>
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      className="h-7 shrink-0 px-2.5 text-xs"
+      disabled={busy}
+      onClick={() => void copy()}
+    >
       {copied ? t('actions.copied') : t('detail.copyGuestLink')}
     </Button>
   );

@@ -16,53 +16,68 @@ type VideoMeetingDetailActionsProps = {
   onCancel: () => void;
 };
 
-/** One primary launch action. End and cancel stay secondary so they do not compete with start. */
-export function VideoMeetingDetailActions({
+const CORNER_BUTTON_CLASS = 'h-7 px-2 text-xs';
+
+/** Small dismiss action in the sheet corner: cancel before start, end once live. */
+export function VideoMeetingCornerAction({
+  status,
+  canManage,
+  busy,
+  onEnd,
+  onCancel,
+}: Omit<VideoMeetingDetailActionsProps, 'meetingId' | 'onStart'>) {
+  const t = useTranslations('videoMeetings');
+  const canCancel = canManage && (status === 'CREATED' || status === 'WAITING');
+  const canEnd = canManage && status === 'ACTIVE';
+  if (!canCancel && !canEnd) return null;
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className={cn(CORNER_BUTTON_CLASS, 'text-muted-foreground absolute top-3 right-4 z-10')}
+      disabled={busy}
+      onClick={canEnd ? onEnd : onCancel}
+    >
+      {canEnd ? t('actions.endMeeting') : t('actions.cancelMeeting')}
+    </Button>
+  );
+}
+
+/** Full-width launch pinned to the bottom of the sheet. */
+export function VideoMeetingLaunchAction({
   meetingId,
   status,
   canManage,
   busy,
   onStart,
-  onEnd,
-  onCancel,
-}: VideoMeetingDetailActionsProps) {
+}: Omit<VideoMeetingDetailActionsProps, 'onEnd' | 'onCancel'>) {
   const t = useTranslations('videoMeetings');
   const live = status === 'ACTIVE';
   const canStart = canManage && !live && status !== 'ENDED' && status !== 'CANCELLED';
-  const canCancel = canManage && (status === 'CREATED' || status === 'WAITING');
+  if (!canStart && !live) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {canStart ? (
-        <Button type="button" size="form" disabled={busy} onClick={onStart}>
-          {t('actions.startMeeting')}
-        </Button>
-      ) : null}
+    <footer className="border-border shrink-0 border-t px-5 py-4">
       {live ? (
         <Link
           href={`/video-meetings/${meetingId}/room`}
-          className={cn(buttonVariants({ size: 'form' }))}
+          className={cn(buttonVariants({ size: 'form' }), 'h-11 w-full text-base')}
         >
           {t('actions.joinRoom')}
         </Link>
-      ) : null}
-      {live && canManage ? (
+      ) : (
         <Button
           type="button"
           size="form"
-          variant="destructive"
-          className="bg-destructive hover:bg-destructive/90 text-white"
+          className="h-11 w-full text-base"
           disabled={busy}
-          onClick={onEnd}
+          onClick={onStart}
         >
-          {t('actions.endMeeting')}
+          {t('actions.startMeeting')}
         </Button>
-      ) : null}
-      {canCancel ? (
-        <Button type="button" variant="ghost" disabled={busy} onClick={onCancel}>
-          {t('actions.cancelMeeting')}
-        </Button>
-      ) : null}
-    </div>
+      )}
+    </footer>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { RelationPickerField } from '@/components/shared';
 import { searchEmployeesForPicker } from '@/lib/employees';
@@ -10,12 +10,14 @@ type VideoMeetingColleagueInviteSectionProps = {
   meetingId: string;
   excludeEmployeeId?: string;
   initialInvites: ColleagueInviteListItem[];
+  trailing?: ReactNode;
 };
 
 export function VideoMeetingColleagueInviteSection({
   meetingId,
   excludeEmployeeId,
   initialInvites,
+  trailing,
 }: VideoMeetingColleagueInviteSectionProps) {
   const t = useTranslations('videoMeetings');
   const [invites, setInvites] = useState(initialInvites);
@@ -49,7 +51,10 @@ export function VideoMeetingColleagueInviteSection({
 
   return (
     <section className="bg-card/40 border-border/80 space-y-3 rounded-xl border p-4">
-      <h2 className="text-sm font-medium">{t('detail.colleagueInvites')}</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-medium">{t('detail.colleagueInvites')}</h2>
+        {trailing}
+      </div>
       <RelationPickerField
         label={t('detail.colleagueSearch')}
         entityKind="employee"
