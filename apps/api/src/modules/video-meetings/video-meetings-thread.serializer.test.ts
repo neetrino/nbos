@@ -44,6 +44,15 @@ function rows(): ThreadRows {
         createdAt: at('11:00'),
       },
     ],
+    participants: [
+      {
+        id: 'p-ada',
+        sessionId: 's1',
+        displayName: 'Ada Lovelace',
+        avatarUrl: '/api/employees/emp-ada/avatar?v=1',
+        joinedAt: at('10:00'),
+      },
+    ],
     recordings: [
       {
         id: 'r-open-at-end',
@@ -80,7 +89,16 @@ describe('video meeting thread serializer', () => {
       'recording:r-processing',
     ]);
     const card = thread.items.find((item) => item.id === 'r-open-at-end');
-    expect(card).toMatchObject({ at: at('10:30').toISOString(), playable: true });
+    expect(card).toMatchObject({
+      at: at('10:30').toISOString(),
+      playable: true,
+      durationSeconds: 25 * 60,
+      participants: [{ id: 'p-ada', displayName: 'Ada Lovelace' }],
+    });
+    expect(thread.items.find((item) => item.id === 'r-processing')).toMatchObject({
+      durationSeconds: 15 * 60,
+      participants: [{ id: 'p-ada', displayName: 'Ada Lovelace' }],
+    });
     expect(thread.items.find((item) => item.id === 'r-processing')).toMatchObject({
       status: 'FINALIZING',
       playable: false,

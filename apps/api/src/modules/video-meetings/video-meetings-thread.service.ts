@@ -18,6 +18,7 @@ import {
   serializeThreadMessage,
   type GuestThreadDto,
   type GuestThreadMessageDto,
+  type ThreadParticipantRow,
   type ThreadRows,
   type VideoMeetingThreadDto,
   type VideoMeetingThreadMessageDto,
@@ -138,7 +139,7 @@ export class VideoMeetingsThreadService {
   }
 
   private async loadRows(meetingId: string): Promise<ThreadRows> {
-    const [latestMessages, sessions, recordings] = await Promise.all([
+    const [latestMessages, sessions, recordings, participants] = await Promise.all([
       this.prisma.videoMeetingMessage.findMany({
         where: { meetingId },
         orderBy: { createdAt: 'desc' },
@@ -162,7 +163,55 @@ export class VideoMeetingsThreadService {
           assets: { select: { kind: true, status: true, fileAssetId: true } },
         },
       }),
+      this.loadJoinedParticipants(meetingId),
     ]);
-    return { messages: [...latestMessages].reverse(), sessions, recordings };
+    return {
+      messages: [...latestMessages].reverse(),
+      sessions,
+      recordings,
+      participants,
+    };
+  }
+
+  private async loadJoinedParticipants(meetingId: string): Promise<ThreadParticipantRow[]> {
+    const rows = await this.prisma.videoMeetingParticipant.findMany({
+      where: { meetingId, joinedAt: { not: null } },
+      orderBy: { joinedAt: 'asc' },
+      select: {
+        id: true,
+        sessionId: true,
+        employeeId: true,
+        displayName: true,
+        joinedAt: true,
+      },
+    });
+    return this.withParticipantAvatars(rows);
+  }
+
+  private async withParticipantAvatars(
+    rows: Array<{
+      id: string;
+      sessionId: string | null;
+      employeeId: string | null;
+      displayName: string;
+      joinedAt: Date | null;
+    }>,
+  ): Promise<ThreadParticipantRow[]> {
+    const employeeIds = rows.flatMap((row) => (row.employeeId ? [row.employeeId] : []));
+    const employees =
+      employeeIds.length === 0
+        ? []
+        : await this.prisma.employee.findMany({
+            where: { id: { in: employeeIds } },
+            select: { id: true, avatar: true },
+          });
+    const avatars = new Map(employees.map((employee) => [employee.id, employee.avatar]));
+    return rows.map((row) => ({
+      id: row.id,
+      sessionId: row.sessionId,
+      displayName: row.displayName,
+      avatarUrl: row.employeeId ? (avatars.get(row.employeeId) ?? null) : null,
+      joinedAt: row.joinedAt,
+    }));
   }
 }

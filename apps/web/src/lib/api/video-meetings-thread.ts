@@ -25,6 +25,12 @@ export type VideoMeetingThreadSession = {
   endedAt: string | null;
 };
 
+export type VideoMeetingThreadRecordingPerson = {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+};
+
 /** No playback URL here; `playable` means the private player may be offered on this card. */
 export type VideoMeetingThreadRecording = {
   type: 'recording';
@@ -33,6 +39,8 @@ export type VideoMeetingThreadRecording = {
   sessionId: string | null;
   status: VideoMeetingRecordingStatus;
   playable: boolean;
+  durationSeconds: number | null;
+  participants: VideoMeetingThreadRecordingPerson[];
 };
 
 export type VideoMeetingThreadItem =

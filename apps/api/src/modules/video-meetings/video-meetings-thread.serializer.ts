@@ -35,10 +35,20 @@ export type ThreadRecordingRow = {
   }[];
 };
 
+/** Someone who joined the room. Used as the recording cover, not as an ACL. */
+export type ThreadParticipantRow = {
+  id: string;
+  sessionId: string | null;
+  displayName: string;
+  avatarUrl: string | null;
+  joinedAt: Date | null;
+};
+
 export type ThreadRows = {
   messages: ThreadMessageRow[];
   sessions: ThreadSessionRow[];
   recordings: ThreadRecordingRow[];
+  participants: ThreadParticipantRow[];
 };
 
 export type VideoMeetingThreadMessageDto = {
@@ -61,6 +71,12 @@ export type VideoMeetingThreadSessionDto = {
   endedAt: string | null;
 };
 
+export type VideoMeetingThreadRecordingPersonDto = {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+};
+
 /** No playback URL or Drive id; `playable` only says the private player may be offered. */
 export type VideoMeetingThreadRecordingDto = {
   type: 'recording';
@@ -69,6 +85,10 @@ export type VideoMeetingThreadRecordingDto = {
   sessionId: string | null;
   status: VideoMeetingRecordingStatus;
   playable: boolean;
+  /** Whole seconds from start to stop, or to the session end when stop was the hang-up. */
+  durationSeconds: number | null;
+  /** People who were in the room, so the cover can show faces when the camera was off. */
+  participants: VideoMeetingThreadRecordingPersonDto[];
 };
 
 export type VideoMeetingThreadItemDto =
@@ -97,6 +117,9 @@ export type GuestThreadRecordingNoteDto = {
 
 export type GuestThreadDto = { items: (GuestThreadMessageDto | GuestThreadRecordingNoteDto)[] };
 
+const RECORDING_COVER_PARTICIPANT_LIMIT = 6;
+const MS_PER_SECOND = 1000;
+
 /** Sessions sort before messages, recordings after, when times are equal. */
 const RANK_SESSION = 0;
 const RANK_MESSAGE = 1;
@@ -119,6 +142,32 @@ function sortPlaced<T>(placed: Placed<T>[]): T[] {
 function recordingPlacedAt(recording: ThreadRecordingRow, sessions: ThreadSessionRow[]): Date {
   const session = sessions.find((row) => row.id === recording.sessionId);
   return recording.stoppedAt ?? session?.endedAt ?? recording.startedAt ?? recording.createdAt;
+}
+
+function recordingDurationSeconds(
+  recording: ThreadRecordingRow,
+  sessions: ThreadSessionRow[],
+): number | null {
+  if (!recording.startedAt) return null;
+  const session = sessions.find((row) => row.id === recording.sessionId);
+  const endedAt = recording.stoppedAt ?? session?.endedAt ?? null;
+  if (!endedAt) return null;
+  const seconds = Math.floor((endedAt.getTime() - recording.startedAt.getTime()) / MS_PER_SECOND);
+  return seconds >= 0 ? seconds : null;
+}
+
+function recordingCoverParticipants(
+  recording: ThreadRecordingRow,
+  participants: ThreadParticipantRow[],
+): VideoMeetingThreadRecordingPersonDto[] {
+  const joined = participants.filter((person) => person.joinedAt);
+  const inSession = joined.filter((person) => person.sessionId === recording.sessionId);
+  const source = inSession.length > 0 ? inSession : joined;
+  return source.slice(0, RECORDING_COVER_PARTICIPANT_LIMIT).map((person) => ({
+    id: person.id,
+    displayName: person.displayName,
+    avatarUrl: person.avatarUrl,
+  }));
 }
 
 function hasPlayableComposite(recording: ThreadRecordingRow): boolean {
@@ -196,6 +245,8 @@ export function buildVideoMeetingThread(
         sessionId: recording.sessionId,
         status: recording.status,
         playable: callerMayPlay && hasPlayableComposite(recording),
+        durationSeconds: recordingDurationSeconds(recording, rows.sessions),
+        participants: recordingCoverParticipants(recording, rows.participants),
       };
       return { at, rank: RANK_RECORDING, item };
     }),

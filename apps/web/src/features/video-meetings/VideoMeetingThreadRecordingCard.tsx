@@ -26,19 +26,16 @@ export function VideoMeetingThreadRecordingCard({
   );
 
   return (
-    <article className="border-border bg-muted/30 flex w-full max-w-sm flex-col gap-2 rounded-2xl border p-2">
-      <div className="flex items-center justify-between gap-2 px-1">
-        <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          {t('label')}
-        </p>
-        <p className="text-muted-foreground text-xs">
-          {t(recordingGroupStatusKey(recording.status))}
-        </p>
-      </div>
-      {recording.playable ? (
-        <VideoMeetingRecordingPreview url={url} onOpen={() => setOpen(true)} />
-      ) : null}
-      {error ? <p className="text-destructive px-1 text-xs">{error}</p> : null}
+    <article className="w-full max-w-sm">
+      <VideoMeetingRecordingPreview
+        people={recording.participants ?? []}
+        durationSeconds={recording.durationSeconds ?? null}
+        statusLabel={t(recordingGroupStatusKey(recording.status))}
+        url={url}
+        playable={recording.playable}
+        onOpen={() => setOpen(true)}
+      />
+      {error ? <p className="text-destructive mt-1 px-1 text-xs">{error}</p> : null}
       <VideoMeetingRecordingPlayerDialog
         open={open}
         title={t('playbackTitle')}
