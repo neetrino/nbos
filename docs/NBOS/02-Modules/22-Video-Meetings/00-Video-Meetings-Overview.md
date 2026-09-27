@@ -14,7 +14,7 @@ Calendar remains an **optional** planning/reminder integration. CRM Calls/ATS te
 
 | V1 — required to launch                                                       | V2 — separate rollout                                 |
 | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
-| Own sidebar section, instant creation, room and history                       | Speech-to-text of the meeting                         |
+| Own sidebar section, durable room, persisted chat, thread with recordings     | Speech-to-text of the meeting                         |
 | Optional create-from Deal/Project/Product/Contact                             | Speaker-attributed transcript with timestamps         |
 | Guest invitation without NBOS registration; host admission                    | AI summary, decisions, unresolved issues              |
 | Camera, microphone, screen sharing and participant controls                   | Suggested follow-up Tasks requiring employee approval |
@@ -26,7 +26,7 @@ Per-participant audio and the participant/track identity timeline are **V1 requi
 
 ## Ownership across NBOS
 
-- **Video Meetings:** meeting/session/room, guest invitations, participants, consent, recording jobs, media/participant mapping and entity links.
+- **Video Meetings:** meeting/session/room, persisted room chat, guest invitations, participants, consent, recording jobs, media/participant mapping and entity links.
 - **Drive:** durable file operations, private Cloudflare R2, `FileAsset`, `FileVersion`, `FileLink`, storage retention and playback infrastructure. Reuse existing `MEETING_RECORDING` purpose.
 - **Calendar:** optional, explicit schedule association only. Existing `CalendarMeeting` records keep calendar-specific scheduling/conflicts/reminders.
 - **CRM/Projects/Clients:** authoritative business objects, unchanged ownership/permissions.
@@ -35,13 +35,15 @@ Per-participant audio and the participant/track identity timeline are **V1 requi
 
 ## Primary use cases
 
-1. **Instant:** Video Meetings → New → invite → admit → meet → consent → record → end → watch.
-2. **Contextual:** create a meeting from an authorized Deal, Product, Project or Contact.
-3. **Afterwards:** attach an initially unlinked, **completed** meeting to authorized business records, without copying recording files.
+1. **Instant:** Video Meetings → New room → invite → admit → meet → consent → record → end the session → review the thread → start the same room again.
+2. **Contextual:** from an authorized Deal, Product, Project or Contact, reopen the linked room when one already exists; create a room only when none does.
+3. **Afterwards:** attach an initially unlinked room to authorized business records, without copying recording files. Messages and every recording of that room stay in one thread.
 4. **Optional planned meeting:** schedule in Video Meetings and opt into Calendar, or create a linked conference from an existing CalendarMeeting.
 
 ## Guardrails
 
 V1 is a usable final conferencing/recording product, **not** an AI demo. No mandatory calendar entry, public video recording URL, SIP/ATS integration, automatic AI decisions, paid meeting-provider subscription or promise of zero infrastructure cost. Future internal quick calls may reuse the engine but are not required for V1.
 
-Read: [Architecture](01-Architecture-and-Integrations.md) · [V1](02-V1-Core-Meetings.md) · [V2](03-V2-AI-Meeting-Intelligence.md) · [Security](04-Access-Consent-and-Recording-Policy.md) · [UI](05-UI-and-Workflows.md) · [Operations](06-Technical-Validation-and-Operations.md) · [Register](99-Video-Meetings-Cleanup-Register.md).
+A room is reused across calls. Chat and recordings accumulate in that room. Contract: [Durable room and thread](07-Durable-Room-and-Thread.md).
+
+Read: [Architecture](01-Architecture-and-Integrations.md) · [V1](02-V1-Core-Meetings.md) · [V2](03-V2-AI-Meeting-Intelligence.md) · [Security](04-Access-Consent-and-Recording-Policy.md) · [UI](05-UI-and-Workflows.md) · [Operations](06-Technical-Validation-and-Operations.md) · [Durable room](07-Durable-Room-and-Thread.md) · [Register](99-Video-Meetings-Cleanup-Register.md).

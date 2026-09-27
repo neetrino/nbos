@@ -8,7 +8,7 @@ Do not reuse Calendar/ATS/Drive permissions as universal Video Meetings access. 
 
 - Employee host can manage only currently authorized meetings and records.
 - Employee participant may join but does not automatically gain record/play/export rights.
-- Guest uses single-room, least-privilege join only: no NBOS API/list, Drive, business entity details or recording playback.
+- Guest uses single-room, least-privilege join only: no NBOS API/list, Drive, business entity details or recording playback. During an admitted live session the guest may read and send that room's persisted messages. After the session the guest cannot open the thread.
 - Existing Drive visibility, business-object permissions and **meeting-specific restriction** must **all** pass before replay/export; multiple business links are navigation, not automatic media disclosure.
 - Keep restricted media access even after post-meeting links; explicit grant with reason/audit is required to broaden access.
 

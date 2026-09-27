@@ -36,7 +36,8 @@ Active implementation packages live under `docs/implementation/<feature>/`. An a
 - Do not mix with ATS Calls / CALLS journal. Do not change Finance/Payroll or unrelated modules.
 - Backend mints least-privilege LiveKit tokens. Guests get no NBOS API, Drive, or CRM data.
 - Explicit recording start/stop, visible indicator, affirmative consent; unknown consent → recording forbidden. Retention/notice wording need legal approval before production (do not invent binding periods).
-- Separate statuses: logical meeting, live session, recording job, each file. Meeting `ENDED` ≠ recording `READY`.
+- Separate statuses: logical room, live session, recording job, each file. Room `IDLE` ≠ recording `READY`.
+- Durable room and persisted thread are approved canon and are **not** part of S00–S07: [07-Durable-Room-and-Thread.md](../../NBOS/02-Modules/22-Video-Meetings/07-Durable-Room-and-Thread.md). Implement that slice from the canon, not from the old terminal-`ENDED` behavior.
 - Private R2; business links do not auto-grant media access. Extend `FileArtifactOperation` minimally; never bypass Drive.
 - Feature-flagged until full release gate. No production deploy/migration/data deletion; no secrets in git.
 - LiveKit/Egress failure must not break other NBOS modules.

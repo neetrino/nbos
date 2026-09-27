@@ -8,21 +8,21 @@ An authorized NBOS employee can conduct a real **instant unlinked** meeting with
 
 ## Required journeys
 
-| Entry point                  | V1 experience                                                                                |
-| ---------------------------- | -------------------------------------------------------------------------------------------- |
-| Video Meetings → New meeting | Creates instant/unlinked meeting and revocable join link                                     |
-| Authorized business card     | Opens a new meeting with optional Deal/Project/Product/Contact link                          |
-| Calendar (opt in only)       | Schedules/launches linked conference; existing conflict and reminder rules stay in Calendar  |
-| Guest link                   | Browser name entry, mic/camera preflight, recording notice, host admission, no NBOS login    |
-| Meeting room                 | Video/mic, screen share, participant tiles, host moderation, visible recording state         |
-| Completion                   | Session/attendance timeline; separate recording status and player                            |
-| History/detail               | Search/filter accessible meetings, change valid business links **after** call, secure replay |
+| Entry point               | V1 experience                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Video Meetings → New room | Creates one durable room and a revocable join link. Later calls start that same room                               |
+| Authorized business card  | Opens the latest linked room when one exists; creates a room only when none does                                   |
+| Calendar (opt in only)    | Schedules/launches linked conference; existing conflict and reminder rules stay in Calendar                        |
+| Guest link                | Browser name entry, mic/camera preflight, recording notice, host admission, no NBOS login                          |
+| Meeting room              | Video/mic, screen share, participant tiles, host moderation, visible recording state                               |
+| Completion                | Session ends, room stays. Thread shows that run's messages and recording card                                      |
+| History/detail            | One thread per room: every session, message and recording. Change valid business links after a call; secure replay |
 
 ## Status separation
 
-Logical meeting: `CREATED → WAITING → ACTIVE → ENDED` or `CANCELLED` if never held. Sessions may recur; each has its own room reference. Each recording group and individual output has its **own** state such as `PENDING`, `RECORDING`, `FINALIZING`, `READY`, `PARTIAL` or `FAILED`; exact schema enums are a coding decision.
+Room: `CREATED` or `WAITING` → `ACTIVE` → `IDLE`, and back to `ACTIVE` on the next start. `CANCELLED` only if no session was ever held. Each session has its own LiveKit room reference. Each recording group and individual output has its **own** state such as `PENDING`, `RECORDING`, `FINALIZING`, `READY`, `PARTIAL` or `FAILED`.
 
-A meeting may be `ENDED` while storage is still processing. Failed output cannot be called `READY`. Stop/retry/reconcile must avoid duplicate files and track loss.
+A room may be `IDLE` while storage is still processing. Failed output cannot be called `READY`. Stop/retry/reconcile must avoid duplicate files and track loss. Full rules: [Durable room and thread](07-Durable-Room-and-Thread.md).
 
 ## Required recording behavior
 
@@ -43,5 +43,6 @@ Calendar down → instant meeting still works. AI down → no impact. Egress/Dri
 3. Existing CalendarMeeting can link to VideoMeeting without becoming universal mandatory storage.
 4. A revoked/expired guest invite, unauthorized employee, replayed webhook and client-side forged recording request are rejected.
 5. Late join, consent withdrawal, absent audio publication, R2 upload failure and browser disconnect produce honest status with audit/reconciliation evidence.
+6. The same room is started twice. Both chats and both composite recordings are in one thread. The Contact action reopens that room instead of creating a second one. Rules: [Durable room and thread](07-Durable-Room-and-Thread.md).
 
 See [operations/negative tests](06-Technical-Validation-and-Operations.md).

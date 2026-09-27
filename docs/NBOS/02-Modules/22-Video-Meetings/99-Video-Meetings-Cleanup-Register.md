@@ -32,6 +32,15 @@ These are **not** evidence of staging or production deployment.
 - [x] **Package S07:** Optional Calendar link; reminder path documented as missing; cross-module actions; capacity env; acceptance record; runbook.
 - [ ] **V1 gate (staging):** live guest recording on target infra with composite + attributable audio; measured load; legal/RBAC/flag enablement — **open**.
 
+## Next product slice — durable room (canon approved, code not started)
+
+Contract: [07-Durable-Room-and-Thread.md](07-Durable-Room-and-Thread.md). Current code still rejects start on `ENDED` and does not persist chat.
+
+- [ ] Room returns to `IDLE` after a session and can start again. Backfill `ENDED` → `IDLE`.
+- [ ] Persist `VideoMeetingMessage`. LiveKit chat is transport only.
+- [ ] Room sheet thread: messages, session markers, one recording card per group.
+- [ ] List is rooms with Start. Business-card action reopens the latest linked room.
+
 ## V2 deferred
 
 - [ ] Separately confirm AI Platform runtime entry gate and V2 owner go/no-go.
