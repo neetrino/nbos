@@ -9,6 +9,13 @@ import {
 } from './payroll-allocation-matrix-cell-sources';
 import { resolveMatrixExceptionDraftReason } from './payroll-allocation-exception-reason';
 import type { PayrollMatrixCellState } from './payroll-allocation-matrix.types';
+import {
+  assertChosenSourceAmounts,
+  encodePayrollAllocationSourceAmounts,
+  parsePayrollAllocationSourceAmounts,
+  remainingForBonusEntry,
+  type PayrollAllocationSourceAmountInput,
+} from './payroll-allocation-source-amounts';
 
 const CLOSED_DELIVERY_STATUSES = new Set(['DONE', 'LOST', 'TRANSFER']);
 
@@ -33,6 +40,7 @@ type PatchCellOrder = {
 };
 
 type PatchCellRelease = {
+  bonusEntryId: string;
   payrollRunId: string | null;
   status: string;
   amount: Decimal;
@@ -65,6 +73,7 @@ export async function writePayrollMatrixCellDraft(
     userId: string;
     releaseAmount: Decimal;
     reason: string | undefined;
+    sourceAmounts?: PayrollAllocationSourceAmountInput[];
   },
 ): Promise<void> {
   const order = await loadPatchCellOrder(db, params.orderId, params.employeeId);
@@ -79,18 +88,10 @@ export async function writePayrollMatrixCellDraft(
       'No bonus entry for this employee and delivery unit. Create a manual bonus first.',
     );
   }
-  const entryReleases = await db.bonusRelease.findMany({
-    where: {
-      bonusEntryId: { in: visible.map((row) => row.id) },
-      status: { in: ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] },
-    },
-    select: {
-      payrollRunId: true,
-      status: true,
-      amount: true,
-      payrollIncludedAmount: true,
-    },
-  });
+  const entryReleases = await loadVisibleEntryReleases(
+    db,
+    visible.map((row) => row.id),
+  );
   const draft = resolvePatchCellDraftWrite({
     payrollMonth: params.payrollMonth,
     payrollRunId: params.payrollRunId,
@@ -101,7 +102,16 @@ export async function writePayrollMatrixCellDraft(
     order,
     entryReleases,
   });
-  await upsertPayrollMatrixCellDraft(db, params, entry.id, order.projectId, draft);
+  const title = encodedCellSourceAmountsTitle({
+    kind: draft.kind,
+    sourceAmounts: params.sourceAmounts,
+    visible,
+    releases: entryReleases,
+    payrollMonth: params.payrollMonth,
+    payrollRunId: params.payrollRunId,
+    cellAmount: params.releaseAmount,
+  });
+  await upsertPayrollMatrixCellDraft(db, params, entry.id, order.projectId, { ...draft, title });
 }
 
 function resolvePatchCellDraftWrite(params: {
@@ -181,7 +191,7 @@ async function upsertPayrollMatrixCellDraft(
   },
   bonusEntryId: string,
   projectId: string,
-  draft: { kind: PayrollBonusAllocationKindEnum; reason: string | null },
+  draft: { kind: PayrollBonusAllocationKindEnum; reason: string | null; title: string | null },
 ): Promise<void> {
   await db.payrollBonusAllocationDraft.upsert({
     where: {
@@ -200,6 +210,7 @@ async function upsertPayrollMatrixCellDraft(
       amount: params.releaseAmount,
       kind: draft.kind,
       reason: draft.reason,
+      title: draft.title,
       createdById: params.userId,
       updatedById: params.userId,
     },
@@ -209,9 +220,61 @@ async function upsertPayrollMatrixCellDraft(
       amount: params.releaseAmount,
       kind: draft.kind,
       reason: draft.reason,
+      title: draft.title,
       updatedById: params.userId,
     },
   });
+}
+
+async function loadVisibleEntryReleases(
+  db: PatchCellDraftDb,
+  bonusEntryIds: string[],
+): Promise<PatchCellRelease[]> {
+  return db.bonusRelease.findMany({
+    where: {
+      bonusEntryId: { in: bonusEntryIds },
+      status: { in: ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] },
+    },
+    select: {
+      bonusEntryId: true,
+      payrollRunId: true,
+      status: true,
+      amount: true,
+      payrollIncludedAmount: true,
+    },
+  });
+}
+
+function encodedCellSourceAmountsTitle(params: {
+  kind: PayrollBonusAllocationKindEnum;
+  sourceAmounts: PayrollAllocationSourceAmountInput[] | undefined;
+  visible: PatchCellEntry[];
+  releases: PatchCellRelease[];
+  payrollMonth: string;
+  payrollRunId: string;
+  cellAmount: Decimal;
+}): string | null {
+  if (params.kind === 'EXTRA_BONUS' || params.kind === 'OVER_FUNDING') return null;
+  const splits = parsePayrollAllocationSourceAmounts(params.sourceAmounts);
+  if (splits == null) return null;
+  const remainingByEntry = new Map(
+    params.visible.map((entry) => [
+      entry.id,
+      remainingForBonusEntry({
+        entry,
+        releases: params.releases,
+        payrollMonth: params.payrollMonth,
+        payrollRunId: params.payrollRunId,
+      }),
+    ]),
+  );
+  assertChosenSourceAmounts({
+    splits,
+    cellAmount: params.cellAmount,
+    remainingByEntry,
+    visibleIds: new Set(params.visible.map((entry) => entry.id)),
+  });
+  return encodePayrollAllocationSourceAmounts(splits);
 }
 
 function isDeliveryUnitOpen(order: PatchCellOrder): boolean {

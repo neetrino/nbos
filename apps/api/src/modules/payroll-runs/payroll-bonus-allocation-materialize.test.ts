@@ -44,10 +44,13 @@ function createTx(drafts: DraftRow[]) {
     },
     bonusEntry: {
       findUnique: vi.fn(),
-      create: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn().mockResolvedValue({ id: 'extra-1' }),
+      update: vi.fn(),
     },
     bonusRelease: {
       findMany: vi.fn().mockResolvedValue([]),
+      findFirst: vi.fn().mockResolvedValue(null),
       create: vi.fn().mockResolvedValue({ id: 'rel1' }),
     },
     order: {

@@ -89,11 +89,18 @@ export type PatchPayrollMatrixLayoutBody = {
   pinnedUnitIds?: string[];
 };
 
+export type PatchPayrollMatrixCellSourceAmount = {
+  bonusEntryId: string;
+  amount: string;
+};
+
 export type PatchPayrollMatrixCellBody = {
   employeeId: string;
   orderId: string;
   releaseThisMonth: string;
   reason?: string;
+  /** Chosen per-source amounts. Required when the cell total spans more than one bound entry. */
+  sourceAmounts?: PatchPayrollMatrixCellSourceAmount[];
 };
 
 export type CreatePayrollMatrixManualBonusBody = {

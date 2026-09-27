@@ -214,6 +214,77 @@ describe('PayrollAllocationMatrixService.patchCell exception reason', () => {
     );
   });
 
+  it('stores a chosen 50 + 30 split instead of 80 on the first source', async () => {
+    prisma.order.findUnique.mockResolvedValue({
+      id: 'o1',
+      projectId: 'p1',
+      product: { status: 'DONE' },
+      extension: null,
+      productBonusPool: { availableFunding: new Decimal('1000') },
+      bonusEntries: [
+        visibleEntry(),
+        {
+          ...visibleEntry(),
+          id: 'be2',
+          amount: new Decimal(70),
+          payableAmount: new Decimal(70),
+        },
+      ],
+    });
+
+    await service.patchCell('pr1', ACTOR, {
+      ...BODY,
+      releaseThisMonth: '80',
+      sourceAmounts: [
+        { bonusEntryId: 'be1', amount: '50.00' },
+        { bonusEntryId: 'be2', amount: '30.00' },
+      ],
+    });
+
+    expect(prisma.payrollBonusAllocationDraft.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          kind: 'READY',
+          amount: expect.anything(),
+          title: expect.stringContaining('be1'),
+        }),
+      }),
+    );
+    const upsert = prisma.payrollBonusAllocationDraft.upsert.mock.calls[0]?.[0] as {
+      create: { title: string | null; amount: Decimal };
+    };
+    expect(upsert.create.title).toContain('30.00');
+    expect(upsert.create.title).not.toContain('"amount":"80.00"');
+  });
+
+  it('rejects a split that would write 80 onto the 50 source', async () => {
+    prisma.order.findUnique.mockResolvedValue({
+      id: 'o1',
+      projectId: 'p1',
+      product: { status: 'DONE' },
+      extension: null,
+      productBonusPool: { availableFunding: new Decimal('1000') },
+      bonusEntries: [
+        visibleEntry(),
+        {
+          ...visibleEntry(),
+          id: 'be2',
+          amount: new Decimal(70),
+          payableAmount: new Decimal(70),
+        },
+      ],
+    });
+
+    await expect(
+      service.patchCell('pr1', ACTOR, {
+        ...BODY,
+        releaseThisMonth: '80',
+        sourceAmounts: [{ bonusEntryId: 'be1', amount: '80.00' }],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.payrollBonusAllocationDraft.upsert).not.toHaveBeenCalled();
+  });
+
   it('saves a closed-product in-remainder allocation without an exception reason', async () => {
     await service.patchCell('pr1', ACTOR, { ...BODY, releaseThisMonth: '30' });
 

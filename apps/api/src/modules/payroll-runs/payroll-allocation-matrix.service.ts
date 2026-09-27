@@ -399,6 +399,7 @@ export class PayrollAllocationMatrixService {
       userId: actor.id,
       releaseAmount,
       reason: body.reason,
+      sourceAmounts: body.sourceAmounts,
     });
     return this.getMatrix(payrollRunId, actor);
   }
