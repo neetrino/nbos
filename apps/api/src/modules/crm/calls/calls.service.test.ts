@@ -74,9 +74,12 @@ describe('CallsService', () => {
     );
 
     expect(prisma.atsCallEvent.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where, skip: 0, take: 20 }),
+      expect.objectContaining({
+        where,
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      }),
     );
-    expect(prisma.atsCallEvent.count).toHaveBeenCalledWith({ where });
+    expect(result.meta).toEqual({ total: 1, page: 1, pageSize: 20, totalPages: 1 });
     expect(result.items[0]).toMatchObject({
       type: 'CALL',
       id: 'call-1',
@@ -105,8 +108,9 @@ describe('CallsService', () => {
     const result = await service.findJournal({ page: 1, pageSize: 20 }, actor);
     expect(result.items[0]?.note).toBe('Asked about the proposal');
     expect(prisma.atsCallEvent.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ orderBy: { createdAt: 'desc' }, skip: 0, take: 20 }),
+      expect.objectContaining({ orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] }),
     );
+    expect(result.meta.total).toBe(1);
   });
 
   it('lists CALL activities for a Contact through authorized relations', async () => {
@@ -165,18 +169,16 @@ describe('CallsService', () => {
     expect(prisma.atsCallEvent.findMany).not.toHaveBeenCalled();
   });
 
-  it('uses the same Prisma access predicate for findMany and count', async () => {
+  it('uses the Prisma access predicate for the conversation list', async () => {
     const { prisma, service } = createService();
     prisma.atsCallEvent.findMany.mockResolvedValue([]);
-    prisma.atsCallEvent.count.mockResolvedValue(0);
 
-    await service.findAll({ leadId: 'lead-own' }, OWN_ACTOR);
+    const result = await service.findAll({ leadId: 'lead-own' }, OWN_ACTOR);
     const findWhere = prisma.atsCallEvent.findMany.mock.calls[0]?.[0]?.where;
-    const countWhere = prisma.atsCallEvent.count.mock.calls[0]?.[0]?.where;
-    expect(findWhere).toEqual(countWhere);
     expect(findWhere).toEqual(
       mergeCallListWhere(buildCallParentWhere('lead', { leadId: 'lead-own' }), ownAccessWhere()),
     );
+    expect(result.meta.total).toBe(0);
   });
 
   it('ALL lists the parent without treating OWN as sufficient', async () => {

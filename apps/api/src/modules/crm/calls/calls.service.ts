@@ -1,7 +1,14 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { CALL_LIST_SELECT } from './call-list.select';
+import {
+  groupCallConversations,
+  mergeCallConversation,
+  normalizeCallLid,
+  pageConversationGroups,
+  type CallConversationRow,
+} from './call-conversation';
+import { CALL_CONVERSATION_KEY_SELECT, CALL_LIST_SELECT } from './call-list.select';
 import { mapCallResponse } from './call-response.map';
 import { CallAccessPolicyService } from './call-access-policy.service';
 import type { CallAccessActor } from './call-access.types';
@@ -29,21 +36,7 @@ export class CallsService {
     const pageSize = clampPageSize(query.pageSize);
     const where = await this.access.resolveJournalAccessWhere(actor);
 
-    const [rows, total] = await Promise.all([
-      this.prisma.atsCallEvent.findMany({
-        where,
-        select: CALL_LIST_SELECT,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.atsCallEvent.count({ where }),
-    ]);
-
-    return {
-      items: rows.map(mapCallResponse),
-      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
-    };
+    return this.listConversations(where, page, pageSize);
   }
 
   async findAll(query: ListCallsQuery, actor: CallAccessActor) {
@@ -57,33 +50,81 @@ export class CallsService {
       await this.access.resolveAccessWhere(actor),
     );
 
-    const [rows, total] = await Promise.all([
-      this.prisma.atsCallEvent.findMany({
-        where,
-        select: CALL_LIST_SELECT,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.atsCallEvent.count({ where }),
-    ]);
-
-    return {
-      items: rows.map(mapCallResponse),
-      meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
-    };
+    return this.listConversations(where, page, pageSize);
   }
 
   async findById(id: string, actor: CallAccessActor) {
-    await this.access.assertCanAccessCall(actor, id);
+    const accessWhere = await this.access.assertCanAccessCall(actor, id);
+    const row = await this.loadCallRow(id);
+    if (!row) throw new NotFoundException(`Call ${id} not found`);
+    const members = await this.loadVisibleMembers(row, accessWhere);
+    return mapCallResponse(mergeCallConversation(members));
+  }
+
+  /**
+   * Every visible key is loaded before the page slice.
+   * Truncating that scan would publish a later connection as the card id.
+   * `meta.total` counts conversations. Only the current page is hydrated.
+   */
+  private async listConversations(
+    where: Prisma.AtsCallEventWhereInput,
+    page: number,
+    pageSize: number,
+  ) {
+    const keys = await this.prisma.atsCallEvent.findMany({
+      where,
+      select: CALL_CONVERSATION_KEY_SELECT,
+      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    });
+    const paged = pageConversationGroups(groupCallConversations(keys), page, pageSize);
+    const items = await this.hydrateConversations(where, paged.groups);
+    return {
+      items,
+      meta: { total: paged.total, page, pageSize, totalPages: paged.totalPages },
+    };
+  }
+
+  private async hydrateConversations(
+    where: Prisma.AtsCallEventWhereInput,
+    groups: Array<Array<{ id: string }>>,
+  ) {
+    const memberIds = groups.flatMap((group) => group.map((row) => row.id));
+    if (memberIds.length === 0) return [];
+    const rows = await this.prisma.atsCallEvent.findMany({
+      where: { AND: [where, { id: { in: memberIds } }] },
+      select: CALL_LIST_SELECT,
+    });
+    const byId = new Map(rows.map((row) => [row.id, row as CallConversationRow]));
+    return groups.flatMap((group) => {
+      const members = group.flatMap((key) => {
+        const row = byId.get(key.id);
+        return row ? [row] : [];
+      });
+      const card = members[0] ? mergeCallConversation(members) : null;
+      return card ? [mapCallResponse(card)] : [];
+    });
+  }
+
+  private async loadVisibleMembers(
+    row: CallConversationRow,
+    accessWhere: Prisma.AtsCallEventWhereInput,
+  ): Promise<CallConversationRow[]> {
+    const lid = normalizeCallLid(row.lid);
+    if (!lid) return [row];
+    const members = await this.prisma.atsCallEvent.findMany({
+      where: { AND: [accessWhere, { lid }] },
+      select: CALL_LIST_SELECT,
+    });
+    const visible = members as CallConversationRow[];
+    return visible.length > 0 ? visible : [row];
+  }
+
+  private async loadCallRow(id: string): Promise<CallConversationRow | null> {
     const row = await this.prisma.atsCallEvent.findUnique({
       where: { id },
       select: CALL_LIST_SELECT,
     });
-    if (!row) {
-      throw new NotFoundException(`Call ${id} not found`);
-    }
-    return mapCallResponse(row);
+    return row as CallConversationRow | null;
   }
 }
 

@@ -166,10 +166,12 @@ enum AtsCallRecordingStatusEnum {
   FAILED
 }
 
-/// ATS.am Active Call webhook idempotency + CRM Call snapshot (one row per call uid).
+/// One ATS connection. `uid` stays unique; CRM cards group rows that share `lid`.
 model AtsCallEvent {
   id                      String                       @id @default(uuid())
   uid                     String                       @unique
+  /// ATS conversation id. Null means this connection is its own card.
+  lid                     String?
   state                   String?
   disposition             String?
   billsec                 String?
@@ -218,6 +220,7 @@ model AtsCallEvent {
   @@index([recordingStatus])
   @@index([initiatedByEmployeeId])
   @@index([source, phone, createdAt])
+  @@index([lid, createdAt])
   @@map("ats_call_events")
 }
 
