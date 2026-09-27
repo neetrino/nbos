@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import type { LiveKitJoinCredentials } from '@/lib/api/video-meetings';
 import { VideoMeetingCallHeader } from './VideoMeetingCallHeader';
 import { VideoMeetingChatPanel } from './VideoMeetingChatPanel';
+import type { PersistedVideoMeetingChatMode } from './use-persisted-video-meeting-chat';
 import { VideoMeetingMiniBar, VideoMeetingRoomControls } from './VideoMeetingRoomControls';
 import {
   VideoMeetingDeviceNotice,
@@ -34,6 +35,9 @@ type VideoMeetingLiveKitRoomProps = {
   onMinimize?: () => void;
   onExpand?: () => void;
   framed?: boolean;
+  chatMode?: PersistedVideoMeetingChatMode | null;
+  chatSelfDisplayName?: string;
+  chatSelfEmployeeId?: string | null;
 };
 
 function roomFrameClass(framed: boolean, minimized: boolean): string {
@@ -103,6 +107,9 @@ function VideoMeetingCallSurface({
   onAbortLeave,
   onEnd,
   onMinimize,
+  chatMode,
+  chatSelfDisplayName,
+  chatSelfEmployeeId,
 }: VideoMeetingLiveKitRoomProps) {
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -136,6 +143,9 @@ function VideoMeetingCallSurface({
           open={chatOpen}
           onClose={() => setChatOpen(false)}
           meetingId={meetingId}
+          chatMode={chatMode ?? (meetingId ? { kind: 'employee', meetingId } : null)}
+          selfDisplayName={chatSelfDisplayName ?? self.name}
+          selfEmployeeId={chatSelfEmployeeId}
         />
       </div>
     </>

@@ -56,6 +56,13 @@ describe('EntityVideoMeetingAction wiring', () => {
     expect(source).toContain('entityType="DEAL"');
   });
 
+  it('EntityVideoMeetingAction opens room via getByEntity', () => {
+    const source = readFileSync(join(here, 'EntityVideoMeetingAction.tsx'), 'utf8');
+    expect(source).toContain('videoMeetingThreadApi.getByEntity');
+    expect(source).toContain('crossModule.openRoom');
+    expect(source).not.toContain('linkExisting');
+  });
+
   it('Contact / Project / Product surfaces mount EntityVideoMeetingAction', () => {
     const contact = readFileSync(
       join(here, '../clients/components/ContactSheetHeaderActions.tsx'),

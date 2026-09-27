@@ -20,6 +20,7 @@ import { VideoMeetingEntityLinksSection } from './video-meeting-detail-sections'
 import { resolveVideoMeetingDisplayTitle } from './video-meeting-title';
 import { VideoMeetingTitleField } from './VideoMeetingTitleField';
 import { videoMeetingStatusLabel } from './video-meeting-status-label';
+import { VideoMeetingDetailThread } from './VideoMeetingDetailThread';
 
 type VideoMeetingDetailPageProps = {
   meetingId: string;
@@ -144,6 +145,11 @@ export function VideoMeetingDetailPage({ meetingId }: VideoMeetingDetailPageProp
               t={t}
             />
           ) : null}
+          <VideoMeetingDetailThread
+            meetingId={meetingId}
+            roomStatus={card.status}
+            employeeId={me?.id ?? null}
+          />
         </div>
       </div>
       <VideoMeetingLaunchAction

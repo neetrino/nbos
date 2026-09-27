@@ -44,6 +44,9 @@ export function VideoMeetingCallDock(props: VideoMeetingCallDockProps) {
         self={{ name: dock.credentials.displayName, avatarUrl: dock.avatarUrl }}
         title={dock.card?.title}
         meetingId={props.meetingId}
+        chatMode={{ kind: 'employee', meetingId: props.meetingId }}
+        chatSelfEmployeeId={dock.me?.id ?? null}
+        chatSelfDisplayName={dock.credentials.displayName}
         canEnd={dock.canManage}
         canControlRecording={dock.canManage}
         isHost={dock.isHost}
@@ -90,6 +93,7 @@ function useVideoMeetingCallDock({ meetingId, onMinimize, onDismiss }: VideoMeet
     card,
     credentials,
     connect,
+    me,
     isHost,
     avatarUrl: me?.avatar,
     canManage: isHost && can('EDIT', 'VIDEO_MEETINGS'),

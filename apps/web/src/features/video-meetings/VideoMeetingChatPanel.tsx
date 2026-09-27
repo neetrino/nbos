@@ -1,21 +1,37 @@
 'use client';
 
-import { useChat, useLocalParticipant } from '@livekit/components-react';
 import { Send, X } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import type { GuestVideoMeetingThreadItem } from '@/lib/api/video-meetings-guest-thread';
+import type { VideoMeetingThreadMessage } from '@/lib/api/video-meetings-thread';
 import { VideoMeetingConsentActions } from './VideoMeetingConsentActions';
 import { CALL_ICON_BUTTON_CLASS } from './video-meeting-call-styles';
+import {
+  usePersistedVideoMeetingChat,
+  type PersistedVideoMeetingChatMode,
+} from './use-persisted-video-meeting-chat';
+import { recordingGroupStatusKey } from './video-meeting-recording-labels';
 
 type VideoMeetingChatPanelProps = {
   open: boolean;
   onClose: () => void;
   meetingId?: string;
+  chatMode: PersistedVideoMeetingChatMode | null;
+  selfDisplayName?: string;
+  selfEmployeeId?: string | null;
 };
 
-/** Right-hand chat sheet. Stays mounted so messages survive closing the panel. */
-export function VideoMeetingChatPanel({ open, onClose, meetingId }: VideoMeetingChatPanelProps) {
+/** Right-hand chat sheet. Persisted room thread — not LiveKit transport chat. */
+export function VideoMeetingChatPanel({
+  open,
+  onClose,
+  meetingId,
+  chatMode,
+  selfDisplayName,
+  selfEmployeeId,
+}: VideoMeetingChatPanelProps) {
   const t = useTranslations('videoMeetings.room');
   const closeLabel = useTranslations('common')('close');
 
@@ -38,7 +54,12 @@ export function VideoMeetingChatPanel({ open, onClose, meetingId }: VideoMeeting
           <X />
         </button>
       </header>
-      <VideoMeetingChatThread />
+      <PersistedChatThread
+        chatMode={chatMode}
+        enabled={open}
+        selfDisplayName={selfDisplayName}
+        selfEmployeeId={selfEmployeeId}
+      />
       {meetingId ? (
         <div className="border-border border-t px-4 py-3">
           <VideoMeetingConsentActions compact meetingId={meetingId} />
@@ -48,54 +69,111 @@ export function VideoMeetingChatPanel({ open, onClose, meetingId }: VideoMeeting
   );
 }
 
-function VideoMeetingChatThread() {
+function PersistedChatThread({
+  chatMode,
+  enabled,
+  selfDisplayName,
+  selfEmployeeId,
+}: {
+  chatMode: PersistedVideoMeetingChatMode | null;
+  enabled: boolean;
+  selfDisplayName?: string;
+  selfEmployeeId?: string | null;
+}) {
   const t = useTranslations('videoMeetings.room');
-  const { chatMessages, send, isSending } = useChat();
-  const { localParticipant } = useLocalParticipant();
+  const tRecording = useTranslations('videoMeetings.recording');
+  const { items, loading, posting, postMessage } = usePersistedVideoMeetingChat(chatMode, {
+    enabled,
+  });
   const [draft, setDraft] = useState('');
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const text = draft.trim();
-    if (!text || isSending) return;
-    void send(text);
+    if (!text || posting || !chatMode) return;
+    void postMessage(text);
     setDraft('');
   };
 
   return (
     <>
       <ol className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-2">
-        {chatMessages.length === 0 ? (
+        {loading ? (
+          <li className="text-muted-foreground m-auto text-center text-sm">{t('chatLoading')}</li>
+        ) : items.length === 0 ? (
           <li className="text-muted-foreground m-auto text-center text-sm">{t('chatEmpty')}</li>
         ) : (
-          chatMessages.map((message) => (
-            <ChatBubble
-              key={`${message.timestamp}-${message.from?.identity ?? 'self'}`}
-              mine={message.from?.identity === localParticipant.identity}
-              author={message.from?.name || message.from?.identity || ''}
-              text={message.message}
+          items.map((item) => (
+            <ChatRow
+              key={chatRowKey(item)}
+              item={item}
+              mine={isMine(item, chatMode, selfDisplayName, selfEmployeeId)}
+              tRecording={tRecording}
             />
           ))
         )}
       </ol>
-      <form onSubmit={submit} className="flex gap-2 px-3 pb-3">
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder={t('chatPlaceholder')}
-          className="border-border bg-muted/40 h-11 min-w-0 flex-1 rounded-full border px-4 text-sm outline-none"
-        />
-        <button
-          type="submit"
-          className={cn(CALL_ICON_BUTTON_CLASS, 'size-11 shrink-0')}
-          disabled={isSending || draft.trim().length === 0}
-          aria-label={t('chatSend')}
-        >
-          <Send />
-        </button>
-      </form>
+      {chatMode ? (
+        <form onSubmit={submit} className="flex gap-2 px-3 pb-3">
+          <input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder={t('chatPlaceholder')}
+            className="border-border bg-muted/40 h-11 min-w-0 flex-1 rounded-full border px-4 text-sm outline-none"
+          />
+          <button
+            type="submit"
+            className={cn(CALL_ICON_BUTTON_CLASS, 'size-11 shrink-0')}
+            disabled={posting || draft.trim().length === 0}
+            aria-label={t('chatSend')}
+          >
+            <Send />
+          </button>
+        </form>
+      ) : null}
     </>
   );
+}
+
+function chatRowKey(item: VideoMeetingThreadMessage | GuestVideoMeetingThreadItem): string {
+  if (item.type === 'recording_note') return `note-${item.at}`;
+  return item.id;
+}
+
+function isMine(
+  item: VideoMeetingThreadMessage | GuestVideoMeetingThreadItem,
+  mode: PersistedVideoMeetingChatMode | null,
+  selfDisplayName: string | undefined,
+  selfEmployeeId: string | null | undefined,
+): boolean {
+  if (item.type !== 'message') return false;
+  if (mode?.kind === 'employee' && selfEmployeeId) {
+    return item.employeeId === selfEmployeeId;
+  }
+  if (mode?.kind === 'guest' && selfDisplayName) {
+    return item.authorDisplayName === selfDisplayName;
+  }
+  return false;
+}
+
+function ChatRow({
+  item,
+  mine,
+  tRecording,
+}: {
+  item: VideoMeetingThreadMessage | GuestVideoMeetingThreadItem;
+  mine: boolean;
+  tRecording: ReturnType<typeof useTranslations<'videoMeetings.recording'>>;
+}) {
+  if (item.type === 'recording_note') {
+    return (
+      <li className="text-muted-foreground text-center text-xs">
+        {tRecording('label')}: {tRecording(recordingGroupStatusKey(item.status))}
+      </li>
+    );
+  }
+
+  return <ChatBubble mine={mine} author={item.authorDisplayName} text={item.body} />;
 }
 
 function ChatBubble({ mine, author, text }: { mine: boolean; author: string; text: string }) {

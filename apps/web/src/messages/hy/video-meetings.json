@@ -40,7 +40,18 @@
     "host": "Հոստ",
     "status": "Կargavijak",
     "created": "Ստեղծված",
-    "search": "Որոնել հանդիպումներ"
+    "search": "Որոնել հանդիպումներ",
+    "lastActivity": "Verjin aktivutyun",
+    "recordingCount": "{count, plural, =0 {Granacum chka} one {# granacum} other {# granacum}}"
+  },
+  "thread": {
+    "title": "Senyaki lenta",
+    "loading": "Lent@ bertsnum e…",
+    "empty": "Der chka haghordagrutyunner kam sessionner.",
+    "composerPlaceholder": "Haghordagrutyun senyakum",
+    "sessionMarker": "Zang",
+    "sessionDuration": "{duration}",
+    "sessionTimeUnknown": "Jamanak@ anhayt e"
   },
   "status": {
     "CREATED": "Պlanavorvats",
@@ -155,6 +166,7 @@
     "callEnded": "Զանգն ավարտված է.",
     "mediaBlocked": "Դիտարկիչը արգելել է տեսախցիկն ու խոսափողը այս էջում։ Թույլատրեք դրանք կայքի կարգավորումներում և սեղմեք կրկին։",
     "chatEmpty": "Հաղորդագրություններ դեռ չկան։",
+    "chatLoading": "Haghordagrutyunner@ bertsnum en…",
     "chatPlaceholder": "Հաղորդագրություն",
     "chatSend": "Ուղարկել"
   },
@@ -177,11 +189,10 @@
   },
   "crossModule": {
     "actionLabel": "Tesahandipum",
-    "startNew": "Skseł nor tesahandipum",
-    "linkExisting": "Kaparvel verjin avartvats@",
+    "openRoom": "Batsel tesahandipman senyak@",
+    "startNew": "Sksel urish senyak",
     "meetingTitle": "Handipum — {label}",
-    "actionError": "Chhajoghvets skseł kam kaparvel tesahandipum.",
-    "noEndedMeetings": "Avartvats handipumner chkan."
+    "actionError": "Chhajoghvets batsel kam stegtsel tesahandipman senyak@."
   },
   "defaultTitle": "Ակնթարթային հանդիպում",
   "suggestedTitlePrefix": "Հանդիպում",

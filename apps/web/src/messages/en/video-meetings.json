@@ -40,7 +40,18 @@
     "host": "Host",
     "status": "Status",
     "created": "Created",
-    "search": "Search meetings"
+    "search": "Search meetings",
+    "lastActivity": "Last activity",
+    "recordingCount": "{count, plural, =0 {No recordings} one {# recording} other {# recordings}}"
+  },
+  "thread": {
+    "title": "Room thread",
+    "loading": "Loading thread…",
+    "empty": "No messages or sessions yet.",
+    "composerPlaceholder": "Message this room",
+    "sessionMarker": "Call",
+    "sessionDuration": "{duration}",
+    "sessionTimeUnknown": "Time unknown"
   },
   "status": {
     "CREATED": "Scheduled",
@@ -155,6 +166,7 @@
     "callEnded": "The call has ended.",
     "mediaBlocked": "The browser blocked the camera and microphone on this page. Allow them in the site settings, then try the buttons again.",
     "chatEmpty": "No messages yet.",
+    "chatLoading": "Loading messages…",
     "chatPlaceholder": "Message",
     "chatSend": "Send"
   },
@@ -177,11 +189,10 @@
   },
   "crossModule": {
     "actionLabel": "Video meeting",
-    "startNew": "Start new video meeting",
-    "linkExisting": "Link latest ended meeting",
+    "openRoom": "Open video room",
+    "startNew": "Start another video room",
     "meetingTitle": "Meeting — {label}",
-    "actionError": "Could not start or link a video meeting.",
-    "noEndedMeetings": "No ended meetings available to link."
+    "actionError": "Could not open or create a video room."
   },
   "defaultTitle": "Instant meeting",
   "suggestedTitlePrefix": "Meeting",

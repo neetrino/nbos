@@ -125,6 +125,8 @@ function GuestJoinContent() {
         <VideoMeetingLiveKitRoom
           credentials={join}
           self={{ name: join.displayName }}
+          chatMode={{ kind: 'guest', inviteToken }}
+          chatSelfDisplayName={join.displayName}
           canEnd={false}
           onArmLeave={() => {
             leavingRef.current = true;

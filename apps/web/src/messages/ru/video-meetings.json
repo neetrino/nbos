@@ -40,7 +40,18 @@
     "host": "Ведущий",
     "status": "Статус",
     "created": "Создано",
-    "search": "Поиск встреч"
+    "search": "Поиск встреч",
+    "lastActivity": "Последняя активность",
+    "recordingCount": "{count, plural, =0 {Нет записей} one {# запись} few {# записи} many {# записей} other {# записи}}"
+  },
+  "thread": {
+    "title": "Лента комнаты",
+    "loading": "Загрузка ленты…",
+    "empty": "Пока нет сообщений и сессий.",
+    "composerPlaceholder": "Сообщение в комнату",
+    "sessionMarker": "Звонок",
+    "sessionDuration": "{duration}",
+    "sessionTimeUnknown": "Время неизвестно"
   },
   "status": {
     "CREATED": "Запланирована",
@@ -155,6 +166,7 @@
     "callEnded": "Звонок завершён.",
     "mediaBlocked": "Браузер запретил камеру и микрофон на этой странице. Разрешите их в настройках сайта и нажмите кнопки ещё раз.",
     "chatEmpty": "Сообщений пока нет.",
+    "chatLoading": "Загрузка сообщений…",
     "chatPlaceholder": "Сообщение",
     "chatSend": "Отправить"
   },
@@ -177,11 +189,10 @@
   },
   "crossModule": {
     "actionLabel": "Видеовстреча",
-    "startNew": "Начать новую видеовстречу",
-    "linkExisting": "Привязать последнюю завершённую",
+    "openRoom": "Открыть видеокомнату",
+    "startNew": "Создать ещё одну комнату",
     "meetingTitle": "Встреча — {label}",
-    "actionError": "Не удалось начать или привязать видеовстречу.",
-    "noEndedMeetings": "Нет завершённых встреч для привязки."
+    "actionError": "Не удалось открыть или создать видеокомнату."
   },
   "defaultTitle": "Мгновенная встреча",
   "suggestedTitlePrefix": "Встреча",

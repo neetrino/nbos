@@ -233,13 +233,24 @@ export class VideoMeetingsController {
   @Get(':id/recording/playback')
   @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
   @ApiOperation({
-    summary: 'Signed composite playback URL',
+    summary: 'Signed composite playback URL (latest READY composite)',
   })
   getRecordingPlayback(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.playbackService.getCompositePlayback(user, id);
+  }
+
+  @Get(':id/recordings/:recordingId/playback')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Signed ROOM_COMPOSITE playback URL for one recording group' })
+  getRecordingGroupPlayback(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('recordingId', ParseUUIDPipe) recordingId: string,
+  ) {
+    return this.playbackService.getRecordingCompositePlayback(user, id, recordingId);
   }
 
   @Post(':id/consent')
