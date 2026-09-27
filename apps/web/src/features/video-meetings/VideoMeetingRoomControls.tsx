@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
 import {
+  CALL_CONTROL_ON_CLASS,
   CALL_HANGUP_BUTTON_CLASS,
   CALL_ICON_BUTTON_CLASS,
   CALL_MEDIA_OFF_CLASS,
@@ -123,7 +124,7 @@ function CallMediaButtons({
       <HoverCaption label={t('chat')}>
         <button
           type="button"
-          className={cn(CALL_ICON_BUTTON_CLASS, chatOpen && 'bg-foreground text-background')}
+          className={cn(CALL_ICON_BUTTON_CLASS, chatOpen && CALL_CONTROL_ON_CLASS)}
           aria-pressed={chatOpen}
           aria-label={t('chat')}
           onClick={onToggleChat}

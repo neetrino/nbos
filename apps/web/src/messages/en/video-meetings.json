@@ -182,8 +182,8 @@
     "noEndedMeetings": "No ended meetings available to link."
   },
   "defaultTitle": "Instant meeting",
+  "suggestedTitlePrefix": "Meeting",
   "titleLabel": "Meeting title",
-  "titleHint": "You can change the title now or later.",
   "colleaguePrompt": {
     "title": "Video meeting invite",
     "body": "{inviter} invited you to “{meeting}”.",

@@ -182,8 +182,8 @@
     "noEndedMeetings": "Нет завершённых встреч для привязки."
   },
   "defaultTitle": "Мгновенная встреча",
+  "suggestedTitlePrefix": "Встреча",
   "titleLabel": "Название встречи",
-  "titleHint": "Название можно задать сразу и изменить потом.",
   "colleaguePrompt": {
     "title": "Приглашение на видеовстречу",
     "body": "{inviter} приглашает вас на «{meeting}».",

@@ -182,8 +182,8 @@
     "noEndedMeetings": "Avartvats handipumner chkan."
   },
   "defaultTitle": "Ակնթարթային հանդիպում",
+  "suggestedTitlePrefix": "Հանդիպում",
   "titleLabel": "Հանդիպման անուն",
-  "titleHint": "Անունը կարելի է դնել հիմա և փոխել հետո։",
   "colleaguePrompt": {
     "title": "Տեսահանդիպման հրավեր",
     "body": "{inviter}-ը հրավիրում է ձեզ «{meeting}».",

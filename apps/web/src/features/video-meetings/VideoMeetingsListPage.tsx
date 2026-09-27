@@ -10,7 +10,10 @@ import { usePermission } from '@/lib/permissions';
 import { videoMeetingsApi, type VideoMeetingListItem } from '@/lib/api/video-meetings';
 import { VideoMeetingCreateDialog } from './VideoMeetingCreateDialog';
 import { VideoMeetingListStack } from './VideoMeetingListBoard';
-import { resolveVideoMeetingDisplayTitle } from './video-meeting-title';
+import {
+  resolveVideoMeetingDisplayTitle,
+  suggestNextVideoMeetingTitle,
+} from './video-meeting-title';
 
 type MeetingBoards = {
   active: VideoMeetingListItem[];
@@ -31,6 +34,10 @@ async function loadBoards(): Promise<MeetingBoards> {
     (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
   );
   return { active: active.items, upcoming, history: history.items };
+}
+
+function collectMeetingTitles(boards: MeetingBoards): string[] {
+  return [...boards.active, ...boards.upcoming, ...boards.history].map((item) => item.title);
 }
 
 function filterBoard(items: VideoMeetingListItem[], query: string, fallbackTitle: string) {
@@ -73,7 +80,16 @@ export function VideoMeetingsListPage() {
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [createdTitles, setCreatedTitles] = useState<string[]>([]);
   const fallback = t('defaultTitle');
+  const suggestedTitle = useMemo(
+    () =>
+      suggestNextVideoMeetingTitle(
+        [...collectMeetingTitles(loaded.boards), ...createdTitles],
+        t('suggestedTitlePrefix'),
+      ),
+    [createdTitles, loaded.boards, t],
+  );
   const boards = useMemo(
     () => ({
       active: filterBoard(loaded.boards.active, query, fallback),
@@ -87,6 +103,7 @@ export function VideoMeetingsListPage() {
     setCreating(true);
     try {
       const meeting = await videoMeetingsApi.create(title);
+      setCreatedTitles((current) => [...current, title]);
       setCreateOpen(false);
       router.push(`/video-meetings/${meeting.id}`);
     } catch {
@@ -111,8 +128,10 @@ export function VideoMeetingsListPage() {
         }
       />
       <VideoMeetingCreateDialog
+        key={suggestedTitle}
         open={createOpen}
         creating={creating}
+        suggestedTitle={suggestedTitle}
         onOpenChange={setCreateOpen}
         onCreate={(title) => void handleCreate(title)}
       />

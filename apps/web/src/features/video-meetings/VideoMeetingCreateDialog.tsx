@@ -6,19 +6,18 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 const TITLE_MAX_LENGTH = 200;
 
 type VideoMeetingCreateDialogProps = {
   open: boolean;
   creating: boolean;
+  suggestedTitle: string;
   onOpenChange: (open: boolean) => void;
   onCreate: (title: string) => Promise<void>;
 };
@@ -26,42 +25,42 @@ type VideoMeetingCreateDialogProps = {
 export function VideoMeetingCreateDialog({
   open,
   creating,
+  suggestedTitle,
   onOpenChange,
   onCreate,
 }: VideoMeetingCreateDialogProps) {
   const t = useTranslations('videoMeetings');
-  const [title, setTitle] = useState(t('defaultTitle'));
-
-  const resetTitle = () => setTitle(t('defaultTitle'));
+  const [title, setTitle] = useState(suggestedTitle);
 
   const submit = async () => {
-    const next = title.trim() || t('defaultTitle');
-    await onCreate(next);
-    resetTitle();
+    await onCreate(title.trim() || suggestedTitle);
   };
 
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) resetTitle();
+        if (!next) setTitle(suggestedTitle);
         onOpenChange(next);
       }}
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('actions.newMeeting')}</DialogTitle>
-          <DialogDescription>{t('titleHint')}</DialogDescription>
+          <DialogTitle>{t('titleLabel')}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-2">
-          <Label htmlFor="video-meeting-create-title">{t('titleLabel')}</Label>
-          <Input
-            id="video-meeting-create-title"
-            value={title}
-            maxLength={TITLE_MAX_LENGTH}
-            onChange={(event) => setTitle(event.target.value)}
-          />
-        </div>
+        <Input
+          aria-label={t('titleLabel')}
+          value={title}
+          maxLength={TITLE_MAX_LENGTH}
+          autoFocus
+          onChange={(event) => setTitle(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              void submit();
+            }
+          }}
+        />
         <DialogFooter>
           <Button type="button" disabled={creating} onClick={() => void submit()}>
             {creating ? t('actions.creating') : t('actions.createMeeting')}

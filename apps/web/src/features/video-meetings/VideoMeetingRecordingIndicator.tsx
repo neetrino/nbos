@@ -199,8 +199,8 @@ function RecordingIconButton({
             className={cn(
               CALL_ICON_BUTTON_CLASS,
               active
-                ? 'bg-destructive hover:bg-destructive/90 border-transparent text-white'
-                : 'bg-muted text-muted-foreground',
+                ? 'bg-destructive hover:bg-destructive/90 border-transparent text-white hover:text-white'
+                : 'bg-muted text-muted-foreground hover:bg-muted hover:text-muted-foreground',
             )}
             aria-label={error ?? label}
             aria-pressed={active}
