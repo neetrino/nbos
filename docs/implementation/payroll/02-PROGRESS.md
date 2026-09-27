@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P4-S2
-**Next step:** Grok 4.6 High lets a 200,000 plan be released as 40,000 + 10,000 + 120,000, with an extra 30,000 as a separate reasoned entry.
+**Active slice:** P4-S3
+**Next step:** Grok 4.6 High keeps an older unpaid bonus payable after the month changes, without creating a new bonus.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -19,10 +19,10 @@ Owner authorized synthetic data and browser checks on the local dev database (`e
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P4-S1 done; P4-S2 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P4-S2 done; P4-S3 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P4-S1 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P4-S2 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -43,6 +43,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-28 | P3-S3 order envelope review    | Claude Opus 5.5 Medium | Combined 300,000 cap. Opus 5.5 High is unavailable.                               | Uncommitted order-envelope diff only                                |
 | 2026-09-28 | P3-S4 salary-ceiling review    | Claude Opus 5.5 Medium | Ceiling removal and consumed carry. Opus 5.5 High is unavailable.                 | Uncommitted ceiling and carry diff only                             |
 | 2026-09-28 | P4-S1 matrix source sum        | Claude Opus 5.5 Medium | Cell total of every visible entry. Opus 5.5 High is unavailable.                  | Uncommitted matrix source diff only                                 |
+| 2026-09-28 | P4-S2 plan parts and extra     | Claude Opus 5.5 Medium | Installments, extra overflow, and title splits. Opus 5.5 High is unavailable.     | Uncommitted installment and extra diff only                         |
 
 ## Slice log
 
@@ -58,8 +59,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P3-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 25 passed. No browser. No live race. Migration `20260928020000` not applied.       | `5588995d7` | One order stays within 300,000. Recheck closed four over-cap findings.                                      |
 | P3-S4 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 6 files, 41 passed. No browser. No migration.                                               | `aaf7511cc` | Full bonus is included. Open reversal returns consumed carry. Closed or PAID April stays an owner decision. |
 | P4-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed. No browser. No migration.                                               | `5299c4022` | Planned cell amount is the sum of visible sources. Both entry ids stay on the cell.                         |
-| P4-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | 200,000 can be released as 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry.            |
-| P4-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
+| P4-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 23 passed on the last recheck. No browser. No migration.                           | `3f917cce6` | Plan parts stay on the plan. Extra is only the amount above every source remainder.                         |
+| P4-S3 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | An older unpaid bonus stays payable. The earned month is not rewritten.                                     |
 | P5-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
 | P5-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
 | P5-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
@@ -69,38 +70,41 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 
 ## Review findings
 
-| ID       | Status | Finding                                                                                                              |
-| -------- | ------ | -------------------------------------------------------------------------------------------------------------------- |
-| P1-S1-R1 | Closed | Dashboard `payrollRuns` is null unless salary VIEW is ALL.                                                           |
-| P1-S1-R2 | Closed | KPI and bonus policy reads require ALL.                                                                              |
-| P1-S1-R3 | Closed | Department detail totals come from scoped lines. Recheck passed.                                                     |
-| P1-S1-R4 | Closed | Attaching a release to a payroll run requires salary EDIT ALL. Recheck passed.                                       |
-| P1-S2-R1 | Closed | Non-sales PROGRESS requires a reason and materializes as EARLY. Sales PROGRESS stays ordinary. Recheck passed.       |
-| P2-S1-R1 | Closed | Terminated pay stops after the fireDate month. Open-ended profile does not continue. Recheck passed.                 |
-| P2-S1-R2 | Closed | Directory returns only the profile covering the current month. Recheck passed.                                       |
-| P2-S1-R3 | Closed | A later profile no longer hides a gap when earlier terms exist. Recheck passed.                                      |
-| P2-S1-R4 | Closed | A past start month cannot be activated and does not shorten the current profile. Recheck passed.                     |
-| P3-S1-R1 | Closed | A later subscription invoice no longer receives the first-month rate. Recheck passed.                                |
-| P3-S1-R2 | Closed | Recurring roles use `sales_accrual_role`, so equal percents keep both shares.                                        |
-| P3-S2-R1 | Closed | A later rate version does not reprice an older receipt. Recheck passed.                                              |
-| P3-S2-R2 | Closed | Publishing a rate does not replay historical invoices. Recheck passed.                                               |
-| P3-S2-R3 | Closed | Marking an invoice paid runs accrual once. Recheck passed.                                                           |
-| P3-S2-R4 | Closed | A below-minimum sibling does not turn the creation floor off. Recheck passed.                                        |
-| P3-S2-R5 | Closed | Reactivating the current closed version covers later receipts. Recheck passed.                                       |
-| P3-S2-R6 | Closed | Inactive legacy rows get a zero-length window in the unapplied migration. Recheck passed.                            |
-| P3-S2-R7 | Closed | Reactivating an older id while a newer version is open is rejected. Recheck passed. The later receipt stays 120,000. |
-| P3-S2-R8 | Open   | Two reactivations at the same instant can insert two open versions. Low. No partial unique index.                    |
-| P3-S2-R9 | Open   | A percent edit on an old closed row copies the unsent percent from that old row. Low.                                |
-| P3-S3-R1 | Closed | Null invoice ids count toward the 300,000 sum. Recheck passed.                                                       |
-| P3-S3-R2 | Closed | A legacy null-role row blocks a second insert for that employee. Recheck passed.                                     |
-| P3-S3-R3 | Closed | The order lock covers the sum and the inserts. Recheck passed. No live Postgres race.                                |
-| P3-S3-R4 | Closed | A replay cannot refill a spent envelope. Recheck passed.                                                             |
-| P3-S3-R5 | Open   | A partial wave from before this change can replay the missing role at 12,000 instead of 60,000. Low. Under 300,000.  |
-| P3-S4-R1 | Closed | Reversing May finds April after a June re-attach and returns 100,000. Recheck passed.                                |
-| P3-S4-R2 | Open   | If April is on a closed or PAID run, reversing May removes 100,000 with no destination. Owner decision.              |
-| P3-S4-R3 | Open   | Restore credits the newest remembered carry, not the release that month consumed. Low. Employee total stays put.     |
-| P4-S1-R1 | Closed | Two visible entries of 50 and 70 display 120. Review passed.                                                         |
-| P4-S1-R2 | Open   | Materializing 80 still checks only the first 50 entry and rejects it. P4-S2.                                         |
+| ID       | Status | Finding                                                                                                                             |
+| -------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| P1-S1-R1 | Closed | Dashboard `payrollRuns` is null unless salary VIEW is ALL.                                                                          |
+| P1-S1-R2 | Closed | KPI and bonus policy reads require ALL.                                                                                             |
+| P1-S1-R3 | Closed | Department detail totals come from scoped lines. Recheck passed.                                                                    |
+| P1-S1-R4 | Closed | Attaching a release to a payroll run requires salary EDIT ALL. Recheck passed.                                                      |
+| P1-S2-R1 | Closed | Non-sales PROGRESS requires a reason and materializes as EARLY. Sales PROGRESS stays ordinary. Recheck passed.                      |
+| P2-S1-R1 | Closed | Terminated pay stops after the fireDate month. Open-ended profile does not continue. Recheck passed.                                |
+| P2-S1-R2 | Closed | Directory returns only the profile covering the current month. Recheck passed.                                                      |
+| P2-S1-R3 | Closed | A later profile no longer hides a gap when earlier terms exist. Recheck passed.                                                     |
+| P2-S1-R4 | Closed | A past start month cannot be activated and does not shorten the current profile. Recheck passed.                                    |
+| P3-S1-R1 | Closed | A later subscription invoice no longer receives the first-month rate. Recheck passed.                                               |
+| P3-S1-R2 | Closed | Recurring roles use `sales_accrual_role`, so equal percents keep both shares.                                                       |
+| P3-S2-R1 | Closed | A later rate version does not reprice an older receipt. Recheck passed.                                                             |
+| P3-S2-R2 | Closed | Publishing a rate does not replay historical invoices. Recheck passed.                                                              |
+| P3-S2-R3 | Closed | Marking an invoice paid runs accrual once. Recheck passed.                                                                          |
+| P3-S2-R4 | Closed | A below-minimum sibling does not turn the creation floor off. Recheck passed.                                                       |
+| P3-S2-R5 | Closed | Reactivating the current closed version covers later receipts. Recheck passed.                                                      |
+| P3-S2-R6 | Closed | Inactive legacy rows get a zero-length window in the unapplied migration. Recheck passed.                                           |
+| P3-S2-R7 | Closed | Reactivating an older id while a newer version is open is rejected. Recheck passed. The later receipt stays 120,000.                |
+| P3-S2-R8 | Open   | Two reactivations at the same instant can insert two open versions. Low. No partial unique index.                                   |
+| P3-S2-R9 | Open   | A percent edit on an old closed row copies the unsent percent from that old row. Low.                                               |
+| P3-S3-R1 | Closed | Null invoice ids count toward the 300,000 sum. Recheck passed.                                                                      |
+| P3-S3-R2 | Closed | A legacy null-role row blocks a second insert for that employee. Recheck passed.                                                    |
+| P3-S3-R3 | Closed | The order lock covers the sum and the inserts. Recheck passed. No live Postgres race.                                               |
+| P3-S3-R4 | Closed | A replay cannot refill a spent envelope. Recheck passed.                                                                            |
+| P3-S3-R5 | Open   | A partial wave from before this change can replay the missing role at 12,000 instead of 60,000. Low. Under 300,000.                 |
+| P3-S4-R1 | Closed | Reversing May finds April after a June re-attach and returns 100,000. Recheck passed.                                               |
+| P3-S4-R2 | Open   | If April is on a closed or PAID run, reversing May removes 100,000 with no destination. Owner decision.                             |
+| P3-S4-R3 | Open   | Restore credits the newest remembered carry, not the release that month consumed. Low. Employee total stays put.                    |
+| P4-S1-R1 | Closed | Two visible entries of 50 and 70 display 120. Review passed.                                                                        |
+| P4-S1-R2 | Closed | A chosen 50 and 30 split materializes on those sources. A bare 80 is still rejected.                                                |
+| P4-S2-R1 | Closed | Extra consumes every visible source remainder, then extras only the excess. Recheck passed.                                         |
+| P4-S2-R3 | Open   | If one source was released past its plan, the matrix net and the per-source sum can disagree. 10 may be paid twice. Low. Unsettled. |
+| P4-S2-R2 | Closed | A manual title with the source-amount prefix does not pay another employee's plan. Recheck passed.                                  |
 
 ## External blockers
 
