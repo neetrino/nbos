@@ -26,3 +26,6 @@ export const TASK_SHEET_SPLIT_STORAGE_KEY = 'nbos.task-sheet.detail-ratio';
 
 /** Wider hit target than the visible grip (px). */
 export const TASK_SHEET_SPLIT_HIT_PX = 10;
+
+/** Visible divider inside the hit target (px). */
+export const TASK_SHEET_SPLIT_BAR_PX = 6;

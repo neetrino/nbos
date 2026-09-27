@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Video } from 'lucide-react';
+import { Video, VideoOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -17,18 +17,16 @@ type VideoMeetingDetailActionsProps = {
   onCancel: () => void;
 };
 
-/** Quiet dismiss next to the call button: cancel before start, end once live. */
+/** Cancel a room that has not started. Ending a live call is the video button. */
 export function VideoMeetingCornerAction({
   status,
   canManage,
   busy,
-  onEnd,
   onCancel,
-}: Omit<VideoMeetingDetailActionsProps, 'meetingId' | 'onStart'>) {
+}: Omit<VideoMeetingDetailActionsProps, 'meetingId' | 'onStart' | 'onEnd'>) {
   const t = useTranslations('videoMeetings');
   const canCancel = canManage && (status === 'CREATED' || status === 'WAITING');
-  const canEnd = canManage && status === 'ACTIVE';
-  if (!canCancel && !canEnd) return null;
+  if (!canCancel) return null;
 
   return (
     <Button
@@ -37,41 +35,48 @@ export function VideoMeetingCornerAction({
       size="sm"
       className="text-muted-foreground h-8 px-2 text-xs"
       disabled={busy}
-      onClick={canEnd ? onEnd : onCancel}
+      onClick={onCancel}
     >
-      {canEnd ? t('actions.endMeeting') : t('actions.cancelMeeting')}
+      {t('actions.cancelMeeting')}
     </Button>
   );
 }
 
-/** Compact call control for the chat header. */
+/** Start a call, or end it once this room is already live. */
 export function VideoMeetingLaunchAction({
   meetingId,
   status,
   canManage,
   busy,
   onStart,
-}: Omit<VideoMeetingDetailActionsProps, 'onEnd' | 'onCancel'>) {
+  onEnd,
+}: Omit<VideoMeetingDetailActionsProps, 'onCancel'>) {
   const t = useTranslations('videoMeetings');
   const live = status === 'ACTIVE';
-  const canStart = canManage && !live && status !== 'CANCELLED';
-  if (!canStart && !live) return null;
-
-  const label = t('actions.videoCall');
+  if (canManage && live) {
+    return (
+      <Button type="button" variant="destructive" className="gap-2" disabled={busy} onClick={onEnd}>
+        <VideoOff className="size-4" aria-hidden />
+        {t('actions.endMeeting')}
+      </Button>
+    );
+  }
 
   if (live) {
     return (
       <Link href={`/video-meetings/${meetingId}/room`} className={cn(buttonVariants(), 'gap-2')}>
         <Video className="size-4" aria-hidden />
-        {label}
+        {t('actions.videoCall')}
       </Link>
     );
   }
 
+  if (!canManage || status === 'CANCELLED') return null;
+
   return (
     <Button type="button" className="gap-2" disabled={busy} onClick={onStart}>
       <Video className="size-4" aria-hidden />
-      {label}
+      {t('actions.videoCall')}
     </Button>
   );
 }
