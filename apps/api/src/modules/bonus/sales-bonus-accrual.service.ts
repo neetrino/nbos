@@ -15,7 +15,7 @@ import {
   hasSlottedSalesBonusOnOrder,
 } from './sales-bonus-accrual-idempotency';
 import { loadPaidSalesBonusInvoice } from './sales-bonus-accrual-invoice-load';
-import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
+import { persistLockedCappedSalesBonusRows } from './sales-bonus-order-accrual-write';
 import { accrueClassicOneTimeSalesBonus } from './sales-bonus-classic-one-time';
 import { loadSalesBonusPolicyAtEvent } from './sales-bonus-policy-at-event';
 import { isExcludedFromSalesAccrual } from './sales-bonus-qualifying-invoice';
@@ -267,21 +267,17 @@ export class SalesBonusAccrualService {
       basis: params.basis,
     };
 
-    const rows = buildSalesBonusAmountRows(order.deal, policy, params.baseAmount);
-    if (rows.length === 0) {
-      return false;
-    }
-
-    return persistSalesBonusRows(
-      this.prisma,
+    return persistLockedCappedSalesBonusRows({
+      prisma: this.prisma,
       order,
-      order.deal,
-      rows,
-      snapshot as InputJsonValue,
-      invoice.id,
-      'slot',
+      deal: order.deal,
+      policy,
+      baseAmount: params.baseAmount,
+      snapshotJson: snapshot as InputJsonValue,
+      invoiceId: invoice.id,
+      slotMode: 'slot',
       earnedPeriod,
-    );
+    });
   }
 
   private readonly notifyHold: SalesAccrualHoldNotify = (details) =>

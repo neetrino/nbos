@@ -541,6 +541,8 @@ model BonusEntry {
   /// Invoice whose PAID event triggered this accrual (subscription recurring idempotency; audit).
   salesAccrualInvoiceId String?             @map("sales_accrual_invoice_id")
   salesBonusSlot        SalesBonusSlotEnum? @map("sales_bonus_slot")
+  /// Recurring (unslotted) Seller/Assistant identity. Null on slotted first-month rows.
+  salesAccrualRole      SalesBonusSlotEnum? @map("sales_accrual_role")
   calculationSnapshot   Json?               @map("calculation_snapshot")
   /// v2 configurator source. Null keeps legacy/manual/sales entries unchanged.
   deliverySource        DeliveryBonusSourceEnum? @map("delivery_source")
@@ -587,7 +589,8 @@ model BonusEntry {
   @@index([deliverySource])
   /// Partial unique indexes: `bonus_entries_sales_slotted_unique`,
   /// `bonus_entries_sales_invoice_employee_slot_unique`,
-  /// `bonus_entries_sales_invoice_employee_unslotted_unique`.
+  /// `bonus_entries_sales_invoice_employee_unslotted_unique`
+  /// (unslotted includes `sales_accrual_role`, not `sales_bonus_slot` or `percent`).
   @@map("bonus_entries")
 }
 

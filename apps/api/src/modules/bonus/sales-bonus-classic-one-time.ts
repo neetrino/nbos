@@ -10,8 +10,8 @@ import {
   hasSlottedSalesAccrualForInvoice,
   hasSlottedSalesBonusOnOrder,
 } from './sales-bonus-accrual-idempotency';
-import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
 import { firstProductInvoiceMinimumAmount } from './sales-bonus-combined-accrual';
+import { persistLockedCappedSalesBonusRows } from './sales-bonus-order-accrual-write';
 import { loadSalesBonusPolicyAtEvent } from './sales-bonus-policy-at-event';
 import { classifyClassicSalesInvoicePurpose } from './sales-bonus-qualifying-invoice';
 
@@ -160,10 +160,6 @@ function writeClassicRows(
   },
   policy: { sellerPercent: Decimal; assistantPercent: Decimal; effectiveFrom: Date },
 ): Promise<boolean> {
-  const rows = buildSalesBonusAmountRows(input.order.deal, policy, input.order.totalAmount);
-  if (rows.length === 0) {
-    return Promise.resolve(false);
-  }
   const snapshot = {
     fromCategory: input.order.deal.source,
     paymentModel: CLASSIC_PAYMENT_MODEL,
@@ -178,14 +174,15 @@ function writeClassicRows(
     dealId: input.order.deal.id,
     basis: 'ORDER_TOTAL',
   } as InputJsonValue;
-  return persistSalesBonusRows(
-    input.prisma,
-    input.order,
-    input.order.deal,
-    rows,
-    snapshot,
-    input.invoice.id,
-    'slot',
-    input.earnedPeriod,
-  );
+  return persistLockedCappedSalesBonusRows({
+    prisma: input.prisma,
+    order: input.order,
+    deal: input.order.deal,
+    policy,
+    baseAmount: input.order.totalAmount,
+    snapshotJson: snapshot,
+    invoiceId: input.invoice.id,
+    slotMode: 'slot',
+    earnedPeriod: input.earnedPeriod,
+  });
 }

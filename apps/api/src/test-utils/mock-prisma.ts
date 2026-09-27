@@ -200,6 +200,7 @@ export function createMockPrisma() {
     extensionDeliveryRoleAssignment: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
+    $executeRaw: vi.fn().mockResolvedValue(1),
     $transaction: vi.fn(),
   };
 

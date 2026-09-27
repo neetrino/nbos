@@ -1,10 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
-import { Decimal, PrismaClient, type LeadSourceEnum } from '@nbos/database';
+import {
+  Decimal,
+  PrismaClient,
+  type LeadSourceEnum,
+  type SalesBonusPaymentModelEnum,
+} from '@nbos/database';
 
 export type SalesBonusPolicyVersionRow = {
   id: string;
   fromCategory: LeadSourceEnum;
-  paymentModel: string;
+  paymentModel: SalesBonusPaymentModelEnum;
   sellerPercent: Decimal;
   assistantPercent: Decimal;
   effectiveFrom: Date;
@@ -25,7 +30,7 @@ function percentsDiffer(
 
 async function closeOpenVersionsForKey(
   prisma: InstanceType<typeof PrismaClient>,
-  key: { fromCategory: LeadSourceEnum; paymentModel: string },
+  key: { fromCategory: LeadSourceEnum; paymentModel: SalesBonusPaymentModelEnum },
   closedAt: Date,
 ): Promise<void> {
   await prisma.salesBonusPolicy.updateMany({

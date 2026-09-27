@@ -217,4 +217,43 @@ describe('SalesBonusAccrualService subscription routing', () => {
       ]),
     );
   });
+
+  it('does not insert a missing first-month Assistant when 300000 is already stored', async () => {
+    const store = createSlotStore([
+      {
+        employeeId: 'emp-1',
+        orderId: 'ord-sub',
+        type: 'SALES',
+        salesBonusSlot: 'SELLER',
+        salesAccrualInvoiceId: 'inv-1',
+      },
+      {
+        employeeId: 'emp-1',
+        orderId: 'ord-sub',
+        type: 'SALES',
+        salesBonusSlot: null,
+        salesAccrualInvoiceId: 'inv-2',
+      },
+    ]);
+    prisma.bonusEntry.findFirst.mockImplementation(findFirstForSubscriptionRows(store.rows));
+    prisma.bonusEntry.createMany.mockImplementation(store.createMany);
+    prisma.invoice.findUnique.mockResolvedValue({
+      ...subscriptionInvoice('inv-1'),
+      amount: 100_000,
+    });
+    prisma.salesBonusPolicy.findMany.mockResolvedValue([
+      {
+        sellerPercent: 40,
+        assistantPercent: 10,
+        effectiveFrom: new Date('2020-01-01T00:00:00.000Z'),
+      },
+    ]);
+    stubPoolLookups(prisma);
+    prisma.bonusEntry.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(300_000) } });
+
+    await service.onInvoicePaid('inv-1');
+
+    expect(store.rows.filter((row) => row.salesBonusSlot === 'ASSISTANT')).toHaveLength(0);
+    expect(prisma.bonusEntry.createMany).not.toHaveBeenCalled();
+  });
 });

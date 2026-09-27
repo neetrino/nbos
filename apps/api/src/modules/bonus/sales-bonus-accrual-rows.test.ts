@@ -22,7 +22,9 @@ type StoredSalesBonus = {
   orderId: string;
   type: string;
   salesBonusSlot: 'SELLER' | 'ASSISTANT' | null;
+  salesAccrualRole: 'SELLER' | 'ASSISTANT' | null;
   salesAccrualInvoiceId: string | null;
+  percent: Decimal;
 };
 
 type CreateManyArgs = {
@@ -58,7 +60,8 @@ function rowConflicts(row: StoredSalesBonus, next: StoredSalesBonus): boolean {
   return (
     row.salesBonusSlot == null &&
     row.salesAccrualInvoiceId === next.salesAccrualInvoiceId &&
-    row.employeeId === next.employeeId
+    row.employeeId === next.employeeId &&
+    row.salesAccrualRole === next.salesAccrualRole
   );
 }
 
@@ -106,9 +109,26 @@ describe('buildSalesBonusAmountRows', () => {
       new Decimal(1_000_000),
     );
     expect(rows).toEqual([
-      expect.objectContaining({ employeeId: 'emp-1', slot: 'SELLER' }),
-      expect.objectContaining({ employeeId: 'emp-1', slot: 'ASSISTANT' }),
+      expect.objectContaining({
+        employeeId: 'emp-1',
+        slot: 'SELLER',
+        amount: new Decimal(80_000),
+      }),
+      expect.objectContaining({
+        employeeId: 'emp-1',
+        slot: 'ASSISTANT',
+        amount: new Decimal(20_000),
+      }),
     ]);
+  });
+
+  it('stores 240000 and 60000 when combined 40% and 10% exceed the cap', () => {
+    const rows = buildSalesBonusAmountRows(
+      { sellerId: 'emp-seller', sellerAssistantId: 'emp-asst' },
+      { sellerPercent: new Decimal(40), assistantPercent: new Decimal(10) },
+      new Decimal(1_000_000),
+    );
+    expect(rows.map((row) => row.amount.toString())).toEqual(['240000', '60000']);
   });
 });
 
@@ -119,6 +139,7 @@ describe('persistSalesBonusRows unique keys', () => {
     expect(created).toBe(true);
     expect(store.rows).toHaveLength(2);
     expect(store.rows.map((row) => row.salesBonusSlot)).toEqual(['SELLER', 'ASSISTANT']);
+    expect(store.rows.every((row) => row.salesAccrualRole === null)).toBe(true);
     expect(store.rows.every((row) => row.employeeId === 'emp-1')).toBe(true);
   });
 
@@ -165,6 +186,34 @@ describe('persistSalesBonusRows unique keys', () => {
     expect(store.rows[0]?.employeeId).toBe('emp-seller');
   });
 
+  it('keeps both unslotted recurring roles for one employee on the same invoice', async () => {
+    const store = createUniqueAwareBonusStore();
+    const recurring: SalesBonusAmountRow[] = [
+      { employeeId: 'emp-1', slot: 'SELLER', amount: new Decimal(8_000), percent: new Decimal(8) },
+      {
+        employeeId: 'emp-1',
+        slot: 'ASSISTANT',
+        amount: new Decimal(2_000),
+        percent: new Decimal(2),
+      },
+    ];
+    const created = await persistSalesBonusRows(
+      store.prisma as never,
+      ORDER,
+      DEAL,
+      recurring,
+      SNAPSHOT,
+      'inv-recurring-1',
+      null,
+      EARNED_PERIOD,
+    );
+    expect(created).toBe(true);
+    expect(store.rows).toHaveLength(2);
+    expect(store.rows.every((row) => row.employeeId === 'emp-1')).toBe(true);
+    expect(store.rows.every((row) => row.salesBonusSlot === null)).toBe(true);
+    expect(store.rows.map((row) => row.salesAccrualRole)).toEqual(['SELLER', 'ASSISTANT']);
+  });
+
   it('keeps recurring accruals on different invoices separate', async () => {
     const store = createUniqueAwareBonusStore();
     const recurring: SalesBonusAmountRow[] = [
@@ -209,5 +258,20 @@ describe('sales invoice-employee unique migration', () => {
     expect(sql).toContain('"bonus_entries_sales_invoice_employee_slot_unique"');
     expect(sql).toContain('"sales_bonus_slot"');
     expect(sql).toContain('"bonus_entries_sales_invoice_employee_unslotted_unique"');
+  });
+
+  it('uses sales_accrual_role on the unslotted unique and does not drop slotted uniqueness', () => {
+    const sqlPath = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      '../../../../../packages/database/prisma/migrations/20260928020000_bonus_entry_sales_unslotted_role_unique/migration.sql',
+    );
+    const sql = readFileSync(sqlPath, 'utf8');
+    expect(sql).toContain(
+      'DROP INDEX IF EXISTS "bonus_entries_sales_invoice_employee_unslotted_unique"',
+    );
+    expect(sql).toContain('"sales_accrual_role"');
+    expect(sql).not.toContain('"percent"');
+    expect(sql).not.toMatch(/DROP INDEX.*bonus_entries_sales_slotted_unique/);
+    expect(sql).not.toMatch(/DROP INDEX.*bonus_entries_sales_invoice_employee_slot_unique/);
   });
 });
