@@ -2,7 +2,6 @@ import { GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { NotFoundException, StreamableFile } from '@nestjs/common';
 import { Readable } from 'node:stream';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CRM_CALL_RECORDINGS_PLAY_PERMISSION } from '@nbos/shared';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import { createMockPrisma } from '../../../test-utils/mock-prisma';
 import { CallAccessPolicyService } from './call-access-policy.service';
@@ -31,8 +30,6 @@ const PLAY_USER: CurrentUserPayload = {
   permissions: {
     CRM_LEADS_VIEW: 'OWN',
     CRM_DEALS_VIEW: 'OWN',
-    [CRM_CALL_RECORDINGS_PLAY_PERMISSION]: 'ALL',
-    DRIVE_VIEW: 'OWN',
   },
 };
 
@@ -57,7 +54,6 @@ function lastGetObject(send: ReturnType<typeof vi.fn>): GetObjectCommand {
 describe('CallsRecordingService byte-range streaming', () => {
   const send = vi.fn();
   const r2 = { bucket: 'recordings', ensureS3: vi.fn(() => ({ send })) };
-  const driveAccess = { fromRequest: vi.fn() };
   let prisma: ReturnType<typeof createMockPrisma>;
   let service: CallsRecordingService;
 
@@ -67,18 +63,12 @@ describe('CallsRecordingService byte-range streaming', () => {
     prisma.atsCallEvent.findUnique.mockResolvedValue(READY_CALL);
     prisma.atsCallEvent.findFirst.mockResolvedValue({ id: READY_CALL.id });
     r2.ensureS3.mockReturnValue({ send });
-    driveAccess.fromRequest.mockResolvedValue({
-      employeeId: ACTOR_ID,
-      departmentIds: OWN_ACTOR.departmentIds,
-      driveScope: 'OWN',
-    });
     prisma.fileAsset.findFirst.mockResolvedValue(FILE);
     send.mockResolvedValue({ Body: Readable.from(['audio']), ContentLength: TOTAL });
     service = new CallsRecordingService(
       prisma as never,
       r2 as never,
       new CallAccessPolicyService(prisma as never),
-      driveAccess as never,
     );
   });
 
