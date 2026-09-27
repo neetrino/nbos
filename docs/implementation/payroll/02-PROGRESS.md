@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P4-S1
-**Next step:** Grok 4.6 High makes the allocation matrix sum every source entry for one employee and order.
+**Active slice:** P4-S2
+**Next step:** Grok 4.6 High lets a 200,000 plan be released as 40,000 + 10,000 + 120,000, with an extra 30,000 as a separate reasoned entry.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -19,10 +19,10 @@ Owner authorized synthetic data and browser checks on the local dev database (`e
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P3-S4 done; P4-S1 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P4-S1 done; P4-S2 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P3-S4 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P4-S1 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -42,6 +42,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-28 | P3-S2 qualifying invoice       | Claude Opus 5.5 Medium | Receipt rates and invoice floor. Opus 5.5 High is unavailable.                    | Uncommitted qualifying-invoice diff only                            |
 | 2026-09-28 | P3-S3 order envelope review    | Claude Opus 5.5 Medium | Combined 300,000 cap. Opus 5.5 High is unavailable.                               | Uncommitted order-envelope diff only                                |
 | 2026-09-28 | P3-S4 salary-ceiling review    | Claude Opus 5.5 Medium | Ceiling removal and consumed carry. Opus 5.5 High is unavailable.                 | Uncommitted ceiling and carry diff only                             |
+| 2026-09-28 | P4-S1 matrix source sum        | Claude Opus 5.5 Medium | Cell total of every visible entry. Opus 5.5 High is unavailable.                  | Uncommitted matrix source diff only                                 |
 
 ## Slice log
 
@@ -56,8 +57,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P3-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest on rates and the floor. No browser. Migration `20260928010000` not applied.                 | `edfcabfcb` | Receipt rates stay put. Historical replay removed. Two low residuals remain.                                |
 | P3-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 25 passed. No browser. No live race. Migration `20260928020000` not applied.       | `5588995d7` | One order stays within 300,000. Recheck closed four over-cap findings.                                      |
 | P3-S4 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 6 files, 41 passed. No browser. No migration.                                               | `aaf7511cc` | Full bonus is included. Open reversal returns consumed carry. Closed or PAID April stays an owner decision. |
-| P4-S1 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Matrix sums every source entry. Two entries of 50 and 70 display 120.                                       |
-| P4-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
+| P4-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed. No browser. No migration.                                               | `5299c4022` | Planned cell amount is the sum of visible sources. Both entry ids stay on the cell.                         |
+| P4-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | 200,000 can be released as 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry.            |
 | P4-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
 | P5-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
 | P5-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
@@ -98,6 +99,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P3-S4-R1 | Closed | Reversing May finds April after a June re-attach and returns 100,000. Recheck passed.                                |
 | P3-S4-R2 | Open   | If April is on a closed or PAID run, reversing May removes 100,000 with no destination. Owner decision.              |
 | P3-S4-R3 | Open   | Restore credits the newest remembered carry, not the release that month consumed. Low. Employee total stays put.     |
+| P4-S1-R1 | Closed | Two visible entries of 50 and 70 display 120. Review passed.                                                         |
+| P4-S1-R2 | Open   | Materializing 80 still checks only the first 50 entry and rejects it. P4-S2.                                         |
 
 ## External blockers
 

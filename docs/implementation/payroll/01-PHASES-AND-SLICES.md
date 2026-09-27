@@ -72,8 +72,8 @@ M-09 evidence is collected inside P1–P5 on the paths each slice changes. P6 re
 
 | Slice                                                                 | Status        | M / V                        | Acceptance                                                                                                       |
 | --------------------------------------------------------------------- | ------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| P4-S1 Matrix sums every source entry                                  | `IN_PROGRESS` | M-05; V-06, V-07             | Two entries of 50 and 70 display 120. Trace to sources remains                                                   |
-| P4-S2 Explicit project amounts, Development installments, extra award | `PLANNED`     | M-05, M-08; V-06, V-07, V-12 | 200,000 plan can be paid 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry. Draft is not cash |
+| P4-S1 Matrix sums every source entry                                  | `VERIFIED`    | M-05; V-06, V-07             | Two entries of 50 and 70 display 120. Trace to sources remains. Commit `5299c4022`                               |
+| P4-S2 Explicit project amounts, Development installments, extra award | `IN_PROGRESS` | M-05, M-08; V-06, V-07, V-12 | 200,000 plan can be paid 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry. Draft is not cash |
 | P4-S3 Older unpaid entitlements stay payable                          | `PLANNED`     | M-05, M-06; V-10             | Month rollover and termination do not drop a real unpaid amount. No project FIFO                                 |
 
 ## P5 — Cash, reversals, registers
