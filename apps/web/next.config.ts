@@ -24,7 +24,8 @@ function buildContentSecurityPolicy(): string {
     `script-src ${scriptSrc.join(' ')}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
-    `media-src 'self' blob: mediastream:`,
+    // Signed recording URLs are cross-origin https (object storage). Same allowance as images.
+    `media-src 'self' blob: mediastream: https:`,
     `font-src 'self' data:`,
     `connect-src ${connectSrc.join(' ')}`,
     `frame-ancestors 'none'`,
