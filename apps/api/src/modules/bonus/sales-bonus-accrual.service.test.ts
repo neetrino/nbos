@@ -70,6 +70,7 @@ describe('SalesBonusAccrualService', () => {
 
     await service.onInvoicePaid('inv1');
 
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledTimes(1);
     expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
       expect.objectContaining({
         skipDuplicates: true,
@@ -90,7 +91,7 @@ describe('SalesBonusAccrualService', () => {
     expect(prisma.productBonusPool.upsert).toHaveBeenCalled();
   });
 
-  it('skips classic accrual when a slotted SALES bonus already exists', async () => {
+  it('replays a complete seller-only wave without creating another row', async () => {
     prisma.invoice.findUnique.mockResolvedValue({
       id: 'inv1',
       moneyStatus: 'PAID',
@@ -110,12 +111,22 @@ describe('SalesBonusAccrualService', () => {
         },
       },
     });
-    prisma.bonusEntry.findFirst.mockResolvedValue({ id: 'existing-bonus' });
+    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
+      sellerPercent: 10,
+      assistantPercent: 2,
+    });
+    prisma.bonusEntry.createMany.mockResolvedValue({ count: 0 });
 
     await service.onInvoicePaid('inv1');
 
-    expect(prisma.bonusEntry.createMany).not.toHaveBeenCalled();
-    expect(prisma.salesBonusPolicy.findFirst).not.toHaveBeenCalled();
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledTimes(1);
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skipDuplicates: true,
+        data: [expect.objectContaining({ employeeId: 'emp-seller', salesBonusSlot: 'SELLER' })],
+      }),
+    );
+    expect(prisma.productBonusPool.upsert).not.toHaveBeenCalled();
   });
 
   it('uses first-month policy on first subscription paid invoice', async () => {
@@ -165,6 +176,7 @@ describe('SalesBonusAccrualService', () => {
     const created = prisma.bonusEntry.createMany.mock.calls[0]?.[0] as {
       data: Array<{ amount: Decimal; calculationSnapshot: { basis: string; baseAmount: string } }>;
     };
+    expect(created.data).toHaveLength(1);
     expect(created.data[0]?.amount.toString()).toBe('40000');
     expect(created.data[0]?.calculationSnapshot.basis).toBe('FIRST_PAID_MONTH');
     expect(created.data[0]?.calculationSnapshot.baseAmount).toBe('100000');
@@ -216,12 +228,17 @@ describe('SalesBonusAccrualService', () => {
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_FIRST_MONTH' }),
       }),
     );
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledTimes(2);
     expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.arrayContaining([
-          expect.objectContaining({ employeeId: 'emp-seller', amount: new Decimal(40000) }),
-          expect.objectContaining({ employeeId: 'emp-asst', amount: new Decimal(10000) }),
-        ]),
+        skipDuplicates: true,
+        data: [expect.objectContaining({ employeeId: 'emp-seller', amount: new Decimal(40000) })],
+      }),
+    );
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skipDuplicates: true,
+        data: [expect.objectContaining({ employeeId: 'emp-asst', amount: new Decimal(10000) })],
       }),
     );
   });
@@ -248,6 +265,7 @@ describe('SalesBonusAccrualService', () => {
     });
     prisma.bonusEntry.findFirst
       .mockResolvedValueOnce({ id: 'first-month-row' })
+      .mockResolvedValueOnce(null)
       .mockResolvedValue({ id: 'existing' });
     prisma.salesBonusPolicy.findFirst.mockResolvedValue({
       sellerPercent: 5,
@@ -282,6 +300,7 @@ describe('SalesBonusAccrualService', () => {
     prisma.bonusEntry.findFirst
       .mockResolvedValueOnce({ id: 'first-month-row' })
       .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null);
     prisma.bonusEntry.createMany.mockResolvedValue({ count: 2 });
     prisma.salesBonusPolicy.findFirst.mockResolvedValue({
@@ -307,21 +326,29 @@ describe('SalesBonusAccrualService', () => {
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_RECURRING' }),
       }),
     );
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledTimes(2);
     expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
       expect.objectContaining({
         skipDuplicates: true,
-        data: expect.arrayContaining([
+        data: [
           expect.objectContaining({
             salesBonusSlot: null,
             salesAccrualInvoiceId: 'inv-b',
             employeeId: 'emp-seller',
           }),
+        ],
+      }),
+    );
+    expect(prisma.bonusEntry.createMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skipDuplicates: true,
+        data: [
           expect.objectContaining({
             salesBonusSlot: null,
             salesAccrualInvoiceId: 'inv-b',
             employeeId: 'emp-asst',
           }),
-        ]),
+        ],
       }),
     );
   });

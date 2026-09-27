@@ -5,7 +5,7 @@ import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import {
-  hasSalesAccrualForInvoice,
+  hasSlottedSalesAccrualForInvoice,
   hasSlottedSalesBonusOnOrder,
 } from './sales-bonus-accrual-idempotency';
 import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
@@ -171,8 +171,13 @@ export class SalesBonusAccrualService {
     order: AccrualOrder,
     earnedPeriod: string,
   ): Promise<boolean> {
-    const firstMonthDone = await hasSlottedSalesBonusOnOrder(this.prisma, order.id);
-    if (!firstMonthDone) {
+    const firstMonthStarted = await hasSlottedSalesBonusOnOrder(this.prisma, order.id);
+    const thisInvoiceHasSlottedRow = await hasSlottedSalesAccrualForInvoice(
+      this.prisma,
+      order.id,
+      invoice.id,
+    );
+    if (!firstMonthStarted || thisInvoiceHasSlottedRow) {
       const baseAmount = subscriptionFirstMonthBonusBase({
         invoiceAmount: invoice.amount,
         coverageMonthCount: invoice.coverageMonthCount,
@@ -220,13 +225,6 @@ export class SalesBonusAccrualService {
     earnedPeriod: string,
     params: { baseAmount: Decimal; basis: AccrualBasis },
   ): Promise<boolean> {
-    if (await hasSalesAccrualForInvoice(this.prisma, order.id, invoice.id)) {
-      return false;
-    }
-    if (await hasSlottedSalesBonusOnOrder(this.prisma, order.id)) {
-      return false;
-    }
-
     const policy = await this.loadPolicy(order.deal.source, paymentModel);
     if (!policy) {
       this.logger.warn(

@@ -582,7 +582,9 @@ model BonusEntry {
   @@index([orderId, salesAccrualInvoiceId])
   @@index([deliveryConfigurationId])
   @@index([deliverySource])
-  /// Partial unique indexes: `bonus_entries_sales_slotted_unique`, `bonus_entries_sales_invoice_employee_unique`.
+  /// Partial unique indexes: `bonus_entries_sales_slotted_unique`,
+  /// `bonus_entries_sales_invoice_employee_slot_unique`,
+  /// `bonus_entries_sales_invoice_employee_unslotted_unique`.
   @@map("bonus_entries")
 }
 

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   hasRecurringSalesAccrualForInvoiceEmployee,
   hasSalesAccrualForInvoice,
+  hasSlottedSalesAccrualForInvoice,
   hasSlottedSalesBonusOnOrder,
 } from './sales-bonus-accrual-idempotency';
 
@@ -22,6 +23,21 @@ describe('sales-bonus-accrual-idempotency', () => {
     expect(db.bonusEntry.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ salesBonusSlot: { not: null } }),
+      }),
+    );
+  });
+
+  it('hasSlottedSalesAccrualForInvoice requires a slot on this invoice', async () => {
+    const db = {
+      bonusEntry: { findFirst: vi.fn().mockResolvedValue(null) },
+    };
+    await hasSlottedSalesAccrualForInvoice(db as never, 'ord1', 'inv2');
+    expect(db.bonusEntry.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          salesAccrualInvoiceId: 'inv2',
+          salesBonusSlot: { not: null },
+        }),
       }),
     );
   });

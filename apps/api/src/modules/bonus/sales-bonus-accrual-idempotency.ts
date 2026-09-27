@@ -33,6 +33,24 @@ export async function hasSlottedSalesBonusOnOrder(
   return row != null;
 }
 
+/** First-month Seller/Assistant row already tied to this invoice. Ignores unslotted recurring. */
+export async function hasSlottedSalesAccrualForInvoice(
+  db: AccrualIdempotencyDb,
+  orderId: string,
+  invoiceId: string,
+): Promise<boolean> {
+  const row = await db.bonusEntry.findFirst({
+    where: {
+      orderId,
+      type: SALES_BONUS_TYPE,
+      salesAccrualInvoiceId: invoiceId,
+      salesBonusSlot: { not: null },
+    },
+    select: { id: true },
+  });
+  return row != null;
+}
+
 /** Subscription recurring row for this invoice + employee. */
 export async function hasRecurringSalesAccrualForInvoiceEmployee(
   db: AccrualIdempotencyDb,
