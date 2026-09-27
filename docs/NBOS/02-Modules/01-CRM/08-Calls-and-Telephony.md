@@ -2,7 +2,7 @@
 
 > NBOS Platform — звонки как активность CRM, не отдельная воронка.
 >
-> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + Active Call Screen (SSE `call.started` / `call.answered` / `call.finished`) + CALL activities + recording FileAsset/playback + click-to-call. Playback записи отделён от Call VIEW: `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + Drive `DRIVE_VIEW` (не Drive listing / RESTRICTED owner filter). Сверка history — следующий срез.
+> **Статус:** канон Accepted (2026-08-20). Runtime: Call core + Active Call Screen (SSE `call.started` / `call.answered` / `call.finished`) + CALL activities + recording FileAsset/playback + click-to-call. Playback записи совпадает с object-level Call view: кто видит этот звонок, тот слушает его `CALL_RECORDING`. `CALLS_PLAY` остаётся в каталоге и на потоке не проверяется. `DRIVE_VIEW` для плеера не нужен и автоматически не выдаётся. Сверка history — следующий срез.
 >
 > Провайдер: ATS.am. Контракт API: [`../../06-Integrations/09-ATS-AM-Integration.md`](../../06-Integrations/09-ATS-AM-Integration.md).  
 > Окно звонка (UI): [`../../05-UI-Specifications/11-Call-Screen.md`](../../05-UI-Specifications/11-Call-Screen.md).  
@@ -131,14 +131,14 @@ Same key + другой target → 409. Same key другого employee не р
 
 ## 9. Права
 
-**Факт звонка и playback записи — разные права.** Журнал `/calls` не требует CRM.
+**Прослушивание совпадает с правом увидеть этот звонок.** Журнал `/calls` не требует CRM.
 
-- `CALLS_VIEW` (`OWN` / `DEPARTMENT` / `ALL`) — журнал и метаданные Call. Default: Owner / CEO / Head of Sales `ALL`; Seller `OWN`; Delivery / Marketing / HR — `NONE` до выдачи в Settings → Roles. `OWN` / `DEPARTMENT` не наследуют широту `CRM_*_VIEW`: дополнительно OR только назначение `OWN` (`Lead.assignedTo`, `Deal.sellerId` / `sellerAssistantId`), чтобы продавец не терял звонки по своим лидам и не видел всю компанию.
-- `CALLS_PLAY` — прослушивание. Default те же роли, что Seller/Head of Sales/Owner/CEO. Playback также принимает legacy `CRM_CALL_RECORDINGS_PLAY`.
-- Seller — свои / назначенные Lead и Deal, свои звонки; playback при `CALLS_PLAY` или `CRM_CALL_RECORDINGS_PLAY` + object-level Call access + `DRIVE_VIEW`;
-- Head of Sales / CEO / Owner — все звонки; playback проходит object-level Call access (CALLS и/или CRM) и `DRIVE_VIEW`, без Drive listing filter (RESTRICTED owner-only иначе даёт 404 на чужой CALL_RECORDING);
-- Marketing (включая Head of Marketing) — без PLAY по умолчанию, прослушивание запрещено даже если CRM VIEW позволяет видеть Call;
-- Custom role с `CALLS_VIEW` / `CALLS_PLAY` работает по effective permissions, без проверки имени роли;
+- `CALLS_VIEW` (`OWN` / `DEPARTMENT` / `ALL`) — журнал, метаданные и запись Call в том же охвате. Default: Owner / CEO / Head of Sales `ALL`; Seller `OWN`; Delivery / Marketing / HR — `NONE` до выдачи в Settings → Roles. `OWN` / `DEPARTMENT` не наследуют широту `CRM_*_VIEW`: дополнительно OR только назначение `OWN` (`Lead.assignedTo`, `Deal.sellerId` / `sellerAssistantId`), чтобы продавец не терял звонки по своим лидам и не видел всю компанию.
+- `CALLS_PLAY` и legacy `CRM_CALL_RECORDINGS_PLAY` остаются в каталоге и на потоке записи не проверяются. Отдельного переключателя в матрице нет.
+- Seller — свои / назначенные Lead и Deal, свои звонки; playback при том же object-level Call view, без `DRIVE_VIEW`;
+- Head of Sales / CEO / Owner — все звонки; playback проходит object-level Call access (CALLS и/или CRM), без Drive listing filter (RESTRICTED owner-only иначе даёт 404 на чужой CALL_RECORDING);
+- Marketing (включая Head of Marketing) — без `CALLS_VIEW` по умолчанию. Если CRM VIEW даёт увидеть конкретный Call, запись этого звонка тоже доступна;
+- Custom role с `CALLS_VIEW` работает по effective permissions, без проверки имени роли;
 - записи: `purpose=CALL_RECORDING`, `visibility=RESTRICTED`, `confidentiality=CONFIDENTIAL`; playback стримит через API, signed/public URL не выдаётся.
 - **Note** (`PATCH /crm/calls/:id/note`) — не VIEW. Нужны одновременно: object-level Call VIEW, object-level CRM EDIT (`CRM_LEADS_EDIT` / `CRM_DEALS_EDIT`), terminal ATS state (`finish` / `end`), and current `expectedNoteVersion`. VIEW-only → deny до записи и до Audit.
 - Object-level EDIT совпадает с Call VIEW predicates, но по EDIT scope: `NONE` deny; `ALL` — Calls соответствующего CRM-модуля (contact-only без Lead/Deal — только при `ALL`); `OWN` — `Lead.assignedTo`, `Deal.sellerId` / `sellerAssistantId`, `Call.responsibleEmployeeId` / `initiatedByEmployeeId` / `answeredEmployeeId`; `DEPARTMENT` — те же relations для actor и коллег из `EmployeeDepartment` (строка `DEPARTMENT` ≠ ALL). Contact UUID сам по себе EDIT не даёт.
