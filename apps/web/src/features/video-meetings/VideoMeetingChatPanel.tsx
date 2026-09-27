@@ -139,7 +139,7 @@ function isMine(
   selfEmployeeId: string | null | undefined,
 ): boolean {
   if (item.type !== 'message') return false;
-  if (mode?.kind === 'employee' && selfEmployeeId) {
+  if (mode?.kind === 'employee' && selfEmployeeId && 'employeeId' in item) {
     return item.employeeId === selfEmployeeId;
   }
   if (mode?.kind === 'guest' && selfDisplayName) {

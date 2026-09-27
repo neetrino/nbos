@@ -10,6 +10,7 @@ import {
 import {
   videoMeetingThreadApi,
   type VideoMeetingThreadItem,
+  type VideoMeetingThreadMessage,
 } from '@/lib/api/video-meetings-thread';
 import { VIDEO_MEETING_THREAD_POLL_MS } from './constants';
 import { threadHasNonTerminalRecording } from './video-meeting-thread-poll';
@@ -18,9 +19,9 @@ export type PersistedVideoMeetingChatMode =
   | { kind: 'employee'; meetingId: string }
   | { kind: 'guest'; inviteToken: string };
 
-type ChatItem = VideoMeetingThreadItem | GuestVideoMeetingThreadItem;
+type PersistedChatLine = VideoMeetingThreadMessage | GuestVideoMeetingThreadItem;
 
-function isMessageItem(item: ChatItem): item is Extract<ChatItem, { type: 'message' }> {
+function isEmployeeMessage(item: VideoMeetingThreadItem): item is VideoMeetingThreadMessage {
   return item.type === 'message';
 }
 
@@ -36,7 +37,7 @@ export function usePersistedVideoMeetingChat(
   mode: PersistedVideoMeetingChatMode | null,
   options: { enabled: boolean },
 ) {
-  const [items, setItems] = useState<ChatItem[]>([]);
+  const [items, setItems] = useState<PersistedChatLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
 
@@ -52,7 +53,7 @@ export function usePersistedVideoMeetingChat(
   const refresh = useCallback(async () => {
     if (modeKind === 'employee' && employeeMeetingId) {
       const thread = await videoMeetingThreadApi.getThread(employeeMeetingId);
-      setItems(thread.items.filter(isMessageItem));
+      setItems(thread.items.filter(isEmployeeMessage));
       return;
     }
     if (modeKind === 'guest' && guestInviteToken) {
@@ -114,7 +115,7 @@ export function useEmployeeRoomThread(meetingId: string) {
   const [items, setItems] = useState<VideoMeetingThreadItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLLIElement | null>(null);
   const didScrollRef = useRef(false);
 
   const refresh = useCallback(async () => {

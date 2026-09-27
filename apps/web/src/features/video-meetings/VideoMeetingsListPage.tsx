@@ -133,7 +133,7 @@ export function VideoMeetingsListPage() {
         creating={creating}
         suggestedTitle={suggestedTitle}
         onOpenChange={setCreateOpen}
-        onCreate={(title) => void handleCreate(title)}
+        onCreate={handleCreate}
       />
       <DataView
         loading={loaded.loading}
