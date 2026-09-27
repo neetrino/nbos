@@ -40,19 +40,29 @@ export function usePersistedVideoMeetingChat(
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
 
+  const enabled = options.enabled;
+  const modeKind = mode?.kind ?? null;
+  const employeeMeetingId = mode?.kind === 'employee' ? mode.meetingId : undefined;
+  const guestInviteToken = mode?.kind === 'guest' ? mode.inviteToken : undefined;
+
+  const canFetchThread =
+    (modeKind === 'employee' && Boolean(employeeMeetingId)) ||
+    (modeKind === 'guest' && Boolean(guestInviteToken));
+
   const refresh = useCallback(async () => {
-    if (!mode) return;
-    if (mode.kind === 'employee') {
-      const thread = await videoMeetingThreadApi.getThread(mode.meetingId);
+    if (modeKind === 'employee' && employeeMeetingId) {
+      const thread = await videoMeetingThreadApi.getThread(employeeMeetingId);
       setItems(thread.items.filter(isMessageItem));
       return;
     }
-    const thread = await guestThread(mode.inviteToken);
-    setItems(thread.items.filter(isGuestChatItem));
-  }, [mode]);
+    if (modeKind === 'guest' && guestInviteToken) {
+      const thread = await guestThread(guestInviteToken);
+      setItems(thread.items.filter(isGuestChatItem));
+    }
+  }, [modeKind, employeeMeetingId, guestInviteToken]);
 
   useEffect(() => {
-    if (!mode || !options.enabled) {
+    if (!enabled || !canFetchThread) {
       setLoading(false);
       return;
     }
@@ -68,33 +78,33 @@ export function usePersistedVideoMeetingChat(
     return () => {
       cancelled = true;
     };
-  }, [mode, options.enabled, refresh]);
+  }, [modeKind, employeeMeetingId, guestInviteToken, enabled, canFetchThread, refresh]);
 
   useEffect(() => {
-    if (!mode || !options.enabled) return;
+    if (!enabled || !canFetchThread) return;
     const tick = () => {
       void refresh().catch(() => undefined);
     };
     const id = window.setInterval(tick, VIDEO_MEETING_THREAD_POLL_MS);
     return () => window.clearInterval(id);
-  }, [mode, options.enabled, refresh]);
+  }, [modeKind, employeeMeetingId, guestInviteToken, enabled, canFetchThread, refresh]);
 
   const postMessage = useCallback(
     async (body: string) => {
-      if (!mode) return;
+      if (!canFetchThread) return;
       setPosting(true);
       try {
-        if (mode.kind === 'employee') {
-          await videoMeetingThreadApi.postMessage(mode.meetingId, body);
-        } else {
-          await guestPostMessage(mode.inviteToken, body);
+        if (modeKind === 'employee' && employeeMeetingId) {
+          await videoMeetingThreadApi.postMessage(employeeMeetingId, body);
+        } else if (modeKind === 'guest' && guestInviteToken) {
+          await guestPostMessage(guestInviteToken, body);
         }
         await refresh();
       } finally {
         setPosting(false);
       }
     },
-    [mode, refresh],
+    [canFetchThread, modeKind, employeeMeetingId, guestInviteToken, refresh],
   );
 
   return { items, loading, posting, postMessage, refresh };
