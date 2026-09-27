@@ -11,6 +11,7 @@ import {
   type VideoMeetingRecordingGroup,
   type VideoMeetingRecordingStatus,
 } from '@/lib/api/video-meetings';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CALL_ICON_BUTTON_CLASS } from './video-meeting-call-styles';
 
 type VideoMeetingRecordingIndicatorProps = {
@@ -189,19 +190,28 @@ function RecordingIconButton({
   const label = active ? stopLabel : startLabel;
 
   return (
-    <button
-      type="button"
-      className={cn(
-        CALL_ICON_BUTTON_CLASS,
-        active && 'bg-destructive hover:bg-destructive/90 border-transparent text-white',
-      )}
-      aria-label={label}
-      aria-pressed={active}
-      title={error ?? label}
-      disabled={!enabled || busy}
-      onClick={onToggle}
-    >
-      <Circle className={cn('size-3.5', active && 'fill-current')} aria-hidden />
-    </button>
+    <Tooltip>
+      <TooltipTrigger
+        delay={200}
+        render={
+          <button
+            type="button"
+            className={cn(
+              CALL_ICON_BUTTON_CLASS,
+              active
+                ? 'bg-destructive hover:bg-destructive/90 border-transparent text-white'
+                : 'bg-muted text-muted-foreground',
+            )}
+            aria-label={error ?? label}
+            aria-pressed={active}
+            disabled={!enabled || busy}
+            onClick={onToggle}
+          />
+        }
+      >
+        <Circle className={cn('size-3.5', active && 'fill-current')} aria-hidden />
+      </TooltipTrigger>
+      <TooltipContent side="top">{error ?? label}</TooltipContent>
+    </Tooltip>
   );
 }

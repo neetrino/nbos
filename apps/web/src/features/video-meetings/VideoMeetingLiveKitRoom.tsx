@@ -28,6 +28,7 @@ type VideoMeetingLiveKitRoomProps = {
   onConnected?: () => void;
   title?: string;
   meetingId?: string;
+  canControlRecording?: boolean;
   isHost?: boolean;
   minimized?: boolean;
   onMinimize?: () => void;
@@ -95,6 +96,7 @@ function VideoMeetingCallSurface({
   meetingId,
   self,
   canEnd,
+  canControlRecording,
   isHost,
   onArmLeave,
   onLeave,
@@ -125,6 +127,8 @@ function VideoMeetingCallSurface({
               onEnd={onEnd}
               chatOpen={chatOpen}
               onToggleChat={() => setChatOpen((open) => !open)}
+              meetingId={meetingId}
+              canControlRecording={canControlRecording}
             />
           </div>
         </div>
