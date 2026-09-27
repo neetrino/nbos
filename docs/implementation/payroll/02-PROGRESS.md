@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P3-S3
-**Next step:** Grok 4.6 High caps combined Sales accrual at 300,000 AMD per order before KPI, including subscription invoices, and keeps both recurring roles for one employee.
+**Active slice:** P3-S4
+**Next step:** Grok 4.6 High stops the monthly salary-multiple bonus ceiling without deleting existing unpaid carry.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -19,10 +19,10 @@ Owner authorized synthetic data and browser checks on the local dev database (`e
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P3-S2 done; P3-S3 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P3-S3 done; P3-S4 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P3-S2 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P3-S3 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -52,8 +52,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P2-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 32 passed. No browser.                                                             | `2ea6c9c2f` | USD/EUR/blank rejected at seed and approval. No FX.                                         |
 | P3-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 5 files, 21 passed. No browser. Migration not applied. Recheck closed the recurring replay. | `73c7b493b` | Both slotted roles persist. Recurring same-person share waits for the subscription envelope |
 | P3-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest on rates and the floor. No browser. Migration `20260928010000` not applied.                 | `edfcabfcb` | Receipt rates stay put. Historical replay removed. Two low residuals remain.                |
-| P3-S3 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Shared 300,000 envelope before KPI, including both recurring roles                          |
-| P3-S4 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Historical carry must survive                                                               |
+| P3-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 25 passed. No browser. No live race. Migration `20260928020000` not applied.       | `5588995d7` | One order stays within 300,000. Recheck closed four over-cap findings.                      |
+| P3-S4 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Remove the salary-multiple ceiling. Existing unpaid carry stays.                            |
 | P4-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                             |
 | P4-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                             |
 | P4-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                             |
@@ -78,7 +78,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P2-S1-R3 | Closed | A later profile no longer hides a gap when earlier terms exist. Recheck passed.                                      |
 | P2-S1-R4 | Closed | A past start month cannot be activated and does not shorten the current profile. Recheck passed.                     |
 | P3-S1-R1 | Closed | A later subscription invoice no longer receives the first-month rate. Recheck passed.                                |
-| P3-S1-R2 | Open   | Recurring rows still collapse two roles of one employee. Deferred to the subscription envelope.                      |
+| P3-S1-R2 | Closed | Recurring roles use `sales_accrual_role`, so equal percents keep both shares.                                        |
 | P3-S2-R1 | Closed | A later rate version does not reprice an older receipt. Recheck passed.                                              |
 | P3-S2-R2 | Closed | Publishing a rate does not replay historical invoices. Recheck passed.                                               |
 | P3-S2-R3 | Closed | Marking an invoice paid runs accrual once. Recheck passed.                                                           |
@@ -88,6 +88,11 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P3-S2-R7 | Closed | Reactivating an older id while a newer version is open is rejected. Recheck passed. The later receipt stays 120,000. |
 | P3-S2-R8 | Open   | Two reactivations at the same instant can insert two open versions. Low. No partial unique index.                    |
 | P3-S2-R9 | Open   | A percent edit on an old closed row copies the unsent percent from that old row. Low.                                |
+| P3-S3-R1 | Closed | Null invoice ids count toward the 300,000 sum. Recheck passed.                                                       |
+| P3-S3-R2 | Closed | A legacy null-role row blocks a second insert for that employee. Recheck passed.                                     |
+| P3-S3-R3 | Closed | The order lock covers the sum and the inserts. Recheck passed. No live Postgres race.                                |
+| P3-S3-R4 | Closed | A replay cannot refill a spent envelope. Recheck passed.                                                             |
+| P3-S3-R5 | Open   | A partial wave from before this change can replay the missing role at 12,000 instead of 60,000. Low. Under 300,000.  |
 
 ## External blockers
 
