@@ -70,19 +70,19 @@ M-09 evidence is collected inside P1–P5 on the paths each slice changes. P6 re
 
 ## P4 — Sources, manual allocation, old balances
 
-| Slice                                                                 | Status        | M / V                        | Acceptance                                                                                                                           |
-| --------------------------------------------------------------------- | ------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| P4-S1 Matrix sums every source entry                                  | `VERIFIED`    | M-05; V-06, V-07             | Two entries of 50 and 70 display 120. Trace to sources remains. Commit `5299c4022`                                                   |
-| P4-S2 Explicit project amounts, Development installments, extra award | `VERIFIED`    | M-05, M-08; V-06, V-07, V-12 | 200,000 plan can be paid 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry. Draft is not cash. Commit `3f917cce6` |
-| P4-S3 Older unpaid entitlements stay payable                          | `IN_PROGRESS` | M-05, M-06; V-10             | Month rollover and termination do not drop a real unpaid amount. No project FIFO                                                     |
+| Slice                                                                 | Status     | M / V                        | Acceptance                                                                                                                           |
+| --------------------------------------------------------------------- | ---------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| P4-S1 Matrix sums every source entry                                  | `VERIFIED` | M-05; V-06, V-07             | Two entries of 50 and 70 display 120. Trace to sources remains. Commit `5299c4022`                                                   |
+| P4-S2 Explicit project amounts, Development installments, extra award | `VERIFIED` | M-05, M-08; V-06, V-07, V-12 | 200,000 plan can be paid 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry. Draft is not cash. Commit `3f917cce6` |
+| P4-S3 Older unpaid entitlements stay payable                          | `VERIFIED` | M-05, M-06; V-10             | Month rollover and termination do not drop a real unpaid amount. No project FIFO. Commit `637dd783f`                                 |
 
 ## P5 — Cash, reversals, registers
 
-| Slice                                                    | Status    | M / V                  | Acceptance                                                                                                                                          |
-| -------------------------------------------------------- | --------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P5-S1 Salary-first cash and explicit project attribution | `PLANNED` | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash                                    |
-| P5-S2 Reversal restores the original links               | `PLANNED` | M-07; V-11             | Refund and payout reversal do not rewrite closed history in place. Fixed salary is not a clawback source. Uncovered negative residual stays visible |
-| P5-S3 Register reconciliation                            | `PLANNED` | M-06, M-07; V-11, V-17 | SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, Wallet, ProductBonusPool, and the journal agree on synthetic fixtures                |
+| Slice                                                    | Status        | M / V                  | Acceptance                                                                                                                                          |
+| -------------------------------------------------------- | ------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P5-S1 Salary-first cash and explicit project attribution | `IN_PROGRESS` | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash                                    |
+| P5-S2 Reversal restores the original links               | `PLANNED`     | M-07; V-11             | Refund and payout reversal do not rewrite closed history in place. Fixed salary is not a clawback source. Uncovered negative residual stays visible |
+| P5-S3 Register reconciliation                            | `PLANNED`     | M-06, M-07; V-11, V-17 | SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, Wallet, ProductBonusPool, and the journal agree on synthetic fixtures                |
 
 ## P6 — Cutover inventory and acceptance
 
