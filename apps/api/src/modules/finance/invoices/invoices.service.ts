@@ -49,6 +49,7 @@ import {
   paymentReminderCycleIncrement,
   prepareInvoiceMoneyStatusTransition,
 } from './invoice-money-status-transition';
+import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
 import { OperationalJournalService } from '../journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../journal/posting-period-guard';
 import {
@@ -126,6 +127,10 @@ export class InvoicesService {
 
   private resolvePaymentsService(): MarkPaidPaymentsPort {
     return this.moduleRef.get<MarkPaidPaymentsPort>(PAYMENTS_SERVICE_TOKEN, { strict: false });
+  }
+
+  private resolveSalesBonusAccrual(): Pick<SalesBonusAccrualService, 'onInvoicePaid'> {
+    return this.moduleRef.get(SalesBonusAccrualService, { strict: false });
   }
 
   async findAll(params: InvoiceQueryParams) {
@@ -248,14 +253,15 @@ export class InvoicesService {
 
   async create(data: CreateInvoiceDto) {
     this.assertCreateInvoiceInput(data);
+    const type = await resolveCreateInvoiceType(this.prisma, data);
     await assertFirstInvoiceMinimums(this.prisma, {
       orderId: data.orderId,
       subscriptionId: data.subscriptionId,
       amount: data.amount,
+      type,
     });
     const code = await allocateInvoiceCode(this.prisma);
     const taxStatus = await resolveInvoiceTaxStatus(this.prisma, data);
-    const type = await resolveCreateInvoiceType(this.prisma, data);
     const schedule = await resolveInvoiceCreateSchedule(this.prisma, {
       subscriptionId: data.subscriptionId,
       dueDate: data.dueDate,
@@ -396,10 +402,14 @@ export class InvoicesService {
         ...(cycleIncrement ? { paymentReminderCycle: cycleIncrement } : {}),
       },
     });
-    if (!invoice.orderId) return;
-    await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
-    if (moneyStatus === 'PAID') {
-      await this.checkAndPromoteDeal(invoice.orderId);
+    if (invoice.orderId) {
+      await syncInvoiceOrderStatus(this.prisma, invoice.orderId);
+      if (moneyStatus === 'PAID') {
+        await this.checkAndPromoteDeal(invoice.orderId);
+      }
+    }
+    if (moneyStatus === 'PAID' && invoice.moneyStatus !== 'PAID') {
+      await this.resolveSalesBonusAccrual().onInvoicePaid(invoice.id);
     }
   }
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { SalesBonusAccrualService } from '../../bonus/sales-bonus-accrual.service';
 import { InvoicesService } from './invoices.service';
 import { createMockPrisma, type MockPrisma } from '../../../test-utils/mock-prisma';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -56,8 +57,17 @@ describe('InvoicesService', () => {
     create: vi.fn().mockResolvedValue(undefined),
   };
 
+  const salesBonusAccrual = {
+    onInvoicePaid: vi.fn().mockResolvedValue(undefined),
+  };
+
   const moduleRef = {
-    get: vi.fn().mockReturnValue(paymentsService),
+    get: vi.fn().mockImplementation((token: unknown) => {
+      if (token === SalesBonusAccrualService) {
+        return salesBonusAccrual;
+      }
+      return paymentsService;
+    }),
   };
 
   beforeEach(() => {
@@ -65,8 +75,14 @@ describe('InvoicesService', () => {
     prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
     operationalJournal.appendInvoiceCardAccrualLine.mockClear();
     paymentsService.create.mockClear();
+    salesBonusAccrual.onInvoicePaid.mockClear();
     moduleRef.get.mockClear();
-    moduleRef.get.mockReturnValue(paymentsService);
+    moduleRef.get.mockImplementation((token: unknown) => {
+      if (token === SalesBonusAccrualService) {
+        return salesBonusAccrual;
+      }
+      return paymentsService;
+    });
     service = new InvoicesService(
       prisma as never,
       {
@@ -398,6 +414,39 @@ describe('InvoicesService', () => {
       prisma.invoice.update.mockResolvedValue({});
       await service.updateMoneyStatus('1', 'PAID');
       expect(paymentsService.create).not.toHaveBeenCalled();
+    });
+
+    it('accrues when a fully covered invoice is marked PAID without a new payment', async () => {
+      const paidDate = new Date('2026-02-20T00:00:00.000Z');
+      prisma.invoice.findUnique
+        .mockResolvedValueOnce({
+          id: 'inv-manual-paid',
+          orderId: 'ord-1',
+          orderComment: 'FIRST_PHASE',
+          amount: 200_000,
+          dueDate: new Date('2026-02-20'),
+          moneyStatus: 'AWAITING_PAYMENT',
+          payments: [{ amount: 200_000, paymentDate: paidDate }],
+        })
+        .mockResolvedValueOnce(
+          mockInvoiceFindByIdRow('inv-manual-paid', {
+            amount: 200_000,
+            orderId: 'ord-1',
+            payments: [{ id: 'p1', amount: 200_000, paymentDate: paidDate }],
+            paidDate,
+          }),
+        );
+      prisma.invoice.update.mockResolvedValue({});
+      prisma.order.findUnique.mockResolvedValue({
+        deal: { status: 'WON' },
+        invoices: [],
+      });
+
+      await service.updateMoneyStatus('inv-manual-paid', 'PAID');
+
+      expect(paymentsService.create).not.toHaveBeenCalled();
+      expect(salesBonusAccrual.onInvoicePaid).toHaveBeenCalledTimes(1);
+      expect(salesBonusAccrual.onInvoicePaid).toHaveBeenCalledWith('inv-manual-paid');
     });
 
     it('promotes the linked deal when all order invoices are paid and amount is covered', async () => {

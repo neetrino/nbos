@@ -4,6 +4,24 @@ import { SalesBonusAccrualService } from './sales-bonus-accrual.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import type { NotificationService } from '../notifications/notification.service';
 
+const RECEIPT_AT = new Date('2026-09-15T10:00:00.000Z');
+const POLICY_FROM = new Date('2020-01-01T00:00:00.000Z');
+
+function withReceipt<T extends object>(invoice: T, type = 'DEVELOPMENT') {
+  return {
+    type,
+    paidDate: RECEIPT_AT,
+    payments: [{ paymentDate: RECEIPT_AT }],
+    ...invoice,
+  };
+}
+
+function stubPolicy(prisma: MockPrisma, sellerPercent = 10, assistantPercent = 2): void {
+  prisma.salesBonusPolicy.findMany.mockResolvedValue([
+    { sellerPercent, assistantPercent, effectiveFrom: POLICY_FROM },
+  ]);
+}
+
 describe('SalesBonusAccrualService', () => {
   let prisma: MockPrisma;
   let service: SalesBonusAccrualService;
@@ -14,7 +32,8 @@ describe('SalesBonusAccrualService', () => {
     prisma.bonusEntry.findMany.mockResolvedValue([]);
     prisma.bonusEntry.findFirst.mockResolvedValue(null);
     prisma.bonusEntry.createMany.mockResolvedValue({ count: 1 });
-    notifications = { create: vi.fn() } as unknown as NotificationService;
+    stubPolicy(prisma);
+    notifications = { create: vi.fn(), createMany: vi.fn() } as unknown as NotificationService;
     service = new SalesBonusAccrualService(prisma as never, notifications);
   });
 
@@ -29,33 +48,31 @@ describe('SalesBonusAccrualService', () => {
 
     await service.onInvoicePaid('inv1');
 
-    expect(prisma.salesBonusPolicy.findFirst).not.toHaveBeenCalled();
+    expect(prisma.salesBonusPolicy.findMany).not.toHaveBeenCalled();
   });
 
   it('accrues seller SALES bonus on classic fully paid invoice', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv1',
-      moneyStatus: 'PAID',
-      amount: 500,
-      orderId: 'ord1',
-      order: {
-        id: 'ord1',
-        projectId: 'proj1',
-        totalAmount: 2000,
-        paymentType: 'CLASSIC',
-        dealId: 'deal1',
-        deal: {
-          id: 'deal1',
-          source: 'SALES',
-          sellerId: 'emp-seller',
-          sellerAssistantId: null,
+    prisma.invoice.findUnique.mockResolvedValue(
+      withReceipt({
+        id: 'inv1',
+        moneyStatus: 'PAID',
+        amount: 500,
+        orderId: 'ord1',
+        order: {
+          id: 'ord1',
+          projectId: 'proj1',
+          totalAmount: 2000,
+          paymentType: 'CLASSIC',
+          dealId: 'deal1',
+          deal: {
+            id: 'deal1',
+            source: 'SALES',
+            sellerId: 'emp-seller',
+            sellerAssistantId: null,
+          },
         },
-      },
-    });
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 10,
-      assistantPercent: 2,
-    });
+      }),
+    );
     prisma.order.findUnique.mockResolvedValue({
       id: 'ord1',
       projectId: 'proj1',
@@ -92,29 +109,27 @@ describe('SalesBonusAccrualService', () => {
   });
 
   it('replays a complete seller-only wave without creating another row', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv1',
-      moneyStatus: 'PAID',
-      amount: 500,
-      orderId: 'ord1',
-      order: {
-        id: 'ord1',
-        projectId: 'proj1',
-        totalAmount: 2000,
-        paymentType: 'CLASSIC',
-        dealId: 'deal1',
-        deal: {
-          id: 'deal1',
-          source: 'SALES',
-          sellerId: 'emp-seller',
-          sellerAssistantId: null,
+    prisma.invoice.findUnique.mockResolvedValue(
+      withReceipt({
+        id: 'inv1',
+        moneyStatus: 'PAID',
+        amount: 500,
+        orderId: 'ord1',
+        order: {
+          id: 'ord1',
+          projectId: 'proj1',
+          totalAmount: 2000,
+          paymentType: 'CLASSIC',
+          dealId: 'deal1',
+          deal: {
+            id: 'deal1',
+            source: 'SALES',
+            sellerId: 'emp-seller',
+            sellerAssistantId: null,
+          },
         },
-      },
-    });
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 10,
-      assistantPercent: 2,
-    });
+      }),
+    );
     prisma.bonusEntry.createMany.mockResolvedValue({ count: 0 });
 
     await service.onInvoicePaid('inv1');
@@ -130,29 +145,31 @@ describe('SalesBonusAccrualService', () => {
   });
 
   it('uses first-month policy on first subscription paid invoice', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv-a',
-      moneyStatus: 'PAID',
-      amount: 100_000,
-      orderId: 'ord-sub',
-      order: {
-        id: 'ord-sub',
-        projectId: 'proj1',
-        totalAmount: 1_200_000,
-        paymentType: 'SUBSCRIPTION',
-        dealId: 'deal1',
-        deal: {
-          id: 'deal1',
-          source: 'CLIENT',
-          sellerId: 'emp-seller',
-          sellerAssistantId: null,
+    prisma.invoice.findUnique.mockResolvedValue(
+      withReceipt(
+        {
+          id: 'inv-a',
+          moneyStatus: 'PAID',
+          amount: 100_000,
+          orderId: 'ord-sub',
+          order: {
+            id: 'ord-sub',
+            projectId: 'proj1',
+            totalAmount: 1_200_000,
+            paymentType: 'SUBSCRIPTION',
+            dealId: 'deal1',
+            deal: {
+              id: 'deal1',
+              source: 'CLIENT',
+              sellerId: 'emp-seller',
+              sellerAssistantId: null,
+            },
+          },
         },
-      },
-    });
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 40,
-      assistantPercent: 10,
-    });
+        'SUBSCRIPTION',
+      ),
+    );
+    stubPolicy(prisma, 40, 10);
     prisma.order.findUnique.mockResolvedValue({
       id: 'ord-sub',
       projectId: 'proj1',
@@ -167,7 +184,7 @@ describe('SalesBonusAccrualService', () => {
 
     await service.onInvoicePaid('inv-a');
 
-    expect(prisma.salesBonusPolicy.findFirst).toHaveBeenCalledWith(
+    expect(prisma.salesBonusPolicy.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_FIRST_MONTH' }),
       }),
@@ -183,31 +200,33 @@ describe('SalesBonusAccrualService', () => {
   });
 
   it('accrues first-month subscription bonus from one month of a multi-month invoice', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv-prepaid',
-      moneyStatus: 'PAID',
-      amount: 300_000,
-      coverageMonthCount: null,
-      orderId: 'ord-sub',
-      order: {
-        id: 'ord-sub',
-        projectId: 'proj1',
-        totalAmount: 1_200_000,
-        paymentType: 'SUBSCRIPTION',
-        dealId: 'deal1',
-        deal: {
-          id: 'deal1',
-          source: 'CLIENT',
-          amount: 100_000,
-          sellerId: 'emp-seller',
-          sellerAssistantId: 'emp-asst',
+    prisma.invoice.findUnique.mockResolvedValue(
+      withReceipt(
+        {
+          id: 'inv-prepaid',
+          moneyStatus: 'PAID',
+          amount: 300_000,
+          coverageMonthCount: null,
+          orderId: 'ord-sub',
+          order: {
+            id: 'ord-sub',
+            projectId: 'proj1',
+            totalAmount: 1_200_000,
+            paymentType: 'SUBSCRIPTION',
+            dealId: 'deal1',
+            deal: {
+              id: 'deal1',
+              source: 'CLIENT',
+              amount: 100_000,
+              sellerId: 'emp-seller',
+              sellerAssistantId: 'emp-asst',
+            },
+          },
         },
-      },
-    });
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 40,
-      assistantPercent: 10,
-    });
+        'SUBSCRIPTION',
+      ),
+    );
+    stubPolicy(prisma, 40, 10);
     prisma.order.findUnique.mockResolvedValue({
       id: 'ord-sub',
       projectId: 'proj1',
@@ -223,7 +242,7 @@ describe('SalesBonusAccrualService', () => {
 
     await service.onInvoicePaid('inv-prepaid');
 
-    expect(prisma.salesBonusPolicy.findFirst).toHaveBeenCalledWith(
+    expect(prisma.salesBonusPolicy.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_FIRST_MONTH' }),
       }),
@@ -244,33 +263,35 @@ describe('SalesBonusAccrualService', () => {
   });
 
   it('skips recurring accrual when invoice employee rows already exist', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv-b',
-      moneyStatus: 'PAID',
-      amount: 50_000,
-      orderId: 'ord-sub',
-      order: {
-        id: 'ord-sub',
-        projectId: 'proj1',
-        totalAmount: 1_200_000,
-        paymentType: 'SUBSCRIPTION',
-        dealId: 'deal1',
-        deal: {
-          id: 'deal1',
-          source: 'CLIENT',
-          sellerId: 'emp-seller',
-          sellerAssistantId: 'emp-asst',
+    prisma.invoice.findUnique.mockResolvedValue(
+      withReceipt(
+        {
+          id: 'inv-b',
+          moneyStatus: 'PAID',
+          amount: 50_000,
+          orderId: 'ord-sub',
+          order: {
+            id: 'ord-sub',
+            projectId: 'proj1',
+            totalAmount: 1_200_000,
+            paymentType: 'SUBSCRIPTION',
+            dealId: 'deal1',
+            deal: {
+              id: 'deal1',
+              source: 'CLIENT',
+              sellerId: 'emp-seller',
+              sellerAssistantId: 'emp-asst',
+            },
+          },
         },
-      },
-    });
+        'SUBSCRIPTION',
+      ),
+    );
     prisma.bonusEntry.findFirst
       .mockResolvedValueOnce({ id: 'first-month-row' })
       .mockResolvedValueOnce(null)
       .mockResolvedValue({ id: 'existing' });
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 5,
-      assistantPercent: 1,
-    });
+    stubPolicy(prisma, 5, 1);
 
     await service.onInvoicePaid('inv-b');
 
@@ -278,35 +299,37 @@ describe('SalesBonusAccrualService', () => {
   });
 
   it('accrues recurring subscription bonus on later paid invoices', async () => {
-    prisma.invoice.findUnique.mockResolvedValue({
-      id: 'inv-b',
-      moneyStatus: 'PAID',
-      amount: 50_000,
-      orderId: 'ord-sub',
-      order: {
-        id: 'ord-sub',
-        projectId: 'proj1',
-        totalAmount: 1_200_000,
-        paymentType: 'SUBSCRIPTION',
-        dealId: 'deal1',
-        deal: {
-          id: 'deal1',
-          source: 'CLIENT',
-          sellerId: 'emp-seller',
-          sellerAssistantId: 'emp-asst',
+    prisma.invoice.findUnique.mockResolvedValue(
+      withReceipt(
+        {
+          id: 'inv-b',
+          moneyStatus: 'PAID',
+          amount: 50_000,
+          orderId: 'ord-sub',
+          order: {
+            id: 'ord-sub',
+            projectId: 'proj1',
+            totalAmount: 1_200_000,
+            paymentType: 'SUBSCRIPTION',
+            dealId: 'deal1',
+            deal: {
+              id: 'deal1',
+              source: 'CLIENT',
+              sellerId: 'emp-seller',
+              sellerAssistantId: 'emp-asst',
+            },
+          },
         },
-      },
-    });
+        'SUBSCRIPTION',
+      ),
+    );
     prisma.bonusEntry.findFirst
       .mockResolvedValueOnce({ id: 'first-month-row' })
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null);
     prisma.bonusEntry.createMany.mockResolvedValue({ count: 2 });
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 5,
-      assistantPercent: 1,
-    });
+    stubPolicy(prisma, 5, 1);
     prisma.order.findUnique.mockResolvedValue({
       id: 'ord-sub',
       projectId: 'proj1',
@@ -321,7 +344,7 @@ describe('SalesBonusAccrualService', () => {
 
     await service.onInvoicePaid('inv-b');
 
-    expect(prisma.salesBonusPolicy.findFirst).toHaveBeenCalledWith(
+    expect(prisma.salesBonusPolicy.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_RECURRING' }),
       }),

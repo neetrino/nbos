@@ -210,6 +210,48 @@ describe('applyInvoiceGeneralUpdate', () => {
     });
   });
 
+  it('rejects lowering the first product invoice below the combined sales accrual', async () => {
+    const prisma = {
+      invoice: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'inv-1',
+          type: 'DEVELOPMENT',
+          orderId: 'ord-1',
+          subscriptionId: null,
+          amount: 80_000,
+          taxStatus: 'TAX',
+          moneyStatus: 'NEW',
+          officialInvoiceRequestSent: false,
+          payments: [],
+        }),
+        count: vi.fn().mockResolvedValue(0),
+        findMany: vi.fn().mockResolvedValue([]),
+        update: vi.fn(),
+      },
+      order: {
+        findUnique: vi.fn().mockResolvedValue({
+          paymentType: 'CLASSIC',
+          totalAmount: 500_000,
+          deal: { source: 'SALES' },
+        }),
+      },
+      salesBonusPolicy: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            sellerPercent: 10,
+            assistantPercent: 2,
+            effectiveFrom: new Date('2020-01-01T00:00:00.000Z'),
+          },
+        ]),
+      },
+    };
+
+    await expect(
+      applyInvoiceGeneralUpdate(prisma as never, 'inv-1', { amount: 10_000 }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.invoice.update).not.toHaveBeenCalled();
+  });
+
   it('writes notes on an issued invoice', async () => {
     const prisma = {
       invoice: {

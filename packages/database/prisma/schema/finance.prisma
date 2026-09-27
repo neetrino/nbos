@@ -492,11 +492,14 @@ model SalesBonusPolicy {
   sellerPercent    Decimal                    @map("seller_percent") @db.Decimal(5, 2)
   assistantPercent Decimal                    @map("assistant_percent") @db.Decimal(5, 2)
   effectiveFrom    DateTime                   @map("effective_from")
+  /// Exclusive end of this version. Null means the version is still open.
+  effectiveTo      DateTime?                  @map("effective_to")
   isActive         Boolean                    @default(true) @map("is_active")
   createdAt        DateTime                   @default(now()) @map("created_at")
   updatedAt        DateTime                   @updatedAt @map("updated_at")
 
   @@index([fromCategory, paymentModel, isActive])
+  @@index([fromCategory, paymentModel, effectiveFrom])
   @@map("sales_bonus_policies")
 }
 

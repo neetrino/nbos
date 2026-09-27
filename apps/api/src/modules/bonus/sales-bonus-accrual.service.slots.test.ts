@@ -32,7 +32,10 @@ function salesSlotTaken(existing: StoredSalesBonus[], next: StoredSalesBonus): b
 function classicDualRoleInvoice() {
   return {
     id: 'inv1',
+    type: 'DEVELOPMENT',
     moneyStatus: 'PAID',
+    paidDate: new Date('2026-09-15T10:00:00.000Z'),
+    payments: [{ paymentDate: new Date('2026-09-15T10:00:00.000Z') }],
     amount: 500,
     orderId: 'ord1',
     order: {
@@ -94,10 +97,13 @@ describe('SalesBonusAccrualService slotted replay', () => {
     ]);
     prisma.bonusEntry.createMany.mockImplementation(store.createMany);
     prisma.invoice.findUnique.mockResolvedValue(classicDualRoleInvoice());
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 10,
-      assistantPercent: 2,
-    });
+    prisma.salesBonusPolicy.findMany.mockResolvedValue([
+      {
+        sellerPercent: 10,
+        assistantPercent: 2,
+        effectiveFrom: new Date('2020-01-01T00:00:00.000Z'),
+      },
+    ]);
     prisma.order.findUnique.mockResolvedValue({
       id: 'ord1',
       projectId: 'proj1',

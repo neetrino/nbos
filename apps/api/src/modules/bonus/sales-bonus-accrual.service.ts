@@ -4,22 +4,30 @@ import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
+import { notifyFinanceBonusViewersOfAccrualHold } from './sales-bonus-accrual-hold-notify';
+import {
+  reportSalesAccrualHold,
+  SALES_ACCRUAL_HOLD_REASON,
+  type SalesAccrualHoldNotify,
+} from './sales-bonus-accrual-hold';
 import {
   hasSlottedSalesAccrualForInvoice,
   hasSlottedSalesBonusOnOrder,
 } from './sales-bonus-accrual-idempotency';
+import { loadPaidSalesBonusInvoice } from './sales-bonus-accrual-invoice-load';
 import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
+import { accrueClassicOneTimeSalesBonus } from './sales-bonus-classic-one-time';
+import { loadSalesBonusPolicyAtEvent } from './sales-bonus-policy-at-event';
+import { isExcludedFromSalesAccrual } from './sales-bonus-qualifying-invoice';
+import { salesBonusEarnedPeriod, salesBonusReceiptEventAt } from './sales-bonus-receipt-event';
 import { accrueSubscriptionRecurringSalesBonus } from './sales-bonus-subscription-recurring';
-import {
-  earnedPeriodFromUtcDate,
-  refreshSalesBonusesForEmployeesEarnedMonth,
-} from './sales-bonus-kpi-payable';
+import { refreshSalesBonusesForEmployeesEarnedMonth } from './sales-bonus-kpi-payable';
 import { subscriptionFirstMonthBonusBase } from './subscription-first-month-bonus-base';
 
 type SlottedPaymentModel = 'CLASSIC' | 'SUBSCRIPTION_FIRST_MONTH';
 type PolicyPaymentModel = SlottedPaymentModel | 'SUBSCRIPTION_RECURRING';
-
 type AccrualBasis = 'ORDER_TOTAL' | 'FIRST_PAID_MONTH' | 'SUBSCRIPTION_RECURRING_INVOICE';
+type PaidAccrualInvoice = NonNullable<Awaited<ReturnType<typeof loadPaidSalesBonusInvoice>>>;
 
 type AccrualDeal = {
   id: string;
@@ -67,43 +75,36 @@ export class SalesBonusAccrualService {
 
   /** @returns order id when bonus rows were created and product pool should sync. */
   private async runAccrual(invoiceId: string): Promise<string | null> {
-    const invoice = await this.prisma.invoice.findUnique({
-      where: { id: invoiceId },
-      select: {
-        id: true,
-        paidDate: true,
-        moneyStatus: true,
-        amount: true,
-        coverageMonthCount: true,
-        orderId: true,
-        order: {
-          select: {
-            id: true,
-            projectId: true,
-            totalAmount: true,
-            paymentType: true,
-            paymentMode: true,
-            dealId: true,
-            deal: {
-              select: {
-                id: true,
-                source: true,
-                amount: true,
-                sellerId: true,
-                sellerAssistantId: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!invoice || invoice.moneyStatus !== 'PAID' || !invoice.orderId || !invoice.order) {
+    const invoice = await loadPaidSalesBonusInvoice(this.prisma, invoiceId);
+    if (!invoice) {
       return null;
     }
+    const order = this.toAccrualOrder(invoice);
+    if (!order) {
+      return null;
+    }
+    const receiptAt = salesBonusReceiptEventAt(invoice);
+    if (receiptAt == null) {
+      await reportSalesAccrualHold(this.logger, this.notifyHold, {
+        reason: SALES_ACCRUAL_HOLD_REASON.MISSING_RECEIPT_EVENT,
+        invoiceId: invoice.id,
+        orderId: order.id,
+      });
+      return null;
+    }
+    const earnedPeriod = salesBonusEarnedPeriod(receiptAt);
+    const created = await this.accrueForPaymentType(invoice, order, receiptAt, earnedPeriod);
+    await refreshSalesBonusesForEmployeesEarnedMonth(
+      this.prisma,
+      [order.deal.sellerId, order.deal.sellerAssistantId ?? ''].filter(Boolean),
+      earnedPeriod,
+    );
+    return created ? order.id : null;
+  }
 
+  private toAccrualOrder(invoice: PaidAccrualInvoice): AccrualOrder | null {
     const raw = invoice.order;
-    if (raw.paymentMode === 'FREE') {
+    if (!raw || raw.paymentMode === 'FREE') {
       return null;
     }
     if (!raw.dealId || !raw.deal || !raw.deal.source) {
@@ -115,8 +116,7 @@ export class SalesBonusAccrualService {
       }
       return null;
     }
-
-    const order: AccrualOrder = {
+    return {
       id: raw.id,
       projectId: raw.projectId,
       totalAmount: decimalFrom(raw.totalAmount),
@@ -129,36 +129,36 @@ export class SalesBonusAccrualService {
         sellerAssistantId: raw.deal.sellerAssistantId,
       },
     };
+  }
 
-    const earnedPeriod =
-      invoice.paidDate != null
-        ? earnedPeriodFromUtcDate(invoice.paidDate)
-        : earnedPeriodFromUtcDate(new Date());
+  private async accrueForPaymentType(
+    invoice: PaidAccrualInvoice,
+    order: AccrualOrder,
+    receiptAt: Date,
+    earnedPeriod: string,
+  ): Promise<boolean> {
+    if (isExcludedFromSalesAccrual(invoice.type)) {
+      return false;
+    }
     const invoiceCore = {
       id: invoice.id,
       amount: decimalFrom(invoice.amount),
       coverageMonthCount: invoice.coverageMonthCount,
-      periodAmount: raw.deal.amount == null ? null : decimalFrom(raw.deal.amount),
+      periodAmount:
+        invoice.order?.deal?.amount == null ? null : decimalFrom(invoice.order.deal.amount),
     };
-
-    let created = false;
     if (order.paymentType === 'SUBSCRIPTION') {
-      created = await this.runSubscriptionAccrual(invoiceCore, order, earnedPeriod);
-    } else {
-      created = await this.runSlottedAccrual(invoiceCore, order, 'CLASSIC', earnedPeriod, {
-        baseAmount: order.totalAmount,
-        basis: 'ORDER_TOTAL',
-      });
+      return this.runSubscriptionAccrual(invoiceCore, order, receiptAt, earnedPeriod);
     }
-
-    const deal = order.deal;
-    await refreshSalesBonusesForEmployeesEarnedMonth(
-      this.prisma,
-      [deal.sellerId, deal.sellerAssistantId ?? ''].filter(Boolean),
+    return accrueClassicOneTimeSalesBonus({
+      prisma: this.prisma,
+      logger: this.logger,
+      notifyHold: this.notifyHold,
+      invoice: { id: invoice.id, amount: decimalFrom(invoice.amount), type: invoice.type },
+      order,
+      receiptAt,
       earnedPeriod,
-    );
-
-    return created ? order.id : null;
+    });
   }
 
   private async runSubscriptionAccrual(
@@ -169,6 +169,7 @@ export class SalesBonusAccrualService {
       periodAmount: Decimal | null;
     },
     order: AccrualOrder,
+    receiptAt: Date,
     earnedPeriod: string,
   ): Promise<boolean> {
     const firstMonthStarted = await hasSlottedSalesBonusOnOrder(this.prisma, order.id);
@@ -183,10 +184,17 @@ export class SalesBonusAccrualService {
         coverageMonthCount: invoice.coverageMonthCount,
         periodAmount: invoice.periodAmount,
       });
-      return this.runSlottedAccrual(invoice, order, 'SUBSCRIPTION_FIRST_MONTH', earnedPeriod, {
-        baseAmount,
-        basis: 'FIRST_PAID_MONTH',
-      });
+      return this.runSlottedAccrual(
+        invoice,
+        order,
+        'SUBSCRIPTION_FIRST_MONTH',
+        receiptAt,
+        earnedPeriod,
+        {
+          baseAmount,
+          basis: 'FIRST_PAID_MONTH',
+        },
+      );
     }
     return accrueSubscriptionRecurringSalesBonus({
       prisma: this.prisma,
@@ -194,27 +202,37 @@ export class SalesBonusAccrualService {
       invoice,
       order,
       earnedPeriod,
-      loadPolicy: (fromCategory, paymentModel) => this.loadPolicy(fromCategory, paymentModel),
+      loadPolicy: (fromCategory, paymentModel) =>
+        this.loadPolicy(fromCategory, paymentModel, receiptAt, invoice.id),
     });
   }
 
   private async loadPolicy(
     fromCategory: LeadSourceEnum,
     paymentModel: PolicyPaymentModel,
+    at: Date,
+    invoiceId: string,
   ): Promise<{ sellerPercent: Decimal; assistantPercent: Decimal } | null> {
-    const policy = await this.prisma.salesBonusPolicy.findFirst({
-      where: {
+    const loaded = await loadSalesBonusPolicyAtEvent(this.prisma, {
+      fromCategory,
+      paymentModel,
+      at,
+    });
+    if (loaded.status === 'ambiguous') {
+      await reportSalesAccrualHold(this.logger, this.notifyHold, {
+        reason: SALES_ACCRUAL_HOLD_REASON.AMBIGUOUS_SALES_POLICY,
+        invoiceId,
         fromCategory,
         paymentModel,
-        isActive: true,
-        effectiveFrom: { lte: new Date() },
-      },
-      orderBy: { effectiveFrom: 'desc' },
-    });
-    if (!policy) return null;
+      });
+      return null;
+    }
+    if (loaded.status === 'missing') {
+      return null;
+    }
     return {
-      sellerPercent: new Decimal(policy.sellerPercent),
-      assistantPercent: new Decimal(policy.assistantPercent),
+      sellerPercent: loaded.policy.sellerPercent,
+      assistantPercent: loaded.policy.assistantPercent,
     };
   }
 
@@ -222,10 +240,11 @@ export class SalesBonusAccrualService {
     invoice: { id: string; amount: Decimal },
     order: AccrualOrder,
     paymentModel: SlottedPaymentModel,
+    receiptAt: Date,
     earnedPeriod: string,
     params: { baseAmount: Decimal; basis: AccrualBasis },
   ): Promise<boolean> {
-    const policy = await this.loadPolicy(order.deal.source, paymentModel);
+    const policy = await this.loadPolicy(order.deal.source, paymentModel, receiptAt, invoice.id);
     if (!policy) {
       this.logger.warn(
         { from: order.deal.source, paymentModel, dealId: order.deal.id },
@@ -239,6 +258,8 @@ export class SalesBonusAccrualService {
       paymentModel,
       sellerPercent: Number(policy.sellerPercent),
       assistantPercent: Number(policy.assistantPercent),
+      receiptEventAt: receiptAt.toISOString(),
+      earnedPeriod,
       baseAmount: params.baseAmount.toString(),
       invoiceId: invoice.id,
       orderId: order.id,
@@ -251,16 +272,18 @@ export class SalesBonusAccrualService {
       return false;
     }
 
-    const snapshotJson = snapshot as InputJsonValue;
     return persistSalesBonusRows(
       this.prisma,
       order,
       order.deal,
       rows,
-      snapshotJson,
+      snapshot as InputJsonValue,
       invoice.id,
       'slot',
       earnedPeriod,
     );
   }
+
+  private readonly notifyHold: SalesAccrualHoldNotify = (details) =>
+    notifyFinanceBonusViewersOfAccrualHold(this.prisma, this.notifications, details);
 }

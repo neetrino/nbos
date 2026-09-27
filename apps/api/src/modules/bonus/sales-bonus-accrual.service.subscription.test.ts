@@ -21,7 +21,10 @@ type FindFirstWhere = {
 function subscriptionInvoice(invoiceId: string) {
   return {
     id: invoiceId,
+    type: 'SUBSCRIPTION',
     moneyStatus: 'PAID',
+    paidDate: new Date('2026-09-15T10:00:00.000Z'),
+    payments: [{ paymentDate: new Date('2026-09-15T10:00:00.000Z') }],
     amount: 50_000,
     orderId: 'ord-sub',
     order: {
@@ -148,19 +151,22 @@ describe('SalesBonusAccrualService subscription routing', () => {
     ];
     prisma.bonusEntry.findFirst.mockImplementation(findFirstForSubscriptionRows(rows));
     prisma.invoice.findUnique.mockResolvedValue(subscriptionInvoice('inv-2'));
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 5,
-      assistantPercent: 1,
-    });
+    prisma.salesBonusPolicy.findMany.mockResolvedValue([
+      {
+        sellerPercent: 5,
+        assistantPercent: 1,
+        effectiveFrom: new Date('2020-01-01T00:00:00.000Z'),
+      },
+    ]);
 
     await service.onInvoicePaid('inv-2');
 
-    expect(prisma.salesBonusPolicy.findFirst).toHaveBeenCalledWith(
+    expect(prisma.salesBonusPolicy.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_RECURRING' }),
       }),
     );
-    expect(prisma.salesBonusPolicy.findFirst).not.toHaveBeenCalledWith(
+    expect(prisma.salesBonusPolicy.findMany).not.toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_FIRST_MONTH' }),
       }),
@@ -184,15 +190,18 @@ describe('SalesBonusAccrualService subscription routing', () => {
       ...subscriptionInvoice('inv-1'),
       amount: 100_000,
     });
-    prisma.salesBonusPolicy.findFirst.mockResolvedValue({
-      sellerPercent: 40,
-      assistantPercent: 10,
-    });
+    prisma.salesBonusPolicy.findMany.mockResolvedValue([
+      {
+        sellerPercent: 40,
+        assistantPercent: 10,
+        effectiveFrom: new Date('2020-01-01T00:00:00.000Z'),
+      },
+    ]);
     stubPoolLookups(prisma);
 
     await service.onInvoicePaid('inv-1');
 
-    expect(prisma.salesBonusPolicy.findFirst).toHaveBeenCalledWith(
+    expect(prisma.salesBonusPolicy.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ paymentModel: 'SUBSCRIPTION_FIRST_MONTH' }),
       }),
