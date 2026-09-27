@@ -36,11 +36,7 @@ import type {
   PayrollEmployeeBonusHistoryMetaDto,
   PayrollEmployeeBonusHistorySliceDto,
 } from './payroll-employee-bonus-history.types';
-import {
-  isPayrollMatrixBonusEntryVisible,
-  payrollBonusReleaseBase,
-} from './payroll-bonus-release-base';
-import { sumBonusEntryReleasedBefore } from './payroll-bonus-entry-released-before';
+import { isPayrollMatrixBonusEntryVisible } from './payroll-bonus-release-base';
 import {
   applyCustomOrder,
   loadPayrollMatrixLayout,
@@ -55,6 +51,11 @@ import type {
 } from './payroll-allocation-matrix.types';
 import { payrollAllocationReasonRequired } from './payroll-allocation-exception-reason';
 import { resolvePayrollMatrixCellState } from './payroll-allocation-matrix-cell-state';
+import {
+  aggregatePayrollMatrixCellSources,
+  payrollMatrixCellIsManualBonus,
+  type PayrollMatrixCellSourceAggregate,
+} from './payroll-allocation-matrix-cell-sources';
 import { writePayrollMatrixCellDraft } from './payroll-allocation-matrix-cell-write';
 
 export { resolvePayrollMatrixCellState } from './payroll-allocation-matrix-cell-state';
@@ -68,6 +69,54 @@ function cellKey(employeeId: string, orderId: string): string {
 
 function sumMoney(values: string[]): Decimal {
   return values.reduce((sum, value) => sum.plus(decimalFrom(value)), BONUS_POOL_ZERO);
+}
+
+function assemblePayrollAllocationMatrixCell(params: {
+  employeeId: string;
+  orderId: string;
+  linked: boolean;
+  sources: PayrollMatrixCellSourceAggregate;
+  draft: { bonusEntryId: string | null; kind: string } | undefined;
+  releaseThisMonth: Decimal;
+  availableFunding: Decimal;
+  deliveryOpen: boolean;
+  runEditable: boolean;
+}): PayrollAllocationMatrixCell {
+  const entry = params.sources.firstEntry;
+  const state = resolvePayrollMatrixCellState({
+    linked: params.linked,
+    hasBonusEntry: entry != null,
+    releaseAmount: params.releaseThisMonth,
+    remaining: params.sources.remaining,
+    availableFunding: params.availableFunding,
+    deliveryOpen: params.deliveryOpen,
+    manualBonus: payrollMatrixCellIsManualBonus(params.sources.visibleEntries, params.draft),
+  });
+  return {
+    employeeId: params.employeeId,
+    orderId: params.orderId,
+    state,
+    linked: params.linked,
+    bonusTitle: entry?.title ?? null,
+    bonusEntryId: entry?.id ?? null,
+    sourceEntries: params.sources.sourceEntries,
+    bonusReleaseId: params.sources.thisRunReleaseId,
+    plannedAmount: params.sources.planned.toFixed(2),
+    originalAmount: params.sources.original?.toFixed(2) ?? null,
+    currentAmount: params.sources.planned.toFixed(2),
+    releasedBefore: params.sources.releasedBefore.toFixed(2),
+    paidBefore: params.sources.paidBefore.toFixed(2),
+    remaining: params.sources.remaining.toFixed(2),
+    suggestedThisMonth: params.sources.remaining.toFixed(2),
+    releaseThisMonth: params.releaseThisMonth.toFixed(2),
+    warning:
+      state === 'OVER_FUNDING' ? 'Over funding' : state === 'EXTRA_BONUS' ? 'Extra bonus' : null,
+    reasonRequired:
+      payrollAllocationReasonRequired(state, entry?.type) ||
+      payrollAllocationReasonRequired(params.draft?.kind ?? '', entry?.type),
+    bonusType: entry?.type ?? null,
+    editable: params.runEditable && (params.linked || state !== 'UNLINKED'),
+  };
 }
 
 @Injectable()
@@ -152,7 +201,13 @@ export class PayrollAllocationMatrixService {
         payrollRunId: true,
         status: true,
         bonusEntry: {
-          select: { employeeId: true, orderId: true, amount: true, originalAmount: true },
+          select: {
+            id: true,
+            employeeId: true,
+            orderId: true,
+            amount: true,
+            originalAmount: true,
+          },
         },
       },
     });
@@ -229,96 +284,38 @@ export class PayrollAllocationMatrixService {
           : new Set<string>();
         const key = cellKey(emp.employeeId, unit.orderId);
         const linked = linkedIds.has(emp.employeeId) || manualDraftKeys.has(key);
-        const entry = order?.bonusEntries.find(
-          (b) =>
-            b.employeeId === emp.employeeId &&
-            isPayrollMatrixBonusEntryVisible(b, run.payrollMonth),
-        );
-        const entryReleases = releases.filter(
+        const orderReleases = releases.filter(
           (r) =>
             r.bonusEntry.employeeId === emp.employeeId && r.bonusEntry.orderId === unit.orderId,
         );
-        const thisRunRelease = entryReleases.find(
-          (r) => r.payrollRunId === payrollRunId && r.status === 'INCLUDED_IN_PAYROLL',
-        );
-        const draft = draftByCell.get(key);
-        const releasedBefore = sumBonusEntryReleasedBefore(entryReleases, payrollRunId);
-        const paidBefore = entryReleases
-          .filter((r) => r.status === 'PAID')
-          .reduce(
-            (s, r) => s.plus(decimalFrom(r.payrollIncludedAmount ?? r.amount)),
-            BONUS_POOL_ZERO,
-          );
-        const planned = entry
-          ? payrollBonusReleaseBase(
-              {
-                type: entry.type,
-                amount: entry.amount,
-                payableAmount: entry.payableAmount,
-                earnedPeriod: entry.earnedPeriod,
-              },
-              run.payrollMonth,
-            )
-          : BONUS_POOL_ZERO;
-        const original = entry?.originalAmount
-          ? decimalFrom(entry.originalAmount)
-          : entry
-            ? decimalFrom(entry.amount)
-            : null;
-        const remaining = Decimal.max(BONUS_POOL_ZERO, planned.minus(releasedBefore));
-        const releaseThisMonth =
-          DRAFT_PREVIEW_STATUSES.has(run.status) && draft
-            ? decimalFrom(draft.amount)
-            : thisRunRelease
-              ? decimalFrom(thisRunRelease.payrollIncludedAmount ?? thisRunRelease.amount)
-              : BONUS_POOL_ZERO;
-        const pool = unitByOrderId.get(unit.orderId);
-        const availableFunding = pool ? decimalFrom(pool.availableFunding) : BONUS_POOL_ZERO;
-        const manualBonus =
-          draft?.bonusEntryId == null && draft != null
-            ? true
-            : entry != null &&
-              entry.dealId == null &&
-              entry.salesAccrualInvoiceId == null &&
-              entry.calculationSnapshot == null;
-        const state = resolvePayrollMatrixCellState({
-          linked,
-          hasBonusEntry: entry != null,
-          releaseAmount: releaseThisMonth,
-          remaining,
-          availableFunding,
-          deliveryOpen: unit.deliveryOpen,
-          manualBonus,
-        });
-
-        cells.push({
+        const sources = aggregatePayrollMatrixCellSources({
+          entries: order?.bonusEntries ?? [],
           employeeId: emp.employeeId,
-          orderId: unit.orderId,
-          state,
-          linked,
-          bonusTitle: entry?.title ?? null,
-          bonusEntryId: entry?.id ?? null,
-          bonusReleaseId: thisRunRelease?.id ?? null,
-          plannedAmount: planned.toFixed(2),
-          originalAmount: original?.toFixed(2) ?? null,
-          currentAmount: planned.toFixed(2),
-          releasedBefore: releasedBefore.toFixed(2),
-          paidBefore: paidBefore.toFixed(2),
-          remaining: remaining.toFixed(2),
-          suggestedThisMonth: remaining.toFixed(2),
-          releaseThisMonth: releaseThisMonth.toFixed(2),
-          warning:
-            state === 'OVER_FUNDING'
-              ? 'Over funding'
-              : state === 'EXTRA_BONUS'
-                ? 'Extra bonus'
-                : null,
-          reasonRequired:
-            payrollAllocationReasonRequired(state, entry?.type) ||
-            payrollAllocationReasonRequired(draft?.kind ?? '', entry?.type),
-          bonusType: entry?.type ?? null,
-          editable: editable && (linked || state !== 'UNLINKED'),
+          payrollMonth: run.payrollMonth,
+          payrollRunId,
+          releases: orderReleases.map((release) => ({
+            ...release,
+            bonusEntryId: release.bonusEntry.id,
+          })),
         });
+        const draft = draftByCell.get(key);
+        const pool = unitByOrderId.get(unit.orderId);
+        cells.push(
+          assemblePayrollAllocationMatrixCell({
+            employeeId: emp.employeeId,
+            orderId: unit.orderId,
+            linked,
+            sources,
+            draft,
+            releaseThisMonth:
+              DRAFT_PREVIEW_STATUSES.has(run.status) && draft
+                ? decimalFrom(draft.amount)
+                : sources.thisRunReleaseAmount,
+            availableFunding: pool ? decimalFrom(pool.availableFunding) : BONUS_POOL_ZERO,
+            deliveryOpen: unit.deliveryOpen,
+            runEditable: editable,
+          }),
+        );
       }
     }
 

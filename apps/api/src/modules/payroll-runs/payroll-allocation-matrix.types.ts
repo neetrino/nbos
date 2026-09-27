@@ -24,6 +24,14 @@ export type PayrollAllocationMatrixEmployeeRow = {
   payableTotal: string;
 };
 
+export type PayrollAllocationMatrixCellSource = {
+  bonusEntryId: string;
+  plannedAmount: string;
+  originalAmount: string;
+  title: string | null;
+  type: string;
+};
+
 export type PayrollAllocationMatrixCell = {
   employeeId: string;
   orderId: string;
@@ -31,6 +39,8 @@ export type PayrollAllocationMatrixCell = {
   linked: boolean;
   bonusTitle: string | null;
   bonusEntryId: string | null;
+  /** Every visible source entry in this employee/order cell. */
+  sourceEntries: PayrollAllocationMatrixCellSource[];
   bonusReleaseId: string | null;
   plannedAmount: string;
   originalAmount: string | null;

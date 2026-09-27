@@ -1,12 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { Decimal, PrismaClient, type PayrollBonusAllocationKindEnum } from '@nbos/database';
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
-import {
-  isPayrollMatrixBonusEntryVisible,
-  payrollBonusReleaseBase,
-} from './payroll-bonus-release-base';
-import { sumBonusEntryReleasedBefore } from './payroll-bonus-entry-released-before';
 import { resolvePayrollMatrixCellState } from './payroll-allocation-matrix-cell-state';
+import {
+  isPayrollMatrixManualBonusEntry,
+  resolvePayrollMatrixVisibleSourceRemaining,
+  visiblePayrollMatrixCellEntries,
+} from './payroll-allocation-matrix-cell-sources';
 import { resolveMatrixExceptionDraftReason } from './payroll-allocation-exception-reason';
 import type { PayrollMatrixCellState } from './payroll-allocation-matrix.types';
 
@@ -14,6 +14,7 @@ const CLOSED_DELIVERY_STATUSES = new Set(['DONE', 'LOST', 'TRANSFER']);
 
 type PatchCellEntry = {
   id: string;
+  employeeId: string;
   type: string;
   amount: Decimal;
   payableAmount: Decimal | null;
@@ -67,9 +68,12 @@ export async function writePayrollMatrixCellDraft(
   },
 ): Promise<void> {
   const order = await loadPatchCellOrder(db, params.orderId, params.employeeId);
-  const entry = order.bonusEntries.find((row) =>
-    isPayrollMatrixBonusEntryVisible(row, params.payrollMonth),
+  const visible = visiblePayrollMatrixCellEntries(
+    order.bonusEntries,
+    params.employeeId,
+    params.payrollMonth,
   );
+  const entry = visible[0];
   if (!entry) {
     throw new BadRequestException(
       'No bonus entry for this employee and delivery unit. Create a manual bonus first.',
@@ -77,7 +81,7 @@ export async function writePayrollMatrixCellDraft(
   }
   const entryReleases = await db.bonusRelease.findMany({
     where: {
-      bonusEntryId: entry.id,
+      bonusEntryId: { in: visible.map((row) => row.id) },
       status: { in: ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] },
     },
     select: {
@@ -93,6 +97,7 @@ export async function writePayrollMatrixCellDraft(
     releaseAmount: params.releaseAmount,
     reason: params.reason,
     entry,
+    visible,
     order,
     entryReleases,
   });
@@ -105,15 +110,16 @@ function resolvePatchCellDraftWrite(params: {
   releaseAmount: Decimal;
   reason: string | undefined;
   entry: PatchCellEntry;
+  visible: PatchCellEntry[];
   order: PatchCellOrder;
   entryReleases: PatchCellRelease[];
 }): { kind: PayrollBonusAllocationKindEnum; reason: string | null } {
-  const remaining = Decimal.max(
-    BONUS_POOL_ZERO,
-    payrollBonusReleaseBase(params.entry, params.payrollMonth).minus(
-      sumBonusEntryReleasedBefore(params.entryReleases, params.payrollRunId),
-    ),
-  );
+  const { remaining } = resolvePayrollMatrixVisibleSourceRemaining({
+    entries: params.visible,
+    payrollMonth: params.payrollMonth,
+    payrollRunId: params.payrollRunId,
+    releases: params.entryReleases,
+  });
   const state = resolvePayrollMatrixCellState({
     linked: true,
     hasBonusEntry: true,
@@ -123,7 +129,7 @@ function resolvePatchCellDraftWrite(params: {
       ? decimalFrom(params.order.productBonusPool.availableFunding)
       : BONUS_POOL_ZERO,
     deliveryOpen: isDeliveryUnitOpen(params.order),
-    manualBonus: isManualBonusEntry(params.entry),
+    manualBonus: params.visible.every(isPayrollMatrixManualBonusEntry),
   });
   return {
     kind: allocationKindFromCellState(state),
@@ -214,10 +220,4 @@ function isDeliveryUnitOpen(order: PatchCellOrder): boolean {
   const extensionOpen =
     order.extension?.status != null && !CLOSED_DELIVERY_STATUSES.has(order.extension.status);
   return productOpen || extensionOpen;
-}
-
-function isManualBonusEntry(entry: PatchCellEntry): boolean {
-  return (
-    entry.dealId == null && entry.salesAccrualInvoiceId == null && entry.calculationSnapshot == null
-  );
 }

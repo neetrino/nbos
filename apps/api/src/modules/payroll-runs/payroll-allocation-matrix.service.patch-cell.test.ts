@@ -175,6 +175,45 @@ describe('PayrollAllocationMatrixService.patchCell exception reason', () => {
     );
   });
 
+  it('does not treat 80 as extra when two visible entries of 50 and 70 remain', async () => {
+    prisma.order.findUnique.mockResolvedValue({
+      id: 'o1',
+      projectId: 'p1',
+      product: { status: 'DONE' },
+      extension: null,
+      productBonusPool: { availableFunding: new Decimal('1000') },
+      bonusEntries: [
+        visibleEntry(),
+        {
+          ...visibleEntry(),
+          id: 'be2',
+          amount: new Decimal(70),
+          payableAmount: new Decimal(70),
+        },
+      ],
+    });
+
+    await service.patchCell('pr1', ACTOR, { ...BODY, releaseThisMonth: '80' });
+
+    expect(prisma.payrollBonusAllocationDraft.upsert).toHaveBeenCalledTimes(1);
+    expect(prisma.bonusRelease.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          bonusEntryId: { in: ['be1', 'be2'] },
+        }),
+      }),
+    );
+    expect(prisma.payrollBonusAllocationDraft.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          kind: 'READY',
+          reason: null,
+          amount: expect.anything(),
+        }),
+      }),
+    );
+  });
+
   it('saves a closed-product in-remainder allocation without an exception reason', async () => {
     await service.patchCell('pr1', ACTOR, { ...BODY, releaseThisMonth: '30' });
 
