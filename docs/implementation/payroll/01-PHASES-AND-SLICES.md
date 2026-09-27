@@ -61,20 +61,20 @@ M-09 evidence is collected inside P1–P5 on the paths each slice changes. P6 re
 
 ## P3 — Sales accrual and ceilings
 
-| Slice                                                                   | Status        | M / V                  | Acceptance                                                                                                                                                                                 |
-| ----------------------------------------------------------------------- | ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| P3-S1 Both Sales roles persist, including one employee                  | `VERIFIED`    | M-04; V-04, V-05       | Unique protection does not drop a role. Replay keeps one pair                                                                                                                              |
-| P3-S2 Qualifying invoice, minimum, event-date snapshot                  | `VERIFIED`    | M-04; V-04, V-14       | Full payment of the first qualifying product invoice. Domain invoices do not qualify. Minimum covers the capped combined accrual. Rates come from the receipt event, Asia/Yerevan fallback |
-| P3-S3 Shared 300,000 order envelope before KPI, including subscriptions | `VERIFIED`    | M-04, M-06; V-05, V-09 | One envelope per order. 8:2 splits 240,000/60,000. Excess is not later debt. KPI 1 / 0.5 / 0 applies after the cap                                                                         |
-| P3-S4 Remove salary-multiple monthly ceiling without erasing old carry  | `IN_PROGRESS` | M-06; V-09, V-10       | No one/two/three-salary limit. Existing unpaid carry remains for manual settlement. No bulk reprice                                                                                        |
+| Slice                                                                   | Status     | M / V                  | Acceptance                                                                                                                                                                                 |
+| ----------------------------------------------------------------------- | ---------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P3-S1 Both Sales roles persist, including one employee                  | `VERIFIED` | M-04; V-04, V-05       | Unique protection does not drop a role. Replay keeps one pair                                                                                                                              |
+| P3-S2 Qualifying invoice, minimum, event-date snapshot                  | `VERIFIED` | M-04; V-04, V-14       | Full payment of the first qualifying product invoice. Domain invoices do not qualify. Minimum covers the capped combined accrual. Rates come from the receipt event, Asia/Yerevan fallback |
+| P3-S3 Shared 300,000 order envelope before KPI, including subscriptions | `VERIFIED` | M-04, M-06; V-05, V-09 | One envelope per order. 8:2 splits 240,000/60,000. Excess is not later debt. KPI 1 / 0.5 / 0 applies after the cap                                                                         |
+| P3-S4 Remove salary-multiple monthly ceiling without erasing old carry  | `VERIFIED` | M-06; V-09, V-10       | No one/two/three-salary limit. Existing unpaid carry remains for manual settlement. No bulk reprice. Commit `aaf7511cc`                                                                    |
 
 ## P4 — Sources, manual allocation, old balances
 
-| Slice                                                                 | Status    | M / V                        | Acceptance                                                                                                       |
-| --------------------------------------------------------------------- | --------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| P4-S1 Matrix sums every source entry                                  | `PLANNED` | M-05; V-06, V-07             | Two entries of 50 and 70 display 120. Trace to sources remains                                                   |
-| P4-S2 Explicit project amounts, Development installments, extra award | `PLANNED` | M-05, M-08; V-06, V-07, V-12 | 200,000 plan can be paid 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry. Draft is not cash |
-| P4-S3 Older unpaid entitlements stay payable                          | `PLANNED` | M-05, M-06; V-10             | Month rollover and termination do not drop a real unpaid amount. No project FIFO                                 |
+| Slice                                                                 | Status        | M / V                        | Acceptance                                                                                                       |
+| --------------------------------------------------------------------- | ------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| P4-S1 Matrix sums every source entry                                  | `IN_PROGRESS` | M-05; V-06, V-07             | Two entries of 50 and 70 display 120. Trace to sources remains                                                   |
+| P4-S2 Explicit project amounts, Development installments, extra award | `PLANNED`     | M-05, M-08; V-06, V-07, V-12 | 200,000 plan can be paid 40,000 + 10,000 + 120,000. Extra 30,000 is a separate reasoned entry. Draft is not cash |
+| P4-S3 Older unpaid entitlements stay payable                          | `PLANNED`     | M-05, M-06; V-10             | Month rollover and termination do not drop a real unpaid amount. No project FIFO                                 |
 
 ## P5 — Cash, reversals, registers
 
