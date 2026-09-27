@@ -8,6 +8,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { AccessToken, RoomServiceClient, type VideoGrant } from 'livekit-server-sdk';
 import {
+  VIDEO_MEETING_TOKEN_KIND_EMPLOYEE,
+  VIDEO_MEETING_TOKEN_KIND_GUEST,
+  videoMeetingTokenMetadata,
+} from '@nbos/shared';
+import {
   LIVEKIT_API_KEY_ENV_KEY,
   LIVEKIT_API_SECRET_ENV_KEY,
   LIVEKIT_PUBLIC_URL_ENV_KEY,
@@ -56,6 +61,7 @@ export class VideoMeetingsLivekitService {
       await this.getRoomClient().createRoom({
         name: roomName,
         emptyTimeout: VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
+        departureTimeout: VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
       });
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -95,11 +101,14 @@ export class VideoMeetingsLivekitService {
       consentGranted: input.consentGranted,
     });
     assertLeastPrivilegeVideoGrant(grant, input.roomName);
+    const kind =
+      input.role === 'guest' ? VIDEO_MEETING_TOKEN_KIND_GUEST : VIDEO_MEETING_TOKEN_KIND_EMPLOYEE;
     const token = await this.signToken({
       apiKey: env.apiKey,
       apiSecret: env.apiSecret,
       identity: input.participantId,
       name: input.displayName,
+      metadata: videoMeetingTokenMetadata(kind),
       grant,
     });
     return {
@@ -109,18 +118,32 @@ export class VideoMeetingsLivekitService {
     };
   }
 
-  /** Test/hook seam: sign without network. */
+  /** Identities currently in the room. A missing room counts as empty. */
+  async listParticipantIdentities(roomName: string): Promise<string[]> {
+    try {
+      const participants = await this.getRoomClient().listParticipants(roomName);
+      return participants.map((participant) => participant.identity).filter((id) => id.length > 0);
+    } catch (error) {
+      if (isMissingLiveKitRoom(error)) return [];
+      const message = error instanceof Error ? error.message : 'unknown';
+      this.logger.warn(`livekit_list_participants_failed room=${roomName} ${message}`);
+      throw new ServiceUnavailableException('LiveKit is not available');
+    }
+  }
+
   async signToken(input: {
     apiKey: string;
     apiSecret: string;
     identity: string;
     name: string;
     grant: VideoGrant;
+    metadata?: string;
   }): Promise<string> {
     assertLeastPrivilegeVideoGrant(input.grant, input.grant.room ?? '');
     const at = new AccessToken(input.apiKey, input.apiSecret, {
       identity: input.identity,
       name: input.name,
+      metadata: input.metadata,
       ttl: VIDEO_MEETING_LIVEKIT_TOKEN_TTL_SECONDS,
     });
     at.addGrant(input.grant);
@@ -152,4 +175,9 @@ export class VideoMeetingsLivekitService {
       serverUrl.replace(/^http/i, 'ws');
     return { serverUrl, publicUrl, apiKey, apiSecret };
   }
+}
+
+function isMissingLiveKitRoom(error: unknown): boolean {
+  const message = error instanceof Error ? error.message.toLowerCase() : '';
+  return message.includes('not found') || message.includes('does not exist');
 }

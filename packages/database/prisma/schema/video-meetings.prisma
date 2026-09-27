@@ -107,6 +107,10 @@ model VideoMeetingSession {
   livekitRoomSid  String?   @map("livekit_room_sid")
   startedAt       DateTime? @map("started_at")
   endedAt         DateTime? @map("ended_at")
+  /// Checkpoint the team accepted. Null until the first Continue. Not the age of the room card.
+  durationContinuedThrough     DateTime? @map("duration_continued_through")
+  durationContinuedAt          DateTime? @map("duration_continued_at")
+  durationContinuedByEmployeeId String?  @map("duration_continued_by_employee_id")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 

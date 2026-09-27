@@ -184,9 +184,9 @@ export class VideoMeetingsController {
   }
 
   @Post(':id/end')
-  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
   @ApiOperation({
-    summary: 'End meeting; Calendar cancel only with confirm',
+    summary: 'Last teammate ends the meeting; Calendar cancel only for host with confirm',
   })
   end(
     @CurrentUser() user: CurrentUserPayload,
@@ -210,15 +210,15 @@ export class VideoMeetingsController {
   }
 
   @Post(':id/recording/start')
-  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Start consented recording' })
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Start recording; any teammate in the meeting' })
   startRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.recordingService.start(user, id);
   }
 
   @Post(':id/recording/stop')
-  @RequirePermission(VIDEO_MEETINGS_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Stop recording and finalize' })
+  @RequirePermission(VIDEO_MEETINGS_MODULE, 'VIEW')
+  @ApiOperation({ summary: 'Stop recording and finalize; any teammate in the meeting' })
   stopRecording(@CurrentUser() user: CurrentUserPayload, @Param('id', ParseUUIDPipe) id: string) {
     return this.recordingService.stop(user, id);
   }

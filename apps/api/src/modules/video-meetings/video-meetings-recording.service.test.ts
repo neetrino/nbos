@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { ForbiddenException, ServiceUnavailableException } from '@nestjs/common';
 import {
   VideoMeetingRecordingAssetStatus,
   VideoMeetingRecordingStatus,
@@ -98,6 +98,12 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       objectStore,
     );
     prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue(meetingRow());
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue({
+      id: P1,
+      employeeId: HOST.id,
+      kind: 'EMPLOYEE',
+      leftAt: null,
+    });
     prisma.videoMeetingSession.findFirst = vi.fn().mockResolvedValue({
       id: 'sess-1',
       livekitRoomName: 'vm_room',
@@ -123,6 +129,25 @@ describe('VideoMeetingsRecordingService (S05)', () => {
       stoppedAt: null,
       assets: [],
     });
+  });
+
+  it('rejects an employee who is not in the meeting', async () => {
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue(null);
+
+    await expect(service.start(HOST, MEETING_ID)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(egress.startRoomComposite).not.toHaveBeenCalled();
+  });
+
+  it('rejects recording when the teammate is not in the room', async () => {
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue({
+      id: 'not-in-room',
+      employeeId: HOST.id,
+      kind: 'EMPLOYEE',
+      leftAt: null,
+    });
+
+    await expect(service.start(HOST, MEETING_ID)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(egress.startRoomComposite).not.toHaveBeenCalled();
   });
 
   it('starts recording without per-participant consent', async () => {

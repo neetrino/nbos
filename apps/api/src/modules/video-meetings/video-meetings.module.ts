@@ -8,6 +8,9 @@ import { VideoMeetingsColleagueInvitesController } from './video-meetings-collea
 import { VideoMeetingsColleagueInvitesService } from './video-meetings-colleague-invites.service';
 import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsController } from './video-meetings.controller';
+import { VideoMeetingsDurationGuardController } from './video-meetings-duration-guard.controller';
+import { VideoMeetingsDurationGuardCron } from './video-meetings-duration-guard.cron';
+import { VideoMeetingsDurationGuardService } from './video-meetings-duration-guard.service';
 import { VideoMeetingsFeatureGuard } from './video-meetings-feature.guard';
 import { VideoMeetingsFeatureService } from './video-meetings-feature.service';
 import { VideoMeetingsGuestController } from './video-meetings-guest.controller';
@@ -35,6 +38,7 @@ import { VideoMeetingsService } from './video-meetings.service';
   imports: [DriveModule, CalendarModule, NotificationModule],
   controllers: [
     VideoMeetingsController,
+    VideoMeetingsDurationGuardController,
     VideoMeetingsThreadController,
     VideoMeetingsColleagueInvitesController,
     VideoMeetingsGuestController,
@@ -67,6 +71,8 @@ import { VideoMeetingsService } from './video-meetings.service';
     VideoMeetingsRecordingPlaybackService,
     VideoMeetingsRecordingLifecycleService,
     VideoMeetingsRecordingService,
+    VideoMeetingsDurationGuardService,
+    VideoMeetingsDurationGuardCron,
     VideoMeetingsRecordingWebhookService,
   ],
   exports: [VideoMeetingsService, VideoMeetingsFeatureService],

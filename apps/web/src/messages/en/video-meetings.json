@@ -157,6 +157,7 @@
     "tokenError": "Could not obtain a join token.",
     "leave": "Leave",
     "endCall": "End call",
+    "endFailed": "Could not end the call",
     "waitingGuests": "Waiting to join",
     "noWaiting": "No guests waiting.",
     "controlsAria": "In-room controls",
@@ -207,6 +208,13 @@
   "defaultTitle": "Instant meeting",
   "suggestedTitlePrefix": "Meeting",
   "titleLabel": "Meeting title",
+  "durationGuard": {
+    "title": "Continue the meeting?",
+    "hint": "If nobody continues, the meeting ends",
+    "continue": "Continue",
+    "continueFailed": "Could not continue. Try again.",
+    "countdownAria": "Time left {time}"
+  },
   "colleaguePrompt": {
     "title": "Video meeting invite",
     "body": "{inviter} invited you to “{meeting}”.",

@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Inject,
   Injectable,
   Logger,
-  NotFoundException,
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -31,6 +29,7 @@ import type {
   VideoMeetingsRecordingObjectStore,
 } from './video-meetings-egress.types';
 import { assertRecordingCapacityAvailable } from './video-meetings-recording-capacity';
+import { assertTeammateConnected, requireMeetingTeammate } from './video-meetings-teammate-access';
 import { VideoMeetingsRecordingLifecycleService } from './video-meetings-recording-lifecycle.service';
 import {
   serializeRecordingGroup,
@@ -58,7 +57,11 @@ export class VideoMeetingsRecordingService {
     meetingId: string,
   ): Promise<{ recording: VideoMeetingRecordingGroupDto }> {
     this.requireEgressConfigured();
-    const meeting = await this.requireHostOrOwner(meetingId, user.id);
+    const { meeting, participantId } = await requireMeetingTeammate(
+      this.prisma,
+      meetingId,
+      user.id,
+    );
     if (meeting.status !== VideoMeetingStatus.ACTIVE) {
       throw new BadRequestException('Meeting must be ACTIVE to start recording');
     }
@@ -84,6 +87,7 @@ export class VideoMeetingsRecordingService {
     if (identities.length === 0) {
       throw new BadRequestException('No capturable participants in the room');
     }
+    assertTeammateConnected(participantId, identities);
 
     const audioTracks = await this.egress!.listPublishedAudioTracks(session.livekitRoomName);
 
@@ -173,7 +177,13 @@ export class VideoMeetingsRecordingService {
     meetingId: string,
   ): Promise<{ recording: VideoMeetingRecordingGroupDto }> {
     this.requireEgressConfigured();
-    await this.requireHostOrOwner(meetingId, user.id);
+    const { participantId, roomName } = await requireMeetingTeammate(
+      this.prisma,
+      meetingId,
+      user.id,
+    );
+    const identities = await this.egress!.listParticipantIdentities(roomName);
+    assertTeammateConnected(participantId, identities);
     const recording = await this.lifecycle.findActiveRecording(meetingId);
     if (!recording) {
       throw new BadRequestException('No active recording to stop');
@@ -225,14 +235,5 @@ export class VideoMeetingsRecordingService {
     if (!this.egress?.isConfigured() || !this.objectStore?.isConfigured()) {
       throw new ServiceUnavailableException('Recording egress is not configured');
     }
-  }
-
-  private async requireHostOrOwner(meetingId: string, employeeId: string) {
-    const meeting = await this.prisma.videoMeeting.findUnique({ where: { id: meetingId } });
-    if (!meeting) throw new NotFoundException('Meeting not found');
-    if (meeting.hostEmployeeId !== employeeId && meeting.ownerEmployeeId !== employeeId) {
-      throw new ForbiddenException('Only host or owner may control recording');
-    }
-    return meeting;
   }
 }

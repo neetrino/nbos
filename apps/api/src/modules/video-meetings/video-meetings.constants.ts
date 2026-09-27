@@ -35,8 +35,17 @@ export const VIDEO_MEETING_BY_ENTITY_SCAN_LIMIT = 50 as const;
 /** LiveKit AccessToken TTL for join JWTs (seconds). */
 export const VIDEO_MEETING_LIVEKIT_TOKEN_TTL_SECONDS = 3600 as const;
 
-/** Empty-room timeout passed to LiveKit CreateRoom (seconds). */
-export const VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS = 600 as const;
+/**
+ * How long LiveKit keeps a room with nobody in it (seconds).
+ * `emptyTimeout` applies before the first join. `departureTimeout` applies after
+ * the last person leaves — that is the office-network drop. Both must outlast
+ * the duration-guard gap (about 70 minutes). CreateRoom does not update a room
+ * that already exists.
+ */
+const VIDEO_MEETING_EMPTY_ROOM_TIMEOUT_HOURS = 4;
+const SECONDS_PER_HOUR = 3600;
+export const VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS =
+  VIDEO_MEETING_EMPTY_ROOM_TIMEOUT_HOURS * SECONDS_PER_HOUR;
 
 /**
  * DI token: tests may inject `true` to enable the module without env.

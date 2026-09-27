@@ -157,6 +157,7 @@
     "tokenError": "Chhajoghvets stanal token.",
     "leave": "Դուրս գալ",
     "endCall": "Ավարտել զանգը",
+    "endFailed": "Չհաջողվեց ավարտել զանգը",
     "waitingGuests": "Spasum en",
     "noWaiting": "Spasoghner chkan.",
     "controlsAria": "Senyaki karavarum",
@@ -207,6 +208,13 @@
   "defaultTitle": "Ակնթարթային հանդիպում",
   "suggestedTitlePrefix": "Հանդիպում",
   "titleLabel": "Հանդիպման անուն",
+  "durationGuard": {
+    "title": "Շարունակե՞նք հանդիպումը",
+    "hint": "Եթե ոչ ոք չսեղմի, հանդիպումը կավարտվի",
+    "continue": "Շարունակել",
+    "continueFailed": "Չհաջողվեց շարունակել։ Կրկին սեղմեք։",
+    "countdownAria": "Մնացել է {time}"
+  },
   "colleaguePrompt": {
     "title": "Տեսահանդիպման հրավեր",
     "body": "{inviter}-ը հրավիրում է ձեզ «{meeting}».",

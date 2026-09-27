@@ -92,6 +92,12 @@ describe('recording capacity (S07)', () => {
       objectStore,
     );
 
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue({
+      id: 'p-host',
+      employeeId: HOST.id,
+      kind: 'EMPLOYEE',
+      leftAt: null,
+    });
     prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue({
       id: MEETING_ID,
       status: VideoMeetingStatus.ACTIVE,

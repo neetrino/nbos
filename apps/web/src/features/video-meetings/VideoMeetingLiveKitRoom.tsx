@@ -16,12 +16,16 @@ import {
 } from './VideoMeetingStage';
 import { VideoMeetingRecordingReminderSlot } from './VideoMeetingRecordingReminder';
 import { VideoMeetingWaitingHostPanel } from './VideoMeetingWaitingHostPanel';
+import { VideoMeetingDurationGuard } from './VideoMeetingDurationGuard';
+import { useIsLastTeammate } from './use-last-teammate';
 import { VIDEO_MEETING_ROOM_OPTIONS } from './video-meeting-room-options';
 
 type VideoMeetingLiveKitRoomProps = {
   credentials: LiveKitJoinCredentials;
   self: CallSelfPresence;
   canEnd: boolean;
+  /** Employee call: the hang-up ends the meeting only when this person is the last teammate. */
+  endWhenLastTeammate?: boolean;
   onArmLeave: () => void;
   onLeave: () => void;
   onAbortLeave: () => void;
@@ -75,17 +79,19 @@ export function VideoMeetingLiveKitRoom(props: VideoMeetingLiveKitRoomProps) {
 
 function CallRoomBody(props: VideoMeetingLiveKitRoomProps) {
   const collapsed = Boolean(props.minimized && props.onExpand);
+  const lastTeammate = useIsLastTeammate();
+  const canEnd = props.endWhenLastTeammate ? lastTeammate : props.canEnd;
 
   return (
     <>
       <div className={collapsed ? 'hidden' : 'flex min-h-0 flex-1 flex-col'}>
-        <VideoMeetingCallSurface {...props} />
+        <VideoMeetingCallSurface {...props} canEnd={canEnd} />
       </div>
       {collapsed && props.onExpand ? (
         <VideoMeetingMiniBar
           title={props.title ?? ''}
           onExpand={props.onExpand}
-          canEnd={props.canEnd}
+          canEnd={canEnd}
           onArmLeave={props.onArmLeave}
           onLeave={props.onLeave}
           onAbortLeave={props.onAbortLeave}
@@ -129,6 +135,9 @@ function VideoMeetingCallSurface({
           meetingId={meetingId}
           enabled={Boolean(canControlRecording)}
         />
+        {meetingId && canControlRecording ? (
+          <VideoMeetingDurationGuard meetingId={meetingId} />
+        ) : null}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center pb-5">
           <div className="pointer-events-auto">
             <VideoMeetingRoomControls

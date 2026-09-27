@@ -1,6 +1,6 @@
 # 07 — Duration guard decisions
 
-**Status:** accepted 2026-09-27. Not implemented. Do not reopen these choices during implementation.
+**Status:** accepted 2026-09-27. Continuation guard (§1), teammate recording control and last-teammate end (§3), and the empty-room wait (§4) are in code. File roll (§2) and deleting the local copy after R2 (§5) are not implemented. Do not reopen the accepted choices.
 
 Owner decisions for the live meeting and its recording. Ordinary meetings last about 30 minutes, sometimes 2 hours, rarely 3. The guard exists so a forgotten room cannot run for days.
 
@@ -72,7 +72,7 @@ Egress runs on the server. If the office network dies and every client disappear
 - The same wait applies when the room becomes empty and when only guests remain. Guests cannot click Continue, so they do not keep the meeting alive past the guard.
 - The continuation guard is the timeout for that wait. If nobody from our side is back to press Continue, the countdown reaches zero, the meeting ends, and the recording is finalized and uploaded.
 - An explicit leave is different. When every teammate has pressed leave, the last of those presses ends the meeting and the recording immediately. The system does not wait for an hourly check.
-- Today LiveKit `emptyTimeout` is 600 seconds, and a `room_finished` from that timeout would stop the recording. That is shorter than the guard and must not win. An empty room stays open until the guard or an explicit end closes it. People rejoin the same live meeting.
+- LiveKit keeps an empty room for 4 hours, longer than the guard's longest quiet gap (about 70 minutes). `departureTimeout` is the wait after the last person leaves. `emptyTimeout` is only the wait before anyone joins. An empty room stays open until the guard or an explicit end closes it. People rejoin the same live meeting. CreateRoom does not change these on a room that already exists, so a room created before this setting keeps LiveKit's 20-second departure wait until that room is closed. A real `room_finished` still saves the recording.
 - Every real stop (last teammate, or the guard) finalizes the file and uploads it to R2 before cleanup. A recording is not discarded because the clients are already gone. The local copy is still deleted only after §5 verifies the object.
 
 If the recording server itself dies before the file is closed, that open file cannot be promised. An office outage is not that case: the server still has the room and keeps writing.

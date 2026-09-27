@@ -16,7 +16,9 @@ import {
 } from 'lucide-react';
 import { useState, type ReactElement } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { VideoMeetingRecordingIndicator } from './VideoMeetingRecordingIndicator';
 import {
@@ -266,6 +268,7 @@ async function disconnectRoom(room: { disconnect: (stopTracks: boolean) => Promi
 
 function useRoomExitActions({ canEnd, onArmLeave, onLeave, onAbortLeave, onEnd }: RoomExitProps) {
   const room = useRoomContext();
+  const t = useTranslations('videoMeetings.room');
   const [ending, setEnding] = useState(false);
 
   const hangUp = async () => {
@@ -275,9 +278,10 @@ function useRoomExitActions({ canEnd, onArmLeave, onLeave, onAbortLeave, onEnd }
       if (canEnd) await onEnd();
       await disconnectRoom(room);
       onLeave();
-    } catch {
+    } catch (error: unknown) {
       onAbortLeave();
       setEnding(false);
+      toast.error(getApiErrorMessage(error, t('endFailed')));
     }
   };
 

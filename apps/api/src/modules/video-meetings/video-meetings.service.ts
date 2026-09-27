@@ -13,6 +13,7 @@ import { isVideoMeetingAccessible } from './video-meetings-access-query';
 import { VIDEO_MEETING_DEFAULT_TITLE } from './video-meetings.constants';
 import { generateOpaqueLivekitRoomName } from './video-meetings-room-name';
 import { closeOpenMeetingRoom } from './video-meetings-close-room';
+import { authorizeMeetingEnd } from './video-meetings-end-access';
 import { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
 import {
   assertSafeVideoMeetingPayload,
@@ -127,10 +128,12 @@ export class VideoMeetingsService {
     meetingId: string,
     confirm?: VideoMeetingLifecycleConfirmDto,
   ): Promise<VideoMeetingCardDto> {
-    const meeting = await this.requireHostOrOwner(meetingId, user.id);
+    const meeting = await this.prisma.videoMeeting.findUnique({ where: { id: meetingId } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
     if (meeting.status !== VideoMeetingStatus.ACTIVE) {
       throw new BadRequestException('Only an active meeting can be ended');
     }
+    const access = await authorizeMeetingEnd(this.prisma, this.livekit, meetingId, user.id);
     await this.recordings.stopIfRecordingOnMeetingEnd(meetingId);
     await closeOpenMeetingRoom(this.prisma, this.livekit, meetingId);
     const now = new Date();
@@ -145,11 +148,13 @@ export class VideoMeetingsService {
         include: videoMeetingCardInclude,
       });
     });
-    await this.calendarLink.maybeCancelLinkedCalendar(
-      user,
-      meeting.calendarMeetingId,
-      confirm?.alsoCancelCalendarMeeting,
-    );
+    if (access.mayCancelCalendar) {
+      await this.calendarLink.maybeCancelLinkedCalendar(
+        user,
+        meeting.calendarMeetingId,
+        confirm?.alsoCancelCalendarMeeting,
+      );
+    }
     return this.toCard(updated, user.permissions);
   }
 

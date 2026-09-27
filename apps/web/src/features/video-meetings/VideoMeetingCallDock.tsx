@@ -47,8 +47,9 @@ export function VideoMeetingCallDock(props: VideoMeetingCallDockProps) {
         chatMode={{ kind: 'employee', meetingId: props.meetingId }}
         chatSelfEmployeeId={dock.me?.id ?? null}
         chatSelfDisplayName={dock.credentials.displayName}
-        canEnd={dock.canManage}
-        canControlRecording={dock.canManage}
+        canEnd={false}
+        endWhenLastTeammate
+        canControlRecording
         isHost={dock.isHost}
         framed={false}
         minimized={!props.expanded}

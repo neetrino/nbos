@@ -19,6 +19,12 @@ keys:
 logging:
   level: info
 
+# Match the API CreateRoom timeouts (4 hours). departure_timeout is the wait
+# after the last person leaves; empty_timeout is only before the first join.
+room:
+  empty_timeout: 14400
+  departure_timeout: 14400
+
 # LiveKit → NBOS egress/track/room webhooks. host.docker.internal reaches the host API
 # from containers on Docker Desktop / OrbStack. Feature flag must be ON for the route.
 webhook:

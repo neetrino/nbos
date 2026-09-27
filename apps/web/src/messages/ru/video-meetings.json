@@ -157,6 +157,7 @@
     "tokenError": "Не удалось получить токен входа.",
     "leave": "Выйти",
     "endCall": "Завершить звонок",
+    "endFailed": "Не удалось завершить звонок",
     "waitingGuests": "Ожидают допуска",
     "noWaiting": "Никто не ожидает.",
     "controlsAria": "Управление в комнате",
@@ -207,6 +208,13 @@
   "defaultTitle": "Мгновенная встреча",
   "suggestedTitlePrefix": "Встреча",
   "titleLabel": "Название встречи",
+  "durationGuard": {
+    "title": "Продолжаем встречу?",
+    "hint": "Если никто не нажмёт, встреча завершится",
+    "continue": "Продолжить",
+    "continueFailed": "Не удалось продолжить. Нажмите ещё раз.",
+    "countdownAria": "Осталось {time}"
+  },
   "colleaguePrompt": {
     "title": "Приглашение на видеовстречу",
     "body": "{inviter} приглашает вас на «{meeting}».",
