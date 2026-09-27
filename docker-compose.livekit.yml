@@ -48,6 +48,7 @@ services:
       - livekit-redis
     cap_add:
       - SYS_ADMIN
+    shm_size: '1gb'
     environment:
       EGRESS_CONFIG_FILE: /etc/egress.yaml
     volumes:

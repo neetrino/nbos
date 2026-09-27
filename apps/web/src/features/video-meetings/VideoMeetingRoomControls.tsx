@@ -256,6 +256,14 @@ export function VideoMeetingMiniBar({
   );
 }
 
+async function disconnectRoom(room: { disconnect: (stopTracks: boolean) => Promise<void> }) {
+  try {
+    await room.disconnect(true);
+  } catch {
+    // Ending the meeting deletes the LiveKit room, so the client is already gone.
+  }
+}
+
 function useRoomExitActions({ canEnd, onArmLeave, onLeave, onAbortLeave, onEnd }: RoomExitProps) {
   const room = useRoomContext();
   const [ending, setEnding] = useState(false);
@@ -264,8 +272,8 @@ function useRoomExitActions({ canEnd, onArmLeave, onLeave, onAbortLeave, onEnd }
     setEnding(true);
     onArmLeave();
     try {
-      await room.disconnect(true);
       if (canEnd) await onEnd();
+      await disconnectRoom(room);
       onLeave();
     } catch {
       onAbortLeave();

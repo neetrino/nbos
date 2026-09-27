@@ -29,7 +29,7 @@ import {
   createAgentBodyLimitErrorHandler,
   createAgentJsonBodyParser,
 } from './modules/ai-platform/limits/agent-body-limit.middleware';
-import { captureJsonWebhookRawBody } from './http/json-webhook-raw-body';
+import { captureJsonWebhookRawBody, shouldParseJsonBody } from './http/json-webhook-raw-body';
 
 /** Request body caps (defense against memory-exhaustion / DoS). Uploads go straight to R2 (presigned). */
 const JSON_BODY_LIMIT = '1mb';
@@ -63,6 +63,7 @@ async function bootstrap() {
   app.use(
     json({
       limit: JSON_BODY_LIMIT,
+      type: (req) => shouldParseJsonBody(req.headers['content-type']),
       verify: (req, _res, buf) => {
         captureJsonWebhookRawBody(req, buf);
       },

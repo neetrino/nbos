@@ -115,7 +115,11 @@ function VideoMeetingCallSurface({
 
   return (
     <>
-      <VideoMeetingCallHeader title={title ?? ''} onMinimize={onMinimize} />
+      <VideoMeetingCallHeader
+        title={title ?? ''}
+        meetingId={chatMode?.kind === 'employee' ? meetingId : undefined}
+        onMinimize={onMinimize}
+      />
       <div className="relative flex min-h-0 flex-1">
         <VideoMeetingStage self={self} />
         <VideoMeetingDeviceNotice />

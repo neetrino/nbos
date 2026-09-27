@@ -3,7 +3,9 @@
 import { Circle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { ApiError } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import {
   guestRecordingStatus,
@@ -25,8 +27,28 @@ type VideoMeetingRecordingIndicatorProps = {
   initialRecording?: VideoMeetingRecordingGroup | null;
 };
 
-function isActivelyRecording(status: VideoMeetingRecordingStatus | undefined): boolean {
-  return status === 'RECORDING' || status === 'PENDING' || status === 'FINALIZING';
+function isCaptureLive(status: VideoMeetingRecordingStatus | undefined): boolean {
+  return status === 'RECORDING' || status === 'PENDING';
+}
+
+function recordingStatusLabel(
+  status: VideoMeetingRecordingStatus | undefined,
+  copy: { live: string; saving: string; idle: string },
+): string {
+  if (isCaptureLive(status)) return copy.live;
+  if (status === 'FINALIZING') return copy.saving;
+  return copy.idle;
+}
+
+function recordingActionError(
+  caught: unknown,
+  copy: { unavailable: string; consent: string; failed: string },
+): string {
+  const message = caught instanceof Error ? caught.message : '';
+  const status = caught instanceof ApiError ? caught.statusCode : undefined;
+  if (status === 503 || message.includes('503')) return copy.unavailable;
+  if (message.toLowerCase().includes('consent')) return copy.consent;
+  return copy.failed;
 }
 
 /** Wired to S05 recording start/stop + consent-gated status. */
@@ -75,7 +97,12 @@ export function VideoMeetingRecordingIndicator({
     return () => window.clearInterval(timer);
   }, [refresh]);
 
-  const active = isActivelyRecording(recording?.status);
+  const active = isCaptureLive(recording?.status);
+  const statusLabel = recordingStatusLabel(recording?.status, {
+    live: t('recordingActive'),
+    saving: t('saving'),
+    idle: t('notRecording'),
+  });
   const showControls = Boolean(canControl && meetingId && !guestInviteToken);
 
   const run = async (action: () => Promise<{ recording: VideoMeetingRecordingGroup }>) => {
@@ -86,14 +113,13 @@ export function VideoMeetingRecordingIndicator({
       const result = await action();
       setRecording(result.recording);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : '';
-      if (message.includes('503')) {
-        setError(t('egressUnavailable'));
-      } else if (message.toLowerCase().includes('consent')) {
-        setError(t('consentRequired'));
-      } else {
-        setError(t('actionError'));
-      }
+      const next = recordingActionError(caught, {
+        unavailable: t('egressUnavailable'),
+        consent: t('consentRequired'),
+        failed: t('actionError'),
+      });
+      setError(next);
+      toast.error(next);
     } finally {
       setBusy(false);
     }
@@ -138,9 +164,7 @@ export function VideoMeetingRecordingIndicator({
           aria-hidden
         />
         <span className="font-medium">{t('label')}</span>
-        <span className="text-muted-foreground">
-          {active ? t('recordingActive') : t('notRecording')}
-        </span>
+        <span className="text-muted-foreground">{statusLabel}</span>
       </div>
       {error && <p className="text-destructive text-xs">{error}</p>}
       {showControls && (

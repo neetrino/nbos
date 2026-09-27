@@ -106,6 +106,7 @@
     "label": "Recording",
     "notRecording": "Not recording",
     "recordingActive": "Recording in progress",
+    "saving": "Saving recording",
     "start": "Start recording",
     "stop": "Stop recording",
     "loadError": "Could not load recording status.",
