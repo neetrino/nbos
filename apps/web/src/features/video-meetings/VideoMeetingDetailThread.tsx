@@ -48,7 +48,7 @@ export function VideoMeetingDetailThread({
         <li ref={bottomRef} aria-hidden className="h-px shrink-0" />
       </ol>
       {showComposer ? (
-        <div className="border-border/60 shrink-0 border-t px-5 py-3">
+        <div className="shrink-0 px-5 py-3">
           <ThreadComposer
             busy={posting}
             onPost={(body) => void postMessage(body)}
