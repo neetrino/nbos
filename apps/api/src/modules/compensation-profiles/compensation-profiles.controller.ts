@@ -48,7 +48,10 @@ export class CompensationProfilesController {
 
   @Post('compensation-profiles/:id/activate')
   @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
-  @ApiOperation({ summary: 'Activate profile and archive prior active versions' })
+  @ApiOperation({
+    summary:
+      'Activate profile; keep non-overlapping approved ranges; future start does not change today',
+  })
   activate(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

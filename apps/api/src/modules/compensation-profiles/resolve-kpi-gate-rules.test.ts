@@ -7,7 +7,7 @@ import { DEFAULT_KPI_GATE_RULES } from '../payroll-runs/default-kpi-gate-rules';
 describe('resolveKpiGateRulesForPayrollEmployee', () => {
   it('returns default when no active profile', async () => {
     const db = {
-      compensationProfile: { findFirst: vi.fn().mockResolvedValue(null) },
+      compensationProfile: { findMany: vi.fn().mockResolvedValue([]) },
       kpiPolicy: { findFirst: vi.fn() },
     };
     const rules = await resolveKpiGateRulesForPayrollEmployee(db as never, 'e1', '2026-05');
@@ -23,12 +23,14 @@ describe('resolveKpiGateRulesForPayrollEmployee', () => {
     };
     const db = {
       compensationProfile: {
-        findFirst: vi.fn().mockResolvedValue({
-          id: 'cp1',
-          baseSalary: { toString: () => '100' },
-          currency: 'AMD',
-          kpiPolicyId: 'pol1',
-        }),
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: 'cp1',
+            baseSalary: { toString: () => '100' },
+            currency: 'AMD',
+            kpiPolicyId: 'pol1',
+          },
+        ]),
       },
       kpiPolicy: {
         findFirst: vi.fn().mockResolvedValue({

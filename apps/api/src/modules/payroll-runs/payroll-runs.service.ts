@@ -5,7 +5,7 @@ import {
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
-import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
+import { PrismaClient, type Prisma } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationService } from '../notifications/notification.service';
 import { isValidPayrollMonth } from './payroll-runs.constants';
@@ -44,8 +44,8 @@ import {
   type SalaryBoardQueryParams,
   type SalaryBoardResponseDto,
 } from './payroll-salary-board';
-import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
 import type { FinancePayActor } from '../compensation-profiles/finance-pay-access';
+import { seedPayrollRunSalaryLines } from './seed-payroll-run-salary-lines';
 import { querySalaryLineMonthDetail } from './salary-line-month-detail';
 import type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
 import {
@@ -65,7 +65,7 @@ export type { SalaryBoardQueryParams, SalaryBoardResponseDto } from './payroll-s
 
 export interface CreatePayrollRunBody {
   payrollMonth: string;
-  /** When true (default), seed salary lines from active compensation profiles (fallback: `Employee.baseSalary`). */
+  /** When true (default), seed salary lines from approved profiles covering the payroll month. */
   seedLines?: boolean;
 }
 
@@ -150,31 +150,7 @@ export class PayrollRunsService {
       });
 
       if (seedLines) {
-        const employees = await tx.employee.findMany({
-          where: { status: { not: 'TERMINATED' } },
-          select: { id: true, baseSalary: true },
-        });
-
-        for (const emp of employees) {
-          const profile = await resolveCompensationProfileForPayrollMonth(tx, emp.id, month);
-          const base = profile
-            ? new Decimal(profile.baseSalary.toString())
-            : (emp.baseSalary ?? new Decimal(0));
-          const zero = new Decimal(0);
-          const totalPayable = base;
-          await tx.salaryLine.create({
-            data: {
-              payrollRunId: run.id,
-              employeeId: emp.id,
-              compensationProfileId: profile?.id ?? null,
-              baseSalary: base,
-              bonusesTotal: zero,
-              totalPayable,
-              paidAmount: zero,
-              remainingAmount: totalPayable,
-            },
-          });
-        }
+        await seedPayrollRunSalaryLines(tx, run.id, month);
       }
 
       await recalculatePayrollRunTotalsFromSalaryLines(tx, run.id);

@@ -313,6 +313,20 @@ describe('PayrollRunsService', () => {
         ConflictException,
       );
     });
+
+    it('does not seed guessed salaries when an approved profile is missing', async () => {
+      prisma.payrollRun.findUnique.mockResolvedValue(null);
+      prisma.payrollRun.create.mockResolvedValue({ id: 'run-1', payrollMonth: '2026-09' });
+      prisma.employee.findMany.mockResolvedValue([
+        { id: 'e1', status: 'ACTIVE', firstName: 'Ada', lastName: 'Lovelace' },
+      ]);
+      prisma.compensationProfile.findMany.mockResolvedValue([]);
+
+      await expect(service.create(ALL, { payrollMonth: '2026-09' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(prisma.salaryLine.create).not.toHaveBeenCalled();
+    });
   });
 
   describe('updateStatus', () => {

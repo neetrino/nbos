@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { Decimal } from '@nbos/database';
 import { EmployeeWalletService } from './employee-wallet.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
+import { endOfPayrollMonthUtc } from '../compensation-profiles/compensation-profile-payroll-month';
 
 describe('EmployeeWalletService', () => {
   let service: EmployeeWalletService;
@@ -133,13 +134,51 @@ describe('EmployeeWalletService', () => {
       baseSalary: new Decimal(1),
       role: { name: 'Developer' },
     });
-    prisma.compensationProfile.findFirst.mockResolvedValue({
-      baseSalary: new Decimal(250_000),
-    });
+    prisma.compensationProfile.findMany.mockResolvedValue([
+      {
+        id: 'cp-now',
+        baseSalary: { toString: () => '250000' },
+        currency: 'AMD',
+        kpiPolicyId: null,
+      },
+    ]);
     prisma.bonusEntry.findMany.mockResolvedValue([]);
     prisma.salaryLine.findMany.mockResolvedValue([]);
 
     const snap = await service.getWallet('e1');
     expect(snap.employee.baseSalary).toBe('250000');
+  });
+
+  it('does not present a future approved profile as already due', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-27T12:00:00.000Z'));
+    try {
+      prisma.employee.findUnique.mockResolvedValue({
+        id: 'e1',
+        firstName: 'A',
+        lastName: 'B',
+        position: 'Dev',
+        level: 'MID',
+        baseSalary: new Decimal(100_000),
+        role: { name: 'Developer' },
+      });
+      prisma.compensationProfile.findMany.mockResolvedValue([]);
+      prisma.bonusEntry.findMany.mockResolvedValue([]);
+      prisma.salaryLine.findMany.mockResolvedValue([]);
+
+      const snap = await service.getWallet('e1');
+      expect(snap.employee.baseSalary).toBe('100000');
+      expect(prisma.compensationProfile.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            employeeId: 'e1',
+            status: 'ACTIVE',
+            effectiveFrom: { lte: endOfPayrollMonthUtc('2026-09') },
+          }),
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

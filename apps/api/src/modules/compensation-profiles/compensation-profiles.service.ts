@@ -10,6 +10,7 @@ import type {
   CreateCompensationProfileBody,
   PatchCompensationProfileDraftBody,
 } from './compensation-profiles.types';
+import { activateCompensationProfileInTransaction } from './activate-compensation-profile';
 import {
   FINANCE_SALARY_MODULE,
   assertEmployeeAccessible,
@@ -18,6 +19,16 @@ import {
   resolveAccessibleEmployeeIds,
   type FinancePayActor,
 } from './finance-pay-access';
+import {
+  approvedProfileCoversPayrollMonth,
+  endOfPayrollMonthUtc,
+  payrollMonthForInstant,
+  startOfPayrollMonthUtc,
+} from './compensation-profile-payroll-month';
+import {
+  APPROVED_COMPENSATION_PROFILE_STATUS,
+  uniqueCoveringProfilePerEmployee,
+} from './resolve-active-compensation-profile';
 
 const PROFILE_STATUSES: CompensationProfileStatusEnum[] = ['DRAFT', 'REVIEW', 'ACTIVE', 'ARCHIVED'];
 const include = compensationProfileInclude();
@@ -140,7 +151,9 @@ export class CompensationProfilesService {
       throw new BadRequestException('Archived compensation profiles cannot be activated');
     }
     if (profile.status === 'ACTIVE') {
-      await this.copyBaseSalaryToEmployee(profile.employeeId, profile.baseSalary);
+      if (approvedProfileCoversPayrollMonth(profile, payrollMonthForInstant(new Date()))) {
+        await this.copyBaseSalaryToEmployee(profile.employeeId, profile.baseSalary);
+      }
       return this.findById(actor, profileId);
     }
     if (!PROFILE_STATUSES.includes(profile.status)) {
@@ -148,47 +161,25 @@ export class CompensationProfilesService {
     }
 
     const now = new Date();
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const priorActive = await tx.compensationProfile.findMany({
-        where: { employeeId: profile.employeeId, status: 'ACTIVE', id: { not: profileId } },
-      });
-      for (const prior of priorActive) {
-        await tx.compensationProfile.update({
-          where: { id: prior.id },
-          data: {
-            status: 'ARCHIVED',
-            effectiveTo: profile.effectiveFrom,
-          },
-        });
-      }
-
-      const activated = await tx.compensationProfile.update({
-        where: { id: profileId },
-        data: {
-          status: 'ACTIVE',
-          approvedById,
-          approvedAt: now,
-        },
-        include,
-      });
-      await tx.employee.update({
-        where: { id: profile.employeeId },
-        data: { baseSalary: profile.baseSalary },
-      });
-      return activated;
-    });
+    const updated = await this.prisma.$transaction(async (tx) =>
+      activateCompensationProfileInTransaction(tx, profile, approvedById, now),
+    );
 
     return serializeCompensationProfile(updated);
   }
 
   async listActiveSummaries(actor: FinancePayActor) {
     const accessible = await this.resolveCompensationAccess(actor, 'VIEW');
+    const payrollMonth = payrollMonthForInstant(new Date());
+    const monthStart = startOfPayrollMonthUtc(payrollMonth);
+    const monthEnd = endOfPayrollMonthUtc(payrollMonth);
     const rows = await this.prisma.compensationProfile.findMany({
       where: {
-        status: 'ACTIVE',
+        status: APPROVED_COMPENSATION_PROFILE_STATUS,
+        effectiveFrom: { lte: monthEnd },
+        OR: [{ effectiveTo: null }, { effectiveTo: { gte: monthStart } }],
         ...(accessible === 'ALL' ? {} : { employeeId: { in: accessible } }),
       },
-      orderBy: { effectiveFrom: 'desc' },
       select: {
         employeeId: true,
         baseSalary: true,
@@ -197,8 +188,9 @@ export class CompensationProfilesService {
         kpiPolicy: { select: { name: true } },
       },
     });
+    const unique = uniqueCoveringProfilePerEmployee(rows, payrollMonth);
     return {
-      items: rows.map((row) => ({
+      items: unique.map((row) => ({
         employeeId: row.employeeId,
         baseSalary: row.baseSalary.toString(),
         currency: row.currency,
