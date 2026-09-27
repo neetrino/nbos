@@ -145,7 +145,7 @@ function MediaToggle({
   labelOn,
   labelOff,
 }: {
-  source: Track.Source;
+  source: Exclude<Track.Source, Track.Source.ScreenShareAudio | Track.Source.Unknown>;
   enabledIcon: LucideIcon;
   disabledIcon: LucideIcon;
   labelOn: string;

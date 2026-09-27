@@ -1,8 +1,12 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NAV_MODULE_DEFINITIONS } from './nav-config';
 import { applyNavFeatureFlags } from './nav-feature-flags';
 
 describe('applyNavFeatureFlags', () => {
+  beforeEach(() => {
+    delete process.env.NEXT_PUBLIC_VIDEO_MEETINGS_V1_ENABLED;
+  });
+
   afterEach(() => {
     delete process.env.NEXT_PUBLIC_VIDEO_MEETINGS_V1_ENABLED;
   });
