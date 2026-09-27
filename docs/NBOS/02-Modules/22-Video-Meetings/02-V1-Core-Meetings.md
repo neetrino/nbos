@@ -4,7 +4,7 @@
 
 ## Definition of done
 
-An authorized NBOS employee can conduct a real **instant unlinked** meeting with external guest(s), voluntarily start recording after confirmed notice/consent, then see (1) a playable private composite video **and** (2) independently captured audio for each identifiable participant. An authorized employee can link the completed meeting to an accessible Project/Product/Deal/Contact later. No AI or mandatory Calendar is needed.
+An authorized NBOS employee can conduct a real **instant unlinked** meeting with external guest(s), start recording without a per-participant consent step, then see (1) a playable private composite video **and** (2) independently captured audio for each identifiable participant. An authorized employee can link the completed meeting to an accessible Project/Product/Deal/Contact later. No AI or mandatory Calendar is needed.
 
 ## Required journeys
 
@@ -27,8 +27,8 @@ A room may be `IDLE` while storage is still processing. Failed output cannot be 
 ## Required recording behavior
 
 - Manual host start/stop and visible on-screen notice. No silent automatic capture.
-- Composite video + separate participant **audio** during consented capture; join/leave, mute, audio republish and reconnect create truthful segments with explicit gaps.
-- Late participant must accept the active recording notice **before** their media is recorded; revocation stops/suspends capture immediately per [security rules](04-Access-Consent-and-Recording-Policy.md).
+- Composite video + separate participant **audio** while the host is recording; join/leave, mute, audio republish and reconnect create truthful segments with explicit gaps.
+- A late participant is recorded with the rest of the room. Capture is host-controlled; see [recording policy](04-Access-Consent-and-Recording-Policy.md).
 - R2 files are private and registered through Drive as `MEETING_RECORDING`; independently verify each output and use current permission-gated player.
 - Individual audio and identity metadata are preserved for later V2; transcription/diarization/model decisions are explicitly **not V1**.
 

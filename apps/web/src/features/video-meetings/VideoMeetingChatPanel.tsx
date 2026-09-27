@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { GuestVideoMeetingThreadItem } from '@/lib/api/video-meetings-guest-thread';
 import type { VideoMeetingThreadMessage } from '@/lib/api/video-meetings-thread';
-import { VideoMeetingConsentActions } from './VideoMeetingConsentActions';
 import { CALL_ICON_BUTTON_CLASS } from './video-meeting-call-styles';
 import {
   usePersistedVideoMeetingChat,
@@ -17,7 +16,6 @@ import { recordingGroupStatusKey } from './video-meeting-recording-labels';
 type VideoMeetingChatPanelProps = {
   open: boolean;
   onClose: () => void;
-  meetingId?: string;
   chatMode: PersistedVideoMeetingChatMode | null;
   selfDisplayName?: string;
   selfEmployeeId?: string | null;
@@ -27,7 +25,6 @@ type VideoMeetingChatPanelProps = {
 export function VideoMeetingChatPanel({
   open,
   onClose,
-  meetingId,
   chatMode,
   selfDisplayName,
   selfEmployeeId,
@@ -60,11 +57,6 @@ export function VideoMeetingChatPanel({
         selfDisplayName={selfDisplayName}
         selfEmployeeId={selfEmployeeId}
       />
-      {meetingId ? (
-        <div className="border-border border-t px-4 py-3">
-          <VideoMeetingConsentActions compact meetingId={meetingId} />
-        </div>
-      ) : null}
     </aside>
   );
 }

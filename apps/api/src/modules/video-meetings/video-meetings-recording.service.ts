@@ -16,10 +16,8 @@ import {
   VideoMeetingRecordingStatus,
   VideoMeetingStatus,
 } from '@nbos/database';
-import { isRecordingEligibleFromConsents } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
 import type { CurrentUserPayload } from '../../common/decorators';
-import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import {
   VIDEO_MEETINGS_EGRESS_CLIENT_TOKEN,
   VIDEO_MEETINGS_RECORDING_OBJECT_STORE_TOKEN,
@@ -45,7 +43,6 @@ export class VideoMeetingsRecordingService {
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
-    private readonly consent: VideoMeetingsConsentService,
     private readonly lifecycle: VideoMeetingsRecordingLifecycleService,
     private readonly config: ConfigService,
     @Optional()
@@ -88,21 +85,7 @@ export class VideoMeetingsRecordingService {
       throw new BadRequestException('No capturable participants in the room');
     }
 
-    const consentMap = await this.consent.listLatestByParticipantIds(identities);
-    const snapshots = identities.map((id) => {
-      const row = consentMap.get(id);
-      return row ? { decision: row.decision } : null;
-    });
-    if (!isRecordingEligibleFromConsents(snapshots)) {
-      throw new BadRequestException(
-        'Recording denied: every capturable participant must have affirmative GRANTED consent',
-      );
-    }
-
     const audioTracks = await this.egress!.listPublishedAudioTracks(session.livekitRoomName);
-    const consentedAudio = audioTracks.filter((t) =>
-      this.consent.isGranted(consentMap.get(t.participantId)?.decision),
-    );
 
     const recording = await this.prisma.videoMeetingRecording.create({
       data: {
@@ -128,7 +111,7 @@ export class VideoMeetingsRecordingService {
       trackId: string;
       objectKey: string;
     }> = [];
-    for (const track of consentedAudio) {
+    for (const track of audioTracks) {
       const objectKey = buildParticipantAudioObjectKey(
         meetingId,
         recording.id,

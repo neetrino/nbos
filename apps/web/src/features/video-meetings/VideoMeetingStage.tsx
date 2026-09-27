@@ -2,6 +2,7 @@
 
 import {
   isTrackReference,
+  useIsSpeaking,
   useRoomContext,
   useTracks,
   VideoTrack,
@@ -22,6 +23,9 @@ export type CallSelfPresence = {
 const STAGE_CLASS =
   'relative min-h-0 flex-1 overflow-hidden bg-gradient-to-b from-primary/20 via-background to-muted/40';
 
+const SCREEN_SHARE_RAIL_CLASS =
+  'border-border/60 flex w-36 shrink-0 flex-col gap-2 overflow-y-auto border-l p-3 sm:w-44';
+
 type Presence = { label: string; imageUrl?: string };
 
 /** Camera-off stage uses the caller's photo instead of the stock gray silhouette. */
@@ -32,20 +36,48 @@ export function VideoMeetingStage({ self }: { self: CallSelfPresence }) {
   const screens = useTracks([{ source: Track.Source.ScreenShare, withPlaceholder: false }], {
     onlySubscribed: false,
   });
-  const tiles = [...screens, ...cameras];
-  const solo = tiles.length === 1 ? tiles[0] : undefined;
+  if (screens.length > 0) {
+    return <ScreenShareStage screens={screens} cameras={cameras} self={self} />;
+  }
+
+  const solo = cameras.length === 1 ? cameras[0] : undefined;
 
   return (
     <div className={STAGE_CLASS}>
       {solo && !hasLiveVideo(solo) ? (
         <VideoMeetingPortrait track={solo} self={self} />
       ) : (
-        <ul className={gridClass(tiles.length)}>
-          {tiles.map((track) => (
+        <ul className={gridClass(cameras.length)}>
+          {cameras.map((track) => (
             <VideoMeetingTile key={tileKey(track)} track={track} self={self} />
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function ScreenShareStage({
+  screens,
+  cameras,
+  self,
+}: {
+  screens: TrackReferenceOrPlaceholder[];
+  cameras: TrackReferenceOrPlaceholder[];
+  self: CallSelfPresence;
+}) {
+  return (
+    <div className={cn(STAGE_CLASS, 'flex')}>
+      <ul className="flex min-h-0 min-w-0 flex-1 flex-col gap-3 p-4">
+        {screens.map((track) => (
+          <VideoMeetingTile key={tileKey(track)} track={track} self={self} />
+        ))}
+      </ul>
+      <ul className={SCREEN_SHARE_RAIL_CLASS}>
+        {cameras.map((track) => (
+          <VideoMeetingTile key={tileKey(track)} track={track} self={self} compact />
+        ))}
+      </ul>
     </div>
   );
 }
@@ -81,10 +113,11 @@ function VideoMeetingPortrait({
   self: CallSelfPresence;
 }) {
   const presence = presenceFor(track.participant, self);
+  const speaking = useIsSpeaking(track.participant);
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-5 px-6">
-      <div className="ring-border rounded-full p-1 shadow-2xl ring-1">
+      <div className={cn('rounded-full p-1 shadow-2xl', speakingRing(speaking))}>
         <EmployeePersonAvatar
           label={presence.label}
           imageUrl={presence.imageUrl}
@@ -100,16 +133,25 @@ function VideoMeetingPortrait({
 function VideoMeetingTile({
   track,
   self,
+  compact = false,
 }: {
   track: TrackReferenceOrPlaceholder;
   self: CallSelfPresence;
+  compact?: boolean;
 }) {
   const presence = presenceFor(track.participant, self);
+  const speaking = useIsSpeaking(track.participant);
   const sharing = track.source === Track.Source.ScreenShare;
 
   return (
-    <li className="flex min-h-0 min-w-0 flex-col">
-      <div className="bg-card/50 ring-border relative min-h-0 flex-1 overflow-hidden rounded-3xl ring-1">
+    <li className={cn('flex min-h-0 min-w-0 flex-col', compact ? 'shrink-0' : 'min-h-0 flex-1')}>
+      <div
+        className={cn(
+          'bg-card/50 relative overflow-hidden rounded-3xl',
+          speakingRing(speaking),
+          compact ? 'aspect-video' : 'min-h-0 flex-1',
+        )}
+      >
         {hasLiveVideo(track) ? (
           <VideoTrack
             trackRef={track}
@@ -121,14 +163,20 @@ function VideoMeetingTile({
               label={presence.label}
               imageUrl={presence.imageUrl}
               loading="eager"
-              className="size-24 text-2xl"
+              className={compact ? 'size-10 text-sm' : 'size-24 text-2xl'}
             />
           </div>
         )}
+        <p className="bg-background/85 absolute inset-x-2 bottom-2 truncate rounded-full px-2 py-0.5 text-center text-xs font-medium">
+          {presence.label}
+        </p>
       </div>
-      <p className="mt-2 truncate text-center text-sm font-medium">{presence.label}</p>
     </li>
   );
+}
+
+function speakingRing(speaking: boolean): string {
+  return speaking ? 'ring-success ring-2' : 'ring-border ring-1';
 }
 
 function presenceFor(participant: Participant, self: CallSelfPresence): Presence {

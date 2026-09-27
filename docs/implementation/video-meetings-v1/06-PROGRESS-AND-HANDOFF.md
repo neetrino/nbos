@@ -125,3 +125,7 @@ docs/NBOS/.../99-Video-Meetings-Cleanup-Register.md
 ## Prior slices
 
 S01–S06 summaries remain valid.
+
+## Duration guard (accepted, not built)
+
+Owner decisions from 2026-09-27 live in [07-DURATION-GUARD-DECISIONS.md](07-DURATION-GUARD-DECISIONS.md). Continuation prompt ends the meeting (and the recording, if one is running). Recording follows the meeting, not the person who started it: any teammate in the call can start or stop it, a network drop keeps the room until the guard, and only the last teammate's explicit end stops it immediately. One recording file until 3 hours; a later file rolls only after an explicit continue, with about a 20-second gap and background R2 upload. Local SSD copies are deleted only after the R2 object is verified. Do not reopen those choices when implementing.

@@ -23,6 +23,7 @@ Ship an executable plan so slices S01–S07 can implement Module 22 V1 without i
    4. [04-TEST-AND-ACCEPTANCE.md](04-TEST-AND-ACCEPTANCE.md)
    5. [05-DEPLOYMENT-AND-RUNBOOK.md](05-DEPLOYMENT-AND-RUNBOOK.md)
    6. [06-PROGRESS-AND-HANDOFF.md](06-PROGRESS-AND-HANDOFF.md)
+   7. [07-DURATION-GUARD-DECISIONS.md](07-DURATION-GUARD-DECISIONS.md) — accepted 2026-09-27, not implemented yet
 3. Implement **S01** next. Do not start S01 until S00 commit is on the feature branch.
 4. Stack remains NestJS + Next.js + Prisma + pnpm per [`docs/TECH_CARD.md`](../../TECH_CARD.md).
 

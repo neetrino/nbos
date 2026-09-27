@@ -14,6 +14,7 @@ import {
   VideoMeetingStage,
   type CallSelfPresence,
 } from './VideoMeetingStage';
+import { VideoMeetingRecordingReminderSlot } from './VideoMeetingRecordingReminder';
 import { VideoMeetingWaitingHostPanel } from './VideoMeetingWaitingHostPanel';
 import { VIDEO_MEETING_ROOM_OPTIONS } from './video-meeting-room-options';
 
@@ -115,11 +116,7 @@ function VideoMeetingCallSurface({
 
   return (
     <>
-      <VideoMeetingCallHeader
-        title={title ?? ''}
-        meetingId={chatMode?.kind === 'employee' ? meetingId : undefined}
-        onMinimize={onMinimize}
-      />
+      <VideoMeetingCallHeader title={title ?? ''} onMinimize={onMinimize} />
       <div className="relative flex min-h-0 flex-1">
         <VideoMeetingStage self={self} />
         <VideoMeetingDeviceNotice />
@@ -128,6 +125,10 @@ function VideoMeetingCallSurface({
             <VideoMeetingWaitingHostPanel meetingId={meetingId} enabled={Boolean(isHost)} />
           </div>
         ) : null}
+        <VideoMeetingRecordingReminderSlot
+          meetingId={meetingId}
+          enabled={Boolean(canControlRecording)}
+        />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center pb-5">
           <div className="pointer-events-auto">
             <VideoMeetingRoomControls
@@ -146,7 +147,6 @@ function VideoMeetingCallSurface({
         <VideoMeetingChatPanel
           open={chatOpen}
           onClose={() => setChatOpen(false)}
-          meetingId={meetingId}
           chatMode={chatMode ?? (meetingId ? { kind: 'employee', meetingId } : null)}
           selfDisplayName={chatSelfDisplayName ?? self.name}
           selfEmployeeId={chatSelfEmployeeId}
