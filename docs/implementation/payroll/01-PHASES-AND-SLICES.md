@@ -86,11 +86,11 @@ M-09 evidence is collected inside P1–P5 on the paths each slice changes. P6 re
 
 ## P6 — Cutover inventory and acceptance
 
-| Slice                                                | Status                     | M / V                        | Acceptance                                                                                                             |
-| ---------------------------------------------------- | -------------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| P6-S1 Safe inventory of old unpaid balances          | `VERIFIED`                 | M-10; V-18                   | Each unpaid amount is listed once. A 200,000 split with 70,000 carry owes 170,000. Commit `a9d6e8991`                  |
-| P6-S2 Independent synthetic payroll                  | `IMPLEMENTED_NOT_VERIFIED` | M-11; V-13, V-14, V-17, V-19 | Independent amounts hold. Accrual waits for the paid re-read. Commit `a80b52061`. Seeded browser amounts still blocked |
-| P6-S3 Canon reconciliation for implemented decisions | `PLANNED`                  | M-10                         | Touched canon matches sections 0 and 6. Superseded salary-cap and whole-Probation text is marked historical            |
+| Slice                                                | Status                     | M / V                        | Acceptance                                                                                                                 |
+| ---------------------------------------------------- | -------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| P6-S1 Safe inventory of old unpaid balances          | `VERIFIED`                 | M-10; V-18                   | Each unpaid amount is listed once. A 200,000 split with 70,000 carry owes 170,000. Commit `a9d6e8991`                      |
+| P6-S2 Independent synthetic payroll                  | `IMPLEMENTED_NOT_VERIFIED` | M-11; V-13, V-14, V-17, V-19 | Dev browser shows September 2026 draft, 19 lines, 2,060,000 AMD payable, paid 0. Invented data: `03-DEV-SYNTHETIC-DATA.md` |
+| P6-S3 Canon reconciliation for implemented decisions | `IN_PROGRESS`              | M-10                         | Touched canon matches sections 0 and 6. Superseded salary-cap and whole-Probation text is marked historical                |
 
 ## Out of scope
 
