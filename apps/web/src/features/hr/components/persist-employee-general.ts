@@ -3,9 +3,19 @@ import { meApi } from '@/lib/api/me';
 import {
   buildEmployeeGeneralPatch,
   employeeRoleChanged,
+  employeeStatusChanged,
   type EmployeeGeneralDraft,
 } from './employee-general-form-state';
 import { buildEmployeeOwnProfilePatch } from './employee-own-profile-fields';
+
+/** Statuses the employee card may save. Termination uses the offboarding flow. */
+const CARD_EMPLOYEE_STATUSES = new Set(['ACTIVE', 'PROBATION', 'ON_LEAVE']);
+
+function cardStatusToSave(snap: EmployeeGeneralDraft, draft: EmployeeGeneralDraft): string | null {
+  if (!employeeStatusChanged(snap, draft)) return null;
+  if (!CARD_EMPLOYEE_STATUSES.has(draft.status)) return null;
+  return draft.status;
+}
 
 export async function persistEmployeeGeneral(input: {
   employeeId: string;
@@ -30,6 +40,11 @@ export async function persistEmployeeGeneral(input: {
   }
   if (employeeRoleChanged(input.snap, input.draft)) {
     const updated = await employeesApi.changeRole(input.employeeId, input.draft.roleId);
+    updatedId = updated.id;
+  }
+  const nextStatus = cardStatusToSave(input.snap, input.draft);
+  if (nextStatus) {
+    const updated = await employeesApi.changeStatus(input.employeeId, nextStatus);
     updatedId = updated.id;
   }
   return employeesApi.getById(updatedId);

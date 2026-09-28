@@ -49,23 +49,23 @@ function directoryCacheFresh(): boolean {
   );
 }
 
-async function fetchActiveDirectory(): Promise<EmployeePickerPerson[]> {
+async function fetchAssignableDirectory(): Promise<EmployeePickerPerson[]> {
   const res = await employeesApi.getAll({
     page: 1,
     pageSize: EMPLOYEE_PICKER_PAGE_SIZE,
-    status: 'ACTIVE',
+    excludeStatus: 'TERMINATED',
   });
   return res.items.map(employeeToPerson);
 }
 
-async function loadActiveDirectory(): Promise<EmployeePickerPerson[]> {
+async function loadAssignableDirectory(): Promise<EmployeePickerPerson[]> {
   if (directoryCacheFresh() && directoryCache) {
     return directoryCache.people;
   }
   if (directoryPromise) {
     return directoryPromise;
   }
-  directoryPromise = fetchActiveDirectory()
+  directoryPromise = fetchAssignableDirectory()
     .then((people) => {
       directoryCache = { people, fetchedAt: Date.now() };
       return people;
@@ -76,7 +76,7 @@ async function loadActiveDirectory(): Promise<EmployeePickerPerson[]> {
   return directoryPromise;
 }
 
-/** Clears cached active list so the next open refetches. */
+/** Clears cached assignable list so the next open refetches. */
 export function invalidateEmployeePickerEmptyCache(): void {
   directoryCache = null;
 }
@@ -87,18 +87,19 @@ export function invalidateEmployeeDirectoryCaches(): void {
   invalidateTeamDirectoryCache();
 }
 
-/** Warm active employee directory after sign-in. Best-effort — never throws. */
+/** Warm the assignable employee directory after sign-in. Best-effort — never throws. */
 export function prefetchEmployeePickerEmptyPage(): void {
-  void loadActiveDirectory().catch(() => undefined);
+  void loadAssignableDirectory().catch(() => undefined);
 }
 
 /**
- * Picker search: one cached ACTIVE directory, then local filter + rank.
+ * Picker search: one cached non-terminated directory, then local filter + rank.
+ * Includes ACTIVE, PROBATION, and ON_LEAVE. Terminated people stay out.
  */
 export async function searchEmployeesForPicker(
   query: string,
   excludeIds?: ReadonlySet<string>,
 ): Promise<RelationPickerOption[]> {
-  const people = await loadActiveDirectory();
+  const people = await loadAssignableDirectory();
   return applyExclude(filterAndRankEmployeePickerPeople(people, query), excludeIds);
 }

@@ -49,6 +49,22 @@ These are the same figures as `payroll-p6-s2-expected.amounts.ts`. They are illu
 | Development plan 200,000, released 170,000                    | Ordinary remaining 30,000                                           |
 | Cash 320,000 against salary 300,000 and included bonus 60,000 | Salary 300,000, named bonus 20,000, bonus still unpaid 40,000       |
 
+## Tax-free invoice
+
+Created on dev `2026-09-28` by a direct insert. No payment was recorded, so sales accrual did not run and no WhatsApp call was made.
+
+| Field                       | Value             |
+| --------------------------- | ----------------- |
+| Code                        | `DEV-FREE-210000` |
+| Amount                      | 210,000.00 AMD    |
+| Tax status                  | `TAX_FREE`        |
+| Money status                | `NEW`             |
+| Official accountant request | not sent          |
+| Client notifications        | off               |
+| Due date                    | 2099-12-31        |
+
+Accountant WhatsApp is sent only for `TAX` invoices that are awaiting payment. This card is neither.
+
 ## Still not invented
 
 The real cutover month, production salaries, production KPI targets, and Delivery norms stay unset. Nothing here is applied to production.

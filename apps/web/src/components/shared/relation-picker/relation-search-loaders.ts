@@ -66,7 +66,7 @@ export function useProjectRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
   );
 }
 
-/** Cached ACTIVE directory, then local filter + rank. */
+/** Cached non-terminated directory, then local filter + rank. */
 export function useEmployeeRelationSearch(
   excludeIds?: ReadonlySet<string>,
 ): RelationPickerSearchFn {
