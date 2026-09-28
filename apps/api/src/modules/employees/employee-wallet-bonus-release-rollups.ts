@@ -2,8 +2,10 @@ import { Decimal, type BonusReleaseStatusEnum } from '@nbos/database';
 
 import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { BONUS_RELEASE_COUNTING_STATUSES } from '../bonus/product-bonus-pool.constants';
+import { moneyAmount } from '../payroll-runs/payroll-allocation-source-amounts';
 
 export interface BonusReleaseForWalletRollup {
+  id: string;
   bonusEntryId: string;
   amount: Decimal;
   kpiBurnedAmount: Decimal | null;
@@ -26,9 +28,24 @@ export interface WalletReleaseRollup {
 
 const COUNTING = new Set<string>(BONUS_RELEASE_COUNTING_STATUSES);
 
+function paidCashForRelease(
+  release: BonusReleaseForWalletRollup,
+  attributedPaidByReleaseId: ReadonlyMap<string, Decimal>,
+): Decimal {
+  const attributed = attributedPaidByReleaseId.get(release.id);
+  if (attributed != null) {
+    return moneyAmount(Decimal.max(BONUS_POOL_ZERO, attributed));
+  }
+  if (release.status === 'PAID') {
+    return release.amount;
+  }
+  return BONUS_POOL_ZERO;
+}
+
 function rollupOneEntry(
   planned: Decimal,
   releases: BonusReleaseForWalletRollup[],
+  attributedPaidByReleaseId: ReadonlyMap<string, Decimal>,
 ): WalletReleaseRollup {
   let released = BONUS_POOL_ZERO;
   let paid = BONUS_POOL_ZERO;
@@ -39,9 +56,7 @@ function rollupOneEntry(
     if (COUNTING.has(r.status)) {
       released = released.add(r.amount);
     }
-    if (r.status === 'PAID') {
-      paid = paid.add(r.amount);
-    }
+    paid = paid.add(paidCashForRelease(r, attributedPaidByReleaseId));
     if (r.kpiBurnedAmount != null && r.kpiBurnedAmount.gt(0)) {
       kpiBurned = kpiBurned.add(r.kpiBurnedAmount);
     }
@@ -78,6 +93,7 @@ function rollupOneEntry(
 export function buildWalletReleaseRollups(
   plannedByEntryId: Map<string, Decimal>,
   releases: BonusReleaseForWalletRollup[],
+  attributedPaidByReleaseId: ReadonlyMap<string, Decimal> = new Map(),
 ): Map<string, WalletReleaseRollup> {
   const byEntry = new Map<string, BonusReleaseForWalletRollup[]>();
   for (const r of releases) {
@@ -89,7 +105,7 @@ export function buildWalletReleaseRollups(
   const out = new Map<string, WalletReleaseRollup>();
   for (const [entryId, planned] of plannedByEntryId) {
     const list = byEntry.get(entryId) ?? [];
-    out.set(entryId, rollupOneEntry(planned, list));
+    out.set(entryId, rollupOneEntry(planned, list, attributedPaidByReleaseId));
   }
   return out;
 }

@@ -21,6 +21,7 @@ export type BonusPoolTimelineEventDto = {
   label: string;
   orderCode: string | null;
   employeeName: string | null;
+  employeeId: string | null;
   releaseType: string | null;
   releaseStatus: string | null;
   releaseReason: string | null;
@@ -100,6 +101,7 @@ export async function queryBonusPoolTimeline(
         createdAt: true,
         updatedAt: true,
         payrollIncludedAmount: true,
+        employeeId: true,
         employee: { select: { firstName: true, lastName: true } },
         bonusEntry: { select: { id: true, orderId: true } },
         payrollRun: { select: { payrollMonth: true } },
@@ -134,6 +136,7 @@ export async function queryBonusPoolTimeline(
       label: p.invoice.code ? `Payment · ${p.invoice.code}` : 'Client payment',
       orderCode: orderId ? (orderCodeById.get(orderId) ?? null) : null,
       employeeName: null,
+      employeeId: null,
       releaseType: null,
       releaseStatus: null,
       releaseReason: null,
@@ -163,6 +166,7 @@ export async function queryBonusPoolTimeline(
       label: `Release · ${r.releaseType}${statusSuffix}`,
       orderCode: orderCodeById.get(r.bonusEntry.orderId) ?? null,
       employeeName: name,
+      employeeId: r.employeeId,
       releaseType: r.releaseType,
       releaseStatus: r.status,
       releaseReason: r.reason,

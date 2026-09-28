@@ -359,6 +359,8 @@ export interface AddExpensePaymentPayload {
   amount: number;
   paymentDate: string;
   notes?: string;
+  bonusAssignments?: { bonusReleaseId: string; amount: string }[];
+  idempotencyKey?: string;
 }
 
 export interface UpdateExpensePayload {
@@ -499,7 +501,7 @@ export interface FinanceDashboardSummary {
     company: { id: string; name: string } | null;
     projectId: string;
   }>;
-  payrollRuns: FinanceDashboardPayrollRuns;
+  payrollRuns: FinanceDashboardPayrollRuns | null;
 }
 
 export const invoicesApi = {

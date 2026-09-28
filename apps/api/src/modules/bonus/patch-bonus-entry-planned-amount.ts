@@ -3,6 +3,10 @@ import { Decimal, type PrismaClient } from '@nbos/database';
 import { DELIVERY_BONUS_SOURCE_V2 } from '@nbos/shared';
 import { BONUS_POOL_ZERO, decimalFrom } from './bonus-pool-decimal';
 import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
+import {
+  assertOrdinaryCountingWithinSalesPayable,
+  sumOrdinaryCountingReleases,
+} from './bonus-release-entry-cap';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 
 const COUNTING_STATUSES = ['DRAFT', 'APPROVED', 'INCLUDED_IN_PAYROLL', 'PAID'] as const;
@@ -26,6 +30,19 @@ export type PatchBonusEntryPlannedAmountResult = {
   previousTitle: string | null;
 };
 
+type PlannedAmountEntry = {
+  id: string;
+  amount: Decimal;
+  originalAmount: Decimal | null;
+  title: string | null;
+  projectId: string;
+  orderId: string;
+  employeeId: string;
+  type: string;
+  earnedPeriod: string | null;
+  deliverySource: string | null;
+};
+
 /** Preserve first amount as `originalAmount` when Finance edits planned bonus. */
 export function resolvePlannedAmountFields(
   currentAmount: Decimal,
@@ -44,17 +61,32 @@ export function resolvePlannedAmountFields(
   };
 }
 
-export async function patchBonusEntryPlannedAmount(
-  prisma: InstanceType<typeof PrismaClient>,
-  params: PatchBonusEntryPlannedAmountParams,
-): Promise<PatchBonusEntryPlannedAmountResult> {
-  const reason = params.reason.trim();
-  if (reason.length === 0) {
-    throw new BadRequestException('reason is required when editing planned bonus');
+async function assertSalesOrdinaryFitAfterSnapshot(
+  db: Pick<InstanceType<typeof PrismaClient>, 'bonusEntry' | 'bonusRelease'>,
+  bonusEntryId: string,
+  type: string,
+): Promise<void> {
+  if (type !== 'SALES') {
+    return;
   }
+  const snapshotted = await db.bonusEntry.findUnique({
+    where: { id: bonusEntryId },
+    select: { payableAmount: true },
+  });
+  const ordinaryTotal = await sumOrdinaryCountingReleases(db, bonusEntryId);
+  assertOrdinaryCountingWithinSalesPayable(
+    ordinaryTotal,
+    snapshotted?.payableAmount ?? null,
+    'Sales bonus',
+  );
+}
 
+async function loadEntryForPlannedAmountPatch(
+  prisma: InstanceType<typeof PrismaClient>,
+  bonusEntryId: string,
+): Promise<PlannedAmountEntry> {
   const entry = await prisma.bonusEntry.findUnique({
-    where: { id: params.bonusEntryId },
+    where: { id: bonusEntryId },
     select: {
       id: true,
       amount: true,
@@ -74,47 +106,73 @@ export async function patchBonusEntryPlannedAmount(
   if (entry.deliverySource === DELIVERY_BONUS_SOURCE_V2) {
     throw new BadRequestException('V2 generated delivery entries cannot be patched here');
   }
+  return entry;
+}
 
+async function assertPlannedAmountAboveReleased(
+  prisma: InstanceType<typeof PrismaClient>,
+  bonusEntryId: string,
+  nextAmount: Decimal,
+): Promise<void> {
   const paidCount = await prisma.bonusRelease.count({
-    where: { bonusEntryId: entry.id, status: 'PAID' },
+    where: { bonusEntryId, status: 'PAID' },
   });
   if (paidCount > 0) {
     throw new BadRequestException('Planned bonus cannot be edited after payment');
   }
-
   const releasedAgg = await prisma.bonusRelease.aggregate({
     where: {
-      bonusEntryId: entry.id,
+      bonusEntryId,
       status: { in: [...COUNTING_STATUSES] },
     },
     _sum: { amount: true },
   });
-  const releasedTotal = decimalFrom(releasedAgg._sum.amount);
-  const currentAmount = decimalFrom(entry.amount);
-  const nextAmount = decimalFrom(params.amount);
-
-  if (nextAmount.lt(releasedTotal)) {
+  if (nextAmount.lt(decimalFrom(releasedAgg._sum.amount))) {
     throw new BadRequestException('Planned amount cannot be less than already released');
   }
+}
 
-  const { amount, originalAmount } = resolvePlannedAmountFields(
+async function persistPlannedAmountAndSnapshot(
+  prisma: InstanceType<typeof PrismaClient>,
+  entry: PlannedAmountEntry,
+  fields: { amount: Decimal; originalAmount: Decimal },
+  title: string | undefined,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    await tx.bonusEntry.update({
+      where: { id: entry.id },
+      data: {
+        amount: fields.amount,
+        originalAmount: fields.originalAmount,
+        ...(title && title.length > 0 ? { title } : {}),
+      },
+    });
+    await applyPayableSnapshotToBonusEntry(tx, entry.id);
+    await assertSalesOrdinaryFitAfterSnapshot(tx, entry.id, entry.type);
+  });
+}
+
+export async function patchBonusEntryPlannedAmount(
+  prisma: InstanceType<typeof PrismaClient>,
+  params: PatchBonusEntryPlannedAmountParams,
+): Promise<PatchBonusEntryPlannedAmountResult> {
+  const reason = params.reason.trim();
+  if (reason.length === 0) {
+    throw new BadRequestException('reason is required when editing planned bonus');
+  }
+
+  const entry = await loadEntryForPlannedAmountPatch(prisma, params.bonusEntryId);
+  const currentAmount = decimalFrom(entry.amount);
+  const nextAmount = decimalFrom(params.amount);
+  await assertPlannedAmountAboveReleased(prisma, entry.id, nextAmount);
+
+  const fields = resolvePlannedAmountFields(
     currentAmount,
     nextAmount,
     entry.originalAmount ? decimalFrom(entry.originalAmount) : null,
   );
-
-  const title = params.title?.trim();
-  await prisma.bonusEntry.update({
-    where: { id: entry.id },
-    data: {
-      amount,
-      originalAmount,
-      ...(title && title.length > 0 ? { title } : {}),
-    },
-  });
-
+  await persistPlannedAmountAndSnapshot(prisma, entry, fields, params.title?.trim());
   await syncProductBonusPoolForOrder(prisma, entry.orderId);
-  await applyPayableSnapshotToBonusEntry(prisma, entry.id);
 
   return {
     bonusEntryId: entry.id,
@@ -124,7 +182,7 @@ export async function patchBonusEntryPlannedAmount(
     type: entry.type,
     earnedPeriod: entry.earnedPeriod,
     previousAmount: currentAmount.toFixed(2),
-    nextAmount: amount.toFixed(2),
+    nextAmount: fields.amount.toFixed(2),
     previousTitle: entry.title,
   };
 }

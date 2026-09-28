@@ -23,7 +23,7 @@ describe('payrollBonusReleaseBase', () => {
     ).toBe('70000');
   });
 
-  it('returns zero for SALES from the wrong earned month', () => {
+  it('returns zero for SALES earned in the payroll month', () => {
     expect(
       payrollBonusReleaseBase(
         {
@@ -51,6 +51,48 @@ describe('payrollBonusReleaseBase', () => {
     ).toBe('55000');
   });
 
+  it('holds Sales at zero when payableAmount is missing', () => {
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'SALES',
+          amount: new Decimal(100_000),
+          payableAmount: null,
+          earnedPeriod: '2026-04',
+        },
+        '2026-05',
+      ).toString(),
+    ).toBe('0');
+  });
+
+  it('uses an explicit Sales payable of zero as real performance, not a hold', () => {
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'SALES',
+          amount: new Decimal(100_000),
+          payableAmount: new Decimal(0),
+          earnedPeriod: '2026-04',
+        },
+        '2026-05',
+      ).toString(),
+    ).toBe('0');
+  });
+
+  it('uses a stored Sales payable of 40000', () => {
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'SALES',
+          amount: new Decimal(100_000),
+          payableAmount: new Decimal(40_000),
+          earnedPeriod: '2026-04',
+        },
+        '2026-05',
+      ).toString(),
+    ).toBe('40000');
+  });
+
   it('falls back to amount when payableAmount is missing', () => {
     expect(
       payrollBonusReleaseBase(
@@ -65,7 +107,7 @@ describe('payrollBonusReleaseBase', () => {
     ).toBe('50000');
   });
 
-  it('returns zero for delivery entries from the wrong earned month', () => {
+  it('returns zero for delivery entries earned in the payroll month', () => {
     expect(
       payrollBonusReleaseBase(
         {
@@ -81,9 +123,12 @@ describe('payrollBonusReleaseBase', () => {
 });
 
 describe('isBonusEligibleForPayrollMonth', () => {
-  it('matches payroll month minus one', () => {
+  it('matches payroll month minus one and older unpaid months', () => {
     expect(
       isBonusEligibleForPayrollMonth({ type: 'DELIVERY', earnedPeriod: '2026-04' }, '2026-05'),
+    ).toBe(true);
+    expect(
+      isBonusEligibleForPayrollMonth({ type: 'DELIVERY', earnedPeriod: '2026-08' }, '2026-10'),
     ).toBe(true);
   });
 
@@ -148,14 +193,39 @@ describe('isPayrollMatrixBonusEntryVisible', () => {
     ).toBe(true);
   });
 
-  it('hides non-Sales entries outside the previous earned month', () => {
+  it('shows an unpaid August 40000 ordinary bonus on an October payroll run', () => {
+    expect(
+      isPayrollMatrixBonusEntryVisible(
+        {
+          type: 'DELIVERY',
+          amount: new Decimal('40000.00'),
+          payableAmount: new Decimal('40000.00'),
+          earnedPeriod: '2026-08',
+        },
+        '2026-10',
+      ),
+    ).toBe(true);
+    expect(
+      payrollBonusReleaseBase(
+        {
+          type: 'DELIVERY',
+          amount: new Decimal('40000.00'),
+          payableAmount: new Decimal('40000.00'),
+          earnedPeriod: '2026-08',
+        },
+        '2026-10',
+      ).toFixed(2),
+    ).toBe('40000.00');
+  });
+
+  it('hides non-Sales entries earned in or after the payroll month', () => {
     expect(
       isPayrollMatrixBonusEntryVisible(
         {
           type: 'DELIVERY',
           amount: new Decimal(100),
           payableAmount: null,
-          earnedPeriod: '2026-03',
+          earnedPeriod: '2026-05',
         },
         '2026-05',
       ),

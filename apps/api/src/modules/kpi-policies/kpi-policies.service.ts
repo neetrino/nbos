@@ -1,6 +1,11 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient, type KpiPolicyStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  FINANCE_SALARY_MODULE,
+  assertCompanyWideFinanceAccess,
+  type FinancePayActor,
+} from '../compensation-profiles/finance-pay-access';
 import { KPI_POLICY_TEMPLATE_GATE_PAYOUT } from '../payroll-runs/kpi-gate-rules.types';
 import { parseKpiGateRules } from '../payroll-runs/parse-kpi-gate-rules';
 import {
@@ -82,7 +87,8 @@ function optionalText(value: string | null | undefined): string | null | undefin
 export class KpiPoliciesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async list(): Promise<{ items: KpiPolicyDto[] }> {
+  async list(actor: FinancePayActor): Promise<{ items: KpiPolicyDto[] }> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_SALARY_MODULE, 'VIEW');
     const rows = await this.prisma.kpiPolicy.findMany({
       orderBy: [{ status: 'asc' }, { name: 'asc' }],
     });
@@ -92,7 +98,8 @@ export class KpiPoliciesService {
     };
   }
 
-  async findById(id: string): Promise<KpiPolicyDto> {
+  async findById(actor: FinancePayActor, id: string): Promise<KpiPolicyDto> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_SALARY_MODULE, 'VIEW');
     const row = await this.prisma.kpiPolicy.findUnique({ where: { id } });
     if (!row) {
       throw new NotFoundException(`KPI policy ${id} not found`);
@@ -103,7 +110,8 @@ export class KpiPoliciesService {
     return serializeKpiPolicy(row, count);
   }
 
-  async create(body: CreateKpiPolicyBody): Promise<KpiPolicyDto> {
+  async create(actor: FinancePayActor, body: CreateKpiPolicyBody): Promise<KpiPolicyDto> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_SALARY_MODULE, 'EDIT');
     const name = assertPolicyName(body.name);
     const gateRules = parseKpiGateRules(body.gateRules);
     const capMultiplier = assertBonusCapBaseSalaryMultiplierInput(
@@ -128,7 +136,12 @@ export class KpiPoliciesService {
     return serializeKpiPolicy(row, 0);
   }
 
-  async update(id: string, body: UpdateKpiPolicyBody): Promise<KpiPolicyDto> {
+  async update(
+    actor: FinancePayActor,
+    id: string,
+    body: UpdateKpiPolicyBody,
+  ): Promise<KpiPolicyDto> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_SALARY_MODULE, 'EDIT');
     const existing = await this.prisma.kpiPolicy.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException(`KPI policy ${id} not found`);

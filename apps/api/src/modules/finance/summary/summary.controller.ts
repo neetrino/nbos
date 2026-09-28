@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
 import { FinanceSummaryService } from './summary.service';
 
 @ApiTags('Finance / Summary')
@@ -12,12 +13,13 @@ export class FinanceSummaryController {
   @ApiOperation({
     summary: 'Get finance dashboard summary',
     description:
-      'Includes workspace-wide `payrollRuns` from `GET /payroll-runs/stats` (all runs), independent of invoice date filters.',
+      'Includes workspace-wide `payrollRuns` from `GET /payroll-runs/stats` only when the actor has FINANCE_SALARY VIEW ALL. Otherwise `payrollRuns` is null.',
   })
   async getDashboardSummary(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
-    return this.financeSummaryService.getDashboardSummary({ dateFrom, dateTo });
+    return this.financeSummaryService.getDashboardSummary(user, { dateFrom, dateTo });
   }
 }

@@ -42,6 +42,12 @@ describe('buildFinanceZoneHubMetrics', () => {
     expect(metrics.expenses.openCardCount).toBe(3);
     expect(metrics.expenses.openCardAmount).toBe(600);
     expect(metrics.overview.reconciliationWarningCount).toBe(1);
-    expect(metrics.payroll.remainingPayable).toBe(600);
+    expect(metrics.payroll?.remainingPayable).toBe(600);
+  });
+
+  it('omits payroll zone figures when payrollRuns is null', () => {
+    const metrics = buildFinanceZoneHubMetrics(minimalDashboardData({ payrollRuns: null }));
+    expect(metrics.payroll).toBeNull();
+    expect(metrics.expenses.openCardCount).toBe(3);
   });
 });

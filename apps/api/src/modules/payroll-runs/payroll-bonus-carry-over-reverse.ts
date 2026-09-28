@@ -1,5 +1,7 @@
 import { Decimal, type TransactionClient } from '@nbos/database';
 
+import { resolveConsumedPayrollCarryOver } from './payroll-bonus-cap';
+import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
 import { computeSalaryLineTotalPayable } from './payroll-salary-line-total-payable';
 
@@ -9,29 +11,157 @@ type CarryReverseTx = Pick<TransactionClient, 'bonusRelease' | 'salaryLine' | 'p
 
 type PriorCarryReleaseRow = {
   id: string;
+  status: string;
+  employeeId: string;
+  payrollRunId: string | null;
+  payrollIncludedAmount: Decimal | null;
   payrollCarryOverAmount: Decimal | null;
   payrollCarryOverRemaining: Decimal | null;
+  payrollRun: { status: string; payrollMonth: string } | null;
 };
+
+const OPEN_PAYROLL_RUN_STATUSES = ['DRAFT', 'REVIEW'] as const;
+
+function isOpenPayrollRunStatus(status: string | undefined): boolean {
+  return status == null || OPEN_PAYROLL_RUN_STATUSES.some((open) => open === status);
+}
 
 async function loadPriorCarryReleasesForRestore(
   tx: CarryReverseTx,
   employeeId: string,
-  payrollMonth: string,
 ): Promise<PriorCarryReleaseRow[]> {
   return tx.bonusRelease.findMany({
     where: {
       employeeId,
       payrollCarryOverAmount: { gt: 0 },
-      status: { in: ['INCLUDED_IN_PAYROLL', 'PAID'] },
-      payrollRun: { payrollMonth: { lt: payrollMonth } },
+      OR: [{ status: 'INCLUDED_IN_PAYROLL' }, { status: 'APPROVED', payrollRunId: null }],
     },
-    orderBy: { payrollRun: { payrollMonth: 'desc' } },
+    orderBy: { updatedAt: 'desc' },
     select: {
       id: true,
+      status: true,
+      employeeId: true,
+      payrollRunId: true,
+      payrollIncludedAmount: true,
       payrollCarryOverAmount: true,
       payrollCarryOverRemaining: true,
+      payrollRun: { select: { status: true, payrollMonth: true } },
     },
   });
+}
+
+async function restoreRemainingOnDetachedRelease(
+  tx: CarryReverseTx,
+  row: PriorCarryReleaseRow,
+  restoreAmount: Decimal,
+): Promise<Decimal> {
+  const consumed = resolveConsumedPayrollCarryOver(row);
+  const take = Decimal.min(restoreAmount, consumed);
+  if (take.lte(0)) {
+    return ZERO;
+  }
+
+  const original = row.payrollCarryOverAmount ?? ZERO;
+  const current = row.payrollCarryOverRemaining ?? ZERO;
+  const nextRemaining = current.plus(take);
+  await tx.bonusRelease.update({
+    where: { id: row.id },
+    data: {
+      payrollCarryOverRemaining: nextRemaining.gte(original) ? original : nextRemaining,
+    },
+  });
+  return take;
+}
+
+async function loadOpenSalaryLineForRestore(
+  tx: CarryReverseTx,
+  payrollRunId: string,
+  employeeId: string,
+): Promise<{
+  id: string;
+  baseSalary: Decimal;
+  bonusesTotal: Decimal;
+  paidAmount: Decimal;
+} | null> {
+  const line = await tx.salaryLine.findUnique({
+    where: { payrollRunId_employeeId: { payrollRunId, employeeId } },
+    select: { id: true, baseSalary: true, bonusesTotal: true, paidAmount: true, status: true },
+  });
+  if (line == null || line.status === 'PAID') {
+    return null;
+  }
+  return line;
+}
+
+async function addBonusToPriorSalaryLine(
+  tx: CarryReverseTx,
+  payrollRunId: string,
+  line: { id: string; baseSalary: Decimal; bonusesTotal: Decimal; paidAmount: Decimal },
+  amount: Decimal,
+): Promise<void> {
+  const nextBonuses = line.bonusesTotal.plus(amount);
+  const nextTotal = computeSalaryLineTotalPayable({
+    baseSalary: line.baseSalary,
+    bonusesTotal: nextBonuses,
+  });
+  const nextRemaining = Decimal.max(ZERO, nextTotal.minus(line.paidAmount));
+  await tx.salaryLine.update({
+    where: { id: line.id },
+    data: {
+      bonusesTotal: nextBonuses,
+      totalPayable: nextTotal,
+      remainingAmount: nextRemaining,
+      status: resolveSalaryLineStatus(nextTotal, line.paidAmount),
+    },
+  });
+  await recalculatePayrollRunTotalsFromSalaryLines(tx, payrollRunId);
+}
+
+async function restoreConsumedOntoIncludedRelease(
+  tx: CarryReverseTx,
+  row: PriorCarryReleaseRow,
+  restoreAmount: Decimal,
+): Promise<Decimal> {
+  const consumed = resolveConsumedPayrollCarryOver(row);
+  const take = Decimal.min(restoreAmount, consumed);
+  if (take.lte(0) || row.payrollRunId == null) {
+    return ZERO;
+  }
+  if (!isOpenPayrollRunStatus(row.payrollRun?.status)) {
+    return ZERO;
+  }
+
+  const line = await loadOpenSalaryLineForRestore(tx, row.payrollRunId, row.employeeId);
+  if (line == null) {
+    return ZERO;
+  }
+
+  const nextRemembered = consumed.minus(take);
+  const nextIncluded = (row.payrollIncludedAmount ?? ZERO).plus(take);
+  await tx.bonusRelease.update({
+    where: { id: row.id },
+    data: {
+      payrollIncludedAmount: nextIncluded,
+      payrollCarryOverAmount: nextRemembered.gt(0) ? nextRemembered : null,
+      payrollCarryOverRemaining: null,
+    },
+  });
+  await addBonusToPriorSalaryLine(tx, row.payrollRunId, line, take);
+  return take;
+}
+
+async function restoreOnePriorCarryRelease(
+  tx: CarryReverseTx,
+  row: PriorCarryReleaseRow,
+  restoreAmount: Decimal,
+): Promise<Decimal> {
+  if (row.status === 'INCLUDED_IN_PAYROLL') {
+    return restoreConsumedOntoIncludedRelease(tx, row, restoreAmount);
+  }
+  if (row.status === 'APPROVED') {
+    return restoreRemainingOnDetachedRelease(tx, row, restoreAmount);
+  }
+  return ZERO;
 }
 
 /** Restores FIFO-consumed cap carry on prior-month releases (LIFO restore). */
@@ -43,33 +173,14 @@ export async function restorePriorPayrollCarryConsumed(
     return;
   }
 
-  const rows = await loadPriorCarryReleasesForRestore(tx, params.employeeId, params.payrollMonth);
+  const rows = await loadPriorCarryReleasesForRestore(tx, params.employeeId);
   let left = params.restoreAmount;
-
   for (const row of rows) {
     if (left.lte(0)) {
       break;
     }
-    const original = row.payrollCarryOverAmount ?? ZERO;
-    const current = row.payrollCarryOverRemaining ?? ZERO;
-    const consumed = original.minus(current);
-    if (consumed.lte(0)) {
-      continue;
-    }
-
-    const restore = Decimal.min(left, consumed);
-    const nextRemaining = current.plus(restore);
-    await tx.bonusRelease.update({
-      where: { id: row.id },
-      data: {
-        payrollCarryOverRemaining: nextRemaining.gte(original)
-          ? original
-          : nextRemaining.lte(0)
-            ? null
-            : nextRemaining,
-      },
-    });
-    left = left.minus(restore);
+    const restored = await restoreOnePriorCarryRelease(tx, row, left);
+    left = left.minus(restored);
   }
 }
 

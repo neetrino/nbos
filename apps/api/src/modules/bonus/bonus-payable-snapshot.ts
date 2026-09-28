@@ -1,5 +1,8 @@
 import { Decimal, type PrismaClient } from '@nbos/database';
 
+import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
+import { pickUniqueEmployeePeriodKpiResult } from '../payroll-runs/sales-kpi-period-result';
+import { resolveSalesKpiPayoutFactorOrHold } from '../payroll-runs/sales-kpi-payroll-payout';
 import { isValidPayrollMonth } from '../payroll-runs/payroll-runs.constants';
 import { BONUS_POOL_ZERO, decimalFrom } from './bonus-pool-decimal';
 
@@ -9,6 +12,12 @@ export type BonusPayableSnapshotDb = Pick<
   InstanceType<typeof PrismaClient>,
   'bonusEntry' | 'kpiResult' | 'compensationProfile'
 >;
+
+export type BonusPayableSnapshotFields = {
+  kpiPayoutFactor: Decimal | null;
+  payableAmount: Decimal | null;
+  kpiGatePassed: boolean | null;
+};
 
 const entrySnapshotSelect = {
   id: true,
@@ -32,48 +41,73 @@ export function computePayableAmount(autoPayable: Decimal, adjustment: Decimal):
   );
 }
 
-async function loadKpiPayoutFactor(
+/**
+ * Sales snapshot fields. Null factor holds the bonus (not a payout of 1 or 0).
+ */
+export function buildPayableSnapshotFields(params: {
+  amount: Decimal;
+  adjustment: Decimal;
+  factor: Decimal | null;
+}): BonusPayableSnapshotFields {
+  if (params.factor == null) {
+    return { kpiPayoutFactor: null, payableAmount: null, kpiGatePassed: null };
+  }
+  return {
+    kpiPayoutFactor: params.factor,
+    payableAmount: computePayableAmount(
+      computeAutoPayable(params.amount, params.factor),
+      params.adjustment,
+    ),
+    kpiGatePassed: params.factor.gt(0),
+  };
+}
+
+async function loadSalesKpiPayoutFactorOrHold(
   db: BonusPayableSnapshotDb,
   employeeId: string,
   earnedPeriod: string,
-  kpiPolicyId: string,
-): Promise<Decimal> {
-  const row = await db.kpiResult.findFirst({
-    where: { employeeId, period: earnedPeriod, kpiPolicyId },
-    select: { payoutFactor: true },
-    orderBy: { updatedAt: 'desc' },
+): Promise<Decimal | null> {
+  const rows = await db.kpiResult.findMany({
+    where: { employeeId, period: earnedPeriod },
+    select: { planAmount: true, actualAmount: true },
   });
-  return row?.payoutFactor ?? BONUS_PAYOUT_FACTOR_ONE;
+  const row = pickUniqueEmployeePeriodKpiResult(rows);
+  if (row == null) {
+    return null;
+  }
+  return resolveSalesKpiPayoutFactorOrHold(row.planAmount, row.actualAmount);
 }
 
-/** Resolves KPI payout factor for a bonus entry (1 when no KPI policy or non-Sales). */
+/**
+ * Non-Sales stays at factor 1. Missing Sales facts (no unique result, no plan,
+ * no actual, invalid month, or no month KPI policy) hold — null, not 1 or 0.
+ */
 export async function resolveBonusPayoutFactor(
   db: BonusPayableSnapshotDb,
   entry: { type: string; employeeId: string; earnedPeriod: string | null },
-): Promise<Decimal> {
+): Promise<Decimal | null> {
   if (entry.type !== 'SALES') {
     return BONUS_PAYOUT_FACTOR_ONE;
   }
 
   const earnedPeriod = entry.earnedPeriod?.trim() ?? '';
   if (!isValidPayrollMonth(earnedPeriod)) {
-    return BONUS_PAYOUT_FACTOR_ONE;
+    return null;
   }
 
-  const profile = await db.compensationProfile.findFirst({
-    where: { employeeId: entry.employeeId, status: 'ACTIVE' },
-    select: { kpiPolicyId: true },
-    orderBy: { effectiveFrom: 'desc' },
-  });
-
+  const profile = await resolveCompensationProfileForPayrollMonth(
+    db,
+    entry.employeeId,
+    earnedPeriod,
+  );
   if (profile?.kpiPolicyId == null) {
-    return BONUS_PAYOUT_FACTOR_ONE;
+    return null;
   }
 
-  return loadKpiPayoutFactor(db, entry.employeeId, earnedPeriod, profile.kpiPolicyId);
+  return loadSalesKpiPayoutFactorOrHold(db, entry.employeeId, earnedPeriod);
 }
 
-/** Writes kpiPayoutFactor + payableAmount from amount, factor, and payableAdjustment. */
+/** Writes kpiPayoutFactor + payableAmount, or clears them when Sales KPI is held. */
 export async function applyPayableSnapshotToBonusEntry(
   db: BonusPayableSnapshotDb,
   bonusEntryId: string,
@@ -87,18 +121,13 @@ export async function applyPayableSnapshotToBonusEntry(
   }
 
   const factor = await resolveBonusPayoutFactor(db, entry);
-  const amount = decimalFrom(entry.amount);
-  const adjustment = decimalFrom(entry.payableAdjustment);
-  const autoPayable = computeAutoPayable(amount, factor);
-  const payableAmount = computePayableAmount(autoPayable, adjustment);
-
   await db.bonusEntry.update({
     where: { id: entry.id },
-    data: {
-      kpiPayoutFactor: factor,
-      payableAmount,
-      kpiGatePassed: factor.gt(0),
-    },
+    data: buildPayableSnapshotFields({
+      amount: decimalFrom(entry.amount),
+      adjustment: decimalFrom(entry.payableAdjustment),
+      factor,
+    }),
   });
   return true;
 }

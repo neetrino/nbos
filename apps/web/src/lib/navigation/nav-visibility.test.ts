@@ -140,8 +140,6 @@ describe('getVisibleNavModules', () => {
       '/my-company/team',
       '/my-company/departments',
       '/my-company/roles-seats',
-      '/my-company/bonus-policies',
-      '/my-company/kpi',
       '/my-company/sop',
     ]);
   });

@@ -97,4 +97,20 @@ describe('syncSalaryLinePaidFromExpenseLedger', () => {
       }),
     });
   });
+
+  it('does not edit a closed payroll run salary line', async () => {
+    const prisma = buildPrismaMock([{ amount: new Decimal(40) }]);
+    prisma.salaryLine.findUnique.mockResolvedValue({
+      id: 'sl1',
+      payrollRunId: 'pr1',
+      employeeId: 'emp1',
+      totalPayable: new Decimal(100),
+      payrollRun: { status: 'CLOSED' },
+    });
+
+    await syncSalaryLinePaidFromExpenseLedger(prisma as never, 'ex1');
+
+    expect(prisma._salaryLineUpdate).not.toHaveBeenCalled();
+    expect(prisma.expense.findUnique).not.toHaveBeenCalled();
+  });
 });

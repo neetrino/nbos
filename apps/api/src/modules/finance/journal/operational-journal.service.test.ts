@@ -112,6 +112,29 @@ describe('OperationalJournalService', () => {
     });
   });
 
+  it('records an expense payment refund as cash inflow', async () => {
+    prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
+    prisma.financePostingPeriod.create.mockResolvedValue({ id: 'period-1', monthKey: '2026-05' });
+
+    await service.appendExpensePaymentLine({
+      expensePaymentId: 'ep-refund',
+      expenseName: 'Payroll',
+      amount: -20000,
+      bookedAt: new Date('2026-05-02T00:00:00.000Z'),
+    });
+
+    expect(prisma.operationalJournalEntry.upsert).toHaveBeenCalledWith({
+      where: { idempotencyKey: 'expense-payment:ep-refund' },
+      update: {},
+      create: expect.objectContaining({
+        sourceType: 'EXPENSE_PAYMENT',
+        amount: -20000,
+        functionalAmount: 20000,
+        recognitionBasis: 'CASH',
+      }),
+    });
+  });
+
   it('creates manual adjustment in open period', async () => {
     prisma.financePostingPeriod.findUnique.mockResolvedValue(null);
     prisma.financePostingPeriod.create.mockResolvedValue({ id: 'period-1', monthKey: '2026-05' });

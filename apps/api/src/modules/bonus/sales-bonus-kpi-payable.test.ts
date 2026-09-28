@@ -21,10 +21,19 @@ describe('applyPayableSnapshotToSalesEntry', () => {
         update,
       },
       compensationProfile: {
-        findFirst: vi.fn().mockResolvedValue({ kpiPolicyId: 'kp1' }),
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: 'cp1',
+            baseSalary: { toString: () => '0' },
+            currency: 'AMD',
+            kpiPolicyId: 'kp1',
+          },
+        ]),
       },
       kpiResult: {
-        findFirst: vi.fn().mockResolvedValue({ payoutFactor: new Decimal('0.8') }),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([{ planAmount: new Decimal(1000), actualAmount: new Decimal(600) }]),
       },
     };
 
@@ -34,8 +43,8 @@ describe('applyPayableSnapshotToSalesEntry', () => {
     expect(update).toHaveBeenCalledWith({
       where: { id: 'be1' },
       data: {
-        kpiPayoutFactor: new Decimal('0.8'),
-        payableAmount: new Decimal('80.00'),
+        kpiPayoutFactor: new Decimal('0.5'),
+        payableAmount: new Decimal('50.00'),
         kpiGatePassed: true,
       },
     });

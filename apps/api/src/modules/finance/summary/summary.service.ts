@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
+import {
+  FINANCE_SALARY_MODULE,
+  financePayScope,
+  type FinancePayActor,
+} from '../../compensation-profiles/finance-pay-access';
 import { PayrollRunsService } from '../../payroll-runs/payroll-runs.service';
 import {
   ACTIVE_EXPENSE_STATUSES,
@@ -22,7 +27,7 @@ export class FinanceSummaryService {
     private readonly payrollRunsService: PayrollRunsService,
   ) {}
 
-  async getDashboardSummary(params: FinanceSummaryParams = {}) {
+  async getDashboardSummary(actor: FinancePayActor, params: FinanceSummaryParams = {}) {
     const [
       invoiceStats,
       expenseStats,
@@ -38,7 +43,7 @@ export class FinanceSummaryService {
       this.getRecentPayments(params),
       this.getUpcomingInvoices(params),
       getFinanceReconciliationSummary(this.prisma),
-      this.payrollRunsService.getStats({}),
+      this.loadWorkspacePayrollRuns(actor),
     ]);
 
     return {
@@ -60,6 +65,13 @@ export class FinanceSummaryService {
       /** Workspace-wide payroll run aggregates (not filtered by invoice `dateFrom`/`dateTo`). */
       payrollRuns,
     };
+  }
+
+  private async loadWorkspacePayrollRuns(actor: FinancePayActor) {
+    if (financePayScope(actor, FINANCE_SALARY_MODULE, 'VIEW') !== 'ALL') {
+      return null;
+    }
+    return this.payrollRunsService.getStats(actor, {});
   }
 
   private async getInvoiceStats(params: FinanceSummaryParams) {

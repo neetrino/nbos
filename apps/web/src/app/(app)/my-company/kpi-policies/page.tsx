@@ -7,6 +7,7 @@ import { DataView, ErrorState, ListMutationErrorBanner, LoadingState } from '@/c
 import { useCompanySectionTabs } from '@/features/hr/components/use-company-section-tabs';
 import { KpiPolicyCard } from '@/features/my-company/kpi-policies/kpi-policy-card';
 import { KpiPolicySheet } from '@/features/my-company/kpi-policies/kpi-policy-sheet';
+import { PermissionGate } from '@/lib/permissions';
 import { kpiPoliciesApi, type KpiPolicyRow, type KpiPolicyStatus } from '@/lib/api/kpi-policies';
 
 const STATUS_RANK: Record<KpiPolicyStatus, number> = {
@@ -65,18 +66,20 @@ export default function KpiPoliciesPage() {
         <p className="text-muted-foreground max-w-3xl text-sm">
           Attainment bands that scale a sales bonus. Open a gate to edit the payout steps.
         </p>
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => {
-            setEditing(null);
-            setCreating(true);
-            setSheetOpen(true);
-          }}
-        >
-          <Plus className="size-4" aria-hidden />
-          New policy
-        </Button>
+        <PermissionGate module="FINANCE_SALARY" action="EDIT">
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              setEditing(null);
+              setCreating(true);
+              setSheetOpen(true);
+            }}
+          >
+            <Plus className="size-4" aria-hidden />
+            New policy
+          </Button>
+        </PermissionGate>
       </div>
       {error && hasData ? (
         <ListMutationErrorBanner message={error} onDismiss={() => setError(null)} />
