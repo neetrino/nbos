@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P5-S2
-**Next step:** Grok 4.6 High reverses a payment on its original salary and bonus links without taking the refund from fixed salary.
+**Active slice:** P5-S3
+**Next step:** Grok 4.6 High reconciles salary line, expense, bonus release, wallet, pool, and journal on one synthetic payment.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -19,10 +19,10 @@ Owner authorized synthetic data and browser checks on the local dev database (`e
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P5-S1 done; P5-S2 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P5-S2 done; P5-S3 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P5-S1 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P5-S2 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -46,29 +46,31 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-28 | P4-S2 plan parts and extra     | Claude Opus 5.5 Medium | Installments, extra overflow, and title splits. Opus 5.5 High is unavailable.     | Uncommitted installment and extra diff only                         |
 | 2026-09-28 | P4-S3 older unpaid bonus       | Claude Opus 5.5 Medium | Month eligibility and settlement currency. Opus 5.5 High is unavailable.          | Uncommitted older-unpaid diff only                                  |
 | 2026-09-28 | P5-S1 salary-first cash        | Claude Opus 5.5 Medium | Salary before named bonus cash. Opus 5.5 High is unavailable.                     | Uncommitted salary-first cash diff only                             |
+| 2026-09-28 | P5-S2 payment reversal         | Claude Opus 5.5 Medium | Original links on delete and refund. Opus 5.5 High is unavailable.                | Uncommitted reversal diff only                                      |
+| 2026-09-28 | P5-S2 refund id recheck        | Claude Opus 5.5 Medium | Same reviewer, only the missing payment id and the closed-run write.              | Salary-line sync, refund, and the select-honouring mock             |
 
 ## Slice log
 
-| Slice | Status        | Executor          | Reviewer               | Checks                                                                                                      | Commit      | Notes                                                                                                       |
-| ----- | ------------- | ----------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
-| P1-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed; web typecheck passed; API typecheck still fails on unrelated CRM `lid`              | `b06e6667e` | Department totals and payroll-run attachment rechecked and closed                                           |
-| P1-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed. API typecheck not obtained (OOM). No browser.                                       | `b1664e362` | Early recheck closed. Direct PAID rejected. Exception reasons required.                                     |
-| P2-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 10 files, 60 passed. No browser. No PostgreSQL race. Recheck closed four findings.          | `cb48c47bf` | Directory 409 if legacy overlaps is display-only                                                            |
-| P2-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest on the cap passed. No browser. Stacked-release recheck closed.                              | `b616e9b9a` | Missing plan holds. Ordinary releases cannot exceed payable.                                                |
-| P2-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 32 passed. No browser.                                                             | `2ea6c9c2f` | USD/EUR/blank rejected at seed and approval. No FX.                                                         |
-| P3-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 5 files, 21 passed. No browser. Migration not applied. Recheck closed the recurring replay. | `73c7b493b` | Both slotted roles persist. Recurring same-person share waits for the subscription envelope                 |
-| P3-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest on rates and the floor. No browser. Migration `20260928010000` not applied.                 | `edfcabfcb` | Receipt rates stay put. Historical replay removed. Two low residuals remain.                                |
-| P3-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 25 passed. No browser. No live race. Migration `20260928020000` not applied.       | `5588995d7` | One order stays within 300,000. Recheck closed four over-cap findings.                                      |
-| P3-S4 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 6 files, 41 passed. No browser. No migration.                                               | `aaf7511cc` | Full bonus is included. Open reversal returns consumed carry. Closed or PAID April stays an owner decision. |
-| P4-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed. No browser. No migration.                                               | `5299c4022` | Planned cell amount is the sum of visible sources. Both entry ids stay on the cell.                         |
-| P4-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 23 passed on the last recheck. No browser. No migration.                           | `3f917cce6` | Plan parts stay on the plan. Extra is only the amount above every source remainder.                         |
-| P4-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 28 passed on the last recheck. No browser. No migration.                           | `637dd783f` | August 40,000 stays payable in October. A zero-salary settlement approves as AMD.                           |
-| P5-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed on the last recheck. No browser. No migration.                           | `598eef803` | Salary is paid first. Bonus cash follows the named bonus. Line carry can be paid.                           |
-| P5-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | A reversal restores the original links. Fixed salary is not the source of a bonus refund.                   |
-| P5-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
-| P6-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Blocked for live data until a separate authorization                                                        |
-| P6-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Needs isolated environment                                                                                  |
-| P6-S3 | `PLANNED`     | Composer 2.5 Fast | Grok 4.6 High          | —                                                                                                           | —           | Canon text only, after behavior is verified                                                                 |
+| Slice | Status        | Executor          | Reviewer               | Checks                                                                                                         | Commit      | Notes                                                                                                       |
+| ----- | ------------- | ----------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
+| P1-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed; web typecheck passed; API typecheck still fails on unrelated CRM `lid`                 | `b06e6667e` | Department totals and payroll-run attachment rechecked and closed                                           |
+| P1-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest passed. API typecheck not obtained (OOM). No browser.                                          | `b1664e362` | Early recheck closed. Direct PAID rejected. Exception reasons required.                                     |
+| P2-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 10 files, 60 passed. No browser. No PostgreSQL race. Recheck closed four findings.             | `cb48c47bf` | Directory 409 if legacy overlaps is display-only                                                            |
+| P2-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest on the cap passed. No browser. Stacked-release recheck closed.                                 | `b616e9b9a` | Missing plan holds. Ordinary releases cannot exceed payable.                                                |
+| P2-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 32 passed. No browser.                                                                | `2ea6c9c2f` | USD/EUR/blank rejected at seed and approval. No FX.                                                         |
+| P3-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 5 files, 21 passed. No browser. Migration not applied. Recheck closed the recurring replay.    | `73c7b493b` | Both slotted roles persist. Recurring same-person share waits for the subscription envelope                 |
+| P3-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest on rates and the floor. No browser. Migration `20260928010000` not applied.                    | `edfcabfcb` | Receipt rates stay put. Historical replay removed. Two low residuals remain.                                |
+| P3-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 25 passed. No browser. No live race. Migration `20260928020000` not applied.          | `5588995d7` | One order stays within 300,000. Recheck closed four over-cap findings.                                      |
+| P3-S4 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 6 files, 41 passed. No browser. No migration.                                                  | `aaf7511cc` | Full bonus is included. Open reversal returns consumed carry. Closed or PAID April stays an owner decision. |
+| P4-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed. No browser. No migration.                                                  | `5299c4022` | Planned cell amount is the sum of visible sources. Both entry ids stay on the cell.                         |
+| P4-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 23 passed on the last recheck. No browser. No migration.                              | `3f917cce6` | Plan parts stay on the plan. Extra is only the amount above every source remainder.                         |
+| P4-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 28 passed on the last recheck. No browser. No migration.                              | `637dd783f` | August 40,000 stays payable in October. A zero-salary settlement approves as AMD.                           |
+| P5-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed on the last recheck. No browser. No migration.                              | `598eef803` | Salary is paid first. Bonus cash follows the named bonus. Line carry can be paid.                           |
+| P5-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 6 files, 38 passed. No browser. No migration. Recheck closed the id miss and the closed write. | `71e1d9e49` | Refund of 50,000 leaves paidAmount 300,000. Paying A again stores 320,000. Closed run rejects the write.    |
+| P5-S3 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Registers must agree on one synthetic payment. Wallet still ignores a partial bonus.                        |
+| P6-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Blocked for live data until a separate authorization                                                        |
+| P6-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Needs isolated environment                                                                                  |
+| P6-S3 | `PLANNED`     | Composer 2.5 Fast | Grok 4.6 High          | —                                                                                                              | —           | Canon text only, after behavior is verified                                                                 |
 
 ## Review findings
 
@@ -110,6 +112,10 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P4-S3-R2 | Open   | The approval test mocks attach, so line creation and a single include are shown by reading the code. Low.                           |
 | P5-S1-R1 | Closed | A 430,000 payment covers 300,000 salary, 100,000 named bonus, and 30,000 line carry. Recheck passed.                                |
 | P5-S1-R2 | Open   | On a line with carry, unnamed cash after salary goes to carry instead of being rejected. Low. No double pay.                        |
+| P5-S2-R1 | Closed | Salary sync loads payment id, so the 50,000 refund stores paidAmount 300,000 and A is unpaid again. Recheck passed.                 |
+| P5-S2-R2 | Closed | A second refund does not restore A again. Deleting the source payment clears the leftover refund. Recheck passed.                   |
+| P5-S2-R3 | Closed | A CLOSED run rejects the refund before insert. The closed expense paid total stays 320,000. Recheck passed.                         |
+| P5-S2-R4 | Open   | The closed-run check sits outside the payment lock. A run closed in the same moment could still receive the refund row. Low.        |
 | P4-S2-R2 | Closed | A manual title with the source-amount prefix does not pay another employee's plan. Recheck passed.                                  |
 
 ## External blockers

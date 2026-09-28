@@ -78,11 +78,11 @@ M-09 evidence is collected inside P1–P5 on the paths each slice changes. P6 re
 
 ## P5 — Cash, reversals, registers
 
-| Slice                                                    | Status        | M / V                  | Acceptance                                                                                                                                          |
-| -------------------------------------------------------- | ------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P5-S1 Salary-first cash and explicit project attribution | `VERIFIED`    | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash. Commit `598eef803`                |
-| P5-S2 Reversal restores the original links               | `IN_PROGRESS` | M-07; V-11             | Refund and payout reversal do not rewrite closed history in place. Fixed salary is not a clawback source. Uncovered negative residual stays visible |
-| P5-S3 Register reconciliation                            | `PLANNED`     | M-06, M-07; V-11, V-17 | SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, Wallet, ProductBonusPool, and the journal agree on synthetic fixtures                |
+| Slice                                                    | Status        | M / V                  | Acceptance                                                                                                                           |
+| -------------------------------------------------------- | ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| P5-S1 Salary-first cash and explicit project attribution | `VERIFIED`    | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash. Commit `598eef803` |
+| P5-S2 Reversal restores the original links               | `VERIFIED`    | M-07; V-11             | Refund of 50,000 leaves paidAmount 300,000. Paying the bonus again stores 320,000. Closed run rejects the write. Commit `71e1d9e49`  |
+| P5-S3 Register reconciliation                            | `IN_PROGRESS` | M-06, M-07; V-11, V-17 | SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, Wallet, ProductBonusPool, and the journal agree on synthetic fixtures |
 
 ## P6 — Cutover inventory and acceptance
 
