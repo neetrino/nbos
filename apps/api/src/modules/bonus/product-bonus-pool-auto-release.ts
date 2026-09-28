@@ -124,22 +124,53 @@ export async function tryCreateProportionalAutoReleases(
     return false;
   }
 
-  await prisma.$transaction(
-    creates.map(({ row, amount }) =>
-      prisma.bonusRelease.create({
-        data: {
-          bonusEntryId: row.entry.id,
-          employeeId: row.entry.employeeId,
-          projectId: row.entry.projectId,
-          productId: order.productId,
-          extensionId: order.extensionId,
-          amount,
-          releaseType: 'AUTO',
-          status: 'APPROVED',
-        },
-      }),
-    ),
-  );
+  await insertAutoReleaseRows(prisma, order, creates);
 
   return true;
+}
+
+type AutoReleaseCreate = {
+  row: { entry: { id: string; employeeId: string; projectId: string } };
+  amount: Decimal;
+};
+
+/**
+ * Batch `$transaction` exists only on the root client.
+ * Inside an interactive transaction the writes run on that same client.
+ */
+async function insertAutoReleaseRows(
+  db: Pick<PrismaClient, 'bonusRelease'>,
+  order: OrderForAutoRelease,
+  creates: AutoReleaseCreate[],
+): Promise<void> {
+  const writes = creates.map(({ row, amount }) =>
+    db.bonusRelease.create({
+      data: {
+        bonusEntryId: row.entry.id,
+        employeeId: row.entry.employeeId,
+        projectId: row.entry.projectId,
+        productId: order.productId,
+        extensionId: order.extensionId,
+        amount,
+        releaseType: 'AUTO',
+        status: 'APPROVED',
+      },
+    }),
+  );
+  const batch = readBatchTransaction(db);
+  if (batch != null) {
+    await batch(writes);
+    return;
+  }
+  for (const write of writes) {
+    await write;
+  }
+}
+
+type BatchTransaction = (writes: Promise<unknown>[]) => Promise<unknown>;
+
+function readBatchTransaction(db: object): BatchTransaction | null {
+  const batch = (db as { $transaction?: unknown }).$transaction;
+  if (typeof batch !== 'function') return null;
+  return batch as BatchTransaction;
 }

@@ -1,44 +1,25 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  BadRequestException,
-  ConflictException,
-} from '@nestjs/common';
-import { PrismaClient, type Prisma } from '@nbos/database';
+import { Injectable, Inject, BadRequestException, ConflictException } from '@nestjs/common';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationService } from '../notifications/notification.service';
 import { isValidPayrollMonth } from './payroll-runs.constants';
-import { parsePayrollRunStatusQuery } from './payroll-run-list-scope';
 import {
   queryPayrollRunList,
   queryPayrollRunListStats,
   type PayrollRunListParams,
 } from './payroll-run-list-queries';
-import { canTransitionPayrollRun } from './payroll-run-status-transitions';
-import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
 import {
-  materializePayrollBonusAllocationDrafts,
-  type PayrollBonusAllocationMaterializeResult,
-} from './payroll-bonus-allocation-materialize';
+  commitLockedPayrollRunStatus,
+  preparePayrollRunStatusUpdate,
+} from './payroll-run-status-commit';
+import { publishPayrollStatusSideEffects } from './payroll-run-status-side-effects';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
 import {
   PAYROLL_RUN_AUDIT_ACTION_CREATED,
-  PAYROLL_RUN_AUDIT_ACTION_STATUS_CHANGED,
   PAYROLL_RUN_AUDIT_ENTITY_TYPE,
 } from './payroll-run-audit.constants';
 import { type PayrollRunStatsResult } from './payroll-run-list-stats';
-import { notifyPayrollCarryEventsOnAttach } from './payroll-bonus-carry-notify';
-import {
-  refreshBonusEntryStatusesForReleases,
-  syncProductBonusPoolsForBonusReleases,
-} from './payroll-run-bonus-release-side-effects';
-import {
-  notifyEmployeesOnPayrollRunClosed,
-  notifyEmployeesOnPayrollRunCreated,
-} from './payroll-run-employee-wallet-notify';
-import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
-import { validatePayrollMatrixForApproval } from './payroll-matrix-approval-validation';
+import { notifyEmployeesOnPayrollRunCreated } from './payroll-run-employee-wallet-notify';
 import {
   querySalaryBoard,
   type SalaryBoardQueryParams,
@@ -72,12 +53,6 @@ export interface CreatePayrollRunBody {
   payrollMonth: string;
   /** When true (default), seed salary lines from approved profiles covering the payroll month. */
   seedLines?: boolean;
-}
-
-/** Actor for audit rows on status transitions (`PATCH …/status`). */
-export interface PayrollRunStatusMeta {
-  actorUserId: string;
-  approvedById?: string | null;
 }
 
 @Injectable()
@@ -191,108 +166,21 @@ export class PayrollRunsService {
 
   async updateStatus(actor: FinancePayActor, id: string, nextStatus: string) {
     assertPayrollWriteAccess(actor, 'EDIT');
-    const meta: PayrollRunStatusMeta = {
-      actorUserId: actor.id,
-      approvedById: actor.id,
-    };
-    const status = parsePayrollRunStatusQuery(nextStatus);
-    const run = await this.prisma.payrollRun.findUnique({ where: { id } });
-    if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
-
-    if (!canTransitionPayrollRun(run.status, status)) {
-      throw new ConflictException(`Cannot transition payroll run from ${run.status} to ${status}`);
-    }
-
-    if (status === 'APPROVED') {
-      const matrixIssues = await validatePayrollMatrixForApproval(this.prisma, id);
-      if (matrixIssues.length > 0) {
-        throw new BadRequestException({
-          message: 'Payroll matrix validation failed',
-          issues: matrixIssues,
-        });
-      }
-    }
-
-    if (status === 'CLOSED') {
-      const blockingCount = await loadSalaryLinesBlockingPayrollCloseCount(this.prisma, id);
-      if (blockingCount > 0) {
-        throw new ConflictException(
-          `Cannot close payroll run: ${blockingCount} salary line(s) are not fully paid or held.`,
-        );
-      }
-    }
-
-    const data: Prisma.PayrollRunUpdateInput = { status };
-    let materializedBonusResult: PayrollBonusAllocationMaterializeResult | undefined;
-
-    if (status === 'APPROVED') {
-      data.approvedAt = new Date();
-      if (meta.approvedById) {
-        data.approvedBy = { connect: { id: meta.approvedById } };
-      }
-    }
-
-    if (status === 'CLOSED') {
-      data.closedAt = new Date();
-    }
-
-    await this.prisma.$transaction(async (tx) => {
-      if (run.status === 'REVIEW' && status === 'APPROVED') {
-        materializedBonusResult = await materializePayrollBonusAllocationDrafts(tx, {
-          payrollRunId: id,
-          payrollMonth: run.payrollMonth,
-          actorUserId: meta.actorUserId,
-        });
-      }
-      await tx.payrollRun.update({ where: { id }, data });
-      let materializedExpenseIds: string[] | undefined;
-      if (status === 'APPROVED') {
-        const { createdExpenseIds } = await materializePayrollExpensesForApprovedRun(tx, {
-          payrollRunId: id,
-          payrollMonth: run.payrollMonth,
-        });
-        if (createdExpenseIds.length > 0) {
-          materializedExpenseIds = createdExpenseIds;
-        }
-      }
-      await tx.auditLog.create({
-        data: {
-          entityType: PAYROLL_RUN_AUDIT_ENTITY_TYPE,
-          entityId: id,
-          action: PAYROLL_RUN_AUDIT_ACTION_STATUS_CHANGED,
-          userId: meta.actorUserId,
-          changes:
-            materializedExpenseIds && materializedExpenseIds.length > 0
-              ? { from: run.status, to: status, materializedExpenseIds }
-              : { from: run.status, to: status },
-        },
-      });
+    const prepared = await preparePayrollRunStatusUpdate(this.prisma, id, nextStatus, actor.id);
+    const committed = await this.prisma.$transaction((tx) =>
+      commitLockedPayrollRunStatus(tx, {
+        payrollRunId: id,
+        nextStatus: prepared.status,
+        data: prepared.data,
+        actorUserId: actor.id,
+      }),
+    );
+    await publishPayrollStatusSideEffects(this.prisma, this.notifications, {
+      payrollRunId: id,
+      payrollMonth: prepared.payrollMonth,
+      nextStatus: prepared.status,
+      bonus: committed.materializedBonus,
     });
-
-    const bonusResult = materializedBonusResult;
-    if (bonusResult !== undefined) {
-      await refreshBonusEntryStatusesForReleases(this.prisma, bonusResult.releaseIds);
-      await syncProductBonusPoolsForBonusReleases(
-        this.prisma,
-        bonusResult.releaseIds,
-        this.notifications,
-      );
-      await notifyPayrollCarryEventsOnAttach(
-        this.prisma,
-        this.notifications,
-        bonusResult.carryNotifyEvents,
-      );
-    }
-
-    if (status === 'CLOSED') {
-      await notifyEmployeesOnPayrollRunClosed(
-        this.prisma,
-        this.notifications,
-        id,
-        run.payrollMonth,
-      );
-    }
-
     return this.findById(actor, id);
   }
 }

@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { Decimal, type TransactionClient } from '@nbos/database';
 
 import { resolveConsumedPayrollCarryOver } from './payroll-bonus-cap';
@@ -6,6 +7,11 @@ import { resolveSalaryLineStatus } from './payroll-salary-line-ledger-sync';
 import { computeSalaryLineTotalPayable } from './payroll-salary-line-total-payable';
 
 const ZERO = new Decimal(0);
+
+export const PAYROLL_CARRY_REVERSE_ERRORS = {
+  closedPriorRestore:
+    'Prior-month carry cannot be restored onto a closed or paid payroll run; leave the applied carry and settle with a current-month manual adjustment',
+} as const;
 
 type CarryReverseTx = Pick<TransactionClient, 'bonusRelease' | 'salaryLine' | 'payrollRun'>;
 
@@ -36,7 +42,8 @@ async function loadPriorCarryReleasesForRestore(
       payrollCarryOverAmount: { gt: 0 },
       OR: [{ status: 'INCLUDED_IN_PAYROLL' }, { status: 'APPROVED', payrollRunId: null }],
     },
-    orderBy: { updatedAt: 'desc' },
+    // Consume is FIFO by payroll month; restore the same order (oldest first).
+    orderBy: [{ payrollRun: { payrollMonth: 'asc' } }, { updatedAt: 'asc' }],
     select: {
       id: true,
       status: true,
@@ -136,14 +143,14 @@ async function restoreConsumedOntoIncludedRelease(
     return ZERO;
   }
 
-  const nextRemembered = consumed.minus(take);
-  const nextIncluded = (row.payrollIncludedAmount ?? ZERO).plus(take);
+  const nextCarry = (row.payrollCarryOverAmount ?? ZERO).minus(take);
+  const keepRemaining = row.payrollCarryOverRemaining != null && nextCarry.gt(0);
   await tx.bonusRelease.update({
     where: { id: row.id },
     data: {
-      payrollIncludedAmount: nextIncluded,
-      payrollCarryOverAmount: nextRemembered.gt(0) ? nextRemembered : null,
-      payrollCarryOverRemaining: null,
+      payrollIncludedAmount: (row.payrollIncludedAmount ?? ZERO).plus(take),
+      payrollCarryOverAmount: nextCarry.gt(0) ? nextCarry : null,
+      payrollCarryOverRemaining: keepRemaining ? row.payrollCarryOverRemaining : null,
     },
   });
   await addBonusToPriorSalaryLine(tx, row.payrollRunId, line, take);
@@ -164,7 +171,37 @@ async function restoreOnePriorCarryRelease(
   return ZERO;
 }
 
-/** Restores FIFO-consumed cap carry on prior-month releases (LIFO restore). */
+async function restorableAmountForRow(
+  tx: CarryReverseTx,
+  row: PriorCarryReleaseRow,
+): Promise<Decimal> {
+  const consumed = resolveConsumedPayrollCarryOver(row);
+  if (consumed.lte(0)) {
+    return ZERO;
+  }
+  if (row.status === 'APPROVED') {
+    return consumed;
+  }
+  if (row.status !== 'INCLUDED_IN_PAYROLL' || row.payrollRunId == null) {
+    return ZERO;
+  }
+  if (!isOpenPayrollRunStatus(row.payrollRun?.status)) {
+    return ZERO;
+  }
+  const line = await loadOpenSalaryLineForRestore(tx, row.payrollRunId, row.employeeId);
+  return line == null ? ZERO : consumed;
+}
+
+async function sumRestorablePriorCarry(tx: CarryReverseTx, employeeId: string): Promise<Decimal> {
+  const rows = await loadPriorCarryReleasesForRestore(tx, employeeId);
+  let total = ZERO;
+  for (const row of rows) {
+    total = total.plus(await restorableAmountForRow(tx, row));
+  }
+  return total;
+}
+
+/** Restores FIFO-consumed cap carry on prior-month releases (oldest payroll month first). */
 export async function restorePriorPayrollCarryConsumed(
   tx: CarryReverseTx,
   params: { employeeId: string; payrollMonth: string; restoreAmount: Decimal },
@@ -186,6 +223,7 @@ export async function restorePriorPayrollCarryConsumed(
 
 /**
  * Reverts prior-month carry applied to the salary line when no releases stay on the run.
+ * Refuses when the consumed carry cannot be restored (closed/PAID prior run).
  */
 export async function reversePayrollCarryAppliedOnSalaryLine(
   tx: CarryReverseTx,
@@ -205,6 +243,11 @@ export async function reversePayrollCarryAppliedOnSalaryLine(
   const applied = params.line.payrollCarryAppliedAmount;
   if (applied == null || applied.lte(0)) {
     return;
+  }
+
+  const restorable = await sumRestorablePriorCarry(tx, params.employeeId);
+  if (restorable.lt(applied)) {
+    throw new BadRequestException(PAYROLL_CARRY_REVERSE_ERRORS.closedPriorRestore);
   }
 
   await restorePriorPayrollCarryConsumed(tx, {

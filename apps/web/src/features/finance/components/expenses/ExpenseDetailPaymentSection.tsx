@@ -21,6 +21,7 @@ import {
   EXPENSE_GATE_FIELD_PAYMENTS,
   expenseStageGateSectionClass,
 } from '@/features/finance/constants/expense-stage-gate-highlight';
+import { visibleFinanceNote } from '@/features/finance/utils/visible-finance-note';
 import { DeleteExpensePaymentDialog } from './DeleteExpensePaymentDialog';
 import { translateExpensePaymentStatus } from './expense-i18n-labels';
 
@@ -121,7 +122,7 @@ export function ExpenseDetailPaymentSection({
                       {formatAmount(parseFloat(row.amount))}
                     </TableCell>
                     <TableCell className="text-muted-foreground max-w-[200px] truncate">
-                      {row.notes ?? '—'}
+                      {visibleFinanceNote(row.notes) ?? '—'}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

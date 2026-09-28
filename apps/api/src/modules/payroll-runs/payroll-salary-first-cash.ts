@@ -38,6 +38,8 @@ export type AllocateSalaryFirstCashInput = {
   bonuses: readonly PayrollCashAssignableBonus[];
   assignments: readonly PayrollCashBonusPart[];
   carryRemaining?: Decimal;
+  /** Set only when this payment is explicitly earlier unpaid carry, with no bonus part. */
+  requestedCarry?: Decimal;
 };
 
 export type SalaryFirstCashAllocation = {
@@ -102,6 +104,7 @@ export function allocateSalaryFirstCash(
     bonuses: input.bonuses,
     assignments: input.assignments,
     carryRemaining: moneyAmount(input.carryRemaining ?? BONUS_POOL_ZERO),
+    requestedCarry: input.requestedCarry,
   });
   assertPartsEqualCash(cash, salaryAmount, split.bonusParts, split.carryAmount);
   return {
@@ -156,12 +159,16 @@ function splitLeftoverAfterSalary(input: {
   bonuses: readonly PayrollCashAssignableBonus[];
   assignments: readonly PayrollCashBonusPart[];
   carryRemaining: Decimal;
+  requestedCarry?: Decimal;
 }): { bonusParts: PayrollCashBonusPart[]; carryAmount: Decimal } {
   if (input.leftover.eq(BONUS_POOL_ZERO)) {
     if (input.assignments.length > 0) {
       throw new BadRequestException(PAYROLL_CASH_ERRORS.assignmentMismatch);
     }
     return { bonusParts: [], carryAmount: BONUS_POOL_ZERO };
+  }
+  if (input.assignments.length === 0) {
+    return explicitCarryOnly(input);
   }
   const remaining = new Map(
     input.bonuses.map((row) => [row.bonusReleaseId, moneyAmount(row.remaining)]),
@@ -178,6 +185,18 @@ function splitLeftoverAfterSalary(input: {
   }
   rejectUnassignedLeftover(afterAssigned.minus(carryAmount), bonusParts.length);
   return { bonusParts, carryAmount };
+}
+
+function explicitCarryOnly(input: {
+  leftover: Decimal;
+  carryRemaining: Decimal;
+  requestedCarry?: Decimal;
+}): { bonusParts: PayrollCashBonusPart[]; carryAmount: Decimal } {
+  const requested = moneyAmount(input.requestedCarry ?? BONUS_POOL_ZERO);
+  if (!requested.eq(input.leftover) || requested.gt(input.carryRemaining)) {
+    throw new BadRequestException(PAYROLL_CASH_ERRORS.bonusMustAssign);
+  }
+  return { bonusParts: [], carryAmount: requested };
 }
 
 function rejectUnassignedLeftover(unassigned: Decimal, assignedCount: number): void {

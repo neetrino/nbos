@@ -28,6 +28,10 @@ export type PayrollAllocationMatrixCellSource = {
   bonusEntryId: string;
   plannedAmount: string;
   originalAmount: string;
+  /** Planned minus released-before for this entry only (two decimal places). */
+  remainingAmount: string;
+  /** Amount already included on this payroll run for this entry (two decimal places). */
+  includedThisMonth: string;
   title: string | null;
   type: string;
 };

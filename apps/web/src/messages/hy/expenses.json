@@ -192,7 +192,14 @@
     "amountRequired": "Գումար *",
     "dateRequired": "Վճարման ամսաթիվ *",
     "dateAria": "Վճարման ամսաթիվ",
-    "notesOptional": "Ընտրովի"
+    "notesOptional": "Ընտրովի",
+    "salaryPart": "Աշխատավարձ այս վճարման մեջ՝ {amount}",
+    "bonusAssignHint": "Աշխատավարձից ավել գումարը պետք է վերագրել կոնկրետ բոնուսի։",
+    "bonusUntitled": "Բոնուս",
+    "bonusField": "{name}, մնացորդ {amount}",
+    "carryField": "Ավելի վաղ չվճարված գումար",
+    "carryPart": "Ավելի վաղ չվճարված գումար այս վճարման մեջ՝ {amount}",
+    "assignShort": "Մնացած {amount}-ը վերագրեք բոնուսի։"
   },
   "dialogs": {
     "addPaymentTitle": "Ավելացնել վճարում",

@@ -126,6 +126,31 @@ describe('P5-S1 salary-first cash allocation', () => {
     ).toThrow(PAYROLL_CASH_ERRORS.bonusMustAssign);
   });
 
+  it('rejects unnamed cash that would otherwise become carry', () => {
+    expect(() =>
+      allocateSalaryFirstCash({
+        cash: new Decimal('20000.00'),
+        salaryRemaining: new Decimal(0),
+        bonuses: [],
+        assignments: [],
+        carryRemaining: new Decimal('20000.00'),
+      }),
+    ).toThrow(PAYROLL_CASH_ERRORS.bonusMustAssign);
+  });
+
+  it('pays earlier carry only when that amount is named', () => {
+    const allocation = allocateSalaryFirstCash({
+      cash: new Decimal('20000.00'),
+      salaryRemaining: new Decimal(0),
+      bonuses: [],
+      assignments: [],
+      carryRemaining: new Decimal('20000.00'),
+      requestedCarry: new Decimal('20000.00'),
+    });
+    expect(allocation.carryAmount.toFixed(2)).toBe('20000.00');
+    expect(allocation.bonusParts).toEqual([]);
+  });
+
   it('pays 430000 as 300000 salary, 100000 named bonus, and 30000 line carry', () => {
     const bonuses = [{ bonusReleaseId: 'rel-100', remaining: new Decimal('100000.00') }];
     const allocation = allocateSalaryFirstCash({

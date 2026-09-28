@@ -14,6 +14,7 @@ import {
   payrollAllocationMatrixApi,
   type PayrollAllocationMatrix,
   type PayrollAllocationMatrixCell,
+  type PayrollMatrixCellSavePayload,
 } from '@/lib/api/payroll-allocation-matrix';
 import type { PayrollEmployeeBonusHistoryMeta } from '@/lib/api/payroll-employee-bonus-history';
 import { toast } from 'sonner';
@@ -91,10 +92,7 @@ export function PayrollEmployeeBonusHistoryWorkspace({
   }, [focusEmployee?.bonusTotalThisRun, onTotalsChange]);
 
   const handleCellSave = useCallback(
-    async (
-      cell: PayrollAllocationMatrixCell,
-      payload: { releaseThisMonth: string; reason?: string },
-    ) => {
+    async (cell: PayrollAllocationMatrixCell, payload: PayrollMatrixCellSavePayload) => {
       const key = cellKey(cell.employeeId, cell.orderId);
       setSavingCellKey(key);
       try {
@@ -103,6 +101,7 @@ export function PayrollEmployeeBonusHistoryWorkspace({
           orderId: cell.orderId,
           releaseThisMonth: payload.releaseThisMonth,
           reason: payload.reason,
+          sourceAmounts: payload.sourceAmounts,
         });
         applyMatrixUpdate(updated);
         onSalaryLinesStale?.();

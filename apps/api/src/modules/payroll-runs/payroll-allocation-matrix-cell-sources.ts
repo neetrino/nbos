@@ -9,6 +9,7 @@ import {
   sumBonusEntryReleasedBefore,
   type PayrollBonusReleaseLedgerRow,
 } from './payroll-bonus-entry-released-before';
+import { remainingForBonusEntry } from './payroll-allocation-source-amounts';
 import type { PayrollAllocationMatrixCellSource } from './payroll-allocation-matrix.types';
 
 export type PayrollMatrixCellSourceInput = {
@@ -76,15 +77,44 @@ export function sumPayrollMatrixCellPlanned(
 
 export function mapPayrollMatrixCellSourceEntries(
   entries: PayrollMatrixCellSourceInput[],
-  payrollMonth: string,
+  params: {
+    payrollMonth: string;
+    payrollRunId: string;
+    releases: PayrollMatrixCellSourceRelease[];
+  },
 ): PayrollAllocationMatrixCellSource[] {
-  return entries.map((entry) => ({
-    bonusEntryId: entry.id,
-    plannedAmount: moneyText(payrollBonusReleaseBase(entry, payrollMonth)),
-    originalAmount: moneyText(entryOriginalAmount(entry)),
-    title: entry.title ?? null,
-    type: entry.type,
-  }));
+  return entries.map((entry) => {
+    const remaining = remainingForBonusEntry({
+      entry,
+      releases: params.releases,
+      payrollMonth: params.payrollMonth,
+      payrollRunId: params.payrollRunId,
+    });
+    return {
+      bonusEntryId: entry.id,
+      plannedAmount: moneyText(payrollBonusReleaseBase(entry, params.payrollMonth)),
+      originalAmount: moneyText(entryOriginalAmount(entry)),
+      remainingAmount: moneyText(remaining),
+      includedThisMonth: moneyText(
+        includedThisRunAmount(params.releases, entry.id, params.payrollRunId),
+      ),
+      title: entry.title ?? null,
+      type: entry.type,
+    };
+  });
+}
+
+function includedThisRunAmount(
+  releases: PayrollMatrixCellSourceRelease[],
+  entryId: string,
+  payrollRunId: string,
+): Decimal {
+  return releases.reduce((sum, release) => {
+    if (release.bonusEntryId !== entryId) return sum;
+    if (release.payrollRunId !== payrollRunId) return sum;
+    if (release.status !== 'INCLUDED_IN_PAYROLL') return sum;
+    return sum.plus(decimalFrom(release.payrollIncludedAmount ?? release.amount));
+  }, BONUS_POOL_ZERO);
 }
 
 function filterReleasesForVisibleSources(
@@ -184,7 +214,11 @@ export function aggregatePayrollMatrixCellSources(params: {
   return {
     visibleEntries: visible,
     firstEntry: visible[0] ?? null,
-    sourceEntries: mapPayrollMatrixCellSourceEntries(visible, params.payrollMonth),
+    sourceEntries: mapPayrollMatrixCellSourceEntries(visible, {
+      payrollMonth: params.payrollMonth,
+      payrollRunId: params.payrollRunId,
+      releases: scopedReleases,
+    }),
     planned,
     original,
     releasedBefore,

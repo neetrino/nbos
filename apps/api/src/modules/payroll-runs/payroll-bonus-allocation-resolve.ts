@@ -169,6 +169,35 @@ function allocationsFromSourceRemainings(
     }));
 }
 
+function orderBoundSourceFirst(
+  sources: Array<{ bonusEntryId: string; remaining: Decimal }>,
+  boundEntryId: string | null,
+): Array<{ bonusEntryId: string; remaining: Decimal }> {
+  if (boundEntryId == null) return sources;
+  const bound = sources.filter((source) => source.bonusEntryId === boundEntryId);
+  const rest = sources.filter((source) => source.bonusEntryId !== boundEntryId);
+  return [...bound, ...rest];
+}
+
+/** Consumes visible source remainings up to `amount`; never invents EXTRA. */
+function consumeSourceRemainingsUpTo(
+  sources: Array<{ bonusEntryId: string; remaining: Decimal }>,
+  amount: Decimal,
+  boundEntryId: string | null,
+): PayrollResolveAllocation[] {
+  let left = moneyAmount(amount);
+  const allocations: PayrollResolveAllocation[] = [];
+  for (const source of orderBoundSourceFirst(sources, boundEntryId)) {
+    if (left.lte(BONUS_POOL_ZERO) || source.remaining.lte(BONUS_POOL_ZERO)) {
+      continue;
+    }
+    const take = moneyAmount(Decimal.min(source.remaining, left));
+    allocations.push({ bonusEntryId: source.bonusEntryId, amount: take, kind: 'READY' });
+    left = moneyAmount(left.minus(take));
+  }
+  return allocations;
+}
+
 async function appendExtraAllocation(
   tx: ResolveTx,
   draft: PayrollResolveDraft,
@@ -187,34 +216,11 @@ async function appendExtraAllocation(
   return allocations;
 }
 
-async function resolveBoundEntryOverflow(
-  tx: ResolveTx,
-  draft: PayrollResolveDraft,
-  params: { payrollRunId: string; payrollMonth: string },
-  amount: Decimal,
-): Promise<PayrollResolveAllocation[]> {
-  const remaining =
-    draft.bonusEntryId == null
-      ? BONUS_POOL_ZERO
-      : await loadBonusEntryRemaining(tx, {
-          bonusEntryId: draft.bonusEntryId,
-          payrollRunId: params.payrollRunId,
-          payrollMonth: params.payrollMonth,
-        });
-  const planPortion = Decimal.min(moneyAmount(amount), moneyAmount(remaining));
-  const allocations: PayrollResolveAllocation[] = [];
-  if (planPortion.gt(BONUS_POOL_ZERO) && draft.bonusEntryId != null) {
-    allocations.push({ bonusEntryId: draft.bonusEntryId, amount: planPortion, kind: 'READY' });
-  }
-  return appendExtraAllocation(
-    tx,
-    draft,
-    params,
-    allocations,
-    moneyAmount(amount.minus(planPortion)),
-  );
-}
-
+/**
+ * EXTRA is only max(0, cell − sum of per-source remaining). When the cell is at
+ * or below that sum, consume remaining sources; never mark EXTRA on the bound
+ * entry while another visible source still has remainder.
+ */
 async function resolveExtraOverflowAllocations(
   tx: ResolveTx,
   draft: PayrollResolveDraft,
@@ -226,16 +232,11 @@ async function resolveExtraOverflowAllocations(
     sources.reduce((sum, source) => sum.plus(source.remaining), BONUS_POOL_ZERO),
   );
   const cellAmount = moneyAmount(amount);
-  if (!cellAmount.gt(combined)) {
-    return resolveBoundEntryOverflow(tx, draft, params, cellAmount);
+  const excess = moneyAmount(Decimal.max(BONUS_POOL_ZERO, cellAmount.minus(combined)));
+  if (excess.lte(BONUS_POOL_ZERO)) {
+    return consumeSourceRemainingsUpTo(sources, cellAmount, draft.bonusEntryId);
   }
-  return appendExtraAllocation(
-    tx,
-    draft,
-    params,
-    allocationsFromSourceRemainings(sources),
-    moneyAmount(cellAmount.minus(combined)),
-  );
+  return appendExtraAllocation(tx, draft, params, allocationsFromSourceRemainings(sources), excess);
 }
 
 export async function resolveDraftAllocations(

@@ -640,6 +640,23 @@ describe('ExpensesService', () => {
       expect(prisma.expensePayment.delete).not.toHaveBeenCalled();
     });
 
+    it('keeps a journal failure inside the payment delete transaction', async () => {
+      prisma.expensePayment.findFirst.mockResolvedValue({
+        id: 'pay1',
+        expenseId: 'e1',
+        amount: new Decimal(10),
+        paymentDate: new Date('2026-05-05T00:00:00.000Z'),
+        notes: null,
+      });
+      operationalJournal.reverseJournalLineByIdempotencyKey.mockRejectedValueOnce(
+        new Error('journal down'),
+      );
+
+      await expect(service.deletePayment('e1', 'pay1')).rejects.toThrow('journal down');
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.expensePayment.delete).toHaveBeenCalled();
+    });
+
     it('deletes payment and returns ledger shape', async () => {
       prisma.expensePayment.findFirst.mockResolvedValue({
         id: 'pay1',

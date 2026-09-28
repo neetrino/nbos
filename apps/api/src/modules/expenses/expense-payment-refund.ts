@@ -59,16 +59,18 @@ export async function refundExpensePayrollCash(
   await rejectClosedPayrollCashHistory(prisma, expenseId);
   const refundAmount = parseRefundAmount(input.amount);
   const reason = input.reason.trim();
-  const written = await prisma.$transaction((tx) =>
-    commitLockedPayrollCashRefund(tx, expenseId, paymentId, {
+  const written = await prisma.$transaction(async (tx) => {
+    const committed = await commitLockedPayrollCashRefund(tx, expenseId, paymentId, {
       refundAmount,
       paymentDate,
       reason,
       idempotencyKey: input.idempotencyKey,
-    }),
-  );
-  await appendPayrollCashRefundJournal(written, paymentDate, opts?.journal);
-  await syncSalaryLineIfHistoryOpen(prisma, expenseId);
+    });
+    const db = tx as InstanceType<typeof PrismaClient>;
+    await appendPayrollCashRefundJournal(committed, paymentDate, opts?.journal, db);
+    await syncSalaryLineIfHistoryOpen(db, expenseId);
+    return committed;
+  });
   return toRefundResult(written);
 }
 
@@ -84,6 +86,8 @@ async function commitLockedPayrollCashRefund(
   },
 ): Promise<WrittenPayrollCashRefund> {
   await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${expenseId} FOR UPDATE`;
+  await lockPayrollCashHistoryForUpdate(tx, expenseId);
+  await rejectClosedPayrollCashHistory(tx, expenseId);
   const expense = await tx.expense.findUnique({
     where: { id: expenseId },
     include: { expensePayments: true },
@@ -111,6 +115,19 @@ async function commitLockedPayrollCashRefund(
   const paymentIdResolved =
     existing?.id ?? (await insertRefundPayment(tx, expenseId, refund, input));
   return writtenRefund(refund, expense, paymentIdResolved, cashAmount, existing?.id != null);
+}
+
+/** Locks salary line and payroll run so a concurrent close cannot race the refund insert. */
+async function lockPayrollCashHistoryForUpdate(
+  tx: ExpensePaymentWriteDb,
+  expenseId: string,
+): Promise<void> {
+  const history = await assertPayrollCashHistoryOpen(tx, expenseId);
+  if (history == null) {
+    return;
+  }
+  await tx.$queryRaw`SELECT id FROM salary_lines WHERE expense_id = ${expenseId} FOR UPDATE`;
+  await tx.$queryRaw`SELECT id FROM payroll_runs WHERE id = ${history.payrollRunId} FOR UPDATE`;
 }
 
 async function syncSalaryLineIfHistoryOpen(
@@ -196,16 +213,20 @@ async function appendPayrollCashRefundJournal(
   written: WrittenPayrollCashRefund,
   bookedAt: Date,
   journal?: OperationalJournalService,
+  db?: Pick<PrismaClient, 'operationalJournalEntry' | 'financePostingPeriod'>,
 ): Promise<void> {
   if (journal == null) {
     return;
   }
-  await journal.appendExpensePaymentLine({
-    expensePaymentId: written.paymentId,
-    expenseName: written.expenseName,
-    amount: written.cashAmount.toNumber(),
-    bookedAt,
-    projectId: written.projectId,
-    productId: written.productId,
-  });
+  await journal.appendExpensePaymentLine(
+    {
+      expensePaymentId: written.paymentId,
+      expenseName: written.expenseName,
+      amount: written.cashAmount.toNumber(),
+      bookedAt,
+      projectId: written.projectId,
+      productId: written.productId,
+    },
+    db,
+  );
 }
