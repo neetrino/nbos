@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P6-S1
-**Next step:** Grok 4.6 High inventories old unpaid balances as read-only. No live correction.
+**Active slice:** P6-S2
+**Next step:** Grok 4.6 High computes independent expected payroll amounts, then compares the implementation. Browser on the local app.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -19,10 +19,10 @@ Owner authorized synthetic data and browser checks on the local dev database (`e
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P5-S3 done; P6-S1 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P6-S1 done; P6-S2 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P5-S3 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P6-S1 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -50,6 +50,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-28 | P5-S2 refund id recheck        | Claude Opus 5.5 Medium | Same reviewer, only the missing payment id and the closed-run write.              | Salary-line sync, refund, and the select-honouring mock             |
 | 2026-09-28 | P5-S3 register reconciliation  | Claude Opus 5.5 Medium | Wallet, journal, and salary line on one payment. Opus 5.5 High is unavailable.    | Uncommitted register diff only                                      |
 | 2026-09-28 | P5-S3 delete journal recheck   | Claude Opus 5.5 Medium | Same reviewer, only the leftover journal after payment delete.                    | Delete, refund neutralize, and journal reverse                      |
+| 2026-09-28 | P6-S1 unpaid inventory         | Claude Opus 5.5 Medium | Read-only old balances. Opus 5.5 High is unavailable.                             | Uncommitted inventory diff only                                     |
+| 2026-09-28 | P6-S1 double-count recheck     | Claude Opus 5.5 Medium | Same reviewer, included remaining, consumed carry, KPI burn, and carry twice.     | Inventory remaining helpers                                         |
 
 ## Slice log
 
@@ -70,8 +72,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P5-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed on the last recheck. No browser. No migration.                              | `598eef803` | Salary is paid first. Bonus cash follows the named bonus. Line carry can be paid.                           |
 | P5-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 6 files, 38 passed. No browser. No migration. Recheck closed the id miss and the closed write. | `71e1d9e49` | Refund of 50,000 leaves paidAmount 300,000. Paying A again stores 320,000. Closed run rejects the write.    |
 | P5-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 28 passed. No browser. No migration. Recheck closed the leftover journal.             | `8e285fd1c` | After 320,000 cash wallet paid is 20,000. Delete reverses the journal to 0.                                 |
-| P6-S1 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Read-only inventory of old unpaid balances. No live correction.                                             |
-| P6-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Needs isolated environment                                                                                  |
+| P6-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 1 file, 13 passed. No browser. No migration. Recheck closed double counts.                     | `a9d6e8991` | Each unpaid amount is listed once. A 200,000 split with 70,000 carry owes 170,000.                          |
+| P6-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Independent expected amounts first. Then compare the implementation. Browser on the local app.              |
 | P6-S3 | `PLANNED`     | Composer 2.5 Fast | Grok 4.6 High          | —                                                                                                              | —           | Canon text only, after behavior is verified                                                                 |
 
 ## Review findings
@@ -121,6 +123,13 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P5-S3-R1 | Closed | Delete of 320,000 reverses the journal line. Refund then delete reverses both lines. ACTIVE journal nets to 0. Recheck passed.      |
 | P5-S3-R2 | Open   | Payment delete and journal reverse are separate writes. A failure in between can leave the journal ACTIVE. Low.                     |
 | P5-S3-R3 | Open   | The P5-S3 tests use a fake journal, not OperationalJournalService against a database. Low.                                          |
+| P6-S1-R1 | Closed | Included remaining 40,000 of 60,000 is listed once. Recheck passed.                                                                 |
+| P6-S1-R2 | Closed | Untouched carry 100,000 is leftover only, not also an unpaid bonus. Recheck passed.                                                 |
+| P6-S1-R3 | Closed | Used carry is not an unpaid bonus. 60,000 used leaves leftover 40,000. Recheck passed.                                              |
+| P6-S1-R4 | Closed | Entry 80,000 with included 60,000 and cash 20,000 owes 40,000. Burned 20,000 is not unpaid. Recheck passed.                         |
+| P6-S1-R5 | Closed | Entry 200,000 with leftover carry 70,000 and unreleased 100,000 owes 170,000. Recheck passed.                                       |
+| P6-S1-R6 | Open   | Unpaid salary remaining is not listed. Low. Required bonus and carry amounts still hold.                                            |
+| P6-S1-R7 | Open   | findMany reads every payment, salary line, and bonus. A later HTTP route would need payroll-level scope. Low.                       |
 | P4-S2-R2 | Closed | A manual title with the source-amount prefix does not pay another employee's plan. Recheck passed.                                  |
 
 ## External blockers
