@@ -78,19 +78,19 @@ M-09 evidence is collected inside P1–P5 on the paths each slice changes. P6 re
 
 ## P5 — Cash, reversals, registers
 
-| Slice                                                    | Status        | M / V                  | Acceptance                                                                                                                           |
-| -------------------------------------------------------- | ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| P5-S1 Salary-first cash and explicit project attribution | `VERIFIED`    | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash. Commit `598eef803` |
-| P5-S2 Reversal restores the original links               | `VERIFIED`    | M-07; V-11             | Refund of 50,000 leaves paidAmount 300,000. Paying the bonus again stores 320,000. Closed run rejects the write. Commit `71e1d9e49`  |
-| P5-S3 Register reconciliation                            | `IN_PROGRESS` | M-06, M-07; V-11, V-17 | SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, Wallet, ProductBonusPool, and the journal agree on synthetic fixtures |
+| Slice                                                    | Status     | M / V                  | Acceptance                                                                                                                           |
+| -------------------------------------------------------- | ---------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| P5-S1 Salary-first cash and explicit project attribution | `VERIFIED` | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash. Commit `598eef803` |
+| P5-S2 Reversal restores the original links               | `VERIFIED` | M-07; V-11             | Refund of 50,000 leaves paidAmount 300,000. Paying the bonus again stores 320,000. Closed run rejects the write. Commit `71e1d9e49`  |
+| P5-S3 Register reconciliation                            | `VERIFIED` | M-06, M-07; V-11, V-17 | After 320,000 cash wallet paid is 20,000. Delete reverses the journal to 0. Commit `8e285fd1c`                                       |
 
 ## P6 — Cutover inventory and acceptance
 
-| Slice                                                | Status    | M / V                        | Acceptance                                                                                                                             |
-| ---------------------------------------------------- | --------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| P6-S1 Safe inventory of old unpaid balances          | `PLANNED` | M-10; V-18                   | Read-only inventory. No live correction, no mass cap removal, no double recovery                                                       |
-| P6-S2 Independent synthetic payroll                  | `PLANNED` | M-11; V-13, V-14, V-17, V-19 | Expected amounts are calculated before reading the implementation result. Browser Finance flows included when a local app is available |
-| P6-S3 Canon reconciliation for implemented decisions | `PLANNED` | M-10                         | Touched canon matches sections 0 and 6. Superseded salary-cap and whole-Probation text is marked historical                            |
+| Slice                                                | Status        | M / V                        | Acceptance                                                                                                                             |
+| ---------------------------------------------------- | ------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| P6-S1 Safe inventory of old unpaid balances          | `IN_PROGRESS` | M-10; V-18                   | Read-only inventory. No live correction, no mass cap removal, no double recovery                                                       |
+| P6-S2 Independent synthetic payroll                  | `PLANNED`     | M-11; V-13, V-14, V-17, V-19 | Expected amounts are calculated before reading the implementation result. Browser Finance flows included when a local app is available |
+| P6-S3 Canon reconciliation for implemented decisions | `PLANNED`     | M-10                         | Touched canon matches sections 0 and 6. Superseded salary-cap and whole-Probation text is marked historical                            |
 
 ## Out of scope
 

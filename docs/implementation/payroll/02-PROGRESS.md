@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P5-S3
-**Next step:** Grok 4.6 High reconciles salary line, expense, bonus release, wallet, pool, and journal on one synthetic payment.
+**Active slice:** P6-S1
+**Next step:** Grok 4.6 High inventories old unpaid balances as read-only. No live correction.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -19,10 +19,10 @@ Owner authorized synthetic data and browser checks on the local dev database (`e
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P5-S2 done; P5-S3 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P5-S3 done; P6-S1 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P5-S2 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P5-S3 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -48,6 +48,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-28 | P5-S1 salary-first cash        | Claude Opus 5.5 Medium | Salary before named bonus cash. Opus 5.5 High is unavailable.                     | Uncommitted salary-first cash diff only                             |
 | 2026-09-28 | P5-S2 payment reversal         | Claude Opus 5.5 Medium | Original links on delete and refund. Opus 5.5 High is unavailable.                | Uncommitted reversal diff only                                      |
 | 2026-09-28 | P5-S2 refund id recheck        | Claude Opus 5.5 Medium | Same reviewer, only the missing payment id and the closed-run write.              | Salary-line sync, refund, and the select-honouring mock             |
+| 2026-09-28 | P5-S3 register reconciliation  | Claude Opus 5.5 Medium | Wallet, journal, and salary line on one payment. Opus 5.5 High is unavailable.    | Uncommitted register diff only                                      |
+| 2026-09-28 | P5-S3 delete journal recheck   | Claude Opus 5.5 Medium | Same reviewer, only the leftover journal after payment delete.                    | Delete, refund neutralize, and journal reverse                      |
 
 ## Slice log
 
@@ -67,8 +69,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P4-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 28 passed on the last recheck. No browser. No migration.                              | `637dd783f` | August 40,000 stays payable in October. A zero-salary settlement approves as AMD.                           |
 | P5-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed on the last recheck. No browser. No migration.                              | `598eef803` | Salary is paid first. Bonus cash follows the named bonus. Line carry can be paid.                           |
 | P5-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 6 files, 38 passed. No browser. No migration. Recheck closed the id miss and the closed write. | `71e1d9e49` | Refund of 50,000 leaves paidAmount 300,000. Paying A again stores 320,000. Closed run rejects the write.    |
-| P5-S3 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Registers must agree on one synthetic payment. Wallet still ignores a partial bonus.                        |
-| P6-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Blocked for live data until a separate authorization                                                        |
+| P5-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 28 passed. No browser. No migration. Recheck closed the leftover journal.             | `8e285fd1c` | After 320,000 cash wallet paid is 20,000. Delete reverses the journal to 0.                                 |
+| P6-S1 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Read-only inventory of old unpaid balances. No live correction.                                             |
 | P6-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                              | —           | Needs isolated environment                                                                                  |
 | P6-S3 | `PLANNED`     | Composer 2.5 Fast | Grok 4.6 High          | —                                                                                                              | —           | Canon text only, after behavior is verified                                                                 |
 
@@ -116,6 +118,9 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P5-S2-R2 | Closed | A second refund does not restore A again. Deleting the source payment clears the leftover refund. Recheck passed.                   |
 | P5-S2-R3 | Closed | A CLOSED run rejects the refund before insert. The closed expense paid total stays 320,000. Recheck passed.                         |
 | P5-S2-R4 | Open   | The closed-run check sits outside the payment lock. A run closed in the same moment could still receive the refund row. Low.        |
+| P5-S3-R1 | Closed | Delete of 320,000 reverses the journal line. Refund then delete reverses both lines. ACTIVE journal nets to 0. Recheck passed.      |
+| P5-S3-R2 | Open   | Payment delete and journal reverse are separate writes. A failure in between can leave the journal ACTIVE. Low.                     |
+| P5-S3-R3 | Open   | The P5-S3 tests use a fake journal, not OperationalJournalService against a database. Low.                                          |
 | P4-S2-R2 | Closed | A manual title with the source-amount prefix does not pay another employee's plan. Recheck passed.                                  |
 
 ## External blockers
