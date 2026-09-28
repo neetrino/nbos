@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P6-S3
-**Next step:** Canon text for the decisions already implemented. Dev synthetic salaries are documented in `03-DEV-SYNTHETIC-DATA.md`. Do not write production.
+**Active slice:** none
+**Next step:** Open lows and V-13 races stay open. A live 210,000 invoice was not loaded in the browser. Do not write production. Do not treat this branch as production-ready.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -76,7 +76,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P5-S3 | `VERIFIED`                 | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 28 passed. No browser. No migration. Recheck closed the leftover journal.                              | `8e285fd1c` | After 320,000 cash wallet paid is 20,000. Delete reverses the journal to 0.                                                                           |
 | P6-S1 | `VERIFIED`                 | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 1 file, 13 passed. No browser. No migration. Recheck closed double counts.                                      | `a9d6e8991` | Each unpaid amount is listed once. A 200,000 split with 70,000 carry owes 170,000.                                                                    |
 | P6-S2 | `IMPLEMENTED_NOT_VERIFIED` | Grok 4.6 High     | Claude Opus 5.5 Medium | Dev browser: September 2026 draft, 19 lines, payable 2,060,000 AMD, paid 0. Detail page opens. Live 210,000 invoice not loaded. | `a80b52061` | Invented dev profiles are in `03-DEV-SYNTHETIC-DATA.md`. Five pending migrations, including the three payroll ones, are applied on the dev host only. |
-| P6-S3 | `IN_PROGRESS`              | Composer 2.5 Fast | Grok 4.6 High          | —                                                                                                                               | —           | Canon text only. Salary-cap and whole-Probation text is marked historical.                                                                            |
+| P6-S3 | `VERIFIED`                 | Composer 2.5 Fast | Orchestrator           | Canon diff checked against document 11 §0, §6, and Q-39–Q-46. No app code.                                                      | —           | Salary-linked monthly cap and whole-Probation KPI are historical. The half-bonus band is ≥50% and <70%.                                               |
 
 ## Review findings
 
