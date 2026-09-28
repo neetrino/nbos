@@ -143,14 +143,14 @@ async function restoreConsumedOntoIncludedRelease(
     return ZERO;
   }
 
-  const nextRemembered = consumed.minus(take);
-  const nextIncluded = (row.payrollIncludedAmount ?? ZERO).plus(take);
+  const nextCarry = (row.payrollCarryOverAmount ?? ZERO).minus(take);
+  const keepRemaining = row.payrollCarryOverRemaining != null && nextCarry.gt(0);
   await tx.bonusRelease.update({
     where: { id: row.id },
     data: {
-      payrollIncludedAmount: nextIncluded,
-      payrollCarryOverAmount: nextRemembered.gt(0) ? nextRemembered : null,
-      payrollCarryOverRemaining: null,
+      payrollIncludedAmount: (row.payrollIncludedAmount ?? ZERO).plus(take),
+      payrollCarryOverAmount: nextCarry.gt(0) ? nextCarry : null,
+      payrollCarryOverRemaining: keepRemaining ? row.payrollCarryOverRemaining : null,
     },
   });
   await addBonusToPriorSalaryLine(tx, row.payrollRunId, line, take);
