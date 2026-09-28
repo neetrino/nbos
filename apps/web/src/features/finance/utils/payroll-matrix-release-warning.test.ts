@@ -24,6 +24,7 @@ const baseCell: PayrollAllocationMatrixCell = {
   releaseThisMonth: '50',
   warning: null,
   reasonRequired: false,
+  bonusType: 'SALES',
   editable: true,
 };
 

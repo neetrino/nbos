@@ -132,7 +132,7 @@ describe('resolveNavPermission', () => {
     });
   });
 
-  it('keeps overview, revenue, and payroll pages on FINANCE_INVOICES', () => {
+  it('keeps overview and revenue pages on FINANCE_INVOICES and payroll on salary', () => {
     expect(resolveNavPermission('/finance/dashboard')).toEqual({
       module: 'FINANCE_INVOICES',
       action: 'VIEW',
@@ -142,7 +142,15 @@ describe('resolveNavPermission', () => {
       action: 'VIEW',
     });
     expect(resolveNavPermission('/finance/payroll')).toEqual({
-      module: 'FINANCE_INVOICES',
+      module: 'FINANCE_SALARY',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/salary')).toEqual({
+      module: 'FINANCE_SALARY',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/finance/bonuses')).toEqual({
+      module: 'FINANCE_BONUSES',
       action: 'VIEW',
     });
   });
@@ -167,6 +175,14 @@ describe('resolveNavPermission', () => {
       action: 'VIEW',
     });
     expect(resolveNavPermission('/my-company/compensation')).toEqual({
+      module: 'FINANCE_SALARY',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/my-company/bonus-policies')).toEqual({
+      module: 'FINANCE_BONUSES',
+      action: 'VIEW',
+    });
+    expect(resolveNavPermission('/my-company/kpi')).toEqual({
       module: 'FINANCE_SALARY',
       action: 'VIEW',
     });

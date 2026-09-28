@@ -23,7 +23,7 @@ export type FinanceZoneHubMetrics = {
   overview: FinanceZoneHubOverviewMetrics;
   revenue: FinanceZoneHubRevenueMetrics;
   expenses: FinanceZoneHubExpensesMetrics;
-  payroll: FinanceZoneHubPayrollMetrics;
+  payroll: FinanceZoneHubPayrollMetrics | null;
 };
 
 /** Roll-up dashboard API data into per-zone hub card metrics. */
@@ -47,9 +47,16 @@ export function buildFinanceZoneHubMetrics(data: FinanceDashboardData): FinanceZ
       openCardCount,
       openCardAmount,
     },
-    payroll: {
-      runCount: data.payrollRuns.runCount,
-      remainingPayable: data.payrollRuns.totalRemaining,
-    },
+    payroll: mapPayrollZoneMetrics(data.payrollRuns),
+  };
+}
+
+function mapPayrollZoneMetrics(
+  payrollRuns: FinanceDashboardData['payrollRuns'],
+): FinanceZoneHubPayrollMetrics | null {
+  if (!payrollRuns) return null;
+  return {
+    runCount: payrollRuns.runCount,
+    remainingPayable: payrollRuns.totalRemaining,
   };
 }

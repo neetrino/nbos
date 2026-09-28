@@ -10,7 +10,10 @@ export type PayrollBonusReleaseBaseInput = {
   earnedPeriod?: string | null;
 };
 
-/** Bonuses for payroll month M use earned period M−1 only. */
+/**
+ * Bonuses already earned on or before M−1 stay payable in payroll month M.
+ * A missing earned period is not treated as a zero entitlement.
+ */
 export function isBonusEligibleForPayrollMonth(
   entry: Pick<PayrollBonusReleaseBaseInput, 'type' | 'earnedPeriod'>,
   payrollMonth: string,
@@ -19,7 +22,7 @@ export function isBonusEligibleForPayrollMonth(
   if (earnedPeriod.length === 0) {
     return false;
   }
-  return earnedPeriod === earnedBonusPeriodForPayoutMonth(payrollMonth);
+  return earnedPeriod <= earnedBonusPeriodForPayoutMonth(payrollMonth);
 }
 
 /** @deprecated Use `isBonusEligibleForPayrollMonth`; kept for Sales KPI attach copy. */
@@ -40,6 +43,9 @@ export function payrollBonusReleaseBase(
   }
   if (entry.payableAmount != null) {
     return decimalFrom(entry.payableAmount);
+  }
+  if (entry.type === 'SALES') {
+    return BONUS_POOL_ZERO;
   }
   return decimalFrom(entry.amount);
 }

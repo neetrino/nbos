@@ -14,16 +14,28 @@ export function computeSalesKpiPayoutFactor(plan: Decimal, actual: Decimal): Dec
   return computeKpiGatePayoutFactor(plan, actual, DEFAULT_KPI_GATE_RULES);
 }
 
+/**
+ * Missing or non-positive plan, or missing actual, holds the Sales bonus.
+ * Null is not a payout of 1 (full) or 0 (under 50 percent).
+ */
+export function resolveSalesKpiPayoutFactorOrHold(
+  plan: Decimal | null,
+  actual: Decimal | null,
+  gateRules: KpiGateRules = DEFAULT_KPI_GATE_RULES,
+): Decimal | null {
+  if (plan == null || actual == null || plan.lte(0)) {
+    return null;
+  }
+  return computeKpiGatePayoutFactor(plan, actual, gateRules);
+}
+
 export function resolveSalesKpiPayoutFactorFromRun(
   run: PayrollRunKpiSnapshot,
   gateRules: KpiGateRules = DEFAULT_KPI_GATE_RULES,
-): Decimal {
+): Decimal | null {
   const plan = run.kpiSalesPlanAmount != null ? new Decimal(run.kpiSalesPlanAmount) : null;
   const actual = run.kpiSalesActualAmount != null ? new Decimal(run.kpiSalesActualAmount) : null;
-  if (plan == null || actual == null || plan.lte(0)) {
-    return new Decimal(1);
-  }
-  return computeKpiGatePayoutFactor(plan, actual, gateRules);
+  return resolveSalesKpiPayoutFactorOrHold(plan, actual, gateRules);
 }
 
 /**

@@ -10,6 +10,8 @@ import {
 import {
   FINANCE_INVOICES_VIEW_REQUIREMENT,
   FINANCE_MODULE_VIEW_REQUIREMENT,
+  FINANCE_SALARY_VIEW_REQUIREMENT,
+  FINANCE_BONUSES_VIEW_REQUIREMENT,
 } from './finance-nav-permissions';
 import type { PermissionRequirement } from './permission-requirement';
 
@@ -34,10 +36,6 @@ const FINANCE_INVOICES_VIEW_ROUTES = [
   '/finance/journal',
   '/finance/orders',
   '/finance/invoices',
-  '/finance/payroll',
-  '/finance/salary',
-  '/finance/bonuses',
-  '/finance/bonus-pools',
 ] as const;
 
 /**
@@ -82,6 +80,14 @@ export const EXPLICIT_ROUTE_PERMISSIONS: RoutePermissionEntry[] = [
     href,
     permission: FINANCE_INVOICES_VIEW_REQUIREMENT,
   })),
+  { href: '/finance/payroll', permission: FINANCE_SALARY_VIEW_REQUIREMENT },
+  { href: '/finance/salary', permission: FINANCE_SALARY_VIEW_REQUIREMENT },
+  { href: '/finance/bonuses', permission: FINANCE_BONUSES_VIEW_REQUIREMENT },
+  { href: '/finance/bonus-pools', permission: FINANCE_BONUSES_VIEW_REQUIREMENT },
+  { href: '/my-company/bonus-policies', permission: FINANCE_BONUSES_VIEW_REQUIREMENT },
+  { href: '/my-company/sales-bonus-policies', permission: FINANCE_BONUSES_VIEW_REQUIREMENT },
+  { href: '/my-company/kpi', permission: FINANCE_SALARY_VIEW_REQUIREMENT },
+  { href: '/my-company/kpi-policies', permission: FINANCE_SALARY_VIEW_REQUIREMENT },
   { href: '/finance/payments', permission: { module: 'FINANCE_PAYMENTS', action: 'VIEW' } },
   {
     href: '/finance/subscriptions',

@@ -2,7 +2,9 @@ import { ForbiddenException, Injectable, Inject, NotFoundException } from '@nest
 import { resolveCompensationPayoutPhase } from '../payroll-runs/compensation-payout-phase';
 import { querySalaryLineMonthDetail } from '../payroll-runs/salary-line-month-detail';
 import type { SalaryLineMonthDetailDto } from '../payroll-runs/salary-line-month-detail.types';
-import { Prisma, PrismaClient, type Decimal } from '@nbos/database';
+import { Decimal, Prisma, PrismaClient } from '@nbos/database';
+import { payrollMonthForInstant } from '../compensation-profiles/compensation-profile-payroll-month';
+import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
 import { PRISMA_TOKEN } from '../../database.module';
 import { fetchWalletActivity } from './employee-wallet-activity';
 import {
@@ -90,6 +92,7 @@ export class EmployeeWalletService {
       loadWalletBonusLedgerContext(
         this.prisma,
         bonusRows.map((b) => ({ id: b.id, orderId: b.orderId, amount: b.amount })),
+        employeeId,
       ),
       fetchWalletActivity(this.prisma, employeeId),
     ]);
@@ -160,12 +163,12 @@ export class EmployeeWalletService {
   }
 
   private async loadActiveProfileSalary(employeeId: string): Promise<Decimal | null> {
-    const row = await this.prisma.compensationProfile.findFirst({
-      where: { employeeId, status: 'ACTIVE' },
-      orderBy: { effectiveFrom: 'desc' },
-      select: { baseSalary: true },
-    });
-    return row?.baseSalary ?? null;
+    const row = await resolveCompensationProfileForPayrollMonth(
+      this.prisma,
+      employeeId,
+      payrollMonthForInstant(new Date()),
+    );
+    return row != null ? new Decimal(row.baseSalary.toString()) : null;
   }
 
   private toEmployeeBlock(

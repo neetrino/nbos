@@ -36,7 +36,13 @@ export type MyCompanyHubDescriptionKey =
   | 'hub.sections.sop.description'
   | 'hub.sections.coreFunction.description';
 
-export type MyCompanyNavGate = 'company' | 'salary' | 'checklists' | 'coreFunction';
+export type MyCompanyNavGate =
+  | 'company'
+  | 'salary'
+  | 'bonus'
+  | 'kpi'
+  | 'checklists'
+  | 'coreFunction';
 
 export type MyCompanyNavItem = {
   href: string;
@@ -89,7 +95,7 @@ export const MY_COMPANY_NAV: MyCompanyNavItem[] = [
     href: '/my-company/bonus-policies',
     labelKey: 'companyNav.bonus',
     icon: Percent,
-    gate: 'company',
+    gate: 'bonus',
     matchHrefs: ['/my-company/bonus-policies', '/my-company/sales-bonus-policies'],
     descriptionKey: 'hub.sections.bonus.description',
   },
@@ -97,7 +103,7 @@ export const MY_COMPANY_NAV: MyCompanyNavItem[] = [
     href: '/my-company/kpi',
     labelKey: 'companyNav.kpi',
     icon: Target,
-    gate: 'company',
+    gate: 'kpi',
     matchHrefs: ['/my-company/kpi', '/my-company/kpi-policies'],
     descriptionKey: 'hub.sections.kpi.description',
   },
@@ -144,7 +150,7 @@ export function isMyCompanyNavVisible(gate: MyCompanyNavGate, can: CanPermission
   if (gate === 'coreFunction') {
     return can('VIEW', FUNCTION_CATALOG_MODULE) || can('VIEW', DELIVERY_COMPENSATION_RULES_MODULE);
   }
-  const canOpenHr = can('VIEW', 'COMPANY');
-  if (gate === 'salary') return canOpenHr && can('VIEW', 'FINANCE_SALARY');
-  return canOpenHr;
+  if (gate === 'salary' || gate === 'kpi') return can('VIEW', 'FINANCE_SALARY');
+  if (gate === 'bonus') return can('VIEW', 'FINANCE_BONUSES');
+  return can('VIEW', 'COMPANY');
 }

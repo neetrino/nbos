@@ -62,6 +62,7 @@ export type PayrollAllocationMatrixCell = {
   releaseThisMonth: string;
   warning: string | null;
   reasonRequired: boolean;
+  bonusType: string | null;
   editable: boolean;
 };
 

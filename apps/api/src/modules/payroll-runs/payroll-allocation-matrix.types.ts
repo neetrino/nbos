@@ -24,6 +24,14 @@ export type PayrollAllocationMatrixEmployeeRow = {
   payableTotal: string;
 };
 
+export type PayrollAllocationMatrixCellSource = {
+  bonusEntryId: string;
+  plannedAmount: string;
+  originalAmount: string;
+  title: string | null;
+  type: string;
+};
+
 export type PayrollAllocationMatrixCell = {
   employeeId: string;
   orderId: string;
@@ -31,6 +39,8 @@ export type PayrollAllocationMatrixCell = {
   linked: boolean;
   bonusTitle: string | null;
   bonusEntryId: string | null;
+  /** Every visible source entry in this employee/order cell. */
+  sourceEntries: PayrollAllocationMatrixCellSource[];
   bonusReleaseId: string | null;
   plannedAmount: string;
   originalAmount: string | null;
@@ -42,6 +52,8 @@ export type PayrollAllocationMatrixCell = {
   releaseThisMonth: string;
   warning: string | null;
   reasonRequired: boolean;
+  /** Bonus entry type, or null when the cell has no visible entry. */
+  bonusType: string | null;
   editable: boolean;
 };
 
@@ -77,11 +89,18 @@ export type PatchPayrollMatrixLayoutBody = {
   pinnedUnitIds?: string[];
 };
 
+export type PatchPayrollMatrixCellSourceAmount = {
+  bonusEntryId: string;
+  amount: string;
+};
+
 export type PatchPayrollMatrixCellBody = {
   employeeId: string;
   orderId: string;
   releaseThisMonth: string;
   reason?: string;
+  /** Chosen per-source amounts. Required when the cell total spans more than one bound entry. */
+  sourceAmounts?: PatchPayrollMatrixCellSourceAmount[];
 };
 
 export type CreatePayrollMatrixManualBonusBody = {

@@ -1,6 +1,7 @@
 'use client';
 
 import { CalendarRange, LayoutGrid, List, Users } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { ViewModeOption } from '@/components/shared';
 import { createPersistedScalarStore } from '@/lib/persisted-client-state';
@@ -66,7 +67,7 @@ export function getPayrollRunDetailViewOptions(
 
 export function usePayrollRunDetailViewOptions(): ViewModeOption<PayrollRunDetailViewMode>[] {
   const t = useTranslations('payroll');
-  return getPayrollRunDetailViewOptions((key) => t(key));
+  return useMemo(() => getPayrollRunDetailViewOptions((key) => t(key)), [t]);
 }
 
 /** English fallback for surfaces that are not yet on the payroll namespace. */

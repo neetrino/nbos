@@ -173,6 +173,13 @@ export function PayrollRunDetailPageContent({
   const matrixViewMode: PayrollMatrixViewMode =
     detailViewMode === 'ORDER_MATRIX' ? 'ORDER_MATRIX' : 'EMPLOYEE_MATRIX';
 
+  const handleMatrixChange = useCallback(
+    (matrix: PayrollAllocationMatrix) => {
+      matrixCache.setMatrixForMode(matrixViewMode, matrix);
+    },
+    [matrixCache, matrixViewMode],
+  );
+
   useEffect(() => {
     if (!usesMatrixFamily || !isPayrollMatrixViewMode(detailViewMode)) return;
     void matrixCache.ensureMatrix(matrixViewMode);
@@ -373,7 +380,7 @@ export function PayrollRunDetailPageContent({
             search={matrixSearch}
             fullscreen={matrixFullscreen}
             initialMatrix={matrixCache.matrixByMode[matrixViewMode]}
-            onMatrixChange={(matrix) => matrixCache.setMatrixForMode(matrixViewMode, matrix)}
+            onMatrixChange={handleMatrixChange}
             onTotalsChange={setMatrixTotals}
             onLayoutHeroActionsChange={setLayoutHeroActions}
             onOpenSalaryLine={handleOpenSalaryLine}

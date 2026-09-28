@@ -2,6 +2,8 @@
 
 **Дополнение 2026-09-18:** [Delivery Compensation v2](../../03-Business-Logic/11-Delivery-Compensation-Configurator.md) заменяет способ расчёта плановых delivery-бонусов для новой модели. Проценты, employee overrides и split 70/30 не определяют v2-суммы. Funding, release, payroll и выплата сохраняются; совместимость earned period, late funding и корректировок обязательна по [техническому контракту](../../../implementation/delivery-compensation/01-TECHNICAL-CONTRACT.md). Product/Delivery больше не являются финансовыми экранами; суммы доступны в Wallet/авторизованном Finance.
 
+**Актуальная политика payroll (2026-09-27):** consolidated decisions — [11-FINAL-COMPLETION-PLAN](../../../audit/payroll/11-FINAL-COMPLETION-PLAN.md) §0, §6, Q-39–Q-46; детали Sales/KPI/accrual — [03-Bonus-Payroll-Logic](../../03-Business-Logic/03-Bonus-Payroll-Logic.md) § «Актуальная политика payroll». Кратко: AMD take-home, `Decimal` 2dp ROUND_HALF_UP; tax/bank вне NBOS; manual payroll run; salary-first при частичной выплате; explicit project allocation без FIFO; один authorized Finance/Director/CEO/Owner (без mandatory second approver); Sales combined accrual ≤300k/order до KPI; Probation = тот же calendar-month KPI gate; **нет** monthly bonus ceiling от Fix. Документ **не** заявляет production-ready.
+
 ## Общая концепция
 
 Этот контур отвечает за мотивацию сотрудников и выплаты:
@@ -575,9 +577,11 @@ Expense Payments
 
 ## Payroll cycle / Цикл выплаты зарплат
 
+> **Уточнение (2026-09-27, BR-24):** для first launch `Payroll Run` создаёт **Finance вручную**; обязательного payroll scheduler нет. Ниже — целевой operational flow после создания run, не описание автоматического cron.
+
 ### 1. Подготовка
 
-В начале месяца система создаёт `Payroll Run` за предыдущий месяц.
+~~В начале месяца система создаёт `Payroll Run` за предыдущий месяц.~~ **Superseded как обязательное поведение:** Finance инициирует run за нужный сервисный месяц вручную; автосоздание в начале месяца — историческое/будущее convenience (BR-05 deferred), не launch requirement.
 
 Она подтягивает:
 
@@ -604,11 +608,11 @@ Finance проверяет:
 
 ### 3. Утверждение
 
-CEO / Finance утверждает payroll:
+CEO / Finance / Owner (один authorized operator с financial permissions) утверждает payroll:
 
 `Review -> Approved`
 
-После этого система создаёт связанные `Expense Cards`.
+Mandatory second approver / maker-checker **не** требуется (BR-16). После approval система создаёт связанные `Expense Cards`. При частичной выплате сотруднику **сначала** закрывается Fix, затем именованный bonus; распределение bonus по проектам — явное, без automatic oldest-project FIFO (BR-15, BR-37, Q-43).
 
 ### 4. Выплата
 
@@ -701,17 +705,18 @@ Row/column order persists per user, per payroll run, per view mode (`PayrollMatr
 
 KPI configuration lives in **My Company / Compensation / KPI Policies**, not in Payroll Run Detail.
 
-| Concept        | Role                                                                         |
-| -------------- | ---------------------------------------------------------------------------- |
-| KPI Policy     | Reusable gate rules (bands, cap multiplier)                                  |
-| KPI Result     | Earned-month snapshot: plan, actual, attainment %, payout factor             |
-| BonusEntry     | `earnedPeriod`, `amount`, `kpiPayoutFactorAtFreeze`, `payableAmount`         |
-| Payroll attach | Uses **bonus earned period** + frozen `payableAmount`, not payroll month − 1 |
+| Concept        | Role                                                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| KPI Policy     | Reusable gate rules (bands, payout factors). ~~`cap multiplier` к Fix~~ — **superseded** 2026-09-27 (BR-29); monthly salary-linked bonus ceiling не является текущей политикой |
+| KPI Result     | Earned-month snapshot: plan, actual, attainment %, payout factor                                                                                                               |
+| BonusEntry     | `earnedPeriod`, `amount`, `kpiPayoutFactorAtFreeze`, `payableAmount`                                                                                                           |
+| Payroll attach | Uses **bonus earned period** + frozen `payableAmount`, not payroll month − 1                                                                                                   |
 
 Rules:
 
 - KPI snapshots refresh on business events (client payment, sales accrual) — not Finance manual month-close.
-- Calendar month roll-over implicitly freezes prior-month bonuses; optional scheduler repair endpoints only for ops.
+- Calendar month roll-over implicitly freezes prior-month bonuses; optional scheduler repair endpoints only for ops (не payroll-run scheduler; BR-24).
+- Sales KPI payable snapshot и order combined accrual cap 300 000 AMD — см. [03-Bonus-Payroll-Logic](../../03-Business-Logic/03-Bonus-Payroll-Logic.md); Probation использует тот же calendar-month KPI gate, что active Sales (BR-25/33).
 - Payroll shows KPI-adjusted amounts as part of bonus release facts (Salary Board month sheet, Wallet) — no standalone KPI workspace on payroll detail.
 - Bonus Board / matrix: **Adjust planned amount** — any sum, required reason, audit `PLANNED_BONUS_UPDATED`.
 

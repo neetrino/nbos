@@ -169,13 +169,13 @@ export const NAV_MODULE_DEFINITIONS: NavModuleDefinition[] = [
         label: 'children.myCompany.bonus',
         href: '/my-company/bonus-policies',
         matchHrefs: ['/my-company/bonus-policies', '/my-company/sales-bonus-policies'],
-        permission: { module: 'COMPANY', action: 'VIEW' },
+        permission: { module: 'FINANCE_BONUSES', action: 'VIEW' },
       },
       {
         label: 'children.myCompany.kpi',
         href: '/my-company/kpi',
         matchHrefs: ['/my-company/kpi', '/my-company/kpi-policies'],
-        permission: { module: 'COMPANY', action: 'VIEW' },
+        permission: { module: 'FINANCE_SALARY', action: 'VIEW' },
       },
       {
         label: 'children.myCompany.checklists',

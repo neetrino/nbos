@@ -1,9 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Decimal, PrismaClient, type InputJsonValue, type LeadSourceEnum } from '@nbos/database';
 import { decimalFrom } from './bonus-pool-decimal';
-import { hasRecurringSalesAccrualForInvoiceEmployee } from './sales-bonus-accrual-idempotency';
-import { buildSalesBonusAmountRows, persistSalesBonusRows } from './sales-bonus-accrual-rows';
-import type { SalesBonusAmountRow } from './sales-bonus-accrual-rows';
+import { persistLockedCappedSalesBonusRows } from './sales-bonus-order-accrual-write';
 
 type RecurringDeal = {
   id: string;
@@ -51,21 +49,17 @@ export async function accrueSubscriptionRecurringSalesBonus(input: {
     return false;
   }
 
-  const rowsToCreate = await rowsMissingForInvoice(input, policy);
-  if (rowsToCreate.length === 0) {
-    return false;
-  }
-
-  return persistSalesBonusRows(
-    input.prisma,
-    input.order,
-    input.order.deal,
-    rowsToCreate,
-    recurringSnapshot(input, policy),
-    input.invoice.id,
-    null,
-    input.earnedPeriod,
-  );
+  return persistLockedCappedSalesBonusRows({
+    prisma: input.prisma,
+    order: input.order,
+    deal: input.order.deal,
+    policy,
+    baseAmount: decimalFrom(input.invoice.amount),
+    snapshotJson: recurringSnapshot(input, policy),
+    invoiceId: input.invoice.id,
+    slotMode: null,
+    earnedPeriod: input.earnedPeriod,
+  });
 }
 
 function recurringSnapshot(
@@ -84,29 +78,4 @@ function recurringSnapshot(
     dealId: input.order.deal.id,
     basis: 'SUBSCRIPTION_RECURRING_INVOICE',
   };
-}
-
-async function rowsMissingForInvoice(
-  input: {
-    prisma: InstanceType<typeof PrismaClient>;
-    invoice: { id: string; amount: Decimal };
-    order: RecurringOrder;
-  },
-  policy: SalesBonusPolicy,
-): Promise<SalesBonusAmountRow[]> {
-  const baseAmount = decimalFrom(input.invoice.amount);
-  const rows = buildSalesBonusAmountRows(input.order.deal, policy, baseAmount);
-  const missing: SalesBonusAmountRow[] = [];
-  for (const row of rows) {
-    const exists = await hasRecurringSalesAccrualForInvoiceEmployee(
-      input.prisma,
-      input.order.id,
-      input.invoice.id,
-      row.employeeId,
-    );
-    if (!exists) {
-      missing.push(row);
-    }
-  }
-  return missing;
 }

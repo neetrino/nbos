@@ -1,4 +1,6 @@
 import { Decimal, type ExpenseCategoryEnum, type TransactionClient } from '@nbos/database';
+import { assertEmployeeTakeHomeCurrency } from '../compensation-profiles/compensation-profile-currency';
+import { isZeroSalaryBonusSettlementLine } from './payroll-bonus-settlement-salary-line';
 
 /** Machine-readable trace for support / reconciliation (not shown as user-facing copy). */
 export function formatPayrollExpenseNotes(
@@ -42,15 +44,58 @@ export interface MaterializePayrollExpensesResult {
   createdExpenseIds: string[];
 }
 
+type PayableSalaryLine = {
+  id: string;
+  totalPayable: Decimal;
+  baseSalary: Decimal;
+  bonusesTotal: Decimal;
+  compensationProfileId: string | null;
+  employee: { firstName: string; lastName: string };
+  compensationProfile: { id: string; currency: string } | null;
+};
+
+function assertPayableLinesAreAmd(lines: readonly PayableSalaryLine[]): void {
+  for (const line of lines) {
+    if (isZeroSalaryBonusSettlementLine(line)) {
+      continue;
+    }
+    assertEmployeeTakeHomeCurrency(line.compensationProfile?.currency, `Salary line ${line.id}`);
+  }
+}
+
+async function createLinkedPayrollExpense(
+  tx: TransactionClient,
+  params: { payrollRunId: string; payrollMonth: string },
+  line: PayableSalaryLine,
+): Promise<string> {
+  const expense = await tx.expense.create({
+    data: {
+      name: `Payroll ${params.payrollMonth} · ${employeeDisplayName(line.employee)}`,
+      type: 'PLANNED',
+      category: pickPayrollExpenseCategory(line),
+      amount: line.totalPayable,
+      frequency: 'ONE_TIME',
+      dueDate: endOfPayrollMonthUtc(params.payrollMonth),
+      status: 'DUE_NOW',
+      notes: formatPayrollExpenseNotes(params.payrollRunId, line.id, line.compensationProfileId),
+    },
+  });
+  await tx.salaryLine.update({
+    where: { id: line.id },
+    data: { expenseId: expense.id, status: 'APPROVED' },
+  });
+  return expense.id;
+}
+
 /**
  * Creates one `Expense` per payable salary line and links `salary_lines.expense_id`.
  * Call only while transitioning a run to `APPROVED`, inside the same DB transaction.
+ * Expense has no currency column: non-AMD profiles are rejected before create.
  */
 export async function materializePayrollExpensesForApprovedRun(
   tx: TransactionClient,
   params: { payrollRunId: string; payrollMonth: string },
 ): Promise<MaterializePayrollExpensesResult> {
-  const createdExpenseIds: string[] = [];
   const lines = await tx.salaryLine.findMany({
     where: { payrollRunId: params.payrollRunId, expenseId: null },
     include: {
@@ -58,34 +103,12 @@ export async function materializePayrollExpensesForApprovedRun(
       compensationProfile: { select: { id: true, currency: true } },
     },
   });
+  const payable = lines.filter((line) => line.totalPayable.gt(0));
+  assertPayableLinesAreAmd(payable);
 
-  for (const line of lines) {
-    if (line.totalPayable.lte(0)) {
-      continue;
-    }
-
-    const name = `Payroll ${params.payrollMonth} · ${employeeDisplayName(line.employee)}`;
-    const category = pickPayrollExpenseCategory(line);
-    const expense = await tx.expense.create({
-      data: {
-        name,
-        type: 'PLANNED',
-        category,
-        amount: line.totalPayable,
-        frequency: 'ONE_TIME',
-        dueDate: endOfPayrollMonthUtc(params.payrollMonth),
-        status: 'DUE_NOW',
-        notes: formatPayrollExpenseNotes(params.payrollRunId, line.id, line.compensationProfileId),
-      },
-    });
-
-    createdExpenseIds.push(expense.id);
-
-    await tx.salaryLine.update({
-      where: { id: line.id },
-      data: { expenseId: expense.id, status: 'APPROVED' },
-    });
+  const createdExpenseIds: string[] = [];
+  for (const line of payable) {
+    createdExpenseIds.push(await createLinkedPayrollExpense(tx, params, line));
   }
-
   return { createdExpenseIds };
 }

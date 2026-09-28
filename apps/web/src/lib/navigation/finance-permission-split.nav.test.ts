@@ -86,6 +86,18 @@ describe('finance permission-split navigation', () => {
     expect(hasNavPermission(FINANCE_MODULE_VIEW_REQUIREMENT, canView('FINANCE_INVOICES'))).toBe(
       true,
     );
+    expect(hasNavPermission(FINANCE_MODULE_VIEW_REQUIREMENT, canView('FINANCE_SALARY'))).toBe(true);
+    expect(hasNavPermission(FINANCE_MODULE_VIEW_REQUIREMENT, canView('FINANCE_BONUSES'))).toBe(
+      true,
+    );
     expect(hasNavPermission({ anyOf: [] }, () => true)).toBe(false);
+  });
+
+  it('opens payroll pages on salary or bonus, not invoices', () => {
+    expect(permitted('/finance/payroll', canView('FINANCE_INVOICES'))).toBe(false);
+    expect(permitted('/finance/payroll', canView('FINANCE_SALARY'))).toBe(true);
+    expect(permitted('/finance/bonuses', canView('FINANCE_BONUSES'))).toBe(true);
+    expect(permitted('/finance/bonuses', canView('FINANCE_SALARY'))).toBe(false);
+    expect(visibleZones(canView('FINANCE_SALARY'))).toEqual(['payroll']);
   });
 });

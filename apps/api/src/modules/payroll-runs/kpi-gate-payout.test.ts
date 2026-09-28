@@ -43,4 +43,17 @@ describe('computeKpiGatePayoutFactor', () => {
       '0.25',
     );
   });
+
+  it('uses 70/50/0 boundaries on a 1,500,000 example plan without float math', () => {
+    const plan = new Decimal('1500000');
+    expect(
+      computeKpiGatePayoutFactor(plan, new Decimal('1050000'), DEFAULT_KPI_GATE_RULES).toString(),
+    ).toBe('1');
+    expect(
+      computeKpiGatePayoutFactor(plan, new Decimal('750000'), DEFAULT_KPI_GATE_RULES).toString(),
+    ).toBe('0.5');
+    expect(
+      computeKpiGatePayoutFactor(plan, new Decimal('749999.99'), DEFAULT_KPI_GATE_RULES).toString(),
+    ).toBe('0');
+  });
 });

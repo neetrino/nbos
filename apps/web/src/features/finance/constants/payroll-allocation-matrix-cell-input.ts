@@ -9,6 +9,9 @@ export const PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER_KEY = 'matrix.cell.placehol
 
 export const PAYROLL_MATRIX_CELL_RELEASE_ARIA_KEY = 'matrix.cell.releaseAria' as const;
 
+/** Reuses the existing Finance reason copy so extra/over-funding/early saves can send it. */
+export const PAYROLL_MATRIX_CELL_REASON_ARIA_KEY = 'matrix.manual.fieldReason' as const;
+
 /** Finance field shell — same hover/focus treatment as detail sheet money fields. */
 export const PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS = cn(
   DETAIL_SHEET_FIELD_SHELL_HOVER_BORDER_CLASS,
