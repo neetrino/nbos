@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import {
   payrollAllocationMatrixApi,
@@ -114,14 +114,26 @@ export function usePayrollRunMatrixCache(payrollRunId: string, enabled: boolean)
     });
   }, [enabled, ensureMeta, ensureMatrix]);
 
-  return {
-    meta,
-    metaError,
-    matrixByMode,
-    matrixLoadingMode,
-    ensureMeta,
-    ensureMatrix,
-    setMatrixForMode,
-    reset,
-  };
+  return useMemo(
+    () => ({
+      meta,
+      metaError,
+      matrixByMode,
+      matrixLoadingMode,
+      ensureMeta,
+      ensureMatrix,
+      setMatrixForMode,
+      reset,
+    }),
+    [
+      meta,
+      metaError,
+      matrixByMode,
+      matrixLoadingMode,
+      ensureMeta,
+      ensureMatrix,
+      setMatrixForMode,
+      reset,
+    ],
+  );
 }
