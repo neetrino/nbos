@@ -1,7 +1,5 @@
-import {
-  sumNetEncodedBonusCashByRelease,
-  type PayrollCashPaymentNotes,
-} from './payroll-salary-first-cash-reverse';
+import { sumNetEncodedBonusCashByRelease } from './payroll-salary-first-cash-reverse';
+import type { PayrollCashPaymentNotes } from './payroll-salary-first-cash-notes';
 import {
   alreadySettledSalaryRows,
   includedUnpaidReleaseRows,
