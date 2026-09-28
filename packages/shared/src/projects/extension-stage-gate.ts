@@ -1,5 +1,4 @@
 import type { StageGateError } from '../stage-gates/types';
-import { isOrderPaymentGateSatisfied } from './order-payment-gate';
 
 export const EXTENSION_ALLOWED_TRANSITIONS: Record<string, string[]> = {
   NEW: ['DEVELOPMENT', 'LOST'],
@@ -74,34 +73,9 @@ function getExtensionDoneGateErrors(extension: ExtensionStageGateInput): StageGa
       message: `${openTaskCount} tasks still require completion before Extension Done.`,
     });
   }
-  return [
-    ...errors,
-    ...buildOpenOrderErrors(extension.order),
-    ...buildUnpaidInvoiceErrors(extension.order?.invoices ?? []),
-  ];
+  return errors;
 }
 
 function isClosedTask(status: string): boolean {
   return ['COMPLETED', 'ON_HOLD', 'DONE'].includes(status);
-}
-
-function buildOpenOrderErrors(order: ExtensionStageGateInput['order']): StageGateError[] {
-  if (isOrderPaymentGateSatisfied(order)) return [];
-  return [
-    {
-      field: 'finance',
-      message: `Order ${order?.status} must be fully paid or closed before Extension Done.`,
-    },
-  ];
-}
-
-function buildUnpaidInvoiceErrors(invoices: Array<{ moneyStatus: string }>): StageGateError[] {
-  const unpaidCount = invoices.filter((invoice) => invoice.moneyStatus !== 'PAID').length;
-  if (unpaidCount === 0) return [];
-  return [
-    {
-      field: 'finance',
-      message: `${unpaidCount} invoices still require payment before Extension Done.`,
-    },
-  ];
 }

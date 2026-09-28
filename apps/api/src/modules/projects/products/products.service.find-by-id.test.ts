@@ -153,9 +153,13 @@ describe('ProductsService', () => {
           'OPEN_TASKS',
           'OPEN_TICKETS',
           'CLIENT_ACCEPTANCE_MISSING',
-          'UNPAID_INVOICES',
-          'ORDER_NOT_CLOSED',
         ]),
+      );
+      expect(result.doneReadiness.blockers.map((item) => item.code)).not.toContain(
+        'UNPAID_INVOICES',
+      );
+      expect(result.doneReadiness.blockers.map((item) => item.code)).not.toContain(
+        'ORDER_NOT_CLOSED',
       );
       expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
         'NO_PROJECT_CREDENTIALS',

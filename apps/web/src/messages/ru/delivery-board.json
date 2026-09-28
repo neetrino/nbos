@@ -126,8 +126,6 @@
     "noOpenTasks": "Нет открытых задач",
     "noOpenTickets": "Нет открытых тикетов",
     "clientAcceptance": "Приёмка клиента зафиксирована",
-    "orderClosed": "Заказ финансово закрыт",
-    "noUnpaidInvoices": "Нет неоплаченных счетов",
     "scopeFilled": "Описание и заметки заполнены",
     "ownerAssigned": "Владелец назначен",
     "stageChecklist": "Чек-лист этапа",

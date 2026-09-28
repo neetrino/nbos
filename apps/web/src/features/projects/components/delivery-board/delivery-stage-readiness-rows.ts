@@ -1,4 +1,3 @@
-import { isOrderPaymentGateSatisfied } from '@nbos/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import type { ChecklistStageProgress, DeliveryLifecycleProjection } from '@/lib/api/projects';
@@ -19,8 +18,6 @@ export const STAGE_READINESS_LABELS = {
   noOpenTasks: 'No open tasks',
   noOpenTickets: 'No open tickets',
   clientAcceptance: 'Client acceptance recorded',
-  orderClosed: 'Order financially closed',
-  noUnpaidInvoices: 'No unpaid invoices',
   scopeFilled: 'Scope & notes filled',
   ownerAssigned: 'Owner assigned',
   stageChecklist: 'Stage checklist',
@@ -82,9 +79,6 @@ export function buildProductStageReadinessRows(
       done: open === 0,
     });
   } else if (stage === 'TRANSFER') {
-    const invoices = product.order?.invoices ?? [];
-    const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
-    const orderOk = isOrderPaymentGateSatisfied(product.order);
     const extOpen = (product.extensions ?? []).filter(
       (e) => !CLOSED_EXTENSION.has(e.status),
     ).length;
@@ -105,8 +99,6 @@ export function buildProductStageReadinessRows(
         label: STAGE_READINESS_LABELS.clientAcceptance,
         done: Boolean(product.clientAcceptedAt),
       },
-      { key: 'order', label: STAGE_READINESS_LABELS.orderClosed, done: orderOk },
-      { key: 'inv', label: STAGE_READINESS_LABELS.noUnpaidInvoices, done: unpaid === 0 },
     );
   }
 
@@ -148,18 +140,11 @@ export function buildExtensionStageReadinessRows(
       done: open === 0,
     });
   } else if (stage === 'TRANSFER') {
-    const invoices = extension.order?.invoices ?? [];
-    const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
-    const orderOk = isOrderPaymentGateSatisfied(extension.order);
-    rows.push(
-      {
-        key: 'tasks',
-        label: STAGE_READINESS_LABELS.noOpenTasks,
-        done: countOpenTasks(extension.tasks ?? []) === 0,
-      },
-      { key: 'order', label: STAGE_READINESS_LABELS.orderClosed, done: orderOk },
-      { key: 'inv', label: STAGE_READINESS_LABELS.noUnpaidInvoices, done: unpaid === 0 },
-    );
+    rows.push({
+      key: 'tasks',
+      label: STAGE_READINESS_LABELS.noOpenTasks,
+      done: countOpenTasks(extension.tasks ?? []) === 0,
+    });
   }
 
   if (checklist && checklist.total > 0) {

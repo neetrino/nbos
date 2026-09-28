@@ -42,8 +42,6 @@ export const READINESS_LABEL_MESSAGE_KEYS = {
   [STAGE_READINESS_LABELS.noOpenTasks]: 'readiness.noOpenTasks',
   [STAGE_READINESS_LABELS.noOpenTickets]: 'readiness.noOpenTickets',
   [STAGE_READINESS_LABELS.clientAcceptance]: 'readiness.clientAcceptance',
-  [STAGE_READINESS_LABELS.orderClosed]: 'readiness.orderClosed',
-  [STAGE_READINESS_LABELS.noUnpaidInvoices]: 'readiness.noUnpaidInvoices',
   [STAGE_READINESS_LABELS.scopeFilled]: 'readiness.scopeFilled',
   [STAGE_READINESS_LABELS.ownerAssigned]: 'readiness.ownerAssigned',
   [STAGE_READINESS_LABELS.stageChecklist]: 'readiness.stageChecklist',

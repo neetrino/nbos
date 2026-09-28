@@ -13,58 +13,19 @@ const readyWork = {
   },
 };
 
-describe('buildProductDoneReadiness finance gate', () => {
-  it('allows CLASSIC FULLY_PAID with no unpaid invoices', () => {
-    const result = buildProductDoneReadiness({
-      ...readyWork,
-      order: {
-        status: 'FULLY_PAID',
-        paymentType: 'CLASSIC',
-        invoices: [{ moneyStatus: 'PAID' }],
-      },
-    });
-    expect(result.canCompleteWithRuntimeData).toBe(true);
-    expect(result.blockers.map((item) => item.code)).not.toContain('ORDER_NOT_CLOSED');
-    expect(result.blockers.map((item) => item.code)).not.toContain('UNPAID_INVOICES');
-  });
-
-  it('blocks CLASSIC PARTIALLY_PAID even when invoices are paid', () => {
+describe('buildProductDoneReadiness finance independence', () => {
+  it('stays Done-ready when the linked order is partially paid and an invoice is unpaid', () => {
     const result = buildProductDoneReadiness({
       ...readyWork,
       order: {
         status: 'PARTIALLY_PAID',
         paymentType: 'CLASSIC',
-        invoices: [{ moneyStatus: 'PAID' }],
-      },
-    });
-    expect(result.canCompleteWithRuntimeData).toBe(false);
-    expect(result.blockers.map((item) => item.code)).toContain('ORDER_NOT_CLOSED');
-  });
-
-  it('mirrors TRANSFER: subscription PARTIALLY_PAID with no unpaid invoices is Done-ready', () => {
-    const result = buildProductDoneReadiness({
-      ...readyWork,
-      order: {
-        status: 'PARTIALLY_PAID',
-        paymentType: 'SUBSCRIPTION',
-        invoices: [{ moneyStatus: 'PAID' }],
-      },
-    });
-    expect(result.canCompleteWithRuntimeData).toBe(true);
-    expect(result.blockers.map((item) => item.code)).not.toContain('ORDER_NOT_CLOSED');
-  });
-
-  it('still blocks a subscription order that has an unpaid invoice', () => {
-    const result = buildProductDoneReadiness({
-      ...readyWork,
-      order: {
-        status: 'PARTIALLY_PAID',
-        paymentType: 'SUBSCRIPTION',
         invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
       },
     });
-    expect(result.canCompleteWithRuntimeData).toBe(false);
-    expect(result.blockers.map((item) => item.code)).toContain('UNPAID_INVOICES');
+    expect(result.canCompleteWithRuntimeData).toBe(true);
+    expect(result.summary.unpaidInvoiceCount).toBe(1);
     expect(result.blockers.map((item) => item.code)).not.toContain('ORDER_NOT_CLOSED');
+    expect(result.blockers.map((item) => item.code)).not.toContain('UNPAID_INVOICES');
   });
 });
