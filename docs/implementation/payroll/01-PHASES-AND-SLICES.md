@@ -80,8 +80,8 @@ M-09 evidence is collected inside P1–P5 on the paths each slice changes. P6 re
 
 | Slice                                                    | Status        | M / V                  | Acceptance                                                                                                                                          |
 | -------------------------------------------------------- | ------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P5-S1 Salary-first cash and explicit project attribution | `IN_PROGRESS` | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash                                    |
-| P5-S2 Reversal restores the original links               | `PLANNED`     | M-07; V-11             | Refund and payout reversal do not rewrite closed history in place. Fixed salary is not a clawback source. Uncovered negative residual stays visible |
+| P5-S1 Salary-first cash and explicit project attribution | `VERIFIED`    | M-06; V-12, V-19       | Partial combined payout settles remaining salary first. Bonus cash is explicitly assigned. Components equal cash. Commit `598eef803`                |
+| P5-S2 Reversal restores the original links               | `IN_PROGRESS` | M-07; V-11             | Refund and payout reversal do not rewrite closed history in place. Fixed salary is not a clawback source. Uncovered negative residual stays visible |
 | P5-S3 Register reconciliation                            | `PLANNED`     | M-06, M-07; V-11, V-17 | SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, Wallet, ProductBonusPool, and the journal agree on synthetic fixtures                |
 
 ## P6 — Cutover inventory and acceptance

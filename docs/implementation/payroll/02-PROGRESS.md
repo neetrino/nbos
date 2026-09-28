@@ -2,8 +2,8 @@
 
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
-**Active slice:** P5-S1
-**Next step:** Grok 4.6 High applies a partial cash payment to remaining salary first, then to explicitly chosen bonus amounts.
+**Active slice:** P5-S2
+**Next step:** Grok 4.6 High reverses a payment on its original salary and bonus links without taking the refund from fixed salary.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -19,10 +19,10 @@ Owner authorized synthetic data and browser checks on the local dev database (`e
 | Role               | Requested            | Actually available for launch                   | Used                   |
 | ------------------ | -------------------- | ----------------------------------------------- | ---------------------- |
 | Orchestrator       | Grok 4.7 High        | Parent session                                  | Yes, this chat         |
-| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P4-S3 done; P5-S1 next |
+| Main executor      | Grok 4.7 High        | Not listed. Substitute: Grok 4.6 High           | P5-S1 done; P5-S2 next |
 | Complex analyst    | Grok 4.7 xHigh       | Listed                                          | Not used               |
 | Simple executor    | Composer standard    | Composer 2.5 Fast                               | Not used               |
-| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P4-S3 review closed    |
+| Finance reviewer   | Claude Opus 5.5 High | Not listed. Same family: Claude Opus 5.5 Medium | P5-S1 review closed    |
 | Alternate reviewer | GPT-5.6 Sol High     | Listed                                          | Held in reserve        |
 
 Paid-launch log. Token cost is not invented when the session does not report it.
@@ -45,6 +45,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-28 | P4-S1 matrix source sum        | Claude Opus 5.5 Medium | Cell total of every visible entry. Opus 5.5 High is unavailable.                  | Uncommitted matrix source diff only                                 |
 | 2026-09-28 | P4-S2 plan parts and extra     | Claude Opus 5.5 Medium | Installments, extra overflow, and title splits. Opus 5.5 High is unavailable.     | Uncommitted installment and extra diff only                         |
 | 2026-09-28 | P4-S3 older unpaid bonus       | Claude Opus 5.5 Medium | Month eligibility and settlement currency. Opus 5.5 High is unavailable.          | Uncommitted older-unpaid diff only                                  |
+| 2026-09-28 | P5-S1 salary-first cash        | Claude Opus 5.5 Medium | Salary before named bonus cash. Opus 5.5 High is unavailable.                     | Uncommitted salary-first cash diff only                             |
 
 ## Slice log
 
@@ -62,8 +63,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P4-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed. No browser. No migration.                                               | `5299c4022` | Planned cell amount is the sum of visible sources. Both entry ids stay on the cell.                         |
 | P4-S2 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 23 passed on the last recheck. No browser. No migration.                           | `3f917cce6` | Plan parts stay on the plan. Extra is only the amount above every source remainder.                         |
 | P4-S3 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 4 files, 28 passed on the last recheck. No browser. No migration.                           | `637dd783f` | August 40,000 stays payable in October. A zero-salary settlement approves as AMD.                           |
-| P5-S1 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Partial cash pays remaining salary first. Bonus cash is explicitly assigned.                                |
-| P5-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
+| P5-S1 | `VERIFIED`    | Grok 4.6 High     | Claude Opus 5.5 Medium | Targeted vitest 3 files, 21 passed on the last recheck. No browser. No migration.                           | `598eef803` | Salary is paid first. Bonus cash follows the named bonus. Line carry can be paid.                           |
+| P5-S2 | `IN_PROGRESS` | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | A reversal restores the original links. Fixed salary is not the source of a bonus refund.                   |
 | P5-S3 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           |                                                                                                             |
 | P6-S1 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Blocked for live data until a separate authorization                                                        |
 | P6-S2 | `PLANNED`     | Grok 4.6 High     | Claude Opus 5.5 Medium | —                                                                                                           | —           | Needs isolated environment                                                                                  |
@@ -107,6 +108,8 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | P4-S2-R3 | Open   | If one source was released past its plan, the matrix net and the per-source sum can disagree. 10 may be paid twice. Low. Unsettled. |
 | P4-S3-R1 | Closed | A zero-salary settlement with no profile approves as AMD. Blank, USD, and EUR salary lines stay rejected. Recheck passed.           |
 | P4-S3-R2 | Open   | The approval test mocks attach, so line creation and a single include are shown by reading the code. Low.                           |
+| P5-S1-R1 | Closed | A 430,000 payment covers 300,000 salary, 100,000 named bonus, and 30,000 line carry. Recheck passed.                                |
+| P5-S1-R2 | Open   | On a line with carry, unnamed cash after salary goes to carry instead of being rejected. Low. No double pay.                        |
 | P4-S2-R2 | Closed | A manual title with the source-amount prefix does not pay another employee's plan. Recheck passed.                                  |
 
 ## External blockers
