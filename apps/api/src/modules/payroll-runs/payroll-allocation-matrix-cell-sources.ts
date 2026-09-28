@@ -9,7 +9,10 @@ import {
   sumBonusEntryReleasedBefore,
   type PayrollBonusReleaseLedgerRow,
 } from './payroll-bonus-entry-released-before';
-import { remainingForBonusEntry } from './payroll-allocation-source-amounts';
+import {
+  decodePayrollAllocationSourceAmounts,
+  remainingForBonusEntry,
+} from './payroll-allocation-source-amounts';
 import type { PayrollAllocationMatrixCellSource } from './payroll-allocation-matrix.types';
 
 export type PayrollMatrixCellSourceInput = {
@@ -186,6 +189,33 @@ export function payrollMatrixCellIsManualBonus(
 ): boolean {
   if (draft != null && draft.bonusEntryId == null) return true;
   return entries.length > 0 && entries.every(isPayrollMatrixManualBonusEntry);
+}
+
+/** Restores per-source amounts saved on a draft so a reload shows each accrual. */
+export function applyStoredDraftSourceAmounts(
+  sources: PayrollAllocationMatrixCellSource[],
+  title: string | null,
+): PayrollAllocationMatrixCellSource[] {
+  const splits = decodePayrollAllocationSourceAmounts(title);
+  if (splits == null) return sources;
+  const includedByEntry = new Map(
+    splits.map((split) => [split.bonusEntryId, moneyText(split.amount)]),
+  );
+  return sources.map((source) => {
+    const stored = includedByEntry.get(source.bonusEntryId);
+    if (stored == null || source.includedThisMonth !== '0.00') return source;
+    return { ...source, includedThisMonth: stored };
+  });
+}
+
+export function previewStoredDraftSources(
+  sources: PayrollMatrixCellSourceAggregate,
+  title: string | null,
+): PayrollMatrixCellSourceAggregate {
+  if (title == null) return sources;
+  const sourceEntries = applyStoredDraftSourceAmounts(sources.sourceEntries, title);
+  if (sourceEntries === sources.sourceEntries) return sources;
+  return { ...sources, sourceEntries };
 }
 
 export function aggregatePayrollMatrixCellSources(params: {

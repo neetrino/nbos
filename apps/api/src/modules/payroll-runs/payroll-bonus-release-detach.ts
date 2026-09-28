@@ -12,7 +12,7 @@ const DETACH_ALLOWED: PayrollRunStatusEnum[] = ['DRAFT', 'REVIEW'];
 
 export type BonusReleaseDetachTx = Pick<
   TransactionClient,
-  'payrollRun' | 'bonusRelease' | 'salaryLine'
+  'payrollRun' | 'bonusRelease' | 'salaryLine' | '$queryRaw'
 >;
 
 export interface DetachBonusReleasesParams {
@@ -185,6 +185,9 @@ export async function detachBonusReleasesFromPayrollRun(
   }
 
   const uniqueIds = [...new Set(releaseIds)];
+  for (const releaseId of uniqueIds) {
+    await tx.$queryRaw`SELECT id FROM bonus_releases WHERE id = ${releaseId} FOR UPDATE`;
+  }
   const run = await loadPayrollRunForDetach(tx, payrollRunId);
   const releases = await loadReleasesForDetach(tx, uniqueIds);
 

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   assertChosenSourceAmounts,
+  assertPayrollManualBonusTitle,
   decodePayrollAllocationSourceAmounts,
   encodePayrollAllocationSourceAmounts,
   isOwnedPayrollAllocationSourceSplit,
@@ -26,6 +27,16 @@ describe('payroll allocation source amounts', () => {
 
   it('does not treat a display title as a split', () => {
     expect(decodePayrollAllocationSourceAmounts('Extra award')).toBeNull();
+  });
+
+  it('treats a broken source-amount title as no split', () => {
+    expect(decodePayrollAllocationSourceAmounts('nbos:v1:sourceAmounts:not-json')).toBeNull();
+  });
+
+  it('rejects a manual title that uses the source-amount prefix', () => {
+    expect(() => assertPayrollManualBonusTitle('nbos:v1:sourceAmounts:[]')).toThrow(
+      BadRequestException,
+    );
   });
 
   it('rejects a decoded split that points at another employee plan', () => {

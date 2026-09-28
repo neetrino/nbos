@@ -87,9 +87,21 @@ export function decodePayrollAllocationSourceAmounts(
   if (title == null || !title.startsWith(PAYROLL_SOURCE_AMOUNTS_PREFIX)) {
     return null;
   }
-  const raw = title.slice(PAYROLL_SOURCE_AMOUNTS_PREFIX.length);
-  const parsed = parseStoredSourceAmountJson(raw);
-  return parsePayrollAllocationSourceAmounts(parsed.map((row) => coerceStoredSourceAmount(row)));
+  try {
+    const raw = title.slice(PAYROLL_SOURCE_AMOUNTS_PREFIX.length);
+    const parsed = parseStoredSourceAmountJson(raw);
+    return parsePayrollAllocationSourceAmounts(parsed.map((row) => coerceStoredSourceAmount(row)));
+  } catch (error) {
+    if (error instanceof BadRequestException) return null;
+    throw error;
+  }
+}
+
+/** Manual titles are display text. The source-amount prefix is reserved for stored splits. */
+export function assertPayrollManualBonusTitle(title: string): void {
+  if (title.trim().startsWith(PAYROLL_SOURCE_AMOUNTS_PREFIX)) {
+    throw new BadRequestException('Manual bonus title cannot start with the source-amount prefix');
+  }
 }
 
 export function payrollAllocationDraftDisplayTitle(title: string | null): string | null {

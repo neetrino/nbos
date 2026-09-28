@@ -5,12 +5,14 @@ import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detac
 
 function createTxMock() {
   return {
+    $queryRaw: vi.fn().mockResolvedValue([]),
     payrollRun: {
       findUnique: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
     },
     bonusRelease: {
       findMany: vi.fn(),
+      findUnique: vi.fn().mockResolvedValue(null),
       update: vi.fn().mockResolvedValue({}),
       count: vi.fn().mockResolvedValue(0),
     },
@@ -255,6 +257,9 @@ describe('detachBonusReleasesFromPayrollRun', () => {
       }
       return Promise.resolve([priorCarry]);
     });
+    tx.bonusRelease.findUnique.mockImplementation((args: { where: { id: string } }) =>
+      Promise.resolve(args.where.id === priorCarry.id ? priorCarry : null),
+    );
     tx.bonusRelease.count.mockResolvedValue(0);
     tx.salaryLine.findUnique
       .mockResolvedValueOnce({

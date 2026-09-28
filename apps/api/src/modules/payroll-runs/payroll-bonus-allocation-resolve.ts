@@ -96,12 +96,12 @@ async function loadSplitEntryOwners(
   return new Map(rows.map((row) => [row.id, row]));
 }
 
+/** Keeps each chosen accrual. A prefix that names another employee fails the ownership check. */
 async function resolveOwnedSourceSplits(
   tx: ResolveTx,
   draft: PayrollResolveDraft,
   amount: Decimal,
 ): Promise<PayrollResolveAllocation[] | null> {
-  if (draft.kind === 'MANUAL_BONUS') return null;
   const splits = decodePayrollAllocationSourceAmounts(draft.title);
   if (splits == null) return null;
   const owners = await loadSplitEntryOwners(tx, splits);

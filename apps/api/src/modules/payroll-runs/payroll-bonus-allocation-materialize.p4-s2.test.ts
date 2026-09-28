@@ -717,6 +717,46 @@ describe('P4-S2 development installments extra award and source split', () => {
     expect(releases.filter((row) => row.bonusEntryId === 'be-other')).toHaveLength(1);
   });
 
+  it('pays each owned accrual when a manual cell stored source amounts', async () => {
+    const title = encodePayrollAllocationSourceAmounts([
+      { bonusEntryId: 'be-a', amount: new Decimal(40_000) },
+      { bonusEntryId: 'be-b', amount: new Decimal(20_000) },
+    ]);
+    const entries = new Map([
+      ['be-a', sourceEntry('be-a', new Decimal(40_000))],
+      ['be-b', sourceEntry('be-b', new Decimal(20_000))],
+    ]);
+    const { tx } = createTx({
+      drafts: [
+        draft({
+          id: 'd-split',
+          bonusEntryId: 'be-a',
+          amount: new Decimal(60_000),
+          kind: 'MANUAL_BONUS',
+          title,
+        }),
+      ],
+      entries,
+    });
+
+    await materializePayrollBonusAllocationDrafts(tx as never, {
+      payrollRunId: 'pr1',
+      payrollMonth: '2026-05',
+      actorUserId: 'emp1',
+    });
+
+    expect(tx.bonusRelease.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ bonusEntryId: 'be-a', amount: new Decimal(40_000) }),
+      }),
+    );
+    expect(tx.bonusRelease.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ bonusEntryId: 'be-b', amount: new Decimal(20_000) }),
+      }),
+    );
+  });
+
   it('materializes a matrix draft as APPROVED and never as PAID', async () => {
     const entries = new Map([['be-plan', planEntry()]]);
     const { tx } = createTx({

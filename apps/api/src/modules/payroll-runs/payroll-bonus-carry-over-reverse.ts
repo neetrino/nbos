@@ -13,7 +13,10 @@ export const PAYROLL_CARRY_REVERSE_ERRORS = {
     'Prior-month carry cannot be restored onto a closed or paid payroll run; leave the applied carry and settle with a current-month manual adjustment',
 } as const;
 
-type CarryReverseTx = Pick<TransactionClient, 'bonusRelease' | 'salaryLine' | 'payrollRun'>;
+type CarryReverseTx = Pick<
+  TransactionClient,
+  'bonusRelease' | 'salaryLine' | 'payrollRun' | '$queryRaw'
+>;
 
 type PriorCarryReleaseRow = {
   id: string;
@@ -62,14 +65,22 @@ async function restoreRemainingOnDetachedRelease(
   row: PriorCarryReleaseRow,
   restoreAmount: Decimal,
 ): Promise<Decimal> {
-  const consumed = resolveConsumedPayrollCarryOver(row);
+  await tx.$queryRaw`SELECT id FROM bonus_releases WHERE id = ${row.id} FOR UPDATE`;
+  const fresh = await tx.bonusRelease.findUnique({
+    where: { id: row.id },
+    select: { payrollCarryOverAmount: true, payrollCarryOverRemaining: true },
+  });
+  const consumed = resolveConsumedPayrollCarryOver({
+    payrollCarryOverAmount: fresh?.payrollCarryOverAmount ?? null,
+    payrollCarryOverRemaining: fresh?.payrollCarryOverRemaining ?? null,
+  });
   const take = Decimal.min(restoreAmount, consumed);
   if (take.lte(0)) {
     return ZERO;
   }
 
-  const original = row.payrollCarryOverAmount ?? ZERO;
-  const current = row.payrollCarryOverRemaining ?? ZERO;
+  const original = fresh?.payrollCarryOverAmount ?? ZERO;
+  const current = fresh?.payrollCarryOverRemaining ?? ZERO;
   const nextRemaining = current.plus(take);
   await tx.bonusRelease.update({
     where: { id: row.id },

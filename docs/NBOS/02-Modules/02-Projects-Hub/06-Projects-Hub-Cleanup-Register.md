@@ -260,18 +260,9 @@ This implements the canon rule that execution/QA work must be closed before the 
 
 ### A18. Product Done gate blocks unpaid linked finance state
 
-Статус: `PHASE 4 RUNTIME ALIGNMENT`
+Статус: `SUPERSEDED`
 
-Product Done gate now checks existing finance source data conservatively:
-
-- when the linked Product order has invoices, all of those invoices must be paid (`moneyStatus = PAID`; legacy `Invoice.status` снят);
-- when the linked order is classic (`paymentType = CLASSIC`) and has a status, it must be `FULLY_PAID` or `CLOSED`;
-- subscription orders (`paymentType = SUBSCRIPTION`) skip the full-contract status condition; outstanding invoices remain the finance gate;
-- unpaid linked invoices block `Transfer -> Done` with the structured stage-gate error shape;
-- open classic linked orders block `Transfer -> Done` with the same structured stage-gate error shape;
-- missing invoice data is not treated as fake zero or fake paid state.
-
-This implements the canon rule that classic delivery must be financially closed before Product Done, while subscription delivery may close mid-term as long as no invoice is outstanding.
+Order status and unpaid invoices do not block Product or Extension Done. Delivery and finance stay separate processes. The earlier finance close-gate is withdrawn.
 
 ### A19. Project shell prefers canonical delivery lifecycle
 
@@ -342,7 +333,7 @@ No scheduler, auto-resume or automatic status mutation was introduced.
 Product detail exposes a read-only Done readiness projection:
 
 - backend builds `doneReadiness` from existing delivery, finance and project documentation data;
-- runtime blockers include missing client acceptance, open extensions, tasks, support tickets, unpaid invoices and, for classic orders, open linked order state;
+- runtime blockers include missing client acceptance, open extensions, tasks and support tickets; order payment status and unpaid invoices are not delivery blockers;
 - credentials and domains are surfaced as documentation warnings when project records are missing;
 - missing runtime signals are reserved for canon requirements that still have no stable runtime source, such as DB-backed Drive file links.
 

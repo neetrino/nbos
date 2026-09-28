@@ -1,5 +1,4 @@
 import type { StageGateError } from '../stage-gates/types';
-import { isOrderPaymentGateSatisfied } from './order-payment-gate';
 
 /** Task statuses treated as closed for product stage gates (includes legacy DONE). */
 export const PRODUCT_GATE_CLOSED_TASK_STATUSES = ['ON_HOLD', 'COMPLETED', 'DONE'] as const;
@@ -108,8 +107,6 @@ function getProductDoneGateErrors(product: ProductStageGateInput): StageGateErro
       'Product Done',
     ),
     ...buildClientAcceptanceErrors(product),
-    ...buildOpenOrderErrors(product.order),
-    ...buildUnpaidInvoiceErrors(product.order?.invoices ?? []),
   ];
 }
 
@@ -143,27 +140,6 @@ function buildClientAcceptanceErrors(product: ProductStageGateInput): StageGateE
     {
       field: 'clientAcceptance',
       message: 'Client acceptance must be recorded before Product Done.',
-    },
-  ];
-}
-
-function buildOpenOrderErrors(order: ProductStageGateInput['order']): StageGateError[] {
-  if (isOrderPaymentGateSatisfied(order)) return [];
-  return [
-    {
-      field: 'finance',
-      message: `Order ${order?.status} must be fully paid or closed before Product Done.`,
-    },
-  ];
-}
-
-function buildUnpaidInvoiceErrors(invoices: Array<{ moneyStatus: string }>): StageGateError[] {
-  const unpaidCount = invoices.filter((invoice) => invoice.moneyStatus !== 'PAID').length;
-  if (unpaidCount === 0) return [];
-  return [
-    {
-      field: 'finance',
-      message: `${unpaidCount} invoices still require payment before Product Done.`,
     },
   ];
 }

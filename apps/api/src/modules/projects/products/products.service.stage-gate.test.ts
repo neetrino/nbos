@@ -191,37 +191,10 @@ describe('ProductsService', () => {
       expect(prisma.product.update).not.toHaveBeenCalled();
     });
 
-    it('blocks TRANSFER → DONE when order invoices are unpaid', async () => {
+    it('allows TRANSFER → DONE when invoices are unpaid and the order is only partially paid', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
-        status: 'TRANSFER',
-        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
-        extensions: [{ status: 'DONE' }],
-        tasks: [{ status: 'DONE' }],
-        tickets: [{ status: 'RESOLVED' }],
-        order: {
-          id: 'ord-1',
-          status: 'FULLY_PAID',
-          paymentType: 'CLASSIC',
-          invoices: [{ moneyStatus: 'PAID' }, { moneyStatus: 'AWAITING_PAYMENT' }],
-        },
-      });
-
-      const error = await service
-        .updateStatus('p1', 'DONE', 'emp-audit')
-        .catch((caught: unknown) => caught);
-
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect(readExceptionResponse(error)).toMatchObject({
-        code: 'STAGE_GATE_VALIDATION',
-        errors: [{ field: 'finance', message: expect.any(String) }],
-      });
-      expect(prisma.product.update).not.toHaveBeenCalled();
-    });
-
-    it('blocks TRANSFER → DONE when linked CLASSIC order is not fully paid', async () => {
-      prisma.product.findUnique.mockResolvedValue({
-        id: 'p1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [{ status: 'DONE' }],
@@ -231,20 +204,15 @@ describe('ProductsService', () => {
           id: 'ord-1',
           status: 'PARTIALLY_PAID',
           paymentType: 'CLASSIC',
-          invoices: [{ moneyStatus: 'PAID' }],
+          invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
         },
       });
+      prisma.product.update.mockResolvedValue({ id: 'p1', status: 'DONE' });
 
-      const error = await service
-        .updateStatus('p1', 'DONE', 'emp-audit')
-        .catch((caught: unknown) => caught);
+      const result = await service.updateStatus('p1', 'DONE', 'emp-audit');
 
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect(readExceptionResponse(error)).toMatchObject({
-        code: 'STAGE_GATE_VALIDATION',
-        errors: [{ field: 'finance', message: expect.any(String) }],
-      });
-      expect(prisma.product.update).not.toHaveBeenCalled();
+      expect(result.status).toBe('DONE');
+      expect(prisma.product.update).toHaveBeenCalled();
     });
 
     it('regression: allows TRANSFER → DONE when a subscription order is PARTIALLY_PAID and no invoices are unpaid', async () => {

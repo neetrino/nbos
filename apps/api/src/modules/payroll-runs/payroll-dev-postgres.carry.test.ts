@@ -68,6 +68,24 @@ describe.skipIf(!DATABASE_URL)('payroll carry chains on dev PostgreSQL', () => {
     CASE_TIMEOUT_MS,
   );
 
+  it(
+    'does not restore the same carry twice when two detaches run together',
+    async () => {
+      const first = openClient();
+      const second = openClient();
+      const ids = await seedOpenCarryChain(first);
+      try {
+        const results = await Promise.allSettled([detachTiny(first, ids), detachTiny(second, ids)]);
+        const fulfilled = results.filter((row) => row.status === 'fulfilled');
+        expect(fulfilled).toHaveLength(1);
+        await expectOpenChain(first, ids);
+      } finally {
+        await deleteDevPayrollGraph(first, ids);
+      }
+    },
+    CASE_TIMEOUT_MS,
+  );
+
   function openClient(): PrismaClient {
     const client = createPrismaClient({
       databaseUrl: DATABASE_URL ?? undefined,

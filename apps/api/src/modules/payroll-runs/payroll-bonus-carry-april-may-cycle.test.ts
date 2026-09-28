@@ -68,12 +68,22 @@ function createCycleTx() {
   };
 
   const tx = {
+    $queryRaw: vi.fn().mockResolvedValue([]),
     payrollRun: {
       findUnique: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
     },
     bonusRelease: {
       findMany: vi.fn(),
+      findUnique: vi.fn().mockImplementation((args: { where: { id: string } }) => {
+        if (args.where.id === aprilRelease.id) {
+          return Promise.resolve(aprilRelease);
+        }
+        if (args.where.id === mayRelease.id) {
+          return Promise.resolve(mayRelease);
+        }
+        return Promise.resolve(null);
+      }),
       update: vi.fn().mockImplementation((args: { where: { id: string }; data: object }) => {
         if (args.where.id === 'rel-april') {
           Object.assign(aprilRelease, args.data);

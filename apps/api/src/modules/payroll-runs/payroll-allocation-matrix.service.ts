@@ -54,9 +54,11 @@ import { resolvePayrollMatrixCellState } from './payroll-allocation-matrix-cell-
 import {
   aggregatePayrollMatrixCellSources,
   payrollMatrixCellIsManualBonus,
+  previewStoredDraftSources,
   type PayrollMatrixCellSourceAggregate,
 } from './payroll-allocation-matrix-cell-sources';
 import { writePayrollMatrixCellDraft } from './payroll-allocation-matrix-cell-write';
+import { assertPayrollManualBonusTitle } from './payroll-allocation-source-amounts';
 import { appendAccessibleBonusOnlyPayees } from './payroll-allocation-matrix-unpaid-payees';
 
 export { resolvePayrollMatrixCellState } from './payroll-allocation-matrix-cell-state';
@@ -221,6 +223,7 @@ export class PayrollAllocationMatrixService {
         bonusEntryId: true,
         amount: true,
         kind: true,
+        title: true,
       },
     });
     const draftByCell = new Map(
@@ -302,22 +305,25 @@ export class PayrollAllocationMatrixService {
             })
           : new Set<string>();
         const key = cellKey(emp.employeeId, unit.orderId);
+        const draft = draftByCell.get(key);
         const linked = linkedIds.has(emp.employeeId) || manualDraftKeys.has(key);
         const orderReleases = releases.filter(
           (r) =>
             r.bonusEntry.employeeId === emp.employeeId && r.bonusEntry.orderId === unit.orderId,
         );
-        const sources = aggregatePayrollMatrixCellSources({
-          entries: order?.bonusEntries ?? [],
-          employeeId: emp.employeeId,
-          payrollMonth: run.payrollMonth,
-          payrollRunId,
-          releases: orderReleases.map((release) => ({
-            ...release,
-            bonusEntryId: release.bonusEntry.id,
-          })),
-        });
-        const draft = draftByCell.get(key);
+        const sources = previewStoredDraftSources(
+          aggregatePayrollMatrixCellSources({
+            entries: order?.bonusEntries ?? [],
+            employeeId: emp.employeeId,
+            payrollMonth: run.payrollMonth,
+            payrollRunId,
+            releases: orderReleases.map((release) => ({
+              ...release,
+              bonusEntryId: release.bonusEntry.id,
+            })),
+          }),
+          DRAFT_PREVIEW_STATUSES.has(run.status) ? (draft?.title ?? null) : null,
+        );
         const pool = unitByOrderId.get(unit.orderId);
         cells.push(
           assemblePayrollAllocationMatrixCell({
@@ -465,6 +471,7 @@ export class PayrollAllocationMatrixService {
     if (amount.lte(BONUS_POOL_ZERO)) {
       throw new BadRequestException('Manual bonus amount must be greater than zero');
     }
+    assertPayrollManualBonusTitle(body.title);
 
     await this.prisma.payrollBonusAllocationDraft.upsert({
       where: {

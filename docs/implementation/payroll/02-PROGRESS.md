@@ -3,7 +3,7 @@
 **Updated:** 2026-09-28  
 **Branch:** `feat/payroll-completion` (from `origin/main` `32f3c4ac5`, which contains `sipan` `d39e67c67`)  
 **Active slice:** none
-**Next step:** Dev checks on `ep-nameless-term` are recorded below. September 2026 is `APPROVED` with paid 0 after the browser payment was removed. The real cutover month and production host stay untouched. Do not write production. This branch is not production-ready.
+**Next step:** February 2020 synthetic payroll is approved on `ep-nameless-term`. Salary 300,000 stays paid, bonus remainder is 60,000 after a browser refund of the 20,000 named bonus. September 2026 stays `APPROVED` with paid 0. Still open: a logged-in non-finance role denied in the UI and on the financial API, a PostgreSQL race of close versus a money write, the full wallet report, then review, docs commit, and the local commits. Do not write production.
 
 Owner authorized synthetic data and browser checks on the local dev database (`ep-nameless-term`). Production host `ep-sweet-dew` stays untouched. No production migration or payout.
 
@@ -59,6 +59,7 @@ Paid-launch log. Token cost is not invented when the session does not report it.
 | 2026-09-28 | V-13 order envelope race       | Claude Opus 5.5 Medium | Concurrent cap on one order. Opus 5.5 High is unavailable.                          | Race test and fixture only                                          |
 | 2026-09-28 | Money-diff review              | Claude Opus 5.5 Medium | Opus 5.5 High is not listed. One other-family review of the uncommitted money diff. | Uncommitted payroll money diff only                                 |
 | 2026-09-28 | Refund, carry, approval lock   | Claude Opus 5.5 Medium | Opus 5.5 High is not listed. Review of the new transaction and lock.                | Refund, carry restore, and locked approval only                     |
+| 2026-09-28 | Source-split materialize       | Claude Opus 5.5 Medium | Opus 5.5 High is not listed. Owned splits on a manual cell.                         | Resolve, matrix preview, and the manual-title prefix                |
 
 ## Slice log
 
@@ -167,23 +168,28 @@ Environment: local app against dev host `ep-nameless-term`. Production host was 
 
 Eight tests passed in 90.24s. The command must be run from the repository root so the decorator setting in `vitest.config.ts` is loaded.
 
-Claude Opus 5.5 Medium reviewed the refund transaction, the carry restore, and the approval lock. Opus 5.5 High is not listed, so Medium was used. The review found no material money defect in those three paths. It did not re-run tests. Two limits stay: the paid-in-full check before closing a run still happens before the row lock, and two carry restores at the same moment were not proven.
+Claude Opus 5.5 Medium reviewed the refund transaction, the carry restore, and the approval lock. Opus 5.5 High is not listed, so Medium was used. The review found no material money defect in those three paths. It did not re-run tests. The paid-in-full check now runs again after the row lock. Two simultaneous carry restores were later proven: one detach succeeds and the second is rejected.
+
+The same reviewer then read the manual-cell source split. No material money defect. A broken `nbos:v1:sourceAmounts:` title is treated as no split, and a new manual bonus cannot use that prefix.
 
 ## M / V still open
 
 These were not re-proven in this pass. Earlier slice rows stay as written. Closed in the review table is not a new end-to-end proof.
 
-| Id                     | Remaining limit                                                                                                                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M-01, V-15             | Permission tests exist from P1. A live browser check that a non-finance role is refused was not repeated                                                                                                      |
-| M-02, V-01, V-02, V-16 | Salary-month unit tests exist. Registration, invitation, and a live hire-month screen were not opened                                                                                                         |
-| M-03, V-03             | AMD rejection tests exist. No new currency screen check                                                                                                                                                       |
-| M-04, V-04, V-05       | Policy and invoice unit tests exist. This pass proved only the 210,000 classic card                                                                                                                           |
-| M-05, V-06, V-07       | Matrix unit tests exist. The September matrix was viewed with remaining amounts, and no amount was saved before approval                                                                                      |
-| M-06, V-08, V-09       | Ceiling removal and the order cap are in unit tests plus the earlier envelope race. KPI boundaries were not clicked                                                                                           |
-| M-07, V-11             | Postgres refund and browser remove are proven. A browser refund of a named bonus was not entered                                                                                                              |
-| M-08, V-12             | Browser approve and partial salary pay are proven. Choosing bonus amounts in the matrix was not done                                                                                                          |
-| M-09, V-13, V-14       | The four postgres files passed. A crash between two already committed actions was not simulated beyond the in-transaction journal failure                                                                     |
-| M-10, V-17             | Payroll, the pay board, and one card were reconciled in the browser. Mobile layout and a full wallet report were not opened                                                                                   |
-| M-11, V-18             | Real cutover month is still not supplied. That is a launch condition, not a dev defect                                                                                                                        |
-| V-19 remainder         | Development 200,000 paid 40,000 + 10,000 + 120,000, the extra award, and salary 300,000 plus bonus 60,000 paid as 320,000 were not repeated in the browser. The 320,000 split is in the postgres journal test |
+| Id                     | Remaining limit                                                                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M-01, V-15             | Permission tests exist from P1. A live browser check that a non-finance role is refused was not repeated                                                                                                                                     |
+| M-02, V-01, V-02, V-16 | Salary-month unit tests exist. Registration, invitation, and a live hire-month screen were not opened                                                                                                                                        |
+| M-03, V-03             | AMD rejection tests exist. No new currency screen check                                                                                                                                                                                      |
+| M-04, V-04, V-05       | Policy and invoice unit tests exist. This pass proved only the 210,000 classic card                                                                                                                                                          |
+| M-05, V-06, V-07       | Matrix unit tests exist. The September matrix was viewed with remaining amounts, and no amount was saved before approval                                                                                                                     |
+| M-06, V-08, V-09       | Ceiling removal and the order cap are in unit tests plus the earlier envelope race. KPI boundaries were not clicked                                                                                                                          |
+| M-07, V-11             | Browser refund of 20,000 on payment `c2a4f33c` restored bonus part B and left salary paid 300,000. Expense paid is 300,000. Journal of the original payment is 320,000 ACTIVE. The refund journal line was not re-read after the API restart |
+| M-08, V-12             | February 2020 draft saved 40,000 and 20,000 in one cell. Reload showed both. Approval created two releases. Payment 320,000 assigned 20,000 to part B. Part A remains 40,000 INCLUDED_IN_PAYROLL                                             |
+| M-09, V-13, V-14       | The four postgres files passed. A crash between two already committed actions was not simulated beyond the in-transaction journal failure                                                                                                    |
+| M-10, V-17             | Payroll, the pay board, and one card were reconciled in the browser. Mobile layout and a full wallet report were not opened                                                                                                                  |
+| M-11, V-18             | Real cutover month is still not supplied. That is a launch condition, not a dev defect                                                                                                                                                       |
+| V-19 remainder         | The 320,000 browser split is proven on February 2020. Development 200,000 paid 40,000 + 10,000 + 120,000 and the extra award were not repeated in the browser                                                                                |
+| Close versus cash      | The paid-in-full check now runs again after the payroll row lock. A PostgreSQL race of close against a refund was not executed                                                                                                               |
+| Carry concurrency      | Two simultaneous detaches of one open chain: one succeeded, one was rejected, remaining matched a single restore. `payroll-dev-postgres.carry.test.ts`, 3 passed                                                                             |
+| Access                 | Requests without a session to the payroll run and to expense payments returned 401. A logged-in role without finance was not used                                                                                                            |
