@@ -9,6 +9,11 @@ import {
 } from '../payroll-runs/payroll-salary-first-cash-apply';
 import type { PayrollCashBonusAssignmentInput } from '../payroll-runs/payroll-salary-first-cash';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
+import { hasEncodedPayrollCash } from '../payroll-runs/payroll-salary-first-cash-notes';
+import {
+  hasPayrollCashRefundNotes,
+  payrollCashLedgerPaidAmount,
+} from '../payroll-runs/payroll-salary-first-cash-reverse-paid';
 import { sumExpensePaymentAmounts } from './expense-payment-rollup';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
@@ -159,7 +164,7 @@ async function notesForExpensePayment(
   }
   const prepared = preparePayrollCashPayment({
     cash: newPayment,
-    alreadyPaidCash: alreadyPaid,
+    alreadyPaidCash: payrollAlreadyPaidCash(existingPayments, alreadyPaid),
     baseSalary: payroll.salaryLine.baseSalary,
     carryAppliedAmount: payroll.salaryLine.payrollCarryAppliedAmount,
     releases: payroll.releases,
@@ -236,4 +241,14 @@ async function notifyPayrollExpensePayment(
     expenseId,
     lineStatus: sl.status,
   });
+}
+
+function payrollAlreadyPaidCash(
+  existingPayments: { id: string; amount: Decimal; notes: string | null }[],
+  alreadyPaid: Decimal,
+): Decimal {
+  if (hasEncodedPayrollCash(existingPayments) || hasPayrollCashRefundNotes(existingPayments)) {
+    return payrollCashLedgerPaidAmount(existingPayments);
+  }
+  return alreadyPaid;
 }

@@ -216,6 +216,23 @@ export class ExpensesController {
     return this.expensesService.addPayment(id, body, financeExpenseAccessFromUser(user));
   }
 
+  @Post(':expenseId/payments/:paymentId/refund')
+  @RequirePermission('FINANCE_EXPENSES', 'EDIT')
+  @ApiOperation({ summary: 'Refund a payroll expense payment against its original bonus links' })
+  async refundPayment(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('expenseId') expenseId: string,
+    @Param('paymentId') paymentId: string,
+    @Body() body: { amount: number; paymentDate: string; reason: string; idempotencyKey?: string },
+  ) {
+    return this.expensesService.refundPayment(
+      expenseId,
+      paymentId,
+      body,
+      financeExpenseAccessFromUser(user),
+    );
+  }
+
   @Delete(':expenseId/payments/:paymentId')
   @RequirePermission('FINANCE_EXPENSES', 'EDIT')
   @ApiOperation({ summary: 'Remove a recorded payment line from an expense' })

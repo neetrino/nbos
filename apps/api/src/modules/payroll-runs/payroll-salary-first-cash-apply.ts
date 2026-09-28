@@ -17,10 +17,10 @@ import {
   decodePayrollCashNotes,
   encodePayrollCashNotes,
   findPayrollCashPaymentByIdempotencyKey,
-  sumEncodedBonusCashByRelease,
   sumEncodedCarryCash,
   type PayrollCashPaymentNotes,
 } from './payroll-salary-first-cash-notes';
+import { sumNetEncodedBonusCashByRelease } from './payroll-salary-first-cash-reverse';
 
 export type PayrollCashReleaseRow = {
   id: string;
@@ -49,12 +49,13 @@ export type PreparedPayrollCashPayment = {
 };
 
 const INCLUDED_RELEASE_STATUS = 'INCLUDED_IN_PAYROLL';
+const ATTRIBUTABLE_RELEASE_STATUSES = new Set(['INCLUDED_IN_PAYROLL', 'PAID']);
 
 export function assignableBonusesFromReleases(
   releases: readonly PayrollCashReleaseRow[],
   existingPayments: readonly PayrollCashPaymentNotes[],
 ): PayrollCashAssignableBonus[] {
-  const paidById = sumEncodedBonusCashByRelease(existingPayments);
+  const paidById = sumNetEncodedBonusCashByRelease(existingPayments);
   const assignable: PayrollCashAssignableBonus[] = [];
   for (const release of releases) {
     if (release.status !== INCLUDED_RELEASE_STATUS) {
@@ -120,10 +121,10 @@ export function fullyPaidAttributedReleaseIds(
   releases: readonly PayrollCashReleaseRow[],
   payments: readonly PayrollCashPaymentNotes[],
 ): string[] {
-  const paidById = sumEncodedBonusCashByRelease(payments);
+  const paidById = sumNetEncodedBonusCashByRelease(payments);
   const ids: string[] = [];
   for (const release of releases) {
-    if (release.status !== INCLUDED_RELEASE_STATUS) {
+    if (!ATTRIBUTABLE_RELEASE_STATUSES.has(release.status)) {
       continue;
     }
     if ((paidById.get(release.id) ?? BONUS_POOL_ZERO).gte(payrollCashApprovedAmount(release))) {

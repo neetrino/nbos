@@ -35,7 +35,11 @@ import {
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
 import { createExpensePaymentRecord, type AddExpensePaymentInput } from './expense-payment-create';
-import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
+import { deleteExpensePaymentRecord } from './expense-payment-delete';
+import {
+  refundExpensePayrollCash,
+  type RefundExpensePayrollCashInput,
+} from './expense-payment-refund';
 import { toExpenseLedgerJson } from './expense-detail-mapper';
 import { applyPayrollExpenseListScope } from './expense-payroll-list-scope';
 import { mapSalaryLineToLinkedPayrollRun } from './expense-payroll-link-map';
@@ -235,16 +239,20 @@ export class ExpensesService {
 
   async deletePayment(expenseId: string, paymentId: string, access?: ExpenseQueryParams['access']) {
     await assertExpenseAccessible(this.prisma, expenseId, access);
-    const row = await this.prisma.expensePayment.findFirst({
-      where: { id: paymentId, expenseId },
+    await deleteExpensePaymentRecord(this.prisma, expenseId, paymentId, {
+      notify: this.notifications,
     });
-    if (!row) {
-      throw new NotFoundException(`Expense payment ${paymentId} not found`);
-    }
-    await assertPostingPeriodOpenForBookedAt(this.prisma, row.paymentDate);
-    await this.prisma.expensePayment.delete({ where: { id: paymentId } });
-    await syncExpenseStatusWithPaymentLedger(this.prisma, expenseId);
-    await syncSalaryLinePaidFromExpenseLedger(this.prisma, expenseId, this.notifications);
+    return this.findById(expenseId, access);
+  }
+
+  async refundPayment(
+    expenseId: string,
+    paymentId: string,
+    input: RefundExpensePayrollCashInput,
+    access?: ExpenseQueryParams['access'],
+  ) {
+    await assertExpenseAccessible(this.prisma, expenseId, access);
+    await refundExpensePayrollCash(this.prisma, expenseId, paymentId, input);
     return this.findById(expenseId, access);
   }
 
