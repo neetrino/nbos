@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DetailSheetSection, StatusBadge } from '@/components/shared';
 import { Button } from '@/components/ui/button';
@@ -21,8 +21,15 @@ import {
   EXPENSE_GATE_FIELD_PAYMENTS,
   expenseStageGateSectionClass,
 } from '@/features/finance/constants/expense-stage-gate-highlight';
-import { visibleFinanceNote } from '@/features/finance/utils/visible-finance-note';
+import {
+  isOriginalPayrollCashPayment,
+  visibleFinanceNote,
+} from '@/features/finance/utils/visible-finance-note';
 import { DeleteExpensePaymentDialog } from './DeleteExpensePaymentDialog';
+import {
+  RefundExpensePaymentDialog,
+  type ExpensePaymentRefundInput,
+} from './RefundExpensePaymentDialog';
 import { translateExpensePaymentStatus } from './expense-i18n-labels';
 
 function formatPaymentDate(iso: string | null): string {
@@ -47,8 +54,11 @@ export function ExpenseDetailPaymentSection({
 }: ExpenseDetailPaymentSectionProps) {
   const t = useTranslations('expenses');
   const [paymentToRemove, setPaymentToRemove] = useState<ExpensePaymentEntry | null>(null);
+  const [paymentToRefund, setPaymentToRefund] = useState<ExpensePaymentEntry | null>(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [refundSubmitting, setRefundSubmitting] = useState(false);
+  const [refundError, setRefundError] = useState<string | null>(null);
 
   const ledgerPresentation =
     expense.paymentStatus !== undefined
@@ -59,6 +69,21 @@ export function ExpenseDetailPaymentSection({
     paymentToRemove !== null
       ? `${formatAmount(parseFloat(paymentToRemove.amount))} · ${formatPaymentDate(paymentToRemove.paymentDate)}`
       : '';
+
+  const handleConfirmRefund = async (input: ExpensePaymentRefundInput) => {
+    if (!paymentToRefund) return;
+    setRefundSubmitting(true);
+    setRefundError(null);
+    try {
+      const updated = await expensesApi.refundPayment(expense.id, paymentToRefund.id, input);
+      onExpenseUpdated(updated);
+      setPaymentToRefund(null);
+    } catch (caught) {
+      setRefundError(getApiErrorMessage(caught, t('errors.refundPayment')));
+    } finally {
+      setRefundSubmitting(false);
+    }
+  };
 
   const handleConfirmRemovePayment = async () => {
     if (!paymentToRemove) return;
@@ -109,7 +134,7 @@ export function ExpenseDetailPaymentSection({
                   <TableHead>{t('payments.date')}</TableHead>
                   <TableHead className="text-right">{t('payments.amount')}</TableHead>
                   <TableHead>{t('payments.notes')}</TableHead>
-                  <TableHead className="w-[52px] text-right">
+                  <TableHead className="w-[88px] text-right">
                     <span className="sr-only">{t('payments.actions')}</span>
                   </TableHead>
                 </TableRow>
@@ -125,21 +150,17 @@ export function ExpenseDetailPaymentSection({
                       {visibleFinanceNote(row.notes) ?? '—'}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-xs"
-                        className="text-muted-foreground hover:text-destructive"
-                        aria-label={t('payments.removeAria', {
-                          amount: formatAmount(parseFloat(row.amount)),
-                        })}
-                        onClick={() => {
+                      <PaymentRowActions
+                        row={row}
+                        onRefund={() => {
+                          setRefundError(null);
+                          setPaymentToRefund(row);
+                        }}
+                        onRemove={() => {
                           setDeleteError(null);
                           setPaymentToRemove(row);
                         }}
-                      >
-                        <Trash2 size={14} />
-                      </Button>
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -149,6 +170,18 @@ export function ExpenseDetailPaymentSection({
         </DetailSheetSection>
       ) : null}
 
+      <RefundExpensePaymentDialog
+        open={paymentToRefund !== null}
+        isSubmitting={refundSubmitting}
+        errorMessage={refundError}
+        onOpenChange={(next) => {
+          if (!next) {
+            setPaymentToRefund(null);
+            setRefundError(null);
+          }
+        }}
+        onConfirm={handleConfirmRefund}
+      />
       <DeleteExpensePaymentDialog
         paymentSummary={paymentSummary}
         open={paymentToRemove !== null}
@@ -162,6 +195,41 @@ export function ExpenseDetailPaymentSection({
         }}
         onConfirm={handleConfirmRemovePayment}
       />
+    </div>
+  );
+}
+
+function PaymentRowActions(props: {
+  row: ExpensePaymentEntry;
+  onRefund: () => void;
+  onRemove: () => void;
+}) {
+  const t = useTranslations('expenses');
+  const amount = formatAmount(parseFloat(props.row.amount));
+  return (
+    <div className="flex justify-end gap-1">
+      {isOriginalPayrollCashPayment(props.row.notes) ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          className="text-muted-foreground"
+          aria-label={t('payments.refundAria', { amount })}
+          onClick={props.onRefund}
+        >
+          <Undo2 size={14} />
+        </Button>
+      ) : null}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        className="text-muted-foreground hover:text-destructive"
+        aria-label={t('payments.removeAria', { amount })}
+        onClick={props.onRemove}
+      >
+        <Trash2 size={14} />
+      </Button>
     </div>
   );
 }

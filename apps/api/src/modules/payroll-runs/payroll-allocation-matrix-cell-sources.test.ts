@@ -1,7 +1,11 @@
 import { Decimal } from '@nbos/database';
 import { describe, expect, it } from 'vitest';
 
-import { aggregatePayrollMatrixCellSources } from './payroll-allocation-matrix-cell-sources';
+import { encodePayrollAllocationSourceAmounts } from './payroll-allocation-source-amounts';
+import {
+  aggregatePayrollMatrixCellSources,
+  applyStoredDraftSourceAmounts,
+} from './payroll-allocation-matrix-cell-sources';
 
 const PAYROLL_MONTH = '2026-05';
 const PAYROLL_RUN_ID = 'pr1';
@@ -232,5 +236,26 @@ describe('aggregatePayrollMatrixCellSources', () => {
     expect(afterFirst.remaining.toFixed(2)).toBe('0.00');
     expect(afterFirst.visibleEntries).toHaveLength(1);
     expect(afterFirst.visibleEntries[0]?.earnedPeriod).toBe('2026-08');
+  });
+
+  it('restores saved source amounts onto an empty draft cell', () => {
+    const sources = aggregatePayrollMatrixCellSources({
+      entries: [
+        visibleEntry({ id: 'be-a', amount: 40_000 }),
+        visibleEntry({ id: 'be-b', amount: 20_000 }),
+      ],
+      employeeId: EMPLOYEE_ID,
+      payrollMonth: PAYROLL_MONTH,
+      payrollRunId: PAYROLL_RUN_ID,
+      releases: [],
+    });
+    const title = encodePayrollAllocationSourceAmounts([
+      { bonusEntryId: 'be-a', amount: new Decimal(40_000) },
+      { bonusEntryId: 'be-b', amount: new Decimal(20_000) },
+    ]);
+
+    const restored = applyStoredDraftSourceAmounts(sources.sourceEntries, title);
+
+    expect(restored.map((entry) => entry.includedThisMonth)).toEqual(['40000.00', '20000.00']);
   });
 });

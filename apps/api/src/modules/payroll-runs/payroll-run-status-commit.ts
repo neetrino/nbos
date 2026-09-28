@@ -43,6 +43,7 @@ export async function commitLockedPayrollRunStatus(
 ): Promise<LockedPayrollStatusResult> {
   const locked = await lockPayrollRun(tx, params.payrollRunId);
   assertLockedTransition(locked.status, params.nextStatus);
+  await assertCloseIsFullyPaid(tx, params.payrollRunId, params.nextStatus);
   const materializedBonus = await materializeDraftsWhenApproving(tx, locked, params);
   await tx.payrollRun.update({ where: { id: params.payrollRunId }, data: params.data });
   const materializedExpenseIds = await materializeExpensesWhenApproving(tx, locked, params);
@@ -140,14 +141,14 @@ async function assertApprovalMatrix(
 }
 
 async function assertCloseIsFullyPaid(
-  prisma: InstanceType<typeof PrismaClient>,
+  db: TransactionClient,
   payrollRunId: string,
   status: PayrollRunStatusEnum,
 ): Promise<void> {
   if (status !== 'CLOSED') {
     return;
   }
-  const blockingCount = await loadSalaryLinesBlockingPayrollCloseCount(prisma, payrollRunId);
+  const blockingCount = await loadSalaryLinesBlockingPayrollCloseCount(db, payrollRunId);
   if (blockingCount > 0) {
     throw new ConflictException(
       `Cannot close payroll run: ${blockingCount} salary line(s) are not fully paid or held.`,

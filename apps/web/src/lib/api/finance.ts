@@ -687,6 +687,17 @@ export const expensesApi = {
     const resp = await api.delete<Expense>(`/api/expenses/${expenseId}/payments/${paymentId}`);
     return resp.data;
   },
+  async refundPayment(
+    expenseId: string,
+    paymentId: string,
+    data: { amount: number; paymentDate: string; reason: string },
+  ): Promise<Expense> {
+    const resp = await api.post<Expense>(
+      `/api/expenses/${expenseId}/payments/${paymentId}/refund`,
+      data,
+    );
+    return resp.data;
+  },
   async getStats(params?: ExpenseStatsQueryParams): Promise<ExpenseStats> {
     const resp = await api.get<ExpenseStats>('/api/expenses/stats', { params });
     return resp.data;

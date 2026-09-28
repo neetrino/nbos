@@ -80,6 +80,12 @@ Marker `nbos:dev-synthetic:payroll-postgres`, code prefix `DEV-PAY-PG`. Months a
 
 Checked on 2026-09-28 from the repository root: concurrent payments, concurrent bonus assignment, concurrent approval, the 320,000 cash cycle with a 20,000 refund, a journal failure inside the payment, carry restore, and invoice 210,000. Eight tests passed. The tests delete their own rows.
 
+## February 2020 browser bonus
+
+Marker `nbos:dev-synthetic:payroll-browser-bonus`, employee Dev Browserbonus, month `2020-02`. Salary profile 300,000 AMD covers only that month. Two delivery accruals, 40,000 and 20,000, earned `2020-01`. September 2026 was not edited.
+
+Payroll run `630b2ad4-89e0-402e-a73b-ef38704deb0e` is approved. Payment `c2a4f33c-c333-4072-b2d8-9d48383b6fcb` is 320,000 with salary 300,000 and bonus part B 20,000. A browser refund of 20,000 left salary paid and restored part B. Expense paid is 300,000. These rows stay on dev until a later cleanup of this marker only.
+
 ## Still not invented
 
 The real cutover month, production salaries, production KPI targets, and Delivery norms stay unset. Nothing here is applied to production.
