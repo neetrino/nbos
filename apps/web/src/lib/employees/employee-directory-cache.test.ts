@@ -51,7 +51,7 @@ describe('searchEmployeesForPicker', () => {
     expect(getAll).toHaveBeenCalledWith({
       page: 1,
       pageSize: 100,
-      status: 'ACTIVE',
+      excludeStatus: 'TERMINATED',
     });
     expect(first.map((row) => row.label)).toEqual(['Liana Ghazaryan', 'Amelia Smith']);
     expect(second.map((row) => row.label)).toEqual(['Robert Unused']);

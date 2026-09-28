@@ -5,6 +5,7 @@ const updateProfile = vi.fn();
 const getEmployee = vi.fn();
 const update = vi.fn();
 const changeRole = vi.fn();
+const changeStatus = vi.fn();
 const getById = vi.fn();
 
 vi.mock('@/lib/api/me', () => ({
@@ -18,6 +19,7 @@ vi.mock('@/lib/api/employees', () => ({
   employeesApi: {
     update: (...args: unknown[]) => update(...args),
     changeRole: (...args: unknown[]) => changeRole(...args),
+    changeStatus: (...args: unknown[]) => changeStatus(...args),
     getById: (...args: unknown[]) => getById(...args),
   },
 }));
@@ -49,6 +51,7 @@ describe('persistEmployeeGeneral', () => {
     getEmployee.mockReset();
     update.mockReset();
     changeRole.mockReset();
+    changeStatus.mockReset();
     getById.mockReset();
   });
 
@@ -78,6 +81,35 @@ describe('persistEmployeeGeneral', () => {
     });
     expect(update).toHaveBeenCalled();
     expect(updateProfile).not.toHaveBeenCalled();
+    expect(changeStatus).not.toHaveBeenCalled();
+    expect(getById).toHaveBeenCalledWith('emp-1');
+  });
+
+  it('persists a probation-to-active status change on its own endpoint', async () => {
+    changeStatus.mockResolvedValue({ id: 'emp-1' });
+    getById.mockResolvedValue({ id: 'emp-1', status: 'ACTIVE' });
+    await persistEmployeeGeneral({
+      employeeId: 'emp-1',
+      selfProfile: false,
+      canEditCompany: true,
+      snap: draft({ status: 'PROBATION' }),
+      draft: draft({ status: 'ACTIVE' }),
+    });
+    expect(update).not.toHaveBeenCalled();
+    expect(changeStatus).toHaveBeenCalledWith('emp-1', 'ACTIVE');
+    expect(getById).toHaveBeenCalledWith('emp-1');
+  });
+
+  it('does not start offboarding when the card status is terminated', async () => {
+    getById.mockResolvedValue({ id: 'emp-1', status: 'ACTIVE' });
+    await persistEmployeeGeneral({
+      employeeId: 'emp-1',
+      selfProfile: false,
+      canEditCompany: true,
+      snap: draft({ status: 'ACTIVE' }),
+      draft: draft({ status: 'TERMINATED' }),
+    });
+    expect(changeStatus).not.toHaveBeenCalled();
     expect(getById).toHaveBeenCalledWith('emp-1');
   });
 });
