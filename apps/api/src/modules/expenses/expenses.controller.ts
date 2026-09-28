@@ -209,6 +209,8 @@ export class ExpensesController {
       amount: number;
       paymentDate: string;
       notes?: string;
+      bonusAssignments?: { bonusReleaseId: string; amount: string }[];
+      idempotencyKey?: string;
     },
   ) {
     return this.expensesService.addPayment(id, body, financeExpenseAccessFromUser(user));

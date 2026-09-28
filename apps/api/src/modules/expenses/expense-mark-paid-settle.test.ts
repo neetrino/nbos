@@ -58,6 +58,7 @@ describe('expense-mark-paid-settle', () => {
         amount: 60,
         paymentDate: '2026-09-04',
         notes: MARK_PAID_AUTO_EXPENSE_PAYMENT_NOTE,
+        assignRemainingBonusCash: true,
       },
       { notify: undefined, journal: undefined },
     );

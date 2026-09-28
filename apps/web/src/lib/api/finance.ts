@@ -359,6 +359,8 @@ export interface AddExpensePaymentPayload {
   amount: number;
   paymentDate: string;
   notes?: string;
+  bonusAssignments?: { bonusReleaseId: string; amount: string }[];
+  idempotencyKey?: string;
 }
 
 export interface UpdateExpensePayload {
