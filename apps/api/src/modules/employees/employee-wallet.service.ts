@@ -92,6 +92,7 @@ export class EmployeeWalletService {
       loadWalletBonusLedgerContext(
         this.prisma,
         bonusRows.map((b) => ({ id: b.id, orderId: b.orderId, amount: b.amount })),
+        employeeId,
       ),
       fetchWalletActivity(this.prisma, employeeId),
     ]);

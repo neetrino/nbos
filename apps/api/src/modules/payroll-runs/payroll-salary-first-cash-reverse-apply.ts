@@ -74,27 +74,32 @@ export async function neutralizePayrollCashRefundsForSource(
   prisma: Pick<PrismaClient, 'expensePayment'>,
   expenseId: string,
   sourcePaymentId: string,
-): Promise<void> {
+): Promise<string[]> {
   const rows = await prisma.expensePayment.findMany({
     where: { expenseId },
     select: { id: true, notes: true },
   });
+  const neutralized: string[] = [];
   for (const row of rows) {
-    await neutralizeOneRefundForSource(prisma, row, sourcePaymentId);
+    const refundId = await neutralizeOneRefundForSource(prisma, row, sourcePaymentId);
+    if (refundId != null) {
+      neutralized.push(refundId);
+    }
   }
+  return neutralized;
 }
 
 async function neutralizeOneRefundForSource(
   prisma: Pick<PrismaClient, 'expensePayment'>,
   row: { id: string; notes: string | null },
   sourcePaymentId: string,
-): Promise<void> {
+): Promise<string | null> {
   const refund = decodePayrollCashRefundNotes(row.notes);
   if (refund == null || refund.sourcePaymentId !== sourcePaymentId) {
-    return;
+    return null;
   }
   if (refund.bonusParts.length === 0) {
-    return;
+    return null;
   }
   await prisma.expensePayment.update({
     where: { id: row.id },
@@ -106,6 +111,7 @@ async function neutralizeOneRefundForSource(
       ),
     },
   });
+  return row.id;
 }
 
 function refundReasonFromNotes(notes: string | null): string | null {

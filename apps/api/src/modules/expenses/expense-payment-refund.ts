@@ -17,6 +17,7 @@ import {
 } from '../payroll-runs/payroll-salary-first-cash-reverse';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { moneyAmount } from '../payroll-runs/payroll-allocation-source-amounts';
+import type { OperationalJournalService } from '../finance/journal/operational-journal.service';
 
 export type RefundExpensePayrollCashInput = {
   amount: number;
@@ -35,6 +36,13 @@ type ExpensePaymentWriteDb = Pick<
   'expense' | 'expensePayment' | 'salaryLine' | '$queryRaw'
 >;
 
+type WrittenPayrollCashRefund = RefundExpensePayrollCashResult & {
+  expenseName: string;
+  projectId: string | null;
+  productId: string | null;
+  cashAmount: Decimal;
+};
+
 /**
  * Records a refund against the original bonus links of a payroll expense payment.
  * Does not take the refund from fixed salary. Uncovered residual stays on the refund notes.
@@ -44,6 +52,7 @@ export async function refundExpensePayrollCash(
   expenseId: string,
   paymentId: string,
   input: RefundExpensePayrollCashInput,
+  opts?: { journal?: OperationalJournalService },
 ): Promise<RefundExpensePayrollCashResult> {
   const paymentDate = parseRefundDate(input.paymentDate);
   await assertPostingPeriodOpenForBookedAt(prisma, paymentDate);
@@ -58,8 +67,9 @@ export async function refundExpensePayrollCash(
       idempotencyKey: input.idempotencyKey,
     }),
   );
+  await appendPayrollCashRefundJournal(written, paymentDate, opts?.journal);
   await syncSalaryLineIfHistoryOpen(prisma, expenseId);
-  return written;
+  return toRefundResult(written);
 }
 
 async function commitLockedPayrollCashRefund(
@@ -72,7 +82,7 @@ async function commitLockedPayrollCashRefund(
     reason: string;
     idempotencyKey?: string;
   },
-): Promise<RefundExpensePayrollCashResult> {
+): Promise<WrittenPayrollCashRefund> {
   await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${expenseId} FOR UPDATE`;
   const expense = await tx.expense.findUnique({
     where: { id: expenseId },
@@ -96,19 +106,11 @@ async function commitLockedPayrollCashRefund(
     idempotencyKey: input.idempotencyKey,
   });
   assertRefundReason(refund, input.reason);
+  const cashAmount = refundStoredCashAmount(refund);
   const existing = findPayrollCashRefundForSource(expense.expensePayments, paymentId);
-  if (existing?.id != null) {
-    return { ...refund, paymentId: existing.id, alreadyApplied: true };
-  }
-  const created = await tx.expensePayment.create({
-    data: {
-      expenseId,
-      amount: refundStoredCashAmount(refund),
-      paymentDate: input.paymentDate,
-      notes: encodePayrollCashRefundNotes(refund, input.reason),
-    },
-  });
-  return { ...refund, paymentId: created.id, alreadyApplied: false };
+  const paymentIdResolved =
+    existing?.id ?? (await insertRefundPayment(tx, expenseId, refund, input));
+  return writtenRefund(refund, expense, paymentIdResolved, cashAmount, existing?.id != null);
 }
 
 async function syncSalaryLineIfHistoryOpen(
@@ -141,4 +143,69 @@ function parseRefundDate(paymentDate: string): Date {
     throw new BadRequestException('paymentDate must be a valid ISO date string');
   }
   return when;
+}
+
+async function insertRefundPayment(
+  tx: ExpensePaymentWriteDb,
+  expenseId: string,
+  refund: EncodedPayrollCashRefund,
+  input: { paymentDate: Date; reason: string },
+): Promise<string> {
+  const created = await tx.expensePayment.create({
+    data: {
+      expenseId,
+      amount: refundStoredCashAmount(refund),
+      paymentDate: input.paymentDate,
+      notes: encodePayrollCashRefundNotes(refund, input.reason),
+    },
+  });
+  return created.id;
+}
+
+function writtenRefund(
+  refund: EncodedPayrollCashRefund,
+  expense: { name: string; projectId: string | null; productId: string | null },
+  paymentId: string,
+  cashAmount: Decimal,
+  alreadyApplied: boolean,
+): WrittenPayrollCashRefund {
+  return {
+    ...refund,
+    paymentId,
+    alreadyApplied,
+    expenseName: expense.name,
+    projectId: expense.projectId,
+    productId: expense.productId,
+    cashAmount,
+  };
+}
+
+function toRefundResult(written: WrittenPayrollCashRefund): RefundExpensePayrollCashResult {
+  return {
+    salaryAmount: written.salaryAmount,
+    bonusParts: written.bonusParts,
+    residualAmount: written.residualAmount,
+    sourcePaymentId: written.sourcePaymentId,
+    idempotencyKey: written.idempotencyKey,
+    paymentId: written.paymentId,
+    alreadyApplied: written.alreadyApplied,
+  };
+}
+
+async function appendPayrollCashRefundJournal(
+  written: WrittenPayrollCashRefund,
+  bookedAt: Date,
+  journal?: OperationalJournalService,
+): Promise<void> {
+  if (journal == null) {
+    return;
+  }
+  await journal.appendExpensePaymentLine({
+    expensePaymentId: written.paymentId,
+    expenseName: written.expenseName,
+    amount: written.cashAmount.toNumber(),
+    bookedAt,
+    projectId: written.projectId,
+    productId: written.productId,
+  });
 }

@@ -241,6 +241,7 @@ export class ExpensesService {
     await assertExpenseAccessible(this.prisma, expenseId, access);
     await deleteExpensePaymentRecord(this.prisma, expenseId, paymentId, {
       notify: this.notifications,
+      journal: this.operationalJournal,
     });
     return this.findById(expenseId, access);
   }
@@ -252,7 +253,9 @@ export class ExpensesService {
     access?: ExpenseQueryParams['access'],
   ) {
     await assertExpenseAccessible(this.prisma, expenseId, access);
-    await refundExpensePayrollCash(this.prisma, expenseId, paymentId, input);
+    await refundExpensePayrollCash(this.prisma, expenseId, paymentId, input, {
+      journal: this.operationalJournal,
+    });
     return this.findById(expenseId, access);
   }
 

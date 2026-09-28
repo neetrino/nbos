@@ -241,7 +241,7 @@ export class OperationalJournalService {
     const description = input.expenseName
       ? `Cash expense payment: ${input.expenseName}`
       : 'Cash expense payment';
-    const outflow = -Math.abs(input.amount);
+    const outflow = -input.amount;
 
     return this.upsertJournalLine({
       idempotencyKey: `expense-payment:${input.expensePaymentId}`,
