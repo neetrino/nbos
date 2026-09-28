@@ -7,34 +7,45 @@ import {
   reversePayrollCarryAppliedOnSalaryLine,
 } from './payroll-bonus-carry-over-reverse';
 
+function lockedCarryReleases<T extends { id: string }>(rows: T[]) {
+  return {
+    findMany: vi.fn().mockResolvedValue(rows),
+    findUnique: vi
+      .fn()
+      .mockImplementation((args: { where: { id: string } }) =>
+        Promise.resolve(rows.find((row) => row.id === args.where.id) ?? null),
+      ),
+    update: vi.fn().mockResolvedValue({}),
+  };
+}
+
 describe('restorePriorPayrollCarryConsumed', () => {
   it('restores remaining on prior releases in payroll-month order (oldest first)', async () => {
-    const tx = {
-      bonusRelease: {
-        findMany: vi.fn().mockResolvedValue([
-          {
-            id: 'r1',
-            status: 'APPROVED',
-            employeeId: 'e1',
-            payrollRunId: null,
-            payrollIncludedAmount: null,
-            payrollCarryOverAmount: new Decimal(30),
-            payrollCarryOverRemaining: new Decimal(10),
-            payrollRun: { status: 'DRAFT', payrollMonth: '2026-03' },
-          },
-          {
-            id: 'r2',
-            status: 'APPROVED',
-            employeeId: 'e1',
-            payrollRunId: null,
-            payrollIncludedAmount: null,
-            payrollCarryOverAmount: new Decimal(10),
-            payrollCarryOverRemaining: new Decimal(0),
-            payrollRun: { status: 'DRAFT', payrollMonth: '2026-04' },
-          },
-        ]),
-        update: vi.fn().mockResolvedValue({}),
+    const priorRows = [
+      {
+        id: 'r1',
+        status: 'APPROVED',
+        employeeId: 'e1',
+        payrollRunId: null,
+        payrollIncludedAmount: null,
+        payrollCarryOverAmount: new Decimal(30),
+        payrollCarryOverRemaining: new Decimal(10),
+        payrollRun: { status: 'DRAFT', payrollMonth: '2026-03' },
       },
+      {
+        id: 'r2',
+        status: 'APPROVED',
+        employeeId: 'e1',
+        payrollRunId: null,
+        payrollIncludedAmount: null,
+        payrollCarryOverAmount: new Decimal(10),
+        payrollCarryOverRemaining: new Decimal(0),
+        payrollRun: { status: 'DRAFT', payrollMonth: '2026-04' },
+      },
+    ];
+    const tx = {
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      bonusRelease: lockedCarryReleases(priorRows),
     };
 
     await restorePriorPayrollCarryConsumed(tx as never, {
@@ -60,21 +71,20 @@ describe('restorePriorPayrollCarryConsumed', () => {
   });
 
   it('puts 100000 back on an APPROVED April remaining', async () => {
-    const tx = {
-      bonusRelease: {
-        findMany: vi.fn().mockResolvedValue([
-          {
-            id: 'rel-april',
-            status: 'APPROVED',
-            employeeId: 'e1',
-            payrollRunId: null,
-            payrollIncludedAmount: null,
-            payrollCarryOverAmount: new Decimal(100_000),
-            payrollCarryOverRemaining: null,
-          },
-        ]),
-        update: vi.fn().mockResolvedValue({}),
+    const aprilRows = [
+      {
+        id: 'rel-april',
+        status: 'APPROVED',
+        employeeId: 'e1',
+        payrollRunId: null,
+        payrollIncludedAmount: null,
+        payrollCarryOverAmount: new Decimal(100_000),
+        payrollCarryOverRemaining: null,
       },
+    ];
+    const tx = {
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      bonusRelease: lockedCarryReleases(aprilRows),
     };
 
     await restorePriorPayrollCarryConsumed(tx as never, {
@@ -261,21 +271,20 @@ describe('restorePriorPayrollCarryConsumed', () => {
 
 describe('reversePayrollCarryAppliedOnSalaryLine', () => {
   it('clears carry applied and reduces bonuses total when restore can land', async () => {
-    const tx = {
-      bonusRelease: {
-        findMany: vi.fn().mockResolvedValue([
-          {
-            id: 'rel-april',
-            status: 'APPROVED',
-            employeeId: 'e1',
-            payrollRunId: null,
-            payrollIncludedAmount: null,
-            payrollCarryOverAmount: new Decimal(25),
-            payrollCarryOverRemaining: null,
-          },
-        ]),
-        update: vi.fn().mockResolvedValue({}),
+    const aprilRows = [
+      {
+        id: 'rel-april',
+        status: 'APPROVED',
+        employeeId: 'e1',
+        payrollRunId: null,
+        payrollIncludedAmount: null,
+        payrollCarryOverAmount: new Decimal(25),
+        payrollCarryOverRemaining: null,
       },
+    ];
+    const tx = {
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      bonusRelease: lockedCarryReleases(aprilRows),
       salaryLine: { update: vi.fn().mockResolvedValue({}) },
       payrollRun: {},
     };
