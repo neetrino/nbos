@@ -16,6 +16,7 @@ import {
   payrollAllocationMatrixApi,
   type PayrollAllocationMatrix,
   type PayrollAllocationMatrixCell,
+  type PayrollMatrixCellSavePayload,
   type PayrollMatrixValidationIssue,
   type PayrollMatrixViewMode,
 } from '@/lib/api/payroll-allocation-matrix';
@@ -193,10 +194,7 @@ export function PayrollAllocationMatrixWorkspace({
   };
 
   const handleReleaseSave = useCallback(
-    async (
-      cell: PayrollAllocationMatrixCell,
-      payload: { releaseThisMonth: string; reason?: string },
-    ) => {
+    async (cell: PayrollAllocationMatrixCell, payload: PayrollMatrixCellSavePayload) => {
       const key = matrixCellKey(cell);
       setSavingCellKey(key);
       try {
@@ -205,6 +203,7 @@ export function PayrollAllocationMatrixWorkspace({
           orderId: cell.orderId,
           releaseThisMonth: payload.releaseThisMonth,
           reason: payload.reason,
+          sourceAmounts: payload.sourceAmounts,
         });
         applyMatrix(updated);
         onSalaryLinesStale?.();

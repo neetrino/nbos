@@ -1,4 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 import { SalesBonusPolicyService } from './sales-bonus-policy.service';
@@ -92,6 +95,9 @@ describe('SalesBonusPolicyService', () => {
 
     await service.update(ACTOR, 'pol-closed', { isActive: true });
 
+    const lockSql = String(prisma.$queryRaw.mock.calls[0]?.[0] ?? '');
+    expect(lockSql).toContain('FOR UPDATE');
+    expect(lockSql).toContain('effective_to IS NULL');
     expect(prisma.salesBonusPolicy.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
@@ -134,5 +140,54 @@ describe('SalesBonusPolicyService', () => {
       BadRequestException,
     );
     expect(prisma.salesBonusPolicy.create).not.toHaveBeenCalled();
+  });
+
+  it('fills an omitted percent from the open version, never from a closed id', async () => {
+    const openLive = {
+      ...OPEN_POLICY,
+      id: 'pol-v2-open',
+      sellerPercent: 11,
+      assistantPercent: 4,
+    };
+    prisma.salesBonusPolicy.findUnique.mockResolvedValue(CLOSED_POLICY);
+    prisma.salesBonusPolicy.findFirst.mockResolvedValue(openLive);
+
+    await service.update(ACTOR, 'pol-closed', { sellerPercent: 15 });
+
+    expect(prisma.salesBonusPolicy.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          sellerPercent: 15,
+          assistantPercent: 4,
+          effectiveTo: null,
+          isActive: true,
+        }),
+      }),
+    );
+    expect(prisma.salesBonusPolicy.create.mock.calls[0]?.[0]?.data?.assistantPercent).not.toBe(
+      CLOSED_POLICY.assistantPercent,
+    );
+  });
+
+  it('rejects an omitted percent on a closed id when no open version exists', async () => {
+    prisma.salesBonusPolicy.findUnique.mockResolvedValue(CLOSED_POLICY);
+    prisma.salesBonusPolicy.findFirst.mockResolvedValue(null);
+
+    await expect(service.update(ACTOR, 'pol-closed', { sellerPercent: 15 })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(prisma.salesBonusPolicy.create).not.toHaveBeenCalled();
+  });
+
+  it('adds a partial unique index so only one open version exists per key', () => {
+    const sqlPath = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      '../../../../../packages/database/prisma/migrations/20260928030000_sales_bonus_policy_one_open_version/migration.sql',
+    );
+    const sql = readFileSync(sqlPath, 'utf8');
+    expect(sql).toContain('"sales_bonus_policies_one_open_per_key"');
+    expect(sql).toContain('"from_category"');
+    expect(sql).toContain('"payment_model"');
+    expect(sql).toContain('WHERE "effective_to" IS NULL');
   });
 });

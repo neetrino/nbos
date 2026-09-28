@@ -192,7 +192,14 @@
     "amountRequired": "Amount *",
     "dateRequired": "Payment date *",
     "dateAria": "Payment date",
-    "notesOptional": "Optional"
+    "notesOptional": "Optional",
+    "salaryPart": "Salary in this payment: {amount}",
+    "bonusAssignHint": "Assign the amount above salary to a specific bonus.",
+    "bonusUntitled": "Bonus",
+    "bonusField": "{name}, left {amount}",
+    "carryField": "Earlier unpaid amount",
+    "carryPart": "Earlier unpaid amount in this payment: {amount}",
+    "assignShort": "Assign the remaining {amount} to a bonus."
   },
   "dialogs": {
     "addPaymentTitle": "Add payment",

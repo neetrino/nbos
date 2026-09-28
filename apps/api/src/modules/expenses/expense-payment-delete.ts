@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
-import { PrismaClient } from '@nbos/database';
+import { PrismaClient, type TransactionClient } from '@nbos/database';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
+import { bufferWalletNotifications } from '../employees/wallet-notify-buffer';
 import type { OperationalJournalService } from '../finance/journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import { decodePayrollCashNotes } from '../payroll-runs/payroll-salary-first-cash-notes';
@@ -33,14 +34,38 @@ export async function deleteExpensePaymentRecord(
     throw new NotFoundException(`Expense payment ${paymentId} not found`);
   }
   await assertPostingPeriodOpenForBookedAt(prisma, row.paymentDate);
-  await rejectClosedPayrollCashHistory(prisma, expenseId);
-  const original = decodePayrollCashNotes(row.notes);
-  await prisma.expensePayment.delete({ where: { id: paymentId } });
-  const refundIds = await neutralizePayrollCashRefundsForSource(prisma, expenseId, paymentId);
-  await reverseDeletedExpensePaymentJournal(opts?.journal, [paymentId, ...refundIds]);
-  await syncExpenseStatusWithPaymentLedger(prisma, expenseId);
-  await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId, opts?.notify);
-  await restoreBonusMarksForDeletedPayrollCash(prisma, expenseId, original);
+  const buffered = bufferWalletNotifications();
+  await prisma.$transaction((tx) =>
+    commitExpensePaymentDelete(tx, expenseId, paymentId, {
+      journal: opts?.journal,
+      notify: opts?.notify == null ? undefined : buffered.sink,
+    }),
+  );
+  await buffered.flush(opts?.notify);
+}
+
+async function commitExpensePaymentDelete(
+  tx: TransactionClient,
+  expenseId: string,
+  paymentId: string,
+  opts?: { notify?: WalletInAppNotifySink; journal?: OperationalJournalService },
+): Promise<void> {
+  await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${expenseId} FOR UPDATE`;
+  const current = await tx.expensePayment.findFirst({
+    where: { id: paymentId, expenseId },
+  });
+  if (!current) {
+    throw new NotFoundException(`Expense payment ${paymentId} not found`);
+  }
+  await rejectClosedPayrollCashHistory(tx, expenseId);
+  const original = decodePayrollCashNotes(current.notes);
+  await tx.expensePayment.delete({ where: { id: paymentId } });
+  const refundIds = await neutralizePayrollCashRefundsForSource(tx, expenseId, paymentId);
+  await reverseDeletedExpensePaymentJournal(opts?.journal, [paymentId, ...refundIds], tx);
+  const db = tx as InstanceType<typeof PrismaClient>;
+  await syncExpenseStatusWithPaymentLedger(db, expenseId);
+  await syncSalaryLinePaidFromExpenseLedger(db, expenseId, opts?.notify);
+  await restoreBonusMarksForDeletedPayrollCash(db, expenseId, original);
 }
 
 export function expensePaymentJournalKey(paymentId: string): string {
@@ -50,6 +75,7 @@ export function expensePaymentJournalKey(paymentId: string): string {
 async function reverseDeletedExpensePaymentJournal(
   journal: OperationalJournalService | undefined,
   paymentIds: string[],
+  tx: TransactionClient,
 ): Promise<void> {
   if (journal == null) {
     return;
@@ -58,6 +84,7 @@ async function reverseDeletedExpensePaymentJournal(
     await journal.reverseJournalLineByIdempotencyKey(
       expensePaymentJournalKey(paymentId),
       PAYMENT_DELETED_JOURNAL_NOTE,
+      tx,
     );
   }
 }

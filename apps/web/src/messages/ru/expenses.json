@@ -192,7 +192,14 @@
     "amountRequired": "Сумма *",
     "dateRequired": "Дата платежа *",
     "dateAria": "Дата платежа",
-    "notesOptional": "Необязательно"
+    "notesOptional": "Необязательно",
+    "salaryPart": "Оклад в этом платеже: {amount}",
+    "bonusAssignHint": "Сумму сверх оклада нужно отнести на конкретный бонус.",
+    "bonusUntitled": "Бонус",
+    "bonusField": "{name}, остаток {amount}",
+    "carryField": "Ранее невыплаченный остаток",
+    "carryPart": "Ранее невыплаченный остаток в этом платеже: {amount}",
+    "assignShort": "Отнесите оставшиеся {amount} на бонус."
   },
   "dialogs": {
     "addPaymentTitle": "Добавить платёж",

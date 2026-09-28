@@ -254,6 +254,18 @@ export interface Expense {
     payrollMonth: string;
     salaryLineId: string;
   } | null;
+  /** Included bonuses the financier can name when this payment exceeds remaining salary. */
+  payrollCash?: {
+    baseSalary: string;
+    salaryRemaining: string;
+    carryRemaining: string;
+    bonuses: {
+      bonusReleaseId: string;
+      title: string | null;
+      orderCode: string | null;
+      remaining: string;
+    }[];
+  } | null;
   /** Present when this expense was created from an Expense Plan (Plan→Card). */
   linkedExpensePlan?: { id: string; name: string } | null;
   /** Client invoice that spawned this pass-through expense, when linked. */
@@ -360,6 +372,7 @@ export interface AddExpensePaymentPayload {
   paymentDate: string;
   notes?: string;
   bonusAssignments?: { bonusReleaseId: string; amount: string }[];
+  carryAmount?: string;
   idempotencyKey?: string;
 }
 

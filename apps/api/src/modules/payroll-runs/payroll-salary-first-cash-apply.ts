@@ -1,6 +1,6 @@
 import { Decimal, type PrismaClient } from '@nbos/database';
 
-import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
+import { BONUS_POOL_ZERO, decimalFrom } from '../bonus/bonus-pool-decimal';
 import { moneyAmount } from './payroll-allocation-source-amounts';
 import {
   allocateSalaryFirstCash,
@@ -38,6 +38,8 @@ export type PreparePayrollCashPaymentInput = {
   existingPayments: readonly PayrollCashPaymentNotes[];
   assignments?: readonly PayrollCashBonusAssignmentInput[];
   assignRemainingBonusCash?: boolean;
+  /** Explicit earlier-carry amount. Required when cash above salary names no bonus. */
+  carryAmount?: string | null;
   userNotes?: string | null;
   idempotencyKey?: string | null;
 };
@@ -102,6 +104,7 @@ export function preparePayrollCashPayment(
     salaryRemaining: salaryRemainingBeforeCash(input.baseSalary, input.alreadyPaidCash),
     bonuses,
     assignments: resolveAssignments(input, bonuses),
+    requestedCarry: requestedCarryAmount(input.carryAmount),
     carryRemaining: carryRemainingBeforeCash(
       input.carryAppliedAmount,
       sumEncodedCarryCash(input.existingPayments),
@@ -168,6 +171,12 @@ export async function loadPayrollCashReleasesForExpense(
     select: { id: true, amount: true, payrollIncludedAmount: true, status: true },
   });
   return { salaryLine, releases };
+}
+
+function requestedCarryAmount(carryAmount: string | null | undefined): Decimal | undefined {
+  const text = carryAmount?.trim() ?? '';
+  if (text.length === 0) return undefined;
+  return decimalFrom(text);
 }
 
 function resolveAssignments(

@@ -247,11 +247,13 @@ describe('detachBonusReleasesFromPayrollRun', () => {
       status: 'INCLUDED_IN_PAYROLL' as const,
       payrollRunId: 'run1',
     };
+    // prettier-ignore
+    const priorCarry = { id: 'rel-april', status: 'APPROVED', employeeId: 'e1', payrollRunId: null, payrollRun: null, payrollIncludedAmount: null, payrollCarryOverAmount: new Decimal(25), payrollCarryOverRemaining: new Decimal(0) };
     tx.bonusRelease.findMany.mockImplementation((args: { where?: { id?: { in?: string[] } } }) => {
       if (args.where?.id?.in) {
         return Promise.resolve([detachRelease]);
       }
-      return Promise.resolve([]);
+      return Promise.resolve([priorCarry]);
     });
     tx.bonusRelease.count.mockResolvedValue(0);
     tx.salaryLine.findUnique
@@ -273,14 +275,8 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         paidAmount: new Decimal(0),
         payrollCarryAppliedAmount: new Decimal(25),
       });
-    tx.salaryLine.aggregate.mockResolvedValue({
-      _sum: {
-        baseSalary: new Decimal(100),
-        bonusesTotal: new Decimal(0),
-        totalPayable: new Decimal(100),
-        paidAmount: new Decimal(0),
-      },
-    });
+    // prettier-ignore
+    tx.salaryLine.aggregate.mockResolvedValue({ _sum: { baseSalary: new Decimal(100), bonusesTotal: new Decimal(0), totalPayable: new Decimal(100), paidAmount: new Decimal(0) } });
 
     await detachBonusReleasesFromPayrollRun(tx as never, {
       payrollRunId: 'run1',

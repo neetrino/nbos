@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type FocusEvent, type KeyboardEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { AmdCurrencyIcon } from '@/components/shared/AmdCurrencyIcon';
@@ -22,8 +22,18 @@ import {
   payrollMatrixCellCaptionMessageKey,
   resolveMatrixReleaseWarningKind,
 } from '@/features/finance/utils/payroll-matrix-release-warning';
-import type { PayrollAllocationMatrixCell } from '@/lib/api/payroll-allocation-matrix';
+import type {
+  PayrollAllocationMatrixCell,
+  PayrollMatrixCellSavePayload,
+} from '@/lib/api/payroll-allocation-matrix';
 import { cn } from '@/lib/utils';
+
+import { resolvePayrollMatrixCellSubmitPayload } from './build-payroll-matrix-cell-release-payload';
+import {
+  PayrollAllocationMatrixMultiSourceInput,
+  sourceDraftsFromSources,
+  sumSourceDraftAmounts,
+} from './payroll-allocation-matrix-multi-source-input';
 
 function parseMoney(value: string): number {
   const n = Number.parseFloat(value);
@@ -88,26 +98,41 @@ function PayrollMatrixCellReasonInput(props: {
   );
 }
 
+/** Bivariant so history callers typed without sourceAmounts still compile. */
+export type PayrollMatrixCellSaveHandler = {
+  bivarianceHack(payload: PayrollMatrixCellSavePayload): Promise<void>;
+}['bivarianceHack'];
+
 export function PayrollAllocationMatrixCellInput(props: {
   cell: PayrollAllocationMatrixCell;
   availableFunding: number;
   disabled: boolean;
   saving: boolean;
-  onSave: (payload: { releaseThisMonth: string; reason?: string }) => Promise<void>;
+  onSave: PayrollMatrixCellSaveHandler;
 }) {
   const { cell, availableFunding, disabled, saving, onSave } = props;
   const t = useTranslations('payroll');
-  const cellSyncKey = `${cell.employeeId}:${cell.orderId}:${cell.releaseThisMonth}`;
+  const sources = useMemo(() => cell.sourceEntries ?? [], [cell.sourceEntries]);
+  const isMultiSource = sources.length >= 2;
+  const sourceKey = sources
+    .map((source) => `${source.bonusEntryId}:${source.includedThisMonth ?? ''}`)
+    .join(',');
+  const cellSyncKey = `${cell.employeeId}:${cell.orderId}:${cell.releaseThisMonth}:${sourceKey}`;
   const reasonSyncKey = `${cell.employeeId}:${cell.orderId}`;
   const [cellSyncSeen, setCellSyncSeen] = useState(cellSyncKey);
   const [reasonSyncSeen, setReasonSyncSeen] = useState(reasonSyncKey);
   const [amount, setAmount] = useState(() => releaseDraftFromCell(cell));
+  const [sourceDrafts, setSourceDrafts] = useState(() => sourceDraftsFromSources(sources));
   const [reason, setReason] = useState('');
   const [focused, setFocused] = useState(false);
+  const [sourceDirty, setSourceDirty] = useState(false);
+  const ignoreNextSubmitRef = useRef(false);
 
   if (cellSyncKey !== cellSyncSeen) {
+    setSourceDirty(false);
     setCellSyncSeen(cellSyncKey);
     setAmount(releaseDraftFromCell(cell));
+    setSourceDrafts(sourceDraftsFromSources(sources));
     setFocused(false);
   }
   if (reasonSyncKey !== reasonSyncSeen) {
@@ -117,7 +142,7 @@ export function PayrollAllocationMatrixCellInput(props: {
 
   const showCurrency = focused || amount.trim().length > 0;
   const remaining = parseMoney(cell.remaining);
-  const draftAmount = parseMoney(amount);
+  const draftAmount = isMultiSource ? sumSourceDraftAmounts(sourceDrafts) : parseMoney(amount);
   const needsReason = payrollMatrixCellNeedsExceptionReason({
     cell,
     draftAmount,
@@ -132,16 +157,36 @@ export function PayrollAllocationMatrixCellInput(props: {
 
   const submit = useCallback(async () => {
     if (disabled || saving) return;
-    const releaseThisMonth = amount.trim() || '0';
-    const next = parseMoney(releaseThisMonth);
-    const current = parseMoney(cell.releaseThisMonth);
-    const trimmedReason = reason.trim();
-    if (next === current && (!needsReason || trimmedReason.length === 0)) return;
-    await onSave({
-      releaseThisMonth,
-      reason: trimmedReason.length > 0 ? trimmedReason : undefined,
+    if (ignoreNextSubmitRef.current) {
+      ignoreNextSubmitRef.current = false;
+      return;
+    }
+    const payload = resolvePayrollMatrixCellSubmitPayload({
+      isMultiSource,
+      sourceEntryCount: sources.length,
+      singleAmount: amount,
+      sourceDrafts,
+      savedRelease: cell.releaseThisMonth,
+      sources,
+      dirty: sourceDirty,
+      needsReason,
+      reason,
     });
-  }, [amount, cell.releaseThisMonth, disabled, needsReason, onSave, reason, saving]);
+    if (payload == null) return;
+    await onSave(payload);
+  }, [
+    amount,
+    cell.releaseThisMonth,
+    disabled,
+    isMultiSource,
+    needsReason,
+    onSave,
+    reason,
+    saving,
+    sourceDirty,
+    sourceDrafts,
+    sources,
+  ]);
 
   const handleContainerBlur = (event: FocusEvent<HTMLDivElement>) => {
     const next = event.relatedTarget;
@@ -156,10 +201,20 @@ export function PayrollAllocationMatrixCellInput(props: {
       void submit();
     }
     if (event.key === 'Escape') {
+      ignoreNextSubmitRef.current = true;
+      setSourceDirty(false);
       setAmount(releaseDraftFromCell(cell));
+      setSourceDrafts(sourceDraftsFromSources(sources));
       setReason('');
       setFocused(false);
     }
+  };
+
+  const handleSourceDraftChange = (bonusEntryId: string, nextAmount: string) => {
+    setSourceDirty(true);
+    setSourceDrafts((prev) =>
+      prev.map((row) => (row.bonusEntryId === bonusEntryId ? { ...row, amount: nextAmount } : row)),
+    );
   };
 
   if (!cell.editable) {
@@ -186,32 +241,43 @@ export function PayrollAllocationMatrixCellInput(props: {
       className="relative flex min-h-[2.25rem] min-w-0 flex-col items-stretch justify-center gap-0.5 overflow-hidden px-1 py-1"
       onBlur={handleContainerBlur}
     >
-      <div className={cn(PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS, 'relative')}>
-        <MoneyInput
-          value={amount}
-          onChange={setAmount}
+      {isMultiSource ? (
+        <PayrollAllocationMatrixMultiSourceInput
+          sources={sources}
+          drafts={sourceDrafts}
           disabled={disabled || saving}
-          placeholder={
-            cell.bonusEntryId ? t(PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER_KEY) : undefined
-          }
-          aria-label={t(PAYROLL_MATRIX_CELL_RELEASE_ARIA_KEY)}
-          className={PAYROLL_MATRIX_CELL_MONEY_INPUT_CLASS}
+          onDraftChange={handleSourceDraftChange}
           onFocus={() => setFocused(true)}
           onKeyDown={handleKeyDown}
         />
-        <span
-          className={cn(PAYROLL_MATRIX_CELL_CURRENCY_SLOT_CLASS, !showCurrency && 'invisible')}
-          aria-hidden
-        >
-          <AmdCurrencyIcon className="text-muted-foreground" />
-        </span>
-        {saving ? (
-          <Loader2
-            className="text-muted-foreground pointer-events-none absolute top-1/2 left-1 size-3 -translate-y-1/2 animate-spin"
-            aria-hidden
+      ) : (
+        <div className={cn(PAYROLL_MATRIX_CELL_FIELD_SHELL_CLASS, 'relative')}>
+          <MoneyInput
+            value={amount}
+            onChange={setAmount}
+            disabled={disabled || saving}
+            placeholder={
+              cell.bonusEntryId ? t(PAYROLL_MATRIX_CELL_RELEASE_PLACEHOLDER_KEY) : undefined
+            }
+            aria-label={t(PAYROLL_MATRIX_CELL_RELEASE_ARIA_KEY)}
+            className={PAYROLL_MATRIX_CELL_MONEY_INPUT_CLASS}
+            onFocus={() => setFocused(true)}
+            onKeyDown={handleKeyDown}
           />
-        ) : null}
-      </div>
+          <span
+            className={cn(PAYROLL_MATRIX_CELL_CURRENCY_SLOT_CLASS, !showCurrency && 'invisible')}
+            aria-hidden
+          >
+            <AmdCurrencyIcon className="text-muted-foreground" />
+          </span>
+          {saving ? (
+            <Loader2
+              className="text-muted-foreground pointer-events-none absolute top-1/2 left-1 size-3 -translate-y-1/2 animate-spin"
+              aria-hidden
+            />
+          ) : null}
+        </div>
+      )}
       {needsReason ? (
         <PayrollMatrixCellReasonInput
           value={reason}
@@ -225,6 +291,9 @@ export function PayrollAllocationMatrixCellInput(props: {
         <span className={PAYROLL_MATRIX_CELL_WARNING_CLASS} role="status">
           {caption}
         </span>
+      ) : null}
+      {isMultiSource && saving ? (
+        <Loader2 className="text-muted-foreground size-3 animate-spin self-center" aria-hidden />
       ) : null}
     </div>
   );

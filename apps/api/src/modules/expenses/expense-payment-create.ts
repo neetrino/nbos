@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
 import { notifySalaryExpensePayment } from '../employees/employee-wallet-notify.ops';
+import { bufferWalletNotifications } from '../employees/wallet-notify-buffer';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { syncPartnerPayoutPaidFromExpense } from '../partners/partner-payout-batch.ops';
 import {
@@ -24,6 +25,7 @@ export interface AddExpensePaymentInput {
   paymentDate: string;
   notes?: string;
   bonusAssignments?: PayrollCashBonusAssignmentInput[];
+  carryAmount?: string;
   idempotencyKey?: string;
   assignRemainingBonusCash?: boolean;
 }
@@ -46,11 +48,15 @@ export async function createExpensePaymentRecord(
   const paymentDate = parsePaymentDate(input);
   const newPayment = parsePaymentAmount(input.amount);
   await assertPostingPeriodOpenForBookedAt(prisma, paymentDate);
-  const written = await writeExpensePayment(prisma, expenseId, input, newPayment, paymentDate);
-  await syncExpenseStatusWithPaymentLedger(prisma, expenseId);
-  await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId, opts?.notify);
+  const written = await writeExpensePayment(
+    prisma,
+    expenseId,
+    input,
+    newPayment,
+    paymentDate,
+    opts,
+  );
   await syncPartnerPayoutPaidFromExpense(prisma, expenseId);
-  await appendExpensePaymentJournal(written, newPayment, paymentDate, opts);
   await notifyPayrollExpensePayment(prisma, expenseId, written.paymentId, newPayment, opts?.notify);
   return written.paymentId;
 }
@@ -88,10 +94,32 @@ async function writeExpensePayment(
   input: AddExpensePaymentInput,
   newPayment: Decimal,
   paymentDate: Date,
+  opts?: {
+    notify?: WalletInAppNotifySink;
+    journal?: OperationalJournalService;
+  },
 ): Promise<WrittenExpensePayment> {
-  return prisma.$transaction((tx) =>
-    commitLockedExpensePayment(tx, expenseId, input, newPayment, paymentDate),
-  );
+  const buffered = bufferWalletNotifications();
+  const written = await prisma.$transaction(async (tx) => {
+    const committed = await commitLockedExpensePayment(
+      tx,
+      expenseId,
+      input,
+      newPayment,
+      paymentDate,
+    );
+    const db = tx as InstanceType<typeof PrismaClient>;
+    await syncExpenseStatusWithPaymentLedger(db, expenseId);
+    await syncSalaryLinePaidFromExpenseLedger(
+      db,
+      expenseId,
+      opts?.notify == null ? undefined : buffered.sink,
+    );
+    await appendExpensePaymentJournal(committed, newPayment, paymentDate, opts?.journal, tx);
+    return committed;
+  });
+  await buffered.flush(opts?.notify);
+  return written;
 }
 
 async function commitLockedExpensePayment(
@@ -170,6 +198,7 @@ async function notesForExpensePayment(
     releases: payroll.releases,
     existingPayments,
     assignments: input.bonusAssignments,
+    carryAmount: input.carryAmount,
     assignRemainingBonusCash: input.assignRemainingBonusCash,
     userNotes: input.notes,
     idempotencyKey: input.idempotencyKey,
@@ -192,19 +221,23 @@ async function appendExpensePaymentJournal(
   },
   amount: Decimal,
   bookedAt: Date,
-  opts?: { journal?: OperationalJournalService },
+  journal: OperationalJournalService | undefined,
+  db: Pick<PrismaClient, 'operationalJournalEntry' | 'financePostingPeriod'>,
 ): Promise<void> {
-  if (!opts?.journal) {
+  if (journal == null) {
     return;
   }
-  await opts.journal.appendExpensePaymentLine({
-    expensePaymentId: written.paymentId,
-    expenseName: written.expenseName,
-    amount: amount.toNumber(),
-    bookedAt,
-    projectId: written.projectId,
-    productId: written.productId,
-  });
+  await journal.appendExpensePaymentLine(
+    {
+      expensePaymentId: written.paymentId,
+      expenseName: written.expenseName,
+      amount: amount.toNumber(),
+      bookedAt,
+      projectId: written.projectId,
+      productId: written.productId,
+    },
+    db,
+  );
 }
 
 async function notifyPayrollExpensePayment(
@@ -243,7 +276,7 @@ async function notifyPayrollExpensePayment(
   });
 }
 
-function payrollAlreadyPaidCash(
+export function payrollAlreadyPaidCash(
   existingPayments: { id: string; amount: Decimal; notes: string | null }[],
   alreadyPaid: Decimal,
 ): Decimal {

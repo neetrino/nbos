@@ -250,4 +250,31 @@ describe('P5-S2 expense payment reverse and refund apply', () => {
     expect(prisma.bonusRelease.updateMany).not.toHaveBeenCalled();
     expect(prisma.expensePayment.delete).not.toHaveBeenCalled();
   });
+
+  it('rejects a refund when the run closes inside the transaction lock', async () => {
+    let historyReads = 0;
+    prisma.salaryLine.findUnique.mockImplementation(async () => {
+      historyReads += 1;
+      return {
+        id: 'sl-1',
+        payrollRunId: 'pr-1',
+        employeeId: 'emp-1',
+        totalPayable: new Decimal('400000.00'),
+        payrollRun: { status: historyReads <= 1 ? 'PAYING' : 'CLOSED' },
+      };
+    });
+
+    await expect(
+      refundExpensePayrollCash(prisma as never, 'ex-1', 'pay-1', {
+        amount: 50000,
+        paymentDate: '2026-05-02T00:00:00.000Z',
+        reason: 'Client return uncovered residual',
+        idempotencyKey: 'refund-race-closed',
+      }),
+    ).rejects.toThrow(PAYROLL_CASH_REVERSE_ERRORS.closedHistory);
+    expect(prisma.expensePayment.create).not.toHaveBeenCalled();
+    expect(payments).toHaveLength(1);
+    expect(payments[0]?.amount.toFixed(2)).toBe('320000.00');
+    expect(historyReads).toBeGreaterThan(1);
+  });
 });

@@ -210,6 +210,7 @@ export class ExpensesController {
       paymentDate: string;
       notes?: string;
       bonusAssignments?: { bonusReleaseId: string; amount: string }[];
+      carryAmount?: string;
       idempotencyKey?: string;
     },
   ) {

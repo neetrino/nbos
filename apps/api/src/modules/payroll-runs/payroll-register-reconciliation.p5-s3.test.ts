@@ -154,6 +154,7 @@ describe('P5-S3 register reconciliation', () => {
     expect(fixture.journal.reverseJournalLineByIdempotencyKey).toHaveBeenCalledWith(
       'expense-payment:pay-1',
       expect.any(String),
+      fixture.prisma,
     );
   });
 
@@ -184,10 +185,12 @@ describe('P5-S3 register reconciliation', () => {
     expect(fixture.journal.reverseJournalLineByIdempotencyKey).toHaveBeenCalledWith(
       'expense-payment:pay-1',
       expect.any(String),
+      fixture.prisma,
     );
     expect(fixture.journal.reverseJournalLineByIdempotencyKey).toHaveBeenCalledWith(
       'expense-payment:pay-2',
       expect.any(String),
+      fixture.prisma,
     );
   });
 

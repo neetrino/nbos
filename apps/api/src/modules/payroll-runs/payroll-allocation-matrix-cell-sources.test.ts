@@ -51,6 +51,7 @@ describe('aggregatePayrollMatrixCellSources', () => {
     expect(sources.remaining.toFixed(2)).toBe('120.00');
     expect(sources.sourceEntries.map((entry) => entry.bonusEntryId)).toEqual(['be-50', 'be-70']);
     expect(sources.sourceEntries.map((entry) => entry.plannedAmount)).toEqual(['50.00', '70.00']);
+    expect(sources.sourceEntries.map((entry) => entry.remainingAmount)).toEqual(['50.00', '70.00']);
   });
 
   it('keeps a single visible entry of 50 as planned 50', () => {
@@ -68,6 +69,7 @@ describe('aggregatePayrollMatrixCellSources', () => {
       expect.objectContaining({
         bonusEntryId: 'be-50',
         plannedAmount: '50.00',
+        remainingAmount: '50.00',
       }),
     ]);
   });
@@ -114,6 +116,7 @@ describe('aggregatePayrollMatrixCellSources', () => {
     expect(sources.releasedBefore.toFixed(2)).toBe('20.00');
     expect(sources.remaining.toFixed(2)).toBe('100.00');
     expect(sources.sourceEntries.map((entry) => entry.bonusEntryId)).toEqual(['be-50', 'be-70']);
+    expect(sources.sourceEntries.map((entry) => entry.remainingAmount)).toEqual(['50.00', '50.00']);
   });
 
   it('sums this-run included releases instead of taking the first match', () => {
@@ -148,6 +151,10 @@ describe('aggregatePayrollMatrixCellSources', () => {
     expect(sources.thisRunReleaseAmount.toFixed(2)).toBe('25.00');
     expect(sources.thisRunReleaseId).toBe('rel-50');
     expect(sources.sourceEntries.map((entry) => entry.bonusEntryId)).toEqual(['be-50', 'be-70']);
+    expect(sources.sourceEntries.map((entry) => entry.includedThisMonth)).toEqual([
+      '10.00',
+      '15.00',
+    ]);
   });
 
   it('keeps August 40000 payable in October and does not rewrite the earned month', () => {
@@ -165,6 +172,7 @@ describe('aggregatePayrollMatrixCellSources', () => {
       expect.objectContaining({
         bonusEntryId: 'be-aug',
         plannedAmount: '40000.00',
+        remainingAmount: '40000.00',
       }),
     ]);
     expect(sources.visibleEntries[0]?.earnedPeriod).toBe('2026-08');

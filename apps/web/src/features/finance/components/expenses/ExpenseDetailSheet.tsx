@@ -390,6 +390,7 @@ export function ExpenseDetailSheet({
         <>
           <AddExpensePaymentDialog
             expenseId={expense.id}
+            payrollCash={expense.payrollCash}
             open={paymentOpen}
             onOpenChange={setPaymentOpen}
             onRecorded={handleExpenseChange}

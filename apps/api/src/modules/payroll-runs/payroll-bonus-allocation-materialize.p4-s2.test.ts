@@ -588,6 +588,72 @@ describe('P4-S2 development installments extra award and source split', () => {
     expect(later.tx.bonusRelease.create).not.toHaveBeenCalled();
   });
 
+  it('consumes the 10 remaining on the other source instead of paying EXTRA 10 twice', async () => {
+    const entries = new Map([
+      ['be-50', sourceEntry('be-50', new Decimal(50))],
+      ['be-70', sourceEntry('be-70', new Decimal(70))],
+    ]);
+    const { tx, releases } = createTx({
+      drafts: [
+        draft({
+          bonusEntryId: 'be-50',
+          amount: new Decimal(10),
+          kind: 'EXTRA_BONUS',
+          reason: 'cell at remaining sum',
+        }),
+      ],
+      entries,
+      releases: [
+        {
+          id: 'rel-a-full',
+          bonusEntryId: 'be-50',
+          payrollRunId: 'pr-old',
+          status: 'INCLUDED_IN_PAYROLL',
+          amount: new Decimal(50),
+          payrollIncludedAmount: new Decimal(50),
+        },
+        {
+          id: 'rel-b-part',
+          bonusEntryId: 'be-70',
+          payrollRunId: 'pr-old',
+          status: 'INCLUDED_IN_PAYROLL',
+          amount: new Decimal(60),
+          payrollIncludedAmount: new Decimal(60),
+        },
+      ],
+    });
+
+    await materializePayrollBonusAllocationDrafts(tx as never, {
+      payrollRunId: 'pr1',
+      payrollMonth: '2026-05',
+      actorUserId: 'emp1',
+    });
+
+    expect(tx.bonusEntry.create).not.toHaveBeenCalled();
+    expect(tx.bonusRelease.create).toHaveBeenCalledTimes(1);
+    expect(tx.bonusRelease.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          bonusEntryId: 'be-70',
+          amount: new Decimal(10),
+          releaseType: 'MANUAL',
+          status: 'APPROVED',
+        }),
+      }),
+    );
+    expect(tx.bonusRelease.create).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ releaseType: 'EXTRA' }),
+      }),
+    );
+    expect(
+      economicRemaining(
+        new Decimal(70),
+        releases.filter((row) => row.bonusEntryId === 'be-70'),
+      ).toFixed(2),
+    ).toBe('0.00');
+  });
+
   it('does not let a manual title with the source-amount prefix pay another employee plan', async () => {
     const stolen = encodePayrollAllocationSourceAmounts([
       { bonusEntryId: 'be-other', amount: new Decimal(50) },

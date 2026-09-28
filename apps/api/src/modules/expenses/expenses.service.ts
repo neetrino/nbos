@@ -43,6 +43,7 @@ import {
 import { toExpenseLedgerJson } from './expense-detail-mapper';
 import { applyPayrollExpenseListScope } from './expense-payroll-list-scope';
 import { mapSalaryLineToLinkedPayrollRun } from './expense-payroll-link-map';
+import { loadExpensePayrollCashPreview } from './expense-payroll-cash-preview';
 import { mapExpensePlanToLinkedPlan } from './expense-plan-link-map';
 import {
   attachLedgerFieldsToExpenseListItems,
@@ -200,7 +201,10 @@ export class ExpensesService {
         salaryLine: {
           select: {
             id: true,
+            employeeId: true,
             payrollRunId: true,
+            baseSalary: true,
+            payrollCarryAppliedAmount: true,
             payrollRun: { select: { payrollMonth: true } },
           },
         },
@@ -208,10 +212,16 @@ export class ExpensesService {
     });
     if (!row) throw new NotFoundException(`Expense ${id} not found`);
     const { salaryLine, expensePlan, sourceInvoice, ...expense } = row;
+    const payrollCash = await loadExpensePayrollCashPreview(
+      this.prisma,
+      salaryLine,
+      row.expensePayments,
+    );
     const presentedStatus = refreshExpenseWorkflowStatus(expense.status, expense.dueDate);
     const ledger = toExpenseLedgerJson({ ...expense, status: presentedStatus });
     return {
       ...ledger,
+      payrollCash,
       linkedPayrollRun: mapSalaryLineToLinkedPayrollRun(salaryLine),
       linkedExpensePlan: mapExpensePlanToLinkedPlan(expensePlan),
       sourceInvoice: sourceInvoice

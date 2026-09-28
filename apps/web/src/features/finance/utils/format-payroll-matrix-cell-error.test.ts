@@ -20,6 +20,7 @@ const cell: PayrollAllocationMatrixCell = {
   linked: true,
   bonusTitle: 'Seller bonus',
   bonusEntryId: 'be1',
+  sourceEntries: [],
   bonusReleaseId: 'br1',
   plannedAmount: '100',
   originalAmount: '100',

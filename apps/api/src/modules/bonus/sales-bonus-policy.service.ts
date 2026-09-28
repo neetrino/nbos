@@ -45,8 +45,8 @@ export class SalesBonusPolicyService {
       this.prisma,
       row,
       {
-        sellerPercent: data.sellerPercent ?? Number(row.sellerPercent),
-        assistantPercent: data.assistantPercent ?? Number(row.assistantPercent),
+        sellerPercent: data.sellerPercent,
+        assistantPercent: data.assistantPercent,
       },
       now,
     );

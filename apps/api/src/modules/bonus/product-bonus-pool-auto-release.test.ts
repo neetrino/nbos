@@ -83,4 +83,31 @@ describe('tryCreateProportionalAutoReleases', () => {
     expect(done).toBe(false);
     expect(prisma.bonusRelease.create).not.toHaveBeenCalled();
   });
+
+  it('creates releases on a transaction client that has no $transaction', async () => {
+    prisma.bonusEntry.findMany.mockResolvedValue([
+      { id: 'be1', employeeId: 'e1', projectId: 'p1', amount: new Decimal(30) },
+      { id: 'be2', employeeId: 'e2', projectId: 'p1', amount: new Decimal(70) },
+    ]);
+    prisma.bonusRelease.groupBy.mockResolvedValue([]);
+    prisma.bonusRelease.create.mockResolvedValue({ id: 'r1' });
+    const txClient = { ...prisma, $transaction: undefined };
+
+    const done = await tryCreateProportionalAutoReleases(txClient as never, {
+      order: {
+        id: 'o1',
+        projectId: 'p1',
+        productId: 'prod1',
+        extensionId: null,
+        product: { status: 'DONE' },
+        extension: null,
+      },
+      received: new Decimal(100),
+      released: new Decimal(0),
+    });
+
+    expect(done).toBe(true);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.bonusRelease.create).toHaveBeenCalledTimes(2);
+  });
 });
