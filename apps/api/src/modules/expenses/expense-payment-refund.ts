@@ -4,6 +4,7 @@ import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import {
   assertPayrollCashHistoryOpen,
+  lockPayrollCashHistoryForUpdate,
   rejectClosedPayrollCashHistory,
 } from '../payroll-runs/payroll-salary-first-cash-reverse-apply';
 import { decodePayrollCashNotes } from '../payroll-runs/payroll-salary-first-cash-notes';
@@ -87,7 +88,6 @@ async function commitLockedPayrollCashRefund(
 ): Promise<WrittenPayrollCashRefund> {
   await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${expenseId} FOR UPDATE`;
   await lockPayrollCashHistoryForUpdate(tx, expenseId);
-  await rejectClosedPayrollCashHistory(tx, expenseId);
   const expense = await tx.expense.findUnique({
     where: { id: expenseId },
     include: { expensePayments: true },
@@ -115,19 +115,6 @@ async function commitLockedPayrollCashRefund(
   const paymentIdResolved =
     existing?.id ?? (await insertRefundPayment(tx, expenseId, refund, input));
   return writtenRefund(refund, expense, paymentIdResolved, cashAmount, existing?.id != null);
-}
-
-/** Locks salary line and payroll run so a concurrent close cannot race the refund insert. */
-async function lockPayrollCashHistoryForUpdate(
-  tx: ExpensePaymentWriteDb,
-  expenseId: string,
-): Promise<void> {
-  const history = await assertPayrollCashHistoryOpen(tx, expenseId);
-  if (history == null) {
-    return;
-  }
-  await tx.$queryRaw`SELECT id FROM salary_lines WHERE expense_id = ${expenseId} FOR UPDATE`;
-  await tx.$queryRaw`SELECT id FROM payroll_runs WHERE id = ${history.payrollRunId} FOR UPDATE`;
 }
 
 async function syncSalaryLineIfHistoryOpen(

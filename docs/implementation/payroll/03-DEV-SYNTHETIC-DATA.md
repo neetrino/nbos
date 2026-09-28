@@ -84,7 +84,7 @@ Checked on 2026-09-28 from the repository root: concurrent payments, concurrent 
 
 Marker `nbos:dev-synthetic:payroll-browser-bonus`, employee Dev Browserbonus, month `2020-02`. Salary profile 300,000 AMD covers only that month. Two delivery accruals, 40,000 and 20,000, earned `2020-01`. September 2026 was not edited.
 
-Payroll run `630b2ad4-89e0-402e-a73b-ef38704deb0e` is approved. Payment `c2a4f33c-c333-4072-b2d8-9d48383b6fcb` is 320,000 with salary 300,000 and bonus part B 20,000. A browser refund of 20,000 left salary paid and restored part B. Expense paid is 300,000. These rows stay on dev until a later cleanup of this marker only.
+Payroll run `630b2ad4-89e0-402e-a73b-ef38704deb0e` is approved. Payment `c2a4f33c-c333-4072-b2d8-9d48383b6fcb` is 320,000 with salary 300,000 and bonus part B 20,000. A browser refund of 20,000 left salary paid and restored part B. Expense paid is 300,000. After that restore, part B's bonus entry is `ACTIVE` again, so the wallet does not treat the 20,000 accrual as cash paid. The personal wallet shows paid 300,000, line remaining 60,000, and bonus parts remaining 40,000 and 20,000 with cash paid 0. A temporary sign-in on this employee was removed after the check. These rows stay on dev until a later cleanup of this marker only. September 2026 stays `APPROVED` with paid 0.
 
 ## Still not invented
 
