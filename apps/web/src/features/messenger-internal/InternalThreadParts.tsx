@@ -4,7 +4,7 @@ import type { RefObject } from 'react';
 import { messengerDateLabel } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
 import { MessengerThreadMessageBubble } from '@/features/messenger/messenger-thread-primitives';
-import { ComposerField, MessageDate, MessageSelect, ThreadAvatar } from './InternalThreadChrome';
+import { ComposerField, MessageDate, MessageSelect } from './InternalThreadChrome';
 import { InternalSheetMessage } from './InternalSheetMessage';
 import type {
   MessengerCoreConversationRow,

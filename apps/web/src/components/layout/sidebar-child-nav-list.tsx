@@ -143,7 +143,7 @@ function SheetChildButton({
 }
 
 function sheetChildActive(
-  moduleKey: string,
+  moduleKey: Parameters<typeof isNavChildLinkActive>[2],
   href: string,
   pathname: string,
   child: Parameters<typeof isNavChildLinkActive>[1],

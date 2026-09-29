@@ -128,6 +128,11 @@ describe('messenger realtime bind cleanup', () => {
     const cleanup = bindMessengerRealtimeSocket(socket, {
       conversationIdRef: { current: null },
       onInboundRef: { current: vi.fn() },
+      onSummaryRef: { current: undefined },
+      onConversationReadRef: { current: undefined },
+      onAccessChangedRef: { current: undefined },
+      onReadRef: { current: undefined },
+      onReconnectRef: { current: undefined },
       onPresenceSnapshotRef: { current: onSnapshot },
       onPresenceDeltaRef: { current: onDelta },
     });
@@ -147,6 +152,11 @@ describe('messenger realtime bind cleanup', () => {
     bindMessengerRealtimeSocket(socket, {
       conversationIdRef: { current: null },
       onInboundRef: { current: vi.fn() },
+      onSummaryRef: { current: undefined },
+      onConversationReadRef: { current: undefined },
+      onAccessChangedRef: { current: undefined },
+      onReadRef: { current: undefined },
+      onReconnectRef: { current: undefined },
       onPeerReadRef: { current: onPeerRead },
     });
     socket.handlers.get(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ)?.({
