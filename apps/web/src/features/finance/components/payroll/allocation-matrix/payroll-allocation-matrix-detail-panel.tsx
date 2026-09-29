@@ -54,10 +54,14 @@ function orderPoolMetrics(
   unit: DeliveryPayableUnit,
   plannedLabel: string,
   paidLabel: string,
+  unconfirmedLabel: string,
 ): MetricItem[] {
   return [
     { label: plannedLabel, value: fmt(unit.totalPlannedBonus) },
-    { label: paidLabel, value: fmt(unit.totalPaidBonus) },
+    {
+      label: paidLabel,
+      value: unit.paidCashState === 'UNCONFIRMED' ? unconfirmedLabel : fmt(unit.totalPaidBonus),
+    },
   ];
 }
 
@@ -94,7 +98,12 @@ export function MatrixOrderDetailHeader({ unit }: { unit: DeliveryPayableUnit })
       className={PAYROLL_MATRIX_EXPANSION_COLUMN_HEADER_CLASS}
     >
       <ExpansionMetricStack
-        items={orderPoolMetrics(unit, t('matrix.header.planned'), t('matrix.paid'))}
+        items={orderPoolMetrics(
+          unit,
+          t('matrix.header.planned'),
+          t('matrix.paid'),
+          t('matrix.paidUnconfirmed'),
+        )}
       />
     </th>
   );
@@ -127,7 +136,12 @@ export function MatrixOrderRowDetailSticky({ unit }: { unit: DeliveryPayableUnit
       className={PAYROLL_MATRIX_EXPANSION_ROW_STICKY_CLASS}
     >
       <ExpansionMetricStack
-        items={orderPoolMetrics(unit, t('matrix.header.planned'), t('matrix.paid'))}
+        items={orderPoolMetrics(
+          unit,
+          t('matrix.header.planned'),
+          t('matrix.paid'),
+          t('matrix.paidUnconfirmed'),
+        )}
       />
     </th>
   );

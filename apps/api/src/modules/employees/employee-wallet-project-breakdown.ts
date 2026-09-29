@@ -8,6 +8,7 @@ import type {
 import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
 import { BONUS_RELEASE_COUNTING_STATUSES } from '../bonus/product-bonus-pool.constants';
 import type { WalletReleaseRollup } from './employee-wallet-bonus-release-rollups';
+import { cashConfirmationFor } from './employee-wallet-cash-confirmation';
 
 const COUNTING = new Set<string>(BONUS_RELEASE_COUNTING_STATUSES);
 
@@ -35,7 +36,7 @@ export interface EmployeeWalletProjectBreakdownRow {
   poolAvailableFunding: string | null;
   poolOverFunding: string | null;
   entryStatusesSummary: string;
-  payoutState: 'UNPAID' | 'PARTIAL' | 'PAID';
+  payoutState: 'UNPAID' | 'PARTIAL' | 'PAID' | 'UNCONFIRMED';
 }
 
 export interface WalletPoolForBreakdown {
@@ -118,7 +119,18 @@ export function deriveWalletOrderFundingLabels(input: {
   return labels;
 }
 
-function payoutStateFor(paid: Decimal, remaining: Decimal): 'UNPAID' | 'PARTIAL' | 'PAID' {
+function isUnconfirmedPaid(status: string, rollup: WalletReleaseRollup | undefined): boolean {
+  return cashConfirmationFor(status, rollup) === 'UNCONFIRMED';
+}
+
+function payoutStateFor(
+  paid: Decimal,
+  remaining: Decimal,
+  unconfirmedOnly: boolean,
+): 'UNPAID' | 'PARTIAL' | 'PAID' | 'UNCONFIRMED' {
+  if (unconfirmedOnly) {
+    return 'UNCONFIRMED';
+  }
   if (paid.gt(BONUS_POOL_ZERO) && remaining.gt(BONUS_POOL_ZERO)) {
     return 'PARTIAL';
   }
@@ -166,6 +178,7 @@ export function buildEmployeeWalletProjectBreakdown(
     let released = BONUS_POOL_ZERO;
     let paid = BONUS_POOL_ZERO;
     let remaining = BONUS_POOL_ZERO;
+    let unconfirmed = 0;
     const entryIds = new Set<string>();
     const types: string[] = [];
     const statuses: string[] = [];
@@ -176,6 +189,10 @@ export function buildEmployeeWalletProjectBreakdown(
       const r = rollups.get(e.id);
       planned = planned.add(e.amount);
       released = released.add(r?.releasedAmount ?? BONUS_POOL_ZERO);
+      if (isUnconfirmedPaid(e.status, r)) {
+        unconfirmed += 1;
+        continue;
+      }
       paid = paid.add(r?.paidAmount ?? BONUS_POOL_ZERO);
       remaining = remaining.add(r?.remainingAmount ?? e.amount);
     }
@@ -203,7 +220,7 @@ export function buildEmployeeWalletProjectBreakdown(
       poolAvailableFunding: pool ? pool.availableFunding.toFixed(2) : null,
       poolOverFunding: pool ? pool.overFundingAmount.toFixed(2) : null,
       entryStatusesSummary: uniqueSorted(statuses),
-      payoutState: payoutStateFor(paid, remaining),
+      payoutState: payoutStateFor(paid, remaining, unconfirmed === list.length),
     });
   }
 

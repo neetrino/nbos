@@ -45,8 +45,11 @@ describe('summarizeWalletBonusForecast', () => {
     expect(summary.paidFromReleases).toBe(130);
   });
 
-  it('does not treat an accrued bonus as cash paid when the paid amount is zero', () => {
-    const summary = summarizeWalletBonusForecast([row('PAID', '20000', '20000', '0')]);
+  it('keeps an unconfirmed historical paid mark out of confirmed cash', () => {
+    const historical = row('PAID', '20000', '20000', '20000');
+    historical.cashConfirmation = 'UNCONFIRMED';
+    const summary = summarizeWalletBonusForecast([historical]);
     expect(summary.paidFromReleases).toBe(0);
+    expect(summary.nextPayrollRemaining).toBe(0);
   });
 });

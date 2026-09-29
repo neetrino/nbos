@@ -12,6 +12,7 @@ import {
   type WalletReleaseRollup,
 } from './employee-wallet-bonus-release-rollups';
 import { mapBonusStatusToWalletGroup } from './employee-wallet-bonus-group';
+import { cashConfirmationFor, remainingForWallet } from './employee-wallet-cash-confirmation';
 import { deriveBonusPolicyBreakdownStatuses } from '../payroll-runs/bonus-policy-breakdown-status';
 import { loadWalletBonusLedgerContext } from './employee-wallet-ledger-context';
 import { pickNextOpenPayrollSalaryLine } from './employee-wallet-next-payroll';
@@ -227,7 +228,8 @@ export class EmployeeWalletService {
       percent: b.percent.toString(),
       releasedAmount: r?.releasedAmount.toFixed(2) ?? '0.00',
       paidAmount: r?.paidAmount.toFixed(2) ?? '0.00',
-      remainingAmount: r?.remainingAmount.toFixed(2) ?? plannedDecimalForEntry(b.amount).toFixed(2),
+      cashConfirmation: cashConfirmationFor(b.status, r),
+      remainingAmount: remainingForWallet(b.status, b.amount, r),
       payrollMonth: r?.payrollMonth ?? null,
       kpiBurnedAmount: kpiBurned ? kpiBurned.toFixed(2) : null,
       kpiBurnedReason: r?.kpiBurnedReason ?? null,

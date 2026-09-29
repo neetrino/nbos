@@ -21,6 +21,7 @@ export type PayrollEmployeeBonusHistoryProject = {
   totalPlannedBonus: string;
   totalReleasedBonus: string;
   totalPaidBonus: string;
+  paidCashState?: 'CONFIRMED' | 'UNCONFIRMED';
   totalRemainingBonus: string;
   availableFunding: string;
   monthAmounts: (string | null)[];

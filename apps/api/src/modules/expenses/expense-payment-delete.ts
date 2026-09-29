@@ -1,13 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { PrismaClient, type TransactionClient } from '@nbos/database';
+import { refreshConfirmedPoolPaidForExpense } from '../bonus/product-bonus-pool-paid-cash';
+import { PAYROLL_CASH_TRANSACTION_TIMEOUT_MS } from '../payroll-runs/payroll-salary-first-cash-reverse';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { bufferWalletNotifications } from '../employees/wallet-notify-buffer';
 import type { OperationalJournalService } from '../finance/journal/operational-journal.service';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
 import { decodePayrollCashNotes } from '../payroll-runs/payroll-salary-first-cash-notes';
 import {
+  lockPayrollCashHistoryForUpdate,
   neutralizePayrollCashRefundsForSource,
-  rejectClosedPayrollCashHistory,
   restoreBonusMarksForDeletedPayrollCash,
 } from '../payroll-runs/payroll-salary-first-cash-reverse-apply';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
@@ -35,12 +37,15 @@ export async function deleteExpensePaymentRecord(
   }
   await assertPostingPeriodOpenForBookedAt(prisma, row.paymentDate);
   const buffered = bufferWalletNotifications();
-  await prisma.$transaction((tx) =>
-    commitExpensePaymentDelete(tx, expenseId, paymentId, {
-      journal: opts?.journal,
-      notify: opts?.notify == null ? undefined : buffered.sink,
-    }),
+  await prisma.$transaction(
+    (tx) =>
+      commitExpensePaymentDelete(tx, expenseId, paymentId, {
+        journal: opts?.journal,
+        notify: opts?.notify == null ? undefined : buffered.sink,
+      }),
+    { timeout: PAYROLL_CASH_TRANSACTION_TIMEOUT_MS },
   );
+  await refreshConfirmedPoolPaidForExpense(prisma, expenseId);
   await buffered.flush(opts?.notify);
 }
 
@@ -57,7 +62,7 @@ async function commitExpensePaymentDelete(
   if (!current) {
     throw new NotFoundException(`Expense payment ${paymentId} not found`);
   }
-  await rejectClosedPayrollCashHistory(tx, expenseId);
+  await lockPayrollCashHistoryForUpdate(tx, expenseId);
   const original = decodePayrollCashNotes(current.notes);
   await tx.expensePayment.delete({ where: { id: paymentId } });
   const refundIds = await neutralizePayrollCashRefundsForSource(tx, expenseId, paymentId);

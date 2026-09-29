@@ -20,6 +20,7 @@ export const WALLET_PAYOUT_EXPLAIN_KEYS = {
   UNPAID: 'explainUnpaid',
   PARTIAL: 'explainPartial',
   PAID: 'explainPaid',
+  UNCONFIRMED: 'explainUnconfirmed',
 } as const;
 
 export const WALLET_GLOSSARY_KEYS = [

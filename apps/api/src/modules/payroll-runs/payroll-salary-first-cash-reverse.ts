@@ -19,6 +19,9 @@ export const PAYROLL_CASH_REVERSE_ERRORS = {
   originalLinksRequired: 'Payroll refund must reverse the original payment links',
 } as const;
 
+/** Pool sync on the remote dev database exceeds Prisma's 5s interactive default. */
+export const PAYROLL_CASH_TRANSACTION_TIMEOUT_MS = 15_000;
+
 export type EncodedPayrollCashRefund = {
   salaryAmount: Decimal;
   bonusParts: PayrollCashBonusPart[];

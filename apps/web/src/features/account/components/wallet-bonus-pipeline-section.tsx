@@ -87,11 +87,13 @@ export function WalletBonusPipelineSection({
                           {t('bonus.planned', { amount: formatAmount(parseAmount(b.amount)) })}
                         </div>
                         <div className="text-muted-foreground mt-1 leading-snug tabular-nums">
-                          {t('bonus.releasedPaidRemaining', {
-                            released: formatAmount(parseAmount(b.releasedAmount)),
-                            paid: formatAmount(parseAmount(b.paidAmount)),
-                            remaining: formatAmount(parseAmount(b.remainingAmount)),
-                          })}
+                          {b.cashConfirmation === 'UNCONFIRMED'
+                            ? t('bonus.unconfirmedCash')
+                            : t('bonus.releasedPaidRemaining', {
+                                released: formatAmount(parseAmount(b.releasedAmount)),
+                                paid: formatAmount(parseAmount(b.paidAmount)),
+                                remaining: formatAmount(parseAmount(b.remainingAmount)),
+                              })}
                         </div>
                         {b.kpiBurnedAmount ? (
                           <div className="text-destructive mt-1 text-[10px] tabular-nums">

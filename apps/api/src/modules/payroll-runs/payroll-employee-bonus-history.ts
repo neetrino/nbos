@@ -242,6 +242,7 @@ function buildProjectsForEmployee(params: {
       totalPlannedBonus: unit?.totalPlannedBonus ?? '0.00',
       totalReleasedBonus: unit?.totalReleasedBonus ?? '0.00',
       totalPaidBonus: unit?.totalPaidBonus ?? '0.00',
+      paidCashState: unit?.paidCashState,
       totalRemainingBonus: unit?.totalRemainingBonus ?? '0.00',
       availableFunding: unit?.availableFunding ?? '0.00',
       monthAmounts,
