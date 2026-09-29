@@ -5,6 +5,7 @@ import { formatMessengerTime } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
 
 const SEEN_CHECK_CLASS = 'text-[#93c5fd]';
+const SHEET_BUBBLE = 'max-w-lg rounded-3xl px-3 py-1.5 text-sm leading-5';
 
 export function InternalSheetMessage({
   message,
@@ -12,14 +13,12 @@ export function InternalSheetMessage({
   readReceiptLabel,
   readReceiptSeen = false,
   showAvatar = true,
-  continued = false,
 }: {
   message: MessengerViewMessage;
   mine: boolean;
   readReceiptLabel: string | null;
   readReceiptSeen?: boolean;
   showAvatar?: boolean;
-  continued?: boolean;
 }) {
   if (mine) {
     return (
@@ -31,34 +30,31 @@ export function InternalSheetMessage({
       />
     );
   }
-  return <IncomingSheetMessage message={message} showAvatar={showAvatar} continued={continued} />;
+  return <IncomingSheetMessage message={message} showAvatar={showAvatar} />;
 }
 
 function IncomingSheetMessage({
   message,
   showAvatar,
-  continued,
 }: {
   message: MessengerViewMessage;
   showAvatar: boolean;
-  continued: boolean;
 }) {
   return (
     <div className="flex items-end gap-3 px-5">
       <AvatarSlot initials={message.initials} mine={false} show={showAvatar} />
-      <div className="max-w-2xl min-w-0 flex-1">
-        {continued ? null : (
-          <p className="mb-1 flex items-center gap-2">
-            <span className="text-xs text-[#0f172a]">{message.senderName}</span>
-            <span className="text-[11px] text-[#94a3b8]">
-              {formatMessengerTime(message.timestamp)}
-            </span>
-          </p>
-        )}
-        <div className="rounded-3xl rounded-tl-sm bg-white px-4 py-3 text-sm leading-6 text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]">
-          <p>{message.content}</p>
-          <AttachmentRow message={message} />
-        </div>
+      <div
+        className={`${SHEET_BUBBLE} rounded-tl-sm bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
+      >
+        <p>
+          {message.content}
+          <BubbleStamp
+            time={formatMessengerTime(message.timestamp)}
+            seen={false}
+            showChecks={false}
+          />
+        </p>
+        <AttachmentRow message={message} />
       </div>
     </div>
   );
@@ -77,7 +73,7 @@ function OwnSheetMessage({
 }) {
   return (
     <div className="flex items-end justify-end gap-3 px-5">
-      <div className="max-w-lg rounded-3xl rounded-tr-sm bg-[#4f46e5] px-3 py-1.5 text-sm leading-5 text-white">
+      <div className={`${SHEET_BUBBLE} rounded-tr-sm bg-[#4f46e5] text-white`}>
         <p>
           {message.content}
           <BubbleStamp
@@ -102,8 +98,11 @@ function BubbleStamp({
   seen: boolean;
   showChecks: boolean;
 }) {
+  const tone = showChecks ? 'text-white/75' : 'text-[#94a3b8]';
   return (
-    <span className="ml-2 inline-flex items-center gap-0.5 align-bottom text-[11px] leading-none text-white/75">
+    <span
+      className={`ml-2 inline-flex items-center gap-0.5 align-bottom text-[11px] leading-none ${tone}`}
+    >
       {time}
       {showChecks ? (
         <CheckCheck size={14} aria-hidden className={seen ? SEEN_CHECK_CLASS : 'text-white/80'} />

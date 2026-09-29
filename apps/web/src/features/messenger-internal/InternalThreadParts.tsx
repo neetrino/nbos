@@ -140,13 +140,11 @@ function RowBubble({
   message,
   mine,
   sheet,
-  continued,
   showAvatar,
 }: {
   message: MessengerViewMessage;
   mine: boolean;
   sheet: boolean;
-  continued: boolean;
   showAvatar: boolean;
 }) {
   if (!sheet) {
@@ -164,7 +162,6 @@ function RowBubble({
       readReceiptLabel={message.deliveryLabel ?? null}
       readReceiptSeen={Boolean(message.receiptSeen)}
       showAvatar={showAvatar}
-      continued={continued}
     />
   );
 }
@@ -212,7 +209,6 @@ function ThreadMessageRow({
           message={message}
           mine={mine}
           sheet={sheet}
-          continued={continued}
           showAvatar={!sameSenderRun(message, next)}
         />
         <InternalForwardReferenceCard
