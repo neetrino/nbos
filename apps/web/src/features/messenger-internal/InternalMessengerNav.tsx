@@ -49,7 +49,7 @@ export function InternalMessengerNav({
         <SlidingPillBackdrop
           indicator={indicator}
           ready={ready}
-          className="top-0 bottom-0 bg-[#4f46e5]"
+          className="bg-primary top-0 bottom-0"
         />
         {INTERNAL_MESSENGER_SECTIONS.map((item) => (
           <SectionTab
@@ -101,7 +101,7 @@ function SectionTab({
   itemRef: (node: HTMLElement | null) => void;
 }) {
   const className = `${SECTION_TAB_CLASS} ${
-    active ? 'text-white' : 'text-[#64748b] hover:text-[#0f172a]'
+    active ? 'text-primary-foreground' : 'text-[#64748b] hover:text-[#0f172a]'
   }`;
   if (onSectionChange) {
     return (
