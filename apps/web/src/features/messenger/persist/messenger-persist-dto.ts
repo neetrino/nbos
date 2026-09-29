@@ -58,6 +58,7 @@ const internalItemSchema = z
     unreadCount: z.number().int().nonnegative().max(1_000_000),
     peerEmployeeId: entityId.nullable(),
     peerName: z.string().max(MESSENGER_PERSIST_TITLE_MAX_CHARS).nullable(),
+    peerPosition: z.string().max(MESSENGER_PERSIST_TITLE_MAX_CHARS).nullable().optional(),
     isFavorite: z.boolean(),
     canWrite: z.boolean(),
   })

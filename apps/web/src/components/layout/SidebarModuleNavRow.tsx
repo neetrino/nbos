@@ -11,7 +11,12 @@ import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
 import { SidebarModuleIcon } from './SidebarModuleIcon';
 import { SidebarNavQuickActionButton } from './SidebarNavQuickActionButton';
 import { SidebarChildNavList } from './sidebar-child-nav-list';
+import { ModuleNavTrigger } from './sidebar-module-nav-trigger';
 import { useMessengerBootstrapPrefetch } from '@/features/messenger/persist/use-messenger-bootstrap-prefetch';
+import { useMessengerOverlayOptional } from '@/features/messenger-internal/messenger-overlay-context';
+import { sectionFromPathname } from '@/features/messenger-internal/internal-messenger-section';
+import { useClientMessengerOverlayOptional } from '@/features/messenger-client/client-messenger-overlay-context';
+import { clientSectionFromPathname } from '@/features/messenger-client/client-messenger-section';
 import { useTranslations } from 'next-intl';
 
 interface SidebarModuleNavRowProps {
@@ -36,14 +41,22 @@ export function SidebarModuleNavRow({
   muted = false,
 }: SidebarModuleNavRowProps) {
   const prefetchMessenger = useMessengerBootstrapPrefetch(item.key);
+  const messengerOverlay = useMessengerOverlayOptional();
+  const clientOverlay = useClientMessengerOverlayOptional();
   const moduleEntryHref = useModuleEntryHref(item.key, item.href, pathname);
   const moduleHref = isRegisteredModuleKey(item.key) ? moduleEntryHref : item.href;
   const childPathActive =
     item.children?.some(
       (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child, item.key),
     ) ?? false;
+  const messengerOpen = item.key === 'messenger' && Boolean(messengerOverlay?.isOpen);
+  const clientOpen = item.key === 'client-messenger' && Boolean(clientOverlay?.isOpen);
   const active =
-    childPathActive || pathname.startsWith(item.href) || pathname.startsWith(moduleHref);
+    messengerOpen ||
+    clientOpen ||
+    childPathActive ||
+    pathname.startsWith(item.href) ||
+    pathname.startsWith(moduleHref);
   const firstChildHref = isRegisteredModuleKey(item.key)
     ? moduleEntryHref
     : getFirstChildHref(item);
@@ -104,19 +117,34 @@ function ParentModuleNavRow({
 }) {
   const t = useTranslations('navigation');
   const moduleLabel = t(item.label);
+  const overlay = useMessengerOverlayOptional();
+  const clientOverlay = useClientMessengerOverlayOptional();
+  const messenger = item.key === 'messenger' || item.key === 'client-messenger';
+  const onActivate = () => {
+    onExpandOnly();
+    if (item.key === 'messenger') {
+      clientOverlay?.closeClientMessenger();
+      overlay?.openMessenger(sectionFromPathname(firstChildHref));
+    }
+    if (item.key === 'client-messenger') {
+      overlay?.closeMessenger();
+      clientOverlay?.openClientMessenger(clientSectionFromPathname(firstChildHref));
+    }
+  };
 
   if (collapsed) {
     return (
       <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
-        <Link
+        <ModuleNavTrigger
+          messenger={messenger}
           href={firstChildHref}
-          onClick={onExpandOnly}
           title={moduleLabel}
-          data-sidebar-nav-active={isActive ? 'true' : undefined}
+          active={isActive}
           className={navLinkClass(isActive, collapsed, muted)}
+          onActivate={onActivate}
         >
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
-        </Link>
+        </ModuleNavTrigger>
       </li>
     );
   }
@@ -130,9 +158,11 @@ function ParentModuleNavRow({
           isActive ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-muted',
         )}
       >
-        <Link
+        <ModuleNavTrigger
+          messenger={messenger}
           href={firstChildHref}
-          onClick={onExpandOnly}
+          active={isActive}
+          onActivate={onActivate}
           className={cn(
             `${SIDEBAR_NAV_ITEM_CLASS} flex min-w-0 flex-1 items-center gap-2 text-[13px] font-medium transition-colors`,
             isActive
@@ -142,7 +172,7 @@ function ParentModuleNavRow({
         >
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
           <span className="truncate">{moduleLabel}</span>
-        </Link>
+        </ModuleNavTrigger>
         <button
           type="button"
           aria-expanded={expanded}

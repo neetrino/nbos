@@ -1,7 +1,19 @@
 'use client';
 
+import { useCallback, useRef } from 'react';
 import { Globe, Search, Star } from 'lucide-react';
 import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
+import {
+  SlidingPillBackdrop,
+  useSlidingPillIndicator,
+} from '@/components/shared/page-hero/sliding-pill-indicator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
 import type { MessengerClientConversationRow } from '@/lib/api/messenger-core-client';
 import type {
@@ -15,6 +27,9 @@ import {
 import { uniqueAttentionLabels } from './client-attention-view';
 import { clientConversationTitle, clientProviderLabel } from './client-messenger-section';
 
+const FILTER_TAB_CLASS =
+  'relative z-10 rounded-full px-2 py-1 text-[11px] font-medium transition-colors duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
 const INBOX_FILTERS: Array<{ id: 'all' | MessengerClientListFilter; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'unread', label: 'Unread' },
@@ -22,12 +37,93 @@ const INBOX_FILTERS: Array<{ id: 'all' | MessengerClientListFilter; label: strin
   { id: 'assigned', label: 'Assigned' },
 ];
 
-const PROVIDERS: Array<{ id: '' | MessengerClientProvider; label: string }> = [
-  { id: '', label: 'All providers' },
+const ALL_PROVIDERS_ID = 'all';
+const ALL_PROVIDERS_LABEL = 'All providers';
+const PROVIDER_FILTER_LABEL = 'Filter by provider';
+
+const PROVIDERS: Array<{ id: typeof ALL_PROVIDERS_ID | MessengerClientProvider; label: string }> = [
+  { id: ALL_PROVIDERS_ID, label: ALL_PROVIDERS_LABEL },
   { id: 'INSTAGRAM', label: 'Instagram' },
   { id: 'FACEBOOK', label: 'Facebook' },
   { id: 'WHATSAPP', label: 'WhatsApp' },
 ];
+
+function ClientProviderSelect({
+  provider,
+  onProviderChange,
+}: {
+  provider: '' | MessengerClientProvider;
+  onProviderChange: (value: '' | MessengerClientProvider) => void;
+}) {
+  const label = PROVIDERS.find((item) => item.id === (provider || ALL_PROVIDERS_ID))?.label;
+  return (
+    <Select
+      value={provider || ALL_PROVIDERS_ID}
+      onValueChange={(next) => onProviderChange(providerFromSelect(next))}
+    >
+      <SelectTrigger size="sm" aria-label={PROVIDER_FILTER_LABEL} className="mt-2 w-full">
+        <SelectValue>{label}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {PROVIDERS.map((item) => (
+          <SelectItem key={item.id} value={item.id}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function ClientInboxFilterStrip({
+  filter,
+  onFilterChange,
+}: {
+  filter: 'all' | MessengerClientListFilter;
+  onFilterChange: (value: 'all' | MessengerClientListFilter) => void;
+}) {
+  const groupRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef(new Map<string, HTMLButtonElement>());
+  const getActiveElement = useCallback(() => itemRefs.current.get(filter), [filter]);
+  const { indicator, ready } = useSlidingPillIndicator(groupRef, getActiveElement, filter, false);
+
+  return (
+    <div ref={groupRef} className="relative mt-2 flex items-center gap-1">
+      <SlidingPillBackdrop
+        indicator={indicator}
+        ready={ready}
+        className="top-0 bottom-0 bg-teal-800/15"
+      />
+      {INBOX_FILTERS.map((item) => (
+        <button
+          key={item.id}
+          ref={(node) => rememberFilter(itemRefs.current, item.id, node)}
+          type="button"
+          onClick={() => onFilterChange(item.id)}
+          className={`${FILTER_TAB_CLASS} ${
+            filter === item.id ? 'text-teal-950' : 'text-black/45 hover:text-teal-950'
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function rememberFilter(
+  refs: Map<string, HTMLButtonElement>,
+  id: string,
+  node: HTMLButtonElement | null,
+) {
+  if (node) refs.set(id, node);
+  else refs.delete(id);
+}
+
+function providerFromSelect(value: string | null): '' | MessengerClientProvider {
+  if (value === 'INSTAGRAM' || value === 'FACEBOOK' || value === 'WHATSAPP') return value;
+  return '';
+}
 
 export function ClientConversationList({
   section,
@@ -71,34 +167,8 @@ export function ClientConversationList({
             className="w-full rounded-lg border border-teal-900/10 bg-[#F4F7F7] py-1.5 pr-3 pl-8 text-sm text-black placeholder:text-black/35 focus:ring-2 focus:ring-teal-800/25 focus:outline-none"
           />
         </div>
-        <div className="mt-2 flex flex-wrap gap-1">
-          {INBOX_FILTERS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onFilterChange(item.id)}
-              className={`rounded-md px-2 py-1 text-[11px] font-medium ${
-                filter === item.id
-                  ? 'bg-teal-800/15 text-teal-950'
-                  : 'text-black/45 hover:bg-black/[0.04]'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-        <select
-          aria-label="Filter by provider"
-          value={provider}
-          onChange={(event) => onProviderChange(event.target.value as '' | MessengerClientProvider)}
-          className="mt-2 w-full rounded-lg border border-teal-900/10 bg-[#F4F7F7] px-2 py-1 text-[11px] text-black"
-        >
-          {PROVIDERS.map((item) => (
-            <option key={item.id || 'all'} value={item.id}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+        <ClientInboxFilterStrip filter={filter} onFilterChange={onFilterChange} />
+        <ClientProviderSelect provider={provider} onProviderChange={onProviderChange} />
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-3">
         {listPending ? (

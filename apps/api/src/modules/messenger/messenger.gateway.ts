@@ -24,11 +24,13 @@ import {
   MESSENGER_WS_SERVER_CHANNEL_PEER_READ,
   MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
   MESSENGER_WS_SERVER_DM_PEER_READ,
   MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_READ_UPDATED,
   type MessengerWsChannelPeerReadPayload,
+  type MessengerWsConversationPeerReadPayload,
   type MessengerWsConversationReadUpdatedPayload,
   type MessengerWsDmPeerReadPayload,
   type MessengerWsZone,
@@ -36,9 +38,10 @@ import {
   messengerSocketUserRoom,
 } from '@nbos/shared';
 import {
-  canAccessMessengerChannel,
-  loadMessengerLegacyAccess,
-} from './access/messenger-legacy-channel-access.op';
+  employeeMayUseMessengerChannel,
+  messengerTypingDisplayLabel,
+} from './messenger-gateway-channel-access';
+import { emitMessengerUserEvent } from './messenger-user-event';
 import { authenticateMessengerSocket } from './messenger-gateway-auth';
 import {
   leaveSocketCoreConversation,
@@ -111,7 +114,9 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     if (!employeeId) return { ok: false };
     const channelId = extractChannelId(body);
     if (!channelId) return { ok: false };
-    if (!(await this.employeeMayUseChannel(employeeId, channelId))) return { ok: false };
+    if (!(await employeeMayUseMessengerChannel(this.prisma, employeeId, channelId))) {
+      return { ok: false };
+    }
     await client.join(messengerSocketChannelRoom(channelId));
     return { ok: true };
   }
@@ -148,9 +153,11 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     if (!employeeId) return { ok: false };
     const channelId = extractChannelId(body);
     if (!channelId) return { ok: false };
-    if (!(await this.employeeMayUseChannel(employeeId, channelId))) return { ok: false };
+    if (!(await employeeMayUseMessengerChannel(this.prisma, employeeId, channelId))) {
+      return { ok: false };
+    }
     if (!this.typingThrottle.allow(client.id)) return { ok: true };
-    const label = await this.typingDisplayLabel(employeeId);
+    const label = await messengerTypingDisplayLabel(this.prisma, employeeId);
     client.to(messengerSocketChannelRoom(channelId)).emit(MESSENGER_WS_SERVER_CHANNEL_TYPING, {
       channelId,
       employeeId,
@@ -174,7 +181,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     });
     if (!recipient || recipient.status === 'TERMINATED') return { ok: false };
     if (!this.typingThrottle.allow(client.id)) return { ok: true };
-    const label = await this.typingDisplayLabel(employeeId);
+    const label = await messengerTypingDisplayLabel(this.prisma, employeeId);
     client.to(messengerSocketUserRoom(recipientId)).emit(MESSENGER_WS_SERVER_DM_TYPING, {
       counterpartId: employeeId,
       employeeId,
@@ -240,8 +247,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
 
   /** Notifies all `/messenger` tabs for this employee to refresh list unread (after REST mark-read). */
   emitReadListsUpdated(employeeId: string): void {
-    if (!this.server) return;
-    this.server.to(messengerSocketUserRoom(employeeId)).emit(MESSENGER_WS_SERVER_READ_UPDATED, {
+    emitMessengerUserEvent(this.server, employeeId, MESSENGER_WS_SERVER_READ_UPDATED, {
       scope: MESSENGER_WS_READ_UPDATED_SCOPE.LISTS,
     });
   }
@@ -250,10 +256,19 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     employeeId: string,
     payload: MessengerWsConversationReadUpdatedPayload,
   ): void {
-    if (!this.server) return;
-    this.server
-      .to(messengerSocketUserRoom(employeeId))
-      .emit(MESSENGER_WS_SERVER_READ_UPDATED, payload);
+    emitMessengerUserEvent(this.server, employeeId, MESSENGER_WS_SERVER_READ_UPDATED, payload);
+  }
+
+  emitConversationPeerRead(
+    employeeId: string,
+    payload: MessengerWsConversationPeerReadPayload,
+  ): void {
+    emitMessengerUserEvent(
+      this.server,
+      employeeId,
+      MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
+      payload,
+    );
   }
 
   async evictEmployeeFromConversation(
@@ -265,10 +280,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   emitDmPeerRead(peerEmployeeId: string, payload: MessengerWsDmPeerReadPayload): void {
-    if (!this.server) return;
-    this.server
-      .to(messengerSocketUserRoom(peerEmployeeId))
-      .emit(MESSENGER_WS_SERVER_DM_PEER_READ, payload);
+    emitMessengerUserEvent(this.server, peerEmployeeId, MESSENGER_WS_SERVER_DM_PEER_READ, payload);
   }
 
   emitChannelPeerRead(channelId: string, payload: MessengerWsChannelPeerReadPayload): void {
@@ -276,25 +288,5 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     this.server
       .to(messengerSocketChannelRoom(channelId))
       .emit(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, payload);
-  }
-
-  private async employeeMayUseChannel(employeeId: string, channelId: string): Promise<boolean> {
-    const access = await loadMessengerLegacyAccess(this.prisma, employeeId);
-    if (!access || access.viewScope === 'NONE') return false;
-    const channel = await this.prisma.messengerChannel.findUnique({
-      where: { id: channelId },
-      select: { id: true, projectId: true, type: true },
-    });
-    if (!channel) return false;
-    return canAccessMessengerChannel(this.prisma, access, channel);
-  }
-
-  private async typingDisplayLabel(employeeId: string): Promise<string> {
-    const emp = await this.prisma.employee.findUnique({
-      where: { id: employeeId },
-      select: { firstName: true },
-    });
-    const n = emp?.firstName?.trim();
-    return n && n.length > 0 ? n : 'Someone';
   }
 }

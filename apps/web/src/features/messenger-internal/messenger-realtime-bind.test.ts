@@ -3,7 +3,10 @@ import {
   MESSENGER_WS_CLIENT_LEAVE_CONVERSATION,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
+  MESSENGER_WS_SERVER_PRESENCE,
+  MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
 } from '@nbos/shared';
 import {
@@ -116,5 +119,57 @@ describe('messenger realtime bind cleanup', () => {
     });
     expect(onConversationRead).toHaveBeenCalledTimes(1);
     expect(onRead).not.toHaveBeenCalled();
+  });
+
+  it('applies presence snapshots and deltas, then clears presence when the socket closes', () => {
+    const socket = createSocket();
+    const onSnapshot = vi.fn();
+    const onDelta = vi.fn();
+    const cleanup = bindMessengerRealtimeSocket(socket, {
+      conversationIdRef: { current: null },
+      onInboundRef: { current: vi.fn() },
+      onSummaryRef: { current: undefined },
+      onConversationReadRef: { current: undefined },
+      onAccessChangedRef: { current: undefined },
+      onReadRef: { current: undefined },
+      onReconnectRef: { current: undefined },
+      onPresenceSnapshotRef: { current: onSnapshot },
+      onPresenceDeltaRef: { current: onDelta },
+    });
+    socket.handlers.get(MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT)?.({ employeeIds: ['e1'] });
+    socket.handlers.get(MESSENGER_WS_SERVER_PRESENCE)?.({ employeeId: 'e2', state: 'offline' });
+    socket.handlers.get(MESSENGER_WS_SERVER_PRESENCE)?.({ employeeId: '', state: 'online' });
+    cleanup();
+    expect(onSnapshot).toHaveBeenNthCalledWith(1, ['e1']);
+    expect(onSnapshot).toHaveBeenNthCalledWith(2, []);
+    expect(onDelta).toHaveBeenCalledTimes(1);
+    expect(onDelta).toHaveBeenCalledWith('e2', 'offline');
+  });
+
+  it('routes another participant read cursor and ignores a malformed payload', () => {
+    const socket = createSocket();
+    const onPeerRead = vi.fn();
+    bindMessengerRealtimeSocket(socket, {
+      conversationIdRef: { current: null },
+      onInboundRef: { current: vi.fn() },
+      onSummaryRef: { current: undefined },
+      onConversationReadRef: { current: undefined },
+      onAccessChangedRef: { current: undefined },
+      onReadRef: { current: undefined },
+      onReconnectRef: { current: undefined },
+      onPeerReadRef: { current: onPeerRead },
+    });
+    socket.handlers.get(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ)?.({
+      conversationId: 'c1',
+      readerId: 'e2',
+      lastReadAt: '2026-09-29T10:00:00.000Z',
+    });
+    socket.handlers.get(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ)?.({ conversationId: 'c1' });
+    expect(onPeerRead).toHaveBeenCalledTimes(1);
+    expect(onPeerRead).toHaveBeenCalledWith({
+      conversationId: 'c1',
+      readerId: 'e2',
+      lastReadAt: '2026-09-29T10:00:00.000Z',
+    });
   });
 });

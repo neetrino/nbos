@@ -1,6 +1,7 @@
 'use client';
 
 import { InternalConversationThread } from '@/features/messenger-internal/InternalConversationThread';
+import { MessengerPresenceProvider } from './PresenceAvatar';
 import type { EntityConversationKind } from './entity-conversation-kind';
 import { useEntityConversation } from './use-entity-conversation';
 
@@ -30,21 +31,24 @@ export function EntityConversationPanel({
   }
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-black/[0.06]">
-      <InternalConversationThread
-        conversation={state.conversation}
-        messages={state.messages}
-        messagesLoading={state.messagesLoading}
-        newMessage={state.newMessage}
-        onNewMessageChange={state.setNewMessage}
-        onSend={state.send}
-        canSend={Boolean(state.conversation.canWrite)}
-        sendDisabled={state.sendBusy}
-        onToggleFavorite={state.toggleFavorite}
-        collections={[]}
-        onAddToCollection={() => undefined}
-        remoteTypingHint={null}
-      />
-    </div>
+    <MessengerPresenceProvider onlineIds={state.onlineIds}>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-black/[0.06]">
+        <InternalConversationThread
+          conversation={state.conversation}
+          messages={state.messages}
+          peerLastReadAt={state.peerLastReadAt}
+          messagesLoading={state.messagesLoading}
+          newMessage={state.newMessage}
+          onNewMessageChange={state.setNewMessage}
+          onSend={state.send}
+          canSend={Boolean(state.conversation.canWrite)}
+          sendDisabled={state.sendBusy}
+          onToggleFavorite={state.toggleFavorite}
+          collections={[]}
+          onAddToCollection={() => undefined}
+          remoteTypingHint={null}
+        />
+      </div>
+    </MessengerPresenceProvider>
   );
 }

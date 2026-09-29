@@ -7,6 +7,7 @@ export type MessengerInternalConversationListItem = MessengerCoreConversationDto
   unreadCount: number;
   peerEmployeeId: string | null;
   peerName: string | null;
+  peerPosition: string | null;
   isFavorite: boolean;
   canWrite: boolean;
 };
@@ -44,7 +45,7 @@ export function conversationCanWrite(
 
 export type MessengerInternalMessagePage = {
   items: MessengerCoreMessageDto[];
-  meta: { hasMoreOlder: boolean; pageSize: number };
+  meta: { hasMoreOlder: boolean; pageSize: number; peerLastReadAt?: string | null };
 };
 
 export const MESSENGER_INTERNAL_SECTION_TYPES: Partial<

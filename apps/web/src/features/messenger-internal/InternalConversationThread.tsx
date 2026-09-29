@@ -15,6 +15,10 @@ import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
+import {
+  internalSheetDeliveryLabel,
+  internalSheetMessageSeen,
+} from './internal-sheet-delivery-label';
 import { conversationListTitle } from './internal-messenger-section';
 import { InternalCreateTaskFromMessages } from './InternalCreateTaskFromMessages';
 import { InternalForwardDialog } from './InternalForwardDialog';
@@ -22,9 +26,12 @@ import { InternalMessageActionsBar } from './InternalMessageActionsBar';
 import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadParts';
 import { useInternalThreadActions } from './use-internal-thread-actions';
 
-function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
-  return rows.map((row) =>
-    mapMessengerRowToView({
+function toViewMessages(
+  rows: MessengerCoreMessageRow[],
+  peerLastReadAt: string | null,
+): MessengerViewMessage[] {
+  return rows.map((row) => ({
+    ...mapMessengerRowToView({
       id: row.id,
       channelId: row.conversationId,
       senderId: row.senderId ?? '',
@@ -34,7 +41,9 @@ function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[]
       editedAt: row.editedAt,
       attachments: row.attachments,
     }),
-  );
+    deliveryLabel: internalSheetDeliveryLabel(row.status),
+    receiptSeen: internalSheetMessageSeen(row.status, row.createdAt, peerLastReadAt),
+  }));
 }
 
 export type InternalSendExtras = {
@@ -56,6 +65,7 @@ export function InternalConversationThread({
   onAddToCollection,
   remoteTypingHint,
   onOpenInternalSource,
+  peerLastReadAt = null,
 }: {
   conversation: MessengerCoreConversationRow;
   messages: MessengerCoreMessageRow[];
@@ -70,9 +80,10 @@ export function InternalConversationThread({
   onAddToCollection: (collectionId: string) => void;
   remoteTypingHint: string | null;
   onOpenInternalSource?: (conversationId: string) => void;
+  peerLastReadAt?: string | null;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
-  const { can } = usePermission();
+  const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const actions = useInternalThreadActions(messages, onOpenInternalSource);
   const [mentions, setMentions] = useState<Array<{ id: string; label: string }>>([]);
@@ -86,7 +97,7 @@ export function InternalConversationThread({
       conversation={conversation}
       messages={messages}
       messagesLoading={messagesLoading}
-      views={toViewMessages(messages)}
+      views={toViewMessages(messages, peerLastReadAt ?? null)}
       newMessage={newMessage}
       onNewMessageChange={onNewMessageChange}
       onSend={onSend}
@@ -103,6 +114,7 @@ export function InternalConversationThread({
       mentions={mentions}
       setMentions={setMentions}
       endRef={endRef}
+      meId={me?.id ?? null}
     />
   );
 }
@@ -128,10 +140,11 @@ function ThreadScaffold(props: {
   mentions: Array<{ id: string; label: string }>;
   setMentions: (next: Array<{ id: string; label: string }>) => void;
   endRef: RefObject<HTMLDivElement | null>;
+  meId: string | null;
 }) {
   const { conversation, actions } = props;
   return (
-    <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-[#eef2ff]">
       <ThreadHeader
         conversation={conversation}
         title={conversationListTitle(
@@ -163,6 +176,8 @@ function ThreadScaffold(props: {
         onOpenOriginalSource={actions.openOriginalBySourceId}
         remoteTypingHint={props.remoteTypingHint}
         endRef={props.endRef}
+        sheet
+        meId={props.meId}
       />
       <ThreadComposer
         canSend={props.canSend}
@@ -173,6 +188,7 @@ function ThreadScaffold(props: {
         onClearReply={actions.clearReply}
         mentions={props.mentions}
         onMentionsChange={props.setMentions}
+        sheet
         onSend={() =>
           void Promise.resolve(
             props.onSend({

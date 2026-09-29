@@ -144,6 +144,7 @@ export class MessengerCoreInternalService {
     const conversation = await this.getConversation(conversationId, employeeId);
     return listCoreConversationMessages(this.prisma, conversationId, query, {
       excludeHiddenTaskNotes: conversation.type === 'TASK',
+      viewerId: employeeId,
     });
   }
 
