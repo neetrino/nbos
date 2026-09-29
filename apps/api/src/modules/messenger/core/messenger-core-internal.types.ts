@@ -7,6 +7,7 @@ export type MessengerInternalConversationListItem = MessengerCoreConversationDto
   unreadCount: number;
   peerEmployeeId: string | null;
   peerName: string | null;
+  peerPosition: string | null;
   isFavorite: boolean;
   canWrite: boolean;
 };

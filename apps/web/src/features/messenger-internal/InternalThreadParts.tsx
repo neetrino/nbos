@@ -4,20 +4,13 @@ import type { RefObject } from 'react';
 import { messengerDateLabel } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
 import { MessengerThreadMessageBubble } from '@/features/messenger/messenger-thread-primitives';
-import {
-  ComposerField,
-  FavoriteStar,
-  MessageDate,
-  MessageSelect,
-  ThreadAvatar,
-} from './InternalThreadChrome';
+import { ComposerField, MessageDate, MessageSelect, ThreadAvatar } from './InternalThreadChrome';
 import { InternalSheetMessage } from './InternalSheetMessage';
 import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
-import { conversationTypeBadge } from './internal-messenger-section';
-import { AddToCollectionSelect } from './AddToCollectionSelect';
+import { SheetThreadHeader } from './InternalSheetHeader';
 import { InternalForwardReferenceCard } from './InternalForwardReferenceCard';
 import { InternalMentionPicker } from './InternalMentionPicker';
 import { InternalReplyQuote } from './InternalReplyQuote';
@@ -36,22 +29,14 @@ export function ThreadHeader({
   onToggleFavorite: () => void;
   onAddToCollection: (collectionId: string) => void;
 }) {
-  const direct = conversation.type === 'DIRECT';
   return (
-    <header className="flex items-center gap-3 border-b border-[#f1f5f9] bg-white py-3.5 pr-3 pl-5">
-      <ThreadAvatar title={title} direct={direct} employeeId={conversation.peerEmployeeId} />
-      <div className="min-w-0 flex-1">
-        <div className="flex min-w-0 items-center gap-2">
-          <h2 className="truncate text-sm text-[#0f172a]">{title}</h2>
-          <span className="shrink-0 rounded-full border border-[#c7d2fe] bg-[#eef2ff] px-2 py-0.5 text-[10px] text-[#4338ca]">
-            {conversationTypeBadge(conversation.type)}
-          </span>
-          <FavoriteStar favorite={Boolean(conversation.isFavorite)} onToggle={onToggleFavorite} />
-        </div>
-        <p className="text-xs text-[#64748b]">Internal</p>
-      </div>
-      <AddToCollectionSelect collections={collections} onAdd={onAddToCollection} />
-    </header>
+    <SheetThreadHeader
+      conversation={conversation}
+      title={title}
+      collections={collections}
+      onToggleFavorite={onToggleFavorite}
+      onAddToCollection={onAddToCollection}
+    />
   );
 }
 

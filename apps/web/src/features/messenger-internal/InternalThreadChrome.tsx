@@ -1,6 +1,5 @@
 'use client';
 
-import { Star } from 'lucide-react';
 import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
 import {
   MessengerThreadComposerRow,
@@ -36,11 +35,12 @@ export function FavoriteStar({ favorite, onToggle }: { favorite: boolean; onTogg
   return (
     <button
       type="button"
+      aria-pressed={favorite}
       aria-label={favorite ? 'Remove from Favorites' : 'Add to Favorites'}
       onClick={onToggle}
-      className="rounded-lg p-1 text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5]"
+      className={`flex size-4 shrink-0 items-center justify-center ${favorite ? 'rounded-full bg-[#eef2ff]' : ''}`}
     >
-      <Star size={16} className={favorite ? 'fill-[#4f46e5] text-[#4f46e5]' : ''} />
+      <img src="/messenger/sheet-header-star.svg" alt="" />
     </button>
   );
 }

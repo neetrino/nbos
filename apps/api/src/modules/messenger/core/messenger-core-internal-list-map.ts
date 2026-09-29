@@ -24,7 +24,7 @@ export function internalListInclude(employeeId: string) {
       select: {
         employeeId: true,
         role: true,
-        employee: { select: { firstName: true, lastName: true } },
+        employee: { select: { firstName: true, lastName: true, position: true } },
       },
     },
   };
@@ -45,7 +45,7 @@ export type InternalListRow = {
   participants: Array<{
     employeeId: string;
     role: string;
-    employee: { firstName: string; lastName: string };
+    employee: { firstName: string; lastName: string; position: string | null };
   }>;
 };
 
@@ -79,7 +79,16 @@ export function mapInternalListItem(
     unreadCount,
     peerEmployeeId: peer?.employeeId ?? null,
     peerName: peer ? `${peer.employee.firstName} ${peer.employee.lastName}`.trim() : null,
+    peerPosition: peerPositionLabel(peer?.employee.position),
     isFavorite: row.userSettings[0]?.favorite === true,
     canWrite: conversationCanWrite(editScope, self?.role ?? null, editGrantIds.has(row.id)),
   };
+}
+
+const PEER_POSITION_MAX_CHARS = 256;
+
+function peerPositionLabel(position: string | null | undefined): string | null {
+  const value = position?.trim() ?? '';
+  if (!value) return null;
+  return value.slice(0, PEER_POSITION_MAX_CHARS);
 }

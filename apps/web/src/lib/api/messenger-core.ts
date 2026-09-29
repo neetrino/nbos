@@ -35,6 +35,7 @@ export interface MessengerCoreConversationRow {
   unreadCount?: number;
   peerEmployeeId?: string | null;
   peerName?: string | null;
+  peerPosition?: string | null;
   isFavorite?: boolean;
   canWrite?: boolean;
   primaryLinks?: Array<{ entityType: string; entityId: string }>;
