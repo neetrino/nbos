@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import {
   MAX_WALLPAPER_BYTES,
   MAX_WALLPAPER_EDGE_PX,
+  MAX_WALLPAPER_MEGABYTES,
   MIN_WALLPAPER_EDGE_PX,
   WALLPAPER_EXTENSION,
   WALLPAPER_MIME,
@@ -25,9 +26,7 @@ export function validateWallpaperUpload(input: WallpaperUploadInput): ValidatedW
     throw new BadRequestException('Wallpaper must be image/webp.');
   }
   if (input.bytes.byteLength === 0 || input.bytes.byteLength > MAX_WALLPAPER_BYTES) {
-    throw new BadRequestException(
-      `Wallpaper must be between 1 byte and ${MAX_WALLPAPER_BYTES} bytes.`,
-    );
+    throw new BadRequestException(`Photo must be ${MAX_WALLPAPER_MEGABYTES} MB or smaller.`);
   }
   const size = sniffWebpImage(input.bytes);
   if (!size) {
@@ -50,13 +49,9 @@ function assertWallpaperEdges(width: number, height: number): void {
   const longEdge = Math.max(width, height);
   const shortEdge = Math.min(width, height);
   if (longEdge > MAX_WALLPAPER_EDGE_PX) {
-    throw new BadRequestException(
-      `Wallpaper long edge must be at most ${MAX_WALLPAPER_EDGE_PX}px.`,
-    );
+    throw new BadRequestException(`Longer side must be ${MAX_WALLPAPER_EDGE_PX} px or less.`);
   }
   if (shortEdge < MIN_WALLPAPER_EDGE_PX) {
-    throw new BadRequestException(
-      `Wallpaper short edge must be at least ${MIN_WALLPAPER_EDGE_PX}px.`,
-    );
+    throw new BadRequestException(`Shorter side must be at least ${MIN_WALLPAPER_EDGE_PX} px.`);
   }
 }
