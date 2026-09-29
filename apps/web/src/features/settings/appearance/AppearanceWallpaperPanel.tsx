@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import type { WallpaperSlot } from '@nbos/shared';
+import {
+  MAX_WALLPAPER_EDGE_PX,
+  MAX_WALLPAPER_MEGABYTES,
+  MIN_WALLPAPER_EDGE_PX,
+  type WallpaperSlot,
+} from '@nbos/shared';
 import { PageHero } from '@/components/shared';
 import {
   clearPlatformWallpaper,
@@ -13,7 +18,7 @@ import { applyWallpaperCss } from '@/lib/platform-appearance/apply-wallpaper-css
 import type { PlatformAppearanceView } from '@/lib/platform-appearance/types';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { AppearanceWallpaperSlotCard } from './AppearanceWallpaperSlotCard';
-import { validateWallpaperFile } from './validate-wallpaper-file';
+import { validateWallpaperFile, type WallpaperFileIssue } from './validate-wallpaper-file';
 
 export function AppearanceWallpaperPanel({
   initialAppearance,
@@ -30,7 +35,7 @@ export function AppearanceWallpaperPanel({
     <div className="space-y-6">
       <PageHero title={t('title')} />
       <p className="text-muted-foreground text-sm">{t('description')}</p>
-      <p className="text-muted-foreground text-sm">{t('rules')}</p>
+      <p className="text-muted-foreground text-sm">{t('rules', wallpaperLimits())}</p>
       <div className="grid gap-4 lg:grid-cols-2">
         {(['light', 'dark'] as const).map((slot) => (
           <AppearanceWallpaperSlotCard
@@ -54,7 +59,7 @@ export function AppearanceWallpaperPanel({
   async function handleUpload(slot: WallpaperSlot, file: File): Promise<void> {
     const invalid = await validateWallpaperFile(file);
     if (invalid) {
-      setErrors((current) => ({ ...current, [slot]: invalid }));
+      setErrors((current) => ({ ...current, [slot]: wallpaperIssueText(t, invalid) }));
       return;
     }
     await runSlotAction(slot, () => uploadPlatformWallpaper(slot, file));
@@ -82,4 +87,24 @@ export function AppearanceWallpaperPanel({
       setBusySlot(null);
     }
   }
+}
+
+function wallpaperLimits() {
+  return {
+    maxMb: MAX_WALLPAPER_MEGABYTES,
+    minPx: MIN_WALLPAPER_EDGE_PX,
+    maxPx: MAX_WALLPAPER_EDGE_PX,
+  };
+}
+
+function wallpaperIssueText(
+  t: ReturnType<typeof useTranslations<'common.platformAppearance'>>,
+  issue: WallpaperFileIssue,
+): string {
+  const limits = wallpaperLimits();
+  if (issue === 'format') return t('fileFormat');
+  if (issue === 'size') return t('fileSize', limits);
+  if (issue === 'longEdge') return t('fileLong', limits);
+  if (issue === 'shortEdge') return t('fileShort', limits);
+  return t('fileUnreadable');
 }

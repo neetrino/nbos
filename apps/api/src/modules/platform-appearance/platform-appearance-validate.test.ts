@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { MAX_WALLPAPER_BYTES } from '@nbos/shared';
 import { describe, expect, it } from 'vitest';
 import { validateWallpaperUpload } from './platform-appearance-validate';
 
@@ -26,15 +27,37 @@ function writeU24Le(target: Buffer, offset: number, value: number): void {
 }
 
 describe('validateWallpaperUpload', () => {
-  it('accepts a still WebP inside the size window', () => {
-    const bytes = buildVp8x(1920, 1280);
+  it('accepts a full-HD still WebP', () => {
+    const bytes = buildVp8x(1920, 1080);
     const result = validateWallpaperUpload({
       originalName: 'desk.webp',
       mimeType: 'image/webp',
       bytes,
     });
     expect(result.width).toBe(1920);
-    expect(result.height).toBe(1280);
+    expect(result.height).toBe(1080);
+  });
+
+  it('rejects a WebP heavier than 1 MB', () => {
+    const heavy = new Uint8Array(MAX_WALLPAPER_BYTES + 1);
+    heavy.set(buildVp8x(1920, 1080));
+    expect(() =>
+      validateWallpaperUpload({
+        originalName: 'desk.webp',
+        mimeType: 'image/webp',
+        bytes: heavy,
+      }),
+    ).toThrow(BadRequestException);
+  });
+
+  it('rejects a short side under 1080 px', () => {
+    expect(() =>
+      validateWallpaperUpload({
+        originalName: 'desk.webp',
+        mimeType: 'image/webp',
+        bytes: buildVp8x(1920, 1079),
+      }),
+    ).toThrow(BadRequestException);
   });
 
   it('rejects animation, jpeg names, and oversized edges', () => {
