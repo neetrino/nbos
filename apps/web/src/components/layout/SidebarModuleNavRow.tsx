@@ -15,6 +15,8 @@ import { ModuleNavTrigger } from './sidebar-module-nav-trigger';
 import { useMessengerBootstrapPrefetch } from '@/features/messenger/persist/use-messenger-bootstrap-prefetch';
 import { useMessengerOverlayOptional } from '@/features/messenger-internal/messenger-overlay-context';
 import { sectionFromPathname } from '@/features/messenger-internal/internal-messenger-section';
+import { useClientMessengerOverlayOptional } from '@/features/messenger-client/client-messenger-overlay-context';
+import { clientSectionFromPathname } from '@/features/messenger-client/client-messenger-section';
 import { useTranslations } from 'next-intl';
 
 interface SidebarModuleNavRowProps {
@@ -40,6 +42,7 @@ export function SidebarModuleNavRow({
 }: SidebarModuleNavRowProps) {
   const prefetchMessenger = useMessengerBootstrapPrefetch(item.key);
   const messengerOverlay = useMessengerOverlayOptional();
+  const clientOverlay = useClientMessengerOverlayOptional();
   const moduleEntryHref = useModuleEntryHref(item.key, item.href, pathname);
   const moduleHref = isRegisteredModuleKey(item.key) ? moduleEntryHref : item.href;
   const childPathActive =
@@ -47,8 +50,10 @@ export function SidebarModuleNavRow({
       (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child, item.key),
     ) ?? false;
   const messengerOpen = item.key === 'messenger' && Boolean(messengerOverlay?.isOpen);
+  const clientOpen = item.key === 'client-messenger' && Boolean(clientOverlay?.isOpen);
   const active =
     messengerOpen ||
+    clientOpen ||
     childPathActive ||
     pathname.startsWith(item.href) ||
     pathname.startsWith(moduleHref);
@@ -113,11 +118,18 @@ function ParentModuleNavRow({
   const t = useTranslations('navigation');
   const moduleLabel = t(item.label);
   const overlay = useMessengerOverlayOptional();
-  const messenger = item.key === 'messenger';
+  const clientOverlay = useClientMessengerOverlayOptional();
+  const messenger = item.key === 'messenger' || item.key === 'client-messenger';
   const onActivate = () => {
     onExpandOnly();
-    if (!messenger) return;
-    overlay?.openMessenger(sectionFromPathname(firstChildHref));
+    if (item.key === 'messenger') {
+      clientOverlay?.closeClientMessenger();
+      overlay?.openMessenger(sectionFromPathname(firstChildHref));
+    }
+    if (item.key === 'client-messenger') {
+      overlay?.closeMessenger();
+      clientOverlay?.openClientMessenger(clientSectionFromPathname(firstChildHref));
+    }
   };
 
   if (collapsed) {

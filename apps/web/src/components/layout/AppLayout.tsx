@@ -26,6 +26,10 @@ import {
   MessengerOverlay,
   MessengerOverlayProvider,
 } from '@/features/messenger-internal/messenger-overlay-context';
+import {
+  ClientMessengerOverlay,
+  ClientMessengerOverlayProvider,
+} from '@/features/messenger-client/client-messenger-overlay-context';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -97,38 +101,41 @@ export function AppLayout({ children }: AppLayoutProps) {
                         <VideoMeetingColleagueInvitePrompt />
                         <HeaderContextDockRegistrar />
                         <MessengerOverlayProvider>
-                          <div
-                            className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
-                            style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
-                          >
-                            <Sidebar
-                              collapsed={sidebarCollapsed}
-                              onCollapsedChange={setSidebarCollapsed}
-                              mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
-                              onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
-                            />
-                            <div className="relative flex min-h-0 min-w-0 flex-col overflow-hidden">
-                              <Topbar />
-                              <main
-                                className={cn(
-                                  'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
-                                  isCanvasRoute
-                                    ? 'overflow-hidden'
-                                    : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
-                                  APP_MAIN_CONTENT_INSET,
-                                )}
-                              >
-                                {children}
-                              </main>
-                              {isMobileViewport ? (
-                                <MobileBottomNav
-                                  menuOpen={mobileNavOpen}
-                                  onMoreClick={() => setMobileNavOpen((open) => !open)}
-                                />
-                              ) : null}
-                              <MessengerOverlay />
+                          <ClientMessengerOverlayProvider>
+                            <div
+                              className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
+                              style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
+                            >
+                              <Sidebar
+                                collapsed={sidebarCollapsed}
+                                onCollapsedChange={setSidebarCollapsed}
+                                mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
+                                onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
+                              />
+                              <div className="relative flex min-h-0 min-w-0 flex-col overflow-hidden">
+                                <Topbar />
+                                <main
+                                  className={cn(
+                                    'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
+                                    isCanvasRoute
+                                      ? 'overflow-hidden'
+                                      : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
+                                    APP_MAIN_CONTENT_INSET,
+                                  )}
+                                >
+                                  {children}
+                                </main>
+                                {isMobileViewport ? (
+                                  <MobileBottomNav
+                                    menuOpen={mobileNavOpen}
+                                    onMoreClick={() => setMobileNavOpen((open) => !open)}
+                                  />
+                                ) : null}
+                                <MessengerOverlay />
+                                <ClientMessengerOverlay />
+                              </div>
                             </div>
-                          </div>
+                          </ClientMessengerOverlayProvider>
                         </MessengerOverlayProvider>
                       </VideoMeetingCallProvider>
                     </ActiveCallProvider>

@@ -21,6 +21,7 @@ import { AddToCollectionSelect } from './AddToCollectionSelect';
 import { InternalForwardReferenceCard } from './InternalForwardReferenceCard';
 import { InternalMentionPicker } from './InternalMentionPicker';
 import { InternalReplyQuote } from './InternalReplyQuote';
+import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 export function ThreadHeader({
   conversation,
@@ -77,7 +78,8 @@ export function ThreadMessages({
   sheet?: boolean;
   meId?: string | null;
 }) {
-  const canvas = sheet ? 'bg-[#eef2ff] py-6' : 'py-3';
+  const palette = useSheetMessengerPalette();
+  const canvas = sheet ? `${palette.canvas} py-6` : 'py-3';
   return (
     <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
       {messagesLoading ? (

@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent } from 'react';
+import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 const CLIP_ICON = '/messenger/sheet-composer-clip.svg';
 const STICKER_ICON = '/messenger/sheet-composer-sticker.svg';
@@ -24,10 +25,12 @@ export function InternalSheetComposer({
   disabled,
   sendDisabled,
 }: SheetComposerProps) {
+  const palette = useSheetMessengerPalette();
   return (
-    <div className="bg-[#eef2ff]">
-      <ComposerTip />
+    <div className={palette.canvas}>
+      <ComposerTip tipClass={palette.tip} />
       <ComposerRow
+        sendClass={palette.send}
         value={value}
         onChange={onChange}
         onSend={onSend}
@@ -46,7 +49,8 @@ function ComposerRow({
   placeholder,
   disabled,
   sendDisabled,
-}: SheetComposerProps) {
+  sendClass,
+}: SheetComposerProps & { sendClass: string }) {
   return (
     <div className="flex items-center gap-2 px-4 py-2">
       <button
@@ -69,7 +73,7 @@ function ComposerRow({
         aria-label="Send message"
         onClick={onSend}
         disabled={disabled || sendDisabled}
-        className={`${ROUND_BUTTON} bg-[#4f46e5] disabled:cursor-not-allowed`}
+        className={`${ROUND_BUTTON} disabled:cursor-not-allowed ${sendClass}`}
       >
         <img src={SEND_ICON} alt="" />
       </button>
@@ -101,10 +105,10 @@ function MessageField({
   );
 }
 
-function ComposerTip() {
+function ComposerTip({ tipClass }: { tipClass: string }) {
   return (
     <p className="mx-5 mt-2 inline-flex flex-wrap items-center gap-1.5 rounded-2xl bg-white px-3 py-1.5 text-xs text-[#0f172a] shadow-[0px_4px_2px_rgba(148,163,184,0.1)]">
-      <span className="text-[#4f46e5]">Pro tip:</span>
+      <span className={tipClass}>Pro tip:</span>
       Type <Kbd>@</Kbd> to mention team members, <Kbd>/</Kbd> for quick NBOS commands
     </p>
   );

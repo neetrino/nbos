@@ -3,8 +3,7 @@
 import { CheckCheck, Paperclip } from 'lucide-react';
 import { formatMessengerTime } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
-
-const SEEN_CHECK_CLASS = 'text-[#93c5fd]';
+import { useSheetMessengerPalette } from './sheet-messenger-palette';
 const SHEET_BUBBLE = 'max-w-lg rounded-3xl px-3 py-1.5 text-sm leading-5';
 
 export function InternalSheetMessage({
@@ -71,9 +70,10 @@ function OwnSheetMessage({
   readReceiptSeen: boolean;
   showAvatar: boolean;
 }) {
+  const palette = useSheetMessengerPalette();
   return (
     <div className="flex items-end justify-end gap-3 px-5">
-      <div className={`${SHEET_BUBBLE} rounded-tr-sm bg-[#4f46e5] text-white`}>
+      <div className={`${SHEET_BUBBLE} rounded-tr-sm text-white ${palette.ownBubble}`}>
         <p>
           {message.content}
           <BubbleStamp
@@ -98,15 +98,15 @@ function BubbleStamp({
   seen: boolean;
   showChecks: boolean;
 }) {
+  const palette = useSheetMessengerPalette();
   const tone = showChecks ? 'text-white/75' : 'text-[#94a3b8]';
+  const checks = seen ? palette.seenCheck : 'text-white/80';
   return (
     <span
       className={`ml-2 inline-flex items-center gap-0.5 align-bottom text-[11px] leading-none ${tone}`}
     >
       {time}
-      {showChecks ? (
-        <CheckCheck size={14} aria-hidden className={seen ? SEEN_CHECK_CLASS : 'text-white/80'} />
-      ) : null}
+      {showChecks ? <CheckCheck size={14} aria-hidden className={checks} /> : null}
     </span>
   );
 }
@@ -117,9 +117,8 @@ function AvatarSlot({ initials, mine, show }: { initials: string; mine: boolean;
 }
 
 function MessageAvatar({ initials, mine }: { initials: string; mine: boolean }) {
-  const tone = mine
-    ? 'bg-white text-[#334155]'
-    : 'border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]';
+  const palette = useSheetMessengerPalette();
+  const tone = mine ? 'bg-white text-[#334155]' : palette.incomingAvatar;
   return (
     <span
       className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs ${tone}`}

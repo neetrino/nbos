@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
@@ -20,7 +20,10 @@ import { ClientCollectionsPanel } from './ClientCollectionsPanel';
 import { ClientConversationList } from './ClientConversationList';
 import { ClientConversationThread } from './ClientConversationThread';
 import { ClientMessengerNav } from './ClientMessengerNav';
-import { CLIENT_MESSENGER_SHELL_CLASS } from './client-messenger.constants';
+import {
+  CLIENT_MESSENGER_SHELL_CLASS,
+  type ClientMessengerSectionId,
+} from './client-messenger.constants';
 import { clientSectionFromPathname } from './client-messenger-section';
 import { sendClientThreadMessage } from './send-client-thread-message';
 import { useClientOpenConversationQuery } from './use-client-open-conversation-query';
@@ -32,21 +35,51 @@ import {
   toggleClientFavorite,
 } from './client-messenger-cache-ops';
 
-export function ClientMessengerApp() {
+const CLIENT_SHEET_SHELL_CLASS = 'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-white';
+
+export function ClientMessengerApp({
+  embedded = false,
+  section: sectionOverride,
+  onSectionChange,
+  requestedConversationId = null,
+  onRequestedConversationHandled,
+}: {
+  embedded?: boolean;
+  section?: ClientMessengerSectionId;
+  onSectionChange?: (section: ClientMessengerSectionId) => void;
+  requestedConversationId?: string | null;
+  onRequestedConversationHandled?: () => void;
+}) {
   const pathname = usePathname();
-  const section = clientSectionFromPathname(pathname);
-  return <ClientMessengerScreen section={section} />;
+  const section = sectionOverride ?? clientSectionFromPathname(pathname);
+  return (
+    <ClientMessengerScreen
+      section={section}
+      embedded={embedded}
+      onSectionChange={onSectionChange}
+      requestedConversationId={requestedConversationId}
+      onRequestedConversationHandled={onRequestedConversationHandled}
+    />
+  );
 }
 
 function ClientMessengerScreen({
   section,
+  embedded,
+  onSectionChange,
+  requestedConversationId,
+  onRequestedConversationHandled,
 }: {
-  section: ReturnType<typeof clientSectionFromPathname>;
+  section: ClientMessengerSectionId;
+  embedded: boolean;
+  onSectionChange?: (section: ClientMessengerSectionId) => void;
+  requestedConversationId?: string | null;
+  onRequestedConversationHandled?: () => void;
 }) {
   const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
-  useHeaderModuleTitle('Client Messenger', true);
+  useHeaderModuleTitle('Client Messenger', !embedded);
   const session = useClientMessengerSession(section);
   const enabled = Boolean(canView && me);
   const data = useClientMessengerQueries({
@@ -70,6 +103,12 @@ function ClientMessengerScreen({
   );
 
   useClientOpenConversationQuery(openConversation);
+  useEffect(() => {
+    if (!requestedConversationId) return;
+    void openConversation(requestedConversationId).finally(() =>
+      onRequestedConversationHandled?.(),
+    );
+  }, [openConversation, onRequestedConversationHandled, requestedConversationId]);
 
   useInternalMessengerRealtime({
     canViewMessenger: canView,
@@ -113,8 +152,8 @@ function ClientMessengerScreen({
   }
 
   return (
-    <div className={CLIENT_MESSENGER_SHELL_CLASS}>
-      <ClientMessengerNav section={section} />
+    <div className={embedded ? CLIENT_SHEET_SHELL_CLASS : CLIENT_MESSENGER_SHELL_CLASS}>
+      <ClientMessengerNav section={section} onSectionChange={onSectionChange} />
       {session.bootError || data.listError ? (
         <p className="px-3 py-1 text-xs text-red-600">
           {session.bootError ?? 'Could not refresh Client Messenger.'}

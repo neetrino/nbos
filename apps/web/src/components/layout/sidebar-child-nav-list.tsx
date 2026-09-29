@@ -13,6 +13,8 @@ import {
 import { useTranslations } from 'next-intl';
 import { useMessengerOverlayOptional } from '@/features/messenger-internal/messenger-overlay-context';
 import { sectionFromPathname } from '@/features/messenger-internal/internal-messenger-section';
+import { useClientMessengerOverlayOptional } from '@/features/messenger-client/client-messenger-overlay-context';
+import { clientSectionFromPathname } from '@/features/messenger-client/client-messenger-section';
 
 export function SidebarChildNavList({
   item,
@@ -23,6 +25,7 @@ export function SidebarChildNavList({
 }) {
   const t = useTranslations('navigation');
   const messengerOverlay = useMessengerOverlayOptional();
+  const clientOverlay = useClientMessengerOverlayOptional();
 
   if (!item.children) return null;
 
@@ -57,26 +60,39 @@ export function SidebarChildNavList({
             />
           );
         }
-        const childActive =
-          item.key === 'messenger' && messengerOverlay?.isOpen
-            ? sectionFromPathname(child.href) === messengerOverlay.section
-            : isNavChildLinkActive(pathname, child, item.key);
+        const childActive = sheetChildActive(
+          item.key,
+          child.href,
+          pathname,
+          child,
+          messengerOverlay,
+          clientOverlay,
+        );
         if (item.key === 'messenger' && messengerOverlay) {
           return (
             <li key={child.href}>
-              <button
-                type="button"
-                onClick={() => messengerOverlay.openMessenger(sectionFromPathname(child.href))}
-                className={cn(
-                  SIDEBAR_NAV_CHILD_LINK_CLASS,
-                  'w-full text-left',
-                  childActive
-                    ? 'text-sidebar-foreground font-medium'
-                    : 'text-sidebar-muted hover:text-sidebar-foreground',
-                )}
-              >
-                {childLabel}
-              </button>
+              <SheetChildButton
+                label={childLabel}
+                active={childActive}
+                onClick={() => {
+                  clientOverlay?.closeClientMessenger();
+                  messengerOverlay.openMessenger(sectionFromPathname(child.href));
+                }}
+              />
+            </li>
+          );
+        }
+        if (item.key === 'client-messenger' && clientOverlay) {
+          return (
+            <li key={child.href}>
+              <SheetChildButton
+                label={childLabel}
+                active={childActive}
+                onClick={() => {
+                  messengerOverlay?.closeMessenger();
+                  clientOverlay.openClientMessenger(clientSectionFromPathname(child.href));
+                }}
+              />
             </li>
           );
         }
@@ -98,4 +114,47 @@ export function SidebarChildNavList({
       })}
     </ul>
   );
+}
+
+function SheetChildButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        SIDEBAR_NAV_CHILD_LINK_CLASS,
+        'w-full text-left',
+        active
+          ? 'text-sidebar-foreground font-medium'
+          : 'text-sidebar-muted hover:text-sidebar-foreground',
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function sheetChildActive(
+  moduleKey: string,
+  href: string,
+  pathname: string,
+  child: Parameters<typeof isNavChildLinkActive>[1],
+  messengerOverlay: ReturnType<typeof useMessengerOverlayOptional>,
+  clientOverlay: ReturnType<typeof useClientMessengerOverlayOptional>,
+): boolean {
+  if (moduleKey === 'messenger' && messengerOverlay?.isOpen) {
+    return sectionFromPathname(href) === messengerOverlay.section;
+  }
+  if (moduleKey === 'client-messenger' && clientOverlay?.isOpen) {
+    return clientSectionFromPathname(href) === clientOverlay.section;
+  }
+  return isNavChildLinkActive(pathname, child, moduleKey);
 }
