@@ -11,11 +11,15 @@ export function InternalSheetMessage({
   mine,
   readReceiptLabel,
   readReceiptSeen = false,
+  showAvatar = true,
+  continued = false,
 }: {
   message: MessengerViewMessage;
   mine: boolean;
   readReceiptLabel: string | null;
   readReceiptSeen?: boolean;
+  showAvatar?: boolean;
+  continued?: boolean;
 }) {
   if (mine) {
     return (
@@ -23,23 +27,34 @@ export function InternalSheetMessage({
         message={message}
         readReceiptLabel={readReceiptLabel}
         readReceiptSeen={readReceiptSeen}
+        showAvatar={showAvatar}
       />
     );
   }
-  return <IncomingSheetMessage message={message} />;
+  return <IncomingSheetMessage message={message} showAvatar={showAvatar} continued={continued} />;
 }
 
-function IncomingSheetMessage({ message }: { message: MessengerViewMessage }) {
+function IncomingSheetMessage({
+  message,
+  showAvatar,
+  continued,
+}: {
+  message: MessengerViewMessage;
+  showAvatar: boolean;
+  continued: boolean;
+}) {
   return (
-    <div className="flex items-start gap-3 px-5">
-      <MessageAvatar initials={message.initials} mine={false} />
+    <div className="flex items-end gap-3 px-5">
+      <AvatarSlot initials={message.initials} mine={false} show={showAvatar} />
       <div className="max-w-2xl min-w-0 flex-1">
-        <p className="mb-1 flex items-center gap-2">
-          <span className="text-xs text-[#0f172a]">{message.senderName}</span>
-          <span className="text-[11px] text-[#94a3b8]">
-            {formatMessengerTime(message.timestamp)}
-          </span>
-        </p>
+        {continued ? null : (
+          <p className="mb-1 flex items-center gap-2">
+            <span className="text-xs text-[#0f172a]">{message.senderName}</span>
+            <span className="text-[11px] text-[#94a3b8]">
+              {formatMessengerTime(message.timestamp)}
+            </span>
+          </p>
+        )}
         <div className="rounded-3xl rounded-tl-sm bg-white px-4 py-3 text-sm leading-6 text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]">
           <p>{message.content}</p>
           <AttachmentRow message={message} />
@@ -53,10 +68,12 @@ function OwnSheetMessage({
   message,
   readReceiptLabel,
   readReceiptSeen,
+  showAvatar,
 }: {
   message: MessengerViewMessage;
   readReceiptLabel: string | null;
   readReceiptSeen: boolean;
+  showAvatar: boolean;
 }) {
   return (
     <div className="flex items-end justify-end gap-3 px-5">
@@ -71,7 +88,7 @@ function OwnSheetMessage({
         </p>
         <AttachmentRow message={message} light />
       </div>
-      <MessageAvatar initials={message.initials} mine />
+      <AvatarSlot initials={message.initials} mine show={showAvatar} />
     </div>
   );
 }
@@ -95,13 +112,18 @@ function BubbleStamp({
   );
 }
 
+function AvatarSlot({ initials, mine, show }: { initials: string; mine: boolean; show: boolean }) {
+  if (!show) return <span className="size-9 shrink-0" aria-hidden />;
+  return <MessageAvatar initials={initials} mine={mine} />;
+}
+
 function MessageAvatar({ initials, mine }: { initials: string; mine: boolean }) {
   const tone = mine
     ? 'bg-white text-[#334155]'
     : 'border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]';
   return (
     <span
-      className={`${mine ? '' : 'mt-5'} flex size-9 shrink-0 items-center justify-center rounded-full text-xs ${tone}`}
+      className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs ${tone}`}
     >
       {initials}
     </span>

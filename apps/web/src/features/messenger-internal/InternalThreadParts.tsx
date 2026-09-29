@@ -77,7 +77,7 @@ export function ThreadMessages({
   sheet?: boolean;
   meId?: string | null;
 }) {
-  const canvas = sheet ? 'gap-6 bg-[#eef2ff] py-6' : 'py-3';
+  const canvas = sheet ? 'bg-[#eef2ff] py-6' : 'py-3';
   return (
     <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
       {messagesLoading ? (
@@ -85,19 +85,15 @@ export function ThreadMessages({
       ) : views.length === 0 ? (
         <p className="px-5 py-8 text-center text-sm text-[#64748b]">No messages yet.</p>
       ) : (
-        views.map((message, index) => (
-          <ThreadMessageRow
-            key={message.id}
-            message={message}
-            previous={views[index - 1]}
-            selected={selectedIds.includes(message.id)}
-            references={messages.find((item) => item.id === message.id)?.references ?? []}
-            onToggleSelect={onToggleSelect}
-            onOpenOriginalSource={onOpenOriginalSource}
-            sheet={sheet}
-            mine={Boolean(meId) && message.senderId === meId}
-          />
-        ))
+        <ThreadRows
+          views={views}
+          messages={messages}
+          selectedIds={selectedIds}
+          onToggleSelect={onToggleSelect}
+          onOpenOriginalSource={onOpenOriginalSource}
+          sheet={sheet}
+          meId={meId}
+        />
       )}
       {remoteTypingHint ? (
         <p className="px-5 pt-1 text-xs text-black/40">{remoteTypingHint}</p>
@@ -107,9 +103,84 @@ export function ThreadMessages({
   );
 }
 
+function ThreadRows({
+  views,
+  messages,
+  selectedIds,
+  onToggleSelect,
+  onOpenOriginalSource,
+  sheet,
+  meId,
+}: {
+  views: MessengerViewMessage[];
+  messages: MessengerCoreMessageRow[];
+  selectedIds: string[];
+  onToggleSelect: (id: string) => void;
+  onOpenOriginalSource: (sourceMessageId: string) => void;
+  sheet: boolean;
+  meId: string | null;
+}) {
+  return views.map((message, index) => (
+    <ThreadMessageRow
+      key={message.id}
+      message={message}
+      previous={views[index - 1]}
+      next={views[index + 1]}
+      selected={selectedIds.includes(message.id)}
+      references={messages.find((item) => item.id === message.id)?.references ?? []}
+      onToggleSelect={onToggleSelect}
+      onOpenOriginalSource={onOpenOriginalSource}
+      sheet={sheet}
+      mine={Boolean(meId) && message.senderId === meId}
+    />
+  ));
+}
+
+function RowBubble({
+  message,
+  mine,
+  sheet,
+  continued,
+  showAvatar,
+}: {
+  message: MessengerViewMessage;
+  mine: boolean;
+  sheet: boolean;
+  continued: boolean;
+  showAvatar: boolean;
+}) {
+  if (!sheet) {
+    return (
+      <MessengerThreadMessageBubble
+        message={message}
+        readReceiptLabel={message.deliveryLabel ?? null}
+      />
+    );
+  }
+  return (
+    <InternalSheetMessage
+      message={message}
+      mine={mine}
+      readReceiptLabel={message.deliveryLabel ?? null}
+      readReceiptSeen={Boolean(message.receiptSeen)}
+      showAvatar={showAvatar}
+      continued={continued}
+    />
+  );
+}
+
+function sameSenderRun(
+  current: MessengerViewMessage | undefined,
+  other: MessengerViewMessage | undefined,
+): boolean {
+  if (!current || !other || current.senderId !== other.senderId) return false;
+  return messengerDateLabel(current.timestamp) === messengerDateLabel(other.timestamp);
+}
+
 function ThreadMessageRow({
   message,
   previous,
+  next,
   selected,
   references,
   onToggleSelect,
@@ -119,6 +190,7 @@ function ThreadMessageRow({
 }: {
   message: MessengerViewMessage;
   previous: MessengerViewMessage | undefined;
+  next: MessengerViewMessage | undefined;
   selected: boolean;
   references: NonNullable<MessengerCoreMessageRow['references']>;
   onToggleSelect: (id: string) => void;
@@ -129,24 +201,20 @@ function ThreadMessageRow({
   const showDate =
     !previous || messengerDateLabel(previous.timestamp) !== messengerDateLabel(message.timestamp);
   const label = messengerDateLabel(message.timestamp);
+  const continued = sameSenderRun(previous, message);
+  const rowGap = sheet && previous ? (continued ? 'mt-1' : 'mt-4') : '';
   return (
-    <div className="group flex items-start gap-1">
+    <div className={`group flex items-start gap-1 ${rowGap}`}>
       <MessageSelect selected={selected} onToggle={() => onToggleSelect(message.id)} />
       <div className="min-w-0 flex-1">
         {showDate ? <MessageDate label={label} sheet={sheet} /> : null}
-        {sheet ? (
-          <InternalSheetMessage
-            message={message}
-            mine={mine}
-            readReceiptLabel={message.deliveryLabel ?? null}
-            readReceiptSeen={Boolean(message.receiptSeen)}
-          />
-        ) : (
-          <MessengerThreadMessageBubble
-            message={message}
-            readReceiptLabel={message.deliveryLabel ?? null}
-          />
-        )}
+        <RowBubble
+          message={message}
+          mine={mine}
+          sheet={sheet}
+          continued={continued}
+          showAvatar={!sameSenderRun(message, next)}
+        />
         <InternalForwardReferenceCard
           references={references}
           onOpenOriginal={onOpenOriginalSource}
