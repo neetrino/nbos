@@ -22,11 +22,16 @@
   "platformAppearance": {
     "title": "Appearance",
     "description": "One company wallpaper for every authenticated screen. Cards and chrome stay solid so work stays fast.",
-    "rules": "WebP only, up to 400 KB, long edge at most 2560 px, short edge at least 1280 px. No animation.",
+    "rules": "WebP, up to {maxMb} MB. Sides from {minPx} to {maxPx} px.",
     "light": "Light theme",
     "dark": "Dark theme",
     "empty": "Solid color (current theme background)",
     "replace": "Upload WebP",
+    "fileFormat": "WebP only.",
+    "fileSize": "File must be {maxMb} MB or smaller.",
+    "fileLong": "Longer side must be {maxPx} px or less.",
+    "fileShort": "Shorter side must be at least {minPx} px.",
+    "fileUnreadable": "File is not a valid WebP image.",
     "remove": "Remove",
     "uploading": "Uploading…",
     "previewAlt": "{slot} wallpaper preview"

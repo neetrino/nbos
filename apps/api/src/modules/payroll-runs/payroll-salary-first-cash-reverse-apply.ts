@@ -45,6 +45,22 @@ export async function rejectClosedPayrollCashHistory(
   }
 }
 
+type PayrollCashHistoryLock = Pick<PrismaClient, 'salaryLine' | '$queryRaw'>;
+
+/** Holds the payroll row across a cash write so close and money cannot pass each other. */
+export async function lockPayrollCashHistoryForUpdate(
+  tx: PayrollCashHistoryLock,
+  expenseId: string,
+): Promise<void> {
+  const history = await assertPayrollCashHistoryOpen(tx, expenseId);
+  if (history == null) {
+    return;
+  }
+  await tx.$queryRaw`SELECT id FROM salary_lines WHERE expense_id = ${expenseId} FOR UPDATE`;
+  await tx.$queryRaw`SELECT id FROM payroll_runs WHERE id = ${history.payrollRunId} FOR UPDATE`;
+  await rejectClosedPayrollCashHistory(tx, expenseId);
+}
+
 export async function restoreBonusMarksForDeletedPayrollCash(
   prisma: InstanceType<typeof PrismaClient>,
   expenseId: string,

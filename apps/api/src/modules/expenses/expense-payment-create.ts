@@ -8,6 +8,7 @@ import {
   loadPayrollCashReleasesForExpense,
   preparePayrollCashPayment,
 } from '../payroll-runs/payroll-salary-first-cash-apply';
+import { lockPayrollCashHistoryForUpdate } from '../payroll-runs/payroll-salary-first-cash-reverse-apply';
 import type { PayrollCashBonusAssignmentInput } from '../payroll-runs/payroll-salary-first-cash';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { hasEncodedPayrollCash } from '../payroll-runs/payroll-salary-first-cash-notes';
@@ -130,6 +131,7 @@ async function commitLockedExpensePayment(
   paymentDate: Date,
 ): Promise<WrittenExpensePayment> {
   await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${expenseId} FOR UPDATE`;
+  await lockPayrollCashHistoryForUpdate(tx, expenseId);
   const expense = await tx.expense.findUnique({
     where: { id: expenseId },
     include: { expensePayments: true },

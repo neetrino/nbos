@@ -44,4 +44,9 @@ describe('summarizeWalletBonusForecast', () => {
     expect(summary.nextPayrollRemaining).toBe(150);
     expect(summary.paidFromReleases).toBe(130);
   });
+
+  it('does not treat an accrued bonus as cash paid when the paid amount is zero', () => {
+    const summary = summarizeWalletBonusForecast([row('PAID', '20000', '20000', '0')]);
+    expect(summary.paidFromReleases).toBe(0);
+  });
 });
