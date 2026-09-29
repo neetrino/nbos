@@ -27,7 +27,7 @@ export function SheetThreadHeader({
   onAddToCollection: (collectionId: string) => void;
 }) {
   return (
-    <header className="flex items-center justify-between border-b border-[#f1f5f9] bg-white py-3.5 pl-5">
+    <header className="flex items-center justify-between border-b border-[#f1f5f9] bg-white py-3.5 pr-5 pl-5">
       <HeaderIdentity
         conversation={conversation}
         title={title}
