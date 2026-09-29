@@ -15,7 +15,10 @@ import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-k
 import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { INTERNAL_MESSENGER_SHELL_CLASS } from './internal-messenger.constants';
+import { InternalMessengerSheetFrame } from './InternalMessengerSheetFrame';
+import { InternalQuickRail } from './InternalQuickRail';
 import { sectionFromPathname } from './internal-messenger-section';
+import type { InternalMessengerSectionId } from './internal-messenger.constants';
 import { InternalCollectionsPanel } from './InternalCollectionsPanel';
 import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
@@ -27,18 +30,34 @@ import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
 import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
 
-export function InternalMessengerApp({ embedded = false }: { embedded?: boolean }) {
+export function InternalMessengerApp({
+  embedded = false,
+  section: sectionOverride,
+  onSectionChange,
+}: {
+  embedded?: boolean;
+  section?: InternalMessengerSectionId;
+  onSectionChange?: (section: InternalMessengerSectionId) => void;
+}) {
   const pathname = usePathname();
-  const section = sectionFromPathname(pathname);
-  return <InternalMessengerScreen section={section} embedded={embedded} />;
+  const section = sectionOverride ?? sectionFromPathname(pathname);
+  return (
+    <InternalMessengerScreen
+      section={section}
+      embedded={embedded}
+      onSectionChange={onSectionChange}
+    />
+  );
 }
 
 function InternalMessengerScreen({
   section,
   embedded,
+  onSectionChange,
 }: {
   section: ReturnType<typeof sectionFromPathname>;
   embedded: boolean;
+  onSectionChange?: (section: InternalMessengerSectionId) => void;
 }) {
   const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
@@ -91,48 +110,28 @@ function InternalMessengerScreen({
     },
   });
 
-  if (permsLoading) return <div className={INTERNAL_MESSENGER_SHELL_CLASS} />;
+  if (permsLoading) {
+    return (
+      <InternalMessengerSheetFrame embedded={embedded}>
+        <div className={INTERNAL_MESSENGER_SHELL_CLASS} />
+      </InternalMessengerSheetFrame>
+    );
+  }
   if (meLoadError || !canView) {
     return (
-      <div
-        className={`${INTERNAL_MESSENGER_SHELL_CLASS} items-center justify-center p-6 text-sm text-black/50`}
-      >
-        You do not have access to Internal Messenger.
-      </div>
+      <InternalMessengerSheetFrame embedded={embedded}>
+        <div
+          className={`${INTERNAL_MESSENGER_SHELL_CLASS} items-center justify-center p-6 text-sm text-[#64748b]`}
+        >
+          You do not have access to Internal Messenger.
+        </div>
+      </InternalMessengerSheetFrame>
     );
   }
 
   return (
-    <div className={INTERNAL_MESSENGER_SHELL_CLASS}>
-      <InternalMessengerNav section={section} />
-      <InternalStartBar
-        section={section}
-        canEdit={canEdit}
-        onCreateGroup={async (title) => {
-          const created = await messengerCoreApi.createConversation({
-            type: 'INTERNAL_GROUP',
-            title,
-          });
-          await openInternalConversation(
-            queryClient,
-            created.id,
-            session.setActiveId,
-            session.setOpenedConversation,
-          );
-        }}
-        onStartDirect={async (peerEmployeeId) => {
-          const created = await messengerCoreApi.createConversation({
-            type: 'DIRECT',
-            peerEmployeeId,
-          });
-          await openInternalConversation(
-            queryClient,
-            created.id,
-            session.setActiveId,
-            session.setOpenedConversation,
-          );
-        }}
-      />
+    <InternalMessengerSheetFrame embedded={embedded}>
+      <InternalMessengerNav section={section} onSectionChange={onSectionChange} />
       {session.bootError || data.listError ? (
         <p className="px-3 py-1 text-xs text-red-600">
           {session.bootError ?? 'Could not refresh Internal Messenger.'}
@@ -151,25 +150,55 @@ function InternalMessengerScreen({
             onSelect={(id) => session.setActiveCollectionId(id)}
           />
         ) : (
-          <InternalConversationList
-            section={section}
-            items={data.items}
-            activeId={session.activeId}
-            search={session.search}
-            filter={session.filter}
-            listPending={data.listPending}
-            onSearchChange={session.setSearch}
-            onFilterChange={session.setFilter}
-            onSelect={(id) =>
-              void openInternalConversation(
-                queryClient,
-                id,
-                session.setActiveId,
-                session.setOpenedConversation,
-              ).catch(() => session.setBootError('Could not open that Internal conversation.'))
-            }
-            onToggleFavorite={(id) => void toggleInternalFavorite(queryClient, id)}
-          />
+          <div className="flex w-80 max-w-[46%] shrink-0 flex-col border-r border-[#f1f5f9] bg-[#fafbfc]">
+            <InternalConversationList
+              section={section}
+              items={data.items}
+              activeId={session.activeId}
+              search={session.search}
+              filter={session.filter}
+              listPending={data.listPending}
+              onSearchChange={session.setSearch}
+              onFilterChange={session.setFilter}
+              onSelect={(id) =>
+                void openInternalConversation(
+                  queryClient,
+                  id,
+                  session.setActiveId,
+                  session.setOpenedConversation,
+                ).catch(() => session.setBootError('Could not open that Internal conversation.'))
+              }
+              onToggleFavorite={(id) => void toggleInternalFavorite(queryClient, id)}
+            />
+            <InternalStartBar
+              section={section}
+              canEdit={canEdit}
+              onCreateGroup={async (title) => {
+                const created = await messengerCoreApi.createConversation({
+                  type: 'INTERNAL_GROUP',
+                  title,
+                });
+                await openInternalConversation(
+                  queryClient,
+                  created.id,
+                  session.setActiveId,
+                  session.setOpenedConversation,
+                );
+              }}
+              onStartDirect={async (peerEmployeeId) => {
+                const created = await messengerCoreApi.createConversation({
+                  type: 'DIRECT',
+                  peerEmployeeId,
+                });
+                await openInternalConversation(
+                  queryClient,
+                  created.id,
+                  session.setActiveId,
+                  session.setOpenedConversation,
+                );
+              }}
+            />
+          </div>
         )}
         {active ? (
           <InternalConversationThread
@@ -208,12 +237,24 @@ function InternalMessengerScreen({
             }
           />
         ) : (
-          <div className="flex min-h-0 flex-1 items-center justify-center bg-white text-sm text-black/40">
+          <div className="flex min-h-0 flex-1 items-center justify-center bg-[#eef2ff] text-sm text-[#64748b]">
             Select an Internal conversation
           </div>
         )}
+        <InternalQuickRail
+          items={data.items}
+          activeId={session.activeId}
+          onSelect={(id) =>
+            void openInternalConversation(
+              queryClient,
+              id,
+              session.setActiveId,
+              session.setOpenedConversation,
+            ).catch(() => session.setBootError('Could not open that Internal conversation.'))
+          }
+        />
       </div>
-    </div>
+    </InternalMessengerSheetFrame>
   );
 
   async function createCollection(visibility: 'PERSONAL' | 'SHARED') {

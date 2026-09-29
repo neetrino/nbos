@@ -21,3 +21,12 @@ export function messengerDateLabel(timestamp: string): string {
   if (sameDay(date, yesterday)) return 'Yesterday';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+/** Sidebar stamp: clock today, otherwise the short date label. */
+export function formatConversationListStamp(timestamp: string | null | undefined): string {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return '';
+  const label = messengerDateLabel(timestamp);
+  return label === 'Today' ? formatMessengerTime(timestamp) : label;
+}

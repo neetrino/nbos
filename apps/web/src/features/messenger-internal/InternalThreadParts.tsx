@@ -1,15 +1,17 @@
 'use client';
 
 import type { RefObject } from 'react';
-import { Hash, Star, User } from 'lucide-react';
 import { messengerDateLabel } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
-import { MESSENGER_THREAD_HASH_ICON_CLASS } from '@/features/messenger/messenger-thread-ui.constants';
+import { MessengerThreadMessageBubble } from '@/features/messenger/messenger-thread-primitives';
 import {
-  MessengerThreadComposerRow,
-  MessengerThreadDateDivider,
-  MessengerThreadMessageBubble,
-} from '@/features/messenger/messenger-thread-primitives';
+  ComposerField,
+  FavoriteStar,
+  MessageDate,
+  MessageSelect,
+  ThreadAvatar,
+} from './InternalThreadChrome';
+import { InternalSheetMessage } from './InternalSheetMessage';
 import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
@@ -32,30 +34,20 @@ export function ThreadHeader({
   onToggleFavorite: () => void;
   onAddToCollection: (collectionId: string) => void;
 }) {
+  const direct = conversation.type === 'DIRECT';
   return (
-    <header className="flex items-center gap-3 border-b border-black/[0.06] px-5 py-3">
-      {conversation.type === 'DIRECT' ? (
-        <User size={16} className={MESSENGER_THREAD_HASH_ICON_CLASS} />
-      ) : (
-        <Hash size={16} className={MESSENGER_THREAD_HASH_ICON_CLASS} />
-      )}
+    <header className="flex items-center gap-3 border-b border-[#f1f5f9] bg-white py-3.5 pr-3 pl-5">
+      <ThreadAvatar title={title} direct={direct} />
       <div className="min-w-0 flex-1">
-        <h2 className="truncate text-sm font-semibold text-black">{title}</h2>
-        <p className="text-[11px] text-black/40">
-          {conversationTypeBadge(conversation.type)} · Internal
-        </p>
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="truncate text-sm text-[#0f172a]">{title}</h2>
+          <span className="shrink-0 rounded-full border border-[#c7d2fe] bg-[#eef2ff] px-2 py-0.5 text-[10px] text-[#4338ca]">
+            {conversationTypeBadge(conversation.type)}
+          </span>
+          <FavoriteStar favorite={Boolean(conversation.isFavorite)} onToggle={onToggleFavorite} />
+        </div>
+        <p className="text-xs text-[#64748b]">Internal</p>
       </div>
-      <button
-        type="button"
-        aria-label={conversation.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-        onClick={onToggleFavorite}
-        className="rounded-lg p-1.5 text-black/35 hover:bg-black/[0.04] hover:text-[#E5A84B]"
-      >
-        <Star
-          size={16}
-          className={conversation.isFavorite ? 'fill-[#E5A84B] text-[#E5A84B]' : ''}
-        />
-      </button>
       {collections.length > 0 ? (
         <select
           aria-label="Add to collection"
@@ -89,6 +81,8 @@ export function ThreadMessages({
   onOpenOriginalSource,
   remoteTypingHint,
   endRef,
+  sheet = false,
+  meId = null,
 }: {
   views: MessengerViewMessage[];
   messages: MessengerCoreMessageRow[];
@@ -98,13 +92,16 @@ export function ThreadMessages({
   onOpenOriginalSource: (sourceMessageId: string) => void;
   remoteTypingHint: string | null;
   endRef: RefObject<HTMLDivElement | null>;
+  sheet?: boolean;
+  meId?: string | null;
 }) {
+  const canvas = sheet ? 'gap-6 bg-[#eef2ff] py-6' : 'py-3';
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto py-3">
+    <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
       {messagesLoading ? (
-        <p className="px-5 py-8 text-center text-sm text-black/40">Loading…</p>
+        <p className="px-5 py-8 text-center text-sm text-[#64748b]">Loading…</p>
       ) : views.length === 0 ? (
-        <p className="px-5 py-8 text-center text-sm text-black/40">No messages yet.</p>
+        <p className="px-5 py-8 text-center text-sm text-[#64748b]">No messages yet.</p>
       ) : (
         views.map((message, index) => (
           <ThreadMessageRow
@@ -115,6 +112,8 @@ export function ThreadMessages({
             references={messages.find((item) => item.id === message.id)?.references ?? []}
             onToggleSelect={onToggleSelect}
             onOpenOriginalSource={onOpenOriginalSource}
+            sheet={sheet}
+            mine={Boolean(meId) && message.senderId === meId}
           />
         ))
       )}
@@ -133,6 +132,8 @@ function ThreadMessageRow({
   references,
   onToggleSelect,
   onOpenOriginalSource,
+  sheet,
+  mine,
 }: {
   message: MessengerViewMessage;
   previous: MessengerViewMessage | undefined;
@@ -140,28 +141,29 @@ function ThreadMessageRow({
   references: NonNullable<MessengerCoreMessageRow['references']>;
   onToggleSelect: (id: string) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
+  sheet: boolean;
+  mine: boolean;
 }) {
   const showDate =
     !previous || messengerDateLabel(previous.timestamp) !== messengerDateLabel(message.timestamp);
+  const label = messengerDateLabel(message.timestamp);
   return (
-    <div className="flex items-start gap-1">
-      <label className="mt-3 pl-3">
-        <span className="sr-only">Select message</span>
-        <input
-          type="checkbox"
-          checked={selected}
-          onChange={() => onToggleSelect(message.id)}
-          className="accent-[#E5A84B]"
-        />
-      </label>
+    <div className="group flex items-start gap-1">
+      <MessageSelect selected={selected} onToggle={() => onToggleSelect(message.id)} />
       <div className="min-w-0 flex-1">
-        {showDate ? (
-          <MessengerThreadDateDivider label={messengerDateLabel(message.timestamp)} />
-        ) : null}
-        <MessengerThreadMessageBubble
-          message={message}
-          readReceiptLabel={message.deliveryLabel ?? null}
-        />
+        {showDate ? <MessageDate label={label} sheet={sheet} /> : null}
+        {sheet ? (
+          <InternalSheetMessage
+            message={message}
+            mine={mine}
+            readReceiptLabel={message.deliveryLabel ?? null}
+          />
+        ) : (
+          <MessengerThreadMessageBubble
+            message={message}
+            readReceiptLabel={message.deliveryLabel ?? null}
+          />
+        )}
         <InternalForwardReferenceCard
           references={references}
           onOpenOriginal={onOpenOriginalSource}
@@ -182,6 +184,7 @@ export function ThreadComposer({
   onMentionsChange,
   onSend,
   placeholder,
+  sheet = false,
 }: {
   canSend: boolean;
   sendDisabled: boolean;
@@ -193,27 +196,43 @@ export function ThreadComposer({
   onMentionsChange: (next: Array<{ id: string; label: string }>) => void;
   onSend: () => void;
   placeholder?: string;
+  sheet?: boolean;
 }) {
+  const resolvedPlaceholder =
+    placeholder ?? (canSend ? 'Message' : 'You cannot send in this conversation');
+  const blocked = !canSend || sendDisabled || newMessage.trim().length === 0;
   return (
-    <div className="border-t border-black/[0.06] p-3">
-      {replyTo ? (
-        <InternalReplyQuote
-          senderName={replyTo.senderName}
-          content={replyTo.content}
-          onClear={onClearReply}
-        />
-      ) : null}
+    <div className={sheet ? 'bg-[#eef2ff]' : 'border-t border-black/[0.06] p-3'}>
+      {replyTo ? <ReplySlot sheet={sheet} replyTo={replyTo} onClear={onClearReply} /> : null}
       {canSend ? <InternalMentionPicker selected={mentions} onChange={onMentionsChange} /> : null}
-      <MessengerThreadComposerRow
+      <ComposerField
+        sheet={sheet}
         value={newMessage}
         onChange={onNewMessageChange}
         onSend={onSend}
         disabled={!canSend || sendDisabled}
-        sendDisabled={!canSend || sendDisabled || newMessage.trim().length === 0}
-        placeholder={
-          placeholder ??
-          (canSend ? 'Write an Internal message…' : 'You cannot send in this conversation')
-        }
+        sendDisabled={blocked}
+        placeholder={resolvedPlaceholder}
+      />
+    </div>
+  );
+}
+
+function ReplySlot({
+  sheet,
+  replyTo,
+  onClear,
+}: {
+  sheet: boolean;
+  replyTo: MessengerCoreMessageRow;
+  onClear: () => void;
+}) {
+  return (
+    <div className={sheet ? 'px-4 pt-2' : undefined}>
+      <InternalReplyQuote
+        senderName={replyTo.senderName}
+        content={replyTo.content}
+        onClear={onClear}
       />
     </div>
   );

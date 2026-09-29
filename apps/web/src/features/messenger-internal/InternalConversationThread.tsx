@@ -72,7 +72,7 @@ export function InternalConversationThread({
   onOpenInternalSource?: (conversationId: string) => void;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
-  const { can } = usePermission();
+  const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const actions = useInternalThreadActions(messages, onOpenInternalSource);
   const [mentions, setMentions] = useState<Array<{ id: string; label: string }>>([]);
@@ -103,6 +103,7 @@ export function InternalConversationThread({
       mentions={mentions}
       setMentions={setMentions}
       endRef={endRef}
+      meId={me?.id ?? null}
     />
   );
 }
@@ -128,10 +129,11 @@ function ThreadScaffold(props: {
   mentions: Array<{ id: string; label: string }>;
   setMentions: (next: Array<{ id: string; label: string }>) => void;
   endRef: RefObject<HTMLDivElement | null>;
+  meId: string | null;
 }) {
   const { conversation, actions } = props;
   return (
-    <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-[#eef2ff]">
       <ThreadHeader
         conversation={conversation}
         title={conversationListTitle(
@@ -163,6 +165,8 @@ function ThreadScaffold(props: {
         onOpenOriginalSource={actions.openOriginalBySourceId}
         remoteTypingHint={props.remoteTypingHint}
         endRef={props.endRef}
+        sheet
+        meId={props.meId}
       />
       <ThreadComposer
         canSend={props.canSend}
@@ -173,6 +177,7 @@ function ThreadScaffold(props: {
         onClearReply={actions.clearReply}
         mentions={props.mentions}
         onMentionsChange={props.setMentions}
+        sheet
         onSend={() =>
           void Promise.resolve(
             props.onSend({

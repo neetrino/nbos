@@ -32,7 +32,7 @@ export function InternalStartBar({
   }
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-black/[0.06] px-3 py-2">
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-[#f1f5f9] bg-[#fafbfc] px-3 py-2">
       {section === 'groups' || section === 'all' ? (
         <form
           className="flex items-center gap-1"
