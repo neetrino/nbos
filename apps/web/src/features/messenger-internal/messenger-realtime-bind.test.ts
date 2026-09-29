@@ -3,6 +3,7 @@ import {
   MESSENGER_WS_CLIENT_LEAVE_CONVERSATION,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
@@ -138,5 +139,27 @@ describe('messenger realtime bind cleanup', () => {
     expect(onSnapshot).toHaveBeenNthCalledWith(2, []);
     expect(onDelta).toHaveBeenCalledTimes(1);
     expect(onDelta).toHaveBeenCalledWith('e2', 'offline');
+  });
+
+  it('routes another participant read cursor and ignores a malformed payload', () => {
+    const socket = createSocket();
+    const onPeerRead = vi.fn();
+    bindMessengerRealtimeSocket(socket, {
+      conversationIdRef: { current: null },
+      onInboundRef: { current: vi.fn() },
+      onPeerReadRef: { current: onPeerRead },
+    });
+    socket.handlers.get(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ)?.({
+      conversationId: 'c1',
+      readerId: 'e2',
+      lastReadAt: '2026-09-29T10:00:00.000Z',
+    });
+    socket.handlers.get(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ)?.({ conversationId: 'c1' });
+    expect(onPeerRead).toHaveBeenCalledTimes(1);
+    expect(onPeerRead).toHaveBeenCalledWith({
+      conversationId: 'c1',
+      readerId: 'e2',
+      lastReadAt: '2026-09-29T10:00:00.000Z',
+    });
   });
 });

@@ -36,6 +36,7 @@ export function EntityConversationPanel({
         <InternalConversationThread
           conversation={state.conversation}
           messages={state.messages}
+          peerLastReadAt={state.peerLastReadAt}
           messagesLoading={state.messagesLoading}
           newMessage={state.newMessage}
           onNewMessageChange={state.setNewMessage}

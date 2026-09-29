@@ -4,6 +4,7 @@ import {
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_SERVER_CONVERSATION_ACCESS_CHANGED,
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
@@ -14,6 +15,7 @@ import {
 } from '@nbos/shared';
 import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
 import { isMessengerListReadPayload } from './messenger-realtime-list-read';
+import { parseConversationPeerRead, type ConversationPeerRead } from './messenger-peer-read';
 import {
   parsePresenceDelta,
   parsePresenceSnapshot,
@@ -42,6 +44,7 @@ export type MessengerRealtimeBindRefs = {
   onReconnectRef: { current?: () => void };
   onPresenceSnapshotRef?: { current?: (employeeIds: readonly string[]) => void };
   onPresenceDeltaRef?: { current?: (employeeId: string, state: MessengerPresenceState) => void };
+  onPeerReadRef?: { current?: (payload: ConversationPeerRead) => void };
 };
 
 export function bindMessengerRealtimeSocket(
@@ -121,6 +124,10 @@ function bindCoreRealtimeListeners(
   socket.on(MESSENGER_WS_SERVER_CONVERSATION_ACCESS_CHANGED, (payload: unknown) => {
     if (!isConversationAccessChangedPayload(payload)) return;
     refs.onAccessChangedRef.current?.(payload);
+  });
+  socket.on(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ, (payload: unknown) => {
+    const parsed = parseConversationPeerRead(payload);
+    if (parsed) refs.onPeerReadRef?.current?.(parsed);
   });
 }
 

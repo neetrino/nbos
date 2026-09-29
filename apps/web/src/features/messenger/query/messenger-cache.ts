@@ -17,7 +17,7 @@ import {
 
 export type MessengerMessagesPage = {
   items: MessengerCoreMessageRow[];
-  meta: { hasMoreOlder: boolean };
+  meta: { hasMoreOlder: boolean; peerLastReadAt?: string | null };
 };
 
 export function patchMessengerMessages(

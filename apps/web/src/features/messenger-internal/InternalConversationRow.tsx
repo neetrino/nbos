@@ -77,9 +77,7 @@ function ConversationCopy({ row, title }: { row: MessengerCoreConversationRow; t
           {formatConversationListStamp(row.lastMessageAt)}
         </span>
       </span>
-      <span className="mt-0.5 block truncate text-xs text-[#64748b]">
-        {row.lastMessagePreview ?? conversationTypeBadge(row.type)}
-      </span>
+      <ConversationPreview row={row} />
       <span className="mt-1.5 flex items-center justify-between gap-2">
         <span className="rounded-full bg-[#f1f5f9] px-2 py-0.5 text-[10px] text-[#0f172a]">
           {conversationTypeBadge(row.type)}
@@ -88,6 +86,13 @@ function ConversationCopy({ row, title }: { row: MessengerCoreConversationRow; t
       </span>
     </span>
   );
+}
+
+function ConversationPreview({ row }: { row: MessengerCoreConversationRow }) {
+  const preview = row.lastMessagePreview?.trim();
+  const typeLabel = conversationTypeBadge(row.type);
+  if (!preview || preview.toLowerCase() === typeLabel.toLowerCase()) return null;
+  return <span className="mt-0.5 block truncate text-xs text-[#64748b]">{preview}</span>;
 }
 
 function UnreadCount({ count }: { count: number }) {

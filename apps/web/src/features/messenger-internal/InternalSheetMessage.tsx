@@ -4,16 +4,28 @@ import { CheckCheck, Paperclip } from 'lucide-react';
 import { formatMessengerTime } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
 
+const SEEN_CHECK_CLASS = 'text-[#93c5fd]';
+
 export function InternalSheetMessage({
   message,
   mine,
   readReceiptLabel,
+  readReceiptSeen = false,
 }: {
   message: MessengerViewMessage;
   mine: boolean;
   readReceiptLabel: string | null;
+  readReceiptSeen?: boolean;
 }) {
-  if (mine) return <OwnSheetMessage message={message} readReceiptLabel={readReceiptLabel} />;
+  if (mine) {
+    return (
+      <OwnSheetMessage
+        message={message}
+        readReceiptLabel={readReceiptLabel}
+        readReceiptSeen={readReceiptSeen}
+      />
+    );
+  }
   return <IncomingSheetMessage message={message} />;
 }
 
@@ -40,32 +52,46 @@ function IncomingSheetMessage({ message }: { message: MessengerViewMessage }) {
 function OwnSheetMessage({
   message,
   readReceiptLabel,
+  readReceiptSeen,
 }: {
   message: MessengerViewMessage;
   readReceiptLabel: string | null;
+  readReceiptSeen: boolean;
 }) {
   return (
-    <div className="flex items-start justify-end gap-3 px-5">
-      <div className="flex max-w-lg flex-col items-end gap-1">
-        <p className="flex items-center gap-2">
-          <span className="text-[11px] text-[#94a3b8]">
-            {formatMessengerTime(message.timestamp)}
-          </span>
-          <span className="text-xs text-[#0f172a]">You</span>
+    <div className="flex items-end justify-end gap-3 px-5">
+      <div className="max-w-lg rounded-3xl rounded-tr-sm bg-[#4f46e5] px-3 py-1.5 text-sm leading-5 text-white">
+        <p>
+          {message.content}
+          <BubbleStamp
+            time={formatMessengerTime(message.timestamp)}
+            seen={readReceiptSeen}
+            showChecks={Boolean(readReceiptLabel)}
+          />
         </p>
-        <div className="rounded-3xl rounded-tr-sm bg-[#4f46e5] px-4 py-3 text-sm leading-6 text-white">
-          <p>{message.content}</p>
-          <AttachmentRow message={message} light />
-        </div>
-        {readReceiptLabel ? (
-          <span className="flex items-center gap-1 text-[11px] text-[#94a3b8]">
-            {readReceiptLabel}
-            <CheckCheck size={14} />
-          </span>
-        ) : null}
+        <AttachmentRow message={message} light />
       </div>
       <MessageAvatar initials={message.initials} mine />
     </div>
+  );
+}
+
+function BubbleStamp({
+  time,
+  seen,
+  showChecks,
+}: {
+  time: string;
+  seen: boolean;
+  showChecks: boolean;
+}) {
+  return (
+    <span className="ml-2 inline-flex items-center gap-0.5 align-bottom text-[11px] leading-none text-white/75">
+      {time}
+      {showChecks ? (
+        <CheckCheck size={14} aria-hidden className={seen ? SEEN_CHECK_CLASS : 'text-white/80'} />
+      ) : null}
+    </span>
   );
 }
 
@@ -75,7 +101,7 @@ function MessageAvatar({ initials, mine }: { initials: string; mine: boolean }) 
     : 'border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]';
   return (
     <span
-      className={`mt-5 flex size-9 shrink-0 items-center justify-center rounded-full text-xs ${tone}`}
+      className={`${mine ? '' : 'mt-5'} flex size-9 shrink-0 items-center justify-center rounded-full text-xs ${tone}`}
     >
       {initials}
     </span>

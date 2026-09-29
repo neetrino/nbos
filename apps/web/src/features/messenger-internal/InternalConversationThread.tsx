@@ -15,6 +15,10 @@ import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
+import {
+  internalSheetDeliveryLabel,
+  internalSheetMessageSeen,
+} from './internal-sheet-delivery-label';
 import { conversationListTitle } from './internal-messenger-section';
 import { InternalCreateTaskFromMessages } from './InternalCreateTaskFromMessages';
 import { InternalForwardDialog } from './InternalForwardDialog';
@@ -22,9 +26,12 @@ import { InternalMessageActionsBar } from './InternalMessageActionsBar';
 import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadParts';
 import { useInternalThreadActions } from './use-internal-thread-actions';
 
-function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
-  return rows.map((row) =>
-    mapMessengerRowToView({
+function toViewMessages(
+  rows: MessengerCoreMessageRow[],
+  peerLastReadAt: string | null,
+): MessengerViewMessage[] {
+  return rows.map((row) => ({
+    ...mapMessengerRowToView({
       id: row.id,
       channelId: row.conversationId,
       senderId: row.senderId ?? '',
@@ -34,7 +41,9 @@ function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[]
       editedAt: row.editedAt,
       attachments: row.attachments,
     }),
-  );
+    deliveryLabel: internalSheetDeliveryLabel(row.status),
+    receiptSeen: internalSheetMessageSeen(row.status, row.createdAt, peerLastReadAt),
+  }));
 }
 
 export type InternalSendExtras = {
@@ -56,6 +65,7 @@ export function InternalConversationThread({
   onAddToCollection,
   remoteTypingHint,
   onOpenInternalSource,
+  peerLastReadAt = null,
 }: {
   conversation: MessengerCoreConversationRow;
   messages: MessengerCoreMessageRow[];
@@ -70,6 +80,7 @@ export function InternalConversationThread({
   onAddToCollection: (collectionId: string) => void;
   remoteTypingHint: string | null;
   onOpenInternalSource?: (conversationId: string) => void;
+  peerLastReadAt?: string | null;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
   const { can, me } = usePermission();
@@ -86,7 +97,7 @@ export function InternalConversationThread({
       conversation={conversation}
       messages={messages}
       messagesLoading={messagesLoading}
-      views={toViewMessages(messages)}
+      views={toViewMessages(messages, peerLastReadAt ?? null)}
       newMessage={newMessage}
       onNewMessageChange={onNewMessageChange}
       onSend={onSend}

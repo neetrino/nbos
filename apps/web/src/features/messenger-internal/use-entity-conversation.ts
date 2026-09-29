@@ -107,6 +107,11 @@ function useEntityRealtime(
         clearActive: clearComposer,
       });
     },
+    onPeerRead: (payload) => {
+      void queryClient.invalidateQueries({
+        queryKey: messengerQueryKeys.messages(payload.conversationId),
+      });
+    },
   });
 }
 
@@ -129,6 +134,7 @@ function buildEntityConversationState(input: {
     canView: input.canView,
     conversation: row,
     messages: input.messagesQuery.data?.items ?? [],
+    peerLastReadAt: input.messagesQuery.data?.meta.peerLastReadAt ?? null,
     newMessage: input.newMessage,
     setNewMessage: input.setNewMessage,
     loading: Boolean(

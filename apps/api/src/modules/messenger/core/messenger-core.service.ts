@@ -49,6 +49,7 @@ import {
   leaveCoreParticipant,
   markCoreConversationRead,
 } from './messenger-core-participant.ops';
+import { notifyCoreConversationPeerRead } from './messenger-core-peer-read.ops';
 import {
   MESSENGER_CORE_CLIENT_CREATE_FORBIDDEN,
   MESSENGER_CORE_CLIENT_WRITE_FORBIDDEN,
@@ -166,19 +167,21 @@ export class MessengerCoreService {
 
   async markRead(conversationId: string, employeeId: string): Promise<void> {
     const resolved = await this.requireRead(conversationId, employeeId);
-    const lastReadAt = await markCoreConversationRead(
-      this.prisma,
-      conversationId,
-      employeeId,
-      new Date(),
-    );
+    const lastReadAt = (
+      await markCoreConversationRead(this.prisma, conversationId, employeeId, new Date())
+    ).toISOString();
     this.messengerGateway.emitConversationReadUpdated(employeeId, {
       scope: MESSENGER_WS_READ_UPDATED_SCOPE.CONVERSATION,
       conversationId,
       unreadCount: 0,
       zone: resolved.facts.zone,
-      lastReadAt: lastReadAt.toISOString(),
+      lastReadAt,
     });
+    await notifyCoreConversationPeerRead(
+      this.prisma,
+      (peerId, payload) => this.messengerGateway.emitConversationPeerRead(peerId, payload),
+      { conversationId, readerId: employeeId, lastReadAt },
+    );
   }
 
   async inviteParticipant(

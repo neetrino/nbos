@@ -139,6 +139,7 @@ function ThreadMessageRow({
             message={message}
             mine={mine}
             readReceiptLabel={message.deliveryLabel ?? null}
+            readReceiptSeen={Boolean(message.receiptSeen)}
           />
         ) : (
           <MessengerThreadMessageBubble

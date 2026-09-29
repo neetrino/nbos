@@ -17,6 +17,7 @@ import {
   type MessengerRealtimeBindRefs,
 } from './messenger-realtime-bind';
 import { useMessengerOnlineIds } from './use-messenger-online-ids';
+import type { ConversationPeerRead } from './messenger-peer-read';
 
 const MESSENGER_SOCKET_DEV_ORIGIN = 'http://localhost:4000';
 
@@ -35,6 +36,7 @@ export type InternalMessengerRealtimeOptions = {
   onAccessChanged?: (payload: MessengerWsConversationAccessChangedPayload) => void;
   onReconnect?: () => void;
   onReadListsInvalidate?: () => void;
+  onPeerRead?: (payload: ConversationPeerRead) => void;
 };
 
 export function useInternalMessengerRealtime(options: InternalMessengerRealtimeOptions): {
@@ -62,6 +64,7 @@ function useRealtimeCallbackRefs(
   const onAccessChangedRef = useRef(options.onAccessChanged);
   const onReadRef = useRef(options.onReadListsInvalidate);
   const onReconnectRef = useRef(options.onReconnect);
+  const onPeerReadRef = useRef(options.onPeerRead);
   useLayoutEffect(() => {
     conversationIdRef.current = options.conversationId;
     onInboundRef.current = options.onInboundMessage;
@@ -70,6 +73,7 @@ function useRealtimeCallbackRefs(
     onAccessChangedRef.current = options.onAccessChanged;
     onReadRef.current = options.onReadListsInvalidate;
     onReconnectRef.current = options.onReconnect;
+    onPeerReadRef.current = options.onPeerRead;
   });
   return useMemo(
     () => ({
@@ -80,6 +84,7 @@ function useRealtimeCallbackRefs(
       onAccessChangedRef,
       onReadRef,
       onReconnectRef,
+      onPeerReadRef,
       onPresenceSnapshotRef: presence.onPresenceSnapshotRef,
       onPresenceDeltaRef: presence.onPresenceDeltaRef,
     }),
@@ -91,6 +96,7 @@ function useRealtimeCallbackRefs(
       onAccessChangedRef,
       onReadRef,
       onReconnectRef,
+      onPeerReadRef,
       presence.onPresenceDeltaRef,
       presence.onPresenceSnapshotRef,
     ],

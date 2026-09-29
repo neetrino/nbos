@@ -108,6 +108,11 @@ function InternalMessengerScreen({
     onReadListsInvalidate: () => {
       void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
     },
+    onPeerRead: (payload) => {
+      void queryClient.invalidateQueries({
+        queryKey: messengerQueryKeys.messages(payload.conversationId),
+      });
+    },
   });
 
   if (permsLoading) {
@@ -193,6 +198,7 @@ function InternalMessengerScreen({
             <InternalConversationThread
               conversation={active}
               messages={data.messages.data?.items ?? []}
+              peerLastReadAt={data.messages.data?.meta.peerLastReadAt ?? null}
               messagesLoading={data.messages.isPending && data.messages.data === undefined}
               newMessage={session.newMessage}
               onNewMessageChange={session.setNewMessage}
