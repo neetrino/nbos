@@ -10,6 +10,7 @@ import {
   INTERNAL_MESSENGER_SECTIONS,
   type InternalMessengerSectionId,
 } from './internal-messenger.constants';
+import { InternalCreateMenu } from './InternalCreateMenu';
 
 const SECTION_LABEL: Record<InternalMessengerSectionId, string> = {
   all: 'All',
@@ -31,9 +32,13 @@ const SECTION_STRIP_CLASS =
 export function InternalMessengerNav({
   section,
   onSectionChange,
+  canEdit = false,
+  onCreateGroup,
 }: {
   section: InternalMessengerSectionId;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
+  canEdit?: boolean;
+  onCreateGroup?: (title: string) => Promise<void>;
 }) {
   const groupRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLElement>());
@@ -43,9 +48,9 @@ export function InternalMessengerNav({
   return (
     <nav
       aria-label="Internal Messenger"
-      className="flex h-12 shrink-0 items-center border-b border-[#f1f5f9] bg-[#fafbfc] px-6"
+      className="flex h-12 shrink-0 items-center gap-2 border-b border-[#f1f5f9] bg-[#fafbfc] pr-2 pl-6"
     >
-      <div ref={groupRef} className={SECTION_STRIP_CLASS}>
+      <div ref={groupRef} className={`${SECTION_STRIP_CLASS} min-w-0 flex-1`}>
         <SlidingPillBackdrop
           indicator={indicator}
           ready={ready}
@@ -63,6 +68,9 @@ export function InternalMessengerNav({
           />
         ))}
       </div>
+      {onCreateGroup ? (
+        <InternalCreateMenu canEdit={canEdit} onCreateGroup={onCreateGroup} />
+      ) : null}
     </nav>
   );
 }

@@ -3,6 +3,7 @@
 import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { conversationListTitle } from './internal-messenger-section';
+import { PresenceDot, useEmployeeOnline } from './PresenceAvatar';
 
 const QUICK_RAIL_LIMIT = 12;
 
@@ -44,17 +45,19 @@ function QuickAvatar({
   onSelect: () => void;
 }) {
   const title = conversationListTitle(row.type, row.title, row.peerName ?? null);
+  const online = useEmployeeOnline(row.peerEmployeeId);
   return (
     <button
       type="button"
       aria-label={title}
       aria-current={active ? 'true' : undefined}
       onClick={onSelect}
-      className={`flex size-8 items-center justify-center rounded-full text-[10px] text-[#334155] ${
+      className={`relative flex size-8 items-center justify-center rounded-full text-[10px] text-[#334155] ${
         active ? 'bg-[#c7d2fe]' : 'bg-[#e2e8f0]'
       }`}
     >
       {initialsFromDisplayName(title)}
+      <PresenceDot online={online} size="sm" />
     </button>
   );
 }

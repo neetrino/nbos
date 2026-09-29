@@ -71,7 +71,7 @@ function OwnSheetMessage({
 
 function MessageAvatar({ initials, mine }: { initials: string; mine: boolean }) {
   const tone = mine
-    ? 'border border-[#cbd5e1] bg-white text-[#334155]'
+    ? 'bg-white text-[#334155]'
     : 'border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]';
   return (
     <span

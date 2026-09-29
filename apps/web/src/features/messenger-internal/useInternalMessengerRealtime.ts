@@ -16,6 +16,7 @@ import {
   emitConversationSubscribe,
   type MessengerRealtimeBindRefs,
 } from './messenger-realtime-bind';
+import { useMessengerOnlineIds } from './use-messenger-online-ids';
 
 const MESSENGER_SOCKET_DEV_ORIGIN = 'http://localhost:4000';
 
@@ -36,18 +37,23 @@ export type InternalMessengerRealtimeOptions = {
   onReadListsInvalidate?: () => void;
 };
 
-export function useInternalMessengerRealtime(options: InternalMessengerRealtimeOptions): void {
+export function useInternalMessengerRealtime(options: InternalMessengerRealtimeOptions): {
+  onlineIds: ReadonlySet<string>;
+} {
   const [token, setToken] = useState<string | null>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
-  const refs = useRealtimeCallbackRefs(options);
+  const presence = useMessengerOnlineIds();
+  const refs = useRealtimeCallbackRefs(options, presence);
 
   useRealtimeAccessToken(options.canViewMessenger, options.meId, setToken);
   useRealtimeSocketSession(options.canViewMessenger, options.meId, token, socketRef, refs);
   useActiveConversationRoom(socketRef, options.conversationId);
+  return { onlineIds: presence.onlineIds };
 }
 
 function useRealtimeCallbackRefs(
   options: InternalMessengerRealtimeOptions,
+  presence: ReturnType<typeof useMessengerOnlineIds>,
 ): MessengerRealtimeBindRefs {
   const conversationIdRef = useRef(options.conversationId);
   const onInboundRef = useRef(options.onInboundMessage);
@@ -74,6 +80,8 @@ function useRealtimeCallbackRefs(
       onAccessChangedRef,
       onReadRef,
       onReconnectRef,
+      onPresenceSnapshotRef: presence.onPresenceSnapshotRef,
+      onPresenceDeltaRef: presence.onPresenceDeltaRef,
     }),
     [
       conversationIdRef,
@@ -83,6 +91,8 @@ function useRealtimeCallbackRefs(
       onAccessChangedRef,
       onReadRef,
       onReconnectRef,
+      presence.onPresenceDeltaRef,
+      presence.onPresenceSnapshotRef,
     ],
   );
 }

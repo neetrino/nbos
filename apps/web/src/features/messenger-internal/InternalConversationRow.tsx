@@ -6,6 +6,7 @@ import { initialsFromDisplayName } from '@/features/messenger/messenger-message-
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { conversationListTitle, conversationTypeBadge } from './internal-messenger-section';
+import { PresenceDot, useEmployeeOnline } from './PresenceAvatar';
 
 export function InternalConversationRow({
   row,
@@ -31,7 +32,11 @@ export function InternalConversationRow({
         onClick={() => onSelect(row.id)}
         className="flex min-w-0 flex-1 items-start gap-3 text-left"
       >
-        <ConversationMark title={title} direct={row.type === 'DIRECT'} />
+        <ConversationMark
+          title={title}
+          direct={row.type === 'DIRECT'}
+          employeeId={row.peerEmployeeId}
+        />
         <ConversationCopy row={row} title={title} />
       </button>
       <FavoritePin favorite={Boolean(row.isFavorite)} onToggle={() => onToggleFavorite(row.id)} />
@@ -39,14 +44,26 @@ export function InternalConversationRow({
   );
 }
 
-function ConversationMark({ title, direct }: { title: string; direct: boolean }) {
+function ConversationMark({
+  title,
+  direct,
+  employeeId,
+}: {
+  title: string;
+  direct: boolean;
+  employeeId: string | null | undefined;
+}) {
   const initials = initialsFromDisplayName(title);
+  const online = useEmployeeOnline(employeeId);
   const tone = direct
     ? 'rounded-full border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]'
     : 'rounded-xl bg-[#e0e7ff] text-[#4338ca]';
   return (
-    <span className={`mt-0.5 flex size-10 shrink-0 items-center justify-center text-xs ${tone}`}>
+    <span
+      className={`relative mt-0.5 flex size-10 shrink-0 items-center justify-center text-xs ${tone}`}
+    >
       {initials}
+      <PresenceDot online={online} />
     </span>
   );
 }

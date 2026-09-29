@@ -4,6 +4,8 @@ import {
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
+  MESSENGER_WS_SERVER_PRESENCE,
+  MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
 } from '@nbos/shared';
 import {
@@ -116,5 +118,25 @@ describe('messenger realtime bind cleanup', () => {
     });
     expect(onConversationRead).toHaveBeenCalledTimes(1);
     expect(onRead).not.toHaveBeenCalled();
+  });
+
+  it('applies presence snapshots and deltas, then clears presence when the socket closes', () => {
+    const socket = createSocket();
+    const onSnapshot = vi.fn();
+    const onDelta = vi.fn();
+    const cleanup = bindMessengerRealtimeSocket(socket, {
+      conversationIdRef: { current: null },
+      onInboundRef: { current: vi.fn() },
+      onPresenceSnapshotRef: { current: onSnapshot },
+      onPresenceDeltaRef: { current: onDelta },
+    });
+    socket.handlers.get(MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT)?.({ employeeIds: ['e1'] });
+    socket.handlers.get(MESSENGER_WS_SERVER_PRESENCE)?.({ employeeId: 'e2', state: 'offline' });
+    socket.handlers.get(MESSENGER_WS_SERVER_PRESENCE)?.({ employeeId: '', state: 'online' });
+    cleanup();
+    expect(onSnapshot).toHaveBeenNthCalledWith(1, ['e1']);
+    expect(onSnapshot).toHaveBeenNthCalledWith(2, []);
+    expect(onDelta).toHaveBeenCalledTimes(1);
+    expect(onDelta).toHaveBeenCalledWith('e2', 'offline');
   });
 });

@@ -7,16 +7,27 @@ import {
   MessengerThreadDateDivider,
 } from '@/features/messenger/messenger-thread-primitives';
 import { InternalSheetComposer } from './InternalSheetComposer';
+import { PresenceDot, useEmployeeOnline } from './PresenceAvatar';
 
-export function ThreadAvatar({ title, direct }: { title: string; direct: boolean }) {
+export function ThreadAvatar({
+  title,
+  direct,
+  employeeId,
+}: {
+  title: string;
+  direct: boolean;
+  employeeId?: string | null;
+}) {
+  const online = useEmployeeOnline(employeeId);
   const tone = direct
     ? 'border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]'
     : 'bg-[#e0e7ff] text-[#4338ca]';
   return (
     <span
-      className={`flex size-10 shrink-0 items-center justify-center rounded-full text-[13px] ${tone}`}
+      className={`relative flex size-10 shrink-0 items-center justify-center rounded-full text-[13px] ${tone}`}
     >
       {initialsFromDisplayName(title)}
+      <PresenceDot online={online} />
     </span>
   );
 }

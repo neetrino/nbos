@@ -38,7 +38,7 @@ export function ThreadHeader({
   const direct = conversation.type === 'DIRECT';
   return (
     <header className="flex items-center gap-3 border-b border-[#f1f5f9] bg-white py-3.5 pr-3 pl-5">
-      <ThreadAvatar title={title} direct={direct} />
+      <ThreadAvatar title={title} direct={direct} employeeId={conversation.peerEmployeeId} />
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
           <h2 className="truncate text-sm text-[#0f172a]">{title}</h2>

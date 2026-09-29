@@ -5,6 +5,8 @@ import {
   MESSENGER_WS_SERVER_CONVERSATION_ACCESS_CHANGED,
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
+  MESSENGER_WS_SERVER_PRESENCE,
+  MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT,
   MESSENGER_WS_SERVER_READ_UPDATED,
   type MessengerWsConversationAccessChangedPayload,
   type MessengerWsConversationReadUpdatedPayload,
@@ -12,6 +14,11 @@ import {
 } from '@nbos/shared';
 import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
 import { isMessengerListReadPayload } from './messenger-realtime-list-read';
+import {
+  parsePresenceDelta,
+  parsePresenceSnapshot,
+  type MessengerPresenceState,
+} from './messenger-presence-payload';
 import {
   isConversationAccessChangedPayload,
   isConversationReadPayload,
@@ -33,6 +40,8 @@ export type MessengerRealtimeBindRefs = {
   };
   onReadRef: { current?: () => void };
   onReconnectRef: { current?: () => void };
+  onPresenceSnapshotRef?: { current?: (employeeIds: readonly string[]) => void };
+  onPresenceDeltaRef?: { current?: (employeeId: string, state: MessengerPresenceState) => void };
 };
 
 export function bindMessengerRealtimeSocket(
@@ -46,7 +55,9 @@ export function bindMessengerRealtimeSocket(
     hasConnected = true;
   });
   bindCoreRealtimeListeners(socket, refs);
+  bindPresenceListeners(socket, refs);
   return () => {
+    refs.onPresenceSnapshotRef?.current?.([]);
     socket.close();
   };
 }
@@ -72,6 +83,20 @@ function joinActiveConversation(
   conversationId: string | null,
 ): void {
   if (conversationId) emitConversationSubscribe(socket, conversationId);
+}
+
+function bindPresenceListeners(
+  socket: MessengerRealtimeSocket,
+  refs: MessengerRealtimeBindRefs,
+): void {
+  socket.on(MESSENGER_WS_SERVER_PRESENCE_SNAPSHOT, (payload: unknown) => {
+    const employeeIds = parsePresenceSnapshot(payload);
+    if (employeeIds) refs.onPresenceSnapshotRef?.current?.(employeeIds);
+  });
+  socket.on(MESSENGER_WS_SERVER_PRESENCE, (payload: unknown) => {
+    const delta = parsePresenceDelta(payload);
+    if (delta) refs.onPresenceDeltaRef?.current?.(delta.employeeId, delta.state);
+  });
 }
 
 function bindCoreRealtimeListeners(

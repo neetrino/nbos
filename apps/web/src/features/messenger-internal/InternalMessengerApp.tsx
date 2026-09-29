@@ -23,12 +23,12 @@ import { InternalCollectionsPanel } from './InternalCollectionsPanel';
 import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
 import { InternalMessengerNav } from './InternalMessengerNav';
-import { InternalStartBar } from './InternalStartBar';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerQueries } from './use-internal-messenger-queries';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
 import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
+import { MessengerPresenceProvider } from './PresenceAvatar';
 
 export function InternalMessengerApp({
   embedded = false,
@@ -80,7 +80,7 @@ function InternalMessengerScreen({
     session.openedConversation,
   );
 
-  useInternalMessengerRealtime({
+  const { onlineIds } = useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
     conversationId: session.activeId,
@@ -130,131 +130,121 @@ function InternalMessengerScreen({
   }
 
   return (
-    <InternalMessengerSheetFrame embedded={embedded}>
-      <InternalMessengerNav section={section} onSectionChange={onSectionChange} />
-      {session.bootError || data.listError ? (
-        <p className="px-3 py-1 text-xs text-red-600">
-          {session.bootError ?? 'Could not refresh Internal Messenger.'}
-        </p>
-      ) : null}
-      <div className="flex min-h-0 flex-1">
-        {section === 'collections' && !session.activeCollectionId ? (
-          <InternalCollectionsPanel
-            collections={data.collections.data ?? []}
-            activeId={session.activeCollectionId}
-            newName={session.collectionName}
-            creating={session.creatingCollection}
-            onNewNameChange={session.setCollectionName}
-            onCreatePersonal={() => void createCollection('PERSONAL')}
-            onCreateShared={() => void createCollection('SHARED')}
-            onSelect={(id) => session.setActiveCollectionId(id)}
-          />
-        ) : (
-          <div className="flex w-80 max-w-[46%] shrink-0 flex-col border-r border-[#f1f5f9] bg-[#fafbfc]">
-            <InternalConversationList
-              section={section}
-              items={data.items}
-              activeId={session.activeId}
-              search={session.search}
-              filter={session.filter}
-              listPending={data.listPending}
-              onSearchChange={session.setSearch}
-              onFilterChange={session.setFilter}
-              onSelect={(id) =>
+    <MessengerPresenceProvider onlineIds={onlineIds}>
+      <InternalMessengerSheetFrame embedded={embedded}>
+        <InternalMessengerNav
+          section={section}
+          onSectionChange={onSectionChange}
+          canEdit={canEdit}
+          onCreateGroup={async (title) => {
+            const created = await messengerCoreApi.createConversation({
+              type: 'INTERNAL_GROUP',
+              title,
+            });
+            await openInternalConversation(
+              queryClient,
+              created.id,
+              session.setActiveId,
+              session.setOpenedConversation,
+            );
+          }}
+        />
+        {session.bootError || data.listError ? (
+          <p className="px-3 py-1 text-xs text-red-600">
+            {session.bootError ?? 'Could not refresh Internal Messenger.'}
+          </p>
+        ) : null}
+        <div className="flex min-h-0 flex-1">
+          {section === 'collections' && !session.activeCollectionId ? (
+            <InternalCollectionsPanel
+              collections={data.collections.data ?? []}
+              activeId={session.activeCollectionId}
+              newName={session.collectionName}
+              creating={session.creatingCollection}
+              onNewNameChange={session.setCollectionName}
+              onCreatePersonal={() => void createCollection('PERSONAL')}
+              onCreateShared={() => void createCollection('SHARED')}
+              onSelect={(id) => session.setActiveCollectionId(id)}
+            />
+          ) : (
+            <div className="flex w-80 max-w-[46%] shrink-0 flex-col border-r border-[#f1f5f9] bg-[#fafbfc]">
+              <InternalConversationList
+                section={section}
+                items={data.items}
+                activeId={session.activeId}
+                search={session.search}
+                filter={session.filter}
+                listPending={data.listPending}
+                onSearchChange={session.setSearch}
+                onFilterChange={session.setFilter}
+                onSelect={(id) =>
+                  void openInternalConversation(
+                    queryClient,
+                    id,
+                    session.setActiveId,
+                    session.setOpenedConversation,
+                  ).catch(() => session.setBootError('Could not open that Internal conversation.'))
+                }
+                onToggleFavorite={(id) => void toggleInternalFavorite(queryClient, id)}
+              />
+            </div>
+          )}
+          {active ? (
+            <InternalConversationThread
+              conversation={active}
+              messages={data.messages.data?.items ?? []}
+              messagesLoading={data.messages.isPending && data.messages.data === undefined}
+              newMessage={session.newMessage}
+              onNewMessageChange={session.setNewMessage}
+              onSend={(extras) =>
+                void sendInternalThreadMessage({
+                  conversationId: session.activeId,
+                  canWrite: Boolean(active.canWrite),
+                  sendBusy: session.sendBusy,
+                  content: session.newMessage,
+                  extras,
+                  setSendBusy: session.setSendBusy,
+                  setNewMessage: session.setNewMessage,
+                  queryClient,
+                })
+              }
+              canSend={Boolean(active.canWrite)}
+              sendDisabled={session.sendBusy}
+              onToggleFavorite={() => void toggleInternalFavorite(queryClient, active.id)}
+              collections={data.collections.data ?? []}
+              onAddToCollection={(collectionId) =>
+                void messengerCoreApi.addCollectionItem(collectionId, active.id)
+              }
+              remoteTypingHint={null}
+              onOpenInternalSource={(id) =>
                 void openInternalConversation(
                   queryClient,
                   id,
                   session.setActiveId,
                   session.setOpenedConversation,
-                ).catch(() => session.setBootError('Could not open that Internal conversation.'))
+                )
               }
-              onToggleFavorite={(id) => void toggleInternalFavorite(queryClient, id)}
             />
-            <InternalStartBar
-              section={section}
-              canEdit={canEdit}
-              onCreateGroup={async (title) => {
-                const created = await messengerCoreApi.createConversation({
-                  type: 'INTERNAL_GROUP',
-                  title,
-                });
-                await openInternalConversation(
-                  queryClient,
-                  created.id,
-                  session.setActiveId,
-                  session.setOpenedConversation,
-                );
-              }}
-              onStartDirect={async (peerEmployeeId) => {
-                const created = await messengerCoreApi.createConversation({
-                  type: 'DIRECT',
-                  peerEmployeeId,
-                });
-                await openInternalConversation(
-                  queryClient,
-                  created.id,
-                  session.setActiveId,
-                  session.setOpenedConversation,
-                );
-              }}
-            />
-          </div>
-        )}
-        {active ? (
-          <InternalConversationThread
-            conversation={active}
-            messages={data.messages.data?.items ?? []}
-            messagesLoading={data.messages.isPending && data.messages.data === undefined}
-            newMessage={session.newMessage}
-            onNewMessageChange={session.setNewMessage}
-            onSend={(extras) =>
-              void sendInternalThreadMessage({
-                conversationId: session.activeId,
-                canWrite: Boolean(active.canWrite),
-                sendBusy: session.sendBusy,
-                content: session.newMessage,
-                extras,
-                setSendBusy: session.setSendBusy,
-                setNewMessage: session.setNewMessage,
-                queryClient,
-              })
-            }
-            canSend={Boolean(active.canWrite)}
-            sendDisabled={session.sendBusy}
-            onToggleFavorite={() => void toggleInternalFavorite(queryClient, active.id)}
-            collections={data.collections.data ?? []}
-            onAddToCollection={(collectionId) =>
-              void messengerCoreApi.addCollectionItem(collectionId, active.id)
-            }
-            remoteTypingHint={null}
-            onOpenInternalSource={(id) =>
+          ) : (
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-[#eef2ff] text-sm text-[#64748b]">
+              Select an Internal conversation
+            </div>
+          )}
+          <InternalQuickRail
+            items={data.items}
+            activeId={session.activeId}
+            onSelect={(id) =>
               void openInternalConversation(
                 queryClient,
                 id,
                 session.setActiveId,
                 session.setOpenedConversation,
-              )
+              ).catch(() => session.setBootError('Could not open that Internal conversation.'))
             }
           />
-        ) : (
-          <div className="flex min-h-0 flex-1 items-center justify-center bg-[#eef2ff] text-sm text-[#64748b]">
-            Select an Internal conversation
-          </div>
-        )}
-        <InternalQuickRail
-          items={data.items}
-          activeId={session.activeId}
-          onSelect={(id) =>
-            void openInternalConversation(
-              queryClient,
-              id,
-              session.setActiveId,
-              session.setOpenedConversation,
-            ).catch(() => session.setBootError('Could not open that Internal conversation.'))
-          }
-        />
-      </div>
-    </InternalMessengerSheetFrame>
+        </div>
+      </InternalMessengerSheetFrame>
+    </MessengerPresenceProvider>
   );
 
   async function createCollection(visibility: 'PERSONAL' | 'SHARED') {
