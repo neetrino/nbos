@@ -21,10 +21,9 @@ export function InternalConversationRow({
   const title = conversationListTitle(row.type, row.title, row.peerName ?? null);
   return (
     <div
-      className={`mb-1 flex rounded-xl px-2 py-2.5 ${
-        active
-          ? 'bg-white shadow-[0px_1px_1.5px_rgba(0,0,0,0.1),0px_1px_1px_rgba(0,0,0,0.1)]'
-          : 'hover:bg-white/80'
+      data-conversation-id={row.id}
+      className={`relative z-10 mb-1 flex rounded-xl px-2 py-2.5 ${
+        active ? '' : 'hover:bg-white/80'
       }`}
     >
       <button

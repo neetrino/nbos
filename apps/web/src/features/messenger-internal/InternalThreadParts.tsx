@@ -17,6 +17,7 @@ import type {
   MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
 import { conversationTypeBadge } from './internal-messenger-section';
+import { AddToCollectionSelect } from './AddToCollectionSelect';
 import { InternalForwardReferenceCard } from './InternalForwardReferenceCard';
 import { InternalMentionPicker } from './InternalMentionPicker';
 import { InternalReplyQuote } from './InternalReplyQuote';
@@ -48,26 +49,7 @@ export function ThreadHeader({
         </div>
         <p className="text-xs text-[#64748b]">Internal</p>
       </div>
-      {collections.length > 0 ? (
-        <select
-          aria-label="Add to collection"
-          defaultValue=""
-          className="max-w-[10rem] rounded-lg border border-black/[0.08] bg-[#F5F5F0] px-2 py-1 text-[11px] text-black"
-          onChange={(event) => {
-            const collectionId = event.target.value;
-            if (!collectionId) return;
-            onAddToCollection(collectionId);
-            event.target.value = '';
-          }}
-        >
-          <option value="">Add to collection</option>
-          {collections.map((collection) => (
-            <option key={collection.id} value={collection.id}>
-              {collection.name}
-            </option>
-          ))}
-        </select>
-      ) : null}
+      <AddToCollectionSelect collections={collections} onAdd={onAddToCollection} />
     </header>
   );
 }

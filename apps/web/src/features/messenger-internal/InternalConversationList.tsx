@@ -1,7 +1,8 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { Bookmark, MessageSquare, Search } from 'lucide-react';
+import { ConversationSelectionCard, useConversationSelection } from './conversation-list-selection';
 import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import {
@@ -33,8 +34,8 @@ export function InternalConversationList({
   onSelect: (id: string) => void;
   onToggleFavorite: (id: string) => void;
 }) {
-  const favorites = items.filter((row) => row.isFavorite);
-  const recent = items.filter((row) => !row.isFavorite);
+  const listRef = useRef<HTMLDivElement>(null);
+  const selection = useConversationSelection(listRef, activeId);
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-[#fafbfc]">
       <ListSearch
@@ -43,29 +44,55 @@ export function InternalConversationList({
         onSearchChange={onSearchChange}
         onFilterChange={onFilterChange}
       />
-      <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-2 pb-6">
+      <div ref={listRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-2 pb-6">
+        <ConversationSelectionCard rect={selection.rect} ready={selection.ready} />
         <ListStatus section={section} pending={listPending} empty={items.length === 0} />
-        {favorites.map((row) => (
-          <InternalConversationRow
-            key={row.id}
-            row={row}
-            active={activeId === row.id}
-            onSelect={onSelect}
-            onToggleFavorite={onToggleFavorite}
-          />
-        ))}
-        {favorites.length > 0 && recent.length > 0 ? <RecentLabel /> : null}
-        {recent.map((row) => (
-          <InternalConversationRow
-            key={row.id}
-            row={row}
-            active={activeId === row.id}
-            onSelect={onSelect}
-            onToggleFavorite={onToggleFavorite}
-          />
-        ))}
+        <ConversationRows
+          items={items}
+          activeId={activeId}
+          onSelect={onSelect}
+          onToggleFavorite={onToggleFavorite}
+        />
       </div>
     </div>
+  );
+}
+
+function ConversationRows({
+  items,
+  activeId,
+  onSelect,
+  onToggleFavorite,
+}: {
+  items: MessengerCoreConversationRow[];
+  activeId: string | null;
+  onSelect: (id: string) => void;
+  onToggleFavorite: (id: string) => void;
+}) {
+  const favorites = items.filter((row) => row.isFavorite);
+  const recent = items.filter((row) => !row.isFavorite);
+  return (
+    <>
+      {favorites.map((row) => (
+        <InternalConversationRow
+          key={row.id}
+          row={row}
+          active={activeId === row.id}
+          onSelect={onSelect}
+          onToggleFavorite={onToggleFavorite}
+        />
+      ))}
+      {favorites.length > 0 && recent.length > 0 ? <RecentLabel /> : null}
+      {recent.map((row) => (
+        <InternalConversationRow
+          key={row.id}
+          row={row}
+          active={activeId === row.id}
+          onSelect={onSelect}
+          onToggleFavorite={onToggleFavorite}
+        />
+      ))}
+    </>
   );
 }
 
