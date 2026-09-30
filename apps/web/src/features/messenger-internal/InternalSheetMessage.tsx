@@ -100,7 +100,7 @@ function BubbleStamp({
 }) {
   const palette = useSheetMessengerPalette();
   const tone = showChecks ? 'text-white/75' : 'text-[#94a3b8]';
-  const checks = seen ? palette.seenCheck : 'text-white/80';
+  const checks = seen ? palette.seenCheck : palette.unseenCheck;
   return (
     <span
       className={`ml-2 inline-flex items-center gap-0.5 align-bottom text-[11px] leading-none ${tone}`}

@@ -6,6 +6,7 @@ export type SheetMessengerPalette = {
   canvas: string;
   ownBubble: string;
   seenCheck: string;
+  unseenCheck: string;
   send: string;
   tip: string;
   incomingAvatar: string;
@@ -14,7 +15,8 @@ export type SheetMessengerPalette = {
 const INTERNAL_SHEET_PALETTE: SheetMessengerPalette = {
   canvas: 'bg-[#eef2ff]',
   ownBubble: 'bg-[#4f46e5]',
-  seenCheck: 'text-[#93c5fd]',
+  seenCheck: 'text-[#38bdf8]',
+  unseenCheck: 'text-white/40',
   send: 'bg-[#4f46e5]',
   tip: 'text-[#4f46e5]',
   incomingAvatar: 'border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]',
@@ -23,7 +25,8 @@ const INTERNAL_SHEET_PALETTE: SheetMessengerPalette = {
 const CLIENT_SHEET_PALETTE: SheetMessengerPalette = {
   canvas: 'bg-[#EAF3F3]',
   ownBubble: 'bg-teal-800',
-  seenCheck: 'text-teal-200',
+  seenCheck: 'text-[#5eead4]',
+  unseenCheck: 'text-white/40',
   send: 'bg-teal-800',
   tip: 'text-teal-800',
   incomingAvatar: 'border border-teal-200 bg-teal-50 text-teal-900',
