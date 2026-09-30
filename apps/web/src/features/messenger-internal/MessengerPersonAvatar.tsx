@@ -23,9 +23,15 @@ export function MessengerPersonAvatar({
   const photo = useEmployeeAvatarUrl(employeeId);
   const online = useEmployeeOnline(employeeId);
   return (
-    <span className={`relative shrink-0 ${sizeClassName}`}>
-      <Avatar className={`h-full w-full ${roundedClassName}`} size="default">
-        {photo ? <AvatarImage src={photo} alt={label} /> : null}
+    <span className={`relative inline-flex shrink-0 ${sizeClassName}`}>
+      <Avatar className={`overflow-hidden ${sizeClassName} ${roundedClassName}`} size="default">
+        {photo ? (
+          <AvatarImage
+            src={photo}
+            alt={label}
+            className="size-full max-h-full max-w-full object-cover"
+          />
+        ) : null}
         <AvatarFallback className={`${fallbackClassName} text-xs`}>
           {initialsFromDisplayName(label)}
         </AvatarFallback>

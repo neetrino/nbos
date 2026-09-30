@@ -73,7 +73,6 @@ function ConversationRows({
   const recent = items.filter((row) => !row.isFavorite);
   return (
     <>
-      {favorites.length > 0 ? <SectionLabel>Pinned</SectionLabel> : null}
       {favorites.map((row, index) => (
         <InternalConversationRow
           key={row.id}
