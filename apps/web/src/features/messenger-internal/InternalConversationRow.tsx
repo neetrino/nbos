@@ -71,7 +71,6 @@ function ConversationMark({
       label={title}
       sizeClassName="mt-0.5 size-10"
       fallbackClassName={fallback}
-      showPresence
       roundedClassName={direct ? 'rounded-full border border-[#fcd34d]' : 'rounded-xl'}
     />
   );

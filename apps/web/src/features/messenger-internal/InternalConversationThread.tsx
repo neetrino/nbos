@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { useRef, type RefObject } from 'react';
 import {
   mapMessengerRowToView,
   type MessengerViewMessage,
@@ -23,8 +23,10 @@ import { conversationListTitle } from './internal-messenger-section';
 import { InternalCreateTaskFromMessages } from './InternalCreateTaskFromMessages';
 import { InternalForwardDialog } from './InternalForwardDialog';
 import { InternalMessageActionsBar } from './InternalMessageActionsBar';
+import { InternalJumpToEndButton } from './InternalJumpToEndButton';
 import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadParts';
 import { useInternalThreadActions } from './use-internal-thread-actions';
+import { useScrollThreadToEnd } from './use-scroll-thread-to-end';
 
 function toViewMessages(
   rows: MessengerCoreMessageRow[],
@@ -82,13 +84,17 @@ export function InternalConversationThread({
   onOpenInternalSource?: (conversationId: string) => void;
   peerLastReadAt?: string | null;
 }) {
-  const endRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const actions = useInternalThreadActions(messages, onOpenInternalSource);
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages.length]);
+  const last = messages.at(-1);
+  const endScroll = useScrollThreadToEnd(
+    scrollerRef,
+    last?.id,
+    conversation.id,
+    Boolean(me && last?.senderId === me.id),
+  );
 
   return (
     <ThreadScaffold
@@ -109,7 +115,9 @@ export function InternalConversationThread({
       creatorId={creatorId}
       creatorReady={creatorReady}
       actions={actions}
-      endRef={endRef}
+      scrollerRef={scrollerRef}
+      showJumpToEnd={endScroll.showJumpToEnd}
+      onJumpToEnd={endScroll.jumpToEnd}
       meId={me?.id ?? null}
     />
   );
@@ -133,7 +141,9 @@ function ThreadScaffold(props: {
   creatorId: string | null;
   creatorReady: boolean;
   actions: ReturnType<typeof useInternalThreadActions>;
-  endRef: RefObject<HTMLDivElement | null>;
+  scrollerRef: RefObject<HTMLDivElement | null>;
+  showJumpToEnd: boolean;
+  onJumpToEnd: () => void;
   meId: string | null;
 }) {
   const { conversation, actions } = props;
@@ -161,18 +171,21 @@ function ThreadScaffold(props: {
         onCopySource={() => void actions.copySource()}
         onClear={actions.clearSelection}
       />
-      <ThreadMessages
-        views={props.views}
-        messages={props.messages}
-        messagesLoading={props.messagesLoading}
-        selectedIds={actions.selectedIds}
-        onToggleSelect={actions.toggleSelect}
-        onOpenOriginalSource={actions.openOriginalBySourceId}
-        remoteTypingHint={props.remoteTypingHint}
-        endRef={props.endRef}
-        sheet
-        meId={props.meId}
-      />
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <ThreadMessages
+          views={props.views}
+          messages={props.messages}
+          messagesLoading={props.messagesLoading}
+          selectedIds={actions.selectedIds}
+          onToggleSelect={actions.toggleSelect}
+          onOpenOriginalSource={actions.openOriginalBySourceId}
+          remoteTypingHint={props.remoteTypingHint}
+          scrollerRef={props.scrollerRef}
+          sheet
+          meId={props.meId}
+        />
+        <InternalJumpToEndButton visible={props.showJumpToEnd} onJump={props.onJumpToEnd} />
+      </div>
       <ThreadComposer
         canSend={props.canSend}
         sendDisabled={props.sendDisabled}

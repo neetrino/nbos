@@ -48,7 +48,7 @@ export function ThreadMessages({
   onToggleSelect,
   onOpenOriginalSource,
   remoteTypingHint,
-  endRef,
+  scrollerRef,
   sheet = false,
   meId = null,
 }: {
@@ -59,14 +59,14 @@ export function ThreadMessages({
   onToggleSelect: (id: string) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
   remoteTypingHint: string | null;
-  endRef: RefObject<HTMLDivElement | null>;
+  scrollerRef: RefObject<HTMLDivElement | null>;
   sheet?: boolean;
   meId?: string | null;
 }) {
   const palette = useSheetMessengerPalette();
   const canvas = sheet ? `${palette.canvas} py-6 ${SHEET_COMPOSER_OVERLAY_PAD_CLASS}` : 'py-3';
   return (
-    <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
+    <div ref={scrollerRef} className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
       {messagesLoading ? (
         <p className="px-5 py-8 text-center text-sm text-[#64748b]">Loading…</p>
       ) : views.length === 0 ? (
@@ -85,7 +85,6 @@ export function ThreadMessages({
       {remoteTypingHint ? (
         <p className="px-5 pt-1 text-xs text-black/40">{remoteTypingHint}</p>
       ) : null}
-      <div ref={endRef} />
     </div>
   );
 }

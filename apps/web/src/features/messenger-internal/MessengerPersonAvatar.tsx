@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
-import { PresenceDot, useEmployeeOnline } from './PresenceAvatar';
 import { useEmployeeAvatarUrl } from './use-employee-avatar';
 
 export function MessengerPersonAvatar({
@@ -10,18 +9,15 @@ export function MessengerPersonAvatar({
   label,
   sizeClassName = 'size-9',
   fallbackClassName,
-  showPresence = false,
   roundedClassName = 'rounded-full',
 }: {
   employeeId?: string | null;
   label: string;
   sizeClassName?: string;
   fallbackClassName: string;
-  showPresence?: boolean;
   roundedClassName?: string;
 }) {
   const photo = useEmployeeAvatarUrl(employeeId);
-  const online = useEmployeeOnline(employeeId);
   return (
     <span className={`relative inline-flex shrink-0 ${sizeClassName}`}>
       <Avatar className={`overflow-hidden ${sizeClassName} ${roundedClassName}`} size="default">
@@ -36,7 +32,6 @@ export function MessengerPersonAvatar({
           {initialsFromDisplayName(label)}
         </AvatarFallback>
       </Avatar>
-      {showPresence ? <PresenceDot online={online} /> : null}
     </span>
   );
 }

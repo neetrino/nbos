@@ -26,6 +26,7 @@ import type { InternalMessengerSectionId } from './internal-messenger.constants'
 import { InternalCollectionsPanel } from './InternalCollectionsPanel';
 import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
+import { InternalGroupsEmptyPane } from './InternalGroupsEmptyPane';
 import { InternalMessengerNav } from './InternalMessengerNav';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerQueries } from './use-internal-messenger-queries';
@@ -72,7 +73,6 @@ function InternalMessengerScreen({
   const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
-  const canEdit = can('EDIT', 'MESSENGER');
   useHeaderModuleTitle('Internal Messenger', !embedded);
   const session = useInternalMessengerSession(section);
   const enabled = Boolean(canView && me);
@@ -207,23 +207,7 @@ function InternalMessengerScreen({
                 search={session.search}
                 filter={session.filter}
                 listPending={data.listPending}
-                canCreateGroup={canEdit}
-                onCreateGroup={
-                  section === 'groups'
-                    ? async (title) => {
-                        const created = await messengerCoreApi.createConversation({
-                          type: 'INTERNAL_GROUP',
-                          title,
-                        });
-                        await openInternalConversation(
-                          queryClient,
-                          created.id,
-                          session.setActiveId,
-                          session.setOpenedConversation,
-                        );
-                      }
-                    : undefined
-                }
+                onCreateGroup={section === 'groups' ? createGroup : undefined}
                 onSearchChange={session.setSearch}
                 onFilterChange={session.setFilter}
                 onSelect={(id) =>
@@ -275,6 +259,8 @@ function InternalMessengerScreen({
                 )
               }
             />
+          ) : section === 'groups' ? (
+            <InternalGroupsEmptyPane onCreateGroup={createGroup} />
           ) : (
             <div className="flex min-h-0 flex-1 items-center justify-center bg-[#eef2ff] text-sm text-[#64748b]">
               Select an Internal conversation
@@ -284,6 +270,19 @@ function InternalMessengerScreen({
       </InternalMessengerSheetFrame>
     </MessengerPresenceProvider>
   );
+
+  async function createGroup(title: string) {
+    const created = await messengerCoreApi.createConversation({
+      type: 'INTERNAL_GROUP',
+      title,
+    });
+    await openInternalConversation(
+      queryClient,
+      created.id,
+      session.setActiveId,
+      session.setOpenedConversation,
+    );
+  }
 
   async function createCollection(visibility: 'PERSONAL' | 'SHARED') {
     const name = session.collectionName.trim();

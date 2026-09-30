@@ -4,9 +4,20 @@ import { CheckCheck, Paperclip } from 'lucide-react';
 import { formatMessengerTime } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
 import { MessengerPersonAvatar } from './MessengerPersonAvatar';
+import {
+  SHEET_BUBBLE_LARGE_RADIUS_CLASS,
+  SHEET_BUBBLE_WRAP_CHAR_COUNT,
+} from './internal-messenger.constants';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
-const SHEET_BUBBLE = 'max-w-lg rounded-3xl px-3 py-1.5 text-sm leading-5';
+const SHEET_BUBBLE_BASE = 'max-w-lg px-3 py-1.5 text-sm leading-5';
+
+function sheetBubbleRadiusClass(content: string, tail: 'tl' | 'tr'): string {
+  if (content.includes('\n') || content.length >= SHEET_BUBBLE_WRAP_CHAR_COUNT) {
+    return SHEET_BUBBLE_LARGE_RADIUS_CLASS;
+  }
+  return tail === 'tl' ? 'rounded-3xl rounded-tl-sm' : 'rounded-3xl rounded-tr-sm';
+}
 
 export function InternalSheetMessage({
   message,
@@ -50,7 +61,7 @@ function IncomingSheetMessage({
         label={message.senderName}
       />
       <div
-        className={`${SHEET_BUBBLE} rounded-tl-sm bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
+        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tl')} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
         <p>
           {message.content}
@@ -80,7 +91,9 @@ function OwnSheetMessage({
   const palette = useSheetMessengerPalette();
   return (
     <div className="flex items-end justify-end gap-3 px-5">
-      <div className={`${SHEET_BUBBLE} rounded-tr-sm text-white ${palette.ownBubble}`}>
+      <div
+        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tr')} text-white ${palette.ownBubble}`}
+      >
         <p>
           {message.content}
           <BubbleStamp

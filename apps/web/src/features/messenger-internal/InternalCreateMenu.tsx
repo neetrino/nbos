@@ -9,19 +9,18 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function InternalCreateMenu({
-  canEdit,
   onCreateGroup,
+  variant = 'icon',
 }: {
-  canEdit: boolean;
   onCreateGroup: (title: string) => Promise<void>;
+  variant?: 'icon' | 'button';
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  if (!canEdit) return null;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <CreateGroupTrigger />
+      <CreateGroupTrigger variant={variant} />
       <DropdownMenuContent align="end" className="w-56">
         <GroupNameForm
           busy={busy}
@@ -38,7 +37,7 @@ export function InternalCreateMenu({
   );
 }
 
-function CreateGroupTrigger() {
+function CreateGroupTrigger({ variant }: { variant: 'icon' | 'button' }) {
   return (
     <DropdownMenuTrigger
       render={(props) => (
@@ -46,9 +45,14 @@ function CreateGroupTrigger() {
           {...props}
           type="button"
           aria-label="Create group"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#e2e8f0] bg-white text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5]"
+          className={
+            variant === 'button'
+              ? 'inline-flex items-center gap-2 rounded-full bg-[#4f46e5] px-4 py-2 text-sm font-medium text-white hover:bg-[#4338ca]'
+              : 'flex size-9 shrink-0 items-center justify-center rounded-full border border-[#e2e8f0] bg-white text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5]'
+          }
         >
-          <Plus size={18} aria-hidden />
+          <Plus size={variant === 'button' ? 16 : 18} aria-hidden />
+          {variant === 'button' ? 'Create group' : null}
         </button>
       )}
     />

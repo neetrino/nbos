@@ -35,4 +35,17 @@ export const INTERNAL_MESSENGER_SHELL_CLASS =
 /** Space under the last bubble so the overlay composer does not cover it. */
 export const SHEET_COMPOSER_OVERLAY_PAD_CLASS = 'pb-16';
 
+/** Gap from the visible bottom before we treat the thread as “reading history”. */
+export const SHEET_THREAD_NEAR_END_PX = 80;
+
+/** Same gutter as the sheet composer send control (`px-4` → `right-4`). */
+export const SHEET_COMPOSER_GUTTER_CLASS = 'px-4';
+
+export const SHEET_JUMP_TO_END_BUTTON_CLASS =
+  'absolute right-4 bottom-16 z-30 flex size-10 items-center justify-center rounded-full bg-white text-[#334155] shadow-[0_2px_10px_rgba(15,23,42,0.16)] transition-[opacity,transform] duration-200 ease-out hover:bg-[#f8fafc]';
+
+/** Long wrapping bubbles use a square-ish corner, not a pill. */
+export const SHEET_BUBBLE_LARGE_RADIUS_CLASS = 'rounded-[15px]';
+export const SHEET_BUBBLE_WRAP_CHAR_COUNT = 56;
+
 export const INTERNAL_FORWARD_PREVIEW_MAX_LENGTH = 140;

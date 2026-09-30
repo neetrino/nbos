@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent } from 'react';
+import { SHEET_COMPOSER_GUTTER_CLASS } from './internal-messenger.constants';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 const CLIP_ICON = '/messenger/sheet-composer-clip.svg';
@@ -51,7 +52,7 @@ function ComposerRow({
   sendClass,
 }: SheetComposerProps & { sendClass: string }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-2">
+    <div className={`flex items-center gap-2 ${SHEET_COMPOSER_GUTTER_CLASS} py-2`}>
       <button
         type="button"
         aria-label="Attach file"
