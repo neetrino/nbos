@@ -7,6 +7,7 @@ export {
 export {
   invalidateEmployeeDirectoryCaches,
   invalidateEmployeePickerEmptyCache,
+  listEmployeesForAppRail,
   prefetchEmployeePickerEmptyPage,
   searchEmployeesForPicker,
 } from './employee-directory-cache';

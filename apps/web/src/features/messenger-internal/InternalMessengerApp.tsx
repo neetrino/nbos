@@ -21,7 +21,6 @@ import { resolveActiveConversation } from '@/features/messenger/query/resolve-ac
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { INTERNAL_MESSENGER_SHELL_CLASS } from './internal-messenger.constants';
 import { InternalMessengerSheetFrame } from './InternalMessengerSheetFrame';
-import { InternalQuickRail } from './InternalQuickRail';
 import { sectionFromPathname } from './internal-messenger-section';
 import type { InternalMessengerSectionId } from './internal-messenger.constants';
 import { InternalCollectionsPanel } from './InternalCollectionsPanel';
@@ -33,16 +32,19 @@ import { useInternalMessengerQueries } from './use-internal-messenger-queries';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
 import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
+import { useMessengerConversationLaunch } from './use-messenger-conversation-launch';
 import { MessengerPresenceProvider } from './PresenceAvatar';
 
 export function InternalMessengerApp({
   embedded = false,
   section: sectionOverride,
   onSectionChange,
+  launchConversationId = null,
 }: {
   embedded?: boolean;
   section?: InternalMessengerSectionId;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
+  launchConversationId?: string | null;
 }) {
   const pathname = usePathname();
   const section = sectionOverride ?? sectionFromPathname(pathname);
@@ -51,6 +53,7 @@ export function InternalMessengerApp({
       section={section}
       embedded={embedded}
       onSectionChange={onSectionChange}
+      launchConversationId={launchConversationId}
     />
   );
 }
@@ -59,10 +62,12 @@ function InternalMessengerScreen({
   section,
   embedded,
   onSectionChange,
+  launchConversationId,
 }: {
   section: ReturnType<typeof sectionFromPathname>;
   embedded: boolean;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
+  launchConversationId: string | null;
 }) {
   const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
@@ -84,6 +89,15 @@ function InternalMessengerScreen({
     session.activeId,
     session.openedConversation,
   );
+
+  useMessengerConversationLaunch({
+    queryClient,
+    enabled,
+    launchConversationId,
+    setActiveId: session.setActiveId,
+    setOpenedConversation: session.setOpenedConversation,
+    setBootError: session.setBootError,
+  });
 
   const { onlineIds } = useInternalMessengerRealtime({
     canViewMessenger: canView,
@@ -265,18 +279,6 @@ function InternalMessengerScreen({
               Select an Internal conversation
             </div>
           )}
-          <InternalQuickRail
-            items={data.items}
-            activeId={session.activeId}
-            onSelect={(id) =>
-              void openInternalConversation(
-                queryClient,
-                id,
-                session.setActiveId,
-                session.setOpenedConversation,
-              ).catch(() => session.setBootError('Could not open that Internal conversation.'))
-            }
-          />
         </div>
       </InternalMessengerSheetFrame>
     </MessengerPresenceProvider>

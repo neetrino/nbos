@@ -10,7 +10,8 @@ import type { InternalMessengerSectionId } from './internal-messenger.constants'
 interface MessengerOverlayValue {
   isOpen: boolean;
   section: InternalMessengerSectionId;
-  openMessenger: (section?: InternalMessengerSectionId) => void;
+  pendingConversationId: string | null;
+  openMessenger: (section?: InternalMessengerSectionId, conversationId?: string) => void;
   closeMessenger: () => void;
   setSection: (section: InternalMessengerSectionId) => void;
 }
@@ -20,14 +21,29 @@ const MessengerOverlayContext = createContext<MessengerOverlayValue | null>(null
 export function MessengerOverlayProvider({ children }: { children: ReactNode }) {
   const [isOpen, setOpen] = useState(false);
   const [section, setSection] = useState<InternalMessengerSectionId>('all');
-  const openMessenger = useCallback((next: InternalMessengerSectionId = 'all') => {
-    setSection(next);
-    setOpen(true);
+  const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
+  const openMessenger = useCallback(
+    (next: InternalMessengerSectionId = 'all', conversationId?: string) => {
+      setSection(next);
+      setPendingConversationId(conversationId ?? null);
+      setOpen(true);
+    },
+    [],
+  );
+  const closeMessenger = useCallback(() => {
+    setOpen(false);
+    setPendingConversationId(null);
   }, []);
-  const closeMessenger = useCallback(() => setOpen(false), []);
   const value = useMemo(
-    () => ({ isOpen, section, openMessenger, closeMessenger, setSection }),
-    [closeMessenger, isOpen, openMessenger, section],
+    () => ({
+      isOpen,
+      section,
+      pendingConversationId,
+      openMessenger,
+      closeMessenger,
+      setSection,
+    }),
+    [closeMessenger, isOpen, openMessenger, pendingConversationId, section],
   );
   return (
     <MessengerOverlayContext.Provider value={value}>{children}</MessengerOverlayContext.Provider>
@@ -55,7 +71,8 @@ const MESSENGER_SHEET_RAIL_ANCHOR_CLASS = cn(
 );
 
 export function MessengerOverlay() {
-  const { isOpen, section, closeMessenger, setSection } = useMessengerOverlay();
+  const { isOpen, section, pendingConversationId, closeMessenger, setSection } =
+    useMessengerOverlay();
   return (
     <Sheet
       open={isOpen}
@@ -73,7 +90,12 @@ export function MessengerOverlay() {
       >
         <SheetTitle className="sr-only">Messenger</SheetTitle>
         <SheetDescription className="sr-only">Internal messenger</SheetDescription>
-        <InternalMessengerApp embedded section={section} onSectionChange={setSection} />
+        <InternalMessengerApp
+          embedded
+          section={section}
+          launchConversationId={pendingConversationId}
+          onSectionChange={setSection}
+        />
       </SheetContent>
     </Sheet>
   );

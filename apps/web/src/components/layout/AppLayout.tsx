@@ -11,6 +11,8 @@ import { HeaderContextDockRegistrar } from './header-context/HeaderContextDockRe
 import { MobileModuleDockProvider } from './MobileModuleDockProvider';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { usePermission } from '@/lib/permissions/PermissionContext';
+import { AppMessengerRightRail, APP_MESSENGER_RIGHT_RAIL_WIDTH_PX } from './AppMessengerRightRail';
 import { APP_MAIN_CONTENT_INSET } from './app-layout-constants';
 import { ORG_CHART_PAGE_HREF } from '@/features/hr/components/org-chart/org-chart-constants';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -40,11 +42,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
   const isMobileViewport = useIsMobileViewport();
+  const { can } = usePermission();
+  const showMessengerRightRail = !isMobileViewport && can('VIEW', 'MESSENGER');
   const mainOffsetPx = isMobileViewport
     ? 0
     : sidebarCollapsed
       ? SIDEBAR_WIDTH_COLLAPSED_PX
       : SIDEBAR_WIDTH_EXPANDED_PX;
+  const rightRailPx = showMessengerRightRail ? APP_MESSENGER_RIGHT_RAIL_WIDTH_PX : 0;
 
   /**
    * Auto-collapse the sidebar when entering /documents routes.
@@ -104,7 +109,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                           <ClientMessengerOverlayProvider>
                             <div
                               className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
-                              style={{ gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)` }}
+                              style={{
+                                gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr) ${rightRailPx}px`,
+                              }}
                             >
                               <Sidebar
                                 collapsed={sidebarCollapsed}
@@ -134,6 +141,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 <MessengerOverlay />
                                 <ClientMessengerOverlay />
                               </div>
+                              {showMessengerRightRail ? <AppMessengerRightRail /> : null}
                             </div>
                           </ClientMessengerOverlayProvider>
                         </MessengerOverlayProvider>
