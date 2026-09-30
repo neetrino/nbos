@@ -48,7 +48,7 @@ function productItem(
 }
 
 describe('getLocalDeliveryMoveStageErrors', () => {
-  it('returns task errors when open work items block DEVELOPMENT → QA', () => {
+  it('does not block DEVELOPMENT → QA when open tasks remain', () => {
     const errors = getLocalDeliveryMoveStageErrors(
       productItem({
         status: 'DEVELOPMENT',
@@ -57,7 +57,8 @@ describe('getLocalDeliveryMoveStageErrors', () => {
       }),
       'QA',
     );
-    expect(errors.some((e) => e.field === 'tasks')).toBe(true);
+    expect(errors.some((e) => e.field === 'tasks')).toBe(false);
+    expect(errors).toEqual([]);
   });
 
   it('returns empty when DEVELOPMENT → QA has no open tasks (heuristic)', () => {
@@ -74,7 +75,7 @@ describe('getLocalDeliveryMoveStageErrors', () => {
 });
 
 describe('getLocalDeliveryMoveNextErrors', () => {
-  it('maps DEVELOPMENT to QA gate when tasks count is positive', () => {
+  it('maps DEVELOPMENT to QA without treating open tasks as a gate', () => {
     const errors = getLocalDeliveryMoveNextErrors(
       productItem({
         status: 'DEVELOPMENT',
@@ -82,7 +83,8 @@ describe('getLocalDeliveryMoveNextErrors', () => {
         _count: { extensions: 0, tasks: 1, tickets: 0 },
       }),
     );
-    expect(errors.some((e) => e.field === 'tasks')).toBe(true);
+    expect(errors.some((e) => e.field === 'tasks')).toBe(false);
+    expect(errors).toEqual([]);
   });
 });
 
