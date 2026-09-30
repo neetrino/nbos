@@ -1,6 +1,6 @@
 'use client';
 
-import { Star } from 'lucide-react';
+import { Pin } from 'lucide-react';
 import {
   MessengerThreadComposerRow,
   MessengerThreadDateDivider,
@@ -8,8 +8,8 @@ import {
 import { InternalSheetComposer } from './InternalSheetComposer';
 import { MessengerPersonAvatar } from './MessengerPersonAvatar';
 
-const FAVORITE_STAR_ACTIVE = 'fill-[#4f46e5] text-[#4f46e5]';
-const FAVORITE_STAR_IDLE = 'text-[#94a3b8]';
+const FAVORITE_PIN_ACTIVE = 'fill-[#4f46e5] text-[#4f46e5]';
+const FAVORITE_PIN_IDLE = 'text-[#94a3b8]';
 
 export function ThreadAvatar({
   title,
@@ -40,9 +40,11 @@ export function FavoriteStar({ favorite, onToggle }: { favorite: boolean; onTogg
       aria-pressed={favorite}
       aria-label={favorite ? 'Remove from Favorites' : 'Add to Favorites'}
       onClick={onToggle}
-      className="flex size-4 shrink-0 items-center justify-center"
+      className={`flex size-4 shrink-0 items-center justify-center transition-opacity ${
+        favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'
+      }`}
     >
-      <Star size={14} className={favorite ? FAVORITE_STAR_ACTIVE : FAVORITE_STAR_IDLE} />
+      <Pin size={14} className={favorite ? FAVORITE_PIN_ACTIVE : FAVORITE_PIN_IDLE} />
     </button>
   );
 }

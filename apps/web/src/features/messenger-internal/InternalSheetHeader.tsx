@@ -49,7 +49,7 @@ function HeaderIdentity({
 }) {
   const direct = conversation.type === 'DIRECT';
   return (
-    <div className="flex min-w-0 items-center gap-3">
+    <div className="group flex min-w-0 items-center gap-3">
       <ThreadAvatar title={title} direct={direct} employeeId={conversation.peerEmployeeId} />
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex min-w-0 items-center gap-2">

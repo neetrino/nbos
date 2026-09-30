@@ -28,7 +28,7 @@ export function InternalConversationRow({
   return (
     <div
       data-conversation-id={row.id}
-      className={`group relative z-10 flex items-stretch px-2 py-2.5 ${
+      className={`group relative z-10 flex items-stretch rounded-[17px] px-2 py-2.5 ${
         showDivider
           ? 'after:absolute after:right-2 after:bottom-0 after:left-[3.75rem] after:h-px after:bg-[#e2e8f0]/70'
           : ''
@@ -44,7 +44,7 @@ export function InternalConversationRow({
           direct={row.type === 'DIRECT'}
           employeeId={row.peerEmployeeId}
         />
-        <ConversationBody row={row} title={title} />
+        <ConversationBody row={row} title={title} active={active} />
       </button>
       <ConversationMeta
         row={row}
@@ -77,13 +77,31 @@ function ConversationMark({
   );
 }
 
-function ConversationBody({ row, title }: { row: MessengerCoreConversationRow; title: string }) {
+function ConversationBody({
+  row,
+  title,
+  active,
+}: {
+  row: MessengerCoreConversationRow;
+  title: string;
+  active: boolean;
+}) {
   return (
     <span className="min-w-0 flex-1">
-      <span className="block truncate text-xs text-[#0f172a]">{title}</span>
-      <ConversationPreview row={row} />
+      <span
+        className={`block truncate text-xs ${
+          active ? 'font-semibold text-[#312e81]' : 'font-medium text-[#0f172a]'
+        }`}
+      >
+        {title}
+      </span>
+      <ConversationPreview row={row} active={active} />
       <span className="mt-1.5 inline-flex">
-        <span className="rounded-full bg-[#f1f5f9] px-2 py-0.5 text-[10px] text-[#0f172a]">
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] ${
+            active ? 'bg-[#c7d2fe]/80 text-[#3730a3]' : 'bg-[#f1f5f9] text-[#0f172a]'
+          }`}
+        >
           {conversationTypeBadge(row.type)}
         </span>
       </span>
@@ -123,11 +141,23 @@ function ConversationMeta({
   );
 }
 
-function ConversationPreview({ row }: { row: MessengerCoreConversationRow }) {
+function ConversationPreview({
+  row,
+  active,
+}: {
+  row: MessengerCoreConversationRow;
+  active: boolean;
+}) {
   const preview = row.lastMessagePreview?.trim();
   const typeLabel = conversationTypeBadge(row.type);
   if (!preview || preview.toLowerCase() === typeLabel.toLowerCase()) return null;
-  return <span className="mt-0.5 block truncate text-xs text-[#64748b]">{preview}</span>;
+  return (
+    <span
+      className={`mt-0.5 block truncate text-xs ${active ? 'text-[#4338ca]/80' : 'text-[#64748b]'}`}
+    >
+      {preview}
+    </span>
+  );
 }
 
 function UnreadCount({ count }: { count: number }) {
