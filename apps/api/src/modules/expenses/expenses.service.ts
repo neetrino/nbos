@@ -26,11 +26,9 @@ import {
   requireExpenseStatusIfPresent,
   requireExpenseType,
   requireExpenseTypeIfPresent,
-  requireTaxStatusIfPresent,
   parseExpenseBacklogReasonField,
   resolveExpenseFrequency,
   resolveExpenseStatus,
-  resolveExpenseTaxStatus,
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
@@ -50,6 +48,11 @@ import {
   fetchExpensePaidTotalsByExpenseIds,
 } from './expense-list-ledger';
 import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
+import {
+  expenseUpdateBookedAt,
+  isExpenseNameOnlyPatch,
+  resolveExpenseNamePatch,
+} from './expense-update-name';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
 import { refreshExpenseWorkflowStatus, resolveExpenseListStatusWhere } from './expense-workflow';
 import { OperationalJournalService } from '../finance/journal/operational-journal.service';
@@ -299,9 +302,6 @@ export class ExpensesService {
       ...(data.clientServiceRecordId ? { clientServiceRecordId: data.clientServiceRecordId } : {}),
       ...(data.sourceInvoiceId ? { sourceInvoiceId: data.sourceInvoiceId } : {}),
       isPassThrough: data.isPassThrough ?? false,
-      taxStatus: resolveExpenseTaxStatus(
-        data.taxStatus,
-      ) as Prisma.ExpenseUncheckedCreateInput['taxStatus'],
       ...(data.backlogReason !== undefined && {
         backlogReason: parseExpenseBacklogReasonField(
           data.backlogReason,
@@ -345,8 +345,6 @@ export class ExpensesService {
       data.frequency !== undefined ? requireExpenseFrequencyIfPresent(data.frequency) : undefined;
     const statusPatch =
       data.status !== undefined ? requireExpenseStatusIfPresent(data.status) : undefined;
-    const taxStatusPatch =
-      data.taxStatus !== undefined ? requireTaxStatusIfPresent(data.taxStatus) : undefined;
     const backlogReasonPatch =
       data.backlogReason !== undefined
         ? parseExpenseBacklogReasonField(data.backlogReason)
@@ -356,19 +354,20 @@ export class ExpensesService {
       await assertExpenseAmountCoversRecordedPayments(this.prisma, id, new Decimal(data.amount));
     }
 
-    const bookedAtForGuard =
-      data.dueDate !== undefined
-        ? data.dueDate
-          ? new Date(data.dueDate)
-          : new Date()
-        : (existing.dueDate ?? new Date());
-    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAtForGuard);
+    const namePatch = resolveExpenseNamePatch(data.name);
+    const nameOnly = isExpenseNameOnlyPatch(data);
+    if (!nameOnly) {
+      await assertPostingPeriodOpenForBookedAt(
+        this.prisma,
+        expenseUpdateBookedAt(data.dueDate, existing.dueDate),
+      );
+    }
     await this.settleMarkPaidIfRequested(id, statusPatch);
 
     const linkPatch = await this.resolveExpenseUpdateLinks(data, existing);
 
     const updateData: Prisma.ExpenseUncheckedUpdateInput = {
-      ...(data.name && { name: data.name }),
+      ...(namePatch !== undefined && { name: namePatch }),
       ...(typePatch !== undefined && { type: typePatch as ExpenseTypeEnum }),
       ...(categoryPatch !== undefined && { category: categoryPatch as ExpenseCategoryEnum }),
       ...(data.amount !== undefined && { amount: data.amount }),
@@ -382,9 +381,6 @@ export class ExpensesService {
         clientServiceRecordId: data.clientServiceRecordId || null,
       }),
       ...(data.isPassThrough !== undefined && { isPassThrough: data.isPassThrough }),
-      ...(taxStatusPatch !== undefined && {
-        taxStatus: taxStatusPatch as Prisma.ExpenseUncheckedUpdateInput['taxStatus'],
-      }),
       ...(backlogReasonPatch !== undefined && {
         backlogReason: backlogReasonPatch as ExpenseBacklogReasonEnum | null,
       }),
@@ -394,7 +390,7 @@ export class ExpensesService {
       where: { id },
       data: updateData,
     });
-    if (statusPatch === undefined) {
+    if (!nameOnly && statusPatch === undefined) {
       await this.persistRefreshedWorkflowStatus(id);
     }
     if (data.amount !== undefined) {

@@ -54,60 +54,22 @@ describe('ProductsService', () => {
       expect(result.status).toBe('CREATING');
     });
 
-    it('blocks DEVELOPMENT → QA when product tasks are still open', async () => {
+    it('allows DEVELOPMENT → QA when product tasks are still open', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'DEVELOPMENT',
         tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
-      });
-
-      const error = await service
-        .updateStatus('p1', 'QA', 'emp-audit')
-        .catch((caught: unknown) => caught);
-
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect(readExceptionResponse(error)).toMatchObject({
-        code: 'STAGE_GATE_VALIDATION',
-        errors: [{ field: 'tasks', message: expect.any(String) }],
-      });
-      expect(prisma.product.update).not.toHaveBeenCalled();
-    });
-
-    it('allows DEVELOPMENT → QA when product tasks are closed', async () => {
-      prisma.product.findUnique.mockResolvedValue({
-        id: 'p1',
-        status: 'DEVELOPMENT',
-        tasks: [{ status: 'DONE' }, { status: 'ON_HOLD' }],
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'QA' });
       const result = await service.updateStatus('p1', 'QA', 'emp-audit');
       expect(result.status).toBe('QA');
     });
 
-    it('blocks QA → TRANSFER when QA tasks are still open', async () => {
+    it('allows QA → TRANSFER when product tasks are still open', async () => {
       prisma.product.findUnique.mockResolvedValue({
         id: 'p1',
         status: 'QA',
-        tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
-      });
-
-      const error = await service
-        .updateStatus('p1', 'TRANSFER', 'emp-audit')
-        .catch((caught: unknown) => caught);
-
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect(readExceptionResponse(error)).toMatchObject({
-        code: 'STAGE_GATE_VALIDATION',
-        errors: [{ field: 'tasks', message: expect.any(String) }],
-      });
-      expect(prisma.product.update).not.toHaveBeenCalled();
-    });
-
-    it('allows QA → TRANSFER when QA tasks are closed', async () => {
-      prisma.product.findUnique.mockResolvedValue({
-        id: 'p1',
-        status: 'QA',
-        tasks: [{ status: 'DONE' }, { status: 'COMPLETED' }],
+        tasks: [{ status: 'IN_PROGRESS' }, { status: 'COMPLETED' }],
       });
       prisma.product.update.mockResolvedValue({ id: 'p1', status: 'TRANSFER' });
       const result = await service.updateStatus('p1', 'TRANSFER', 'emp-audit');
@@ -184,7 +146,6 @@ describe('ProductsService', () => {
         code: 'STAGE_GATE_VALIDATION',
         errors: [
           { field: 'extensions', message: expect.any(String) },
-          { field: 'tasks', message: expect.any(String) },
           { field: 'tickets', message: expect.any(String) },
         ],
       });

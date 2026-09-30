@@ -91,6 +91,7 @@ export interface BonusProductPoolRow {
   sumTotalAmount: string;
   sumPipelineAmount: string;
   sumPaidAmount: string;
+  paidCashState?: 'CONFIRMED' | 'UNCONFIRMED';
   sumClawbackAmount: string;
   ledgerPlannedAmount: string | null;
   ledgerReleasedAmount: string | null;

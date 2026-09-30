@@ -10,7 +10,6 @@ import {
   EXPENSE_BACKLOG_REASONS,
   EXPENSE_FREQUENCIES,
   EXPENSE_TYPES,
-  TAX_STATUSES,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ExpenseLedgerPaymentStatus } from '@/lib/api/finance';
 
@@ -25,7 +24,6 @@ const CATEGORY_VALUES = new Set<string>(
 );
 const TYPE_VALUES = new Set<string>(EXPENSE_TYPES.map((item) => item.value));
 const FREQUENCY_VALUES = new Set<string>(EXPENSE_FREQUENCIES.map((item) => item.value));
-const TAX_VALUES = new Set<string>(TAX_STATUSES.map((item) => item.value));
 const BACKLOG_REASON_VALUES = new Set<string>(EXPENSE_BACKLOG_REASONS.map((item) => item.value));
 const STAGE_SHORT_VALUES = new Set([
   'PLANNED',
@@ -40,7 +38,7 @@ const STAGE_SHORT_VALUES = new Set([
 function translateKnown(
   value: string,
   allowed: ReadonlySet<string>,
-  prefix: 'stage' | 'stageShort' | 'category' | 'type' | 'frequency' | 'tax' | 'backlogReason',
+  prefix: 'stage' | 'stageShort' | 'category' | 'type' | 'frequency' | 'backlogReason',
   t: ExpensesTranslator,
   fallback: string,
 ): string {
@@ -78,11 +76,6 @@ export function translateExpenseType(value: string, t: ExpensesTranslator): stri
 export function translateExpenseFrequency(value: string, t: ExpensesTranslator): string {
   const fallback = EXPENSE_FREQUENCIES.find((item) => item.value === value)?.label ?? value;
   return translateKnown(value, FREQUENCY_VALUES, 'frequency', t, fallback);
-}
-
-export function translateExpenseTaxStatus(value: string, t: ExpensesTranslator): string {
-  const fallback = TAX_STATUSES.find((item) => item.value === value)?.label ?? value;
-  return translateKnown(value, TAX_VALUES, 'tax', t, fallback);
 }
 
 export function translateExpenseBacklogReason(

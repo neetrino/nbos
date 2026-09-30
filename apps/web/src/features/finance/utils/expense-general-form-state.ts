@@ -12,7 +12,6 @@ export interface ExpenseGeneralDraft {
   productId: string;
   credentialId: string;
   isPassThrough: boolean;
-  taxStatus: string;
   backlogReason: string;
   notes: string;
 }
@@ -29,7 +28,6 @@ export function createExpenseGeneralDraft(expense: Expense): ExpenseGeneralDraft
     productId: expense.productId ?? '',
     credentialId: expense.credentialId ?? '',
     isPassThrough: expense.isPassThrough,
-    taxStatus: expense.taxStatus,
     backlogReason: expense.backlogReason ?? 'none',
     notes: expense.notes ?? '',
   };
@@ -80,7 +78,6 @@ export function buildExpenseGeneralPatch(
   if (credentialId !== snapCredentialId) out.credentialId = credentialId;
 
   if (draft.isPassThrough !== snap.isPassThrough) out.isPassThrough = draft.isPassThrough;
-  if (draft.taxStatus !== snap.taxStatus) out.taxStatus = draft.taxStatus;
 
   const backlogReason = backlogReasonFromDraft(draft);
   const snapBacklogReason = backlogReasonFromDraft(snap);

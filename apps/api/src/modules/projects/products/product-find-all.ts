@@ -126,7 +126,6 @@ export async function findAllProducts(
     items: items.map((product) => {
       const withLc = lifecycleByProduct.get(product.id) ?? attachProductDeliveryLifecycle(product);
       const open = openByProduct.get(product.id) ?? {
-        openTasks: 0,
         openTickets: 0,
         openExtensions: 0,
       };

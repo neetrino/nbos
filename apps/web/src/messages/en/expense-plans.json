@@ -90,9 +90,10 @@
   },
   "sheet": {
     "loading": "Loading…",
+    "renameHint": "Click to edit name",
     "tabs": {
       "general": "General",
-      "cards": "Cards",
+      "cards": "Pay Now",
       "history": "History"
     },
     "generateAria": "Generate expense card",

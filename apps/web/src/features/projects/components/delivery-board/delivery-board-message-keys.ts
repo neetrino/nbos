@@ -37,9 +37,7 @@ export const PRODUCT_LANGUAGE_MESSAGE_KEYS = {
 
 export const READINESS_LABEL_MESSAGE_KEYS = {
   [STAGE_READINESS_LABELS.deadlineSet]: 'readiness.deadlineSet',
-  [STAGE_READINESS_LABELS.noOpenWorkSpaceTasks]: 'readiness.noOpenWorkSpaceTasks',
   [STAGE_READINESS_LABELS.noOpenExtensions]: 'readiness.noOpenExtensions',
-  [STAGE_READINESS_LABELS.noOpenTasks]: 'readiness.noOpenTasks',
   [STAGE_READINESS_LABELS.noOpenTickets]: 'readiness.noOpenTickets',
   [STAGE_READINESS_LABELS.clientAcceptance]: 'readiness.clientAcceptance',
   [STAGE_READINESS_LABELS.scopeFilled]: 'readiness.scopeFilled',

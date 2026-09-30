@@ -29,19 +29,13 @@ describe('buildProductCurrentStageReadiness', () => {
     });
   });
 
-  it('DEVELOPMENT is 1/1 when no open tasks', () => {
+  it('DEVELOPMENT ignores open tasks', () => {
     const p = { ...baseProduct, status: 'DEVELOPMENT', deliveryStage: 'DEVELOPMENT' as const };
     const lc = buildProductDeliveryLifecycle(p);
-    expect(
-      buildProductCurrentStageReadiness(p, lc, {
-        openTasks: 0,
-        openTickets: 0,
-        openExtensions: 0,
-      }),
-    ).toEqual({ completed: 1, total: 1 });
+    expect(buildProductCurrentStageReadiness(p, lc, zeroOpen())).toBeUndefined();
   });
 
-  it('TRANSFER uses four delivery checks and ignores finance', () => {
+  it('TRANSFER uses delivery checks other than tasks and ignores finance', () => {
     const p = {
       ...baseProduct,
       status: 'TRANSFER',
@@ -56,12 +50,12 @@ describe('buildProductCurrentStageReadiness', () => {
     };
     const lc = buildProductDeliveryLifecycle(p);
     expect(buildProductCurrentStageReadiness(p, lc, zeroOpen())).toEqual({
-      completed: 4,
-      total: 4,
+      completed: 3,
+      total: 3,
     });
   });
 });
 
 function zeroOpen() {
-  return { openTasks: 0, openTickets: 0, openExtensions: 0 };
+  return { openTickets: 0, openExtensions: 0 };
 }

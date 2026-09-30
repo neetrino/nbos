@@ -207,6 +207,7 @@
     "bonusReleases": "Բոնուսների թողարկումներ",
     "payable": "Վճարման ենթակա",
     "paid": "Վճարված",
+    "paidUnconfirmed": "Չհաստատված",
     "remaining": "Մնացորդ",
     "cell": {
       "state": {

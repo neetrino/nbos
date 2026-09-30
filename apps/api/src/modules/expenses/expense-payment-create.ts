@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
+import { refreshConfirmedPoolPaidForExpense } from '../bonus/product-bonus-pool-paid-cash';
 import { notifySalaryExpensePayment } from '../employees/employee-wallet-notify.ops';
 import { bufferWalletNotifications } from '../employees/wallet-notify-buffer';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
@@ -8,7 +9,9 @@ import {
   loadPayrollCashReleasesForExpense,
   preparePayrollCashPayment,
 } from '../payroll-runs/payroll-salary-first-cash-apply';
+import { findPayrollCashPaymentByIdempotencyKey } from '../payroll-runs/payroll-salary-first-cash-notes';
 import { lockPayrollCashHistoryForUpdate } from '../payroll-runs/payroll-salary-first-cash-reverse-apply';
+import { PAYROLL_CASH_TRANSACTION_TIMEOUT_MS } from '../payroll-runs/payroll-salary-first-cash-reverse';
 import type { PayrollCashBonusAssignmentInput } from '../payroll-runs/payroll-salary-first-cash';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
 import { hasEncodedPayrollCash } from '../payroll-runs/payroll-salary-first-cash-notes';
@@ -57,6 +60,10 @@ export async function createExpensePaymentRecord(
     paymentDate,
     opts,
   );
+  if (written.replayed) {
+    return written.paymentId;
+  }
+  await refreshConfirmedPoolPaidForExpense(prisma, expenseId);
   await syncPartnerPayoutPaidFromExpense(prisma, expenseId);
   await notifyPayrollExpensePayment(prisma, expenseId, written.paymentId, newPayment, opts?.notify);
   return written.paymentId;
@@ -87,6 +94,7 @@ type WrittenExpensePayment = {
   expenseName: string;
   projectId: string | null;
   productId: string | null;
+  replayed: boolean;
 };
 
 async function writeExpensePayment(
@@ -101,24 +109,30 @@ async function writeExpensePayment(
   },
 ): Promise<WrittenExpensePayment> {
   const buffered = bufferWalletNotifications();
-  const written = await prisma.$transaction(async (tx) => {
-    const committed = await commitLockedExpensePayment(
-      tx,
-      expenseId,
-      input,
-      newPayment,
-      paymentDate,
-    );
-    const db = tx as InstanceType<typeof PrismaClient>;
-    await syncExpenseStatusWithPaymentLedger(db, expenseId);
-    await syncSalaryLinePaidFromExpenseLedger(
-      db,
-      expenseId,
-      opts?.notify == null ? undefined : buffered.sink,
-    );
-    await appendExpensePaymentJournal(committed, newPayment, paymentDate, opts?.journal, tx);
-    return committed;
-  });
+  const written = await prisma.$transaction(
+    async (tx) => {
+      const committed = await commitLockedExpensePayment(
+        tx,
+        expenseId,
+        input,
+        newPayment,
+        paymentDate,
+      );
+      if (committed.replayed) {
+        return committed;
+      }
+      const db = tx as InstanceType<typeof PrismaClient>;
+      await syncExpenseStatusWithPaymentLedger(db, expenseId);
+      await syncSalaryLinePaidFromExpenseLedger(
+        db,
+        expenseId,
+        opts?.notify == null ? undefined : buffered.sink,
+      );
+      await appendExpensePaymentJournal(committed, newPayment, paymentDate, opts?.journal, tx);
+      return committed;
+    },
+    { timeout: PAYROLL_CASH_TRANSACTION_TIMEOUT_MS },
+  );
   await buffered.flush(opts?.notify);
   return written;
 }
@@ -131,7 +145,6 @@ async function commitLockedExpensePayment(
   paymentDate: Date,
 ): Promise<WrittenExpensePayment> {
   await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${expenseId} FOR UPDATE`;
-  await lockPayrollCashHistoryForUpdate(tx, expenseId);
   const expense = await tx.expense.findUnique({
     where: { id: expenseId },
     include: { expensePayments: true },
@@ -139,6 +152,14 @@ async function commitLockedExpensePayment(
   if (!expense) {
     throw new NotFoundException(`Expense ${expenseId} not found`);
   }
+  const replay = findPayrollCashPaymentByIdempotencyKey(
+    expense.expensePayments,
+    input.idempotencyKey,
+  );
+  if (replay?.id != null) {
+    return writtenPayment(replay.id, expense, true);
+  }
+  await lockPayrollCashHistoryForUpdate(tx, expenseId);
   const paid = sumExpensePaymentAmounts(expense.expensePayments);
   const remaining = expense.amount.minus(paid);
   const notes = await notesForExpensePayment(
@@ -151,7 +172,7 @@ async function commitLockedExpensePayment(
     expense.expensePayments,
   );
   if (notes.existingPaymentId != null) {
-    return writtenPayment(notes.existingPaymentId, expense);
+    return writtenPayment(notes.existingPaymentId, expense, true);
   }
   const payment = await tx.expensePayment.create({
     data: {
@@ -161,18 +182,20 @@ async function commitLockedExpensePayment(
       notes: notes.notes,
     },
   });
-  return writtenPayment(payment.id, expense);
+  return writtenPayment(payment.id, expense, false);
 }
 
 function writtenPayment(
   paymentId: string,
   expense: { name: string; projectId: string | null; productId: string | null },
+  replayed: boolean,
 ): WrittenExpensePayment {
   return {
     paymentId,
     expenseName: expense.name,
     projectId: expense.projectId,
     productId: expense.productId,
+    replayed,
   };
 }
 

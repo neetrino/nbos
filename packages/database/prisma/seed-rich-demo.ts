@@ -398,7 +398,6 @@ async function seedPayrollAndSalaries(
                 amount: payable,
                 frequency: 'ONE_TIME',
                 status: 'PAID',
-                taxStatus: 'TAX',
               },
             })
           : null;

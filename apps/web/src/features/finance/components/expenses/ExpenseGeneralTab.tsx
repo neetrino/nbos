@@ -27,7 +27,6 @@ import {
   EXPENSE_SHEET_FIELD_ROW_2_CLASS,
   EXPENSE_SHEET_FIELD_ROW_3_CLASS,
   EXPENSE_TYPES,
-  TAX_STATUSES,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import type { ExpenseGeneralDraft } from '@/features/finance/utils/expense-general-form-state';
 import type { Expense } from '@/lib/api/finance';
@@ -43,7 +42,6 @@ import {
   translateExpenseCategory,
   translateExpenseFrequency,
   translateExpensePaymentStatus,
-  translateExpenseTaxStatus,
   translateExpenseType,
 } from './expense-i18n-labels';
 
@@ -211,22 +209,6 @@ export function ExpenseGeneralTab({
               onValueChange={(v) => v && patchDraft({ backlogReason: v })}
             />
           ) : null}
-          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
-            <InlineField
-              variant="controlled"
-              label={t('fields.taxStatus')}
-              type="select"
-              value={draft.taxStatus}
-              options={TAX_STATUSES.map((item) => ({
-                value: item.value,
-                label: translateExpenseTaxStatus(item.value, t),
-              }))}
-              disabled={formDisabled}
-              selectMenuTone="highlight"
-              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
-              onValueChange={(v) => v && patchDraft({ taxStatus: v })}
-            />
-          </div>
           <FinanceProductCredentialFields
             productId={draft.productId || null}
             productLabel={productLabel}

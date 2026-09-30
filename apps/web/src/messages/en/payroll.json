@@ -207,6 +207,7 @@
     "bonusReleases": "Bonus releases",
     "payable": "Payable",
     "paid": "Paid",
+    "paidUnconfirmed": "Unconfirmed",
     "remaining": "Remaining",
     "cell": {
       "state": {

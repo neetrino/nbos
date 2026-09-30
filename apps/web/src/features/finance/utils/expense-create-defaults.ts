@@ -24,7 +24,6 @@ export const EXPENSE_CREATE_HIDDEN_DEFAULTS = {
   frequency: 'ONE_TIME',
   status: 'PLANNED',
   isPassThrough: false,
-  taxStatus: 'TAX',
 } as const;
 
 export function applyExpensePlanToCreateForm(
@@ -69,7 +68,6 @@ export function buildCreateExpensePayload(
     credentialId: plan?.credentialId ?? null,
     expensePlanId: plan?.id ?? null,
     isPassThrough: EXPENSE_CREATE_HIDDEN_DEFAULTS.isPassThrough,
-    taxStatus: EXPENSE_CREATE_HIDDEN_DEFAULTS.taxStatus,
     notes: null,
     ...(status === 'BACKLOG' ? { backlogReason: null } : {}),
   };

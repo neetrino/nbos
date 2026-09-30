@@ -5,7 +5,6 @@ import {
   requireExpenseCategory,
   requireExpensePlanCategory,
   requireExpenseType,
-  resolveExpenseTaxStatus,
 } from './expense-mutation-enum-validators';
 
 describe('expense-mutation-enum-validators', () => {
@@ -23,12 +22,6 @@ describe('expense-mutation-enum-validators', () => {
     expect(requireExpensePlanCategory('PARTNER_PAYOUT')).toBe('PARTNER_PAYOUT');
     expect(() => requireExpensePlanCategory('SALARY')).toThrow(BadRequestException);
     expect(() => requireExpensePlanCategory('BONUS')).toThrow(BadRequestException);
-  });
-
-  it('resolveExpenseTaxStatus defaults and validates', () => {
-    expect(resolveExpenseTaxStatus(undefined)).toBe('TAX');
-    expect(resolveExpenseTaxStatus(null)).toBe('TAX');
-    expect(() => resolveExpenseTaxStatus('NOPE')).toThrow(BadRequestException);
   });
 
   it('parseExpenseBacklogReasonField handles undefined, null, and invalid', () => {

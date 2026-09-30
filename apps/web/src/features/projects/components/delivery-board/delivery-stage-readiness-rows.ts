@@ -13,9 +13,7 @@ export interface StageReadinessRow {
 /** English VALUES kept here; translate at render via `READINESS_LABEL_MESSAGE_KEYS`. */
 export const STAGE_READINESS_LABELS = {
   deadlineSet: 'Deadline set',
-  noOpenWorkSpaceTasks: 'No open Work Space tasks',
   noOpenExtensions: 'No open extensions',
-  noOpenTasks: 'No open tasks',
   noOpenTickets: 'No open tickets',
   clientAcceptance: 'Client acceptance recorded',
   scopeFilled: 'Scope & notes filled',
@@ -44,13 +42,8 @@ function checklistReadinessDetail(checklist: ChecklistStageProgress): {
   };
 }
 
-const CLOSED_TASK = new Set(['DONE', 'ON_HOLD', 'COMPLETED']);
 const CLOSED_TICKET = new Set(['RESOLVED', 'CLOSED']);
 const CLOSED_EXTENSION = new Set(['DONE', 'LOST']);
-
-function countOpenTasks(tasks: { status: string }[]): number {
-  return tasks.filter((t) => !CLOSED_TASK.has(t.status)).length;
-}
 
 function countOpenTickets(tickets: { status: string }[]): number {
   return tickets.filter((t) => !CLOSED_TICKET.has(t.status)).length;
@@ -71,24 +64,12 @@ export function buildProductStageReadinessRows(
       label: STAGE_READINESS_LABELS.deadlineSet,
       done: Boolean(product.deadline),
     });
-  } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
-    const open = countOpenTasks(product.tasks ?? []);
-    rows.push({
-      key: 'tasks',
-      label: STAGE_READINESS_LABELS.noOpenWorkSpaceTasks,
-      done: open === 0,
-    });
   } else if (stage === 'TRANSFER') {
     const extOpen = (product.extensions ?? []).filter(
       (e) => !CLOSED_EXTENSION.has(e.status),
     ).length;
     rows.push(
       { key: 'ext', label: STAGE_READINESS_LABELS.noOpenExtensions, done: extOpen === 0 },
-      {
-        key: 'tasks',
-        label: STAGE_READINESS_LABELS.noOpenTasks,
-        done: countOpenTasks(product.tasks ?? []) === 0,
-      },
       {
         key: 'tickets',
         label: STAGE_READINESS_LABELS.noOpenTickets,
@@ -132,19 +113,6 @@ export function buildExtensionStageReadinessRows(
         done: Boolean(extension.assignedTo),
       },
     );
-  } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
-    const open = countOpenTasks(extension.tasks ?? []);
-    rows.push({
-      key: 'tasks',
-      label: STAGE_READINESS_LABELS.noOpenWorkSpaceTasks,
-      done: open === 0,
-    });
-  } else if (stage === 'TRANSFER') {
-    rows.push({
-      key: 'tasks',
-      label: STAGE_READINESS_LABELS.noOpenTasks,
-      done: countOpenTasks(extension.tasks ?? []) === 0,
-    });
   }
 
   if (checklist && checklist.total > 0) {

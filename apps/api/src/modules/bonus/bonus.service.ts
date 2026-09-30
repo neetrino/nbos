@@ -34,6 +34,7 @@ import {
 } from './patch-bonus-entry-payable-adjustment';
 import { applyPayableSnapshotToBonusEntry } from './bonus-payable-snapshot';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
+import { overlayPoolPaidFromCash } from './product-bonus-pool-paid-cash';
 import { resolveSortField, normalizeSortDirection } from '../../common/utils/sort-order';
 import {
   employeeIdWhere,
@@ -364,7 +365,8 @@ export class BonusService {
       return [];
     }
     const withLedgers = accessible === 'ALL' ? await this.mergeProductPoolLedgers(folded) : folded;
-    return this.attachPoolEmployeeCounts(withLedgers, accessible);
+    const marked = await overlayPoolPaidFromCash(this.prisma, withLedgers);
+    return this.attachPoolEmployeeCounts(marked, accessible);
   }
 
   async getProductPoolEmployeeLines(actor: FinancePayActor, poolKey: string) {

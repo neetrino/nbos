@@ -90,9 +90,10 @@
   },
   "sheet": {
     "loading": "Загрузка…",
+    "renameHint": "Нажмите, чтобы изменить название",
     "tabs": {
       "general": "Общее",
-      "cards": "Карточки",
+      "cards": "Pay Now",
       "history": "История"
     },
     "generateAria": "Создать карточку расхода",

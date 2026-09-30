@@ -16,8 +16,10 @@ export interface EmployeeWalletBonusRow {
   percent: string;
   /** Sum of release amounts in APPROVED / INCLUDED_IN_PAYROLL / PAID. */
   releasedAmount: string;
-  /** Sum of release amounts in PAID. */
+  /** Sum of confirmed cash. Zero is confirmed only when a release or payment exists. */
   paidAmount: string;
+  /** CONFIRMED cash, or a historical PAID mark with no release and no payment. */
+  cashConfirmation: 'CONFIRMED' | 'UNCONFIRMED';
   /** Planned minus paid releases, floored at zero. */
   remainingAmount: string;
   /** Payroll month when a release is on a run (latest qualifying). */

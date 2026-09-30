@@ -43,7 +43,9 @@ export function summarizeWalletBonusForecast(
         paidFromReleases += paid;
         break;
       case 'PAID':
-        paidFromReleases += paid;
+        if (row.cashConfirmation !== 'UNCONFIRMED') {
+          paidFromReleases += paid;
+        }
         break;
       case 'CORRECTIONS':
         correctionsPlanned += planned;

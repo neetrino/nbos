@@ -59,7 +59,6 @@ export function buildClientServiceExpensePayload(
     credentialId: service.providerAccountId,
     clientServiceRecordId: service.id,
     isPassThrough: service.billingModel === 'WE_PAY',
-    taxStatus: service.taxStatus,
     notes: `From client service: ${service.name}`,
   };
 }

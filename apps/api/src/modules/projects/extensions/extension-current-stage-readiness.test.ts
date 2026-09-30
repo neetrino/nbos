@@ -17,28 +17,25 @@ describe('buildExtensionCurrentStageReadiness', () => {
 
   it('returns undefined when terminal', () => {
     const lc = buildExtensionDeliveryLifecycle({ ...base, status: 'DONE' });
-    expect(buildExtensionCurrentStageReadiness(base, lc, { openTasks: 0 })).toBeUndefined();
+    expect(buildExtensionCurrentStageReadiness(base, lc)).toBeUndefined();
   });
 
   it('STARTING counts scope and owner', () => {
     const ext = { ...base, status: 'NEW' };
     const lc = buildExtensionDeliveryLifecycle(ext);
-    expect(buildExtensionCurrentStageReadiness(ext, lc, { openTasks: 0 })).toEqual({
+    expect(buildExtensionCurrentStageReadiness(ext, lc)).toEqual({
       completed: 2,
       total: 2,
     });
   });
 
-  it('TRANSFER counts open tasks and ignores finance', () => {
+  it('TRANSFER ignores open tasks and finance', () => {
     const ext = {
       ...base,
       status: 'TRANSFER',
       deliveryStage: 'TRANSFER' as const,
     };
     const lc = buildExtensionDeliveryLifecycle(ext);
-    expect(buildExtensionCurrentStageReadiness(ext, lc, { openTasks: 0 })).toEqual({
-      completed: 1,
-      total: 1,
-    });
+    expect(buildExtensionCurrentStageReadiness(ext, lc)).toBeUndefined();
   });
 });

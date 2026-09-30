@@ -266,7 +266,6 @@ export class ExpensesController {
       productId?: string | null;
       credentialId?: string | null;
       isPassThrough?: boolean;
-      taxStatus?: string;
       backlogReason?: string | null;
       notes?: string;
       expensePlanId?: string;
@@ -293,7 +292,6 @@ export class ExpensesController {
       productId?: string | null;
       credentialId?: string | null;
       isPassThrough?: boolean;
-      taxStatus?: string;
       backlogReason?: string | null;
       notes?: string;
     },

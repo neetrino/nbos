@@ -1,9 +1,5 @@
 import type { DeliveryLifecycleProjection } from '../delivery-lifecycle';
 
-export interface ExtensionOpenCounts {
-  openTasks: number;
-}
-
 interface ExtensionForStageReadiness {
   status?: string | null;
   description?: string | null;
@@ -19,28 +15,11 @@ interface ExtensionForStageReadiness {
 export function buildExtensionCurrentStageReadiness(
   extension: ExtensionForStageReadiness,
   lifecycle: DeliveryLifecycleProjection,
-  open: ExtensionOpenCounts,
 ): { completed: number; total: number } | undefined {
   if (lifecycle.isTerminal || !lifecycle.stage) return undefined;
+  if (lifecycle.stage !== 'STARTING') return undefined;
 
-  const stage = lifecycle.stage;
-
-  if (stage === 'STARTING') {
-    const checks = [Boolean(extension.description?.trim()), Boolean(extension.assignedTo)];
-    const completed = checks.filter(Boolean).length;
-    return { completed, total: checks.length };
-  }
-
-  if (stage === 'DEVELOPMENT' || stage === 'QA') {
-    const clear = open.openTasks === 0;
-    return { completed: clear ? 1 : 0, total: 1 };
-  }
-
-  if (stage === 'TRANSFER') {
-    const checks = [open.openTasks === 0];
-    const completed = checks.filter(Boolean).length;
-    return { completed, total: checks.length };
-  }
-
-  return undefined;
+  const checks = [Boolean(extension.description?.trim()), Boolean(extension.assignedTo)];
+  const completed = checks.filter(Boolean).length;
+  return { completed, total: checks.length };
 }

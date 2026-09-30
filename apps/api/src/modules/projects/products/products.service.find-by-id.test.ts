@@ -148,13 +148,9 @@ describe('ProductsService', () => {
         },
       });
       expect(result.doneReadiness.blockers.map((item) => item.code)).toEqual(
-        expect.arrayContaining([
-          'OPEN_EXTENSIONS',
-          'OPEN_TASKS',
-          'OPEN_TICKETS',
-          'CLIENT_ACCEPTANCE_MISSING',
-        ]),
+        expect.arrayContaining(['OPEN_EXTENSIONS', 'OPEN_TICKETS', 'CLIENT_ACCEPTANCE_MISSING']),
       );
+      expect(result.doneReadiness.blockers.map((item) => item.code)).not.toContain('OPEN_TASKS');
       expect(result.doneReadiness.blockers.map((item) => item.code)).not.toContain(
         'UNPAID_INVOICES',
       );
