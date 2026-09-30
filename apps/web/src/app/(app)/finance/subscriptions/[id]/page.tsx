@@ -217,6 +217,7 @@ export default function SubscriptionDetailPage() {
           draft={generalDraft}
           patchDraft={patchGeneralDraft}
           replaceDraft={replaceGeneralDraft}
+          onSubscriptionChange={handleSubscriptionChange}
           formDisabled={saving}
         />
       </div>

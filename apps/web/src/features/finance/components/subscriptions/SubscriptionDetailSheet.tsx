@@ -246,6 +246,7 @@ export function SubscriptionDetailSheet({
                       draft={generalDraft}
                       patchDraft={patchGeneralDraft}
                       replaceDraft={replaceGeneralDraft}
+                      onSubscriptionChange={handleSubscriptionChange}
                       formDisabled={saving}
                     />
                   ) : null}
