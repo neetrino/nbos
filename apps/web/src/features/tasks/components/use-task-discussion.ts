@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { tasksApi, type TaskDiscussionList } from '@/lib/api/tasks';
@@ -11,9 +11,36 @@ import {
   MESSENGER_QUERY_STALE_TIME_MS,
 } from '@/features/messenger/query/messenger-query-policy';
 import { useObservedMessengerMessages } from '@/features/messenger/query/use-messenger-messages';
+import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import { discussionEntryToCoreMessage } from './discussion-entry-to-core-message';
 import { seedTaskDiscussionMessages } from './seed-task-discussion-messages';
 import type { TaskLocalMessage } from './TaskSheetChatPanel';
+
+/** Inbox copy of a Task conversation, when Messenger has already loaded it. */
+export function useCachedTaskConversationId(taskId: string | null): string | null {
+  const queryClient = useQueryClient();
+  return useSyncExternalStore(
+    (onStoreChange) => queryClient.getQueryCache().subscribe(onStoreChange),
+    () => readCachedTaskConversationId(queryClient, taskId),
+    () => null,
+  );
+}
+
+function readCachedTaskConversationId(
+  queryClient: QueryClient,
+  taskId: string | null,
+): string | null {
+  if (!taskId) return null;
+  const canonicalKey = `task:${taskId}`;
+  const queries = queryClient.getQueriesData<{
+    items?: Array<{ id: string; canonicalKey?: string | null }>;
+  }>({ queryKey: messengerQueryKeys.internalSummariesRoot });
+  for (const [, data] of queries) {
+    const match = data?.items?.find((row) => row.canonicalKey === canonicalKey);
+    if (match) return match.id;
+  }
+  return null;
+}
 
 export function taskDiscussionLocatorKey(taskId: string) {
   return ['tasks', 'discussion', 'locator', taskId] as const;
@@ -47,6 +74,7 @@ export function useTaskDiscussion(taskId: string | null, open: boolean) {
   );
 
   return {
+    conversationId,
     messages: (cached.data?.items ?? []).map(coreMessageToLocal),
     send,
   };
