@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CurrentUser,
@@ -7,6 +17,7 @@ import {
 } from '../../../common/decorators';
 import { CreateInternalConversationDto } from './dto/create-internal-conversation.dto';
 import { ForwardCoreMessagesDto } from './dto/forward-core-messages.dto';
+import { PinCoreMessageDto } from './dto/pin-core-message.dto';
 import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
 import { ListInternalConversationsQueryDto } from './dto/list-internal-conversations.query';
 import { ListMessengerDeltaQueryDto } from './dto/list-messenger-delta.query';
@@ -112,6 +123,25 @@ export class MessengerCoreInternalController {
       mentionedEmployeeIds: body.mentionedEmployeeIds,
       idempotencyKey: body.idempotencyKey,
     });
+  }
+
+  @Post('conversations/:id/pin')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Pin a message at the top of this Internal conversation' })
+  pinMessage(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: PinCoreMessageDto,
+  ) {
+    return this.internal.pinMessage(user.id, id, body.messageId);
+  }
+
+  @Delete('conversations/:id/pin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Unpin the conversation pinned message' })
+  unpinMessage(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.internal.unpinMessage(user.id, id);
   }
 
   @Post('conversations/:id/forwards')

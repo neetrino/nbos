@@ -40,6 +40,7 @@ export interface MessengerCoreConversationRow {
   peerPosition?: string | null;
   isFavorite?: boolean;
   canWrite?: boolean;
+  pinnedMessage?: { id: string; senderName: string; content: string } | null;
   primaryLinks?: Array<{ entityType: string; entityId: string }>;
 }
 
@@ -261,6 +262,21 @@ export const messengerCoreApi = {
 
   async markRead(id: string): Promise<void> {
     await api.post(`${INTERNAL_ROOT}/conversations/${id}/read`);
+  },
+
+  async pinMessage(
+    conversationId: string,
+    messageId: string,
+  ): Promise<{ id: string; senderName: string; content: string }> {
+    const resp = await api.post<{ id: string; senderName: string; content: string }>(
+      `${INTERNAL_ROOT}/conversations/${conversationId}/pin`,
+      { messageId },
+    );
+    return resp.data;
+  },
+
+  async unpinMessage(conversationId: string): Promise<void> {
+    await api.delete(`${INTERNAL_ROOT}/conversations/${conversationId}/pin`);
   },
 
   async toggleFavorite(id: string): Promise<{ favorite: boolean; collectionId: string }> {

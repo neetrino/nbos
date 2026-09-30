@@ -30,6 +30,7 @@ const SUMMARY = {
   peerName: null,
   isFavorite: false,
   canWrite: true,
+  pinnedMessage: null,
 };
 
 describe('loadAccessibleInternalConversationSummary', () => {

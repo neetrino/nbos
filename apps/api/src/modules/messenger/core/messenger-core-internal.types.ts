@@ -14,6 +14,7 @@ export type MessengerInternalConversationListItem = MessengerCoreConversationDto
   peerPosition: string | null;
   isFavorite: boolean;
   canWrite: boolean;
+  pinnedMessage: { id: string; senderName: string; content: string } | null;
 };
 
 export type MessengerInternalConversationDetail = MessengerCoreConversationDto & {

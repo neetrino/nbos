@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, type RefObject } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   mapMessengerRowToView,
   type MessengerViewMessage,
@@ -18,6 +19,8 @@ import {
 } from './internal-sheet-delivery-label';
 import { conversationListTitle } from './internal-messenger-section';
 import { InternalMessageActionsBar } from './InternalMessageActionsBar';
+import { InternalPinnedMessageBar } from './InternalPinnedMessageBar';
+import { pinConversationMessage, unpinConversationMessage } from './pin-conversation-message';
 import { InternalMessageSelectionBar } from './InternalMessageSelectionBar';
 import { InternalJumpToEndButton } from './InternalJumpToEndButton';
 import { InternalThreadActionDialogs } from './InternalThreadActionDialogs';
@@ -157,6 +160,10 @@ function ThreadScaffold(props: {
   onOpenTarget?: (conversationId: string) => void;
 }) {
   const { conversation, actions } = props;
+  const queryClient = useQueryClient();
+  const selectedId = actions.selectedIds[0];
+  const pinned = conversation.pinnedMessage ?? null;
+  const canWrite = Boolean(conversation.canWrite);
   return (
     <section className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#eef2ff]">
       <ThreadHeader
@@ -170,6 +177,13 @@ function ThreadScaffold(props: {
         onToggleFavorite={props.onToggleFavorite}
         onAddToCollection={props.onAddToCollection}
       />
+      {pinned ? (
+        <InternalPinnedMessageBar
+          pinned={pinned}
+          canUnpin={canWrite}
+          onUnpin={() => void unpinConversationMessage(queryClient, conversation.id)}
+        />
+      ) : null}
       <InternalMessageActionsBar
         anchor={actions.menuAnchor}
         onClose={actions.closeActionMenu}
@@ -180,6 +194,16 @@ function ThreadScaffold(props: {
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
         onSelect={actions.startSelecting}
+        onPin={
+          canWrite && selectedId && pinned?.id !== selectedId
+            ? () => void pinConversationMessage(queryClient, conversation.id, selectedId)
+            : undefined
+        }
+        onUnpin={
+          canWrite && selectedId && pinned?.id === selectedId
+            ? () => void unpinConversationMessage(queryClient, conversation.id)
+            : undefined
+        }
         onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
       />
       {actions.selecting ? (

@@ -193,6 +193,7 @@ model MessengerConversation {
   directParticipantHighId String?                      @map("direct_participant_high_id")
   metadata                Json?
   lastMessageAt           DateTime?                    @map("last_message_at")
+  pinnedMessageId         String?                      @map("pinned_message_id")
   createdAt               DateTime                     @default(now()) @map("created_at")
   updatedAt               DateTime                     @updatedAt @map("updated_at")
 
@@ -215,12 +216,14 @@ model MessengerConversation {
   attentions                   MessengerConversationAttention[]
   conversationRevisions         MessengerConversationRevision[]
   employeeConversationRevisions MessengerEmployeeConversationRevision[]
+  pinnedMessage                 MessengerMessage?                      @relation("ConversationPinnedMessage", fields: [pinnedMessageId], references: [id], onDelete: SetNull)
 
   @@unique([directParticipantLowId, directParticipantHighId])
   @@index([type, status])
   @@index([zone, status])
   @@index([lastMessageAt])
   @@index([status, updatedAt])
+  @@index([pinnedMessageId])
   @@map("messenger_conversations")
 }
 
@@ -294,6 +297,7 @@ model MessengerMessage {
   commands           MessengerCommand[]
   externalRefs       MessengerMessageExternalRef[]
   providerEvents     MessengerProviderEvent[]
+  pinnedInConversation MessengerConversation[] @relation("ConversationPinnedMessage")
 
   @@unique([conversationId, idempotencyKey])
   @@index([conversationId, createdAt])

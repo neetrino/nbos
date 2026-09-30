@@ -1,3 +1,4 @@
+import { mapPinnedMessagePreview } from './messenger-core-pin-message.ops';
 import { conversationCanWrite } from './messenger-core-internal.types';
 import type { MessengerInternalConversationListItem } from './messenger-core-internal.types';
 import { hiddenTaskDiscussionNoteWhere } from './messenger-task-discussion.metadata';
@@ -26,6 +27,9 @@ export function internalListInclude(employeeId: string) {
         employee: { select: { firstName: true, lastName: true, position: true } },
       },
     },
+    pinnedMessage: {
+      select: { id: true, senderNameSnapshot: true, content: true, deletedAt: true },
+    },
   };
 }
 
@@ -46,6 +50,12 @@ export type InternalListRow = {
     role: string;
     employee: { firstName: string; lastName: string; position: string | null };
   }>;
+  pinnedMessage?: {
+    id: string;
+    senderNameSnapshot: string;
+    content: string;
+    deletedAt: Date | null;
+  } | null;
 };
 
 export function mapInternalListItem(
@@ -92,6 +102,7 @@ export function mapInternalListItem(
     peerPosition: peerPositionLabel(peer?.employee.position),
     isFavorite: row.userSettings[0]?.favorite === true,
     canWrite: conversationCanWrite(editScope, self?.role ?? null, editGrantIds.has(row.id)),
+    pinnedMessage: mapPinnedMessagePreview(row.pinnedMessage),
   };
 }
 

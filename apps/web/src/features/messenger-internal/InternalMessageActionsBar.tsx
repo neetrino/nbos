@@ -12,6 +12,8 @@ import {
   Ticket,
   Link2,
   CircleCheck,
+  Pin,
+  PinOff,
   Trash2,
 } from 'lucide-react';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
@@ -32,6 +34,8 @@ export function InternalMessageActionsBar({
   onOpenOriginal,
   onCopySource,
   onSelect,
+  onPin,
+  onUnpin,
   onDelete,
 }: {
   anchor: MessageActionMenuAnchor | null;
@@ -47,6 +51,8 @@ export function InternalMessageActionsBar({
   onOpenOriginal: () => void;
   onCopySource: () => void;
   onSelect: () => void;
+  onPin?: () => void;
+  onUnpin?: () => void;
   onDelete?: () => void;
 }) {
   const open = Boolean(anchor);
@@ -97,6 +103,11 @@ export function InternalMessageActionsBar({
         label="Select"
         onClick={() => run(onSelect, onClose)}
       />
+      {onUnpin ? (
+        <MenuRow icon={<PinOff size={16} />} label="Unpin" onClick={() => run(onUnpin, onClose)} />
+      ) : onPin ? (
+        <MenuRow icon={<Pin size={16} />} label="Pin" onClick={() => run(onPin, onClose)} />
+      ) : null}
       <MenuDivider />
       <MenuRow
         icon={<ExternalLink size={16} />}

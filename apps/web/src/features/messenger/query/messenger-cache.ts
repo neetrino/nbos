@@ -158,6 +158,26 @@ function summaryMembershipForKey(
   return 'unknown';
 }
 
+export function patchConversationPinnedMessage(
+  queryClient: QueryClient,
+  zone: MessengerZone,
+  conversationId: string,
+  pinnedMessage: MessengerCoreConversationRow['pinnedMessage'],
+): void {
+  queryClient.setQueriesData<{ items: MessengerCoreConversationRow[] }>(
+    { queryKey: summariesRoot(zone) },
+    (current) => {
+      if (!current?.items) return current;
+      return {
+        ...current,
+        items: current.items.map((row) =>
+          row.id === conversationId ? { ...row, pinnedMessage } : row,
+        ),
+      };
+    },
+  );
+}
+
 export function patchConversationFavorite(
   queryClient: QueryClient,
   zone: MessengerZone,
