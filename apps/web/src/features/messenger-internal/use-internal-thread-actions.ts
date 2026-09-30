@@ -137,7 +137,7 @@ export function useInternalThreadActions(
         setMenuAnchor(null);
         setDeleteConfirmOpen(false);
       } catch (error) {
-        setDeleteError(getApiErrorMessage(error));
+        setDeleteError(getApiErrorMessage(error, 'Could not delete messages'));
       } finally {
         setDeleteSubmitting(false);
       }

@@ -208,9 +208,7 @@ export function ClientConversationThread({
         open={actions.forwardOpen}
         currentConversationId={conversation.id}
         onClose={() => actions.setForwardOpen(false)}
-        onForward={(targetConversationId, comment) =>
-          forwardSelected(targetConversationId, actions, comment)
-        }
+        onForward={(targetConversationId) => forwardSelected(targetConversationId, actions)}
       />
       <InternalDeleteMessagesDialog
         open={actions.deleteConfirmOpen}
@@ -257,12 +255,12 @@ export function ClientConversationThread({
 async function forwardSelected(
   targetConversationId: string,
   actions: ReturnType<typeof useInternalThreadActions>,
-  comment: string,
 ): Promise<void> {
   const result = await messengerCoreApi.forwardMessages(
     targetConversationId,
-    actions.selectedMessages.map((row) => row.id),
-    comment,
+    actions.forwardSourceIds.length > 0
+      ? actions.forwardSourceIds
+      : actions.selectedMessages.map((row) => row.id),
   );
   if (result.createdConversation !== false) return;
   toast.success('Forwarded internally as a reference');
