@@ -25,13 +25,11 @@ export type MessengerQuickRailShortcut = {
 export function MessengerQuickRail({
   people,
   shortcuts,
-  activeId,
   onSelect,
   className = '',
 }: {
   people: MessengerQuickRailPerson[];
   shortcuts?: MessengerQuickRailShortcut[];
-  activeId: string | null;
   onSelect: (employeeId: string) => void;
   className?: string;
 }) {
@@ -51,23 +49,13 @@ export function MessengerQuickRail({
       {pinned.length > 0 ? (
         <>
           {pinned.map((person) => (
-            <QuickAvatar
-              key={person.id}
-              person={person}
-              active={person.id === activeId}
-              onSelect={() => onSelect(person.id)}
-            />
+            <QuickAvatar key={person.id} person={person} onSelect={() => onSelect(person.id)} />
           ))}
           {rest.length > 0 ? <RailDivider /> : null}
         </>
       ) : null}
       {rest.map((person) => (
-        <QuickAvatar
-          key={person.id}
-          person={person}
-          active={person.id === activeId}
-          onSelect={() => onSelect(person.id)}
-        />
+        <QuickAvatar key={person.id} person={person} onSelect={() => onSelect(person.id)} />
       ))}
     </aside>
   );
@@ -84,8 +72,11 @@ function RailShortcut({ shortcut }: { shortcut: MessengerQuickRailShortcut }) {
     <button
       type="button"
       aria-label={unread > 0 ? `${shortcut.label}, ${unread} unread` : shortcut.label}
-      onClick={shortcut.onSelect}
-      className={`relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full ${tone}`}
+      onClick={(event) => {
+        shortcut.onSelect();
+        event.currentTarget.blur();
+      }}
+      className={`relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#a5b4fc] focus-visible:ring-offset-1 ${tone}`}
     >
       <Icon className={iconClass} size={20} strokeWidth={1.85} aria-hidden />
       <RailUnreadBadge count={unread} />
@@ -99,11 +90,9 @@ function RailDivider() {
 
 function QuickAvatar({
   person,
-  active,
   onSelect,
 }: {
   person: MessengerQuickRailPerson;
-  active: boolean;
   onSelect: () => void;
 }) {
   const photo = person.avatarUrl?.trim();
@@ -112,9 +101,11 @@ function QuickAvatar({
     <button
       type="button"
       aria-label={unread > 0 ? `${person.label}, ${unread} unread` : person.label}
-      aria-current={active ? 'true' : undefined}
-      onClick={onSelect}
-      className={`relative rounded-full ${active ? 'ring-2 ring-[#a5b4fc] ring-offset-1' : ''}`}
+      onClick={(event) => {
+        onSelect();
+        event.currentTarget.blur();
+      }}
+      className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#a5b4fc] focus-visible:ring-offset-1"
     >
       <Avatar className="size-10 overflow-hidden" size="lg">
         {photo ? (
@@ -124,9 +115,7 @@ function QuickAvatar({
             className="size-full max-h-full max-w-full object-cover"
           />
         ) : null}
-        <AvatarFallback
-          className={`text-xs text-[#334155] ${active ? 'bg-[#c7d2fe]' : 'bg-[#e2e8f0]'}`}
-        >
+        <AvatarFallback className="bg-[#e2e8f0] text-xs text-[#334155]">
           {initialsFromDisplayName(person.label)}
         </AvatarFallback>
       </Avatar>

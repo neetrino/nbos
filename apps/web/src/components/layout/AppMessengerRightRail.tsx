@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { listEmployeesForAppRail } from '@/lib/employees';
@@ -39,11 +39,9 @@ export function AppMessengerRightRail() {
     useCachedDirectRailPeerState(enabled);
   const { openMessenger } = useMessengerOverlay();
   const { openClientMessenger } = useClientMessengerOverlay();
-  const [activeEmployeeId, setActiveEmployeeId] = useState<string | null>(null);
 
   const onSelect = useCallback(
     (employeeId: string) => {
-      setActiveEmployeeId(employeeId);
       const cachedId = findCachedDirectConversationId(queryClient, employeeId);
       if (cachedId) {
         openMessengerConversation(cachedId, (id) => openMessenger('direct', id));
@@ -54,8 +52,7 @@ export function AppMessengerRightRail() {
         .createConversation({ type: 'DIRECT', peerEmployeeId: employeeId })
         .then((conversation) => {
           openMessengerConversation(conversation.id, (id) => openMessenger('direct', id));
-        })
-        .catch(() => setActiveEmployeeId(null));
+        });
     },
     [openMessenger, queryClient],
   );
@@ -88,12 +85,5 @@ export function AppMessengerRightRail() {
     unreadCount: unreadByPeerId.get(row.value) ?? 0,
   }));
 
-  return (
-    <MessengerQuickRail
-      people={people}
-      shortcuts={shortcuts}
-      activeId={activeEmployeeId}
-      onSelect={onSelect}
-    />
-  );
+  return <MessengerQuickRail people={people} shortcuts={shortcuts} onSelect={onSelect} />;
 }
