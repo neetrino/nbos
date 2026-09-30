@@ -50,6 +50,7 @@ import type {
 import { listCoreConversationLinks } from './messenger-core-link.ops';
 import { defaultTaskLinksFromPrimary } from './messenger-core-task-default-links';
 import {
+  mapPinnedMessagePreview,
   pinCoreConversationMessage,
   unpinCoreConversationMessage,
 } from './messenger-core-pin-message.ops';
@@ -124,10 +125,19 @@ export class MessengerCoreInternalService {
     const loaded = await loadMessengerCoreAccessFacts(this.prisma, employeeId, conversationId);
     const canWrite = loaded.facts ? evaluateMessengerCoreAccess(loaded.facts).canWrite : false;
     const links = await listCoreConversationLinks(this.prisma, conversationId);
+    const pinned = await this.prisma.messengerConversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        pinnedMessage: {
+          select: { id: true, senderNameSnapshot: true, content: true, deletedAt: true },
+        },
+      },
+    });
     return {
       ...conversation,
       canWrite,
       primaryLinks: defaultTaskLinksFromPrimary(links),
+      pinnedMessage: mapPinnedMessagePreview(pinned?.pinnedMessage),
     };
   }
 

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { messengerCoreApi } from '@/lib/api/messenger-core';
+import { useState, useSyncExternalStore } from 'react';
+import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { messengerCoreApi, type MessengerCoreConversationRow } from '@/lib/api/messenger-core';
+import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import { useMessengerMessages } from '@/features/messenger/query/use-messenger-messages';
 import {
   MESSENGER_QUERY_GC_TIME_MS,
@@ -23,7 +24,8 @@ export function TaskLinkedMessengerThread({ conversationId }: { conversationId: 
     gcTime: MESSENGER_QUERY_GC_TIME_MS,
   });
   const messages = useMessengerMessages(conversationId, { enabled: true, zone: 'INTERNAL' });
-  const row = conversation.data;
+  const listed = useListedConversation(conversationId);
+  const row = mergeConversation(conversation.data, listed);
   if (!row) {
     return <p className="text-muted-foreground p-6 text-sm">Loading conversation…</p>;
   }
@@ -55,4 +57,40 @@ export function TaskLinkedMessengerThread({ conversationId }: { conversationId: 
       remoteTypingHint={null}
     />
   );
+}
+
+function useListedConversation(conversationId: string): MessengerCoreConversationRow | null {
+  const queryClient = useQueryClient();
+  return useSyncExternalStore(
+    (onStoreChange) => queryClient.getQueryCache().subscribe(onStoreChange),
+    () => readListedConversation(queryClient, conversationId),
+    () => null,
+  );
+}
+
+function readListedConversation(
+  queryClient: QueryClient,
+  conversationId: string,
+): MessengerCoreConversationRow | null {
+  const queries = queryClient.getQueriesData<{ items?: MessengerCoreConversationRow[] }>({
+    queryKey: messengerQueryKeys.internalSummariesRoot,
+  });
+  for (const [, data] of queries) {
+    const match = data?.items?.find((row) => row.id === conversationId);
+    if (match) return match;
+  }
+  return null;
+}
+
+function mergeConversation(
+  fetched: MessengerCoreConversationRow | undefined,
+  listed: MessengerCoreConversationRow | null,
+): MessengerCoreConversationRow | null {
+  if (!fetched && !listed) return null;
+  return {
+    ...(fetched ?? listed)!,
+    ...(listed ?? {}),
+    pinnedMessage: listed?.pinnedMessage ?? fetched?.pinnedMessage ?? null,
+    canWrite: listed?.canWrite ?? fetched?.canWrite,
+  };
 }

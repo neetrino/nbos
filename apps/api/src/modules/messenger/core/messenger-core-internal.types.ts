@@ -20,6 +20,7 @@ export type MessengerInternalConversationListItem = MessengerCoreConversationDto
 export type MessengerInternalConversationDetail = MessengerCoreConversationDto & {
   canWrite: boolean;
   primaryLinks: Array<{ entityType: MessengerLinkEntityType; entityId: string }>;
+  pinnedMessage: { id: string; senderName: string; content: string } | null;
 };
 
 export type MessengerInternalListQuery = {
