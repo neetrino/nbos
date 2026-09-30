@@ -27,6 +27,7 @@ export type DeliveryPayableUnit = {
   totalPlannedBonus: string;
   totalReleasedBonus: string;
   totalPaidBonus: string;
+  paidCashState?: 'CONFIRMED' | 'UNCONFIRMED';
   totalRemainingBonus: string;
   availableFunding: string;
   overFundingAmount: string;

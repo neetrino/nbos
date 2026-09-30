@@ -80,6 +80,10 @@ Marker `nbos:dev-synthetic:payroll-postgres`, code prefix `DEV-PAY-PG`. Months a
 
 Checked on 2026-09-28 from the repository root: concurrent payments, concurrent bonus assignment, concurrent approval, the 320,000 cash cycle with a 20,000 refund, a journal failure inside the payment, carry restore, and invoice 210,000. Eight tests passed. The tests delete their own rows.
 
+Checked on 2026-09-29 from the repository root: `payroll-dev-postgres.close-followup.test.ts`, 6 passed in 105.85s. Close then delete is rejected and the payment stays. Delete then close is rejected because the line is no longer fully paid. Close and delete together never leave a `CLOSED` run with the payment gone, and the salary line paid equals the payment sum. The same payment key after close returns the original payment id and does not insert a second row. The bonus pool paid total is 60,000 after the full bonus payment, 40,000 after a 20,000 refund, and 60,000 after that 20,000 is paid again. A later payment of 5,000 moves it to 45,000. A second refund call on the same payment does not add a row. Those rows were deleted by the test. February 2020 and September 2026 were not edited.
+
+The same day, `payroll-dev-postgres.hire-access.test.ts` passed 2 tests in 13.47s. A hire dated 2094-03-16 receives the full 180,000.00 for March and nothing for February, and the current employee salary stays empty. OWN, DEPARTMENT, and ALL were checked against a colleague and an outsider. A foreign approver id did not approve the draft. Those rows were deleted by the test.
+
 ## February 2020 browser bonus
 
 Marker `nbos:dev-synthetic:payroll-browser-bonus`, employee Dev Browserbonus, month `2020-02`. Salary profile 300,000 AMD covers only that month. Two delivery accruals, 40,000 and 20,000, earned `2020-01`. September 2026 was not edited.

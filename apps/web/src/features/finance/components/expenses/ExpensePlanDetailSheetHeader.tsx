@@ -2,6 +2,7 @@
 
 import { Ban, CalendarDays, RotateCcw, Trash2 } from 'lucide-react';
 import { DetailSheetSettingsMenu, StatusBadge } from '@/components/shared';
+import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { getExpensePlanStatus } from '@/features/finance/constants/expense-plan-status';
 import { formatAmount } from '@/features/finance/constants/finance';
@@ -28,6 +29,8 @@ interface ExpensePlanDetailSheetHeaderProps {
   actionsDisabled?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
+  canRename?: boolean;
+  onRename: (name: string) => Promise<void>;
   onCancelClick: () => void;
   onResumeClick: () => void;
   onDeleteClick: () => void;
@@ -53,6 +56,8 @@ export function ExpensePlanDetailSheetHeader({
   actionsDisabled = false,
   canEdit = false,
   canDelete = false,
+  canRename = false,
+  onRename,
   onCancelClick,
   onResumeClick,
   onDeleteClick,
@@ -79,11 +84,14 @@ export function ExpensePlanDetailSheetHeader({
       <div className="min-w-0 flex-1">
         <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
           <CalendarDays className="text-muted-foreground size-5 shrink-0" aria-hidden />
-          <div className="min-w-0">
-            <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-              {displayName}
-            </h2>
-          </div>
+          <InlineEditableEntityTitle
+            value={displayName}
+            disabled={!canRename}
+            editHint={t('sheet.renameHint')}
+            placeholder={t('create.namePlaceholder')}
+            onCommit={onRename}
+            titleClassName="text-xl font-bold tracking-tight"
+          />
           <span className="text-muted-foreground rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
             {categoryLabel}
           </span>

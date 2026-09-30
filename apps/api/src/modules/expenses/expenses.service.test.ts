@@ -843,6 +843,60 @@ describe('ExpensesService', () => {
       expect(prisma.expense.findUnique).toHaveBeenCalled();
     });
 
+    it('renames in a closed posting period and trims the name', async () => {
+      prisma.financePostingPeriod.findUnique.mockResolvedValue({ status: 'CLOSED' });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        dueDate: new Date('2026-04-10T00:00:00.000Z'),
+        amount: new Decimal(100),
+        expensePayments: [],
+        project: null,
+      });
+
+      await service.update('e1', { name: '  Office rent  ' });
+
+      expect(prisma.financePostingPeriod.findUnique).not.toHaveBeenCalled();
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: expect.objectContaining({ name: 'Office rent' }),
+        }),
+      );
+    });
+
+    it('rejects a blank name', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        dueDate: new Date('2026-04-10T00:00:00.000Z'),
+        amount: new Decimal(100),
+        expensePayments: [],
+        project: null,
+      });
+
+      await expect(service.update('e1', { name: '   ' })).rejects.toThrow(BadRequestException);
+      expect(prisma.expense.update).not.toHaveBeenCalled();
+    });
+
+    it('still blocks a money change in a closed posting period', async () => {
+      prisma.financePostingPeriod.findUnique.mockResolvedValue({ status: 'CLOSED' });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        dueDate: new Date('2026-04-10T00:00:00.000Z'),
+        amount: new Decimal(100),
+        status: 'DUE_NOW',
+        expensePayments: [],
+        project: null,
+      });
+
+      await expect(service.update('e1', { name: 'Rent', amount: 90 })).rejects.toThrow(
+        /posting period/i,
+      );
+      expect(prisma.expense.update).not.toHaveBeenCalled();
+    });
+
     it('rejects invalid category', async () => {
       prisma.expense.findUnique.mockResolvedValue({
         id: 'e1',

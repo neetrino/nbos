@@ -138,6 +138,7 @@ export async function resolveDeliveryPayableUnits(
             payableAmount: true,
             earnedPeriod: true,
             status: true,
+            bonusReleases: { select: { id: true } },
           },
         },
       },
@@ -158,7 +159,8 @@ export async function resolveDeliveryPayableUnits(
       BONUS_POOL_ZERO,
     );
     const planned = pool ? decimalFrom(pool.totalPlannedAmount) : entryPlanned;
-    const remaining = pool ? decimalFrom(pool.totalRemainingAmount) : entryRemaining;
+    const poolRemaining = pool ? decimalFrom(pool.totalRemainingAmount) : entryRemaining;
+    const remaining = remainingWithoutUnconfirmedPlan(order, poolRemaining);
 
     const deliveryOpen = isDeliveryOpen(order.product?.status, order.extension?.status);
     const unpaid = remaining.gt(BONUS_POOL_ZERO);
@@ -181,7 +183,8 @@ export async function resolveDeliveryPayableUnits(
       deliveryOpen,
       totalPlannedBonus: planned.toFixed(2),
       totalReleasedBonus: pool ? decimalFrom(pool.totalReleasedAmount).toFixed(2) : '0.00',
-      totalPaidBonus: pool ? decimalFrom(pool.totalPaidAmount).toFixed(2) : '0.00',
+      totalPaidBonus: paidBonusAmount(order),
+      paidCashState: paidCashStateFor(order),
       totalRemainingBonus: remaining.toFixed(2),
       availableFunding: pool ? decimalFrom(pool.availableFunding).toFixed(2) : '0.00',
       overFundingAmount: pool ? decimalFrom(pool.overFundingAmount).toFixed(2) : '0.00',
@@ -252,4 +255,58 @@ export function holdsDeliveryRole(
 
 export function decimalGtZero(value: string | Decimal): boolean {
   return decimalFrom(value).gt(BONUS_POOL_ZERO);
+}
+
+function paidCashStateFor(order: {
+  productBonusPool: { totalReleasedAmount: Decimal | string } | null;
+  bonusEntries: { status: string }[];
+}): 'CONFIRMED' | 'UNCONFIRMED' {
+  const released = order.productBonusPool
+    ? decimalFrom(order.productBonusPool.totalReleasedAmount)
+    : BONUS_POOL_ZERO;
+  const historicalPaid = order.bonusEntries.some((entry) => entry.status === 'PAID');
+  if (historicalPaid && !released.gt(BONUS_POOL_ZERO)) {
+    return 'UNCONFIRMED';
+  }
+  return 'CONFIRMED';
+}
+
+function paidBonusAmount(order: {
+  productBonusPool: {
+    totalPaidAmount: Decimal | string;
+    totalReleasedAmount: Decimal | string;
+  } | null;
+  bonusEntries: { status: string; amount: Decimal | string }[];
+}): string {
+  if (order.productBonusPool == null || paidCashStateFor(order) === 'UNCONFIRMED') {
+    return '0.00';
+  }
+  return decimalFrom(order.productBonusPool.totalPaidAmount).toFixed(2);
+}
+
+function remainingWithoutUnconfirmedPlan(
+  order: {
+    productBonusPool: { totalReleasedAmount: Decimal | string } | null;
+    bonusEntries: {
+      status: string;
+      amount: Decimal | string;
+      bonusReleases?: { id: string }[];
+    }[];
+  },
+  remaining: Decimal,
+): Decimal {
+  if (order.productBonusPool == null) {
+    return remaining;
+  }
+  const historical = releaselessPaidAmount(order.bonusEntries);
+  const open = remaining.minus(historical);
+  return open.gt(BONUS_POOL_ZERO) ? open : BONUS_POOL_ZERO;
+}
+
+function releaselessPaidAmount(
+  entries: { status: string; amount: Decimal | string; bonusReleases?: { id: string }[] }[],
+): Decimal {
+  return entries
+    .filter((entry) => entry.status === 'PAID' && (entry.bonusReleases?.length ?? 0) === 0)
+    .reduce((sum, entry) => sum.plus(decimalFrom(entry.amount)), BONUS_POOL_ZERO);
 }

@@ -90,6 +90,7 @@
   },
   "sheet": {
     "loading": "Բեռնվում է…",
+    "renameHint": "Սեղմեք՝ անվանումը փոխելու համար",
     "tabs": {
       "general": "Ընդհանուր",
       "cards": "Pay Now",
