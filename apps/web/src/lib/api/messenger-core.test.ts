@@ -89,6 +89,7 @@ describe('Internal Messenger web client', () => {
 
   it('wires Slice 6 actions on the shared Internal thread', () => {
     const thread = readWeb('features/messenger-internal/InternalConversationThread.tsx');
+    const dialogs = readWeb('features/messenger-internal/InternalThreadActionDialogs.tsx');
     const client = readWeb('lib/api/messenger-core.ts');
     const createTask = readWeb('features/messenger-internal/InternalCreateTaskFromMessages.tsx');
     const sort = readWeb('features/messenger-internal/sort-selected-messages.ts');
@@ -96,7 +97,8 @@ describe('Internal Messenger web client', () => {
     const openOriginal = readWeb('features/messenger-internal/open-original-source.ts');
     const card = readWeb('features/messenger-internal/InternalForwardReferenceCard.tsx');
     expect(thread).toMatch(/InternalMessageActionsBar/);
-    expect(thread).toMatch(/InternalCreateTaskFromMessages/);
+    expect(thread).toMatch(/InternalThreadActionDialogs/);
+    expect(dialogs).toMatch(/InternalCreateTaskFromMessages/);
     expect(thread).toMatch(/onOpenOriginalSource/);
     expect(thread).toMatch(/openOriginalBySourceId/);
     expect(thread).toMatch(/replyToMessageId/);
