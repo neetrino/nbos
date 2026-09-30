@@ -34,6 +34,7 @@ export const INTERNAL_MESSENGER_SHELL_CLASS =
 
 /** Space under the last bubble so the overlay composer does not cover it. */
 export const SHEET_COMPOSER_OVERLAY_PAD_CLASS = 'pb-16';
+export const SHEET_COMPOSER_REPLY_PAD_CLASS = 'pb-28';
 
 /** Gap from the visible bottom before we treat the thread as “reading history”. */
 export const SHEET_THREAD_NEAR_END_PX = 80;
@@ -59,10 +60,13 @@ export const SHEET_JUMP_TO_END_BUTTON_CLASS =
   'absolute right-4 bottom-16 z-30 flex size-10 items-center justify-center rounded-full bg-white text-[#334155] shadow-[0_2px_10px_rgba(15,23,42,0.16)] transition-[opacity,transform] duration-200 ease-out hover:bg-[#f8fafc]';
 
 export const SHEET_BUBBLE_LARGE_RADIUS_CLASS = 'rounded-[15px]';
+export const SHEET_REPLY_QUOTE_RADIUS_CLASS = 'rounded-[10px]';
 export const SHEET_BUBBLE_WRAP_CHAR_COUNT = 56;
 
 export const INTERNAL_FORWARD_PREVIEW_MAX_LENGTH = 140;
 
+export const SHEET_REPLY_JUMP_FLASH_DELAY_MS = 280;
+export const SHEET_REPLY_JUMP_FLASH_MS = 500;
 export const SHEET_MESSAGE_BUBBLE_ATTR = 'data-sheet-bubble';
 export const MESSAGE_ACTION_MENU_WIDTH_PX = 224;
 export const MESSAGE_ACTION_MENU_HEIGHT_PX = 280;

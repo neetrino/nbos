@@ -124,7 +124,7 @@ export class MessengerCoreInternalController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() body: ForwardCoreMessagesDto,
   ) {
-    return this.internal.forwardMessages(user.id, id, body.sourceMessageIds);
+    return this.internal.forwardMessages(user.id, id, body.sourceMessageIds, body.comment);
   }
 
   @Post('conversations/:id/read')

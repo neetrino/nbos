@@ -40,7 +40,8 @@ export function ThreadMessageRow({
   const rowGap = sheet && previous ? (continued ? 'mt-1' : 'mt-4') : '';
   return (
     <div
-      className={`group flex items-start gap-1 ${rowGap} ${
+      data-message-id={message.id}
+      className={`group flex items-start gap-1 rounded-none transition-colors duration-200 data-[reply-flash]:bg-[#4f46e5]/25 ${rowGap} ${
         selecting ? 'cursor-pointer px-1' : ''
       } ${selecting && selected ? 'bg-[#4f46e5]/10' : ''}`}
       onContextMenu={(event) => {

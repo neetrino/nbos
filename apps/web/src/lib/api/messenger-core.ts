@@ -180,12 +180,22 @@ export const messengerCoreApi = {
   async forwardMessages(
     targetConversationId: string,
     sourceMessageIds: string[],
-  ): Promise<{ holder: MessengerCoreMessageRow; sourceIds: string[]; createdConversation: false }> {
+    comment?: string,
+  ): Promise<{
+    holder: MessengerCoreMessageRow;
+    sourceIds: string[];
+    createdConversation: false;
+    commentMessage: MessengerCoreMessageRow | null;
+  }> {
     const resp = await api.post<{
       holder: MessengerCoreMessageRow;
       sourceIds: string[];
       createdConversation: false;
-    }>(`${INTERNAL_ROOT}/conversations/${targetConversationId}/forwards`, { sourceMessageIds });
+      commentMessage: MessengerCoreMessageRow | null;
+    }>(`${INTERNAL_ROOT}/conversations/${targetConversationId}/forwards`, {
+      sourceMessageIds,
+      comment,
+    });
     return resp.data;
   },
 

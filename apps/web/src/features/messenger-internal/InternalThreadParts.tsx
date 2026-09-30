@@ -10,7 +10,10 @@ import type {
 } from '@/lib/api/messenger-core';
 import { SheetThreadHeader } from './InternalSheetHeader';
 import { InternalReplyQuote } from './InternalReplyQuote';
-import { SHEET_COMPOSER_OVERLAY_PAD_CLASS } from './internal-messenger.constants';
+import {
+  SHEET_COMPOSER_OVERLAY_PAD_CLASS,
+  SHEET_COMPOSER_REPLY_PAD_CLASS,
+} from './internal-messenger.constants';
 import { InternalTypingIndicator } from './InternalTypingIndicator';
 import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
@@ -53,6 +56,7 @@ export function ThreadMessages({
   scrollerRef,
   sheet = false,
   meId = null,
+  replyActive = false,
 }: {
   views: MessengerViewMessage[];
   messages: MessengerCoreMessageRow[];
@@ -67,9 +71,11 @@ export function ThreadMessages({
   scrollerRef: RefObject<HTMLDivElement | null>;
   sheet?: boolean;
   meId?: string | null;
+  replyActive?: boolean;
 }) {
   const palette = useSheetMessengerPalette();
-  const canvas = sheet ? `${palette.canvas} py-6 ${SHEET_COMPOSER_OVERLAY_PAD_CLASS}` : 'py-3';
+  const pad = replyActive ? SHEET_COMPOSER_REPLY_PAD_CLASS : SHEET_COMPOSER_OVERLAY_PAD_CLASS;
+  const canvas = sheet ? `${palette.canvas} py-6 ${pad}` : 'py-3';
   return (
     <div ref={scrollerRef} className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
       {messagesLoading ? (
@@ -200,7 +206,7 @@ function ReplySlot({
   onClear: () => void;
 }) {
   return (
-    <div className={sheet ? 'px-4 pt-2' : undefined}>
+    <div className={sheet ? 'pt-2' : undefined}>
       <InternalReplyQuote
         senderName={replyTo.senderName}
         content={replyTo.content}

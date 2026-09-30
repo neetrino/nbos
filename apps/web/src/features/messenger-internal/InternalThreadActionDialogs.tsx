@@ -1,5 +1,7 @@
 'use client';
 
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { applyMessengerSendResult } from '@/features/messenger/query/messenger-cache';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import type { Task } from '@/lib/api/tasks';
@@ -17,19 +19,24 @@ export function InternalThreadActionDialogs({
   actions,
   creatorId,
   creatorReady,
+  onOpenTarget,
 }: {
   conversation: MessengerCoreConversationRow;
   actions: ThreadActions;
   creatorId: string | null;
   creatorReady: boolean;
+  onOpenTarget?: (conversationId: string) => void;
 }) {
+  const queryClient = useQueryClient();
   return (
     <>
       <InternalForwardDialog
         open={actions.forwardOpen}
         currentConversationId={conversation.id}
         onClose={() => actions.setForwardOpen(false)}
-        onForward={(targetConversationId) => forwardSelected(targetConversationId, actions)}
+        onForward={(targetConversationId, comment) =>
+          forwardSelected(targetConversationId, actions, comment, queryClient, onOpenTarget)
+        }
       />
       <InternalDeleteMessagesDialog
         open={actions.deleteConfirmOpen}
@@ -57,14 +64,22 @@ export function InternalThreadActionDialogs({
 async function forwardSelected(
   targetConversationId: string,
   actions: ThreadActions,
+  comment: string,
+  queryClient: QueryClient,
+  onOpenTarget?: (conversationId: string) => void,
 ): Promise<void> {
   const result = await messengerCoreApi.forwardMessages(
     targetConversationId,
     actions.selectedMessages.map((row) => row.id),
+    comment,
   );
   if (result.createdConversation !== false) return;
-  toast.success('Forwarded as a reference');
+  applyMessengerSendResult(queryClient, 'INTERNAL', result.holder);
+  if (result.commentMessage) {
+    applyMessengerSendResult(queryClient, 'INTERNAL', result.commentMessage);
+  }
   actions.clearSelection();
+  onOpenTarget?.(targetConversationId);
 }
 
 async function attachSources(task: Task, actions: ThreadActions): Promise<void> {

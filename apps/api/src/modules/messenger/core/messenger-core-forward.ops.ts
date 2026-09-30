@@ -14,11 +14,13 @@ export async function persistForwardHolderAndReferences(
     targetConversationId: string;
     senderId: string;
     sourceMessageIds: string[];
+    comment?: string;
   },
 ): Promise<{
   holder: MessengerCoreMessageDto;
   sourceIds: string[];
   createdConversation: false;
+  commentMessage: MessengerCoreMessageDto | null;
 }> {
   const sources = await loadOrderedSourceMessages(prisma, input.sourceMessageIds);
   const holder = await persistCoreMessage(
@@ -32,7 +34,24 @@ export async function persistForwardHolderAndReferences(
     [],
   );
   await createForwardReferences(prisma, input.senderId, holder.id, sources);
-  return { holder, sourceIds: sources.map((row) => row.id), createdConversation: false };
+  const comment = input.comment?.trim() ?? '';
+  const commentMessage = comment
+    ? await persistCoreMessage(
+        prisma,
+        {
+          conversationId: input.targetConversationId,
+          senderId: input.senderId,
+          content: comment,
+        },
+        [],
+      )
+    : null;
+  return {
+    holder,
+    sourceIds: sources.map((row) => row.id),
+    createdConversation: false,
+    commentMessage,
+  };
 }
 
 function forwardPreviewContent(sources: Array<{ content: string }>): string {

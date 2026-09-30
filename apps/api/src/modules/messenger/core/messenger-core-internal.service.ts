@@ -131,9 +131,15 @@ export class MessengerCoreInternalService {
     employeeId: string,
     targetConversationId: string,
     sourceMessageIds: string[],
+    comment?: string,
   ) {
     await this.getConversation(targetConversationId, employeeId);
-    return this.actions.forwardMessages(employeeId, targetConversationId, sourceMessageIds);
+    return this.actions.forwardMessages(
+      employeeId,
+      targetConversationId,
+      sourceMessageIds,
+      comment,
+    );
   }
 
   async listMessages(

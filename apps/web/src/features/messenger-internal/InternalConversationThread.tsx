@@ -5,6 +5,7 @@ import {
   mapMessengerRowToView,
   type MessengerViewMessage,
 } from '@/features/messenger/messenger-message-mapper';
+import { replyPreviewForMessage } from '@/features/messenger/reply-preview';
 import { usePermission } from '@/lib/permissions';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import type {
@@ -42,6 +43,8 @@ function toViewMessages(
     }),
     deliveryLabel: internalSheetDeliveryLabel(row.status),
     receiptSeen: internalSheetMessageSeen(row.status, row.createdAt, peerLastReadAt),
+    replyTo: replyPreviewForMessage(row, rows),
+    replyToMessageId: row.replyToMessageId,
   }));
 }
 
@@ -122,6 +125,7 @@ export function InternalConversationThread({
       showJumpToEnd={endScroll.showJumpToEnd}
       onJumpToEnd={endScroll.jumpToEnd}
       meId={me?.id ?? null}
+      onOpenTarget={onOpenInternalSource}
     />
   );
 }
@@ -150,6 +154,7 @@ function ThreadScaffold(props: {
   showJumpToEnd: boolean;
   onJumpToEnd: () => void;
   meId: string | null;
+  onOpenTarget?: (conversationId: string) => void;
 }) {
   const { conversation, actions } = props;
   return (
@@ -169,7 +174,7 @@ function ThreadScaffold(props: {
         anchor={actions.menuAnchor}
         onClose={actions.closeActionMenu}
         canCreateTask={props.canCreateTask}
-        onReply={() => actions.startReply()}
+        onReply={() => actions.startReply(actions.selectedIds[0])}
         onForward={() => actions.setForwardOpen(true)}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
@@ -181,6 +186,11 @@ function ThreadScaffold(props: {
         <InternalMessageSelectionBar
           selectedCount={actions.selectedMessages.length}
           canCreateTask={props.canCreateTask}
+          onReply={
+            actions.selectedMessages.length === 1
+              ? () => actions.startReply(actions.selectedIds[0])
+              : undefined
+          }
           onForward={() => actions.setForwardOpen(true)}
           onCreateTask={() => actions.setCreateTaskOpen(true)}
           onCopySource={() => void actions.copySource()}
@@ -203,6 +213,7 @@ function ThreadScaffold(props: {
           scrollerRef={props.scrollerRef}
           sheet
           meId={props.meId}
+          replyActive={Boolean(actions.replyTo)}
         />
         <InternalJumpToEndButton visible={props.showJumpToEnd} onJump={props.onJumpToEnd} />
       </div>
@@ -230,6 +241,7 @@ function ThreadScaffold(props: {
         actions={actions}
         creatorId={props.creatorId}
         creatorReady={props.creatorReady}
+        onOpenTarget={props.onOpenTarget}
       />
     </section>
   );

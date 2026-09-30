@@ -1,11 +1,12 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { ClipboardCopy, Forward, ListTodo, Trash2, X } from 'lucide-react';
+import { ClipboardCopy, CornerUpLeft, Forward, ListTodo, Trash2, X } from 'lucide-react';
 
 export function InternalMessageSelectionBar({
   selectedCount,
   canCreateTask,
+  onReply,
   onForward,
   onCreateTask,
   onCopySource,
@@ -14,6 +15,7 @@ export function InternalMessageSelectionBar({
 }: {
   selectedCount: number;
   canCreateTask: boolean;
+  onReply?: () => void;
   onForward: () => void;
   onCreateTask: () => void;
   onCopySource: () => void;
@@ -33,6 +35,11 @@ export function InternalMessageSelectionBar({
       <p className="min-w-0 flex-1 truncate text-sm font-semibold text-[#0f172a]">
         {selectedCount}
       </p>
+      {onReply ? (
+        <IconAction label="Reply" onClick={onReply}>
+          <CornerUpLeft size={20} />
+        </IconAction>
+      ) : null}
       <IconAction label="Forward" onClick={onForward}>
         <Forward size={20} />
       </IconAction>

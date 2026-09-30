@@ -1,4 +1,5 @@
 import type { MessengerMessageRow } from '@/lib/api/messenger';
+import type { MessengerReplyPreview } from './reply-preview';
 
 export interface MessengerViewMessage {
   id: string;
@@ -10,6 +11,8 @@ export interface MessengerViewMessage {
   attachments: Array<{ id: string; fileAssetId: string }>;
   deliveryLabel?: string | null;
   receiptSeen?: boolean;
+  replyTo?: MessengerReplyPreview;
+  replyToMessageId?: string | null;
 }
 
 export function initialsFromDisplayName(name: string): string {

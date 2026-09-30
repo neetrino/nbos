@@ -8,6 +8,8 @@ import {
   SHEET_BUBBLE_LARGE_RADIUS_CLASS,
   SHEET_BUBBLE_WRAP_CHAR_COUNT,
 } from './internal-messenger.constants';
+import { InternalSheetReplyPreview } from './InternalSheetReplyPreview';
+import { jumpToThreadMessage } from './jump-to-thread-message';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 const SHEET_BUBBLE_BASE = 'max-w-lg px-3 py-1.5 text-sm leading-5';
@@ -16,8 +18,12 @@ function isWrappingBubble(content: string): boolean {
   return content.includes('\n') || content.length >= SHEET_BUBBLE_WRAP_CHAR_COUNT;
 }
 
-function sheetBubbleRadiusClass(content: string, tail: 'tl' | 'tr'): string {
-  if (isWrappingBubble(content)) return SHEET_BUBBLE_LARGE_RADIUS_CLASS;
+function sheetHasReply(message: MessengerViewMessage): boolean {
+  return Boolean(message.replyTo || message.replyToMessageId);
+}
+
+function sheetBubbleRadiusClass(content: string, tail: 'tl' | 'tr', hasReply = false): string {
+  if (hasReply || isWrappingBubble(content)) return SHEET_BUBBLE_LARGE_RADIUS_CLASS;
   return tail === 'tl' ? 'rounded-3xl rounded-tl-sm' : 'rounded-3xl rounded-tr-sm';
 }
 
@@ -64,8 +70,15 @@ function IncomingSheetMessage({
       />
       <div
         data-sheet-bubble=""
-        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tl')} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
+        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tl', sheetHasReply(message))} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
+        {message.replyTo ? (
+          <InternalSheetReplyPreview
+            replyTo={message.replyTo}
+            mine={false}
+            onJump={jumpToThreadMessage}
+          />
+        ) : null}
         <BubbleBody
           content={message.content}
           time={formatMessengerTime(message.timestamp)}
@@ -94,8 +107,11 @@ function OwnSheetMessage({
     <div className="flex items-end justify-end gap-3 px-5">
       <div
         data-sheet-bubble=""
-        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tr')} text-white ${palette.ownBubble}`}
+        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tr', sheetHasReply(message))} text-white ${palette.ownBubble}`}
       >
+        {message.replyTo ? (
+          <InternalSheetReplyPreview replyTo={message.replyTo} mine onJump={jumpToThreadMessage} />
+        ) : null}
         <BubbleBody
           content={message.content}
           time={formatMessengerTime(message.timestamp)}
@@ -120,20 +136,13 @@ function BubbleBody({
   seen: boolean;
   showChecks: boolean;
 }) {
-  const stamp = <BubbleStamp time={time} seen={seen} showChecks={showChecks} />;
-  if (!isWrappingBubble(content)) {
-    return (
-      <p className="whitespace-pre-wrap">
-        {content}
-        <span className="ml-2 align-bottom">{stamp}</span>
-      </p>
-    );
-  }
   return (
-    <>
-      <p className="whitespace-pre-wrap">{content}</p>
-      <div className="mt-0.5 flex justify-end">{stamp}</div>
-    </>
+    <div className="flex items-end gap-2">
+      <p className="min-w-0 flex-1 whitespace-pre-wrap">{content}</p>
+      <span className="shrink-0">
+        <BubbleStamp time={time} seen={seen} showChecks={showChecks} />
+      </span>
+    </div>
   );
 }
 

@@ -104,6 +104,7 @@ export class MessengerCoreActionsService {
     employeeId: string,
     targetConversationId: string,
     sourceMessageIds: string[],
+    comment?: string,
   ) {
     const target = await this.core.requireWrite(targetConversationId, employeeId);
     assertForwardTargetZone(target.facts.zone);
@@ -113,8 +114,12 @@ export class MessengerCoreActionsService {
       targetConversationId,
       senderId: employeeId,
       sourceMessageIds: sources.map((row) => row.id),
+      comment,
     });
     this.messengerGateway.publishPersistedCoreMessage(result.holder);
+    if (result.commentMessage) {
+      this.messengerGateway.publishPersistedCoreMessage(result.commentMessage);
+    }
     return result;
   }
 

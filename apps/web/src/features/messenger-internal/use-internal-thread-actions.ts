@@ -64,8 +64,11 @@ export function useInternalThreadActions(
       setSelecting(false);
     },
     startReply: (messageId?: string) => {
-      const id = messageId ?? selectedIds[0];
-      setReplyTo(messages.find((row) => row.id === id) ?? selectedMessages[0] ?? null);
+      const id = messageId ?? selectedIds[0] ?? selectedMessages[0]?.id;
+      const target = messages.find((row) => row.id === id) ?? selectedMessages[0] ?? null;
+      setReplyTo(target);
+      setSelecting(false);
+      setMenuAnchor(null);
     },
     clearReply: () => setReplyTo(null),
     setForwardOpen,

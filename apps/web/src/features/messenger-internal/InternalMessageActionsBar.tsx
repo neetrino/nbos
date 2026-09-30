@@ -52,7 +52,7 @@ export function InternalMessageActionsBar({
   return (
     <div
       role="menu"
-      className={`${PORTAL_DROPDOWN_Z_CLASS} fixed min-w-56 rounded-2xl bg-[#2b2b2b] py-1.5 text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)]`}
+      className={`${PORTAL_DROPDOWN_Z_CLASS} fixed min-w-56 overflow-hidden rounded-2xl bg-[#2b2b2b] text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)]`}
       style={{ left: anchor.x, top: anchor.y }}
       onMouseDown={(event) => event.stopPropagation()}
     >
@@ -157,8 +157,8 @@ function MenuRow({
       role="menuitem"
       onMouseDown={(event) => event.stopPropagation()}
       onClick={onClick}
-      className={`flex w-full items-center gap-3 px-3.5 py-2 text-left text-sm hover:bg-white/10 ${
-        danger ? 'text-[#fca5a5]' : ''
+      className={`flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-sm hover:bg-white/10 ${
+        danger ? 'text-[#fca5a5] hover:bg-white/10' : ''
       }`}
     >
       <span className={danger ? 'text-[#fca5a5]' : 'text-white/70'}>{icon}</span>
@@ -168,5 +168,5 @@ function MenuRow({
 }
 
 function MenuDivider() {
-  return <div className="my-1 h-px bg-white/10" />;
+  return <div className="h-px bg-white/10" />;
 }

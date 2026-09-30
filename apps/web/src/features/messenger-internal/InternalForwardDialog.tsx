@@ -15,7 +15,7 @@ export function InternalForwardDialog({
   open: boolean;
   currentConversationId: string;
   onClose: () => void;
-  onForward: (targetConversationId: string) => Promise<void>;
+  onForward: (targetConversationId: string, comment: string) => Promise<void>;
 }) {
   if (!open) return null;
   return (
@@ -34,10 +34,12 @@ function ForwardDialogBody({
 }: {
   currentConversationId: string;
   onClose: () => void;
-  onForward: (targetConversationId: string) => Promise<void>;
+  onForward: (targetConversationId: string, comment: string) => Promise<void>;
 }) {
   const [targets, setTargets] = useState<MessengerCoreConversationRow[]>([]);
   const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const filtered = useFilteredForwardTargets(targets, query);
@@ -58,24 +60,26 @@ function ForwardDialogBody({
         </header>
         <ForwardTargetList
           targets={filtered}
+          selectedId={selectedId}
           busy={busy}
-          onPick={(id) => {
+          onPick={setSelectedId}
+        />
+        <ForwardComposer
+          comment={comment}
+          toName={selectedTitle(targets, selectedId)}
+          busy={busy}
+          canSend={Boolean(selectedId)}
+          onComment={setComment}
+          onClose={onClose}
+          onSend={() => {
+            if (!selectedId) return;
             setBusy(true);
-            void onForward(id)
+            void onForward(selectedId, comment)
               .then(onClose)
               .catch(() => setError('Forward failed. You may not be able to write there.'))
               .finally(() => setBusy(false));
           }}
         />
-        <div className="flex shrink-0 justify-end border-t border-[#e2e8f0] px-4 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg px-3 py-1.5 text-sm text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]"
-          >
-            Cancel
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -106,12 +110,74 @@ function useFilteredForwardTargets(targets: MessengerCoreConversationRow[], quer
   }, [needle, targets]);
 }
 
+function selectedTitle(
+  targets: MessengerCoreConversationRow[],
+  selectedId: string | null,
+): string | null {
+  const row = targets.find((item) => item.id === selectedId);
+  if (!row) return null;
+  return conversationListTitle(row.type, row.title, row.peerName ?? null);
+}
+
+function ForwardComposer({
+  comment,
+  toName,
+  busy,
+  canSend,
+  onComment,
+  onClose,
+  onSend,
+}: {
+  comment: string;
+  toName: string | null;
+  busy: boolean;
+  canSend: boolean;
+  onComment: (value: string) => void;
+  onClose: () => void;
+  onSend: () => void;
+}) {
+  return (
+    <div className="shrink-0 border-t border-[#e2e8f0] px-4 py-3">
+      {toName ? (
+        <p className="mb-2 truncate text-xs font-medium text-[#4f46e5]">To {toName}</p>
+      ) : null}
+      <textarea
+        value={comment}
+        onChange={(event) => onComment(event.target.value)}
+        placeholder={toName ? `Message to ${toName}` : 'Select a chat first'}
+        rows={2}
+        disabled={busy}
+        className="w-full resize-none rounded-xl bg-[#f1f5f9] px-3 py-2 text-sm text-[#0f172a] outline-none placeholder:text-[#94a3b8]"
+      />
+      <div className="mt-2 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg px-3 py-1.5 text-sm text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          disabled={busy || !canSend}
+          onClick={onSend}
+          className="rounded-lg bg-[#4f46e5] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+        >
+          Forward
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ForwardTargetList({
   targets,
+  selectedId,
   busy,
   onPick,
 }: {
   targets: MessengerCoreConversationRow[];
+  selectedId: string | null;
   busy: boolean;
   onPick: (id: string) => void;
 }) {
@@ -123,7 +189,13 @@ function ForwardTargetList({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       {targets.map((row) => (
-        <ForwardTargetRow key={row.id} row={row} busy={busy} onPick={onPick} />
+        <ForwardTargetRow
+          key={row.id}
+          row={row}
+          selected={row.id === selectedId}
+          busy={busy}
+          onPick={onPick}
+        />
       ))}
     </div>
   );
@@ -131,10 +203,12 @@ function ForwardTargetList({
 
 function ForwardTargetRow({
   row,
+  selected,
   busy,
   onPick,
 }: {
   row: MessengerCoreConversationRow;
+  selected: boolean;
   busy: boolean;
   onPick: (id: string) => void;
 }) {
@@ -145,7 +219,9 @@ function ForwardTargetRow({
     <button
       type="button"
       disabled={busy}
-      className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-[#f8fafc] disabled:opacity-40"
+      className={`flex w-full items-center gap-3 px-4 py-2.5 text-left disabled:opacity-40 ${
+        selected ? 'bg-[#eef2ff]' : 'hover:bg-[#f8fafc]'
+      }`}
       onClick={() => onPick(row.id)}
     >
       <MessengerPersonAvatar

@@ -5,6 +5,7 @@ import {
   mapMessengerRowToView,
   type MessengerViewMessage,
 } from '@/features/messenger/messenger-message-mapper';
+import { replyPreviewForMessage } from '@/features/messenger/reply-preview';
 import { usePermission } from '@/lib/permissions';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
@@ -35,12 +36,13 @@ function toViewMessages(
   rows: MessengerCoreMessageRow[],
   meId: string | null,
 ): MessengerViewMessage[] {
-  return rows.map((row) => viewClientMessage(row, meId));
+  return rows.map((row) => viewClientMessage(row, meId, rows));
 }
 
 function viewClientMessage(
   row: MessengerCoreMessageRow,
   meId: string | null,
+  rows: MessengerCoreMessageRow[],
 ): MessengerViewMessage {
   const outbound = row.direction === 'OUTBOUND';
   const mapped = mapMessengerRowToView({
@@ -57,6 +59,8 @@ function viewClientMessage(
     ...mapped,
     senderId: outbound && meId ? meId : mapped.senderId,
     deliveryLabel: clientOutboundDeliveryLabel(row),
+    replyTo: replyPreviewForMessage(row, rows),
+    replyToMessageId: row.replyToMessageId,
   };
 }
 
@@ -128,7 +132,7 @@ export function ClientConversationThread({
         canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
         canCreateTicket={canTicket}
         canLinkTicket={canTicket}
-        onReply={() => actions.startReply()}
+        onReply={() => actions.startReply(actions.selectedIds[0])}
         onForward={() => actions.setForwardOpen(true)}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onCreateTicket={() => setCreateTicketOpen(true)}
@@ -142,6 +146,11 @@ export function ClientConversationThread({
         <InternalMessageSelectionBar
           selectedCount={actions.selectedMessages.length}
           canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
+          onReply={
+            actions.selectedMessages.length === 1
+              ? () => actions.startReply(actions.selectedIds[0])
+              : undefined
+          }
           onForward={() => actions.setForwardOpen(true)}
           onCreateTask={() => actions.setCreateTaskOpen(true)}
           onCopySource={() => void actions.copySource()}
@@ -163,6 +172,7 @@ export function ClientConversationThread({
           scrollerRef={endRef}
           sheet
           meId={me?.id ?? null}
+          replyActive={Boolean(actions.replyTo)}
         />
         <ClientAiPlaceholder />
         {unlocked && canUnlockClientComposer(canSend) ? (
@@ -198,7 +208,9 @@ export function ClientConversationThread({
         open={actions.forwardOpen}
         currentConversationId={conversation.id}
         onClose={() => actions.setForwardOpen(false)}
-        onForward={(targetConversationId) => forwardSelected(targetConversationId, actions)}
+        onForward={(targetConversationId, comment) =>
+          forwardSelected(targetConversationId, actions, comment)
+        }
       />
       <InternalDeleteMessagesDialog
         open={actions.deleteConfirmOpen}
@@ -245,10 +257,12 @@ export function ClientConversationThread({
 async function forwardSelected(
   targetConversationId: string,
   actions: ReturnType<typeof useInternalThreadActions>,
+  comment: string,
 ): Promise<void> {
   const result = await messengerCoreApi.forwardMessages(
     targetConversationId,
     actions.selectedMessages.map((row) => row.id),
+    comment,
   );
   if (result.createdConversation !== false) return;
   toast.success('Forwarded internally as a reference');
