@@ -3,7 +3,9 @@
 import { CheckCheck, Paperclip } from 'lucide-react';
 import { formatMessengerTime } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
+import { MessengerPersonAvatar } from './MessengerPersonAvatar';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
+
 const SHEET_BUBBLE = 'max-w-lg rounded-3xl px-3 py-1.5 text-sm leading-5';
 
 export function InternalSheetMessage({
@@ -41,7 +43,12 @@ function IncomingSheetMessage({
 }) {
   return (
     <div className="flex items-end gap-3 px-5">
-      <AvatarSlot initials={message.initials} mine={false} show={showAvatar} />
+      <AvatarSlot
+        mine={false}
+        show={showAvatar}
+        employeeId={message.senderId}
+        label={message.senderName}
+      />
       <div
         className={`${SHEET_BUBBLE} rounded-tl-sm bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
@@ -84,7 +91,7 @@ function OwnSheetMessage({
         </p>
         <AttachmentRow message={message} light />
       </div>
-      <AvatarSlot initials={message.initials} mine show={showAvatar} />
+      <AvatarSlot mine show={showAvatar} employeeId={message.senderId} label={message.senderName} />
     </div>
   );
 }
@@ -111,20 +118,39 @@ function BubbleStamp({
   );
 }
 
-function AvatarSlot({ initials, mine, show }: { initials: string; mine: boolean; show: boolean }) {
+function AvatarSlot({
+  mine,
+  show,
+  employeeId,
+  label,
+}: {
+  mine: boolean;
+  show: boolean;
+  employeeId?: string;
+  label: string;
+}) {
   if (!show) return <span className="size-9 shrink-0" aria-hidden />;
-  return <MessageAvatar initials={initials} mine={mine} />;
+  return <MessageAvatar mine={mine} employeeId={employeeId} label={label} />;
 }
 
-function MessageAvatar({ initials, mine }: { initials: string; mine: boolean }) {
+function MessageAvatar({
+  mine,
+  employeeId,
+  label,
+}: {
+  mine: boolean;
+  employeeId?: string;
+  label: string;
+}) {
   const palette = useSheetMessengerPalette();
   const tone = mine ? 'bg-white text-[#334155]' : palette.incomingAvatar;
   return (
-    <span
-      className={`flex size-9 shrink-0 items-center justify-center rounded-full text-xs ${tone}`}
-    >
-      {initials}
-    </span>
+    <MessengerPersonAvatar
+      employeeId={employeeId}
+      label={label}
+      sizeClassName="size-9"
+      fallbackClassName={tone}
+    />
   );
 }
 

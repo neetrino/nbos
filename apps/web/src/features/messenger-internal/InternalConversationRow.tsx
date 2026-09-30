@@ -2,11 +2,10 @@
 
 import { CheckCheck, Pin } from 'lucide-react';
 import { formatConversationListStamp } from '@/features/messenger/messenger-format';
-import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { conversationListTitle, conversationTypeBadge } from './internal-messenger-section';
-import { PresenceDot, useEmployeeOnline } from './PresenceAvatar';
+import { MessengerPersonAvatar } from './MessengerPersonAvatar';
 
 const SIDEBAR_SEEN_CHECK = 'text-[#0284c7]';
 const SIDEBAR_UNSEEN_CHECK = 'text-[#475569]';
@@ -65,18 +64,16 @@ function ConversationMark({
   direct: boolean;
   employeeId: string | null | undefined;
 }) {
-  const initials = initialsFromDisplayName(title);
-  const online = useEmployeeOnline(employeeId);
-  const tone = direct
-    ? 'rounded-full border border-[#fcd34d] bg-[#fef3c7] text-[#92400e]'
-    : 'rounded-xl bg-[#e0e7ff] text-[#4338ca]';
+  const fallback = direct ? 'bg-[#fef3c7] text-[#92400e]' : 'bg-[#e0e7ff] text-[#4338ca]';
   return (
-    <span
-      className={`relative mt-0.5 flex size-10 shrink-0 items-center justify-center text-xs ${tone}`}
-    >
-      {initials}
-      <PresenceDot online={online} />
-    </span>
+    <MessengerPersonAvatar
+      employeeId={employeeId}
+      label={title}
+      sizeClassName="mt-0.5 size-10"
+      fallbackClassName={fallback}
+      showPresence
+      roundedClassName={direct ? 'rounded-full border border-[#fcd34d]' : 'rounded-xl'}
+    />
   );
 }
 
