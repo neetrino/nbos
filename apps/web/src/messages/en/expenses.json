@@ -57,10 +57,6 @@
     "YEARLY": "Yearly",
     "MULTI_YEAR": "Multi-year"
   },
-  "tax": {
-    "TAX": "Tax",
-    "TAX_FREE": "Free"
-  },
   "backlogReason": {
     "none": "None",
     "DEBT_PAY_LATER": "Debt to pay later",
@@ -176,7 +172,6 @@
     "category": "Category",
     "frequency": "Frequency",
     "backlogReason": "Backlog reason",
-    "taxStatus": "Tax status",
     "passThrough": "Pass-through",
     "sourceInvoice": "Client invoice",
     "notes": "Description",

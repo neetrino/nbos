@@ -157,7 +157,6 @@ export function ExpenseDetailSheet({
     expense?.productId,
     expense?.credentialId,
     expense?.isPassThrough,
-    expense?.taxStatus,
     expense?.backlogReason,
     expense?.notes,
   ]);

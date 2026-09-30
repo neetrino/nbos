@@ -57,10 +57,6 @@
     "YEARLY": "Ежегодно",
     "MULTI_YEAR": "Многолетний"
   },
-  "tax": {
-    "TAX": "С налогом",
-    "TAX_FREE": "Без налога"
-  },
   "backlogReason": {
     "none": "Нет",
     "DEBT_PAY_LATER": "Долг на потом",
@@ -176,7 +172,6 @@
     "category": "Категория",
     "frequency": "Периодичность",
     "backlogReason": "Причина отложения",
-    "taxStatus": "Налог",
     "passThrough": "Транзитный",
     "sourceInvoice": "Счёт клиента",
     "notes": "Описание",

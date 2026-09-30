@@ -12,7 +12,6 @@ import {
   EXPENSE_BACKLOG_REASONS,
   EXPENSE_FREQUENCIES,
   EXPENSE_TYPES,
-  TAX_STATUSES,
 } from '@/features/finance/components/expenses/edit-expense-dialog-constants';
 import {
   translateExpenseBacklogReason,
@@ -21,7 +20,6 @@ import {
   translateExpensePaymentStatus,
   translateExpenseStage,
   translateExpenseStageShort,
-  translateExpenseTaxStatus,
   translateExpenseType,
   type ExpensesTranslator,
 } from './expense-i18n-labels';
@@ -50,9 +48,6 @@ describe('expenses catalogs', () => {
     }
     for (const frequency of EXPENSE_FREQUENCIES) {
       expect(translateExpenseFrequency(frequency.value, t)).toBe(frequency.label);
-    }
-    for (const tax of TAX_STATUSES) {
-      expect(translateExpenseTaxStatus(tax.value, t)).toBe(tax.label);
     }
     for (const reason of EXPENSE_BACKLOG_REASONS) {
       expect(translateExpenseBacklogReason(reason.value, t)).toBe(reason.label);

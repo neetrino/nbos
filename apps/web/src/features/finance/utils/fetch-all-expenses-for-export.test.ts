@@ -23,7 +23,6 @@ const mockExpense = (id: string): Expense =>
     projectId: null,
     credentialId: null,
     isPassThrough: false,
-    taxStatus: 'TAX',
     backlogReason: null,
     notes: null,
     createdAt: '2026-04-28T12:00:00.000Z',
