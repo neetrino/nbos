@@ -114,7 +114,7 @@ function AppChromeHeaderPrimaryRow({
   }
 
   return (
-    <div className="flex h-16 min-w-0 items-stretch gap-3 px-4 max-md:h-14 sm:gap-4 sm:px-6">
+    <div className="flex h-16 min-w-0 items-stretch gap-3 px-3 max-md:h-14 sm:gap-4 sm:px-4">
       <div className="flex min-w-0 flex-1 items-stretch">
         {showModuleTitle && moduleTitle ? (
           <div
@@ -151,7 +151,7 @@ function AppChromeHeaderMobileNav({ asTabs }: { asTabs: boolean }) {
   return (
     <div
       className={cn(
-        'min-w-0 px-4 sm:px-6',
+        'min-w-0 px-3 sm:px-4',
         asTabs ? 'overflow-x-auto' : 'overflow-x-hidden pb-2.5',
       )}
     >

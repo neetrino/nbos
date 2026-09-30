@@ -1,5 +1,5 @@
-/** Main scroll area inset — tighter top so PageHero toolbars sit closer to the header. */
-export const APP_MAIN_CONTENT_INSET = 'px-6 pt-4 md:pb-4 max-md:px-4 max-md:pt-3 max-md:pb-0';
+/** Main scroll area inset — tighter sides so content sits closer to chrome. */
+export const APP_MAIN_CONTENT_INSET = 'px-4 pt-4 md:pb-4 max-md:px-3 max-md:pt-3 max-md:pb-0';
 
 /**
  * Height for a panel that should fill the main column without forcing page scroll.

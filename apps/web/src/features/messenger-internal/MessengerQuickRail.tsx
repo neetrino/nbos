@@ -5,7 +5,7 @@ import { initialsFromDisplayName } from '@/features/messenger/messenger-message-
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
 import { SIDEBAR_MODULE_VISUALS } from '@/components/layout/sidebar-module-visual';
 
-export const APP_MESSENGER_RIGHT_RAIL_WIDTH_PX = 72;
+export const APP_MESSENGER_RIGHT_RAIL_WIDTH_PX = 64;
 
 export type MessengerQuickRailPerson = {
   id: string;
@@ -42,7 +42,7 @@ export function MessengerQuickRail({
   return (
     <aside
       aria-label="Employees"
-      className={`border-sidebar-border bg-sidebar hidden h-full w-[72px] shrink-0 flex-col items-center gap-3 overflow-y-auto border-l px-1.5 pt-4 lg:flex ${className}`}
+      className={`border-sidebar-border bg-sidebar hidden h-full w-16 shrink-0 flex-col items-center gap-2.5 overflow-y-auto border-l pt-3 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex [&::-webkit-scrollbar]:hidden ${className}`}
     >
       {hasShortcuts
         ? shortcuts!.map((shortcut) => <RailShortcut key={shortcut.id} shortcut={shortcut} />)
