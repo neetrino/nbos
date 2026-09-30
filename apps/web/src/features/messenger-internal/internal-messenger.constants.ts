@@ -40,11 +40,24 @@ export const SHEET_THREAD_NEAR_END_PX = 80;
 
 /** Same gutter as the sheet composer send control (`px-4` → `right-4`). */
 export const SHEET_COMPOSER_GUTTER_CLASS = 'px-4';
+export const SHEET_COMPOSER_MAX_ROWS = 5;
+export const SHEET_COMPOSER_WRAP_CHAR_COUNT = 48;
+/** More rows → tighter corners (pill → almost rectangular). */
+export const SHEET_COMPOSER_RADIUS_BY_ROWS = [
+  'rounded-full',
+  'rounded-[20px]',
+  'rounded-[16px]',
+  'rounded-[14px]',
+  'rounded-[12px]',
+] as const;
+export const SHEET_COMPOSER_FIELD_BASE_CLASS =
+  'flex min-w-0 flex-1 items-center border border-[#e2e8f0] bg-white px-4 transition-[border-radius] duration-150';
+export const SHEET_COMPOSER_TEXTAREA_CLASS =
+  'max-h-[105px] min-h-[21px] min-w-0 flex-1 resize-none overflow-y-auto bg-transparent text-sm leading-[21px] text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none disabled:opacity-50';
 
 export const SHEET_JUMP_TO_END_BUTTON_CLASS =
   'absolute right-4 bottom-16 z-30 flex size-10 items-center justify-center rounded-full bg-white text-[#334155] shadow-[0_2px_10px_rgba(15,23,42,0.16)] transition-[opacity,transform] duration-200 ease-out hover:bg-[#f8fafc]';
 
-/** Long wrapping bubbles use a square-ish corner, not a pill. */
 export const SHEET_BUBBLE_LARGE_RADIUS_CLASS = 'rounded-[15px]';
 export const SHEET_BUBBLE_WRAP_CHAR_COUNT = 56;
 

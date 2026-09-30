@@ -12,10 +12,12 @@ import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 const SHEET_BUBBLE_BASE = 'max-w-lg px-3 py-1.5 text-sm leading-5';
 
+function isWrappingBubble(content: string): boolean {
+  return content.includes('\n') || content.length >= SHEET_BUBBLE_WRAP_CHAR_COUNT;
+}
+
 function sheetBubbleRadiusClass(content: string, tail: 'tl' | 'tr'): string {
-  if (content.includes('\n') || content.length >= SHEET_BUBBLE_WRAP_CHAR_COUNT) {
-    return SHEET_BUBBLE_LARGE_RADIUS_CLASS;
-  }
+  if (isWrappingBubble(content)) return SHEET_BUBBLE_LARGE_RADIUS_CLASS;
   return tail === 'tl' ? 'rounded-3xl rounded-tl-sm' : 'rounded-3xl rounded-tr-sm';
 }
 
@@ -63,14 +65,12 @@ function IncomingSheetMessage({
       <div
         className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tl')} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
-        <p>
-          {message.content}
-          <BubbleStamp
-            time={formatMessengerTime(message.timestamp)}
-            seen={false}
-            showChecks={false}
-          />
-        </p>
+        <BubbleBody
+          content={message.content}
+          time={formatMessengerTime(message.timestamp)}
+          seen={false}
+          showChecks={false}
+        />
         <AttachmentRow message={message} />
       </div>
     </div>
@@ -94,18 +94,44 @@ function OwnSheetMessage({
       <div
         className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tr')} text-white ${palette.ownBubble}`}
       >
-        <p>
-          {message.content}
-          <BubbleStamp
-            time={formatMessengerTime(message.timestamp)}
-            seen={readReceiptSeen}
-            showChecks={Boolean(readReceiptLabel)}
-          />
-        </p>
+        <BubbleBody
+          content={message.content}
+          time={formatMessengerTime(message.timestamp)}
+          seen={readReceiptSeen}
+          showChecks={Boolean(readReceiptLabel)}
+        />
         <AttachmentRow message={message} light />
       </div>
       <AvatarSlot mine show={showAvatar} employeeId={message.senderId} label={message.senderName} />
     </div>
+  );
+}
+
+function BubbleBody({
+  content,
+  time,
+  seen,
+  showChecks,
+}: {
+  content: string;
+  time: string;
+  seen: boolean;
+  showChecks: boolean;
+}) {
+  const stamp = <BubbleStamp time={time} seen={seen} showChecks={showChecks} />;
+  if (!isWrappingBubble(content)) {
+    return (
+      <p className="whitespace-pre-wrap">
+        {content}
+        <span className="ml-2 align-bottom">{stamp}</span>
+      </p>
+    );
+  }
+  return (
+    <>
+      <p className="whitespace-pre-wrap">{content}</p>
+      <div className="mt-0.5 flex justify-end">{stamp}</div>
+    </>
   );
 }
 
@@ -122,9 +148,7 @@ function BubbleStamp({
   const tone = showChecks ? 'text-white/75' : 'text-[#94a3b8]';
   const checks = seen ? palette.seenCheck : palette.unseenCheck;
   return (
-    <span
-      className={`ml-2 inline-flex items-center gap-0.5 align-bottom text-[11px] leading-none ${tone}`}
-    >
+    <span className={`inline-flex items-center gap-0.5 text-[11px] leading-none ${tone}`}>
       {time}
       {showChecks ? <CheckCheck size={14} aria-hidden className={checks} /> : null}
     </span>
