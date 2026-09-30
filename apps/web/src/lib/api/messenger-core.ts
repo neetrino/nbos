@@ -76,6 +76,9 @@ export interface MessengerCoreMessageRow {
     | 'CANCELLED';
   mentionedEmployeeIds?: string[];
   references?: MessengerCoreMessageReferenceRow[];
+  forwardedFrom?: string | null;
+  forwardedContent?: string | null;
+  forwardSourceMessageId?: string | null;
   attachments: Array<{ id: string; fileAssetId: string; createdAt: string }>;
 }
 
@@ -187,12 +190,14 @@ export const messengerCoreApi = {
     sourceIds: string[];
     createdConversation: false;
     commentMessage: MessengerCoreMessageRow | null;
+    holders?: MessengerCoreMessageRow[];
   }> {
     const resp = await api.post<{
       holder: MessengerCoreMessageRow;
       sourceIds: string[];
       createdConversation: false;
       commentMessage: MessengerCoreMessageRow | null;
+      holders?: MessengerCoreMessageRow[];
     }>(`${INTERNAL_ROOT}/conversations/${targetConversationId}/forwards`, {
       sourceMessageIds,
       comment,

@@ -116,7 +116,9 @@ export class MessengerCoreActionsService {
       sourceMessageIds: sources.map((row) => row.id),
       comment,
     });
-    this.messengerGateway.publishPersistedCoreMessage(result.holder);
+    for (const holder of result.holders) {
+      this.messengerGateway.publishPersistedCoreMessage(holder);
+    }
     if (result.commentMessage) {
       this.messengerGateway.publishPersistedCoreMessage(result.commentMessage);
     }

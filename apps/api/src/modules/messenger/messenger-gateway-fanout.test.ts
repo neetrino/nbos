@@ -30,6 +30,9 @@ function persistedMessage(
     attachments: [],
     mentionedEmployeeIds: [],
     references: [],
+    forwardedFrom: null,
+    forwardedContent: null,
+    forwardSourceMessageId: null,
     ...overrides,
   };
 }

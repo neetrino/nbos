@@ -1,7 +1,5 @@
 'use client';
 
-import { useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { applyMessengerSendResult } from '@/features/messenger/query/messenger-cache';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import type { Task } from '@/lib/api/tasks';
@@ -10,6 +8,7 @@ import { toast } from 'sonner';
 import { InternalCreateTaskFromMessages } from './InternalCreateTaskFromMessages';
 import { InternalDeleteMessagesDialog } from './InternalDeleteMessagesDialog';
 import { InternalForwardDialog } from './InternalForwardDialog';
+import type { PendingForwardDraft } from './pending-forward-draft';
 import type { useInternalThreadActions } from './use-internal-thread-actions';
 
 type ThreadActions = ReturnType<typeof useInternalThreadActions>;
@@ -19,24 +18,36 @@ export function InternalThreadActionDialogs({
   actions,
   creatorId,
   creatorReady,
-  onOpenTarget,
+  onBeginForward,
 }: {
   conversation: MessengerCoreConversationRow;
   actions: ThreadActions;
   creatorId: string | null;
   creatorReady: boolean;
-  onOpenTarget?: (conversationId: string) => void;
+  onOpenTarget?: (conversationId: string, seed?: MessengerCoreConversationRow) => void;
+  onBeginForward?: (target: MessengerCoreConversationRow, draft: PendingForwardDraft) => void;
 }) {
-  const queryClient = useQueryClient();
   return (
     <>
       <InternalForwardDialog
         open={actions.forwardOpen}
         currentConversationId={conversation.id}
         onClose={() => actions.setForwardOpen(false)}
-        onForward={(targetConversationId, comment) =>
-          forwardSelected(targetConversationId, actions, comment, queryClient, onOpenTarget)
-        }
+        onForward={(_id, target) => {
+          const preview = actions.forwardPreview;
+          if (!preview || actions.forwardSourceIds.length === 0) {
+            return Promise.reject(new Error('Select a message to forward'));
+          }
+          onBeginForward?.(target, {
+            conversationId: target.id,
+            sourceMessageIds: actions.forwardSourceIds,
+            senderName: preview.senderName,
+            content: preview.content,
+          });
+          actions.clearSelection();
+          actions.setForwardOpen(false);
+          return Promise.resolve();
+        }}
       />
       <InternalDeleteMessagesDialog
         open={actions.deleteConfirmOpen}
@@ -59,27 +70,6 @@ export function InternalThreadActionDialogs({
       ) : null}
     </>
   );
-}
-
-async function forwardSelected(
-  targetConversationId: string,
-  actions: ThreadActions,
-  comment: string,
-  queryClient: QueryClient,
-  onOpenTarget?: (conversationId: string) => void,
-): Promise<void> {
-  const result = await messengerCoreApi.forwardMessages(
-    targetConversationId,
-    actions.selectedMessages.map((row) => row.id),
-    comment,
-  );
-  if (result.createdConversation !== false) return;
-  applyMessengerSendResult(queryClient, 'INTERNAL', result.holder);
-  if (result.commentMessage) {
-    applyMessengerSendResult(queryClient, 'INTERNAL', result.commentMessage);
-  }
-  actions.clearSelection();
-  onOpenTarget?.(targetConversationId);
 }
 
 async function attachSources(task: Task, actions: ThreadActions): Promise<void> {

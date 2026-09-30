@@ -53,6 +53,9 @@ export type MessengerCoreMessageDto = {
   attachments: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
   mentionedEmployeeIds: string[];
   references: MessengerCoreMessageReferenceDto[];
+  forwardedFrom: string | null;
+  forwardedContent: string | null;
+  forwardSourceMessageId: string | null;
 };
 
 export type MessengerCoreLinkInput = {

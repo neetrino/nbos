@@ -15,7 +15,7 @@ export type SheetMessengerPalette = {
 const INTERNAL_SHEET_PALETTE: SheetMessengerPalette = {
   canvas: 'bg-[#eef2ff]',
   ownBubble: 'bg-[#4f46e5]',
-  seenCheck: 'text-[#38bdf8]',
+  seenCheck: 'text-white',
   unseenCheck: 'text-white/40',
   send: 'bg-[#4f46e5]',
   tip: 'text-[#4f46e5]',
@@ -25,7 +25,7 @@ const INTERNAL_SHEET_PALETTE: SheetMessengerPalette = {
 const CLIENT_SHEET_PALETTE: SheetMessengerPalette = {
   canvas: 'bg-[#EAF3F3]',
   ownBubble: 'bg-teal-800',
-  seenCheck: 'text-[#5eead4]',
+  seenCheck: 'text-white',
   unseenCheck: 'text-white/40',
   send: 'bg-teal-800',
   tip: 'text-teal-800',

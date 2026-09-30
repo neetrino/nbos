@@ -13,6 +13,9 @@ export interface MessengerViewMessage {
   receiptSeen?: boolean;
   replyTo?: MessengerReplyPreview;
   replyToMessageId?: string | null;
+  forwardedFrom?: string | null;
+  forwardedContent?: string | null;
+  forwardSourceMessageId?: string | null;
 }
 
 export function initialsFromDisplayName(name: string): string {

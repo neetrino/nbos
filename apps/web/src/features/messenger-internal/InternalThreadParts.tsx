@@ -154,21 +154,23 @@ export function ThreadComposer({
   onTypingIntent,
   placeholder,
   sheet = false,
+  allowEmptySend = false,
 }: {
   canSend: boolean;
   sendDisabled: boolean;
   newMessage: string;
   onNewMessageChange: (value: string) => void;
-  replyTo: MessengerCoreMessageRow | null;
+  replyTo: { senderName: string; content: string } | null;
   onClearReply: () => void;
   onSend: () => void;
   onTypingIntent?: () => void;
   placeholder?: string;
   sheet?: boolean;
+  allowEmptySend?: boolean;
 }) {
   const resolvedPlaceholder =
     placeholder ?? (canSend ? 'Message' : 'You cannot send in this conversation');
-  const blocked = !canSend || sendDisabled || newMessage.trim().length === 0;
+  const blocked = !canSend || sendDisabled || (newMessage.trim().length === 0 && !allowEmptySend);
   return (
     <div
       className={
@@ -202,7 +204,7 @@ function ReplySlot({
   onClear,
 }: {
   sheet: boolean;
-  replyTo: MessengerCoreMessageRow;
+  replyTo: { senderName: string; content: string };
   onClear: () => void;
 }) {
   return (

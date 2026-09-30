@@ -27,7 +27,25 @@ import { InternalThreadActionDialogs } from './InternalThreadActionDialogs';
 import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadParts';
 import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useInternalThreadActions } from './use-internal-thread-actions';
+import { composerQuoteFromForward, type PendingForwardDraft } from './pending-forward-draft';
 import { useScrollThreadToEnd } from './use-scroll-thread-to-end';
+
+function quoteForThreadRow(
+  row: MessengerCoreMessageRow,
+  rows: MessengerCoreMessageRow[],
+): MessengerViewMessage['replyTo'] {
+  const reply = replyPreviewForMessage(row, rows);
+  if (reply) return reply;
+  if (!row.forwardedFrom) return undefined;
+  return {
+    id:
+      row.forwardSourceMessageId ??
+      row.references?.find((item) => item.purpose === 'FORWARD')?.sourceMessageId ??
+      row.id,
+    senderName: row.forwardedFrom,
+    content: row.forwardedContent ?? row.content,
+  };
+}
 
 function toViewMessages(
   rows: MessengerCoreMessageRow[],
@@ -46,14 +64,21 @@ function toViewMessages(
     }),
     deliveryLabel: internalSheetDeliveryLabel(row.status),
     receiptSeen: internalSheetMessageSeen(row.status, row.createdAt, peerLastReadAt),
-    replyTo: replyPreviewForMessage(row, rows),
+    replyTo: quoteForThreadRow(row, rows),
     replyToMessageId: row.replyToMessageId,
+    forwardedFrom: row.forwardedFrom ?? null,
+    forwardedContent: row.forwardedContent ?? null,
+    forwardSourceMessageId:
+      row.forwardSourceMessageId ??
+      row.references?.find((item) => item.purpose === 'FORWARD')?.sourceMessageId ??
+      null,
   }));
 }
 
 export type InternalSendExtras = {
   replyToMessageId?: string;
   mentionedEmployeeIds?: string[];
+  forwardSourceIds?: string[];
 };
 
 export function InternalConversationThread({
@@ -73,6 +98,9 @@ export function InternalConversationThread({
   onTypingIntent,
   onOpenInternalSource,
   peerLastReadAt = null,
+  pendingForward = null,
+  onClearPendingForward,
+  onBeginForward,
 }: {
   conversation: MessengerCoreConversationRow;
   messages: MessengerCoreMessageRow[];
@@ -88,8 +116,11 @@ export function InternalConversationThread({
   remoteTypingHint: string | null;
   typingPeer?: ConversationTypingPeer | null;
   onTypingIntent?: () => void;
-  onOpenInternalSource?: (conversationId: string) => void;
+  onOpenInternalSource?: (conversationId: string, seed?: MessengerCoreConversationRow) => void;
   peerLastReadAt?: string | null;
+  pendingForward?: PendingForwardDraft | null;
+  onClearPendingForward?: () => void;
+  onBeginForward?: (target: MessengerCoreConversationRow, draft: PendingForwardDraft) => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const { can, me } = usePermission();
@@ -129,6 +160,9 @@ export function InternalConversationThread({
       onJumpToEnd={endScroll.jumpToEnd}
       meId={me?.id ?? null}
       onOpenTarget={onOpenInternalSource}
+      pendingForward={pendingForward}
+      onClearPendingForward={onClearPendingForward}
+      onBeginForward={onBeginForward}
     />
   );
 }
@@ -157,9 +191,19 @@ function ThreadScaffold(props: {
   showJumpToEnd: boolean;
   onJumpToEnd: () => void;
   meId: string | null;
-  onOpenTarget?: (conversationId: string) => void;
+  onOpenTarget?: (conversationId: string, seed?: MessengerCoreConversationRow) => void;
+  pendingForward?: PendingForwardDraft | null;
+  onClearPendingForward?: () => void;
+  onBeginForward?: (target: MessengerCoreConversationRow, draft: PendingForwardDraft) => void;
 }) {
   const { conversation, actions } = props;
+  const pending =
+    props.pendingForward?.conversationId === conversation.id ? props.pendingForward : null;
+  const composerQuote = pending
+    ? composerQuoteFromForward(pending)
+    : actions.replyTo
+      ? { senderName: actions.replyTo.senderName, content: actions.replyTo.content }
+      : null;
   const queryClient = useQueryClient();
   const selectedId = actions.selectedIds[0];
   const pinned = conversation.pinnedMessage ?? null;
@@ -189,7 +233,7 @@ function ThreadScaffold(props: {
         onClose={actions.closeActionMenu}
         canCreateTask={props.canCreateTask}
         onReply={() => actions.startReply(actions.selectedIds[0])}
-        onForward={() => actions.setForwardOpen(true)}
+        onForward={actions.openForward}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
@@ -215,7 +259,7 @@ function ThreadScaffold(props: {
               ? () => actions.startReply(actions.selectedIds[0])
               : undefined
           }
-          onForward={() => actions.setForwardOpen(true)}
+          onForward={actions.openForward}
           onCreateTask={() => actions.setCreateTaskOpen(true)}
           onCopySource={() => void actions.copySource()}
           onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
@@ -237,7 +281,7 @@ function ThreadScaffold(props: {
           scrollerRef={props.scrollerRef}
           sheet
           meId={props.meId}
-          replyActive={Boolean(actions.replyTo)}
+          replyActive={Boolean(composerQuote)}
         />
         <InternalJumpToEndButton visible={props.showJumpToEnd} onJump={props.onJumpToEnd} />
       </div>
@@ -246,17 +290,23 @@ function ThreadScaffold(props: {
         sendDisabled={props.sendDisabled}
         newMessage={props.newMessage}
         onNewMessageChange={props.onNewMessageChange}
-        replyTo={actions.replyTo}
-        onClearReply={actions.clearReply}
+        replyTo={composerQuote}
+        allowEmptySend={Boolean(pending)}
+        onClearReply={() => {
+          if (pending) props.onClearPendingForward?.();
+          else actions.clearReply();
+        }}
         onTypingIntent={props.onTypingIntent}
         sheet
         onSend={() =>
           void Promise.resolve(
             props.onSend({
-              replyToMessageId: actions.replyTo?.id,
+              replyToMessageId: pending ? undefined : actions.replyTo?.id,
+              forwardSourceIds: pending?.sourceMessageIds,
             }),
           ).then(() => {
-            actions.clearReply();
+            if (pending) props.onClearPendingForward?.();
+            else actions.clearReply();
           })
         }
       />
@@ -266,6 +316,7 @@ function ThreadScaffold(props: {
         creatorId={props.creatorId}
         creatorReady={props.creatorReady}
         onOpenTarget={props.onOpenTarget}
+        onBeginForward={props.onBeginForward}
       />
     </section>
   );

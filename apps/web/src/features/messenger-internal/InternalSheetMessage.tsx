@@ -18,12 +18,17 @@ function isWrappingBubble(content: string): boolean {
   return content.includes('\n') || content.length >= SHEET_BUBBLE_WRAP_CHAR_COUNT;
 }
 
-function sheetHasReply(message: MessengerViewMessage): boolean {
-  return Boolean(message.replyTo || message.replyToMessageId);
+function sheetUsesLargeRadius(message: MessengerViewMessage): boolean {
+  return Boolean(
+    message.replyTo ||
+    message.replyToMessageId ||
+    message.forwardedFrom ||
+    isWrappingBubble(message.content),
+  );
 }
 
-function sheetBubbleRadiusClass(content: string, tail: 'tl' | 'tr', hasReply = false): string {
-  if (hasReply || isWrappingBubble(content)) return SHEET_BUBBLE_LARGE_RADIUS_CLASS;
+function sheetBubbleRadiusClass(message: MessengerViewMessage, tail: 'tl' | 'tr'): string {
+  if (sheetUsesLargeRadius(message)) return SHEET_BUBBLE_LARGE_RADIUS_CLASS;
   return tail === 'tl' ? 'rounded-3xl rounded-tl-sm' : 'rounded-3xl rounded-tr-sm';
 }
 
@@ -33,12 +38,14 @@ export function InternalSheetMessage({
   readReceiptLabel,
   readReceiptSeen = false,
   showAvatar = true,
+  onOpenForwardSource,
 }: {
   message: MessengerViewMessage;
   mine: boolean;
   readReceiptLabel: string | null;
   readReceiptSeen?: boolean;
   showAvatar?: boolean;
+  onOpenForwardSource?: (sourceMessageId: string) => void;
 }) {
   if (mine) {
     return (
@@ -47,18 +54,27 @@ export function InternalSheetMessage({
         readReceiptLabel={readReceiptLabel}
         readReceiptSeen={readReceiptSeen}
         showAvatar={showAvatar}
+        onOpenForwardSource={onOpenForwardSource}
       />
     );
   }
-  return <IncomingSheetMessage message={message} showAvatar={showAvatar} />;
+  return (
+    <IncomingSheetMessage
+      message={message}
+      showAvatar={showAvatar}
+      onOpenForwardSource={onOpenForwardSource}
+    />
+  );
 }
 
 function IncomingSheetMessage({
   message,
   showAvatar,
+  onOpenForwardSource,
 }: {
   message: MessengerViewMessage;
   showAvatar: boolean;
+  onOpenForwardSource?: (sourceMessageId: string) => void;
 }) {
   return (
     <div className="flex items-end gap-3 px-5">
@@ -70,17 +86,11 @@ function IncomingSheetMessage({
       />
       <div
         data-sheet-bubble=""
-        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tl', sheetHasReply(message))} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
+        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message, 'tl')} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
-        {message.replyTo ? (
-          <InternalSheetReplyPreview
-            replyTo={message.replyTo}
-            mine={false}
-            onJump={jumpToThreadMessage}
-          />
-        ) : null}
+        <SheetQuote message={message} mine={false} onOpenForwardSource={onOpenForwardSource} />
         <BubbleBody
-          content={message.content}
+          content={forwardBodyContent(message)}
           time={formatMessengerTime(message.timestamp)}
           seen={false}
           showChecks={false}
@@ -96,24 +106,24 @@ function OwnSheetMessage({
   readReceiptLabel,
   readReceiptSeen,
   showAvatar,
+  onOpenForwardSource,
 }: {
   message: MessengerViewMessage;
   readReceiptLabel: string | null;
   readReceiptSeen: boolean;
   showAvatar: boolean;
+  onOpenForwardSource?: (sourceMessageId: string) => void;
 }) {
   const palette = useSheetMessengerPalette();
   return (
     <div className="flex items-end justify-end gap-3 px-5">
       <div
         data-sheet-bubble=""
-        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tr', sheetHasReply(message))} text-white ${palette.ownBubble}`}
+        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message, 'tr')} text-white ${palette.ownBubble}`}
       >
-        {message.replyTo ? (
-          <InternalSheetReplyPreview replyTo={message.replyTo} mine onJump={jumpToThreadMessage} />
-        ) : null}
+        <SheetQuote message={message} mine onOpenForwardSource={onOpenForwardSource} />
         <BubbleBody
-          content={message.content}
+          content={forwardBodyContent(message)}
           time={formatMessengerTime(message.timestamp)}
           seen={readReceiptSeen}
           showChecks={Boolean(readReceiptLabel)}
@@ -123,6 +133,35 @@ function OwnSheetMessage({
       <AvatarSlot mine show={showAvatar} employeeId={message.senderId} label={message.senderName} />
     </div>
   );
+}
+
+function SheetQuote({
+  message,
+  mine,
+  onOpenForwardSource,
+}: {
+  message: MessengerViewMessage;
+  mine: boolean;
+  onOpenForwardSource?: (sourceMessageId: string) => void;
+}) {
+  if (!message.replyTo) return null;
+  return (
+    <InternalSheetReplyPreview
+      replyTo={message.replyTo}
+      mine={mine}
+      onJump={
+        message.forwardSourceMessageId
+          ? () => onOpenForwardSource?.(message.forwardSourceMessageId ?? '')
+          : jumpToThreadMessage
+      }
+    />
+  );
+}
+
+function forwardBodyContent(message: MessengerViewMessage): string {
+  if (!message.forwardedFrom || !message.replyTo) return message.content;
+  const quoted = message.forwardedContent ?? message.replyTo.content;
+  return message.content === quoted ? '' : message.content;
 }
 
 function BubbleBody({

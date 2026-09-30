@@ -7,6 +7,7 @@ import type {
   MessengerCoreConversationRow,
   MessengerInternalSection,
 } from '@/lib/api/messenger-core';
+import type { PendingForwardDraft } from './pending-forward-draft';
 
 export type InternalMessengerSessionSnapshot = {
   section: MessengerInternalSection;
@@ -16,6 +17,7 @@ export type InternalMessengerSessionSnapshot = {
   search: string;
   filter: InternalListFilter;
   newMessage: string;
+  pendingForward: PendingForwardDraft | null;
 };
 
 export function isInternalInboxSection(section: MessengerInternalSection): boolean {
@@ -48,6 +50,7 @@ export function createInternalSessionSnapshot(
     search: '',
     filter: 'all',
     newMessage: '',
+    pendingForward: null,
   };
 }
 
@@ -73,6 +76,37 @@ export function applyInternalOpenedConversation(
   };
 }
 
+/** Open a chat without changing the tab. Section switches wipe selection. */
+export function applyInternalOpenTarget(
+  state: InternalMessengerSessionSnapshot,
+  row: MessengerCoreConversationRow,
+): InternalMessengerSessionSnapshot {
+  return {
+    ...state,
+    activeId: row.id,
+    openedConversation: row,
+    newMessage: '',
+  };
+}
+
+export function applyInternalPendingForward(
+  state: InternalMessengerSessionSnapshot,
+  draft: PendingForwardDraft | null,
+): InternalMessengerSessionSnapshot {
+  return { ...state, pendingForward: draft };
+}
+
+export function applyInternalBeginForward(
+  state: InternalMessengerSessionSnapshot,
+  row: MessengerCoreConversationRow,
+  draft: PendingForwardDraft,
+): InternalMessengerSessionSnapshot {
+  return {
+    ...applyInternalOpenTarget(state, row),
+    pendingForward: draft,
+  };
+}
+
 export function applyInternalSectionChange(
   state: InternalMessengerSessionSnapshot,
   nextSection: MessengerInternalSection,
@@ -90,6 +124,7 @@ export function applyInternalSectionChange(
     search: '',
     filter: 'all',
     newMessage: '',
+    pendingForward: null,
   };
 }
 

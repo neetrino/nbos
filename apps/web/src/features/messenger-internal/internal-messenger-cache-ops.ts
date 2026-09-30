@@ -12,8 +12,10 @@ export async function openInternalConversation(
   conversationId: string,
   setActiveId: (id: string) => void,
   setOpenedConversation?: (row: MessengerCoreConversationRow) => void,
+  seed?: MessengerCoreConversationRow,
 ): Promise<void> {
   setActiveId(conversationId);
+  if (seed?.id === conversationId) setOpenedConversation?.(seed);
   const conversation = await messengerCoreApi.getConversation(conversationId);
   upsertConversationSummary(queryClient, 'INTERNAL', conversation);
   setOpenedConversation?.(conversation);

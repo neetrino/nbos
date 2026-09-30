@@ -10,6 +10,7 @@ import {
   openOriginalBySourceIds,
   openOriginalFromMessages,
 } from './open-original-source';
+import { canonicalSourceMessageIds } from './canonical-source-message-ids';
 import { sortSelectedMessages } from './sort-selected-messages';
 
 export function useInternalThreadActions(
@@ -27,6 +28,11 @@ export function useInternalThreadActions(
   } | null>(null);
   const [replyTo, setReplyTo] = useState<MessengerCoreMessageRow | null>(null);
   const [forwardOpen, setForwardOpen] = useState(false);
+  const [forwardSourceIds, setForwardSourceIds] = useState<string[]>([]);
+  const [forwardPreview, setForwardPreview] = useState<{
+    senderName: string;
+    content: string;
+  } | null>(null);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
@@ -43,6 +49,8 @@ export function useInternalThreadActions(
     menuAnchor,
     replyTo,
     forwardOpen,
+    forwardSourceIds,
+    forwardPreview,
     createTaskOpen,
     deleteConfirmOpen,
     deleteSubmitting,
@@ -75,7 +83,29 @@ export function useInternalThreadActions(
       setMenuAnchor(null);
     },
     clearReply: () => setReplyTo(null),
-    setForwardOpen,
+    openForward: () => {
+      const fromSelected = selectedMessages.flatMap(canonicalSourceMessageIds);
+      const ids = fromSelected.length > 0 ? fromSelected : selectedIds;
+      const first = selectedMessages[0];
+      setForwardSourceIds(ids);
+      setForwardPreview(
+        first
+          ? {
+              senderName: first.forwardedFrom ?? first.senderName,
+              content: first.forwardedContent ?? first.content,
+            }
+          : null,
+      );
+      setForwardOpen(true);
+      setMenuAnchor(null);
+    },
+    setForwardOpen: (open: boolean) => {
+      if (!open) {
+        setForwardSourceIds([]);
+        setForwardPreview(null);
+      }
+      setForwardOpen(open);
+    },
     setCreateTaskOpen,
     openOriginal: () =>
       void openOriginalFromMessages(selectedMessages, {

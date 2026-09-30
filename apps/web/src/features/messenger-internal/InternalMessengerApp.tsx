@@ -231,6 +231,9 @@ function InternalMessengerScreen({
               messagesLoading={data.messages.isPending && data.messages.data === undefined}
               newMessage={session.newMessage}
               onNewMessageChange={session.setNewMessage}
+              pendingForward={session.pendingForward}
+              onClearPendingForward={() => session.setPendingForward(null)}
+              onBeginForward={(target, draft) => session.beginForwardTo(target, draft)}
               onSend={(extras) =>
                 void sendInternalThreadMessage({
                   conversationId: session.activeId,
@@ -253,14 +256,18 @@ function InternalMessengerScreen({
               remoteTypingHint={null}
               typingPeer={typingPeer}
               onTypingIntent={emitConversationTyping}
-              onOpenInternalSource={(id) =>
+              onOpenInternalSource={(id, seed) => {
+                if (seed) {
+                  session.openTargetConversation(seed);
+                  return;
+                }
                 void openInternalConversation(
                   queryClient,
                   id,
                   session.setActiveId,
                   session.setOpenedConversation,
-                )
-              }
+                );
+              }}
             />
           ) : section === 'groups' ? (
             <InternalGroupsEmptyPane onCreateGroup={createGroup} />

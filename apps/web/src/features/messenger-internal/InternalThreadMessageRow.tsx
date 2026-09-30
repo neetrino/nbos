@@ -70,11 +70,14 @@ export function ThreadMessageRow({
           mine={mine}
           sheet={sheet}
           showAvatar={!sameSenderRun(message, next)}
+          onOpenForwardSource={onOpenOriginalSource}
         />
-        <InternalForwardReferenceCard
-          references={references}
-          onOpenOriginal={onOpenOriginalSource}
-        />
+        {sheet ? null : (
+          <InternalForwardReferenceCard
+            references={references}
+            onOpenOriginal={onOpenOriginalSource}
+          />
+        )}
       </div>
     </div>
   );
@@ -93,11 +96,13 @@ function RowBubble({
   mine,
   sheet,
   showAvatar,
+  onOpenForwardSource,
 }: {
   message: MessengerViewMessage;
   mine: boolean;
   sheet: boolean;
   showAvatar: boolean;
+  onOpenForwardSource: (sourceMessageId: string) => void;
 }) {
   if (!sheet) {
     return (
@@ -114,6 +119,7 @@ function RowBubble({
       readReceiptLabel={message.deliveryLabel ?? null}
       readReceiptSeen={Boolean(message.receiptSeen)}
       showAvatar={showAvatar}
+      onOpenForwardSource={onOpenForwardSource}
     />
   );
 }
