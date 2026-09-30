@@ -50,6 +50,11 @@ import {
   fetchExpensePaidTotalsByExpenseIds,
 } from './expense-list-ledger';
 import { assertExpenseAmountCoversRecordedPayments } from './expense-amount-update-guard';
+import {
+  expenseUpdateBookedAt,
+  isExpenseNameOnlyPatch,
+  resolveExpenseNamePatch,
+} from './expense-update-name';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
 import { refreshExpenseWorkflowStatus, resolveExpenseListStatusWhere } from './expense-workflow';
 import { OperationalJournalService } from '../finance/journal/operational-journal.service';
@@ -356,19 +361,20 @@ export class ExpensesService {
       await assertExpenseAmountCoversRecordedPayments(this.prisma, id, new Decimal(data.amount));
     }
 
-    const bookedAtForGuard =
-      data.dueDate !== undefined
-        ? data.dueDate
-          ? new Date(data.dueDate)
-          : new Date()
-        : (existing.dueDate ?? new Date());
-    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAtForGuard);
+    const namePatch = resolveExpenseNamePatch(data.name);
+    const nameOnly = isExpenseNameOnlyPatch(data);
+    if (!nameOnly) {
+      await assertPostingPeriodOpenForBookedAt(
+        this.prisma,
+        expenseUpdateBookedAt(data.dueDate, existing.dueDate),
+      );
+    }
     await this.settleMarkPaidIfRequested(id, statusPatch);
 
     const linkPatch = await this.resolveExpenseUpdateLinks(data, existing);
 
     const updateData: Prisma.ExpenseUncheckedUpdateInput = {
-      ...(data.name && { name: data.name }),
+      ...(namePatch !== undefined && { name: namePatch }),
       ...(typePatch !== undefined && { type: typePatch as ExpenseTypeEnum }),
       ...(categoryPatch !== undefined && { category: categoryPatch as ExpenseCategoryEnum }),
       ...(data.amount !== undefined && { amount: data.amount }),
@@ -394,7 +400,7 @@ export class ExpensesService {
       where: { id },
       data: updateData,
     });
-    if (statusPatch === undefined) {
+    if (!nameOnly && statusPatch === undefined) {
       await this.persistRefreshedWorkflowStatus(id);
     }
     if (data.amount !== undefined) {
