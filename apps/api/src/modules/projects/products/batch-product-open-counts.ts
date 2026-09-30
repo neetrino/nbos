@@ -1,8 +1,5 @@
-import type { PrismaClient, TaskStatusEnum } from '@nbos/database';
+import type { PrismaClient } from '@nbos/database';
 import type { ProductOpenCounts } from './product-current-stage-readiness';
-
-/** Prisma task statuses only — `DONE` is legacy in gate strings, not in `TaskStatusEnum`. */
-const CLOSED_TASK_STATUSES: TaskStatusEnum[] = ['ON_HOLD', 'COMPLETED'];
 
 export async function batchProductOpenCounts(
   prisma: InstanceType<typeof PrismaClient>,
@@ -10,19 +7,11 @@ export async function batchProductOpenCounts(
 ): Promise<Map<string, ProductOpenCounts>> {
   const map = new Map<string, ProductOpenCounts>();
   for (const id of productIds) {
-    map.set(id, { openTasks: 0, openTickets: 0, openExtensions: 0 });
+    map.set(id, { openTickets: 0, openExtensions: 0 });
   }
   if (productIds.length === 0) return map;
 
-  const [taskGroups, ticketGroups, extGroups] = await Promise.all([
-    prisma.task.groupBy({
-      by: ['productId'],
-      where: {
-        productId: { in: productIds },
-        status: { notIn: CLOSED_TASK_STATUSES },
-      },
-      _count: { _all: true },
-    }),
+  const [ticketGroups, extGroups] = await Promise.all([
     prisma.supportTicket.groupBy({
       by: ['productId'],
       where: {
@@ -41,11 +30,6 @@ export async function batchProductOpenCounts(
     }),
   ]);
 
-  for (const row of taskGroups) {
-    if (!row.productId) continue;
-    const cur = map.get(row.productId);
-    if (cur) cur.openTasks = row._count._all;
-  }
   for (const row of ticketGroups) {
     if (!row.productId) continue;
     const cur = map.get(row.productId);

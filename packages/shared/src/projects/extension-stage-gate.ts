@@ -51,6 +51,10 @@ export function buildExtensionReadiness(
   return { isReadyForDevelopment: missing.length === 0, missing };
 }
 
+/**
+ * Stage movement checks. Open tasks are not a gate: an extension may keep
+ * future work open through Done.
+ */
 export function getExtensionStageGateErrors(
   extension: ExtensionStageGateInput,
   targetStatus: string,
@@ -58,24 +62,5 @@ export function getExtensionStageGateErrors(
   if (extension.status === 'NEW' && targetStatus === 'DEVELOPMENT') {
     return buildExtensionReadiness(extension).missing;
   }
-  if (targetStatus === 'DONE') {
-    return getExtensionDoneGateErrors(extension);
-  }
   return [];
-}
-
-function getExtensionDoneGateErrors(extension: ExtensionStageGateInput): StageGateError[] {
-  const errors: StageGateError[] = [];
-  const openTaskCount = (extension.tasks ?? []).filter((task) => !isClosedTask(task.status)).length;
-  if (openTaskCount > 0) {
-    errors.push({
-      field: 'tasks',
-      message: `${openTaskCount} tasks still require completion before Extension Done.`,
-    });
-  }
-  return errors;
-}
-
-function isClosedTask(status: string): boolean {
-  return ['COMPLETED', 'ON_HOLD', 'DONE'].includes(status);
 }

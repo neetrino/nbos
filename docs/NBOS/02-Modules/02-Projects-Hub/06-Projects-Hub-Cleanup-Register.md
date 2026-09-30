@@ -247,16 +247,11 @@ This keeps gates enforceable in backend services while making the UI explain why
 
 ### A17. Product QA/Transfer gates block open execution tasks
 
-Статус: `PHASE 4 RUNTIME ALIGNMENT`
+Статус: `SUPERSEDED`
 
-Product stage-gate runtime now enforces task closure for execution/QA movement:
+Withdrawn. Open tasks do not block Product or Extension stage movement. Delivery leaves tasks open for Transfer and for work after the card is closed. Stage readiness does not include an open-task requirement. Checklist instances and the other stage requirements still apply.
 
-- Product cannot move from `Development` to `QA` while linked Product tasks are open;
-- Product cannot move from `QA` to `Transfer` while linked Product tasks are open;
-- closed task statuses for this gate are `DONE`, `DEFERRED` and `CANCELLED`;
-- blocker response uses the existing structured stage-gate error shape.
-
-This implements the canon rule that execution/QA work must be closed before the next handoff stage while keeping deeper deployment and acceptance checklists for later runtime slices.
+The earlier runtime that counted linked Task rows before QA, Transfer, and Done is removed.
 
 ### A18. Product Done gate blocks unpaid linked finance state
 

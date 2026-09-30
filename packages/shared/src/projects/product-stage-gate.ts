@@ -1,6 +1,9 @@
 import type { StageGateError } from '../stage-gates/types';
 
-/** Task statuses treated as closed for product stage gates (includes legacy DONE). */
+/**
+ * Closed task statuses for lists and summaries.
+ * Stage movement does not use this set: open tasks stay allowed through Done.
+ */
 export const PRODUCT_GATE_CLOSED_TASK_STATUSES = ['ON_HOLD', 'COMPLETED', 'DONE'] as const;
 
 export const PRODUCT_ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -41,28 +44,16 @@ export function isProductTransitionAllowed(current: string, target: string): boo
   return getProductAllowedTransitions(current).includes(target);
 }
 
+/**
+ * Stage movement checks. Open tasks are not a gate: delivery keeps future work
+ * open through QA, Transfer, and Done.
+ */
 export function getProductStageGateErrors(
   product: ProductStageGateInput,
   targetStatus: string,
 ): StageGateError[] {
   if (product.status === 'NEW' && targetStatus === 'CREATING') {
     return getProductCreatingGateErrors(product);
-  }
-  if (product.status === 'DEVELOPMENT' && targetStatus === 'QA') {
-    return buildOpenItemErrors(
-      'tasks',
-      product.tasks ?? [],
-      PRODUCT_GATE_CLOSED_TASK_STATUSES,
-      'Product QA',
-    );
-  }
-  if (product.status === 'QA' && targetStatus === 'TRANSFER') {
-    return buildOpenItemErrors(
-      'tasks',
-      product.tasks ?? [],
-      PRODUCT_GATE_CLOSED_TASK_STATUSES,
-      'Product Transfer',
-    );
   }
   if (targetStatus === 'DONE') {
     return getProductDoneGateErrors(product);
@@ -92,12 +83,6 @@ function getProductDoneGateErrors(product: ProductStageGateInput): StageGateErro
       'extensions',
       product.extensions ?? [],
       ['DONE', 'LOST'],
-      'Product Done',
-    ),
-    ...buildOpenItemErrors(
-      'tasks',
-      product.tasks ?? [],
-      PRODUCT_GATE_CLOSED_TASK_STATUSES,
       'Product Done',
     ),
     ...buildOpenItemErrors(

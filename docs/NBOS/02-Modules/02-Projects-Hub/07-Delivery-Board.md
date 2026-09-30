@@ -558,6 +558,7 @@ Transfer      0/6 Future
 
 ```text
 Card cannot move to the next stage until all required stage requirements are satisfied.
+Open tasks are not a stage requirement and do not block QA, Transfer, or Done.
 ```
 
 Если пользователь пытается прыгнуть через stage или сразу закрыть `Done`, система выполняет cumulative validation по всем пропущенным stages.

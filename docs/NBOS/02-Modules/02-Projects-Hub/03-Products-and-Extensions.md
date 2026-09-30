@@ -417,7 +417,10 @@ Stage gate requirements и checklist items не являются одним и �
 Stage readiness = Stage Requirements.
 Checklist instance completion = one possible Stage Requirement.
 Checklist items = internal checklist system, not direct stage-gate fields.
+Open tasks are not a stage requirement.
 ```
+
+Открытые задачи не блокируют переход Product или Extension. Их можно оставлять на QA, Transfer, Done и после закрытия карточки: будущая работа не является условием движения стадии. Stage gate не считает строки Task. Work Space остаётся местом исполнения.
 
 Например `Development Checklist completed` может быть одним requirement внутри stage. Stage gate проверяет только статус checklist instance: completed или open. Внутри checklist есть свои пункты, комментарии, `Done / Not Done / Pending` и собственная логика завершения. Эти checklist templates создаются и версионируются в `07-My-Company/08-Checklist-Template-Builder.md`.
 
