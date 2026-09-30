@@ -27,7 +27,7 @@ export function InternalSheetComposer({
 }: SheetComposerProps) {
   const palette = useSheetMessengerPalette();
   return (
-    <div className={palette.canvas}>
+    <div>
       <ComposerRow
         sendClass={palette.send}
         value={value}

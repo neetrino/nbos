@@ -32,4 +32,7 @@ export const INTERNAL_MESSENGER_EMPTY_COPY: Record<InternalMessengerSectionId, s
 export const INTERNAL_MESSENGER_SHELL_CLASS =
   'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-white';
 
+/** Space under the last bubble so the overlay composer does not cover it. */
+export const SHEET_COMPOSER_OVERLAY_PAD_CLASS = 'pb-16';
+
 export const INTERNAL_FORWARD_PREVIEW_MAX_LENGTH = 140;

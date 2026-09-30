@@ -13,6 +13,7 @@ import type {
 import { SheetThreadHeader } from './InternalSheetHeader';
 import { InternalForwardReferenceCard } from './InternalForwardReferenceCard';
 import { InternalReplyQuote } from './InternalReplyQuote';
+import { SHEET_COMPOSER_OVERLAY_PAD_CLASS } from './internal-messenger.constants';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 export function ThreadHeader({
@@ -63,7 +64,7 @@ export function ThreadMessages({
   meId?: string | null;
 }) {
   const palette = useSheetMessengerPalette();
-  const canvas = sheet ? `${palette.canvas} py-6` : 'py-3';
+  const canvas = sheet ? `${palette.canvas} py-6 ${SHEET_COMPOSER_OVERLAY_PAD_CLASS}` : 'py-3';
   return (
     <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
       {messagesLoading ? (
@@ -231,17 +232,25 @@ export function ThreadComposer({
     placeholder ?? (canSend ? 'Message' : 'You cannot send in this conversation');
   const blocked = !canSend || sendDisabled || newMessage.trim().length === 0;
   return (
-    <div className={sheet ? 'bg-[#eef2ff]' : 'border-t border-black/[0.06] p-3'}>
-      {replyTo ? <ReplySlot sheet={sheet} replyTo={replyTo} onClear={onClearReply} /> : null}
-      <ComposerField
-        sheet={sheet}
-        value={newMessage}
-        onChange={onNewMessageChange}
-        onSend={onSend}
-        disabled={!canSend || sendDisabled}
-        sendDisabled={blocked}
-        placeholder={resolvedPlaceholder}
-      />
+    <div
+      className={
+        sheet
+          ? 'pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-transparent'
+          : 'border-t border-black/[0.06] p-3'
+      }
+    >
+      <div className={sheet ? 'pointer-events-auto' : undefined}>
+        {replyTo ? <ReplySlot sheet={sheet} replyTo={replyTo} onClear={onClearReply} /> : null}
+        <ComposerField
+          sheet={sheet}
+          value={newMessage}
+          onChange={onNewMessageChange}
+          onSend={onSend}
+          disabled={!canSend || sendDisabled}
+          sendDisabled={blocked}
+          placeholder={resolvedPlaceholder}
+        />
+      </div>
     </div>
   );
 }

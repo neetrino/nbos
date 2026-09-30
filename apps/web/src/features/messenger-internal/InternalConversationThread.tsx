@@ -138,7 +138,7 @@ function ThreadScaffold(props: {
 }) {
   const { conversation, actions } = props;
   return (
-    <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-[#eef2ff]">
+    <section className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#eef2ff]">
       <ThreadHeader
         conversation={conversation}
         title={conversationListTitle(
