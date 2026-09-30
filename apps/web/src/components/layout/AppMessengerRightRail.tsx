@@ -63,16 +63,16 @@ export function AppMessengerRightRail() {
   const shortcuts = useMemo<MessengerQuickRailShortcut[]>(
     () => [
       {
-        id: 'messenger',
-        label: 'Messenger',
-        unreadCount: internalUnreadTotal,
-        onSelect: () => openMessenger('all'),
-      },
-      {
         id: 'client-messenger',
         label: 'Client Messenger',
         unreadCount: clientUnreadTotal,
         onSelect: () => openClientMessenger('inbox'),
+      },
+      {
+        id: 'messenger',
+        label: 'Messenger',
+        unreadCount: internalUnreadTotal,
+        onSelect: () => openMessenger('all'),
       },
     ],
     [clientUnreadTotal, internalUnreadTotal, openClientMessenger, openMessenger],
