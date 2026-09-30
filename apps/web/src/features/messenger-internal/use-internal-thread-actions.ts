@@ -14,6 +14,7 @@ export function useInternalThreadActions(
   onOpenInternalSource?: (conversationId: string) => void,
 ) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(null);
   const [replyTo, setReplyTo] = useState<MessengerCoreMessageRow | null>(null);
   const [forwardOpen, setForwardOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
@@ -25,6 +26,7 @@ export function useInternalThreadActions(
   return {
     selectedIds,
     selectedMessages,
+    menuAnchor,
     replyTo,
     forwardOpen,
     createTaskOpen,
@@ -32,8 +34,17 @@ export function useInternalThreadActions(
       setSelectedIds((current) =>
         current.includes(id) ? current.filter((row) => row !== id) : [...current, id],
       ),
+    selectOnly: (id: string) => setSelectedIds([id]),
+    openActionMenu: (id: string, x: number, y: number) => {
+      setSelectedIds([id]);
+      setMenuAnchor({ x, y });
+    },
+    closeActionMenu: () => setMenuAnchor(null),
     clearSelection: () => setSelectedIds([]),
-    startReply: () => setReplyTo(selectedMessages[0] ?? null),
+    startReply: (messageId?: string) => {
+      const id = messageId ?? selectedIds[0];
+      setReplyTo(messages.find((row) => row.id === id) ?? selectedMessages[0] ?? null);
+    },
     clearReply: () => setReplyTo(null),
     setForwardOpen,
     setCreateTaskOpen,

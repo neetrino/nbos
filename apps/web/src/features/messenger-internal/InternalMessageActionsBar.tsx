@@ -1,8 +1,24 @@
 'use client';
 
+import { useEffect, type ReactNode } from 'react';
+import {
+  ClipboardCopy,
+  CornerUpLeft,
+  ExternalLink,
+  Forward,
+  ListTodo,
+  Ticket,
+  Link2,
+} from 'lucide-react';
+import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
+
+const MENU_OFFSET_PX = 4;
+
+export type MessageActionMenuAnchor = { x: number; y: number };
+
 export function InternalMessageActionsBar({
-  selectedCount,
-  canReply,
+  anchor,
+  onClose,
   canCreateTask,
   canCreateTicket = false,
   canLinkTicket = false,
@@ -13,10 +29,9 @@ export function InternalMessageActionsBar({
   onLinkTicket,
   onOpenOriginal,
   onCopySource,
-  onClear,
 }: {
-  selectedCount: number;
-  canReply: boolean;
+  anchor: MessageActionMenuAnchor | null;
+  onClose: () => void;
   canCreateTask: boolean;
   canCreateTicket?: boolean;
   canLinkTicket?: boolean;
@@ -27,36 +42,106 @@ export function InternalMessageActionsBar({
   onLinkTicket?: () => void;
   onOpenOriginal: () => void;
   onCopySource: () => void;
-  onClear: () => void;
 }) {
-  if (selectedCount === 0) return null;
+  useDismissMessageMenu(Boolean(anchor), onClose);
+  if (!anchor) return null;
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-black/[0.06] px-3 py-2">
-      <span className="mr-1 text-[11px] text-black/45">{selectedCount} selected</span>
-      {canReply ? <ActionButton label="Reply" onClick={onReply} /> : null}
-      <ActionButton label="Forward" onClick={onForward} />
-      {canCreateTask ? <ActionButton label="Create Task" onClick={onCreateTask} /> : null}
+    <div
+      role="menu"
+      className={`${PORTAL_DROPDOWN_Z_CLASS} fixed min-w-56 rounded-2xl bg-[#2b2b2b] py-1.5 text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)]`}
+      style={{ left: anchor.x + MENU_OFFSET_PX, top: anchor.y + MENU_OFFSET_PX }}
+      onMouseDown={(event) => event.stopPropagation()}
+    >
+      <MenuRow
+        icon={<CornerUpLeft size={16} />}
+        label="Reply"
+        onClick={() => run(onReply, onClose)}
+      />
+      <MenuRow
+        icon={<Forward size={16} />}
+        label="Forward"
+        onClick={() => run(onForward, onClose)}
+      />
+      {canCreateTask ? (
+        <MenuRow
+          icon={<ListTodo size={16} />}
+          label="Create Task"
+          onClick={() => run(onCreateTask, onClose)}
+        />
+      ) : null}
       {canCreateTicket && onCreateTicket ? (
-        <ActionButton label="Create Ticket" onClick={onCreateTicket} />
+        <MenuRow
+          icon={<Ticket size={16} />}
+          label="Create Ticket"
+          onClick={() => run(onCreateTicket, onClose)}
+        />
       ) : null}
       {canLinkTicket && onLinkTicket ? (
-        <ActionButton label="Link Ticket" onClick={onLinkTicket} />
+        <MenuRow
+          icon={<Link2 size={16} />}
+          label="Link Ticket"
+          onClick={() => run(onLinkTicket, onClose)}
+        />
       ) : null}
-      <ActionButton label="Open original" onClick={onOpenOriginal} />
-      <ActionButton label="Copy source" onClick={onCopySource} />
-      <ActionButton label="Clear" onClick={onClear} />
+      <MenuDivider />
+      <MenuRow
+        icon={<ExternalLink size={16} />}
+        label="Open original"
+        onClick={() => run(onOpenOriginal, onClose)}
+      />
+      <MenuRow
+        icon={<ClipboardCopy size={16} />}
+        label="Copy source"
+        onClick={() => run(onCopySource, onClose)}
+      />
     </div>
   );
 }
 
-function ActionButton({ label, onClick }: { label: string; onClick: () => void }) {
+function run(action: () => void, onClose: () => void): void {
+  action();
+  onClose();
+}
+
+function useDismissMessageMenu(open: boolean, onClose: () => void): void {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    const onPointer = () => onClose();
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('mousedown', onPointer);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('mousedown', onPointer);
+    };
+  }, [open, onClose]);
+}
+
+function MenuRow({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
+      role="menuitem"
+      onMouseDown={(event) => event.stopPropagation()}
       onClick={onClick}
-      className="rounded-md px-2 py-1 text-[11px] font-medium text-black hover:bg-[#E5A84B]/15"
+      className="flex w-full items-center gap-3 px-3.5 py-2 text-left text-sm hover:bg-white/10"
     >
+      <span className="text-white/70">{icon}</span>
       {label}
     </button>
   );
+}
+
+function MenuDivider() {
+  return <div className="my-1 h-px bg-white/10" />;
 }

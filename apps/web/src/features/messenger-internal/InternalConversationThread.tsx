@@ -25,6 +25,7 @@ import { InternalForwardDialog } from './InternalForwardDialog';
 import { InternalMessageActionsBar } from './InternalMessageActionsBar';
 import { InternalJumpToEndButton } from './InternalJumpToEndButton';
 import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadParts';
+import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useInternalThreadActions } from './use-internal-thread-actions';
 import { useScrollThreadToEnd } from './use-scroll-thread-to-end';
 
@@ -66,6 +67,8 @@ export function InternalConversationThread({
   collections,
   onAddToCollection,
   remoteTypingHint,
+  typingPeer = null,
+  onTypingIntent,
   onOpenInternalSource,
   peerLastReadAt = null,
 }: {
@@ -81,6 +84,8 @@ export function InternalConversationThread({
   collections: Array<{ id: string; name: string }>;
   onAddToCollection: (collectionId: string) => void;
   remoteTypingHint: string | null;
+  typingPeer?: ConversationTypingPeer | null;
+  onTypingIntent?: () => void;
   onOpenInternalSource?: (conversationId: string) => void;
   peerLastReadAt?: string | null;
 }) {
@@ -111,6 +116,8 @@ export function InternalConversationThread({
       collections={collections}
       onAddToCollection={onAddToCollection}
       remoteTypingHint={remoteTypingHint}
+      typingPeer={typingPeer}
+      onTypingIntent={onTypingIntent}
       canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
       creatorId={creatorId}
       creatorReady={creatorReady}
@@ -137,6 +144,8 @@ function ThreadScaffold(props: {
   collections: Array<{ id: string; name: string }>;
   onAddToCollection: (collectionId: string) => void;
   remoteTypingHint: string | null;
+  typingPeer?: ConversationTypingPeer | null;
+  onTypingIntent?: () => void;
   canCreateTask: boolean;
   creatorId: string | null;
   creatorReady: boolean;
@@ -161,15 +170,14 @@ function ThreadScaffold(props: {
         onAddToCollection={props.onAddToCollection}
       />
       <InternalMessageActionsBar
-        selectedCount={actions.selectedMessages.length}
-        canReply={actions.selectedMessages.length === 1}
+        anchor={actions.menuAnchor}
+        onClose={actions.closeActionMenu}
         canCreateTask={props.canCreateTask}
-        onReply={actions.startReply}
+        onReply={() => actions.startReply()}
         onForward={() => actions.setForwardOpen(true)}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
-        onClear={actions.clearSelection}
       />
       <div className="relative flex min-h-0 flex-1 flex-col">
         <ThreadMessages
@@ -178,8 +186,10 @@ function ThreadScaffold(props: {
           messagesLoading={props.messagesLoading}
           selectedIds={actions.selectedIds}
           onToggleSelect={actions.toggleSelect}
+          onMessageContextMenu={actions.openActionMenu}
           onOpenOriginalSource={actions.openOriginalBySourceId}
           remoteTypingHint={props.remoteTypingHint}
+          typingPeer={props.typingPeer}
           scrollerRef={props.scrollerRef}
           sheet
           meId={props.meId}
@@ -193,6 +203,7 @@ function ThreadScaffold(props: {
         onNewMessageChange={props.onNewMessageChange}
         replyTo={actions.replyTo}
         onClearReply={actions.clearReply}
+        onTypingIntent={props.onTypingIntent}
         sheet
         onSend={() =>
           void Promise.resolve(

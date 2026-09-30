@@ -121,19 +121,18 @@ export function ClientConversationThread({
         onAttentionChange={onAttentionChange}
       />
       <InternalMessageActionsBar
-        selectedCount={actions.selectedMessages.length}
-        canReply={actions.selectedMessages.length === 1}
+        anchor={actions.menuAnchor}
+        onClose={actions.closeActionMenu}
         canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
         canCreateTicket={canTicket}
         canLinkTicket={canTicket}
-        onReply={actions.startReply}
+        onReply={() => actions.startReply()}
         onForward={() => actions.setForwardOpen(true)}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onCreateTicket={() => setCreateTicketOpen(true)}
         onLinkTicket={() => setLinkTicketOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
-        onClear={actions.clearSelection}
       />
       <SheetMessengerPaletteProvider kind="client">
         <ThreadMessages
@@ -142,9 +141,10 @@ export function ClientConversationThread({
           messagesLoading={messagesLoading}
           selectedIds={actions.selectedIds}
           onToggleSelect={actions.toggleSelect}
+          onMessageContextMenu={actions.openActionMenu}
           onOpenOriginalSource={actions.openOriginalBySourceId}
           remoteTypingHint={null}
-          endRef={endRef}
+          scrollerRef={endRef}
           sheet
           meId={me?.id ?? null}
         />

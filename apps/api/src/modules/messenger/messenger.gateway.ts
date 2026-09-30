@@ -18,6 +18,7 @@ import {
   MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_CHANNEL,
+  MESSENGER_WS_CLIENT_TYPING_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
@@ -55,6 +56,7 @@ import {
   publishPersistedCoreConversationMessage,
   type PersistedCoreMessageFacts,
 } from './messenger-gateway-fanout';
+import { handleCoreConversationTyping } from './messenger-gateway-conversation-typing';
 import { extractChannelId, extractRecipientId } from './messenger-gateway-parse';
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
@@ -188,6 +190,20 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
       label,
     });
     return { ok: true };
+  }
+
+  @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_CONVERSATION)
+  async handleTypingConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    return handleCoreConversationTyping(
+      this.prisma,
+      client,
+      client.data.employeeId as string | undefined,
+      body,
+      this.typingThrottle,
+    );
   }
 
   emitChannelMessage(channelId: string, message: MessengerMessageDto): void {

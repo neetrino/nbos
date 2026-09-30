@@ -1,19 +1,18 @@
 'use client';
 
 import type { RefObject } from 'react';
-import { messengerDateLabel } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
-import { MessengerThreadMessageBubble } from '@/features/messenger/messenger-thread-primitives';
-import { ComposerField, MessageDate, MessageSelect } from './InternalThreadChrome';
-import { InternalSheetMessage } from './InternalSheetMessage';
+import { ComposerField } from './InternalThreadChrome';
+import { ThreadMessageRow } from './InternalThreadMessageRow';
 import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
 import { SheetThreadHeader } from './InternalSheetHeader';
-import { InternalForwardReferenceCard } from './InternalForwardReferenceCard';
 import { InternalReplyQuote } from './InternalReplyQuote';
 import { SHEET_COMPOSER_OVERLAY_PAD_CLASS } from './internal-messenger.constants';
+import { InternalTypingIndicator } from './InternalTypingIndicator';
+import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 export function ThreadHeader({
@@ -46,8 +45,10 @@ export function ThreadMessages({
   messagesLoading,
   selectedIds,
   onToggleSelect,
+  onMessageContextMenu,
   onOpenOriginalSource,
   remoteTypingHint,
+  typingPeer = null,
   scrollerRef,
   sheet = false,
   meId = null,
@@ -57,8 +58,10 @@ export function ThreadMessages({
   messagesLoading: boolean;
   selectedIds: string[];
   onToggleSelect: (id: string) => void;
+  onMessageContextMenu?: (id: string, x: number, y: number) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
   remoteTypingHint: string | null;
+  typingPeer?: ConversationTypingPeer | null;
   scrollerRef: RefObject<HTMLDivElement | null>;
   sheet?: boolean;
   meId?: string | null;
@@ -77,12 +80,15 @@ export function ThreadMessages({
           messages={messages}
           selectedIds={selectedIds}
           onToggleSelect={onToggleSelect}
+          onMessageContextMenu={onMessageContextMenu}
           onOpenOriginalSource={onOpenOriginalSource}
           sheet={sheet}
           meId={meId}
         />
       )}
-      {remoteTypingHint ? (
+      {typingPeer ? (
+        <InternalTypingIndicator peer={typingPeer} />
+      ) : remoteTypingHint ? (
         <p className="px-5 pt-1 text-xs text-black/40">{remoteTypingHint}</p>
       ) : null}
     </div>
@@ -94,6 +100,7 @@ function ThreadRows({
   messages,
   selectedIds,
   onToggleSelect,
+  onMessageContextMenu,
   onOpenOriginalSource,
   sheet,
   meId,
@@ -102,6 +109,7 @@ function ThreadRows({
   messages: MessengerCoreMessageRow[];
   selectedIds: string[];
   onToggleSelect: (id: string) => void;
+  onMessageContextMenu?: (id: string, x: number, y: number) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
   sheet: boolean;
   meId: string | null;
@@ -115,95 +123,12 @@ function ThreadRows({
       selected={selectedIds.includes(message.id)}
       references={messages.find((item) => item.id === message.id)?.references ?? []}
       onToggleSelect={onToggleSelect}
+      onMessageContextMenu={onMessageContextMenu}
       onOpenOriginalSource={onOpenOriginalSource}
       sheet={sheet}
       mine={Boolean(meId) && message.senderId === meId}
     />
   ));
-}
-
-function RowBubble({
-  message,
-  mine,
-  sheet,
-  showAvatar,
-}: {
-  message: MessengerViewMessage;
-  mine: boolean;
-  sheet: boolean;
-  showAvatar: boolean;
-}) {
-  if (!sheet) {
-    return (
-      <MessengerThreadMessageBubble
-        message={message}
-        readReceiptLabel={message.deliveryLabel ?? null}
-      />
-    );
-  }
-  return (
-    <InternalSheetMessage
-      message={message}
-      mine={mine}
-      readReceiptLabel={message.deliveryLabel ?? null}
-      readReceiptSeen={Boolean(message.receiptSeen)}
-      showAvatar={showAvatar}
-    />
-  );
-}
-
-function sameSenderRun(
-  current: MessengerViewMessage | undefined,
-  other: MessengerViewMessage | undefined,
-): boolean {
-  if (!current || !other || current.senderId !== other.senderId) return false;
-  return messengerDateLabel(current.timestamp) === messengerDateLabel(other.timestamp);
-}
-
-function ThreadMessageRow({
-  message,
-  previous,
-  next,
-  selected,
-  references,
-  onToggleSelect,
-  onOpenOriginalSource,
-  sheet,
-  mine,
-}: {
-  message: MessengerViewMessage;
-  previous: MessengerViewMessage | undefined;
-  next: MessengerViewMessage | undefined;
-  selected: boolean;
-  references: NonNullable<MessengerCoreMessageRow['references']>;
-  onToggleSelect: (id: string) => void;
-  onOpenOriginalSource: (sourceMessageId: string) => void;
-  sheet: boolean;
-  mine: boolean;
-}) {
-  const showDate =
-    !previous || messengerDateLabel(previous.timestamp) !== messengerDateLabel(message.timestamp);
-  const label = messengerDateLabel(message.timestamp);
-  const continued = sameSenderRun(previous, message);
-  const rowGap = sheet && previous ? (continued ? 'mt-1' : 'mt-4') : '';
-  return (
-    <div className={`group flex items-start gap-1 ${rowGap}`}>
-      <MessageSelect selected={selected} onToggle={() => onToggleSelect(message.id)} />
-      <div className="min-w-0 flex-1">
-        {showDate ? <MessageDate label={label} sheet={sheet} /> : null}
-        <RowBubble
-          message={message}
-          mine={mine}
-          sheet={sheet}
-          showAvatar={!sameSenderRun(message, next)}
-        />
-        <InternalForwardReferenceCard
-          references={references}
-          onOpenOriginal={onOpenOriginalSource}
-        />
-      </div>
-    </div>
-  );
 }
 
 export function ThreadComposer({
@@ -214,6 +139,7 @@ export function ThreadComposer({
   replyTo,
   onClearReply,
   onSend,
+  onTypingIntent,
   placeholder,
   sheet = false,
 }: {
@@ -224,6 +150,7 @@ export function ThreadComposer({
   replyTo: MessengerCoreMessageRow | null;
   onClearReply: () => void;
   onSend: () => void;
+  onTypingIntent?: () => void;
   placeholder?: string;
   sheet?: boolean;
 }) {
@@ -243,7 +170,10 @@ export function ThreadComposer({
         <ComposerField
           sheet={sheet}
           value={newMessage}
-          onChange={onNewMessageChange}
+          onChange={(value) => {
+            onNewMessageChange(value);
+            onTypingIntent?.();
+          }}
           onSend={onSend}
           disabled={!canSend || sendDisabled}
           sendDisabled={blocked}

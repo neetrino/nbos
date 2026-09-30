@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
-import { MESSENGER_SOCKET_NAMESPACE } from '@nbos/shared';
+import { MESSENGER_SOCKET_NAMESPACE, MESSENGER_TYPING_EMIT_MIN_MS } from '@nbos/shared';
 import type {
   MessengerWsConversationAccessChangedPayload,
   MessengerWsConversationReadUpdatedPayload,
@@ -10,12 +10,15 @@ import type {
 } from '@nbos/shared';
 import { recoverRealtimeSession } from '@/lib/auth/realtime-session';
 import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import { MESSENGER_REMOTE_TYPING_HINT_MS } from '@/features/messenger/messenger-typing-ui.constants';
 import {
   bindMessengerRealtimeSocket,
   emitConversationLeave,
   emitConversationSubscribe,
+  emitConversationTyping,
   type MessengerRealtimeBindRefs,
 } from './messenger-realtime-bind';
+import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useMessengerOnlineIds } from './use-messenger-online-ids';
 import type { ConversationPeerRead } from './messenger-peer-read';
 
@@ -41,23 +44,51 @@ export type InternalMessengerRealtimeOptions = {
 
 export function useInternalMessengerRealtime(options: InternalMessengerRealtimeOptions): {
   onlineIds: ReadonlySet<string>;
+  typingPeer: ConversationTypingPeer | null;
+  emitConversationTyping: () => void;
 } {
   const [token, setToken] = useState<string | null>(null);
+  const [typingPeer, setTypingPeer] = useState<ConversationTypingPeer | null>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const lastTypingEmitRef = useRef(0);
+  const typingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const presence = useMessengerOnlineIds();
-  const refs = useRealtimeCallbackRefs(options, presence);
+  const onTyping = useRef((peer: ConversationTypingPeer) => {
+    setTypingPeer(peer);
+    if (typingClearRef.current) clearTimeout(typingClearRef.current);
+    typingClearRef.current = setTimeout(() => setTypingPeer(null), MESSENGER_REMOTE_TYPING_HINT_MS);
+  });
+  const refs = useRealtimeCallbackRefs(options, presence, onTyping);
 
   useRealtimeAccessToken(options.canViewMessenger, options.meId, setToken);
   useRealtimeSocketSession(options.canViewMessenger, options.meId, token, socketRef, refs);
   useActiveConversationRoom(socketRef, options.conversationId);
-  return { onlineIds: presence.onlineIds };
+
+  const emitTyping = useCallback(() => {
+    const conversationId = options.conversationId;
+    if (!conversationId) return;
+    const now = Date.now();
+    if (now - lastTypingEmitRef.current < MESSENGER_TYPING_EMIT_MIN_MS) return;
+    lastTypingEmitRef.current = now;
+    emitConversationTyping(socketRef.current, conversationId);
+  }, [options.conversationId]);
+
+  const visibleTyping =
+    typingPeer && typingPeer.conversationId === options.conversationId ? typingPeer : null;
+  return {
+    onlineIds: presence.onlineIds,
+    typingPeer: visibleTyping,
+    emitConversationTyping: emitTyping,
+  };
 }
 
 function useRealtimeCallbackRefs(
   options: InternalMessengerRealtimeOptions,
   presence: ReturnType<typeof useMessengerOnlineIds>,
+  onTyping: { current: (peer: ConversationTypingPeer) => void },
 ): MessengerRealtimeBindRefs {
   const conversationIdRef = useRef(options.conversationId);
+  const meIdRef = useRef(options.meId);
   const onInboundRef = useRef(options.onInboundMessage);
   const onSummaryRef = useRef(options.onConversationSummary);
   const onConversationReadRef = useRef(options.onConversationRead);
@@ -67,6 +98,7 @@ function useRealtimeCallbackRefs(
   const onPeerReadRef = useRef(options.onPeerRead);
   useLayoutEffect(() => {
     conversationIdRef.current = options.conversationId;
+    meIdRef.current = options.meId;
     onInboundRef.current = options.onInboundMessage;
     onSummaryRef.current = options.onConversationSummary;
     onConversationReadRef.current = options.onConversationRead;
@@ -78,6 +110,7 @@ function useRealtimeCallbackRefs(
   return useMemo(
     () => ({
       conversationIdRef,
+      meIdRef,
       onInboundRef,
       onSummaryRef,
       onConversationReadRef,
@@ -85,11 +118,13 @@ function useRealtimeCallbackRefs(
       onReadRef,
       onReconnectRef,
       onPeerReadRef,
+      onConversationTypingRef: onTyping,
       onPresenceSnapshotRef: presence.onPresenceSnapshotRef,
       onPresenceDeltaRef: presence.onPresenceDeltaRef,
     }),
     [
       conversationIdRef,
+      meIdRef,
       onInboundRef,
       onSummaryRef,
       onConversationReadRef,
@@ -97,6 +132,7 @@ function useRealtimeCallbackRefs(
       onReadRef,
       onReconnectRef,
       onPeerReadRef,
+      onTyping,
       presence.onPresenceDeltaRef,
       presence.onPresenceSnapshotRef,
     ],

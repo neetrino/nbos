@@ -32,6 +32,7 @@ import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerQueries } from './use-internal-messenger-queries';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
+import { createInternalGroupConversation } from './create-internal-group';
 import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
 import { useMessengerConversationLaunch } from './use-messenger-conversation-launch';
 import { MessengerPresenceProvider } from './PresenceAvatar';
@@ -99,7 +100,7 @@ function InternalMessengerScreen({
     setBootError: session.setBootError,
   });
 
-  const { onlineIds } = useInternalMessengerRealtime({
+  const { onlineIds, typingPeer, emitConversationTyping } = useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
     conversationId: session.activeId,
@@ -250,6 +251,8 @@ function InternalMessengerScreen({
                 void messengerCoreApi.addCollectionItem(collectionId, active.id)
               }
               remoteTypingHint={null}
+              typingPeer={typingPeer}
+              onTypingIntent={emitConversationTyping}
               onOpenInternalSource={(id) =>
                 void openInternalConversation(
                   queryClient,
@@ -272,13 +275,9 @@ function InternalMessengerScreen({
   );
 
   async function createGroup(title: string) {
-    const created = await messengerCoreApi.createConversation({
-      type: 'INTERNAL_GROUP',
-      title,
-    });
-    await openInternalConversation(
+    await createInternalGroupConversation(
       queryClient,
-      created.id,
+      title,
       session.setActiveId,
       session.setOpenedConversation,
     );
