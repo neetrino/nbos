@@ -9,7 +9,6 @@ import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { AddToCollectionSelect } from './AddToCollectionSelect';
 import { FavoriteStar, ThreadAvatar } from './InternalThreadChrome';
 import { conversationTypeBadge } from './internal-messenger-section';
-import { useEmployeeOnline } from './PresenceAvatar';
 
 const HEADER_ICON_BUTTON_CLASS = 'flex items-center justify-center rounded-lg p-2';
 
@@ -59,7 +58,6 @@ function HeaderIdentity({
           </span>
           <FavoriteStar favorite={Boolean(conversation.isFavorite)} onToggle={onToggleFavorite} />
         </div>
-        {direct ? <DirectStatusLine employeeId={conversation.peerEmployeeId} /> : null}
       </div>
     </div>
   );
@@ -69,12 +67,6 @@ function headerPill(conversation: MessengerCoreConversationRow): string {
   const position = conversation.peerPosition?.trim();
   if (conversation.type === 'DIRECT' && position) return position;
   return conversationTypeBadge(conversation.type);
-}
-
-function DirectStatusLine({ employeeId }: { employeeId?: string | null }) {
-  const online = useEmployeeOnline(employeeId);
-  if (!online) return null;
-  return <p className="text-xs leading-[18px] text-[#059669]">Active now</p>;
 }
 
 function SheetHeaderActions({

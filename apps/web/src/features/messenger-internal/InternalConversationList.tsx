@@ -10,6 +10,7 @@ import {
   type InternalMessengerSectionId,
 } from './internal-messenger.constants';
 import { InternalConversationRow } from './InternalConversationRow';
+import { InternalCreateMenu } from './InternalCreateMenu';
 
 export function InternalConversationList({
   section,
@@ -117,11 +118,13 @@ function ListSearch({
   filter,
   onSearchChange,
   onFilterChange,
+  createGroup,
 }: {
   search: string;
   filter: 'all' | 'unread' | 'mentions';
   onSearchChange: (value: string) => void;
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
+  createGroup?: { canEdit: boolean; onCreate: (title: string) => Promise<void> };
 }) {
   return (
     <div className="flex items-center gap-3 p-3">
@@ -137,6 +140,9 @@ function ListSearch({
           className="w-full bg-transparent text-xs text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none"
         />
       </label>
+      {createGroup ? (
+        <InternalCreateMenu canEdit={createGroup.canEdit} onCreateGroup={createGroup.onCreate} />
+      ) : null}
       <FilterToggle
         label="Unread"
         pressed={filter === 'unread'}

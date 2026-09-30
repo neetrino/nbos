@@ -27,7 +27,6 @@ export function ThreadAvatar({
       label={title}
       sizeClassName="size-10"
       fallbackClassName={`text-[13px] ${fallback}`}
-      showPresence
       roundedClassName={direct ? 'rounded-full border border-[#fcd34d]' : 'rounded-full'}
     />
   );
