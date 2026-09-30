@@ -25,7 +25,7 @@ export function ConversationSelectionCard({
     <span
       aria-hidden
       className={cn(
-        'pointer-events-none absolute z-0 rounded-[17px] border border-[#e0e7ff] bg-white shadow-[0_6px_16px_rgba(79,70,229,0.14),0_1px_3px_rgba(15,23,42,0.08)]',
+        'pointer-events-none absolute z-0 rounded-[17px] bg-white shadow-[0px_1px_1.5px_rgba(0,0,0,0.1),0px_1px_1px_rgba(0,0,0,0.1)]',
         ready && SELECTION_TRANSITION_CLASS,
       )}
       style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
