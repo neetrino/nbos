@@ -19,7 +19,7 @@ describe('extension stage gates', () => {
     const errors = getExtensionStageGateErrors(
       {
         status: 'TRANSFER',
-        tasks: [{ status: 'DONE' }],
+        tasks: [{ status: 'IN_PROGRESS' }],
         order: {
           id: 'ord-1',
           status: 'PARTIALLY_PAID',

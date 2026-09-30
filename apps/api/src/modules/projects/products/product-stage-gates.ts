@@ -58,24 +58,6 @@ export function validateProductStageGate(product: ProductForStageGate, target: P
     );
   }
 
-  if (product.status === 'DEVELOPMENT' && target === 'QA') {
-    throw new BadRequestException({
-      statusCode: 400,
-      code: STAGE_GATE_VALIDATION_CODE,
-      message: 'Cannot move product to QA while execution tasks are still open.',
-      errors,
-    });
-  }
-
-  if (product.status === 'QA' && target === 'TRANSFER') {
-    throw new BadRequestException({
-      statusCode: 400,
-      code: STAGE_GATE_VALIDATION_CODE,
-      message: 'Cannot move product to Transfer while QA tasks are still open.',
-      errors,
-    });
-  }
-
   if (target === 'DONE') {
     throw new BadRequestException({
       statusCode: 400,

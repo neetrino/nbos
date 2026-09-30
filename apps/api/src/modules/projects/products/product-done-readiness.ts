@@ -108,7 +108,6 @@ function buildClientAcceptanceBlockers(summary: ProductDoneReadiness['summary'])
 function buildOpenWorkBlockers(summary: ProductDoneReadiness['summary']) {
   return [
     ...buildCountBlocker('OPEN_EXTENSIONS', 'Extensions', summary.openExtensionCount),
-    ...buildCountBlocker('OPEN_TASKS', 'Tasks', summary.openTaskCount),
     ...buildCountBlocker('OPEN_TICKETS', 'Support tickets', summary.openTicketCount),
   ];
 }

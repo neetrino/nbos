@@ -12,7 +12,6 @@ import {
 } from '../../checklist-templates/checklist-instance-stage-progress';
 import { mergeActiveParentProjectScope } from '../active-project-list-scope';
 import { extensionBillingCompanyWhere } from '../products/product-billing-company.where';
-import { batchExtensionOpenTaskCounts } from './batch-extension-open-task-counts';
 import { buildExtensionCurrentStageReadiness } from './extension-current-stage-readiness';
 import { attachExtensionReadiness } from './extension-stage-gates';
 import { volumeAdjustedByOwner } from '../../delivery-compensation/volume-adjusted-flags';
@@ -83,11 +82,6 @@ export async function findAllExtensions(
     prisma.extension.count({ where: scopedWhere }),
   ]);
 
-  const openTasksByExt = await batchExtensionOpenTaskCounts(
-    prisma,
-    items.map((e) => e.id),
-  );
-
   const lifecycleByExtension = new Map(
     items.map((extension) => [extension.id, attachExtensionReadiness(extension)]),
   );
@@ -108,10 +102,7 @@ export async function findAllExtensions(
   return {
     items: items.map((extension) => {
       const base = lifecycleByExtension.get(extension.id) ?? attachExtensionReadiness(extension);
-      const openTasks = openTasksByExt.get(extension.id) ?? 0;
-      const readiness = buildExtensionCurrentStageReadiness(extension, base.deliveryLifecycle, {
-        openTasks,
-      });
+      const readiness = buildExtensionCurrentStageReadiness(extension, base.deliveryLifecycle);
       const checklistStageProgress = pickProgressForEntity(
         checklistProgressMap,
         'EXTENSION',

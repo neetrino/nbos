@@ -54,15 +54,6 @@ export function validateExtensionStageGate(
       errors,
     });
   }
-
-  if (target === 'DONE') {
-    throw new BadRequestException({
-      statusCode: 400,
-      code: EXTENSION_STAGE_GATE_ERROR_CODE,
-      message: 'Cannot complete extension while delivery or finance blockers remain.',
-      errors,
-    });
-  }
 }
 
 export function attachExtensionReadiness<T extends ExtensionForReadiness>(extension: T) {

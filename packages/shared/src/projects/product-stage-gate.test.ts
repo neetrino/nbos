@@ -9,12 +9,12 @@ describe('getProductStageGateErrors', () => {
     );
   });
 
-  it('blocks DEVELOPMENT → QA when tasks are open', () => {
-    const errors = getProductStageGateErrors(
-      { status: 'DEVELOPMENT', tasks: [{ status: 'IN_PROGRESS' }] },
-      'QA',
+  it('allows DEVELOPMENT → QA and QA → TRANSFER when tasks are open', () => {
+    const openTasks = [{ status: 'IN_PROGRESS' }];
+    expect(getProductStageGateErrors({ status: 'DEVELOPMENT', tasks: openTasks }, 'QA')).toEqual(
+      [],
     );
-    expect(errors).toEqual([{ field: 'tasks', message: expect.any(String) }]);
+    expect(getProductStageGateErrors({ status: 'QA', tasks: openTasks }, 'TRANSFER')).toEqual([]);
   });
 
   it('does not block TRANSFER → DONE when the order is unpaid or only partially paid', () => {
@@ -92,7 +92,7 @@ describe('getProductStageGateErrors', () => {
         status: 'TRANSFER',
         clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [],
-        tasks: [],
+        tasks: [{ status: 'IN_PROGRESS' }],
         tickets: [],
         order: {
           id: 'ord-1',
