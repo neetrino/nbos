@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
+import { SIDEBAR_MODULE_VISUALS } from '@/components/layout/sidebar-module-visual';
 
 export const APP_MESSENGER_RIGHT_RAIL_WIDTH_PX = 72;
 
@@ -14,24 +15,39 @@ export type MessengerQuickRailPerson = {
   unreadCount?: number;
 };
 
+export type MessengerQuickRailShortcut = {
+  id: 'messenger' | 'client-messenger';
+  label: string;
+  unreadCount: number;
+  onSelect: () => void;
+};
+
 export function MessengerQuickRail({
   people,
+  shortcuts,
   activeId,
   onSelect,
   className = '',
 }: {
   people: MessengerQuickRailPerson[];
+  shortcuts?: MessengerQuickRailShortcut[];
   activeId: string | null;
   onSelect: (employeeId: string) => void;
   className?: string;
 }) {
   const pinned = people.filter((person) => person.pinned);
   const rest = people.filter((person) => !person.pinned);
+  const hasShortcuts = (shortcuts?.length ?? 0) > 0;
+  const hasPeople = people.length > 0;
   return (
     <aside
       aria-label="Employees"
-      className={`border-sidebar-border bg-sidebar hidden h-full w-[72px] shrink-0 flex-col items-center gap-3 overflow-x-visible overflow-y-auto border-l px-1.5 pt-4 lg:flex ${className}`}
+      className={`border-sidebar-border bg-sidebar hidden h-full w-[72px] shrink-0 flex-col items-center gap-3 overflow-y-auto border-l px-1.5 pt-4 lg:flex ${className}`}
     >
+      {hasShortcuts
+        ? shortcuts!.map((shortcut) => <RailShortcut key={shortcut.id} shortcut={shortcut} />)
+        : null}
+      {hasShortcuts && hasPeople ? <RailDivider /> : null}
       {pinned.length > 0 ? (
         <>
           {pinned.map((person) => (
@@ -54,6 +70,26 @@ export function MessengerQuickRail({
         />
       ))}
     </aside>
+  );
+}
+
+function RailShortcut({ shortcut }: { shortcut: MessengerQuickRailShortcut }) {
+  const { Icon, iconClass } = SIDEBAR_MODULE_VISUALS[shortcut.id];
+  const unread = shortcut.unreadCount;
+  const tone =
+    shortcut.id === 'client-messenger'
+      ? 'bg-teal-800/10 hover:bg-teal-800/15'
+      : 'bg-purple-600/10 hover:bg-purple-600/15';
+  return (
+    <button
+      type="button"
+      aria-label={unread > 0 ? `${shortcut.label}, ${unread} unread` : shortcut.label}
+      onClick={shortcut.onSelect}
+      className={`relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full ${tone}`}
+    >
+      <Icon className={iconClass} size={20} strokeWidth={1.85} aria-hidden />
+      <RailUnreadBadge count={unread} />
+    </button>
   );
 }
 
@@ -108,7 +144,7 @@ function RailUnreadBadge({ count }: { count: number }) {
   return (
     <span
       aria-hidden
-      className="pointer-events-none absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] leading-none font-semibold text-white tabular-nums ring-2 ring-white"
+      className="pointer-events-none absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] leading-none font-semibold text-white tabular-nums ring-2 ring-[#f8fafc]"
     >
       {label}
     </span>

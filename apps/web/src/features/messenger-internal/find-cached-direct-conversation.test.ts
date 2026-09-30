@@ -4,6 +4,7 @@ import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import {
   collectCachedDirectUnreadByPeerId,
+  collectCachedInternalUnreadTotal,
   collectCachedPinnedDirectPeerIds,
 } from './find-cached-direct-conversation';
 
@@ -64,6 +65,30 @@ describe('collectCachedDirectUnreadByPeerId', () => {
     );
 
     expect(collectCachedDirectUnreadByPeerId(queryClient).get('peer-1')).toBe(4);
+  });
+});
+
+describe('collectCachedInternalUnreadTotal', () => {
+  it('sums unread without double-counting cache copies', () => {
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(messengerQueryKeys.internalSummaries({ source: 'all-dataset' }), {
+      items: [row({ id: 'd1', unreadCount: 2 }), row({ id: 'd2', unreadCount: 3 })],
+      mentionsAvailable: false,
+    });
+    queryClient.setQueryData(
+      messengerQueryKeys.internalSummaries({
+        source: 'section',
+        section: 'direct',
+        q: '',
+        filter: 'all',
+      }),
+      {
+        items: [row({ id: 'd1', unreadCount: 5 })],
+        mentionsAvailable: false,
+      },
+    );
+
+    expect(collectCachedInternalUnreadTotal(queryClient)).toBe(8);
   });
 });
 

@@ -40,11 +40,48 @@ export function collectCachedDirectUnreadByPeerId(
   return map;
 }
 
+/** Total Internal unread across conversations (deduped by conversation id). */
+export function collectCachedInternalUnreadTotal(queryClient: QueryClient): number {
+  return sumUnreadByConversationId(iterateCachedInternalConversations(queryClient));
+}
+
+/** Total Client unread across conversations (deduped by conversation id). */
+export function collectCachedClientUnreadTotal(queryClient: QueryClient): number {
+  return sumUnreadByConversationId(iterateCachedClientConversations(queryClient));
+}
+
+function sumUnreadByConversationId(
+  rows: Iterable<Pick<MessengerCoreConversationRow, 'id' | 'unreadCount'>>,
+): number {
+  const byId = new Map<string, number>();
+  for (const row of rows) {
+    const unread = row.unreadCount ?? 0;
+    const previous = byId.get(row.id) ?? 0;
+    if (unread > previous) byId.set(row.id, unread);
+  }
+  let total = 0;
+  for (const count of byId.values()) total += count;
+  return total;
+}
+
 function* iterateCachedInternalConversations(
   queryClient: QueryClient,
 ): Generator<MessengerCoreConversationRow> {
   const queries = queryClient.getQueriesData<{ items?: MessengerCoreConversationRow[] }>({
     queryKey: messengerQueryKeys.internalSummariesRoot,
+  });
+  for (const [, data] of queries) {
+    for (const row of data?.items ?? []) {
+      yield row;
+    }
+  }
+}
+
+function* iterateCachedClientConversations(
+  queryClient: QueryClient,
+): Generator<MessengerCoreConversationRow> {
+  const queries = queryClient.getQueriesData<{ items?: MessengerCoreConversationRow[] }>({
+    queryKey: messengerQueryKeys.clientSummariesRoot,
   });
   for (const [, data] of queries) {
     for (const row of data?.items ?? []) {
