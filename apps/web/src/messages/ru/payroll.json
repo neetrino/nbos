@@ -207,6 +207,7 @@
     "bonusReleases": "Выпуски бонусов",
     "payable": "К выплате",
     "paid": "Оплачено",
+    "paidUnconfirmed": "Не подтверждено",
     "remaining": "Остаток",
     "cell": {
       "state": {

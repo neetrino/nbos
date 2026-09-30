@@ -12,6 +12,8 @@ export type DeliveryPayableUnitDto = {
   totalPlannedBonus: string;
   totalReleasedBonus: string;
   totalPaidBonus: string;
+  /** UNCONFIRMED: a PAID entry exists and no release confirms the cash. */
+  paidCashState?: 'CONFIRMED' | 'UNCONFIRMED';
   totalRemainingBonus: string;
   availableFunding: string;
   overFundingAmount: string;

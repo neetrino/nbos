@@ -139,13 +139,12 @@ async function reconcilePayrollBonusCashPaidMarks(
     },
     params.notify,
   );
-  if (!hasEncodedPayrollCash(params.payments) || markIds == null) {
-    return;
+  if (hasEncodedPayrollCash(params.payments) && markIds != null) {
+    await restorePayrollBonusReleasesIncludedForSalaryLine(
+      prisma,
+      releaseIdsToUnmark(releases, params.payments, markIds),
+    );
   }
-  await restorePayrollBonusReleasesIncludedForSalaryLine(
-    prisma,
-    releaseIdsToUnmark(releases, params.payments, markIds),
-  );
 }
 
 function paidAmountFromExpensePayments(

@@ -95,6 +95,6 @@ async function refreshPaidReleaseEntries(
     }
   }
   for (const orderId of orderIds) {
-    await syncProductBonusPoolForOrder(prisma, orderId, notify);
+    await syncProductBonusPoolForOrder(prisma, orderId, notify, { skipPaidCash: true });
   }
 }

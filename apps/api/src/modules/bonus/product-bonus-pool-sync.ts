@@ -6,6 +6,7 @@ import { tryCreateProportionalAutoReleases } from './product-bonus-pool-auto-rel
 import { sumPaymentsReceivedForOrder } from './order-received-payments-sum';
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
 import { syncBonusEntryStatusesForOrder } from './bonus-entry-status-sync';
+import { confirmedBonusCashByOrder } from './product-bonus-pool-paid-cash';
 
 export { decimalFrom } from './bonus-pool-decimal';
 
@@ -19,6 +20,7 @@ export async function syncProductBonusPoolForOrder(
   prisma: InstanceType<typeof PrismaClient>,
   orderId: string,
   notify?: WalletInAppNotifySink,
+  options?: { skipPaidCash?: boolean },
 ): Promise<void> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
@@ -33,13 +35,9 @@ export async function syncProductBonusPoolForOrder(
   });
   if (!order) return;
 
-  const [plannedAgg, paidAgg, releasedAgg, received] = await Promise.all([
+  const [plannedAgg, releasedAgg, received] = await Promise.all([
     prisma.bonusEntry.aggregate({
       where: { orderId },
-      _sum: { amount: true },
-    }),
-    prisma.bonusEntry.aggregate({
-      where: { orderId, status: 'PAID' },
       _sum: { amount: true },
     }),
     prisma.bonusRelease.aggregate({
@@ -53,7 +51,9 @@ export async function syncProductBonusPoolForOrder(
   ]);
 
   const planned = decimalFrom(plannedAgg._sum.amount);
-  const paidProxy = decimalFrom(paidAgg._sum.amount);
+  const paidCash = options?.skipPaidCash
+    ? null
+    : ((await confirmedBonusCashByOrder(prisma, [orderId])).get(orderId) ?? ZERO);
   let released = decimalFrom(releasedAgg._sum.amount);
 
   const autoAdded = await tryCreateProportionalAutoReleases(prisma, {
@@ -87,7 +87,7 @@ export async function syncProductBonusPoolForOrder(
       extensionId: order.extensionId,
       totalPlannedAmount: planned,
       totalReleasedAmount: released,
-      totalPaidAmount: paidProxy,
+      totalPaidAmount: paidCash ?? ZERO,
       totalRemainingAmount: remaining,
       availableFunding,
       overFundingAmount,
@@ -99,7 +99,7 @@ export async function syncProductBonusPoolForOrder(
       extensionId: order.extensionId,
       totalPlannedAmount: planned,
       totalReleasedAmount: released,
-      totalPaidAmount: paidProxy,
+      ...(paidCash != null && released.gt(ZERO) ? { totalPaidAmount: paidCash } : {}),
       totalRemainingAmount: remaining,
       availableFunding,
       overFundingAmount,

@@ -140,9 +140,11 @@
       "UNPAID": "Չվճարված",
       "PARTIAL": "Partial",
       "PAID": "Ոչարվաց",
+      "UNCONFIRMED": "Չհաստատված",
       "explainUnpaid": "Այս պատվերի համար ձեր գրառումների համար վճարովի թողարկումներ դեռ չկան:",
       "explainPartial": "Some of your bonus on this order was paid; the rest is still open or waiting on funding.",
-      "explainPaid": "Այս պատվերի ձեր վճարովի թողարկումները համապատասխանում են այս շրջանակի համար նախատեսված վճարմանը:"
+      "explainPaid": "Այս պատվերի ձեր վճարովի թողարկումները համապատասխանում են այս շրջանակի համար նախատեսված վճարմանը:",
+      "explainUnconfirmed": "Պատվերը հին տվյալներում նշված է վճարված, բայց թողարկում կամ վճարում չի հաստատում գումարը։ Պլանը մնում է որպես պատմություն և չի ցուցադրվում որպես վճարված կամ պարտք։"
     },
     "glossary": {
       "title": "How to read this wallet",
@@ -164,6 +166,7 @@
       "title": "Բոնուսային խողովակաշար",
       "planned": "Պլանավորված {amount}",
       "releasedPaidRemaining": "Թողարկված է {released} · Վճարված {paid} · Մնացել է {remaining}",
+      "unconfirmedCash": "Հին նշում՝ վճարված։ Թողարկում կամ վճարում չի հաստատում գումարը, ուստի պլանը չի ցուցադրվում որպես վճարված կամ պարտք։",
       "burnedKpi": "Այրված KPI {amount}",
       "carryOver": "Փոխադրում {amount}",
       "payrollRelease": "Աշխատավարձ (թողարկում)՝ {month}",

@@ -20,8 +20,7 @@ import { ExpensePlanDetailSheetLifecycle } from '@/features/finance/components/e
 import { ExpensePlanGeneralTab } from '@/features/finance/components/expenses/ExpensePlanGeneralTab';
 import { ExpensePlanHistoryTab } from '@/features/finance/components/expenses/ExpensePlanHistoryTab';
 import type { ExpensePlanDetailSheetTab } from '@/features/finance/components/expenses/expense-plan-detail-sheet-tabs';
-import { CreateExpenseDialog } from '@/features/finance/components/expenses/CreateExpenseDialog';
-import { GenerateExpenseCardFromPlanDialog } from '@/features/finance/components/expenses/GenerateExpenseCardFromPlanDialog';
+import { ExpensePlanDetailSheetDialogs } from '@/features/finance/components/expenses/ExpensePlanDetailSheetDialogs';
 import { useExpensePlanDetail } from '@/features/finance/hooks/use-expense-plan-detail';
 import {
   buildExpensePlanGeneralPatch,
@@ -59,7 +58,7 @@ export function ExpensePlanDetailSheet({
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(planId);
   const hostMounted = useSheetHostMounted(open, sheetId);
   const activePlanId = open && sheetId ? sheetId : '';
-  const { plan, loading, error, fetchPlan } = useExpensePlanDetail(activePlanId, {
+  const { plan, setPlan, loading, error, fetchPlan } = useExpensePlanDetail(activePlanId, {
     open,
     initialPlan,
     isDirty: () => generalDirtyRef.current,
@@ -129,6 +128,16 @@ export function ExpensePlanDetailSheet({
       setGeneralSnap(next);
     },
     [onPlanUpdated],
+  );
+
+  const handleNameSaved = useCallback(
+    (updated: ExpensePlan) => {
+      onPlanUpdated?.(updated);
+      setPlan(updated);
+      setGeneralDraft((prev) => (prev ? { ...prev, name: updated.name } : prev));
+      setGeneralSnap((prev) => (prev ? { ...prev, name: updated.name } : prev));
+    },
+    [onPlanUpdated, setPlan],
   );
 
   const handleGeneralSave = useCallback(() => {
@@ -210,6 +219,7 @@ export function ExpensePlanDetailSheet({
                 actionsDisabled={saving}
                 canEdit={canEdit}
                 canDelete={canDelete}
+                onNameSaved={handleNameSaved}
                 onPlanUpdated={(updated) => {
                   handlePlanChange(updated);
                   void fetchPlan();
@@ -269,30 +279,17 @@ export function ExpensePlanDetailSheet({
         </EntityDetailSheetContent>
       </Sheet>
 
-      {plan ? (
-        <GenerateExpenseCardFromPlanDialog
-          plan={plan}
-          open={generateOpen}
-          onOpenChange={setGenerateOpen}
-          onGenerated={() => {
-            bumpCards();
-            void fetchPlan();
-          }}
-        />
-      ) : null}
-
-      {plan ? (
-        <CreateExpenseDialog
-          open={createOpen}
-          onOpenChange={setCreateOpen}
-          lockedExpensePlan={plan}
-          forceNestedBackdrop
-          onCreated={() => {
-            bumpCards();
-            void fetchPlan();
-          }}
-        />
-      ) : null}
+      <ExpensePlanDetailSheetDialogs
+        plan={plan}
+        generateOpen={generateOpen}
+        createOpen={createOpen}
+        onGenerateOpenChange={setGenerateOpen}
+        onCreateOpenChange={setCreateOpen}
+        onCardsChanged={() => {
+          bumpCards();
+          void fetchPlan();
+        }}
+      />
     </EntityItemHost>
   );
 }

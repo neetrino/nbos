@@ -1,12 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Banknote, Ban, Receipt, Trash2 } from 'lucide-react';
+import { Banknote } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   DetailSheetFormFooter,
-  DetailSheetSettingsMenu,
   DetailSheetTabBar,
   DetailSheetTabPanel,
   EntityDetailSheetContent,
@@ -14,12 +13,12 @@ import {
   LoadingState,
 } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet } from '@/components/ui/sheet';
 import { AddExpensePaymentDialog } from '@/features/finance/components/expenses/AddExpensePaymentDialog';
 import { DeleteExpenseDialog } from '@/features/finance/components/expenses/DeleteExpenseDialog';
 import { ExpenseDetailPaymentSection } from '@/features/finance/components/expenses/ExpenseDetailPaymentSection';
+import { ExpenseDetailSheetHeader } from '@/features/finance/components/expenses/ExpenseDetailSheetHeader';
 import { ExpenseDetailStageGateBlockers } from '@/features/finance/components/expenses/ExpenseDetailStageGateBlockers';
 import { ExpenseGeneralTab } from '@/features/finance/components/expenses/ExpenseGeneralTab';
 import { ExpensePipelineStages } from '@/features/finance/components/expenses/ExpensePipelineStages';
@@ -42,6 +41,7 @@ import {
   readExpenseStageGatePending,
 } from '@/features/finance/constants/expense-stage-gate-pending';
 import { useExpenseDetail } from '@/features/finance/hooks/use-expense-detail';
+import { usePermission } from '@/lib/permissions';
 import {
   buildExpenseGeneralPatch,
   canSubmitExpenseGeneralDraft,
@@ -88,6 +88,8 @@ export function ExpenseDetailSheet({
   forceNestedBackdrop = false,
 }: ExpenseDetailSheetProps) {
   const t = useTranslations('expenses');
+  const { can } = usePermission();
+  const canEditExpense = can('EDIT', 'FINANCE_EXPENSES');
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(expenseId);
   const hostMounted = useSheetHostMounted(open, sheetId);
   const activeExpenseId = open && sheetId ? sheetId : '';
@@ -194,6 +196,16 @@ export function ExpenseDetailSheet({
     [onExpenseUpdated, setExpense],
   );
 
+  const handleNameSaved = useCallback(
+    (updated: Expense) => {
+      onExpenseUpdated?.(updated);
+      setExpense(updated);
+      setGeneralDraft((prev) => (prev ? { ...prev, name: updated.name } : prev));
+      setGeneralSnap((prev) => (prev ? { ...prev, name: updated.name } : prev));
+    },
+    [onExpenseUpdated, setExpense],
+  );
+
   const { statusBusy, handleStatusChange } = useExpenseSheetStatusChange({
     expense,
     onExpenseUpdated,
@@ -285,33 +297,18 @@ export function ExpenseDetailSheet({
             {loading && !expense ? (
               <p className="text-muted-foreground text-sm">{t('sheet.loading')}</p>
             ) : expense ? (
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
-                    <Receipt className="text-muted-foreground size-5 shrink-0" aria-hidden />
-                    <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                      {generalDraft?.name.trim() || expense.name}
-                    </h2>
-                  </div>
-                </div>
-                {lifecycleMode ? (
-                  <DetailSheetSettingsMenu>
-                    <DropdownMenuItem
-                      variant="destructive"
-                      disabled={saving}
-                      onClick={() => {
-                        setDeleteError(null);
-                        setDeleteOpen(true);
-                      }}
-                    >
-                      {lifecycleMode === 'delete' ? <Trash2 /> : <Ban />}
-                      {lifecycleMode === 'delete'
-                        ? t('actions.deleteExpense')
-                        : t('actions.cancelExpense')}
-                    </DropdownMenuItem>
-                  </DetailSheetSettingsMenu>
-                ) : null}
-              </div>
+              <ExpenseDetailSheetHeader
+                expenseId={expense.id}
+                displayName={generalDraft?.name.trim() || expense.name}
+                canRename={canEditExpense && !saving && !statusBusy}
+                onNameSaved={handleNameSaved}
+                lifecycleMode={lifecycleMode}
+                actionsDisabled={saving}
+                onLifecycleClick={() => {
+                  setDeleteError(null);
+                  setDeleteOpen(true);
+                }}
+              />
             ) : null}
           </div>
 

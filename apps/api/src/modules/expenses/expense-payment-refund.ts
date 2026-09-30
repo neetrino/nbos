@@ -1,7 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
 import { BONUS_POOL_ZERO } from '../bonus/bonus-pool-decimal';
+import { refreshConfirmedPoolPaidForExpense } from '../bonus/product-bonus-pool-paid-cash';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
+import { PAYROLL_CASH_TRANSACTION_TIMEOUT_MS } from '../payroll-runs/payroll-salary-first-cash-reverse';
 import {
   assertPayrollCashHistoryOpen,
   lockPayrollCashHistoryForUpdate,
@@ -60,18 +62,22 @@ export async function refundExpensePayrollCash(
   await rejectClosedPayrollCashHistory(prisma, expenseId);
   const refundAmount = parseRefundAmount(input.amount);
   const reason = input.reason.trim();
-  const written = await prisma.$transaction(async (tx) => {
-    const committed = await commitLockedPayrollCashRefund(tx, expenseId, paymentId, {
-      refundAmount,
-      paymentDate,
-      reason,
-      idempotencyKey: input.idempotencyKey,
-    });
-    const db = tx as InstanceType<typeof PrismaClient>;
-    await appendPayrollCashRefundJournal(committed, paymentDate, opts?.journal, db);
-    await syncSalaryLineIfHistoryOpen(db, expenseId);
-    return committed;
-  });
+  const written = await prisma.$transaction(
+    async (tx) => {
+      const committed = await commitLockedPayrollCashRefund(tx, expenseId, paymentId, {
+        refundAmount,
+        paymentDate,
+        reason,
+        idempotencyKey: input.idempotencyKey,
+      });
+      const db = tx as InstanceType<typeof PrismaClient>;
+      await appendPayrollCashRefundJournal(committed, paymentDate, opts?.journal, db);
+      await syncSalaryLineIfHistoryOpen(db, expenseId);
+      return committed;
+    },
+    { timeout: PAYROLL_CASH_TRANSACTION_TIMEOUT_MS },
+  );
+  await refreshConfirmedPoolPaidForExpense(prisma, expenseId);
   return toRefundResult(written);
 }
 

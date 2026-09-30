@@ -157,6 +157,7 @@
   },
   "sheet": {
     "loading": "Loading…",
+    "renameHint": "Click to edit name",
     "tabs": {
       "general": "General",
       "payments": "Payments"

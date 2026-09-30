@@ -140,9 +140,11 @@
       "UNPAID": "Unpaid",
       "PARTIAL": "Partial",
       "PAID": "Paid",
+      "UNCONFIRMED": "Unconfirmed",
       "explainUnpaid": "No paid releases on your entries for this order yet.",
       "explainPartial": "Some of your bonus on this order was paid; the rest is still open or waiting on funding.",
-      "explainPaid": "Your paid releases on this order match the planned payout for this scope."
+      "explainPaid": "Your paid releases on this order match the planned payout for this scope.",
+      "explainUnconfirmed": "This order is marked paid in old data, but no release or payment confirms the cash. The planned amount is kept as history and is not shown as paid or still due."
     },
     "glossary": {
       "title": "How to read this wallet",
@@ -164,6 +166,7 @@
       "title": "Bonus pipeline",
       "planned": "Planned {amount}",
       "releasedPaidRemaining": "Released {released} · Paid {paid} · Remaining {remaining}",
+      "unconfirmedCash": "Historical paid mark. No release or payment confirms the cash, so the planned amount is not shown as paid or still due.",
       "burnedKpi": "Burned KPI {amount}",
       "carryOver": "Carry-over {amount}",
       "payrollRelease": "Payroll (release): {month}",

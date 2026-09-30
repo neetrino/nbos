@@ -171,7 +171,13 @@ export function ProjectDetailMetrics({ project }: { project: PayrollEmployeeBonu
           label: t('matrix.header.due'),
           value: formatAmount(parseMoney(project.totalRemainingBonus)),
         },
-        { label: t('matrix.paid'), value: formatAmount(parseMoney(project.totalPaidBonus)) },
+        {
+          label: t('matrix.paid'),
+          value:
+            project.paidCashState === 'UNCONFIRMED'
+              ? t('matrix.paidUnconfirmed')
+              : formatAmount(parseMoney(project.totalPaidBonus)),
+        },
       ]}
     />
   );
