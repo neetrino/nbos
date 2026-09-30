@@ -7,6 +7,7 @@ import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
 import { MessageDate, MessageSelect } from './InternalThreadChrome';
 import { InternalForwardReferenceCard } from './InternalForwardReferenceCard';
 import { InternalSheetMessage } from './InternalSheetMessage';
+import { pointForMessageActionMenu } from './message-action-menu-position';
 
 export function ThreadMessageRow({
   message,
@@ -41,7 +42,8 @@ export function ThreadMessageRow({
       onContextMenu={(event) => {
         if (!onMessageContextMenu) return;
         event.preventDefault();
-        onMessageContextMenu(message.id, event.clientX, event.clientY);
+        const point = pointForMessageActionMenu(event.currentTarget, mine);
+        onMessageContextMenu(message.id, point.x, point.y);
       }}
     >
       {sheet ? null : (

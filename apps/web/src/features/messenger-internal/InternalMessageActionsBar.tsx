@@ -12,8 +12,6 @@ import {
 } from 'lucide-react';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 
-const MENU_OFFSET_PX = 4;
-
 export type MessageActionMenuAnchor = { x: number; y: number };
 
 export function InternalMessageActionsBar({
@@ -49,7 +47,7 @@ export function InternalMessageActionsBar({
     <div
       role="menu"
       className={`${PORTAL_DROPDOWN_Z_CLASS} fixed min-w-56 rounded-2xl bg-[#2b2b2b] py-1.5 text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)]`}
-      style={{ left: anchor.x + MENU_OFFSET_PX, top: anchor.y + MENU_OFFSET_PX }}
+      style={{ left: anchor.x, top: anchor.y }}
       onMouseDown={(event) => event.stopPropagation()}
     >
       <MenuRow

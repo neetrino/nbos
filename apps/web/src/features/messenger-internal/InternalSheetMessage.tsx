@@ -63,6 +63,7 @@ function IncomingSheetMessage({
         label={message.senderName}
       />
       <div
+        data-sheet-bubble=""
         className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tl')} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
         <BubbleBody
@@ -92,6 +93,7 @@ function OwnSheetMessage({
   return (
     <div className="flex items-end justify-end gap-3 px-5">
       <div
+        data-sheet-bubble=""
         className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message.content, 'tr')} text-white ${palette.ownBubble}`}
       >
         <BubbleBody
