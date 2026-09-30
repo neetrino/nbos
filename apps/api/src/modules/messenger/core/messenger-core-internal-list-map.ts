@@ -12,8 +12,7 @@ export function internalListInclude(employeeId: string) {
       select: { content: true, senderId: true, createdAt: true },
     },
     readStates: {
-      where: { employeeId },
-      select: { lastReadAt: true },
+      select: { employeeId: true, lastReadAt: true },
     },
     userSettings: {
       where: { employeeId },
@@ -40,7 +39,7 @@ export type InternalListRow = {
   createdAt: Date;
   lastMessageAt: Date | null;
   messages: Array<{ content: string; senderId: string | null; createdAt: Date }>;
-  readStates: Array<{ lastReadAt: Date }>;
+  readStates: Array<{ employeeId: string; lastReadAt: Date }>;
   userSettings: Array<{ favorite: boolean }>;
   participants: Array<{
     employeeId: string;
@@ -55,8 +54,17 @@ export function mapInternalListItem(
   editScope: string,
   editGrantIds: Set<string>,
 ): MessengerInternalConversationListItem {
-  const lastReadAt = row.readStates[0]?.lastReadAt ?? null;
+  const lastReadAt =
+    row.readStates.find((state) => state.employeeId === employeeId)?.lastReadAt ?? null;
   const visible = row.messages[0];
+  const activityAt = visible?.createdAt ?? row.lastMessageAt ?? null;
+  const lastMessageMine = Boolean(visible?.senderId && visible.senderId === employeeId);
+  const lastMessageSeen =
+    lastMessageMine && visible
+      ? row.readStates.some(
+          (state) => state.employeeId !== employeeId && state.lastReadAt >= visible.createdAt,
+        )
+      : false;
   const unreadCount = absoluteConversationUnreadCount({
     viewerEmployeeId: employeeId,
     latestSenderId: visible?.senderId ?? null,
@@ -74,8 +82,10 @@ export function mapInternalListItem(
     status: row.status,
     canonicalKey: row.canonicalKey,
     createdAt: row.createdAt,
-    lastMessageAt: visible?.createdAt ?? null,
+    lastMessageAt: activityAt,
     lastMessagePreview: visible?.content ?? null,
+    lastMessageMine,
+    lastMessageSeen,
     unreadCount,
     peerEmployeeId: peer?.employeeId ?? null,
     peerName: peer ? `${peer.employee.firstName} ${peer.employee.lastName}`.trim() : null,

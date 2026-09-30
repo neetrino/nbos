@@ -6,9 +6,11 @@ import { searchEmployeesForPicker } from '@/lib/employees';
 export function InternalMentionPicker({
   selected,
   onChange,
+  inline = false,
 }: {
   selected: Array<{ id: string; label: string }>;
   onChange: (next: Array<{ id: string; label: string }>) => void;
+  inline?: boolean;
 }) {
   const [query, setQuery] = useState('');
   const [peers, setPeers] = useState<Array<{ value: string; label: string }>>([]);
@@ -24,9 +26,9 @@ export function InternalMentionPicker({
   }
 
   return (
-    <div className="mb-2">
+    <div className={inline ? 'min-w-0 flex-1' : 'mb-2'}>
       {selected.length > 0 ? (
-        <div className="mb-1 flex flex-wrap gap-1">
+        <div className={`flex flex-wrap gap-1 ${inline ? 'mb-1 justify-end' : 'mb-1'}`}>
           {selected.map((employee) => (
             <button
               key={employee.id}
@@ -45,7 +47,11 @@ export function InternalMentionPicker({
           value={query}
           onChange={(event) => void search(event.target.value)}
           placeholder="Mention an employee"
-          className="w-full rounded-lg border border-black/[0.08] bg-[#F5F5F0] px-2 py-1 text-[11px] text-black placeholder:text-black/35"
+          className={
+            inline
+              ? 'w-full rounded-2xl border border-[#e2e8f0] bg-white px-3 py-1.5 text-xs text-[#0f172a] shadow-[0px_4px_2px_rgba(148,163,184,0.1)] placeholder:text-[#94a3b8] focus:outline-none'
+              : 'w-full rounded-lg border border-black/[0.08] bg-[#F5F5F0] px-2 py-1 text-[11px] text-black placeholder:text-black/35'
+          }
         />
         {peers.length > 0 ? (
           <div className="absolute bottom-full z-10 mb-1 w-full rounded-lg border border-black/[0.08] bg-white py-1 shadow-sm">

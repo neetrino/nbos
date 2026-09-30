@@ -269,7 +269,7 @@ describe('Internal conversation list', () => {
             createdAt: new Date('2026-09-05T12:00:00.000Z'),
           },
         ],
-        readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
+        readStates: [{ employeeId: 'e1', lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
       }),
       listRow({
         id: 'inbound',
@@ -281,7 +281,7 @@ describe('Internal conversation list', () => {
             createdAt: new Date('2026-09-05T12:00:00.000Z'),
           },
         ],
-        readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
+        readStates: [{ employeeId: 'e1', lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
       }),
     ]);
     const prisma = {
@@ -297,6 +297,9 @@ describe('Internal conversation list', () => {
       createdAt: true,
     });
     expect(result.items.find((row) => row.id === 'mine')?.unreadCount).toBe(0);
+    expect(result.items.find((row) => row.id === 'mine')?.lastMessageMine).toBe(true);
+    expect(result.items.find((row) => row.id === 'mine')?.lastMessageSeen).toBe(false);
     expect(result.items.find((row) => row.id === 'inbound')?.unreadCount).toBe(1);
+    expect(result.items.find((row) => row.id === 'inbound')?.lastMessageMine).toBe(false);
   });
 });

@@ -32,6 +32,8 @@ export interface MessengerCoreConversationRow {
   createdAt: string;
   lastMessageAt: string | null;
   lastMessagePreview?: string | null;
+  lastMessageMine?: boolean;
+  lastMessageSeen?: boolean;
   unreadCount?: number;
   peerEmployeeId?: string | null;
   peerName?: string | null;

@@ -192,6 +192,12 @@ export function patchConversationUnread(
   );
 }
 
+/** Marks the sidebar receipt as seen when a peer advances past our latest send. */
+export {
+  patchConversationLastMessageSeen,
+  syncConversationListReceipt,
+} from './messenger-list-receipt-cache';
+
 export function applyMessengerRealtimeMessage(
   queryClient: QueryClient,
   message: MessengerCoreMessageRow,
@@ -212,6 +218,8 @@ function applyMessageToSummaries(
             ...row,
             lastMessageAt: message.createdAt,
             lastMessagePreview: message.content,
+            lastMessageMine: true,
+            lastMessageSeen: false,
           }
         : row,
     ),
@@ -241,10 +249,31 @@ function mergeConversationSummaryRow(
       ...incoming,
       lastMessageAt: current.lastMessageAt,
       lastMessagePreview: current.lastMessagePreview,
+      lastMessageMine: current.lastMessageMine,
+      lastMessageSeen: current.lastMessageSeen,
       unreadCount: current.unreadCount,
     };
   }
-  return { ...current, ...incoming };
+  return {
+    ...current,
+    ...incoming,
+    lastMessageAt: incomingAt ?? currentAt ?? null,
+    lastMessagePreview:
+      incoming.lastMessagePreview !== undefined
+        ? incoming.lastMessagePreview
+        : current.lastMessagePreview,
+    lastMessageMine:
+      incoming.lastMessageMine !== undefined ? incoming.lastMessageMine : current.lastMessageMine,
+    lastMessageSeen:
+      incoming.lastMessageSeen !== undefined ? incoming.lastMessageSeen : current.lastMessageSeen,
+    unreadCount: incoming.unreadCount !== undefined ? incoming.unreadCount : current.unreadCount,
+    peerEmployeeId:
+      incoming.peerEmployeeId !== undefined ? incoming.peerEmployeeId : current.peerEmployeeId,
+    peerName: incoming.peerName !== undefined ? incoming.peerName : current.peerName,
+    peerPosition:
+      incoming.peerPosition !== undefined ? incoming.peerPosition : current.peerPosition,
+    isFavorite: incoming.isFavorite !== undefined ? incoming.isFavorite : current.isFavorite,
+  };
 }
 
 function sortSummariesByRecent(

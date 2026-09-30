@@ -238,7 +238,9 @@ export function ThreadComposer({
   return (
     <div className={sheet ? 'bg-[#eef2ff]' : 'border-t border-black/[0.06] p-3'}>
       {replyTo ? <ReplySlot sheet={sheet} replyTo={replyTo} onClear={onClearReply} /> : null}
-      {canSend ? <InternalMentionPicker selected={mentions} onChange={onMentionsChange} /> : null}
+      {!sheet && canSend ? (
+        <InternalMentionPicker selected={mentions} onChange={onMentionsChange} />
+      ) : null}
       <ComposerField
         sheet={sheet}
         value={newMessage}
@@ -247,6 +249,8 @@ export function ThreadComposer({
         disabled={!canSend || sendDisabled}
         sendDisabled={blocked}
         placeholder={resolvedPlaceholder}
+        mentions={mentions}
+        onMentionsChange={canSend ? onMentionsChange : undefined}
       />
     </div>
   );

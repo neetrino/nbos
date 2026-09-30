@@ -1,6 +1,7 @@
 'use client';
 
 import type { KeyboardEvent } from 'react';
+import { InternalMentionPicker } from './InternalMentionPicker';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 const CLIP_ICON = '/messenger/sheet-composer-clip.svg';
@@ -15,6 +16,8 @@ type SheetComposerProps = {
   placeholder: string;
   disabled: boolean;
   sendDisabled: boolean;
+  mentions?: Array<{ id: string; label: string }>;
+  onMentionsChange?: (next: Array<{ id: string; label: string }>) => void;
 };
 
 export function InternalSheetComposer({
@@ -24,11 +27,18 @@ export function InternalSheetComposer({
   placeholder,
   disabled,
   sendDisabled,
+  mentions = [],
+  onMentionsChange,
 }: SheetComposerProps) {
   const palette = useSheetMessengerPalette();
   return (
     <div className={palette.canvas}>
-      <ComposerTip tipClass={palette.tip} />
+      <ComposerTip
+        tipClass={palette.tip}
+        mentions={mentions}
+        onMentionsChange={onMentionsChange}
+        canMention={!disabled && Boolean(onMentionsChange)}
+      />
       <ComposerRow
         sendClass={palette.send}
         value={value}
@@ -50,7 +60,7 @@ function ComposerRow({
   disabled,
   sendDisabled,
   sendClass,
-}: SheetComposerProps & { sendClass: string }) {
+}: Omit<SheetComposerProps, 'mentions' | 'onMentionsChange'> & { sendClass: string }) {
   return (
     <div className="flex items-center gap-2 px-4 py-2">
       <button
@@ -88,7 +98,7 @@ function MessageField({
   placeholder,
   disabled,
   sendDisabled,
-}: SheetComposerProps) {
+}: Omit<SheetComposerProps, 'mentions' | 'onMentionsChange'>) {
   return (
     <div className="flex h-10 min-w-0 flex-1 items-center rounded-full border border-[#e2e8f0] bg-white px-4">
       <input
@@ -105,12 +115,27 @@ function MessageField({
   );
 }
 
-function ComposerTip({ tipClass }: { tipClass: string }) {
+function ComposerTip({
+  tipClass,
+  mentions,
+  onMentionsChange,
+  canMention,
+}: {
+  tipClass: string;
+  mentions: Array<{ id: string; label: string }>;
+  onMentionsChange?: (next: Array<{ id: string; label: string }>) => void;
+  canMention: boolean;
+}) {
   return (
-    <p className="mx-5 mt-2 inline-flex flex-wrap items-center gap-1.5 rounded-2xl bg-white px-3 py-1.5 text-xs text-[#0f172a] shadow-[0px_4px_2px_rgba(148,163,184,0.1)]">
-      <span className={tipClass}>Pro tip:</span>
-      Type <Kbd>@</Kbd> to mention team members, <Kbd>/</Kbd> for quick NBOS commands
-    </p>
+    <div className="mx-5 mt-2 flex flex-wrap items-start gap-2">
+      <p className="inline-flex flex-wrap items-center gap-1.5 rounded-2xl bg-white px-3 py-1.5 text-xs text-[#0f172a] shadow-[0px_4px_2px_rgba(148,163,184,0.1)]">
+        <span className={tipClass}>Pro tip:</span>
+        Type <Kbd>@</Kbd> to mention team members, <Kbd>/</Kbd> for quick NBOS commands
+      </p>
+      {canMention && onMentionsChange ? (
+        <InternalMentionPicker selected={mentions} onChange={onMentionsChange} inline />
+      ) : null}
+    </div>
   );
 }
 

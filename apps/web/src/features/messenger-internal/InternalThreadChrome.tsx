@@ -73,6 +73,8 @@ export function ComposerField({
   disabled,
   sendDisabled,
   placeholder,
+  mentions,
+  onMentionsChange,
 }: {
   sheet: boolean;
   value: string;
@@ -81,6 +83,8 @@ export function ComposerField({
   disabled: boolean;
   sendDisabled: boolean;
   placeholder: string;
+  mentions?: Array<{ id: string; label: string }>;
+  onMentionsChange?: (next: Array<{ id: string; label: string }>) => void;
 }) {
   if (sheet) {
     return (
@@ -91,6 +95,8 @@ export function ComposerField({
         disabled={disabled}
         sendDisabled={sendDisabled}
         placeholder={placeholder}
+        mentions={mentions}
+        onMentionsChange={onMentionsChange}
       />
     );
   }

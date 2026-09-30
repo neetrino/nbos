@@ -1,10 +1,15 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
-import { applyMessengerRealtimeMessage } from '@/features/messenger/query/messenger-cache';
+import {
+  applyMessengerRealtimeMessage,
+  patchConversationLastMessageSeen,
+  syncConversationListReceipt,
+} from '@/features/messenger/query/messenger-cache';
 import {
   applyMessengerAccessChanged,
   applyMessengerRealtimeRead,
@@ -109,11 +114,35 @@ function InternalMessengerScreen({
       void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
     },
     onPeerRead: (payload) => {
+      patchConversationLastMessageSeen(
+        queryClient,
+        'INTERNAL',
+        payload.conversationId,
+        payload.lastReadAt,
+      );
       void queryClient.invalidateQueries({
         queryKey: messengerQueryKeys.messages(payload.conversationId),
       });
     },
   });
+
+  useEffect(() => {
+    if (!session.activeId || !me?.id) return;
+    const messages = data.messages.data?.items;
+    if (!messages?.length) return;
+    syncConversationListReceipt(queryClient, 'INTERNAL', {
+      conversationId: session.activeId,
+      viewerId: me.id,
+      messages,
+      peerLastReadAt: data.messages.data?.meta.peerLastReadAt ?? null,
+    });
+  }, [
+    queryClient,
+    session.activeId,
+    me?.id,
+    data.messages.data?.items,
+    data.messages.data?.meta.peerLastReadAt,
+  ]);
 
   if (permsLoading) {
     return (

@@ -22,6 +22,8 @@ export function reduceConversationSummary(
     ...row,
     lastMessageAt: payload.lastMessageAt,
     lastMessagePreview: payload.lastMessagePreview,
+    lastMessageMine: payload.unreadCount === 0,
+    lastMessageSeen: false,
     unreadCount,
   };
 }

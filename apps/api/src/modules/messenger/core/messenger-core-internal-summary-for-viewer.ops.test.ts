@@ -23,6 +23,8 @@ const SUMMARY = {
   createdAt: new Date('2026-09-11T10:00:00.000Z'),
   lastMessageAt: new Date('2026-09-11T12:00:00.000Z'),
   lastMessagePreview: 'First note',
+  lastMessageMine: true,
+  lastMessageSeen: false,
   unreadCount: 0,
   peerEmployeeId: null,
   peerName: null,

@@ -1,12 +1,15 @@
 'use client';
 
-import { Pin } from 'lucide-react';
+import { CheckCheck, Pin } from 'lucide-react';
 import { formatConversationListStamp } from '@/features/messenger/messenger-format';
 import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { conversationListTitle, conversationTypeBadge } from './internal-messenger-section';
 import { PresenceDot, useEmployeeOnline } from './PresenceAvatar';
+
+const SIDEBAR_SEEN_CHECK = 'text-[#0284c7]';
+const SIDEBAR_UNSEEN_CHECK = 'text-[#475569]';
 
 export function InternalConversationRow({
   row,
@@ -20,10 +23,11 @@ export function InternalConversationRow({
   onToggleFavorite: (id: string) => void;
 }) {
   const title = conversationListTitle(row.type, row.title, row.peerName ?? null);
+  const favorite = Boolean(row.isFavorite);
   return (
     <div
       data-conversation-id={row.id}
-      className={`relative z-10 mb-1 flex rounded-xl px-2 py-2.5 ${
+      className={`group relative z-10 mb-1 flex items-stretch rounded-xl px-2 py-2.5 ${
         active ? '' : 'hover:bg-white/80'
       }`}
     >
@@ -37,9 +41,13 @@ export function InternalConversationRow({
           direct={row.type === 'DIRECT'}
           employeeId={row.peerEmployeeId}
         />
-        <ConversationCopy row={row} title={title} />
+        <ConversationBody row={row} title={title} />
       </button>
-      <FavoritePin favorite={Boolean(row.isFavorite)} onToggle={() => onToggleFavorite(row.id)} />
+      <ConversationMeta
+        row={row}
+        favorite={favorite}
+        onToggleFavorite={() => onToggleFavorite(row.id)}
+      />
     </div>
   );
 }
@@ -68,15 +76,10 @@ function ConversationMark({
   );
 }
 
-function ConversationCopy({ row, title }: { row: MessengerCoreConversationRow; title: string }) {
+function ConversationBody({ row, title }: { row: MessengerCoreConversationRow; title: string }) {
   return (
     <span className="min-w-0 flex-1">
-      <span className="flex items-center justify-between gap-2">
-        <span className="truncate text-xs text-[#0f172a]">{title}</span>
-        <span className="shrink-0 text-[11px] text-[#94a3b8]">
-          {formatConversationListStamp(row.lastMessageAt)}
-        </span>
-      </span>
+      <span className="block truncate text-xs text-[#0f172a]">{title}</span>
       <ConversationPreview row={row} />
       <span className="mt-1.5 flex items-center justify-between gap-2">
         <span className="rounded-full bg-[#f1f5f9] px-2 py-0.5 text-[10px] text-[#0f172a]">
@@ -84,6 +87,34 @@ function ConversationCopy({ row, title }: { row: MessengerCoreConversationRow; t
         </span>
         <UnreadCount count={row.unreadCount ?? 0} />
       </span>
+    </span>
+  );
+}
+
+function ConversationMeta({
+  row,
+  favorite,
+  onToggleFavorite,
+}: {
+  row: MessengerCoreConversationRow;
+  favorite: boolean;
+  onToggleFavorite: () => void;
+}) {
+  const stamp = formatConversationListStamp(row.lastMessageAt ?? row.createdAt);
+  const showChecks = row.lastMessageMine === true;
+  return (
+    <span className="ml-2 flex shrink-0 flex-col items-end justify-between self-stretch">
+      <span className="flex items-center gap-1">
+        {stamp ? <span className="text-[11px] leading-none text-[#64748b]">{stamp}</span> : null}
+        {showChecks ? (
+          <CheckCheck
+            size={14}
+            aria-label={row.lastMessageSeen ? 'Seen' : 'Delivered'}
+            className={row.lastMessageSeen ? SIDEBAR_SEEN_CHECK : SIDEBAR_UNSEEN_CHECK}
+          />
+        ) : null}
+      </span>
+      <FavoritePin favorite={favorite} onToggle={onToggleFavorite} />
     </span>
   );
 }
@@ -114,7 +145,9 @@ function FavoritePin({ favorite, onToggle }: { favorite: boolean; onToggle: () =
       type="button"
       aria-label={favorite ? 'Remove from Favorites' : 'Add to Favorites'}
       onClick={onToggle}
-      className="mt-5 shrink-0 px-1 text-[#64748b]/70 hover:text-[#4f46e5]"
+      className={`rounded-md p-0.5 text-[#64748b]/70 transition-opacity hover:text-[#4f46e5] ${
+        favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'
+      }`}
     >
       <Pin size={14} className={favorite ? 'fill-[#4f46e5] text-[#4f46e5]' : ''} />
     </button>
