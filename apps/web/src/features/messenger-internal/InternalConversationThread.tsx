@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import {
   mapMessengerRowToView,
   type MessengerViewMessage,
@@ -86,8 +86,6 @@ export function InternalConversationThread({
   const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const actions = useInternalThreadActions(messages, onOpenInternalSource);
-  const [mentions, setMentions] = useState<Array<{ id: string; label: string }>>([]);
-
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' });
   }, [messages.length]);
@@ -111,8 +109,6 @@ export function InternalConversationThread({
       creatorId={creatorId}
       creatorReady={creatorReady}
       actions={actions}
-      mentions={mentions}
-      setMentions={setMentions}
       endRef={endRef}
       meId={me?.id ?? null}
     />
@@ -137,8 +133,6 @@ function ThreadScaffold(props: {
   creatorId: string | null;
   creatorReady: boolean;
   actions: ReturnType<typeof useInternalThreadActions>;
-  mentions: Array<{ id: string; label: string }>;
-  setMentions: (next: Array<{ id: string; label: string }>) => void;
   endRef: RefObject<HTMLDivElement | null>;
   meId: string | null;
 }) {
@@ -186,18 +180,14 @@ function ThreadScaffold(props: {
         onNewMessageChange={props.onNewMessageChange}
         replyTo={actions.replyTo}
         onClearReply={actions.clearReply}
-        mentions={props.mentions}
-        onMentionsChange={props.setMentions}
         sheet
         onSend={() =>
           void Promise.resolve(
             props.onSend({
               replyToMessageId: actions.replyTo?.id,
-              mentionedEmployeeIds: props.mentions.map((row) => row.id),
             }),
           ).then(() => {
             actions.clearReply();
-            props.setMentions([]);
           })
         }
       />

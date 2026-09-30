@@ -12,7 +12,6 @@ import type {
 } from '@/lib/api/messenger-core';
 import { SheetThreadHeader } from './InternalSheetHeader';
 import { InternalForwardReferenceCard } from './InternalForwardReferenceCard';
-import { InternalMentionPicker } from './InternalMentionPicker';
 import { InternalReplyQuote } from './InternalReplyQuote';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
@@ -214,8 +213,6 @@ export function ThreadComposer({
   onNewMessageChange,
   replyTo,
   onClearReply,
-  mentions,
-  onMentionsChange,
   onSend,
   placeholder,
   sheet = false,
@@ -226,8 +223,6 @@ export function ThreadComposer({
   onNewMessageChange: (value: string) => void;
   replyTo: MessengerCoreMessageRow | null;
   onClearReply: () => void;
-  mentions: Array<{ id: string; label: string }>;
-  onMentionsChange: (next: Array<{ id: string; label: string }>) => void;
   onSend: () => void;
   placeholder?: string;
   sheet?: boolean;
@@ -238,9 +233,6 @@ export function ThreadComposer({
   return (
     <div className={sheet ? 'bg-[#eef2ff]' : 'border-t border-black/[0.06] p-3'}>
       {replyTo ? <ReplySlot sheet={sheet} replyTo={replyTo} onClear={onClearReply} /> : null}
-      {!sheet && canSend ? (
-        <InternalMentionPicker selected={mentions} onChange={onMentionsChange} />
-      ) : null}
       <ComposerField
         sheet={sheet}
         value={newMessage}
@@ -249,8 +241,6 @@ export function ThreadComposer({
         disabled={!canSend || sendDisabled}
         sendDisabled={blocked}
         placeholder={resolvedPlaceholder}
-        mentions={mentions}
-        onMentionsChange={canSend ? onMentionsChange : undefined}
       />
     </div>
   );

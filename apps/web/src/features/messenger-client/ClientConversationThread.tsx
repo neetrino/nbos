@@ -162,8 +162,6 @@ export function ClientConversationThread({
               onNewMessageChange={onNewMessageChange}
               replyTo={actions.replyTo}
               onClearReply={actions.clearReply}
-              mentions={[]}
-              onMentionsChange={() => undefined}
               placeholder="Type a message to the client…"
               sheet
               onSend={() =>
