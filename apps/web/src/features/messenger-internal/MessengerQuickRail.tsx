@@ -30,7 +30,7 @@ export function MessengerQuickRail({
   return (
     <aside
       aria-label="Employees"
-      className={`border-sidebar-border bg-sidebar hidden h-full w-[72px] shrink-0 flex-col items-center gap-3 overflow-y-auto border-l pt-3 lg:flex ${className}`}
+      className={`border-sidebar-border bg-sidebar hidden h-full w-[72px] shrink-0 flex-col items-center gap-3 overflow-x-visible overflow-y-auto border-l px-1.5 pt-4 lg:flex ${className}`}
     >
       {pinned.length > 0 ? (
         <>
@@ -108,7 +108,7 @@ function RailUnreadBadge({ count }: { count: number }) {
   return (
     <span
       aria-hidden
-      className="pointer-events-none absolute -top-0.5 -right-0.5 flex min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[9px] leading-4 font-semibold text-white tabular-nums shadow-sm"
+      className="pointer-events-none absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] leading-none font-semibold text-white tabular-nums ring-2 ring-white"
     >
       {label}
     </span>

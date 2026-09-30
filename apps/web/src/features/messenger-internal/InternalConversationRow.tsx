@@ -82,11 +82,10 @@ function ConversationBody({ row, title }: { row: MessengerCoreConversationRow; t
     <span className="min-w-0 flex-1">
       <span className="block truncate text-xs text-[#0f172a]">{title}</span>
       <ConversationPreview row={row} />
-      <span className="mt-1.5 flex items-center justify-between gap-2">
+      <span className="mt-1.5 inline-flex">
         <span className="rounded-full bg-[#f1f5f9] px-2 py-0.5 text-[10px] text-[#0f172a]">
           {conversationTypeBadge(row.type)}
         </span>
-        <UnreadCount count={row.unreadCount ?? 0} />
       </span>
     </span>
   );
@@ -103,6 +102,7 @@ function ConversationMeta({
 }) {
   const stamp = formatConversationListStamp(row.lastMessageAt ?? row.createdAt);
   const showChecks = row.lastMessageMine === true;
+  const unread = row.unreadCount ?? 0;
   return (
     <span className="ml-2 flex shrink-0 flex-col items-end justify-between self-stretch">
       <span className="flex items-center gap-1">
@@ -115,7 +115,10 @@ function ConversationMeta({
           />
         ) : null}
       </span>
-      <FavoritePin favorite={favorite} onToggle={onToggleFavorite} />
+      <span className="flex items-center gap-1">
+        <UnreadCount count={unread} />
+        <FavoritePin favorite={favorite} onToggle={onToggleFavorite} />
+      </span>
     </span>
   );
 }
@@ -128,13 +131,16 @@ function ConversationPreview({ row }: { row: MessengerCoreConversationRow }) {
 }
 
 function UnreadCount({ count }: { count: number }) {
-  if (count <= 0) return <span />;
+  if (count <= 0) return null;
   const label =
     count > MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX
       ? `${MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX}+`
       : String(count);
   return (
-    <span className="rounded-full bg-[#4f46e5] px-1.5 py-0.5 text-[10px] text-white tabular-nums">
+    <span
+      aria-label={`${count} unread`}
+      className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#38bdf8] px-1.5 text-[11px] leading-none font-semibold text-[#0f172a] tabular-nums"
+    >
       {label}
     </span>
   );

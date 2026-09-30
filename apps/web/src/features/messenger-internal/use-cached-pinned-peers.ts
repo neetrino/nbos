@@ -1,7 +1,13 @@
 'use client';
 
-import { useCallback, useRef, useSyncExternalStore } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { messengerCoreApi } from '@/lib/api/messenger-core';
+import { internalDefaultSummaryKey } from '@/features/messenger/query/seed-messenger-bootstrap';
+import {
+  MESSENGER_QUERY_GC_TIME_MS,
+  MESSENGER_QUERY_STALE_TIME_MS,
+} from '@/features/messenger/query/messenger-query-policy';
 import {
   collectCachedDirectUnreadByPeerId,
   collectCachedPinnedDirectPeerIds,
@@ -12,49 +18,26 @@ export type CachedDirectRailPeerState = {
   unreadByPeerId: ReadonlyMap<string, number>;
 };
 
-const EMPTY_STATE: CachedDirectRailPeerState = {
-  pinnedIds: new Set(),
-  unreadByPeerId: new Map(),
-};
-
-function railStateSignature(state: CachedDirectRailPeerState): string {
-  const pinned = [...state.pinnedIds].sort().join(',');
-  const unread = [...state.unreadByPeerId.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([id, count]) => `${id}:${count}`)
-    .join(',');
-  return `${pinned}|${unread}`;
-}
-
-/** Live pinned + unread DIRECT peer state from messenger inbox cache. */
-export function useCachedDirectRailPeerState(): CachedDirectRailPeerState {
+/**
+ * Observe the default Internal summary query so rail badges follow bootstrap
+ * and realtime patches without a cache-subscription setState loop.
+ */
+export function useCachedDirectRailPeerState(enabled: boolean): CachedDirectRailPeerState {
   const queryClient = useQueryClient();
-  const snapshotRef = useRef<CachedDirectRailPeerState>(EMPTY_STATE);
-  const signatureRef = useRef(railStateSignature(EMPTY_STATE));
+  const summaries = useQuery({
+    queryKey: internalDefaultSummaryKey(),
+    queryFn: () => messengerCoreApi.listConversations({ section: 'all' }),
+    enabled,
+    staleTime: MESSENGER_QUERY_STALE_TIME_MS,
+    gcTime: MESSENGER_QUERY_GC_TIME_MS,
+  });
 
-  const subscribe = useCallback(
-    (onStoreChange: () => void) => {
-      return queryClient.getQueryCache().subscribe((event) => {
-        const key = event.query.queryKey;
-        if (key[0] !== 'messenger' || key[1] !== 'internal') return;
-        onStoreChange();
-      });
-    },
-    [queryClient],
-  );
-
-  const getSnapshot = useCallback(() => {
-    const next: CachedDirectRailPeerState = {
+  return useMemo(() => {
+    void summaries.data;
+    void summaries.dataUpdatedAt;
+    return {
       pinnedIds: collectCachedPinnedDirectPeerIds(queryClient),
       unreadByPeerId: collectCachedDirectUnreadByPeerId(queryClient),
     };
-    const signature = railStateSignature(next);
-    if (signature !== signatureRef.current) {
-      signatureRef.current = signature;
-      snapshotRef.current = next;
-    }
-    return snapshotRef.current;
-  }, [queryClient]);
-
-  return useSyncExternalStore(subscribe, getSnapshot, () => snapshotRef.current);
+  }, [queryClient, summaries.data, summaries.dataUpdatedAt]);
 }

@@ -32,7 +32,7 @@ export function AppMessengerRightRail() {
     enabled,
     staleTime: 5 * 60 * 1000,
   });
-  const { pinnedIds, unreadByPeerId } = useCachedDirectRailPeerState();
+  const { pinnedIds, unreadByPeerId } = useCachedDirectRailPeerState(enabled);
   const { openMessenger } = useMessengerOverlay();
   const [activeEmployeeId, setActiveEmployeeId] = useState<string | null>(null);
 
