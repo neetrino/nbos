@@ -256,6 +256,7 @@ export function TaskSheet({
                   <TaskSheetChatPanel
                     task={state.task}
                     messages={discussion.messages}
+                    conversationId={discussion.conversationId}
                     onSend={(body) => {
                       void discussion.send(body);
                     }}
@@ -275,6 +276,7 @@ export function TaskSheet({
           onOpenChange={setChatOpen}
           task={state.task}
           messages={discussion.messages}
+          conversationId={discussion.conversationId}
           onSend={(body) => {
             void discussion.send(body);
           }}

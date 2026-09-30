@@ -72,6 +72,7 @@ function createService() {
   const prisma = {
     messengerChannelMessage: { create: vi.fn() },
     messengerDirectMessage: { create: vi.fn() },
+    messengerConversation: { findUnique: vi.fn().mockResolvedValue(null) },
     messengerConversationLink: { findMany: vi.fn().mockResolvedValue([]) },
     messengerConversationCollection: { findMany: vi.fn().mockResolvedValue([]) },
     $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(prisma)),

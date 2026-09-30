@@ -176,6 +176,10 @@ export function patchConversationPinnedMessage(
       };
     },
   );
+  queryClient.setQueryData<MessengerCoreConversationRow>(
+    ['messenger', 'conversation', conversationId],
+    (current) => (current ? { ...current, pinnedMessage } : current),
+  );
 }
 
 export function patchConversationFavorite(

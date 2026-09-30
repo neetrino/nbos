@@ -18,6 +18,7 @@ interface TaskSheetChatSheetProps {
   onOpenChange: (open: boolean) => void;
   task: Task | null;
   messages: TaskLocalMessage[];
+  conversationId?: string | null;
   onSend: (body: string) => void;
   sourcePageHref: string;
 }
@@ -28,6 +29,7 @@ export function TaskSheetChatSheet({
   onOpenChange,
   task,
   messages,
+  conversationId = null,
   onSend,
   sourcePageHref,
 }: TaskSheetChatSheetProps) {
@@ -51,7 +53,12 @@ export function TaskSheetChatSheet({
         sourcePageHref={sourcePageHref}
       >
         {renderTask ? (
-          <TaskSheetChatPanel task={renderTask} messages={messages} onSend={onSend} />
+          <TaskSheetChatPanel
+            task={renderTask}
+            messages={messages}
+            conversationId={conversationId}
+            onSend={onSend}
+          />
         ) : null}
       </EntityDetailSheetContent>
     </Sheet>

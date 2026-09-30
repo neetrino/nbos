@@ -9,7 +9,10 @@ import { useMessengerZoneBootstrap } from '@/features/messenger/query/use-messen
 import { useMessengerOverlay } from '@/features/messenger-internal/messenger-overlay-context';
 import { useClientMessengerOverlay } from '@/features/messenger-client/client-messenger-overlay-context';
 import { openMessengerConversation } from '@/features/messenger-internal/messenger-conversation-opener';
-import { findCachedDirectConversationId } from '@/features/messenger-internal/find-cached-direct-conversation';
+import {
+  findCachedDirectConversationId,
+  findCachedDirectPeerId,
+} from '@/features/messenger-internal/find-cached-direct-conversation';
 import { useCachedDirectRailPeerState } from '@/features/messenger-internal/use-cached-pinned-peers';
 import {
   APP_MESSENGER_RIGHT_RAIL_WIDTH_PX,
@@ -37,24 +40,30 @@ export function AppMessengerRightRail() {
   });
   const { pinnedIds, unreadByPeerId, internalUnreadTotal, clientUnreadTotal } =
     useCachedDirectRailPeerState(enabled);
-  const { openMessenger } = useMessengerOverlay();
+  const { openMessenger, activeConversationId } = useMessengerOverlay();
   const { openClientMessenger } = useClientMessengerOverlay();
+
+  const openDirectChat = useCallback(
+    (conversationId: string) => {
+      openMessenger('direct', conversationId);
+      openMessengerConversation(conversationId, () => undefined);
+    },
+    [openMessenger],
+  );
 
   const onSelect = useCallback(
     (employeeId: string) => {
       const cachedId = findCachedDirectConversationId(queryClient, employeeId);
       if (cachedId) {
-        openMessengerConversation(cachedId, (id) => openMessenger('direct', id));
+        openDirectChat(cachedId);
         return;
       }
       openMessenger('direct');
       void messengerCoreApi
         .createConversation({ type: 'DIRECT', peerEmployeeId: employeeId })
-        .then((conversation) => {
-          openMessengerConversation(conversation.id, (id) => openMessenger('direct', id));
-        });
+        .then((conversation) => openDirectChat(conversation.id));
     },
-    [openMessenger, queryClient],
+    [openDirectChat, openMessenger, queryClient],
   );
 
   const shortcuts = useMemo<MessengerQuickRailShortcut[]>(
@@ -85,5 +94,16 @@ export function AppMessengerRightRail() {
     unreadCount: unreadByPeerId.get(row.value) ?? 0,
   }));
 
-  return <MessengerQuickRail people={people} shortcuts={shortcuts} onSelect={onSelect} />;
+  const activePersonId = activeConversationId
+    ? findCachedDirectPeerId(queryClient, activeConversationId)
+    : null;
+
+  return (
+    <MessengerQuickRail
+      people={people}
+      shortcuts={shortcuts}
+      activePersonId={activePersonId}
+      onSelect={onSelect}
+    />
+  );
 }

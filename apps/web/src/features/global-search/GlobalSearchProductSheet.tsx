@@ -14,12 +14,14 @@ interface GlobalSearchProductSheetProps {
   productId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function GlobalSearchProductSheet({
   productId,
   open,
   onOpenChange,
+  forceNestedBackdrop = false,
 }: GlobalSearchProductSheetProps) {
   const { persistedValue: renderProductId, onOpenChangeComplete: clearRenderProductId } =
     useSheetPersistedValue(productId);
@@ -78,6 +80,7 @@ export function GlobalSearchProductSheet({
       item={item}
       open={open}
       onOpenChange={handleOpenChange}
+      forceNestedBackdrop={forceNestedBackdrop}
       onEntityUpdated={() => void refreshProduct()}
       onTitleSaved={(nextItem) => setItem(nextItem)}
       boardMutations={boardMutations}

@@ -25,7 +25,7 @@ export function ConversationSelectionCard({
     <span
       aria-hidden
       className={cn(
-        'pointer-events-none absolute z-0 rounded-[17px] border border-[#c7d2fe] bg-[#eef2ff] shadow-[0_2px_8px_rgba(79,70,229,0.12),0_1px_2px_rgba(15,23,42,0.06)]',
+        'pointer-events-none absolute z-0 rounded-[17px] bg-white shadow-[0px_1px_1.5px_rgba(0,0,0,0.1),0px_1px_1px_rgba(0,0,0,0.1)]',
         ready && SELECTION_TRANSITION_CLASS,
       )}
       style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
@@ -55,16 +55,18 @@ export function useConversationSelection(
       };
     }
 
-    const observer = new ResizeObserver(() => {
-      publishSelection(containerRef.current, activeId, setRect, setReady);
-    });
-    observer.observe(container);
+    const republish = () => publishSelection(containerRef.current, activeId, setRect, setReady);
+    const resizeObserver = new ResizeObserver(republish);
+    resizeObserver.observe(container);
+    const mutationObserver = new MutationObserver(republish);
+    mutationObserver.observe(container, { childList: true, subtree: true });
     const active = findConversationRow(container, activeId);
-    if (active) observer.observe(active);
+    if (active) resizeObserver.observe(active);
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
-      observer.disconnect();
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
     };
   }, [activeId, containerRef]);
 
@@ -83,8 +85,18 @@ function publishSelection(
     setReady(false);
     return;
   }
+  revealConversationRow(container, active);
   setRect(measureConversationRow(active));
   setReady(true);
+}
+
+function revealConversationRow(container: HTMLElement, row: HTMLElement): void {
+  const rowTop = row.offsetTop;
+  const rowBottom = rowTop + row.offsetHeight;
+  const viewTop = container.scrollTop;
+  const viewBottom = viewTop + container.clientHeight;
+  if (rowTop >= viewTop && rowBottom <= viewBottom) return;
+  row.scrollIntoView({ block: 'nearest' });
 }
 
 function findConversationRow(container: HTMLElement, activeId: string): HTMLElement | null {
