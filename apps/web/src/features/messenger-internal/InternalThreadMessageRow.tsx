@@ -28,7 +28,7 @@ export function ThreadMessageRow({
   selected: boolean;
   references: NonNullable<MessengerCoreMessageRow['references']>;
   onToggleSelect: (id: string) => void;
-  onMessageContextMenu?: (id: string, x: number, y: number) => void;
+  onMessageContextMenu?: (id: string, x: number, y: number, opensUp?: boolean) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
   selecting?: boolean;
   sheet: boolean;
@@ -48,7 +48,7 @@ export function ThreadMessageRow({
         if (!onMessageContextMenu) return;
         event.preventDefault();
         const point = pointForMessageActionMenu(event.currentTarget);
-        onMessageContextMenu(message.id, point.x, point.y);
+        onMessageContextMenu(message.id, point.x, point.y, point.opensUp);
       }}
       onClick={() => {
         if (selecting) onToggleSelect(message.id);

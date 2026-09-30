@@ -65,6 +65,8 @@ export const SHEET_BUBBLE_WRAP_CHAR_COUNT = 56;
 
 export const INTERNAL_FORWARD_PREVIEW_MAX_LENGTH = 140;
 
+export const SHEET_DIALOG_FADE_MS = 240;
+export const SHEET_ACTION_MENU_FADE_MS = 280;
 export const SHEET_REPLY_JUMP_FLASH_DELAY_MS = 280;
 export const SHEET_REPLY_JUMP_FLASH_MS = 500;
 export const SHEET_MESSAGE_BUBBLE_ATTR = 'data-sheet-bubble';

@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { SHEET_ACTION_MENU_FADE_MS } from './internal-messenger.constants';
+import { useSheetDialogFade } from './use-sheet-dialog-fade';
 import {
   ClipboardCopy,
   CornerUpLeft,
@@ -14,7 +16,7 @@ import {
 } from 'lucide-react';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 
-export type MessageActionMenuAnchor = { x: number; y: number };
+export type MessageActionMenuAnchor = { x: number; y: number; opensUp?: boolean };
 
 export function InternalMessageActionsBar({
   anchor,
@@ -47,13 +49,16 @@ export function InternalMessageActionsBar({
   onSelect: () => void;
   onDelete?: () => void;
 }) {
-  useDismissMessageMenu(Boolean(anchor), onClose);
-  if (!anchor) return null;
+  const open = Boolean(anchor);
+  const { mounted, visible } = useSheetDialogFade(open, SHEET_ACTION_MENU_FADE_MS);
+  const point = useHeldMenuAnchor(anchor);
+  useDismissMessageMenu(open, onClose);
+  if (!mounted || !point) return null;
   return (
     <div
       role="menu"
-      className={`${PORTAL_DROPDOWN_Z_CLASS} fixed min-w-56 overflow-hidden rounded-2xl bg-[#2b2b2b] text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)]`}
-      style={{ left: anchor.x, top: anchor.y }}
+      className={menuMotionClass(visible, point.opensUp)}
+      style={{ left: point.x, top: point.y }}
       onMouseDown={(event) => event.stopPropagation()}
     >
       <MenuRow
@@ -116,6 +121,18 @@ export function InternalMessageActionsBar({
       ) : null}
     </div>
   );
+}
+
+function menuMotionClass(visible: boolean, opensUp?: boolean): string {
+  const origin = opensUp ? 'origin-bottom-left' : 'origin-top-left';
+  const motion = visible ? 'scale-100 opacity-100' : 'scale-90 opacity-0';
+  return `${PORTAL_DROPDOWN_Z_CLASS} ${origin} fixed min-w-56 overflow-hidden rounded-2xl bg-[#2b2b2b] text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${motion}`;
+}
+
+function useHeldMenuAnchor(anchor: MessageActionMenuAnchor | null): MessageActionMenuAnchor | null {
+  const [held, setHeld] = useState(anchor);
+  if (anchor && held !== anchor) setHeld(anchor);
+  return held;
 }
 
 function run(action: () => void, onClose: () => void): void {

@@ -64,7 +64,7 @@ export function ThreadMessages({
   selectedIds: string[];
   selecting?: boolean;
   onToggleSelect: (id: string) => void;
-  onMessageContextMenu?: (id: string, x: number, y: number) => void;
+  onMessageContextMenu?: (id: string, x: number, y: number, opensUp?: boolean) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
   remoteTypingHint: string | null;
   typingPeer?: ConversationTypingPeer | null;
@@ -120,7 +120,7 @@ function ThreadRows({
   selectedIds: string[];
   selecting: boolean;
   onToggleSelect: (id: string) => void;
-  onMessageContextMenu?: (id: string, x: number, y: number) => void;
+  onMessageContextMenu?: (id: string, x: number, y: number, opensUp?: boolean) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
   sheet: boolean;
   meId: string | null;

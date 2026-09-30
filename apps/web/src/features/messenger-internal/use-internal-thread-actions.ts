@@ -20,7 +20,11 @@ export function useInternalThreadActions(
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selecting, setSelecting] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<{
+    x: number;
+    y: number;
+    opensUp?: boolean;
+  } | null>(null);
   const [replyTo, setReplyTo] = useState<MessengerCoreMessageRow | null>(null);
   const [forwardOpen, setForwardOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
@@ -50,9 +54,9 @@ export function useInternalThreadActions(
         current.includes(id) ? current.filter((row) => row !== id) : [...current, id],
       ),
     selectOnly: (id: string) => setSelectedIds([id]),
-    openActionMenu: (id: string, x: number, y: number) => {
+    openActionMenu: (id: string, x: number, y: number, opensUp = false) => {
       if (!selecting) setSelectedIds([id]);
-      setMenuAnchor({ x, y });
+      setMenuAnchor({ x, y, opensUp });
     },
     closeActionMenu: () => setMenuAnchor(null),
     startSelecting: () => {
