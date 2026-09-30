@@ -1,6 +1,6 @@
 'use client';
 
-import { Pin } from 'lucide-react';
+import { Check, Pin } from 'lucide-react';
 import {
   MessengerThreadComposerRow,
   MessengerThreadDateDivider,
@@ -48,12 +48,30 @@ export function FavoriteStar({ favorite, onToggle }: { favorite: boolean; onTogg
   );
 }
 
-export function MessageSelect({ selected, onToggle }: { selected: boolean; onToggle: () => void }) {
+export function MessageSelect({
+  selected,
+  onToggle,
+  selecting = false,
+}: {
+  selected: boolean;
+  onToggle: () => void;
+  selecting?: boolean;
+}) {
   return (
-    <label className="mt-3 pl-2 opacity-0 group-hover:opacity-100 has-[:checked]:opacity-100">
-      <span className="sr-only">Select message</span>
-      <input type="checkbox" checked={selected} onChange={onToggle} className="accent-[#4f46e5]" />
-    </label>
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-label={selected ? 'Unselect message' : 'Select message'}
+      onClick={(event) => {
+        event.stopPropagation();
+        onToggle();
+      }}
+      className={`mt-2 ml-2 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+        selected ? 'border-[#4f46e5] bg-[#4f46e5] text-white' : 'border-[#cbd5e1] bg-white'
+      } ${selecting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+    >
+      {selected ? <Check size={14} strokeWidth={3} aria-hidden /> : null}
+    </button>
   );
 }
 

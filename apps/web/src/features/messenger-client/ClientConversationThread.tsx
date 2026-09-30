@@ -14,8 +14,10 @@ import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Task } from '@/lib/api/tasks';
 import { InternalCreateTaskFromMessages } from '@/features/messenger-internal/InternalCreateTaskFromMessages';
+import { InternalDeleteMessagesDialog } from '@/features/messenger-internal/InternalDeleteMessagesDialog';
 import { InternalForwardDialog } from '@/features/messenger-internal/InternalForwardDialog';
 import { InternalMessageActionsBar } from '@/features/messenger-internal/InternalMessageActionsBar';
+import { InternalMessageSelectionBar } from '@/features/messenger-internal/InternalMessageSelectionBar';
 import { ThreadComposer, ThreadMessages } from '@/features/messenger-internal/InternalThreadParts';
 import { SheetMessengerPaletteProvider } from '@/features/messenger-internal/sheet-messenger-palette';
 import { useInternalThreadActions } from '@/features/messenger-internal/use-internal-thread-actions';
@@ -92,7 +94,7 @@ export function ClientConversationThread({
   const endRef = useRef<HTMLDivElement>(null);
   const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const actions = useInternalThreadActions(messages);
+  const actions = useInternalThreadActions(messages, undefined, me?.id);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [createTicketOpen, setCreateTicketOpen] = useState(false);
   const [linkTicketOpen, setLinkTicketOpen] = useState(false);
@@ -133,13 +135,27 @@ export function ClientConversationThread({
         onLinkTicket={() => setLinkTicketOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
+        onSelect={actions.startSelecting}
+        onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
       />
+      {actions.selecting ? (
+        <InternalMessageSelectionBar
+          selectedCount={actions.selectedMessages.length}
+          canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
+          onForward={() => actions.setForwardOpen(true)}
+          onCreateTask={() => actions.setCreateTaskOpen(true)}
+          onCopySource={() => void actions.copySource()}
+          onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
+          onDone={actions.clearSelection}
+        />
+      ) : null}
       <SheetMessengerPaletteProvider kind="client">
         <ThreadMessages
           views={toViewMessages(messages, me?.id ?? null)}
           messages={messages}
           messagesLoading={messagesLoading}
           selectedIds={actions.selectedIds}
+          selecting={actions.selecting}
           onToggleSelect={actions.toggleSelect}
           onMessageContextMenu={actions.openActionMenu}
           onOpenOriginalSource={actions.openOriginalBySourceId}
@@ -183,6 +199,14 @@ export function ClientConversationThread({
         currentConversationId={conversation.id}
         onClose={() => actions.setForwardOpen(false)}
         onForward={(targetConversationId) => forwardSelected(targetConversationId, actions)}
+      />
+      <InternalDeleteMessagesDialog
+        open={actions.deleteConfirmOpen}
+        count={actions.deleteOwnCount}
+        isSubmitting={actions.deleteSubmitting}
+        errorMessage={actions.deleteError}
+        onOpenChange={actions.setDeleteConfirmOpen}
+        onConfirm={actions.confirmDelete}
       />
       {creatorId ? (
         <InternalCreateTaskFromMessages

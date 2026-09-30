@@ -7,10 +7,6 @@ import {
 } from '@/features/messenger/messenger-message-mapper';
 import { usePermission } from '@/lib/permissions';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
-import { messengerCoreApi } from '@/lib/api/messenger-core';
-import type { Task } from '@/lib/api/tasks';
-import { toast } from 'sonner';
-import { getApiErrorMessage } from '@/lib/api-errors';
 import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
@@ -20,10 +16,10 @@ import {
   internalSheetMessageSeen,
 } from './internal-sheet-delivery-label';
 import { conversationListTitle } from './internal-messenger-section';
-import { InternalCreateTaskFromMessages } from './InternalCreateTaskFromMessages';
-import { InternalForwardDialog } from './InternalForwardDialog';
 import { InternalMessageActionsBar } from './InternalMessageActionsBar';
+import { InternalMessageSelectionBar } from './InternalMessageSelectionBar';
 import { InternalJumpToEndButton } from './InternalJumpToEndButton';
+import { InternalThreadActionDialogs } from './InternalThreadActionDialogs';
 import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadParts';
 import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useInternalThreadActions } from './use-internal-thread-actions';
@@ -92,7 +88,7 @@ export function InternalConversationThread({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const actions = useInternalThreadActions(messages, onOpenInternalSource);
+  const actions = useInternalThreadActions(messages, onOpenInternalSource, me?.id);
   const last = messages.at(-1);
   const endScroll = useScrollThreadToEnd(
     scrollerRef,
@@ -178,13 +174,27 @@ function ThreadScaffold(props: {
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
+        onSelect={actions.startSelecting}
+        onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
       />
+      {actions.selecting ? (
+        <InternalMessageSelectionBar
+          selectedCount={actions.selectedMessages.length}
+          canCreateTask={props.canCreateTask}
+          onForward={() => actions.setForwardOpen(true)}
+          onCreateTask={() => actions.setCreateTaskOpen(true)}
+          onCopySource={() => void actions.copySource()}
+          onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
+          onDone={actions.clearSelection}
+        />
+      ) : null}
       <div className="relative flex min-h-0 flex-1 flex-col">
         <ThreadMessages
           views={props.views}
           messages={props.messages}
           messagesLoading={props.messagesLoading}
           selectedIds={actions.selectedIds}
+          selecting={actions.selecting}
           onToggleSelect={actions.toggleSelect}
           onMessageContextMenu={actions.openActionMenu}
           onOpenOriginalSource={actions.openOriginalBySourceId}
@@ -215,7 +225,7 @@ function ThreadScaffold(props: {
           })
         }
       />
-      <ThreadActionDialogs
+      <InternalThreadActionDialogs
         conversation={conversation}
         actions={actions}
         creatorId={props.creatorId}
@@ -223,68 +233,4 @@ function ThreadScaffold(props: {
       />
     </section>
   );
-}
-
-function ThreadActionDialogs({
-  conversation,
-  actions,
-  creatorId,
-  creatorReady,
-}: {
-  conversation: MessengerCoreConversationRow;
-  actions: ReturnType<typeof useInternalThreadActions>;
-  creatorId: string | null;
-  creatorReady: boolean;
-}) {
-  return (
-    <>
-      <InternalForwardDialog
-        open={actions.forwardOpen}
-        currentConversationId={conversation.id}
-        onClose={() => actions.setForwardOpen(false)}
-        onForward={(targetConversationId) => forwardSelected(targetConversationId, actions)}
-      />
-      {creatorId ? (
-        <InternalCreateTaskFromMessages
-          open={actions.createTaskOpen}
-          creatorId={creatorId}
-          creatorReady={creatorReady}
-          defaultLinks={conversation.primaryLinks}
-          selectedCount={actions.selectedMessages.length}
-          onOpenChange={actions.setCreateTaskOpen}
-          onCreated={(task) => void attachSources(task, actions)}
-        />
-      ) : null}
-    </>
-  );
-}
-
-async function forwardSelected(
-  targetConversationId: string,
-  actions: ReturnType<typeof useInternalThreadActions>,
-): Promise<void> {
-  const result = await messengerCoreApi.forwardMessages(
-    targetConversationId,
-    actions.selectedMessages.map((row) => row.id),
-  );
-  if (result.createdConversation !== false) return;
-  toast.success('Forwarded as a reference');
-  actions.clearSelection();
-}
-
-async function attachSources(
-  task: Task,
-  actions: ReturnType<typeof useInternalThreadActions>,
-): Promise<void> {
-  try {
-    await messengerCoreApi.attachTaskSources(
-      actions.selectedMessages.map((row) => row.id),
-      task.id,
-    );
-    toast.success('Task created with source references');
-    actions.clearSelection();
-    actions.setCreateTaskOpen(false);
-  } catch (error) {
-    toast.error(getApiErrorMessage(error, 'Task was created but source references failed.'));
-  }
 }

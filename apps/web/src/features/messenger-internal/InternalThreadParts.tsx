@@ -44,6 +44,7 @@ export function ThreadMessages({
   messages,
   messagesLoading,
   selectedIds,
+  selecting = false,
   onToggleSelect,
   onMessageContextMenu,
   onOpenOriginalSource,
@@ -57,6 +58,7 @@ export function ThreadMessages({
   messages: MessengerCoreMessageRow[];
   messagesLoading: boolean;
   selectedIds: string[];
+  selecting?: boolean;
   onToggleSelect: (id: string) => void;
   onMessageContextMenu?: (id: string, x: number, y: number) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
@@ -79,6 +81,7 @@ export function ThreadMessages({
           views={views}
           messages={messages}
           selectedIds={selectedIds}
+          selecting={selecting}
           onToggleSelect={onToggleSelect}
           onMessageContextMenu={onMessageContextMenu}
           onOpenOriginalSource={onOpenOriginalSource}
@@ -99,6 +102,7 @@ function ThreadRows({
   views,
   messages,
   selectedIds,
+  selecting,
   onToggleSelect,
   onMessageContextMenu,
   onOpenOriginalSource,
@@ -108,6 +112,7 @@ function ThreadRows({
   views: MessengerViewMessage[];
   messages: MessengerCoreMessageRow[];
   selectedIds: string[];
+  selecting: boolean;
   onToggleSelect: (id: string) => void;
   onMessageContextMenu?: (id: string, x: number, y: number) => void;
   onOpenOriginalSource: (sourceMessageId: string) => void;
@@ -125,6 +130,7 @@ function ThreadRows({
       onToggleSelect={onToggleSelect}
       onMessageContextMenu={onMessageContextMenu}
       onOpenOriginalSource={onOpenOriginalSource}
+      selecting={selecting}
       sheet={sheet}
       mine={Boolean(meId) && message.senderId === meId}
     />

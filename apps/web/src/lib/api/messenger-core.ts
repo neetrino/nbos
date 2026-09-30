@@ -189,6 +189,16 @@ export const messengerCoreApi = {
     return resp.data;
   },
 
+  async deleteOwnMessages(
+    messageIds: string[],
+  ): Promise<{ deletedIds: string[]; conversationId: string }> {
+    const resp = await api.post<{ deletedIds: string[]; conversationId: string }>(
+      '/api/messenger/core/messages/delete',
+      { messageIds },
+    );
+    return resp.data;
+  },
+
   async getSourceMessage(id: string): Promise<MessengerCoreSourceMessageRow> {
     const resp = await api.get<MessengerCoreSourceMessageRow>(`/api/messenger/core/messages/${id}`);
     return resp.data;

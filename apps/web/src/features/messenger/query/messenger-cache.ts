@@ -20,6 +20,24 @@ export type MessengerMessagesPage = {
   meta: { hasMoreOlder: boolean; peerLastReadAt?: string | null };
 };
 
+export function removeMessengerMessages(
+  queryClient: QueryClient,
+  conversationId: string,
+  messageIds: string[],
+): void {
+  const removed = new Set(messageIds);
+  const key = messengerQueryKeys.messages(conversationId);
+  queryClient.setQueryData<MessengerMessagesPage>(key, (page) => {
+    if (!page) return page;
+    return {
+      items: page.items.filter((row) => !removed.has(row.id)),
+      meta: page.meta,
+    };
+  });
+  void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
+  void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.clientSummariesRoot });
+}
+
 export function patchMessengerMessages(
   queryClient: QueryClient,
   conversationId: string,

@@ -65,4 +65,5 @@ export const INTERNAL_FORWARD_PREVIEW_MAX_LENGTH = 140;
 
 export const SHEET_MESSAGE_BUBBLE_ATTR = 'data-sheet-bubble';
 export const MESSAGE_ACTION_MENU_WIDTH_PX = 224;
+export const MESSAGE_ACTION_MENU_HEIGHT_PX = 280;
 export const MESSAGE_ACTION_MENU_VIEW_PAD_PX = 8;

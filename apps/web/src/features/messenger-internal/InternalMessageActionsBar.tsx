@@ -9,6 +9,8 @@ import {
   ListTodo,
   Ticket,
   Link2,
+  CircleCheck,
+  Trash2,
 } from 'lucide-react';
 import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
 
@@ -27,6 +29,8 @@ export function InternalMessageActionsBar({
   onLinkTicket,
   onOpenOriginal,
   onCopySource,
+  onSelect,
+  onDelete,
 }: {
   anchor: MessageActionMenuAnchor | null;
   onClose: () => void;
@@ -40,6 +44,8 @@ export function InternalMessageActionsBar({
   onLinkTicket?: () => void;
   onOpenOriginal: () => void;
   onCopySource: () => void;
+  onSelect: () => void;
+  onDelete?: () => void;
 }) {
   useDismissMessageMenu(Boolean(anchor), onClose);
   if (!anchor) return null;
@@ -81,6 +87,11 @@ export function InternalMessageActionsBar({
           onClick={() => run(onLinkTicket, onClose)}
         />
       ) : null}
+      <MenuRow
+        icon={<CircleCheck size={16} />}
+        label="Select"
+        onClick={() => run(onSelect, onClose)}
+      />
       <MenuDivider />
       <MenuRow
         icon={<ExternalLink size={16} />}
@@ -92,6 +103,17 @@ export function InternalMessageActionsBar({
         label="Copy source"
         onClick={() => run(onCopySource, onClose)}
       />
+      {onDelete ? (
+        <>
+          <MenuDivider />
+          <MenuRow
+            icon={<Trash2 size={16} />}
+            label="Delete"
+            tone="danger"
+            onClick={() => run(onDelete, onClose)}
+          />
+        </>
+      ) : null}
     </div>
   );
 }
@@ -121,20 +143,25 @@ function MenuRow({
   icon,
   label,
   onClick,
+  tone = 'default',
 }: {
   icon: ReactNode;
   label: string;
   onClick: () => void;
+  tone?: 'default' | 'danger';
 }) {
+  const danger = tone === 'danger';
   return (
     <button
       type="button"
       role="menuitem"
       onMouseDown={(event) => event.stopPropagation()}
       onClick={onClick}
-      className="flex w-full items-center gap-3 px-3.5 py-2 text-left text-sm hover:bg-white/10"
+      className={`flex w-full items-center gap-3 px-3.5 py-2 text-left text-sm hover:bg-white/10 ${
+        danger ? 'text-[#fca5a5]' : ''
+      }`}
     >
-      <span className="text-white/70">{icon}</span>
+      <span className={danger ? 'text-[#fca5a5]' : 'text-white/70'}>{icon}</span>
       {label}
     </button>
   );

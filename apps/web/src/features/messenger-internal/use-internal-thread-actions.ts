@@ -1,7 +1,10 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { messengerCoreApi, type MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import { deleteOwnSelectedMessages } from './delete-own-selected-messages';
 import {
   copySourceFromMessages,
   openOriginalBySourceIds,
@@ -12,12 +15,18 @@ import { sortSelectedMessages } from './sort-selected-messages';
 export function useInternalThreadActions(
   messages: MessengerCoreMessageRow[],
   onOpenInternalSource?: (conversationId: string) => void,
+  meId?: string | null,
 ) {
+  const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selecting, setSelecting] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | null>(null);
   const [replyTo, setReplyTo] = useState<MessengerCoreMessageRow | null>(null);
   const [forwardOpen, setForwardOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const selectedMessages = useMemo(
     () => sortSelectedMessages(messages.filter((row) => selectedIds.includes(row.id))),
     [messages, selectedIds],
@@ -26,21 +35,34 @@ export function useInternalThreadActions(
   return {
     selectedIds,
     selectedMessages,
+    selecting,
     menuAnchor,
     replyTo,
     forwardOpen,
     createTaskOpen,
+    deleteConfirmOpen,
+    deleteSubmitting,
+    deleteError,
+    deleteOwnCount: selectedMessages.filter((row) => row.senderId === meId).length,
+    setDeleteConfirmOpen,
     toggleSelect: (id: string) =>
       setSelectedIds((current) =>
         current.includes(id) ? current.filter((row) => row !== id) : [...current, id],
       ),
     selectOnly: (id: string) => setSelectedIds([id]),
     openActionMenu: (id: string, x: number, y: number) => {
-      setSelectedIds([id]);
+      if (!selecting) setSelectedIds([id]);
       setMenuAnchor({ x, y });
     },
     closeActionMenu: () => setMenuAnchor(null),
-    clearSelection: () => setSelectedIds([]),
+    startSelecting: () => {
+      setSelecting(true);
+      setMenuAnchor(null);
+    },
+    clearSelection: () => {
+      setSelectedIds([]);
+      setSelecting(false);
+    },
     startReply: (messageId?: string) => {
       const id = messageId ?? selectedIds[0];
       setReplyTo(messages.find((row) => row.id === id) ?? selectedMessages[0] ?? null);
@@ -62,5 +84,26 @@ export function useInternalThreadActions(
       void copySourceFromMessages(selectedMessages, {
         getSourceMessage: (id) => messengerCoreApi.getSourceMessage(id),
       }),
+    canDeleteOwn: Boolean(meId) && selectedMessages.some((row) => row.senderId === meId),
+    requestDelete: () => {
+      setMenuAnchor(null);
+      setDeleteError(null);
+      setDeleteConfirmOpen(true);
+    },
+    confirmDelete: async () => {
+      setDeleteSubmitting(true);
+      setDeleteError(null);
+      try {
+        await deleteOwnSelectedMessages(queryClient, selectedMessages, meId);
+        setSelectedIds([]);
+        setSelecting(false);
+        setMenuAnchor(null);
+        setDeleteConfirmOpen(false);
+      } catch (error) {
+        setDeleteError(getApiErrorMessage(error));
+      } finally {
+        setDeleteSubmitting(false);
+      }
+    },
   };
 }
