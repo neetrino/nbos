@@ -4,6 +4,7 @@ import { useState, type MouseEvent, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { CheckCircle2, Play, RotateCcw } from 'lucide-react';
 import { KanbanCardShell } from '@/components/shared';
+import { TYPE_TINTED_BOARD_CARD_SHELL_CLASS } from '@/components/shared/kanban/type-tinted-board-card-ui.constants';
 import { TaskUrgentFlameIndicator } from '@/features/tasks/components/TaskUrgentFlameIndicator';
 import { TaskCardPeoplePair } from './TaskCardPeoplePair';
 import { cn } from '@/lib/utils';
@@ -63,12 +64,13 @@ export function TaskMiniCard({
 
   return (
     <KanbanCardShell
-      preset="neutral"
+      preset="crm"
       radius="xl"
       padding="lg"
-      baseShadow="sm"
-      hoverShadow="md"
-      transition="all"
+      baseShadow="none"
+      hoverShadow={false}
+      motionClassName="transition-transform duration-200 ease-out hover:-translate-y-1"
+      shellClassName={cn(TYPE_TINTED_BOARD_CARD_SHELL_CLASS, 'shadow-none hover:shadow-none')}
       className={cn(
         'group w-full min-w-0 cursor-pointer pb-2',
         isCompleting && TASK_CARD_COMPLETE_FLASH_CLASS,

@@ -29,6 +29,8 @@ export type KanbanCardShellProps<T extends ElementType = 'div'> = {
   hoverShadow?: KanbanCardShellHoverShadow | false;
   hoverSurface?: KanbanCardShellHoverSurface;
   transition?: KanbanCardShellTransition;
+  /** Replaces the default 1px snap with a custom lift and easing. */
+  motionClassName?: string;
   shellClassName?: string;
 } & ComponentPropsWithoutRef<T>;
 
@@ -45,6 +47,7 @@ export function KanbanCardShell<T extends ElementType = 'div'>({
   hoverShadow = 'sm',
   hoverSurface,
   transition = 'shadow',
+  motionClassName,
   shellClassName,
   className,
   ...rest
@@ -54,15 +57,14 @@ export function KanbanCardShell<T extends ElementType = 'div'>({
   return (
     <Component
       className={cn(
-        preset === 'neutral'
-          ? 'border-border/80 bg-card border hover:-translate-y-px'
-          : 'border hover:-translate-y-px',
+        preset === 'neutral' ? 'border-border/80 bg-card border' : 'border',
+        motionClassName ?? 'hover:-translate-y-1',
         KANBAN_CARD_SHELL_RADIUS_CLASS[radius],
         KANBAN_CARD_SHELL_PADDING_CLASS[padding],
         KANBAN_CARD_SHELL_BASE_SHADOW_CLASS[baseShadow],
         hoverShadow !== false && KANBAN_CARD_SHELL_HOVER_SHADOW_CLASS[hoverShadow],
         hoverSurface && KANBAN_CARD_SHELL_HOVER_SURFACE_CLASS[hoverSurface],
-        KANBAN_CARD_SHELL_TRANSITION_CLASS[transition],
+        motionClassName ? undefined : KANBAN_CARD_SHELL_TRANSITION_CLASS[transition],
         shellClassName,
         className,
       )}
