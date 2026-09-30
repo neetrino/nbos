@@ -14,11 +14,13 @@ const SIDEBAR_UNSEEN_CHECK = 'text-[#475569]';
 export function InternalConversationRow({
   row,
   active,
+  showDivider = true,
   onSelect,
   onToggleFavorite,
 }: {
   row: MessengerCoreConversationRow;
   active: boolean;
+  showDivider?: boolean;
   onSelect: (id: string) => void;
   onToggleFavorite: (id: string) => void;
 }) {
@@ -27,9 +29,11 @@ export function InternalConversationRow({
   return (
     <div
       data-conversation-id={row.id}
-      className={`group relative z-10 mb-1 flex items-stretch rounded-xl px-2 py-2.5 ${
-        active ? '' : 'hover:bg-white/80'
-      }`}
+      className={`group relative z-10 flex items-stretch px-2 py-2.5 ${
+        showDivider
+          ? 'after:absolute after:right-2 after:bottom-0 after:left-[3.75rem] after:h-px after:bg-[#e2e8f0]/70'
+          : ''
+      } ${active ? '' : 'hover:bg-white/80'}`}
     >
       <button
         type="button"

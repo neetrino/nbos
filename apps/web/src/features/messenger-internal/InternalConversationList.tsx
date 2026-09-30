@@ -73,27 +73,43 @@ function ConversationRows({
   const recent = items.filter((row) => !row.isFavorite);
   return (
     <>
-      {favorites.map((row) => (
+      {favorites.map((row, index) => (
         <InternalConversationRow
           key={row.id}
           row={row}
           active={activeId === row.id}
+          showDivider={rowDividerVisible(
+            row.id,
+            index < favorites.length - 1 ? favorites[index + 1]?.id : undefined,
+            activeId,
+          )}
           onSelect={onSelect}
           onToggleFavorite={onToggleFavorite}
         />
       ))}
       {favorites.length > 0 && recent.length > 0 ? <RecentLabel /> : null}
-      {recent.map((row) => (
+      {recent.map((row, index) => (
         <InternalConversationRow
           key={row.id}
           row={row}
           active={activeId === row.id}
+          showDivider={rowDividerVisible(row.id, recent[index + 1]?.id, activeId)}
           onSelect={onSelect}
           onToggleFavorite={onToggleFavorite}
         />
       ))}
     </>
   );
+}
+
+function rowDividerVisible(
+  rowId: string,
+  nextId: string | undefined,
+  activeId: string | null,
+): boolean {
+  if (!nextId) return false;
+  if (rowId === activeId || nextId === activeId) return false;
+  return true;
 }
 
 function ListSearch({
