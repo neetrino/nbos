@@ -11,9 +11,12 @@ interface MessengerOverlayValue {
   isOpen: boolean;
   section: InternalMessengerSectionId;
   pendingConversationId: string | null;
+  launchSerial: number;
+  activeConversationId: string | null;
   openMessenger: (section?: InternalMessengerSectionId, conversationId?: string) => void;
   closeMessenger: () => void;
   setSection: (section: InternalMessengerSectionId) => void;
+  setActiveConversationId: (id: string | null) => void;
 }
 
 const MessengerOverlayContext = createContext<MessengerOverlayValue | null>(null);
@@ -22,10 +25,13 @@ export function MessengerOverlayProvider({ children }: { children: ReactNode }) 
   const [isOpen, setOpen] = useState(false);
   const [section, setSection] = useState<InternalMessengerSectionId>('all');
   const [pendingConversationId, setPendingConversationId] = useState<string | null>(null);
+  const [launchSerial, setLaunchSerial] = useState(0);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const openMessenger = useCallback(
     (next: InternalMessengerSectionId = 'all', conversationId?: string) => {
       setSection(next);
       setPendingConversationId(conversationId ?? null);
+      setLaunchSerial((current) => current + 1);
       setOpen(true);
     },
     [],
@@ -33,17 +39,29 @@ export function MessengerOverlayProvider({ children }: { children: ReactNode }) 
   const closeMessenger = useCallback(() => {
     setOpen(false);
     setPendingConversationId(null);
+    setActiveConversationId(null);
   }, []);
   const value = useMemo(
     () => ({
       isOpen,
       section,
       pendingConversationId,
+      launchSerial,
+      activeConversationId,
       openMessenger,
       closeMessenger,
       setSection,
+      setActiveConversationId,
     }),
-    [closeMessenger, isOpen, openMessenger, pendingConversationId, section],
+    [
+      activeConversationId,
+      closeMessenger,
+      isOpen,
+      launchSerial,
+      openMessenger,
+      pendingConversationId,
+      section,
+    ],
   );
   return (
     <MessengerOverlayContext.Provider value={value}>{children}</MessengerOverlayContext.Provider>
@@ -71,8 +89,15 @@ const MESSENGER_SHEET_RAIL_ANCHOR_CLASS = cn(
 );
 
 export function MessengerOverlay() {
-  const { isOpen, section, pendingConversationId, closeMessenger, setSection } =
-    useMessengerOverlay();
+  const {
+    isOpen,
+    section,
+    pendingConversationId,
+    launchSerial,
+    closeMessenger,
+    setSection,
+    setActiveConversationId,
+  } = useMessengerOverlay();
   return (
     <Sheet
       open={isOpen}
@@ -94,7 +119,9 @@ export function MessengerOverlay() {
           embedded
           section={section}
           launchConversationId={pendingConversationId}
+          launchSerial={launchSerial}
           onSectionChange={setSection}
+          onActiveConversationId={setActiveConversationId}
         />
       </SheetContent>
     </Sheet>

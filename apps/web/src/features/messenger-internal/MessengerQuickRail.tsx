@@ -25,11 +25,13 @@ export type MessengerQuickRailShortcut = {
 export function MessengerQuickRail({
   people,
   shortcuts,
+  activePersonId = null,
   onSelect,
   className = '',
 }: {
   people: MessengerQuickRailPerson[];
   shortcuts?: MessengerQuickRailShortcut[];
+  activePersonId?: string | null;
   onSelect: (employeeId: string) => void;
   className?: string;
 }) {
@@ -49,13 +51,23 @@ export function MessengerQuickRail({
       {pinned.length > 0 ? (
         <>
           {pinned.map((person) => (
-            <QuickAvatar key={person.id} person={person} onSelect={() => onSelect(person.id)} />
+            <QuickAvatar
+              key={person.id}
+              person={person}
+              active={person.id === activePersonId}
+              onSelect={() => onSelect(person.id)}
+            />
           ))}
           {rest.length > 0 ? <RailDivider /> : null}
         </>
       ) : null}
       {rest.map((person) => (
-        <QuickAvatar key={person.id} person={person} onSelect={() => onSelect(person.id)} />
+        <QuickAvatar
+          key={person.id}
+          person={person}
+          active={person.id === activePersonId}
+          onSelect={() => onSelect(person.id)}
+        />
       ))}
     </aside>
   );
@@ -90,9 +102,11 @@ function RailDivider() {
 
 function QuickAvatar({
   person,
+  active = false,
   onSelect,
 }: {
   person: MessengerQuickRailPerson;
+  active?: boolean;
   onSelect: () => void;
 }) {
   const photo = person.avatarUrl?.trim();
@@ -101,11 +115,14 @@ function QuickAvatar({
     <button
       type="button"
       aria-label={unread > 0 ? `${person.label}, ${unread} unread` : person.label}
+      aria-current={active ? 'true' : undefined}
       onClick={(event) => {
         onSelect();
         event.currentTarget.blur();
       }}
-      className="relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#a5b4fc] focus-visible:ring-offset-1"
+      className={`relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#a5b4fc] focus-visible:ring-offset-1 ${
+        active ? 'ring-2 ring-[#4f46e5] ring-offset-2' : ''
+      }`}
     >
       <Avatar className="size-10 overflow-hidden" size="lg">
         {photo ? (

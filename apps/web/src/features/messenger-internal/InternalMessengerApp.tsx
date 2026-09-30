@@ -42,11 +42,15 @@ export function InternalMessengerApp({
   section: sectionOverride,
   onSectionChange,
   launchConversationId = null,
+  launchSerial = 0,
+  onActiveConversationId,
 }: {
   embedded?: boolean;
   section?: InternalMessengerSectionId;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
   launchConversationId?: string | null;
+  launchSerial?: number;
+  onActiveConversationId?: (id: string | null) => void;
 }) {
   const pathname = usePathname();
   const section = sectionOverride ?? sectionFromPathname(pathname);
@@ -56,6 +60,8 @@ export function InternalMessengerApp({
       embedded={embedded}
       onSectionChange={onSectionChange}
       launchConversationId={launchConversationId}
+      launchSerial={launchSerial}
+      onActiveConversationId={onActiveConversationId}
     />
   );
 }
@@ -65,11 +71,15 @@ function InternalMessengerScreen({
   embedded,
   onSectionChange,
   launchConversationId,
+  launchSerial,
+  onActiveConversationId,
 }: {
   section: ReturnType<typeof sectionFromPathname>;
   embedded: boolean;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
   launchConversationId: string | null;
+  launchSerial: number;
+  onActiveConversationId?: (id: string | null) => void;
 }) {
   const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
@@ -95,10 +105,16 @@ function InternalMessengerScreen({
     queryClient,
     enabled,
     launchConversationId,
+    launchSerial,
     setActiveId: session.setActiveId,
     setOpenedConversation: session.setOpenedConversation,
+    setFilter: session.setFilter,
     setBootError: session.setBootError,
   });
+
+  useEffect(() => {
+    onActiveConversationId?.(session.activeId);
+  }, [onActiveConversationId, session.activeId]);
 
   const { onlineIds, typingPeer, emitConversationTyping } = useInternalMessengerRealtime({
     canViewMessenger: canView,

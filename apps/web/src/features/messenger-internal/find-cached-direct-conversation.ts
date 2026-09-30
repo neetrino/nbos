@@ -2,6 +2,19 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 
+/** Peer of a cached DIRECT thread, when the open conversation is a direct chat. */
+export function findCachedDirectPeerId(
+  queryClient: QueryClient,
+  conversationId: string,
+): string | null {
+  for (const row of iterateCachedInternalConversations(queryClient)) {
+    if (row.id === conversationId && row.type === 'DIRECT' && row.peerEmployeeId) {
+      return row.peerEmployeeId;
+    }
+  }
+  return null;
+}
+
 /** Instant lookup of an existing DIRECT thread from inbox cache. */
 export function findCachedDirectConversationId(
   queryClient: QueryClient,
