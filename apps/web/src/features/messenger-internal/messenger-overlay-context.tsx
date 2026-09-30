@@ -109,6 +109,7 @@ export function MessengerOverlay() {
         side="right"
         floatingClose
         showCloseButton={false}
+        stackAboveEntitySheet
         floatingRailVisible={isOpen}
         floatingRailAnchorClassName={MESSENGER_SHEET_RAIL_ANCHOR_CLASS}
         className={MESSENGER_SHEET_PANEL_CLASS}

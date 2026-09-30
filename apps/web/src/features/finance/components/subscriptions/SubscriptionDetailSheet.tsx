@@ -50,6 +50,7 @@ interface SubscriptionDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubscriptionUpdated?: (subscription: Subscription) => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function SubscriptionDetailSheet({
@@ -58,6 +59,7 @@ export function SubscriptionDetailSheet({
   open,
   onOpenChange,
   onSubscriptionUpdated,
+  forceNestedBackdrop = false,
 }: SubscriptionDetailSheetProps) {
   const { persistedValue: sheetId, onOpenChangeComplete } = useSheetPersistedValue(subscriptionId);
   const hostMounted = useSheetHostMounted(open, sheetId);
@@ -196,6 +198,7 @@ export function SubscriptionDetailSheet({
           width="compact"
           sourcePageHref={sourcePageHref}
           workspaceHref={subscriptionWorkspaceHref(sheetId ?? '')}
+          forceNestedBackdrop={forceNestedBackdrop}
         >
           {loading && !subscription ? (
             <div

@@ -91,6 +91,7 @@ function GlobalSearchEntitySheetsHostInner({ children }: { children: ReactNode }
           setLeadOpen(next);
           if (!next) setLeadId(null);
         }}
+        forceNestedBackdrop
       />
 
       <EntityDealSheetDeepLink
@@ -131,6 +132,7 @@ function GlobalSearchEntitySheetsHostInner({ children }: { children: ReactNode }
           setSubscriptionOpen(next);
           if (!next) setSubscriptionId(null);
         }}
+        forceNestedBackdrop
       />
 
       <GlobalSearchProductSheet
@@ -140,6 +142,7 @@ function GlobalSearchEntitySheetsHostInner({ children }: { children: ReactNode }
           setProductOpen(next);
           if (!next) setProductId(null);
         }}
+        forceNestedBackdrop
       />
     </GlobalSearchEntitySheetsProvider>
   );

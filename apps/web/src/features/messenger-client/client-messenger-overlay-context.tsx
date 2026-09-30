@@ -101,6 +101,7 @@ export function ClientMessengerOverlay() {
         side="right"
         floatingClose
         showCloseButton={false}
+        stackAboveEntitySheet
         floatingRailVisible={isOpen}
         floatingRailAnchorClassName={CLIENT_SHEET_RAIL_ANCHOR_CLASS}
         floatingCloseClassName={CLIENT_SHEET_CLOSE_CLASS}
