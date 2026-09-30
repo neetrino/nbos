@@ -43,6 +43,7 @@ export function InternalConversationRow({
           title={title}
           direct={row.type === 'DIRECT'}
           employeeId={row.peerEmployeeId}
+          pinned={favorite}
         />
         <ConversationBody row={row} title={title} />
       </button>
@@ -59,21 +60,37 @@ function ConversationMark({
   title,
   direct,
   employeeId,
+  pinned,
 }: {
   title: string;
   direct: boolean;
   employeeId: string | null | undefined;
+  pinned: boolean;
 }) {
   const fallback = direct ? 'bg-[#fef3c7] text-[#92400e]' : 'bg-[#e0e7ff] text-[#4338ca]';
   return (
-    <MessengerPersonAvatar
-      employeeId={employeeId}
-      label={title}
-      sizeClassName="mt-0.5 size-10"
-      fallbackClassName={fallback}
-      showPresence
-      roundedClassName={direct ? 'rounded-full border border-[#fcd34d]' : 'rounded-xl'}
-    />
+    <span className="relative mt-0.5 shrink-0">
+      <MessengerPersonAvatar
+        employeeId={employeeId}
+        label={title}
+        sizeClassName="size-10"
+        fallbackClassName={fallback}
+        showPresence
+        roundedClassName={direct ? 'rounded-full border border-[#fcd34d]' : 'rounded-xl'}
+      />
+      {pinned ? <PinnedBadge /> : null}
+    </span>
+  );
+}
+
+function PinnedBadge() {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -top-0.5 -left-0.5 flex size-4 items-center justify-center rounded-full bg-[#4f46e5] text-white shadow-sm"
+    >
+      <Pin size={9} className="fill-white" />
+    </span>
   );
 }
 

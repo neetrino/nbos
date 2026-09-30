@@ -1,11 +1,15 @@
 'use client';
 
+import { Star } from 'lucide-react';
 import {
   MessengerThreadComposerRow,
   MessengerThreadDateDivider,
 } from '@/features/messenger/messenger-thread-primitives';
 import { InternalSheetComposer } from './InternalSheetComposer';
 import { MessengerPersonAvatar } from './MessengerPersonAvatar';
+
+const FAVORITE_STAR_ACTIVE = 'fill-[#4f46e5] text-[#4f46e5]';
+const FAVORITE_STAR_IDLE = 'text-[#94a3b8]';
 
 export function ThreadAvatar({
   title,
@@ -36,9 +40,9 @@ export function FavoriteStar({ favorite, onToggle }: { favorite: boolean; onTogg
       aria-pressed={favorite}
       aria-label={favorite ? 'Remove from Favorites' : 'Add to Favorites'}
       onClick={onToggle}
-      className={`flex size-4 shrink-0 items-center justify-center ${favorite ? 'rounded-full bg-[#eef2ff]' : ''}`}
+      className="flex size-4 shrink-0 items-center justify-center"
     >
-      <img src="/messenger/sheet-header-star.svg" alt="" />
+      <Star size={14} className={favorite ? FAVORITE_STAR_ACTIVE : FAVORITE_STAR_IDLE} />
     </button>
   );
 }

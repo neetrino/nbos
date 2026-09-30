@@ -73,6 +73,7 @@ function ConversationRows({
   const recent = items.filter((row) => !row.isFavorite);
   return (
     <>
+      {favorites.length > 0 ? <SectionLabel>Pinned</SectionLabel> : null}
       {favorites.map((row, index) => (
         <InternalConversationRow
           key={row.id}
@@ -87,7 +88,7 @@ function ConversationRows({
           onToggleFavorite={onToggleFavorite}
         />
       ))}
-      {favorites.length > 0 && recent.length > 0 ? <RecentLabel /> : null}
+      {favorites.length > 0 && recent.length > 0 ? <SectionLabel>Recent</SectionLabel> : null}
       {recent.map((row, index) => (
         <InternalConversationRow
           key={row.id}
@@ -199,8 +200,10 @@ function ListStatus({
   );
 }
 
-function RecentLabel() {
+function SectionLabel({ children }: { children: string }) {
   return (
-    <p className="px-2 pt-3 pb-1.5 text-[10px] tracking-[1px] text-[#94a3b8] uppercase">Recent</p>
+    <p className="px-2 pt-3 pb-1.5 text-[10px] tracking-[1px] text-[#94a3b8] uppercase">
+      {children}
+    </p>
   );
 }
