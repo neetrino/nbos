@@ -35,6 +35,7 @@ export interface MessengerCoreConversationRow {
   unreadCount?: number;
   peerEmployeeId?: string | null;
   peerName?: string | null;
+  peerPosition?: string | null;
   isFavorite?: boolean;
   canWrite?: boolean;
   primaryLinks?: Array<{ entityType: string; entityId: string }>;
@@ -146,10 +147,13 @@ export const messengerCoreApi = {
   async listMessages(
     id: string,
     params?: { before?: string; pageSize?: number },
-  ): Promise<{ items: MessengerCoreMessageRow[]; meta: { hasMoreOlder: boolean } }> {
+  ): Promise<{
+    items: MessengerCoreMessageRow[];
+    meta: { hasMoreOlder: boolean; peerLastReadAt?: string | null };
+  }> {
     const resp = await api.get<{
       items: MessengerCoreMessageRow[];
-      meta: { hasMoreOlder: boolean };
+      meta: { hasMoreOlder: boolean; peerLastReadAt?: string | null };
     }>(`${INTERNAL_ROOT}/conversations/${id}/messages`, { params });
     return resp.data;
   },

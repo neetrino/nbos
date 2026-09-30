@@ -37,8 +37,12 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     enabled: Boolean(canView && conversation.data?.id),
     zone: 'INTERNAL',
   });
-  useEntityRealtime(canView, me?.id, conversation.data?.id ?? null, queryClient, () =>
-    setNewMessage(''),
+  const { onlineIds } = useEntityRealtime(
+    canView,
+    me?.id,
+    conversation.data?.id ?? null,
+    queryClient,
+    () => setNewMessage(''),
   );
   useEffect(() => {
     if (!conversation.data?.id) return;
@@ -57,6 +61,7 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     sendBusy,
     setSendBusy,
     queryClient,
+    onlineIds,
   });
 }
 
@@ -76,8 +81,8 @@ function useEntityRealtime(
   conversationId: string | null,
   queryClient: QueryClient,
   clearComposer: () => void,
-): void {
-  useInternalMessengerRealtime({
+): { onlineIds: ReadonlySet<string> } {
+  return useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId,
     conversationId,
@@ -102,6 +107,11 @@ function useEntityRealtime(
         clearActive: clearComposer,
       });
     },
+    onPeerRead: (payload) => {
+      void queryClient.invalidateQueries({
+        queryKey: messengerQueryKeys.messages(payload.conversationId),
+      });
+    },
   });
 }
 
@@ -117,12 +127,14 @@ function buildEntityConversationState(input: {
   sendBusy: boolean;
   setSendBusy: (busy: boolean) => void;
   queryClient: QueryClient;
+  onlineIds: ReadonlySet<string>;
 }) {
   const row = input.conversation.data ?? null;
   return {
     canView: input.canView,
     conversation: row,
     messages: input.messagesQuery.data?.items ?? [],
+    peerLastReadAt: input.messagesQuery.data?.meta.peerLastReadAt ?? null,
     newMessage: input.newMessage,
     setNewMessage: input.setNewMessage,
     loading: Boolean(
@@ -151,6 +163,7 @@ function buildEntityConversationState(input: {
       }),
     toggleFavorite: () =>
       void toggleEntityFavorite(input.queryClient, input.kind, input.entityId, row),
+    onlineIds: input.onlineIds,
   };
 }
 

@@ -17,6 +17,7 @@ import { InternalCreateTaskFromMessages } from '@/features/messenger-internal/In
 import { InternalForwardDialog } from '@/features/messenger-internal/InternalForwardDialog';
 import { InternalMessageActionsBar } from '@/features/messenger-internal/InternalMessageActionsBar';
 import { ThreadComposer, ThreadMessages } from '@/features/messenger-internal/InternalThreadParts';
+import { SheetMessengerPaletteProvider } from '@/features/messenger-internal/sheet-messenger-palette';
 import { useInternalThreadActions } from '@/features/messenger-internal/use-internal-thread-actions';
 import { ClientAiPlaceholder } from './ClientAiPlaceholder';
 import { ClientInviteDialog } from './ClientInviteDialog';
@@ -28,20 +29,33 @@ import { clientConversationTitle } from './client-messenger-section';
 import { canUnlockClientComposer, isClientComposerUnlocked } from './client-composer-unlock';
 import { clientOutboundDeliveryLabel } from './client-delivery-label';
 
-function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
-  return rows.map((row) => ({
-    ...mapMessengerRowToView({
-      id: row.id,
-      channelId: row.conversationId,
-      senderId: row.senderId ?? '',
-      senderName: row.senderName,
-      content: row.content,
-      createdAt: row.createdAt,
-      editedAt: row.editedAt,
-      attachments: row.attachments,
-    }),
+function toViewMessages(
+  rows: MessengerCoreMessageRow[],
+  meId: string | null,
+): MessengerViewMessage[] {
+  return rows.map((row) => viewClientMessage(row, meId));
+}
+
+function viewClientMessage(
+  row: MessengerCoreMessageRow,
+  meId: string | null,
+): MessengerViewMessage {
+  const outbound = row.direction === 'OUTBOUND';
+  const mapped = mapMessengerRowToView({
+    id: row.id,
+    channelId: row.conversationId,
+    senderId: row.senderId ?? '',
+    senderName: row.senderName,
+    content: row.content,
+    createdAt: row.createdAt,
+    editedAt: row.editedAt,
+    attachments: row.attachments,
+  });
+  return {
+    ...mapped,
+    senderId: outbound && meId ? meId : mapped.senderId,
     deliveryLabel: clientOutboundDeliveryLabel(row),
-  }));
+  };
 }
 
 export function ClientConversationThread({
@@ -76,7 +90,7 @@ export function ClientConversationThread({
   onAttentionChange?: (attention: NonNullable<MessengerClientConversationRow['attention']>) => void;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
-  const { can } = usePermission();
+  const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
   const actions = useInternalThreadActions(messages);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -121,46 +135,51 @@ export function ClientConversationThread({
         onCopySource={() => void actions.copySource()}
         onClear={actions.clearSelection}
       />
-      <ThreadMessages
-        views={toViewMessages(messages)}
-        messages={messages}
-        messagesLoading={messagesLoading}
-        selectedIds={actions.selectedIds}
-        onToggleSelect={actions.toggleSelect}
-        onOpenOriginalSource={actions.openOriginalBySourceId}
-        remoteTypingHint={null}
-        endRef={endRef}
-      />
-      <ClientAiPlaceholder />
-      {unlocked && canUnlockClientComposer(canSend) ? (
-        <>
-          <ClientUnlockedComposerBanner
+      <SheetMessengerPaletteProvider kind="client">
+        <ThreadMessages
+          views={toViewMessages(messages, me?.id ?? null)}
+          messages={messages}
+          messagesLoading={messagesLoading}
+          selectedIds={actions.selectedIds}
+          onToggleSelect={actions.toggleSelect}
+          onOpenOriginalSource={actions.openOriginalBySourceId}
+          remoteTypingHint={null}
+          endRef={endRef}
+          sheet
+          meId={me?.id ?? null}
+        />
+        <ClientAiPlaceholder />
+        {unlocked && canUnlockClientComposer(canSend) ? (
+          <>
+            <ClientUnlockedComposerBanner
+              provider={conversation.provider}
+              contextLabel={contextLabel}
+            />
+            <ThreadComposer
+              canSend={canSend}
+              sendDisabled={sendDisabled}
+              newMessage={newMessage}
+              onNewMessageChange={onNewMessageChange}
+              replyTo={actions.replyTo}
+              onClearReply={actions.clearReply}
+              mentions={[]}
+              onMentionsChange={() => undefined}
+              placeholder="Type a message to the client…"
+              sheet
+              onSend={() =>
+                void Promise.resolve(onSend(actions.replyTo?.id)).then(() => actions.clearReply())
+              }
+            />
+          </>
+        ) : (
+          <ClientLockedComposer
+            canSend={canSend}
             provider={conversation.provider}
             contextLabel={contextLabel}
+            onUnlock={onUnlock}
           />
-          <ThreadComposer
-            canSend={canSend}
-            sendDisabled={sendDisabled}
-            newMessage={newMessage}
-            onNewMessageChange={onNewMessageChange}
-            replyTo={actions.replyTo}
-            onClearReply={actions.clearReply}
-            mentions={[]}
-            onMentionsChange={() => undefined}
-            placeholder="Type a message to the client…"
-            onSend={() =>
-              void Promise.resolve(onSend(actions.replyTo?.id)).then(() => actions.clearReply())
-            }
-          />
-        </>
-      ) : (
-        <ClientLockedComposer
-          canSend={canSend}
-          provider={conversation.provider}
-          contextLabel={contextLabel}
-          onUnlock={onUnlock}
-        />
-      )}
+        )}
+      </SheetMessengerPaletteProvider>
       <InternalForwardDialog
         open={actions.forwardOpen}
         currentConversationId={conversation.id}

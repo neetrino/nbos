@@ -9,6 +9,7 @@ export interface MessengerViewMessage {
   timestamp: string;
   attachments: Array<{ id: string; fileAssetId: string }>;
   deliveryLabel?: string | null;
+  receiptSeen?: boolean;
 }
 
 export function initialsFromDisplayName(name: string): string {

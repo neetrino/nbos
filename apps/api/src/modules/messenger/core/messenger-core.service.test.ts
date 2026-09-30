@@ -125,6 +125,7 @@ function createService() {
     },
     messengerConversationParticipant: {
       findFirst: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
       upsert: vi.fn(),
     },
     resourceAccessGrant: { findFirst: vi.fn().mockResolvedValue(null), upsert: vi.fn() },
@@ -156,6 +157,7 @@ function createService() {
     }),
     emitReadListsUpdated: vi.fn(),
     emitConversationReadUpdated: vi.fn(),
+    emitConversationPeerRead: vi.fn(),
     publishPersistedCoreMessage: vi.fn(),
     evictEmployeeFromConversation: vi.fn().mockResolvedValue(undefined),
   };

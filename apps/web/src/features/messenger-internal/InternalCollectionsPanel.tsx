@@ -24,7 +24,7 @@ export function InternalCollectionsPanel({
   onSelect: (id: string) => void;
 }) {
   return (
-    <aside className="border-border bg-card flex min-h-0 w-72 shrink-0 flex-col border-r">
+    <aside className="flex min-h-0 w-80 max-w-[46%] shrink-0 flex-col border-r border-[#f1f5f9] bg-[#fafbfc]">
       <div className="space-y-2 p-3">
         <input
           type="text"
