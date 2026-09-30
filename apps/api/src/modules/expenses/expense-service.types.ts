@@ -17,7 +17,6 @@ export interface CreateExpenseDto {
   /** Paid client invoice that materialized this card (unique cycle key). */
   sourceInvoiceId?: string;
   isPassThrough?: boolean;
-  taxStatus?: string;
   backlogReason?: string | null;
   notes?: string;
 }
@@ -34,7 +33,6 @@ export interface UpdateExpenseDto {
   credentialId?: string | null;
   clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
-  taxStatus?: string;
   backlogReason?: string | null;
   notes?: string;
 }

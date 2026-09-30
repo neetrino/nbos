@@ -57,10 +57,6 @@
     "YEARLY": "Տարեկան",
     "MULTI_YEAR": "Բազմամյա"
   },
-  "tax": {
-    "TAX": "Հարկով",
-    "TAX_FREE": "Ազատ"
-  },
   "backlogReason": {
     "none": "Չկա",
     "DEBT_PAY_LATER": "Պարտք՝ հետո վճարել",
@@ -177,7 +173,6 @@
     "category": "Կատեգորիա",
     "frequency": "Պարբերություն",
     "backlogReason": "Հետանկման պատճառ",
-    "taxStatus": "Հարկային կարգավիճակ",
     "passThrough": "Տարանցիկ",
     "sourceInvoice": "Հաճախորդի հաշիվ",
     "notes": "Նկարագրություն",

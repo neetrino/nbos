@@ -8,6 +8,7 @@ import { useClientServicesT } from './client-service-message-keys';
 interface ClientServiceProviderFieldProps {
   providerName: string;
   disabled?: boolean;
+  className?: string;
   onProviderChange: (name: string) => void;
 }
 
@@ -19,6 +20,7 @@ interface ResolvedProvider {
 export function ClientServiceProviderField({
   providerName,
   disabled = false,
+  className,
   onProviderChange,
 }: ClientServiceProviderFieldProps) {
   const t = useClientServicesT();
@@ -55,7 +57,7 @@ export function ClientServiceProviderField({
       label={t('domainPurchase.provider')}
       labelStyle="outlined"
       disabled={disabled}
-      className="w-full min-w-0"
+      className={className ?? 'w-full min-w-0'}
       onChange={(id, nextName) => {
         setResolved({ name: nextName, id });
         onProviderChange(nextName);

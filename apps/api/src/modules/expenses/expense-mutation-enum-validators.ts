@@ -6,7 +6,6 @@ import {
   pickExpenseFrequencyFilter,
   pickExpenseStatusFilter,
   pickExpenseTypeFilter,
-  pickTaxStatusFilter,
 } from './expense-query-enum-guards';
 
 const INVALID = {
@@ -14,7 +13,6 @@ const INVALID = {
   category: 'Invalid expense category',
   frequency: 'Invalid expense frequency',
   status: 'Invalid expense status',
-  taxStatus: 'Invalid tax status',
   type: 'Invalid expense type',
 } as const;
 
@@ -53,13 +51,6 @@ export function resolveExpenseStatus(value: string | undefined): string {
   return pickExpenseStatusFilter(value) ?? 'PLANNED';
 }
 
-export function resolveExpenseTaxStatus(value: string | undefined | null): string {
-  if (value === undefined || value === null || value === '') return 'TAX';
-  const v = pickTaxStatusFilter(value);
-  if (!v) throw new BadRequestException(INVALID.taxStatus);
-  return v;
-}
-
 export function requireExpenseTypeIfPresent(value: string | undefined | null): string | undefined {
   if (value === undefined || value === null) return undefined;
   return requireExpenseType(value);
@@ -87,13 +78,6 @@ export function requireExpenseStatusIfPresent(
   if (value === undefined || value === null) return undefined;
   const v = pickExpenseStatusFilter(value);
   if (!v) throw new BadRequestException(INVALID.status);
-  return v;
-}
-
-export function requireTaxStatusIfPresent(value: string | undefined | null): string | undefined {
-  if (value === undefined || value === null) return undefined;
-  const v = pickTaxStatusFilter(value);
-  if (!v) throw new BadRequestException(INVALID.taxStatus);
   return v;
 }
 

@@ -4,7 +4,6 @@ import {
   type ClientServiceBillingModel,
   type ClientServiceType,
   type ExpenseFrequency,
-  type TaxStatus,
 } from '@nbos/database';
 import { INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -41,7 +40,6 @@ interface ClientServiceRecordRow {
   frequency: ExpenseFrequency;
   ourCost: unknown;
   clientCharge: unknown;
-  taxStatus: TaxStatus;
   renewalDate: Date | null;
 }
 
@@ -129,7 +127,6 @@ export class ClientServiceFlowsService {
       clientServiceRecordId: service.id,
       sourceInvoiceId: body.sourceInvoiceId?.trim() || undefined,
       isPassThrough: service.billingModel === 'WE_PAY',
-      taxStatus: service.taxStatus,
       notes,
     });
   }

@@ -26,11 +26,9 @@ import {
   requireExpenseStatusIfPresent,
   requireExpenseType,
   requireExpenseTypeIfPresent,
-  requireTaxStatusIfPresent,
   parseExpenseBacklogReasonField,
   resolveExpenseFrequency,
   resolveExpenseStatus,
-  resolveExpenseTaxStatus,
 } from './expense-mutation-enum-validators';
 import { normalizeExpenseListPage, normalizeExpenseListPageSize } from './expenses-list-pagination';
 import { fetchExpenseStatsAggregates } from './expense-stats-aggregates';
@@ -304,9 +302,6 @@ export class ExpensesService {
       ...(data.clientServiceRecordId ? { clientServiceRecordId: data.clientServiceRecordId } : {}),
       ...(data.sourceInvoiceId ? { sourceInvoiceId: data.sourceInvoiceId } : {}),
       isPassThrough: data.isPassThrough ?? false,
-      taxStatus: resolveExpenseTaxStatus(
-        data.taxStatus,
-      ) as Prisma.ExpenseUncheckedCreateInput['taxStatus'],
       ...(data.backlogReason !== undefined && {
         backlogReason: parseExpenseBacklogReasonField(
           data.backlogReason,
@@ -350,8 +345,6 @@ export class ExpensesService {
       data.frequency !== undefined ? requireExpenseFrequencyIfPresent(data.frequency) : undefined;
     const statusPatch =
       data.status !== undefined ? requireExpenseStatusIfPresent(data.status) : undefined;
-    const taxStatusPatch =
-      data.taxStatus !== undefined ? requireTaxStatusIfPresent(data.taxStatus) : undefined;
     const backlogReasonPatch =
       data.backlogReason !== undefined
         ? parseExpenseBacklogReasonField(data.backlogReason)
@@ -388,9 +381,6 @@ export class ExpensesService {
         clientServiceRecordId: data.clientServiceRecordId || null,
       }),
       ...(data.isPassThrough !== undefined && { isPassThrough: data.isPassThrough }),
-      ...(taxStatusPatch !== undefined && {
-        taxStatus: taxStatusPatch as Prisma.ExpenseUncheckedUpdateInput['taxStatus'],
-      }),
       ...(backlogReasonPatch !== undefined && {
         backlogReason: backlogReasonPatch as ExpenseBacklogReasonEnum | null,
       }),

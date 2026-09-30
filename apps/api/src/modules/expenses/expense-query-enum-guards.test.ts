@@ -5,7 +5,6 @@ import {
   pickExpenseFrequencyFilter,
   pickExpenseStatusFilter,
   pickExpenseTypeFilter,
-  pickTaxStatusFilter,
 } from './expense-query-enum-guards';
 
 describe('expense-query-enum-guards', () => {
@@ -32,12 +31,6 @@ describe('expense-query-enum-guards', () => {
     expect(pickExpenseStatusFilter('OLD')).toBeUndefined();
     expect(pickExpenseCategoryFilter('')).toBeUndefined();
     expect(pickExpenseFrequencyFilter(undefined)).toBeUndefined();
-    expect(pickTaxStatusFilter(null)).toBeUndefined();
-  });
-
-  it('accepts tax status members', () => {
-    expect(pickTaxStatusFilter('TAX')).toBe('TAX');
-    expect(pickTaxStatusFilter('TAX_FREE')).toBe('TAX_FREE');
   });
 
   it('accepts backlog reason members', () => {

@@ -244,7 +244,6 @@ export interface Expense {
   projectId: string | null;
   credentialId: string | null;
   isPassThrough: boolean;
-  taxStatus: string;
   backlogReason: string | null;
   notes: string | null;
   createdAt: string;
@@ -361,7 +360,6 @@ export interface CreateExpensePayload {
   expensePlanId?: string | null;
   clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
-  taxStatus?: string;
   backlogReason?: string | null;
   notes?: string | null;
 }
@@ -387,7 +385,6 @@ export interface UpdateExpensePayload {
   productId?: string | null;
   credentialId?: string | null;
   isPassThrough?: boolean;
-  taxStatus?: string;
   backlogReason?: string | null;
   notes?: string | null;
 }

@@ -39,6 +39,7 @@ interface SubscriptionGeneralTabProps {
   draft: SubscriptionGeneralDraft;
   patchDraft: (partial: Partial<SubscriptionGeneralDraft>) => void;
   replaceDraft: (next: SubscriptionGeneralDraft) => void;
+  onSubscriptionChange: (updated: Subscription) => void;
   formDisabled?: boolean;
 }
 
@@ -47,6 +48,7 @@ export function SubscriptionGeneralTab({
   draft,
   patchDraft,
   replaceDraft,
+  onSubscriptionChange,
   formDisabled = false,
 }: SubscriptionGeneralTabProps) {
   const locale = useLocale();
@@ -246,7 +248,10 @@ export function SubscriptionGeneralTab({
         sectionClassName="mt-0"
       />
 
-      <SubscriptionDetailLinkedPanel subscription={subscription} />
+      <SubscriptionDetailLinkedPanel
+        subscription={subscription}
+        onSubscriptionChange={onSubscriptionChange}
+      />
       <p className="text-muted-foreground text-sm">
         Created {formatInvoiceSheetDate(subscription.createdAt, locale)}
       </p>
