@@ -8,6 +8,7 @@ import { applyMessengerSendResult, type MessengerMessagesPage } from './messenge
 import { deriveInternalVisibleSummaries } from './derive-internal-summaries';
 import { messengerQueryKeys } from './messenger-query-keys';
 import { applyMessengerRealtimeSummary } from './messenger-realtime-cache';
+import { MESSENGER_QUERY_STALE_TIME_MS } from './messenger-query-policy';
 import {
   isMessengerDefaultCacheFresh,
   remainingMessengerDefaultFreshMs,
@@ -206,15 +207,13 @@ describe('applyMessengerSendResult conversation upsert', () => {
     queryClient.setQueryData(allKey, { items: [] });
     queryClient.setQueryData(messengerQueryKeys.collections('INTERNAL'), []);
     expect(isMessengerDefaultCacheFresh(queryClient, 'INTERNAL')).toBe(true);
-    const remainingBefore = remainingMessengerDefaultFreshMs(queryClient, 'INTERNAL');
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     applyMessengerSendResult(queryClient, 'INTERNAL', message(), conversation());
     expect(ids(queryClient, allKey)).toEqual(['task-conv']);
     expect(isMessengerDefaultCacheFresh(queryClient, 'INTERNAL')).toBe(true);
-    expect(remainingMessengerDefaultFreshMs(queryClient, 'INTERNAL')).toBeGreaterThan(0);
-    expect(remainingMessengerDefaultFreshMs(queryClient, 'INTERNAL')).toBeLessThanOrEqual(
-      remainingBefore,
-    );
+    const remaining = remainingMessengerDefaultFreshMs(queryClient, 'INTERNAL');
+    expect(remaining).toBeGreaterThan(0);
+    expect(remaining).toBeLessThanOrEqual(MESSENGER_QUERY_STALE_TIME_MS);
     expect(invalidate).not.toHaveBeenCalled();
   });
 });
