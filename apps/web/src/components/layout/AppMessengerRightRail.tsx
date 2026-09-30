@@ -9,7 +9,7 @@ import { useMessengerZoneBootstrap } from '@/features/messenger/query/use-messen
 import { useMessengerOverlay } from '@/features/messenger-internal/messenger-overlay-context';
 import { openMessengerConversation } from '@/features/messenger-internal/messenger-conversation-opener';
 import { findCachedDirectConversationId } from '@/features/messenger-internal/find-cached-direct-conversation';
-import { useCachedPinnedDirectPeerIds } from '@/features/messenger-internal/use-cached-pinned-peers';
+import { useCachedDirectRailPeerState } from '@/features/messenger-internal/use-cached-pinned-peers';
 import {
   APP_MESSENGER_RIGHT_RAIL_WIDTH_PX,
   MessengerQuickRail,
@@ -32,7 +32,7 @@ export function AppMessengerRightRail() {
     enabled,
     staleTime: 5 * 60 * 1000,
   });
-  const pinnedPeerIds = useCachedPinnedDirectPeerIds();
+  const { pinnedIds, unreadByPeerId } = useCachedDirectRailPeerState();
   const { openMessenger } = useMessengerOverlay();
   const [activeEmployeeId, setActiveEmployeeId] = useState<string | null>(null);
 
@@ -61,7 +61,8 @@ export function AppMessengerRightRail() {
     id: row.value,
     label: row.label,
     avatarUrl: row.avatar?.trim() || undefined,
-    pinned: pinnedPeerIds.has(row.value),
+    pinned: pinnedIds.has(row.value),
+    unreadCount: unreadByPeerId.get(row.value) ?? 0,
   }));
 
   return <MessengerQuickRail people={people} activeId={activeEmployeeId} onSelect={onSelect} />;

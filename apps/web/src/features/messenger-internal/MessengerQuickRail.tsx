@@ -2,15 +2,16 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
-import { PresenceDot, useEmployeeOnline } from '@/features/messenger-internal/PresenceAvatar';
+import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
 
-export const APP_MESSENGER_RIGHT_RAIL_WIDTH_PX = 64;
+export const APP_MESSENGER_RIGHT_RAIL_WIDTH_PX = 72;
 
 export type MessengerQuickRailPerson = {
   id: string;
   label: string;
   avatarUrl?: string;
   pinned?: boolean;
+  unreadCount?: number;
 };
 
 export function MessengerQuickRail({
@@ -29,7 +30,7 @@ export function MessengerQuickRail({
   return (
     <aside
       aria-label="Employees"
-      className={`border-sidebar-border bg-sidebar hidden h-full w-16 shrink-0 flex-col items-center gap-2.5 overflow-y-auto border-l pt-3 lg:flex ${className}`}
+      className={`border-sidebar-border bg-sidebar hidden h-full w-[72px] shrink-0 flex-col items-center gap-3 overflow-y-auto border-l pt-3 lg:flex ${className}`}
     >
       {pinned.length > 0 ? (
         <>
@@ -57,7 +58,7 @@ export function MessengerQuickRail({
 }
 
 function RailDivider() {
-  return <div aria-hidden className="my-0.5 h-px w-8 shrink-0 bg-[#e2e8f0]" />;
+  return <div aria-hidden className="my-0.5 h-px w-10 shrink-0 bg-[#e2e8f0]" />;
 }
 
 function QuickAvatar({
@@ -69,17 +70,17 @@ function QuickAvatar({
   active: boolean;
   onSelect: () => void;
 }) {
-  const online = useEmployeeOnline(person.id);
   const photo = person.avatarUrl?.trim();
+  const unread = person.unreadCount ?? 0;
   return (
     <button
       type="button"
-      aria-label={person.label}
+      aria-label={unread > 0 ? `${person.label}, ${unread} unread` : person.label}
       aria-current={active ? 'true' : undefined}
       onClick={onSelect}
       className={`relative rounded-full ${active ? 'ring-2 ring-[#a5b4fc] ring-offset-1' : ''}`}
     >
-      <Avatar className="size-8 overflow-hidden" size="default">
+      <Avatar className="size-10 overflow-hidden" size="lg">
         {photo ? (
           <AvatarImage
             src={photo}
@@ -88,12 +89,28 @@ function QuickAvatar({
           />
         ) : null}
         <AvatarFallback
-          className={`text-[10px] text-[#334155] ${active ? 'bg-[#c7d2fe]' : 'bg-[#e2e8f0]'}`}
+          className={`text-xs text-[#334155] ${active ? 'bg-[#c7d2fe]' : 'bg-[#e2e8f0]'}`}
         >
           {initialsFromDisplayName(person.label)}
         </AvatarFallback>
       </Avatar>
-      <PresenceDot online={online} size="sm" />
+      <RailUnreadBadge count={unread} />
     </button>
+  );
+}
+
+function RailUnreadBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  const label =
+    count > MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX
+      ? `${MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX}+`
+      : String(count);
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute -top-0.5 -right-0.5 flex min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[9px] leading-4 font-semibold text-white tabular-nums shadow-sm"
+    >
+      {label}
+    </span>
   );
 }
