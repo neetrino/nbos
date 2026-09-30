@@ -1,10 +1,15 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
-import { applyMessengerRealtimeMessage } from '@/features/messenger/query/messenger-cache';
+import {
+  applyMessengerRealtimeMessage,
+  patchConversationLastMessageSeen,
+  syncConversationListReceipt,
+} from '@/features/messenger/query/messenger-cache';
 import {
   applyMessengerAccessChanged,
   applyMessengerRealtimeRead,
@@ -16,28 +21,32 @@ import { resolveActiveConversation } from '@/features/messenger/query/resolve-ac
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { INTERNAL_MESSENGER_SHELL_CLASS } from './internal-messenger.constants';
 import { InternalMessengerSheetFrame } from './InternalMessengerSheetFrame';
-import { InternalQuickRail } from './InternalQuickRail';
 import { sectionFromPathname } from './internal-messenger-section';
 import type { InternalMessengerSectionId } from './internal-messenger.constants';
 import { InternalCollectionsPanel } from './InternalCollectionsPanel';
 import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
+import { InternalGroupsEmptyPane } from './InternalGroupsEmptyPane';
 import { InternalMessengerNav } from './InternalMessengerNav';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerQueries } from './use-internal-messenger-queries';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
+import { createInternalGroupConversation } from './create-internal-group';
 import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
+import { useMessengerConversationLaunch } from './use-messenger-conversation-launch';
 import { MessengerPresenceProvider } from './PresenceAvatar';
 
 export function InternalMessengerApp({
   embedded = false,
   section: sectionOverride,
   onSectionChange,
+  launchConversationId = null,
 }: {
   embedded?: boolean;
   section?: InternalMessengerSectionId;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
+  launchConversationId?: string | null;
 }) {
   const pathname = usePathname();
   const section = sectionOverride ?? sectionFromPathname(pathname);
@@ -46,6 +55,7 @@ export function InternalMessengerApp({
       section={section}
       embedded={embedded}
       onSectionChange={onSectionChange}
+      launchConversationId={launchConversationId}
     />
   );
 }
@@ -54,15 +64,16 @@ function InternalMessengerScreen({
   section,
   embedded,
   onSectionChange,
+  launchConversationId,
 }: {
   section: ReturnType<typeof sectionFromPathname>;
   embedded: boolean;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
+  launchConversationId: string | null;
 }) {
   const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
-  const canEdit = can('EDIT', 'MESSENGER');
   useHeaderModuleTitle('Internal Messenger', !embedded);
   const session = useInternalMessengerSession(section);
   const enabled = Boolean(canView && me);
@@ -80,7 +91,16 @@ function InternalMessengerScreen({
     session.openedConversation,
   );
 
-  const { onlineIds } = useInternalMessengerRealtime({
+  useMessengerConversationLaunch({
+    queryClient,
+    enabled,
+    launchConversationId,
+    setActiveId: session.setActiveId,
+    setOpenedConversation: session.setOpenedConversation,
+    setBootError: session.setBootError,
+  });
+
+  const { onlineIds, typingPeer, emitConversationTyping } = useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
     conversationId: session.activeId,
@@ -109,11 +129,35 @@ function InternalMessengerScreen({
       void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
     },
     onPeerRead: (payload) => {
+      patchConversationLastMessageSeen(
+        queryClient,
+        'INTERNAL',
+        payload.conversationId,
+        payload.lastReadAt,
+      );
       void queryClient.invalidateQueries({
         queryKey: messengerQueryKeys.messages(payload.conversationId),
       });
     },
   });
+
+  useEffect(() => {
+    if (!session.activeId || !me?.id) return;
+    const messages = data.messages.data?.items;
+    if (!messages?.length) return;
+    syncConversationListReceipt(queryClient, 'INTERNAL', {
+      conversationId: session.activeId,
+      viewerId: me.id,
+      messages,
+      peerLastReadAt: data.messages.data?.meta.peerLastReadAt ?? null,
+    });
+  }, [
+    queryClient,
+    session.activeId,
+    me?.id,
+    data.messages.data?.items,
+    data.messages.data?.meta.peerLastReadAt,
+  ]);
 
   if (permsLoading) {
     return (
@@ -137,23 +181,7 @@ function InternalMessengerScreen({
   return (
     <MessengerPresenceProvider onlineIds={onlineIds}>
       <InternalMessengerSheetFrame embedded={embedded}>
-        <InternalMessengerNav
-          section={section}
-          onSectionChange={onSectionChange}
-          canEdit={canEdit}
-          onCreateGroup={async (title) => {
-            const created = await messengerCoreApi.createConversation({
-              type: 'INTERNAL_GROUP',
-              title,
-            });
-            await openInternalConversation(
-              queryClient,
-              created.id,
-              session.setActiveId,
-              session.setOpenedConversation,
-            );
-          }}
-        />
+        <InternalMessengerNav section={section} onSectionChange={onSectionChange} />
         {session.bootError || data.listError ? (
           <p className="px-3 py-1 text-xs text-red-600">
             {session.bootError ?? 'Could not refresh Internal Messenger.'}
@@ -180,6 +208,7 @@ function InternalMessengerScreen({
                 search={session.search}
                 filter={session.filter}
                 listPending={data.listPending}
+                onCreateGroup={section === 'groups' ? createGroup : undefined}
                 onSearchChange={session.setSearch}
                 onFilterChange={session.setFilter}
                 onSelect={(id) =>
@@ -202,6 +231,9 @@ function InternalMessengerScreen({
               messagesLoading={data.messages.isPending && data.messages.data === undefined}
               newMessage={session.newMessage}
               onNewMessageChange={session.setNewMessage}
+              pendingForward={session.pendingForward}
+              onClearPendingForward={() => session.setPendingForward(null)}
+              onBeginForward={(target, draft) => session.beginForwardTo(target, draft)}
               onSend={(extras) =>
                 void sendInternalThreadMessage({
                   conversationId: session.activeId,
@@ -222,36 +254,41 @@ function InternalMessengerScreen({
                 void messengerCoreApi.addCollectionItem(collectionId, active.id)
               }
               remoteTypingHint={null}
-              onOpenInternalSource={(id) =>
+              typingPeer={typingPeer}
+              onTypingIntent={emitConversationTyping}
+              onOpenInternalSource={(id, seed) => {
+                if (seed) {
+                  session.openTargetConversation(seed);
+                  return;
+                }
                 void openInternalConversation(
                   queryClient,
                   id,
                   session.setActiveId,
                   session.setOpenedConversation,
-                )
-              }
+                );
+              }}
             />
+          ) : section === 'groups' ? (
+            <InternalGroupsEmptyPane onCreateGroup={createGroup} />
           ) : (
             <div className="flex min-h-0 flex-1 items-center justify-center bg-[#eef2ff] text-sm text-[#64748b]">
               Select an Internal conversation
             </div>
           )}
-          <InternalQuickRail
-            items={data.items}
-            activeId={session.activeId}
-            onSelect={(id) =>
-              void openInternalConversation(
-                queryClient,
-                id,
-                session.setActiveId,
-                session.setOpenedConversation,
-              ).catch(() => session.setBootError('Could not open that Internal conversation.'))
-            }
-          />
         </div>
       </InternalMessengerSheetFrame>
     </MessengerPresenceProvider>
   );
+
+  async function createGroup(title: string) {
+    await createInternalGroupConversation(
+      queryClient,
+      title,
+      session.setActiveId,
+      session.setOpenedConversation,
+    );
+  }
 
   async function createCollection(visibility: 'PERSONAL' | 'SHARED') {
     const name = session.collectionName.trim();

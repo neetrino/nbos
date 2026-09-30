@@ -103,3 +103,10 @@ export async function searchEmployeesForPicker(
   const people = await loadAssignableDirectory();
   return applyExclude(filterAndRankEmployeePickerPeople(people, query), excludeIds);
 }
+
+/** Full non-terminated directory for app chrome (right rail). */
+export async function listEmployeesForAppRail(
+  excludeIds?: ReadonlySet<string>,
+): Promise<RelationPickerOption[]> {
+  return searchEmployeesForPicker('', excludeIds);
+}

@@ -1,6 +1,14 @@
 'use client';
 
 import type { KeyboardEvent } from 'react';
+import {
+  SHEET_COMPOSER_FIELD_BASE_CLASS,
+  SHEET_COMPOSER_GUTTER_CLASS,
+  SHEET_COMPOSER_MAX_ROWS,
+  SHEET_COMPOSER_RADIUS_BY_ROWS,
+  SHEET_COMPOSER_TEXTAREA_CLASS,
+  SHEET_COMPOSER_WRAP_CHAR_COUNT,
+} from './internal-messenger.constants';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
 
 const CLIP_ICON = '/messenger/sheet-composer-clip.svg';
@@ -27,8 +35,7 @@ export function InternalSheetComposer({
 }: SheetComposerProps) {
   const palette = useSheetMessengerPalette();
   return (
-    <div className={palette.canvas}>
-      <ComposerTip tipClass={palette.tip} />
+    <div>
       <ComposerRow
         sendClass={palette.send}
         value={value}
@@ -52,7 +59,7 @@ function ComposerRow({
   sendClass,
 }: SheetComposerProps & { sendClass: string }) {
   return (
-    <div className="flex items-center gap-2 px-4 py-2">
+    <div className={`flex items-center gap-2 ${SHEET_COMPOSER_GUTTER_CLASS} py-2`}>
       <button
         type="button"
         aria-label="Attach file"
@@ -81,6 +88,20 @@ function ComposerRow({
   );
 }
 
+function composerRowCount(value: string): number {
+  const wrapped = value.split('\n').reduce((total, line) => {
+    const width = Math.max(line.length, 1);
+    return total + Math.ceil(width / SHEET_COMPOSER_WRAP_CHAR_COUNT);
+  }, 0);
+  return Math.min(SHEET_COMPOSER_MAX_ROWS, Math.max(1, wrapped));
+}
+
+function composerFieldClass(rows: number): string {
+  const radius = SHEET_COMPOSER_RADIUS_BY_ROWS[rows - 1] ?? SHEET_COMPOSER_RADIUS_BY_ROWS[0];
+  const height = rows > 1 ? 'min-h-10 py-1.5' : 'h-10';
+  return `${SHEET_COMPOSER_FIELD_BASE_CLASS} ${height} ${radius}`;
+}
+
 function MessageField({
   value,
   onChange,
@@ -89,39 +110,25 @@ function MessageField({
   disabled,
   sendDisabled,
 }: SheetComposerProps) {
+  const rows = composerRowCount(value);
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center rounded-full border border-[#e2e8f0] bg-white px-4">
-      <input
-        type="text"
+    <div className={composerFieldClass(rows)}>
+      <textarea
+        rows={rows}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         onKeyDown={(event) => onComposerKeyDown(event, disabled, sendDisabled, onSend)}
         placeholder={placeholder}
         disabled={disabled}
-        className="min-w-0 flex-1 bg-transparent text-sm leading-[21px] text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none disabled:opacity-50"
+        className={SHEET_COMPOSER_TEXTAREA_CLASS}
       />
       <img src={STICKER_ICON} alt="" />
     </div>
   );
 }
 
-function ComposerTip({ tipClass }: { tipClass: string }) {
-  return (
-    <p className="mx-5 mt-2 inline-flex flex-wrap items-center gap-1.5 rounded-2xl bg-white px-3 py-1.5 text-xs text-[#0f172a] shadow-[0px_4px_2px_rgba(148,163,184,0.1)]">
-      <span className={tipClass}>Pro tip:</span>
-      Type <Kbd>@</Kbd> to mention team members, <Kbd>/</Kbd> for quick NBOS commands
-    </p>
-  );
-}
-
-function Kbd({ children }: { children: string }) {
-  return (
-    <kbd className="rounded bg-[#f1f5f9] px-1 font-mono text-[10px] text-[#1e293b]">{children}</kbd>
-  );
-}
-
 function onComposerKeyDown(
-  event: KeyboardEvent<HTMLInputElement>,
+  event: KeyboardEvent<HTMLTextAreaElement>,
   disabled: boolean,
   sendDisabled: boolean,
   onSend: () => void,

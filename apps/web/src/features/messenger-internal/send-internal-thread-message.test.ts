@@ -8,6 +8,7 @@ import { sendInternalThreadMessage } from './send-internal-thread-message';
 vi.mock('@/lib/api/messenger-core', () => ({
   messengerCoreApi: {
     sendMessage: vi.fn(),
+    forwardMessages: vi.fn(),
   },
 }));
 

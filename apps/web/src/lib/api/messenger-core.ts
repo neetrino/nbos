@@ -32,12 +32,15 @@ export interface MessengerCoreConversationRow {
   createdAt: string;
   lastMessageAt: string | null;
   lastMessagePreview?: string | null;
+  lastMessageMine?: boolean;
+  lastMessageSeen?: boolean;
   unreadCount?: number;
   peerEmployeeId?: string | null;
   peerName?: string | null;
   peerPosition?: string | null;
   isFavorite?: boolean;
   canWrite?: boolean;
+  pinnedMessage?: { id: string; senderName: string; content: string } | null;
   primaryLinks?: Array<{ entityType: string; entityId: string }>;
 }
 
@@ -73,6 +76,9 @@ export interface MessengerCoreMessageRow {
     | 'CANCELLED';
   mentionedEmployeeIds?: string[];
   references?: MessengerCoreMessageReferenceRow[];
+  forwardedFrom?: string | null;
+  forwardedContent?: string | null;
+  forwardSourceMessageId?: string | null;
   attachments: Array<{ id: string; fileAssetId: string; createdAt: string }>;
 }
 
@@ -178,12 +184,34 @@ export const messengerCoreApi = {
   async forwardMessages(
     targetConversationId: string,
     sourceMessageIds: string[],
-  ): Promise<{ holder: MessengerCoreMessageRow; sourceIds: string[]; createdConversation: false }> {
+    comment?: string,
+  ): Promise<{
+    holder: MessengerCoreMessageRow;
+    sourceIds: string[];
+    createdConversation: false;
+    commentMessage: MessengerCoreMessageRow | null;
+    holders?: MessengerCoreMessageRow[];
+  }> {
     const resp = await api.post<{
       holder: MessengerCoreMessageRow;
       sourceIds: string[];
       createdConversation: false;
-    }>(`${INTERNAL_ROOT}/conversations/${targetConversationId}/forwards`, { sourceMessageIds });
+      commentMessage: MessengerCoreMessageRow | null;
+      holders?: MessengerCoreMessageRow[];
+    }>(`${INTERNAL_ROOT}/conversations/${targetConversationId}/forwards`, {
+      sourceMessageIds,
+      comment,
+    });
+    return resp.data;
+  },
+
+  async deleteOwnMessages(
+    messageIds: string[],
+  ): Promise<{ deletedIds: string[]; conversationId: string }> {
+    const resp = await api.post<{ deletedIds: string[]; conversationId: string }>(
+      '/api/messenger/core/messages/delete',
+      { messageIds },
+    );
     return resp.data;
   },
 
@@ -239,6 +267,21 @@ export const messengerCoreApi = {
 
   async markRead(id: string): Promise<void> {
     await api.post(`${INTERNAL_ROOT}/conversations/${id}/read`);
+  },
+
+  async pinMessage(
+    conversationId: string,
+    messageId: string,
+  ): Promise<{ id: string; senderName: string; content: string }> {
+    const resp = await api.post<{ id: string; senderName: string; content: string }>(
+      `${INTERNAL_ROOT}/conversations/${conversationId}/pin`,
+      { messageId },
+    );
+    return resp.data;
+  },
+
+  async unpinMessage(conversationId: string): Promise<void> {
+    await api.delete(`${INTERNAL_ROOT}/conversations/${conversationId}/pin`);
   },
 
   async toggleFavorite(id: string): Promise<{ favorite: boolean; collectionId: string }> {

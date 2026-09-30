@@ -22,7 +22,9 @@ type PrismaLike = InstanceType<typeof PrismaClient>;
 const MESSAGE_INCLUDE = {
   attachments: true,
   mentions: true,
-  referencesAsTarget: true,
+  referencesAsTarget: {
+    include: { sourceMessage: { select: { senderNameSnapshot: true, content: true } } },
+  },
 } as const;
 
 export async function persistCoreMessage(

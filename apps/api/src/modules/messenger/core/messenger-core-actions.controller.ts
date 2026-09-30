@@ -8,6 +8,7 @@ import {
 import { tasksAccessFromUser } from '../../tasks/tasks-scoped-access';
 import { AttachTaskSourcesDto } from './dto/attach-task-sources.dto';
 import { AttachTicketSourcesDto } from './dto/attach-ticket-sources.dto';
+import { DeleteCoreMessagesDto } from './dto/delete-core-messages.dto';
 import { MessengerCoreActionsService } from './messenger-core-actions.service';
 
 @ApiTags('Messenger Core Actions')
@@ -23,6 +24,13 @@ export class MessengerCoreActionsController {
   })
   getSourceMessage(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
     return this.actions.getSourceMessage(user.id, id);
+  }
+
+  @Post('messages/delete')
+  @RequirePermission('MESSENGER', 'EDIT')
+  @ApiOperation({ summary: 'Soft-delete own messages in one conversation' })
+  deleteOwnMessages(@CurrentUser() user: CurrentUserPayload, @Body() body: DeleteCoreMessagesDto) {
+    return this.actions.deleteOwnMessages(user.id, body.messageIds);
   }
 
   @Delete('messages/references/:id')

@@ -175,6 +175,9 @@ describe('MetaLeadIngestService', () => {
         attachments: [],
         mentionedEmployeeIds: [],
         references: [],
+        forwardedFrom: null,
+        forwardedContent: null,
+        forwardSourceMessageId: null,
       },
     });
   });

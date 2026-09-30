@@ -4,12 +4,17 @@ import type { MessengerInternalSection } from './messenger-core.constants';
 
 export type MessengerInternalConversationListItem = MessengerCoreConversationDto & {
   lastMessagePreview: string | null;
+  /** True when the latest visible message was sent by the list viewer. */
+  lastMessageMine: boolean;
+  /** True when a peer read cursor is at or after that own latest message. */
+  lastMessageSeen: boolean;
   unreadCount: number;
   peerEmployeeId: string | null;
   peerName: string | null;
   peerPosition: string | null;
   isFavorite: boolean;
   canWrite: boolean;
+  pinnedMessage: { id: string; senderName: string; content: string } | null;
 };
 
 export type MessengerInternalConversationDetail = MessengerCoreConversationDto & {

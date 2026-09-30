@@ -8,6 +8,8 @@ import type {
 import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
 import {
   applyInternalActiveId,
+  applyInternalBeginForward,
+  applyInternalOpenTarget,
   applyInternalOpenedConversation,
   applyInternalSectionChange,
   createInternalSessionSnapshot,
@@ -109,5 +111,31 @@ describe('Internal section navigation', () => {
     expect(state.activeId).toBe('B');
     expect(state.openedConversation?.id).toBe('B');
     expect(resolveActiveConversation([first], 'B', state.openedConversation)?.id).toBe('B');
+  });
+
+  it('opens a Direct target from a group tab without waiting for the list row', () => {
+    const person = row('dm-1', 'DIRECT');
+    const fromGroup = {
+      ...createInternalSessionSnapshot('groups'),
+      activeId: 'g1',
+      openedConversation: row('g1'),
+    };
+    const opened = applyInternalOpenTarget(fromGroup, person);
+    expect(opened.activeId).toBe('dm-1');
+    expect(opened.openedConversation?.id).toBe('dm-1');
+    expect(opened.section).toBe('groups');
+    expect(resolveActiveConversation([], 'dm-1', opened.openedConversation)?.id).toBe('dm-1');
+  });
+
+  it('keeps a forward draft when opening the target chat', () => {
+    const person = row('dm-1', 'DIRECT');
+    const next = applyInternalBeginForward(createInternalSessionSnapshot('groups'), person, {
+      conversationId: 'dm-1',
+      sourceMessageIds: ['m1'],
+      senderName: 'Ada',
+      content: 'hello',
+    });
+    expect(next.activeId).toBe('dm-1');
+    expect(next.pendingForward?.senderName).toBe('Ada');
   });
 });

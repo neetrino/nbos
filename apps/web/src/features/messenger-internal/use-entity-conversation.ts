@@ -9,6 +9,8 @@ import {
   applyMessengerRealtimeMessage,
   invalidateMessengerCollections,
   patchConversationFavorite,
+  patchConversationLastMessageSeen,
+  syncConversationListReceipt,
 } from '@/features/messenger/query/messenger-cache';
 import {
   applyMessengerAccessChanged,
@@ -48,6 +50,23 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     if (!conversation.data?.id) return;
     void messengerCoreApi.markRead(conversation.data.id);
   }, [conversation.data?.id]);
+  useEffect(() => {
+    const conversationId = conversation.data?.id;
+    const messages = messagesQuery.data?.items;
+    if (!conversationId || !me?.id || !messages?.length) return;
+    syncConversationListReceipt(queryClient, 'INTERNAL', {
+      conversationId,
+      viewerId: me.id,
+      messages,
+      peerLastReadAt: messagesQuery.data?.meta.peerLastReadAt ?? null,
+    });
+  }, [
+    queryClient,
+    conversation.data?.id,
+    me?.id,
+    messagesQuery.data?.items,
+    messagesQuery.data?.meta.peerLastReadAt,
+  ]);
 
   return buildEntityConversationState({
     canView,
@@ -108,6 +127,12 @@ function useEntityRealtime(
       });
     },
     onPeerRead: (payload) => {
+      patchConversationLastMessageSeen(
+        queryClient,
+        'INTERNAL',
+        payload.conversationId,
+        payload.lastReadAt,
+      );
       void queryClient.invalidateQueries({
         queryKey: messengerQueryKeys.messages(payload.conversationId),
       });

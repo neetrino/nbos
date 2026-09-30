@@ -10,7 +10,6 @@ import {
   INTERNAL_MESSENGER_SECTIONS,
   type InternalMessengerSectionId,
 } from './internal-messenger.constants';
-import { InternalCreateMenu } from './InternalCreateMenu';
 
 const SECTION_LABEL: Record<InternalMessengerSectionId, string> = {
   all: 'All',
@@ -32,13 +31,9 @@ const SECTION_STRIP_CLASS =
 export function InternalMessengerNav({
   section,
   onSectionChange,
-  canEdit = false,
-  onCreateGroup,
 }: {
   section: InternalMessengerSectionId;
   onSectionChange?: (section: InternalMessengerSectionId) => void;
-  canEdit?: boolean;
-  onCreateGroup?: (title: string) => Promise<void>;
 }) {
   const groupRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLElement>());
@@ -68,9 +63,6 @@ export function InternalMessengerNav({
           />
         ))}
       </div>
-      {onCreateGroup ? (
-        <InternalCreateMenu canEdit={canEdit} onCreateGroup={onCreateGroup} />
-      ) : null}
     </nav>
   );
 }

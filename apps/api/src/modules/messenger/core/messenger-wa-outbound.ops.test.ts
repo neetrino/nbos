@@ -33,6 +33,9 @@ function outboundMessage(): MessengerCoreMessageDto {
     attachments: [],
     mentionedEmployeeIds: [],
     references: [],
+    forwardedFrom: null,
+    forwardedContent: null,
+    forwardSourceMessageId: null,
   };
 }
 

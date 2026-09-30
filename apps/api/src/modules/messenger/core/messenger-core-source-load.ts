@@ -8,7 +8,15 @@ type PrismaLike = InstanceType<typeof PrismaClient>;
 export async function loadOrderedSourceMessages(
   prisma: PrismaLike,
   sourceMessageIds: string[],
-): Promise<Array<{ id: string; conversationId: string; content: string; createdAt: Date }>> {
+): Promise<
+  Array<{
+    id: string;
+    conversationId: string;
+    content: string;
+    senderNameSnapshot: string;
+    createdAt: Date;
+  }>
+> {
   const uniqueIds = [...new Set(sourceMessageIds.map((id) => id.trim()).filter(Boolean))];
   if (uniqueIds.length === 0) {
     throw new BadRequestException('Select at least one source message');
@@ -18,10 +26,21 @@ export async function loadOrderedSourceMessages(
   }
   const rows = await prisma.messengerMessage.findMany({
     where: { id: { in: uniqueIds }, deletedAt: null },
-    select: { id: true, conversationId: true, content: true, createdAt: true },
+    select: {
+      id: true,
+      conversationId: true,
+      content: true,
+      senderNameSnapshot: true,
+      createdAt: true,
+    },
   });
   if (rows.length !== uniqueIds.length) {
     throw new NotFoundException('Source message not found');
   }
-  return sortCoreMessagesByCreatedAtId(rows);
+  return sortCoreMessagesByCreatedAtId(
+    rows.map((row) => ({
+      ...row,
+      senderNameSnapshot: row.senderNameSnapshot?.trim() || 'Message',
+    })),
+  );
 }

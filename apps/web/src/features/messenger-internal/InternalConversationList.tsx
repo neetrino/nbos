@@ -10,6 +10,7 @@ import {
   type InternalMessengerSectionId,
 } from './internal-messenger.constants';
 import { InternalConversationRow } from './InternalConversationRow';
+import { InternalCreateMenu } from './InternalCreateMenu';
 
 export function InternalConversationList({
   section,
@@ -22,6 +23,7 @@ export function InternalConversationList({
   onFilterChange,
   onSelect,
   onToggleFavorite,
+  onCreateGroup,
 }: {
   section: InternalMessengerSectionId;
   items: MessengerCoreConversationRow[];
@@ -33,6 +35,7 @@ export function InternalConversationList({
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
   onSelect: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  onCreateGroup?: (title: string) => Promise<void>;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
   const selection = useConversationSelection(listRef, activeId);
@@ -43,6 +46,7 @@ export function InternalConversationList({
         filter={filter}
         onSearchChange={onSearchChange}
         onFilterChange={onFilterChange}
+        createGroup={section === 'groups' ? onCreateGroup : undefined}
       />
       <div ref={listRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-2 pb-6">
         <ConversationSelectionCard rect={selection.rect} ready={selection.ready} />
@@ -73,21 +77,27 @@ function ConversationRows({
   const recent = items.filter((row) => !row.isFavorite);
   return (
     <>
-      {favorites.map((row) => (
+      {favorites.map((row, index) => (
         <InternalConversationRow
           key={row.id}
           row={row}
           active={activeId === row.id}
+          showDivider={rowDividerVisible(
+            row.id,
+            index < favorites.length - 1 ? favorites[index + 1]?.id : undefined,
+            activeId,
+          )}
           onSelect={onSelect}
           onToggleFavorite={onToggleFavorite}
         />
       ))}
-      {favorites.length > 0 && recent.length > 0 ? <RecentLabel /> : null}
-      {recent.map((row) => (
+      {favorites.length > 0 && recent.length > 0 ? <SectionLabel>Recent</SectionLabel> : null}
+      {recent.map((row, index) => (
         <InternalConversationRow
           key={row.id}
           row={row}
           active={activeId === row.id}
+          showDivider={rowDividerVisible(row.id, recent[index + 1]?.id, activeId)}
           onSelect={onSelect}
           onToggleFavorite={onToggleFavorite}
         />
@@ -96,16 +106,28 @@ function ConversationRows({
   );
 }
 
+function rowDividerVisible(
+  rowId: string,
+  nextId: string | undefined,
+  activeId: string | null,
+): boolean {
+  if (!nextId) return false;
+  if (rowId === activeId || nextId === activeId) return false;
+  return true;
+}
+
 function ListSearch({
   search,
   filter,
   onSearchChange,
   onFilterChange,
+  createGroup,
 }: {
   search: string;
   filter: 'all' | 'unread' | 'mentions';
   onSearchChange: (value: string) => void;
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
+  createGroup?: (title: string) => Promise<void>;
 }) {
   return (
     <div className="flex items-center gap-3 p-3">
@@ -121,6 +143,7 @@ function ListSearch({
           className="w-full bg-transparent text-xs text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none"
         />
       </label>
+      {createGroup ? <InternalCreateMenu onCreateGroup={createGroup} /> : null}
       <FilterToggle
         label="Unread"
         pressed={filter === 'unread'}
@@ -183,8 +206,10 @@ function ListStatus({
   );
 }
 
-function RecentLabel() {
+function SectionLabel({ children }: { children: string }) {
   return (
-    <p className="px-2 pt-3 pb-1.5 text-[10px] tracking-[1px] text-[#94a3b8] uppercase">Recent</p>
+    <p className="px-2 pt-3 pb-1.5 text-[10px] tracking-[1px] text-[#94a3b8] uppercase">
+      {children}
+    </p>
   );
 }

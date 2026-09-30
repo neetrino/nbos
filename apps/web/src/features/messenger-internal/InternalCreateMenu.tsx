@@ -1,79 +1,59 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const MENU_ACTION_CLASS =
-  'hover:bg-muted flex w-full rounded-md px-2 py-1.5 text-left text-sm text-foreground';
-
 export function InternalCreateMenu({
-  canEdit,
   onCreateGroup,
+  variant = 'icon',
 }: {
-  canEdit: boolean;
   onCreateGroup: (title: string) => Promise<void>;
+  variant?: 'icon' | 'button';
 }) {
   const [open, setOpen] = useState(false);
-  const [naming, setNaming] = useState(false);
   const [busy, setBusy] = useState(false);
-  if (!canEdit) return null;
-
-  const close = () => {
-    setOpen(false);
-    setNaming(false);
-  };
 
   return (
-    <DropdownMenu
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) setNaming(false);
-      }}
-    >
-      <CreateMenuTrigger />
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <CreateGroupTrigger variant={variant} />
       <DropdownMenuContent align="end" className="w-56">
-        {naming ? (
-          <GroupNameForm
-            busy={busy}
-            onCreate={(title) => {
-              setBusy(true);
-              void onCreateGroup(title).finally(() => {
-                setBusy(false);
-                close();
-              });
-            }}
-          />
-        ) : (
-          <button type="button" className={MENU_ACTION_CLASS} onClick={() => setNaming(true)}>
-            New group
-          </button>
-        )}
+        <GroupNameForm
+          busy={busy}
+          onCreate={(title) => {
+            setBusy(true);
+            void onCreateGroup(title).finally(() => {
+              setBusy(false);
+              setOpen(false);
+            });
+          }}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
-function CreateMenuTrigger() {
+function CreateGroupTrigger({ variant }: { variant: 'icon' | 'button' }) {
   return (
     <DropdownMenuTrigger
       render={(props) => (
-        <Button
+        <button
           {...props}
           type="button"
-          variant="ghost"
-          size="icon-sm"
-          className="shrink-0 text-[#64748b]"
           aria-label="Create group"
+          className={
+            variant === 'button'
+              ? 'inline-flex items-center gap-2 rounded-full bg-[#4f46e5] px-4 py-2 text-sm font-medium text-white hover:bg-[#4338ca]'
+              : 'flex size-9 shrink-0 items-center justify-center rounded-full border border-[#e2e8f0] bg-white text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5]'
+          }
         >
-          <MoreHorizontal className="size-4" aria-hidden />
-        </Button>
+          <Plus size={variant === 'button' ? 16 : 18} aria-hidden />
+          {variant === 'button' ? 'Create group' : null}
+        </button>
       )}
     />
   );

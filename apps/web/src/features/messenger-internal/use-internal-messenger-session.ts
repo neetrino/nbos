@@ -9,11 +9,15 @@ import type {
 } from '@/lib/api/messenger-core';
 import {
   applyInternalActiveId,
+  applyInternalBeginForward,
+  applyInternalOpenTarget,
   applyInternalOpenedConversation,
+  applyInternalPendingForward,
   applyInternalSectionChange,
   createInternalSessionSnapshot,
   type InternalMessengerSessionSnapshot,
 } from './internal-section-navigation';
+import type { PendingForwardDraft } from './pending-forward-draft';
 
 export function useInternalMessengerSession(section: MessengerInternalSection) {
   const [snapshot, setSnapshot] = useState(() => createInternalSessionSnapshot(section));
@@ -64,9 +68,30 @@ function useInternalSessionSetters(
     },
     [setSnapshot],
   );
+  const openTargetConversation = useCallback(
+    (row: MessengerCoreConversationRow) => {
+      setSnapshot((current) => applyInternalOpenTarget(current, row));
+    },
+    [setSnapshot],
+  );
+  const setPendingForward = useCallback(
+    (draft: PendingForwardDraft | null) => {
+      setSnapshot((current) => applyInternalPendingForward(current, draft));
+    },
+    [setSnapshot],
+  );
+  const beginForwardTo = useCallback(
+    (row: MessengerCoreConversationRow, draft: PendingForwardDraft) => {
+      setSnapshot((current) => applyInternalBeginForward(current, row, draft));
+    },
+    [setSnapshot],
+  );
   return {
     setActiveId,
     setOpenedConversation,
+    openTargetConversation,
+    setPendingForward,
+    beginForwardTo,
     setActiveCollectionId,
     setSearch,
     setFilter,

@@ -49,6 +49,10 @@ import type {
 } from './messenger-core.types';
 import { listCoreConversationLinks } from './messenger-core-link.ops';
 import { defaultTaskLinksFromPrimary } from './messenger-core-task-default-links';
+import {
+  pinCoreConversationMessage,
+  unpinCoreConversationMessage,
+} from './messenger-core-pin-message.ops';
 import { MessengerCoreActionsService } from './messenger-core-actions.service';
 import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
 
@@ -127,13 +131,31 @@ export class MessengerCoreInternalService {
     };
   }
 
+  async pinMessage(employeeId: string, conversationId: string, messageId: string) {
+    await this.getConversation(conversationId, employeeId);
+    await this.core.requireWrite(conversationId, employeeId);
+    return pinCoreConversationMessage(this.prisma, conversationId, messageId);
+  }
+
+  async unpinMessage(employeeId: string, conversationId: string) {
+    await this.getConversation(conversationId, employeeId);
+    await this.core.requireWrite(conversationId, employeeId);
+    await unpinCoreConversationMessage(this.prisma, conversationId);
+  }
+
   async forwardMessages(
     employeeId: string,
     targetConversationId: string,
     sourceMessageIds: string[],
+    comment?: string,
   ) {
     await this.getConversation(targetConversationId, employeeId);
-    return this.actions.forwardMessages(employeeId, targetConversationId, sourceMessageIds);
+    return this.actions.forwardMessages(
+      employeeId,
+      targetConversationId,
+      sourceMessageIds,
+      comment,
+    );
   }
 
   async listMessages(

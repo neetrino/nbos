@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SIDEBAR_NAV_ITEM_CLASS } from './sidebar-layout-constants';
+import {
+  SIDEBAR_NAV_ITEM_CLASS,
+  SIDEBAR_CHEVRON_TRANSITION_CLASS,
+} from './sidebar-layout-constants';
 import { isNavChildLink, type NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { useModuleEntryHref } from '@/lib/navigation/hooks/use-module-entry-href';
 import { getFirstChildHref, isNavChildLinkActive } from '@/lib/navigation/nav-route-utils';
@@ -11,6 +14,7 @@ import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
 import { SidebarModuleIcon } from './SidebarModuleIcon';
 import { SidebarNavQuickActionButton } from './SidebarNavQuickActionButton';
 import { SidebarChildNavList } from './sidebar-child-nav-list';
+import { SidebarCollapsePanel } from './SidebarCollapsePanel';
 import { ModuleNavTrigger } from './sidebar-module-nav-trigger';
 import { useMessengerBootstrapPrefetch } from '@/features/messenger/persist/use-messenger-bootstrap-prefetch';
 import { useMessengerOverlayOptional } from '@/features/messenger-internal/messenger-overlay-context';
@@ -154,8 +158,8 @@ function ParentModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-center overflow-hidden rounded-xl transition-colors',
-          isActive ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-muted',
+          'group relative z-[1] flex w-full items-center overflow-hidden rounded-xl transition-colors duration-200',
+          isActive ? 'text-sidebar-foreground' : 'text-sidebar-muted',
         )}
       >
         <ModuleNavTrigger
@@ -186,10 +190,15 @@ function ParentModuleNavRow({
             isActive && 'text-sidebar-foreground',
           )}
         >
-          <ChevronLeft size={14} className={cn('transition-transform', expanded && '-rotate-90')} />
+          <ChevronLeft
+            size={14}
+            className={cn(SIDEBAR_CHEVRON_TRANSITION_CLASS, expanded && '-rotate-90')}
+          />
         </button>
       </div>
-      {expanded ? <SidebarChildNavList item={item} pathname={pathname} /> : null}
+      <SidebarCollapsePanel open={expanded}>
+        <SidebarChildNavList item={item} pathname={pathname} />
+      </SidebarCollapsePanel>
     </li>
   );
 }
@@ -235,9 +244,9 @@ function LeafModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-center overflow-hidden rounded-xl transition-colors',
+          'group relative z-[1] flex w-full items-center overflow-hidden rounded-xl transition-colors duration-200',
           isActive
-            ? 'bg-sidebar-accent text-sidebar-foreground'
+            ? 'text-sidebar-foreground'
             : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
           muted && !isActive && 'opacity-60',
         )}
@@ -261,10 +270,10 @@ function LeafModuleNavRow({
 
 function navLinkClass(active: boolean, collapsed: boolean, muted: boolean): string {
   return cn(
-    'group relative flex items-center gap-2 rounded-xl text-[13px] font-medium transition-colors duration-150',
+    'group relative z-[1] flex items-center gap-2 rounded-xl text-[13px] font-medium transition-colors duration-200',
     SIDEBAR_NAV_ITEM_CLASS,
     active
-      ? 'bg-sidebar-accent text-sidebar-foreground'
+      ? 'text-sidebar-foreground'
       : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
     muted && !active && 'opacity-60',
     collapsed && 'justify-center px-1.5 py-1',

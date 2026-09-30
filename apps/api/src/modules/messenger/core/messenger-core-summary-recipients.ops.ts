@@ -22,7 +22,7 @@ export type ConversationSummaryPublishInput = {
   zone: MessengerWsZone;
   conversationType?: MessengerConversationType;
   senderId: string | null;
-  lastMessageAt: Date;
+  lastMessageAt: Date | string;
   lastMessagePreview: string;
   connectedEmployeeIds: string[];
 };
@@ -194,15 +194,23 @@ function toSummaryRecipient(
     payload: {
       conversationId: input.conversationId,
       zone: input.zone,
-      lastMessageAt: input.lastMessageAt.toISOString(),
+      lastMessageAt: toIsoInstant(input.lastMessageAt),
       lastMessagePreview: input.lastMessagePreview,
       unreadCount: absoluteRecipientUnreadCount({
         employeeId: row.employeeId,
         senderId: input.senderId,
-        lastMessageAt: input.lastMessageAt,
+        lastMessageAt: asDate(input.lastMessageAt),
         lastReadAt: row.lastReadAt,
       }),
       lastReadAt: row.lastReadAt ? row.lastReadAt.toISOString() : null,
     },
   };
+}
+
+function asDate(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value);
+}
+
+function toIsoInstant(value: Date | string): string {
+  return asDate(value).toISOString();
 }

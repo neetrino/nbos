@@ -2,8 +2,10 @@ import type { Socket } from 'socket.io-client';
 import {
   MESSENGER_WS_CLIENT_LEAVE_CONVERSATION,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
+  MESSENGER_WS_CLIENT_TYPING_CONVERSATION,
   MESSENGER_WS_SERVER_CONVERSATION_ACCESS_CHANGED,
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_TYPING,
   MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
   MESSENGER_WS_SERVER_PRESENCE,
@@ -15,6 +17,10 @@ import {
 } from '@nbos/shared';
 import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
 import { isMessengerListReadPayload } from './messenger-realtime-list-read';
+import {
+  parseConversationTyping,
+  type ConversationTypingPeer,
+} from './messenger-conversation-typing';
 import { parseConversationPeerRead, type ConversationPeerRead } from './messenger-peer-read';
 import {
   parsePresenceDelta,
@@ -45,6 +51,8 @@ export type MessengerRealtimeBindRefs = {
   onPresenceSnapshotRef?: { current?: (employeeIds: readonly string[]) => void };
   onPresenceDeltaRef?: { current?: (employeeId: string, state: MessengerPresenceState) => void };
   onPeerReadRef?: { current?: (payload: ConversationPeerRead) => void };
+  onConversationTypingRef?: { current?: (peer: ConversationTypingPeer) => void };
+  meIdRef?: { current?: string };
 };
 
 export function bindMessengerRealtimeSocket(
@@ -71,6 +79,14 @@ export function emitConversationSubscribe(
 ): void {
   if (!socket) return;
   socket.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION, { conversationId });
+}
+
+export function emitConversationTyping(
+  socket: Pick<MessengerRealtimeSocket, 'emit'> | null,
+  conversationId: string,
+): void {
+  if (!socket) return;
+  socket.emit(MESSENGER_WS_CLIENT_TYPING_CONVERSATION, { conversationId });
 }
 
 export function emitConversationLeave(
@@ -128,6 +144,13 @@ function bindCoreRealtimeListeners(
   socket.on(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ, (payload: unknown) => {
     const parsed = parseConversationPeerRead(payload);
     if (parsed) refs.onPeerReadRef?.current?.(parsed);
+  });
+  socket.on(MESSENGER_WS_SERVER_CONVERSATION_TYPING, (payload: unknown) => {
+    const parsed = parseConversationTyping(payload);
+    if (!parsed) return;
+    if (parsed.employeeId === refs.meIdRef?.current) return;
+    if (parsed.conversationId !== refs.conversationIdRef.current) return;
+    refs.onConversationTypingRef?.current?.(parsed);
   });
 }
 

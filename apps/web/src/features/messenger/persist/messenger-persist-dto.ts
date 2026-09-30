@@ -55,6 +55,8 @@ const internalItemSchema = z
     createdAt: isoDate,
     lastMessageAt: isoDate.nullable(),
     lastMessagePreview: z.string().max(MESSENGER_PERSIST_PREVIEW_MAX_CHARS).nullable(),
+    lastMessageMine: z.boolean().optional(),
+    lastMessageSeen: z.boolean().optional(),
     unreadCount: z.number().int().nonnegative().max(1_000_000),
     peerEmployeeId: entityId.nullable(),
     peerName: z.string().max(MESSENGER_PERSIST_TITLE_MAX_CHARS).nullable(),

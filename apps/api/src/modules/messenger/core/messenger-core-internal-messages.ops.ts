@@ -34,7 +34,10 @@ export async function listCoreConversationMessages(
     include: {
       attachments: true,
       mentions: { select: { employeeId: true } },
-      referencesAsTarget: { orderBy: { sortOrder: 'asc' } },
+      referencesAsTarget: {
+        orderBy: { sortOrder: 'asc' },
+        include: { sourceMessage: { select: { senderNameSnapshot: true, content: true } } },
+      },
     },
   });
   const chronological = [...rows].reverse();

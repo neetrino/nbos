@@ -4,6 +4,10 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
 import { MessengerGateway } from '../messenger.gateway';
 import { persistForwardHolderAndReferences } from './messenger-core-forward.ops';
+import {
+  applyOwnCoreMessageSoftDelete,
+  planOwnCoreMessageDelete,
+} from './messenger-core-delete-message.ops';
 import { loadOrderedSourceMessages } from './messenger-core-source-load';
 import { assertForwardTargetZone } from './messenger-core-reference-access';
 import { deleteCoreMessageReference } from './messenger-core-reference.ops';
@@ -100,6 +104,7 @@ export class MessengerCoreActionsService {
     employeeId: string,
     targetConversationId: string,
     sourceMessageIds: string[],
+    comment?: string,
   ) {
     const target = await this.core.requireWrite(targetConversationId, employeeId);
     assertForwardTargetZone(target.facts.zone);
@@ -109,9 +114,22 @@ export class MessengerCoreActionsService {
       targetConversationId,
       senderId: employeeId,
       sourceMessageIds: sources.map((row) => row.id),
+      comment,
     });
-    this.messengerGateway.publishPersistedCoreMessage(result.holder);
+    for (const holder of result.holders) {
+      this.messengerGateway.publishPersistedCoreMessage(holder);
+    }
+    if (result.commentMessage) {
+      this.messengerGateway.publishPersistedCoreMessage(result.commentMessage);
+    }
     return result;
+  }
+
+  async deleteOwnMessages(employeeId: string, messageIds: string[]) {
+    const plan = await planOwnCoreMessageDelete(this.prisma, employeeId, messageIds);
+    await this.core.requireWrite(plan.conversationId, employeeId);
+    await applyOwnCoreMessageSoftDelete(this.prisma, employeeId, plan.deletedIds);
+    return plan;
   }
 
   private async assertReferenceMutationAccess(

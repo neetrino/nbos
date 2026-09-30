@@ -110,6 +110,7 @@ describe('Slice 6 forward', () => {
             id: 'src-1',
             conversationId: 'conv-src',
             content: 'hello world',
+            senderNameSnapshot: 'Ada',
             createdAt: new Date('2026-08-31T10:00:00.000Z'),
           },
         ]),

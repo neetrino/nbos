@@ -1,0 +1,37 @@
+'use client';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { initialsFromDisplayName } from '@/features/messenger/messenger-message-mapper';
+import { useEmployeeAvatarUrl } from './use-employee-avatar';
+
+export function MessengerPersonAvatar({
+  employeeId,
+  label,
+  sizeClassName = 'size-9',
+  fallbackClassName,
+  roundedClassName = 'rounded-full',
+}: {
+  employeeId?: string | null;
+  label: string;
+  sizeClassName?: string;
+  fallbackClassName: string;
+  roundedClassName?: string;
+}) {
+  const photo = useEmployeeAvatarUrl(employeeId);
+  return (
+    <span className={`relative inline-flex shrink-0 ${sizeClassName}`}>
+      <Avatar className={`overflow-hidden ${sizeClassName} ${roundedClassName}`} size="default">
+        {photo ? (
+          <AvatarImage
+            src={photo}
+            alt={label}
+            className="size-full max-h-full max-w-full object-cover"
+          />
+        ) : null}
+        <AvatarFallback className={`${fallbackClassName} text-xs`}>
+          {initialsFromDisplayName(label)}
+        </AvatarFallback>
+      </Avatar>
+    </span>
+  );
+}
