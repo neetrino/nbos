@@ -27,11 +27,17 @@ export function useScrollThreadToEnd(
 ): { showJumpToEnd: boolean; jumpToEnd: () => void } {
   const [showJumpToEnd, setShowJumpToEnd] = useState(false);
   const pinnedRef = useRef(true);
+  const jumpingRef = useRef(false);
   const conversationRef = useRef(conversationId);
 
   const syncJumpVisibility = useCallback((node: HTMLElement) => {
     const pinned = isPinnedToEnd(node);
     pinnedRef.current = pinned;
+    if (jumpingRef.current) {
+      if (pinned) jumpingRef.current = false;
+      setShowJumpToEnd(false);
+      return;
+    }
     setShowJumpToEnd(!pinned);
   }, []);
 
@@ -58,9 +64,10 @@ export function useScrollThreadToEnd(
   const jumpToEnd = useCallback(() => {
     const node = containerRef.current;
     if (!node) return;
+    jumpingRef.current = true;
     pinnedRef.current = true;
-    pinScrollerToEnd(node, true);
     setShowJumpToEnd(false);
+    pinScrollerToEnd(node, true);
   }, [containerRef]);
 
   return { showJumpToEnd, jumpToEnd };
