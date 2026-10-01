@@ -25,7 +25,7 @@ export interface ClientServicesRenewalExpenseResult {
   asOf: string;
   eligibleCount: number;
   skippedExisting: number;
-  created: Array<{ serviceId: string; invoiceId: string; expenseId: string }>;
+  created: Array<{ serviceId: string; invoiceId: string | null; expenseId: string }>;
   failures: Array<{ serviceId: string; message: string }>;
 }
 
@@ -61,7 +61,7 @@ export function buildRenewalExpenseEligibleWhere(
   const expenseWindowEnd = addDays(now, CLIENT_SERVICE_RENEWAL_EXPENSE_WINDOW_DAYS);
   return {
     ...(serviceId ? { id: serviceId } : {}),
-    billingModel: 'WE_PAY',
+    billingModel: 'CLIENT_CHARGE',
     status: { not: 'CANCELLED' },
     renewalDate: { not: null, lte: expenseWindowEnd },
   };

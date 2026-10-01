@@ -22,7 +22,9 @@ import {
 } from '@/components/shared';
 import {
   CLIENT_SERVICE_TYPES,
+  clientServiceBillsClient,
   clientServiceOptionLabel,
+  clientServicePaysProvider,
   getClientServiceStatus,
 } from '@/features/finance/constants/client-services';
 import {
@@ -250,12 +252,17 @@ export function ClientServiceDetailSheet({
 
   const isCancelled = service?.status === 'CANCELLED';
   const readOnly = isCancelled || !canEdit;
-  const canCreateWePayFinance = Boolean(service && !readOnly && service.billingModel === 'WE_PAY');
+  const canCreateInvoiceFinance = Boolean(
+    service && !readOnly && clientServiceBillsClient(service.billingModel),
+  );
+  const canCreateExpenseFinance = Boolean(
+    service && !readOnly && clientServicePaysProvider(service.billingModel),
+  );
   const detailSheetTabs = useMemo(
     () =>
       buildClientServiceDetailSheetTabs({
-        canCreateInvoice: canCreateWePayFinance && canCreateInvoicePermission,
-        canCreateExpense: canCreateWePayFinance && canCreateExpensePermission,
+        canCreateInvoice: canCreateInvoiceFinance && canCreateInvoicePermission,
+        canCreateExpense: canCreateExpenseFinance && canCreateExpensePermission,
         canCreateTask: canCreateTask && !isCancelled,
         onCreateInvoice: () => setInvoiceOpen(true),
         onCreateExpense: () => setExpenseOpen(true),
@@ -269,7 +276,8 @@ export function ClientServiceDetailSheet({
       canCreateExpensePermission,
       canCreateInvoicePermission,
       canCreateTask,
-      canCreateWePayFinance,
+      canCreateExpenseFinance,
+      canCreateInvoiceFinance,
       isCancelled,
       t,
     ],
@@ -419,8 +427,8 @@ export function ClientServiceDetailSheet({
                     saving={saving}
                     readOnly={readOnly}
                     canRunRegistryCheck={canEdit}
-                    canCreateInvoice={canCreateWePayFinance && canCreateInvoicePermission}
-                    canCreateExpense={canCreateWePayFinance && canCreateExpensePermission}
+                    canCreateInvoice={canCreateInvoiceFinance && canCreateInvoicePermission}
+                    canCreateExpense={canCreateExpenseFinance && canCreateExpensePermission}
                     canCreateTask={canCreateTask && !isCancelled}
                     onCreateInvoice={() => setInvoiceOpen(true)}
                     onCreateExpense={() => setExpenseOpen(true)}

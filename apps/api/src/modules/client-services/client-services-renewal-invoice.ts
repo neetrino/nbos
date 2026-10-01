@@ -61,7 +61,7 @@ function parseAsOfOptional(asOf?: string): Date {
   return parsed;
 }
 
-/** Prisma filter for WE_PAY services approaching `renewal_date` (EXP-04 / Finance canon). */
+/** Prisma filter for CLIENT_CHARGE services approaching `renewal_date` (EXP-04 / Finance canon). */
 export function buildRenewalInvoiceEligibleWhere(
   now: Date = new Date(),
   serviceId?: string,
@@ -69,7 +69,7 @@ export function buildRenewalInvoiceEligibleWhere(
   const invoiceWindowEnd = addDays(now, CLIENT_SERVICE_RENEWAL_INVOICE_WINDOW_DAYS);
   return {
     ...(serviceId ? { id: serviceId } : {}),
-    billingModel: 'WE_PAY',
+    billingModel: 'CLIENT_CHARGE',
     status: { not: 'CANCELLED' },
     renewalDate: { not: null, lte: invoiceWindowEnd },
   };
@@ -106,7 +106,7 @@ export function hasInvoiceForRenewalPeriod(
   return false;
 }
 
-/** Daily scheduler: create pass-through Invoice Cards for due WE_PAY client services. */
+/** Daily scheduler: create pass-through Invoice Cards for due CLIENT_CHARGE client services. */
 export async function runClientServicesRenewalInvoices(
   prisma: PrismaLike,
   flows: ClientServiceFlowsService,

@@ -30,7 +30,7 @@ describe('clientServiceToFormState', () => {
       name: 'example.com',
       provider: null,
       status: 'ACTIVE',
-      billingModel: 'WE_PAY',
+      billingModel: 'CLIENT_CHARGE',
       pricingModel: 'FIXED',
       frequency: 'YEARLY',
       ourCost: '12.00',
@@ -75,7 +75,7 @@ describe('clientServiceFormToPayload', () => {
       name: 'example.com',
       provider: null,
       status: 'PENDING',
-      billingModel: 'WE_PAY',
+      billingModel: 'CLIENT_CHARGE',
       pricingModel: 'FIXED',
       frequency: 'YEARLY',
       ourCost: '12',
@@ -119,7 +119,7 @@ describe('clientServiceFormToPayload', () => {
       clientServiceFormToPayload({
         ...withProduct,
         connectionMode: 'CLIENT_DNS',
-        billingModel: 'WE_PAY',
+        billingModel: 'CLIENT_CHARGE',
       }).billingModel,
     ).toBe('REMINDER_ONLY');
   });

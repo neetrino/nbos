@@ -9,6 +9,10 @@ import {
   getClientServiceExpenseFormDefaults,
   getClientServiceInvoiceFormDefaults,
 } from '@/features/finance/constants/client-service-create-defaults';
+import {
+  clientServiceBillsClient,
+  clientServicePaysProvider,
+} from '@/features/finance/constants/client-services';
 import { clientServicesApi, type ClientServiceRecord } from '@/lib/api/client-services';
 import { expensesApi } from '@/lib/api/finance';
 import { useClientServicesT } from './client-service-message-keys';
@@ -74,20 +78,23 @@ export function ClientServiceCreateDialogs({
     onExpenseCreated();
   }, [onExpenseCreated, t]);
 
-  if (service.billingModel !== 'WE_PAY') return null;
+  if (!clientServicePaysProvider(service.billingModel)) return null;
+  const billsClient = clientServiceBillsClient(service.billingModel);
 
   return (
     <>
-      <CreateInvoiceDialog
-        open={invoiceOpen}
-        onOpenChange={onInvoiceOpenChange}
-        defaultForm={invoiceDefaultForm}
-        clientServiceContext={clientServiceContext}
-        hiddenContext={{ productId: service.productId }}
-        submitOverride={submitInvoice}
-        forceNestedBackdrop
-        onCreated={handleInvoiceCreated}
-      />
+      {billsClient ? (
+        <CreateInvoiceDialog
+          open={invoiceOpen}
+          onOpenChange={onInvoiceOpenChange}
+          defaultForm={invoiceDefaultForm}
+          clientServiceContext={clientServiceContext}
+          hiddenContext={{ productId: service.productId }}
+          submitOverride={submitInvoice}
+          forceNestedBackdrop
+          onCreated={handleInvoiceCreated}
+        />
+      ) : null}
 
       <CreateExpenseDialog
         open={expenseOpen}

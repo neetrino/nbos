@@ -38,11 +38,13 @@ const STATUS_SHORT_KEYS = {
 } as const;
 
 const BILLING_KEYS = {
+  CLIENT_CHARGE: 'billing.CLIENT_CHARGE',
   WE_PAY: 'billing.WE_PAY',
   REMINDER_ONLY: 'billing.REMINDER_ONLY',
 } as const;
 
 const BILLING_SHORT_KEYS = {
+  CLIENT_CHARGE: 'billingShort.CLIENT_CHARGE',
   WE_PAY: 'billingShort.WE_PAY',
   REMINDER_ONLY: 'billingShort.REMINDER_ONLY',
 } as const;

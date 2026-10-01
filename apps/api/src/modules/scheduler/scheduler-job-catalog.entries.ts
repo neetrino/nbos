@@ -200,7 +200,7 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
   platformCronEntry({
     jobName: SCHEDULER_JOB_NAMES.clientServicesRenewalInvoice,
     title: 'Client Services renewal invoices',
-    description: 'Creates Invoice Cards for WE_PAY renewals within 60 days daily at 06:00.',
+    description: 'Creates Invoice Cards for Client Charge renewals within 60 days daily at 06:00.',
     ownerModule: 'Client Services',
     group: SCHEDULER_JOB_GROUP.money,
     defaultExpression: CLIENT_SERVICES_RENEWAL_INVOICE_DEFAULT_CRON,
@@ -213,7 +213,7 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
     jobName: SCHEDULER_JOB_NAMES.clientServicesRenewalExpense,
     title: 'Client Services renewal expenses',
     description:
-      'Creates WE_PAY renewal Expense cards at Invoice Paid or D−30 daily at 06:15. Does not create Expense at D−60 invoice issue.',
+      'Creates Client Charge renewal Expense cards at Invoice Paid or D−30, and We Pay Expense cards at D−30 with no invoice, daily at 06:15.',
     ownerModule: 'Client Services',
     group: SCHEDULER_JOB_GROUP.money,
     defaultExpression: CLIENT_SERVICES_RENEWAL_EXPENSE_DEFAULT_CRON,

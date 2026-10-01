@@ -67,11 +67,11 @@ describe('hasInvoiceForRenewalPeriod', () => {
 });
 
 describe('buildRenewalInvoiceEligibleWhere', () => {
-  it('targets WE_PAY services within the renewal window', () => {
+  it('targets CLIENT_CHARGE services within the renewal window', () => {
     const where = buildRenewalInvoiceEligibleWhere(AS_OF);
     expect(where).toEqual(
       expect.objectContaining({
-        billingModel: 'WE_PAY',
+        billingModel: 'CLIENT_CHARGE',
         status: { not: 'CANCELLED' },
         renewalDate: expect.objectContaining({ not: null }),
       }),
@@ -90,7 +90,7 @@ describe('runClientServicesRenewalInvoices', () => {
     flows = { createInvoice: vi.fn().mockResolvedValue({ id: 'inv-new' }) };
   });
 
-  it('creates invoice for eligible WE_PAY service without existing renewal invoice', async () => {
+  it('creates invoice for eligible CLIENT_CHARGE service without existing renewal invoice', async () => {
     prisma.clientServiceRecord.findMany.mockResolvedValue([buildEligibleService({ invoices: [] })]);
 
     const result = await runClientServicesRenewalInvoices(
@@ -237,7 +237,7 @@ describe('runClientServicesRenewalInvoices createInvoice errors', () => {
   it('surfaces BadRequestException as failure row', async () => {
     const prisma = createMockPrisma();
     const flows = {
-      createInvoice: vi.fn().mockRejectedValue(new BadRequestException('Only we-pay')),
+      createInvoice: vi.fn().mockRejectedValue(new BadRequestException('Only Client Charge')),
     };
     prisma.clientServiceRecord.findMany.mockResolvedValue([
       {

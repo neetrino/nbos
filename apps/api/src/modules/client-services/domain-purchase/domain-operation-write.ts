@@ -44,7 +44,7 @@ async function persistDomainServiceInTx(
       provider: params.domain.provider?.trim() || null,
       providerAccountId,
       status: 'PENDING',
-      billingModel: params.connectionMode === 'CLIENT_DNS' ? 'REMINDER_ONLY' : 'WE_PAY',
+      billingModel: params.connectionMode === 'CLIENT_DNS' ? 'REMINDER_ONLY' : 'CLIENT_CHARGE',
       connectionMode: params.connectionMode,
       dnsInstructions: params.dnsInstructions,
       encryptedRegistrantData: params.encryptedRegistrantData,

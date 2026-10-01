@@ -20,7 +20,7 @@ describe('buildClientServiceExpensePayload', () => {
       type: 'HOSTING',
       name: 'VPS',
       projectId: 'proj-1',
-      billingModel: 'WE_PAY',
+      billingModel: 'CLIENT_CHARGE',
       taxStatus: 'TAX',
     } as ClientServiceRecord;
 

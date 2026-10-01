@@ -27,7 +27,7 @@ describe('ClientServicesService', () => {
         name: 'Client domain',
         ourCost: new Decimal('12'),
         clientCharge: new Decimal('20'),
-        billingModel: 'WE_PAY',
+        billingModel: 'CLIENT_CHARGE',
         renewalDate: null,
         invoices: [],
         expenses: [],
@@ -97,7 +97,7 @@ describe('ClientServicesService', () => {
     expect(prisma.clientServiceRecord.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          billingModel: 'WE_PAY',
+          billingModel: 'CLIENT_CHARGE',
           pricingModel: 'FIXED',
           frequency: 'YEARLY',
         }),
