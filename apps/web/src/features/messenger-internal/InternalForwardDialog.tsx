@@ -64,9 +64,9 @@ function ForwardDialogBody({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="flex max-h-[min(32rem,80vh)] w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-[0_16px_48px_rgba(15,23,42,0.22)]">
+      <div className="bg-card text-card-foreground flex max-h-[min(32rem,80vh)] w-full max-w-sm flex-col overflow-hidden rounded-2xl shadow-[var(--shadow-panel)]">
         <header className="shrink-0 border-b border-[#e2e8f0] px-4 pt-4 pb-3">
-          <h3 className="text-base font-semibold text-[#0f172a]">Forward</h3>
+          <h3 className="text-foreground text-base font-semibold">Forward</h3>
           <ForwardSearch query={query} onQuery={setQuery} />
           {error ? <p className="mt-2 text-xs text-[#dc2626]">{error}</p> : null}
         </header>
@@ -75,7 +75,7 @@ function ForwardDialogBody({
           <button
             type="button"
             onClick={onClose}
-            className="ml-auto block rounded-lg px-3 py-1.5 text-sm text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground ml-auto block rounded-lg px-3 py-1.5 text-sm"
           >
             Cancel
           </button>
@@ -93,7 +93,7 @@ function ForwardSearch({ query, onQuery }: { query: string; onQuery: (value: str
         value={query}
         onChange={(event) => onQuery(event.target.value)}
         placeholder="Search"
-        className="min-w-0 flex-1 bg-transparent text-sm text-[#0f172a] outline-none placeholder:text-[#94a3b8]"
+        className="text-foreground placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
       />
     </label>
   );
@@ -149,7 +149,7 @@ function ForwardTargetRow({
     <button
       type="button"
       disabled={busy}
-      className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-[#f8fafc] disabled:opacity-40"
+      className="hover:bg-muted flex w-full items-center gap-3 px-4 py-2.5 text-left disabled:opacity-40"
       onClick={() => onPick(row.id)}
     >
       <MessengerPersonAvatar
@@ -160,7 +160,7 @@ function ForwardTargetRow({
         roundedClassName={direct ? 'rounded-full' : 'rounded-xl'}
       />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-[#0f172a]">{title}</span>
+        <span className="text-foreground block truncate text-sm font-medium">{title}</span>
         <span className="block truncate text-xs text-[#64748b]">
           {row.lastMessagePreview?.trim() || (direct ? 'Direct message' : 'Group')}
         </span>

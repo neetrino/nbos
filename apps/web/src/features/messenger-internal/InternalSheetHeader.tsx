@@ -26,7 +26,7 @@ export function SheetThreadHeader({
   onAddToCollection: (collectionId: string) => void;
 }) {
   return (
-    <header className="flex h-12 items-center justify-between border-b border-[#f1f5f9] bg-white px-4">
+    <header className="border-border bg-card flex h-12 items-center justify-between border-b px-4">
       <HeaderIdentity
         conversation={conversation}
         title={title}
@@ -52,7 +52,7 @@ function HeaderIdentity({
       <ThreadAvatar title={title} direct={direct} employeeId={conversation.peerEmployeeId} />
       <div className="flex min-w-0 flex-col">
         <div className="flex min-w-0 items-center gap-1.5">
-          <h2 className="truncate text-sm leading-5 font-medium text-[#0f172a]">{title}</h2>
+          <h2 className="text-foreground truncate text-sm leading-5 font-medium">{title}</h2>
           <span className="shrink-0 rounded-full border border-[#c7d2fe] bg-[#eef2ff] px-1.5 py-px text-[10px] leading-[15px] text-[#4338ca]">
             {headerPill(conversation)}
           </span>
@@ -90,7 +90,7 @@ function SheetHeaderActions({
 function HeaderIconButton({ label, src }: { label: string; src: string }) {
   return (
     <button type="button" aria-label={label} className={HEADER_ICON_BUTTON_CLASS}>
-      <img src={src} alt="" />
+      <img src={src} alt="" className="dark:brightness-0 dark:invert" />
     </button>
   );
 }
@@ -108,7 +108,11 @@ function HeaderMore({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger aria-label="More" className={HEADER_ICON_BUTTON_CLASS}>
-        <img src="/messenger/sheet-header-more.svg" alt="" />
+        <img
+          src="/messenger/sheet-header-more.svg"
+          alt=""
+          className="dark:brightness-0 dark:invert"
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 p-2">
         <AddToCollectionSelect collections={collections} onAdd={onAdd} />

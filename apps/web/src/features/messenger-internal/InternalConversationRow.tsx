@@ -30,9 +30,9 @@ export function InternalConversationRow({
       data-conversation-id={row.id}
       className={`group relative z-10 flex items-stretch rounded-[17px] px-2 py-2.5 ${
         showDivider
-          ? 'after:absolute after:right-2 after:bottom-0 after:left-[3.75rem] after:h-px after:bg-[#e2e8f0]/70'
+          ? 'after:bg-border/70 after:absolute after:right-2 after:bottom-0 after:left-[3.75rem] after:h-px'
           : ''
-      } ${active ? '' : 'hover:bg-white/80'}`}
+      } ${active ? '' : 'hover:bg-card/80 dark:hover:bg-white/5'}`}
     >
       <button
         type="button"
@@ -89,7 +89,7 @@ function ConversationBody({
     <span className="min-w-0 flex-1">
       <span
         className={`block truncate text-xs ${
-          active ? 'font-semibold text-[#312e81]' : 'font-medium text-[#0f172a]'
+          active ? 'text-primary font-semibold' : 'text-foreground font-medium'
         }`}
       >
         {title}
@@ -98,7 +98,7 @@ function ConversationBody({
       <span className="mt-1.5 inline-flex">
         <span
           className={`rounded-full px-2 py-0.5 text-[10px] ${
-            active ? 'bg-[#c7d2fe]/80 text-[#3730a3]' : 'bg-[#f1f5f9] text-[#0f172a]'
+            active ? 'bg-primary/15 text-primary' : 'bg-muted text-foreground'
           }`}
         >
           {conversationTypeBadge(row.type)}
@@ -123,7 +123,9 @@ function ConversationMeta({
   return (
     <span className="ml-2 flex shrink-0 flex-col items-end justify-between self-stretch">
       <span className="flex items-center gap-1">
-        {stamp ? <span className="text-[11px] leading-none text-[#64748b]">{stamp}</span> : null}
+        {stamp ? (
+          <span className="text-muted-foreground text-[11px] leading-none">{stamp}</span>
+        ) : null}
         {showChecks ? (
           <CheckCheck
             size={14}
@@ -152,7 +154,7 @@ function ConversationPreview({
   if (!preview || preview.toLowerCase() === typeLabel.toLowerCase()) return null;
   return (
     <span
-      className={`mt-0.5 block truncate text-xs ${active ? 'text-[#4338ca]/80' : 'text-[#64748b]'}`}
+      className={`mt-0.5 block truncate text-xs ${active ? 'text-primary/80' : 'text-muted-foreground'}`}
     >
       {preview}
     </span>

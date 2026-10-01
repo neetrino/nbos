@@ -63,9 +63,9 @@ function ComposerRow({
       <button
         type="button"
         aria-label="Attach file"
-        className={`${ROUND_BUTTON} border border-[#e2e8f0] bg-white`}
+        className={`${ROUND_BUTTON} border-border bg-card border`}
       >
-        <img src={CLIP_ICON} alt="" />
+        <img src={CLIP_ICON} alt="" className="dark:brightness-0 dark:invert" />
       </button>
       <MessageField
         value={value}
@@ -122,7 +122,7 @@ function MessageField({
         disabled={disabled}
         className={SHEET_COMPOSER_TEXTAREA_CLASS}
       />
-      <img src={STICKER_ICON} alt="" />
+      <img src={STICKER_ICON} alt="" className="dark:brightness-0 dark:invert" />
     </div>
   );
 }
