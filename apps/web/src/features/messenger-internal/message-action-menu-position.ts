@@ -1,4 +1,5 @@
 import {
+  MESSAGE_ACTION_MENU_GAP_PX,
   MESSAGE_ACTION_MENU_HEIGHT_PX,
   MESSAGE_ACTION_MENU_VIEW_PAD_PX,
   MESSAGE_ACTION_MENU_WIDTH_PX,
@@ -14,8 +15,11 @@ export function pointForMessageActionMenu(row: HTMLElement): {
   const rect = (bubble instanceof HTMLElement ? bubble : row).getBoundingClientRect();
   const maxX = window.innerWidth - MESSAGE_ACTION_MENU_WIDTH_PX - MESSAGE_ACTION_MENU_VIEW_PAD_PX;
   const floor = window.innerHeight - MESSAGE_ACTION_MENU_VIEW_PAD_PX;
-  const opensUp = rect.top + MESSAGE_ACTION_MENU_HEIGHT_PX > floor;
-  const rawY = opensUp ? rect.bottom - MESSAGE_ACTION_MENU_HEIGHT_PX : rect.top;
+  const below = rect.bottom + MESSAGE_ACTION_MENU_GAP_PX;
+  const opensUp = below + MESSAGE_ACTION_MENU_HEIGHT_PX > floor;
+  const rawY = opensUp
+    ? rect.top - MESSAGE_ACTION_MENU_HEIGHT_PX - MESSAGE_ACTION_MENU_GAP_PX
+    : below;
   return {
     x: clamp(rect.left, MESSAGE_ACTION_MENU_VIEW_PAD_PX, maxX),
     y: clamp(rawY, MESSAGE_ACTION_MENU_VIEW_PAD_PX, floor - MESSAGE_ACTION_MENU_HEIGHT_PX),
