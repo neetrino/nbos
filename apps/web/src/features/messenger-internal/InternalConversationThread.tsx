@@ -28,6 +28,7 @@ import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadPa
 import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useInternalThreadActions } from './use-internal-thread-actions';
 import { composerQuoteFromForward, type PendingForwardDraft } from './pending-forward-draft';
+import { useSheetMessengerPalette } from './sheet-messenger-palette';
 import { useScrollThreadToEnd } from './use-scroll-thread-to-end';
 
 function quoteForThreadRow(
@@ -204,12 +205,13 @@ function ThreadScaffold(props: {
     : actions.replyTo
       ? { senderName: actions.replyTo.senderName, content: actions.replyTo.content }
       : null;
+  const palette = useSheetMessengerPalette();
   const queryClient = useQueryClient();
   const selectedId = actions.selectedIds[0];
   const pinned = conversation.pinnedMessage ?? null;
   const canWrite = Boolean(conversation.canWrite);
   return (
-    <section className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#eef2ff]">
+    <section className={`relative flex min-h-0 min-w-0 flex-1 flex-col ${palette.canvas}`}>
       <ThreadHeader
         conversation={conversation}
         title={conversationListTitle(

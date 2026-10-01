@@ -120,12 +120,12 @@ export function TaskSheetChatPanel({
   };
 
   const titleBlock = (
-    <header className="flex h-12 w-full items-center justify-between bg-white px-4">
+    <header className="bg-card flex h-12 w-full items-center justify-between px-4">
       <div className="flex min-w-0 items-center gap-2">
         <ThreadAvatar title={task.title} direct={false} />
         <div className="flex min-w-0 items-center gap-1.5">
-          <h2 className="truncate text-sm leading-5 font-medium text-[#0f172a]">{task.title}</h2>
-          <span className="shrink-0 rounded-full border border-[#c7d2fe] bg-[#eef2ff] px-1.5 py-px text-[10px] leading-[15px] text-[#4338ca]">
+          <h2 className="text-foreground truncate text-sm leading-5 font-medium">{task.title}</h2>
+          <span className="border-primary/30 bg-primary/10 text-primary shrink-0 rounded-full border px-1.5 py-px text-[10px] leading-[15px]">
             Task
           </span>
         </div>
@@ -146,8 +146,8 @@ export function TaskSheetChatPanel({
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col bg-[#eef2ff]">
-      <div className="border-b border-[#f1f5f9]">{titleBlock}</div>
+    <div className="dark:bg-background relative flex min-h-0 flex-1 flex-col bg-[#eef2ff]">
+      <div className="border-border border-b">{titleBlock}</div>
 
       <div className="min-h-0 flex-1 overflow-y-auto py-4">
         {rows.map((row) => {
