@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Building2, FolderKanban } from 'lucide-react';
 import {
@@ -67,6 +68,16 @@ export function DealInfoProjectBillingFields({
   );
 }
 
+function useClearMaintenanceSubscriptionTerm(
+  draft: DealGeneralDraft,
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void,
+): void {
+  useEffect(() => {
+    if (draft.type !== 'MAINTENANCE' || draft.subscriptionTermMonths == null) return;
+    patchDraft({ subscriptionTermMonths: null });
+  }, [draft.type, draft.subscriptionTermMonths, patchDraft]);
+}
+
 function DealInfoCommercialFields({
   draft,
   patchDraft,
@@ -75,6 +86,7 @@ function DealInfoCommercialFields({
 }: Omit<DealInfoProjectBillingFieldsProps, 'searchProjects' | 'searchCompanies'>) {
   const t = useTranslations('crm');
   const showSubscriptionTerm = showDealSubscriptionTermFields(draft);
+  useClearMaintenanceSubscriptionTerm(draft, patchDraft);
 
   return (
     <>

@@ -76,6 +76,21 @@ describe('buildDealTypeChangePatch', () => {
     });
   });
 
+  it('clears subscription term when switching to MAINTENANCE', () => {
+    const draft: DealGeneralDraft = {
+      ...baseDraft,
+      paymentType: 'SUBSCRIPTION',
+      subscriptionTermMonths: 12,
+    };
+    expect(buildDealTypeChangePatch(draft, 'MAINTENANCE')).toEqual({
+      type: 'MAINTENANCE',
+      productCategory: null,
+      productType: null,
+      productPlatform: null,
+      subscriptionTermMonths: null,
+    });
+  });
+
   it('clears outsourceGoesToDelivery when leaving OUTSOURCE', () => {
     const draft: DealGeneralDraft = {
       ...baseDraft,
