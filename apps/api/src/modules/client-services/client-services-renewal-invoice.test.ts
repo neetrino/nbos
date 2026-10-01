@@ -256,6 +256,6 @@ describe('runClientServicesRenewalInvoices createInvoice errors', () => {
       flows as never as ClientServiceFlowsService,
     );
 
-    expect(result.failures[0]?.message).toContain('we-pay');
+    expect(result.failures[0]?.message).toContain('Only Client Charge');
   });
 });
