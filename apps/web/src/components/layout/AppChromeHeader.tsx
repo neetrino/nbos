@@ -25,6 +25,7 @@ interface AppChromeHeaderProps {
   moduleTitle: string | null;
   isMobileViewport: boolean;
   showQuickNote: boolean;
+  alignAccountWithRail: boolean;
   me: MeResponse | null | undefined;
 }
 
@@ -32,6 +33,7 @@ export function AppChromeHeader({
   moduleTitle,
   isMobileViewport,
   showQuickNote,
+  alignAccountWithRail,
   me,
 }: AppChromeHeaderProps) {
   const pathname = usePathname();
@@ -56,6 +58,7 @@ export function AppChromeHeader({
         moduleTitle={displayModuleTitle}
         isMobileViewport={isMobileViewport}
         showQuickNote={showQuickNote}
+        alignAccountWithRail={alignAccountWithRail}
         showMobileEntityHeader={showMobileEntityHeader}
         showModuleTitle={showModuleTitle}
         moduleKey={moduleKey}
@@ -71,6 +74,7 @@ function AppChromeHeaderPrimaryRow({
   moduleTitle,
   isMobileViewport,
   showQuickNote,
+  alignAccountWithRail,
   showMobileEntityHeader,
   showModuleTitle,
   moduleKey,
@@ -80,6 +84,7 @@ function AppChromeHeaderPrimaryRow({
   moduleTitle: string | null;
   isMobileViewport: boolean;
   showQuickNote: boolean;
+  alignAccountWithRail: boolean;
   showMobileEntityHeader: boolean;
   showModuleTitle: boolean;
   moduleKey: ReturnType<typeof resolveSidebarModuleKeyFromPathname>;
@@ -95,8 +100,10 @@ function AppChromeHeaderPrimaryRow({
           <HeaderQuickNote />
         </div>
       ) : null}
-      <NotificationDropdown />
-      <AccountMenuDropdown me={me} />
+      <span className={alignAccountWithRail ? '-mr-1.5' : undefined}>
+        <NotificationDropdown />
+      </span>
+      {alignAccountWithRail ? null : <AccountMenuDropdown me={me} />}
     </>
   );
 
@@ -114,7 +121,12 @@ function AppChromeHeaderPrimaryRow({
   }
 
   return (
-    <div className="flex h-16 min-w-0 items-stretch gap-3 px-3 max-md:h-14 sm:gap-4 sm:px-4">
+    <div
+      className={cn(
+        'flex h-16 min-w-0 items-stretch gap-3 px-3 max-md:h-14 sm:gap-4 sm:px-4',
+        alignAccountWithRail && 'pr-0 sm:pr-0',
+      )}
+    >
       <div className="flex min-w-0 flex-1 items-stretch">
         {showModuleTitle && moduleTitle ? (
           <div
@@ -140,8 +152,20 @@ function AppChromeHeaderPrimaryRow({
           </div>
         ) : null}
       </div>
-      <div className="ml-auto flex shrink-0 items-center gap-1.5 self-center overflow-visible sm:gap-3">
-        {trailing}
+      <div className="ml-auto flex shrink-0 items-center self-center overflow-visible">
+        <div
+          className={cn(
+            'flex items-center gap-1.5',
+            alignAccountWithRail ? 'sm:gap-1.5' : 'sm:gap-3',
+          )}
+        >
+          {trailing}
+        </div>
+        {alignAccountWithRail ? (
+          <div className="flex w-16 shrink-0 items-center justify-center">
+            <AccountMenuDropdown me={me} placement="rail" />
+          </div>
+        ) : null}
       </div>
     </div>
   );

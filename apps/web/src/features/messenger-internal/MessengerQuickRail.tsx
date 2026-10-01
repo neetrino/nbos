@@ -42,33 +42,35 @@ export function MessengerQuickRail({
   return (
     <aside
       aria-label="Employees"
-      className={`border-sidebar-border bg-sidebar hidden h-full w-16 shrink-0 flex-col items-center gap-2.5 overflow-y-auto border-l pt-3 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex [&::-webkit-scrollbar]:hidden ${className}`}
+      className={`border-sidebar-border bg-sidebar hidden h-full min-h-0 w-16 shrink-0 flex-col border-l lg:flex ${className}`}
     >
-      {hasShortcuts
-        ? shortcuts!.map((shortcut) => <RailShortcut key={shortcut.id} shortcut={shortcut} />)
-        : null}
-      {hasShortcuts && hasPeople ? <RailDivider /> : null}
-      {pinned.length > 0 ? (
-        <>
-          {pinned.map((person) => (
-            <QuickAvatar
-              key={person.id}
-              person={person}
-              active={person.id === activePersonId}
-              onSelect={() => onSelect(person.id)}
-            />
-          ))}
-          {rest.length > 0 ? <RailDivider /> : null}
-        </>
-      ) : null}
-      {rest.map((person) => (
-        <QuickAvatar
-          key={person.id}
-          person={person}
-          active={person.id === activePersonId}
-          onSelect={() => onSelect(person.id)}
-        />
-      ))}
+      <div className="mt-auto flex min-h-0 w-full flex-col items-center gap-2.5 overflow-y-auto px-0 py-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {hasShortcuts
+          ? shortcuts!.map((shortcut) => <RailShortcut key={shortcut.id} shortcut={shortcut} />)
+          : null}
+        {hasShortcuts && hasPeople ? <RailDivider /> : null}
+        {pinned.length > 0 ? (
+          <>
+            {pinned.map((person) => (
+              <QuickAvatar
+                key={person.id}
+                person={person}
+                active={person.id === activePersonId}
+                onSelect={() => onSelect(person.id)}
+              />
+            ))}
+            {rest.length > 0 ? <RailDivider /> : null}
+          </>
+        ) : null}
+        {rest.map((person) => (
+          <QuickAvatar
+            key={person.id}
+            person={person}
+            active={person.id === activePersonId}
+            onSelect={() => onSelect(person.id)}
+          />
+        ))}
+      </div>
     </aside>
   );
 }
