@@ -163,7 +163,8 @@ export const SCHEDULER_PLATFORM_CRON_CATALOG: readonly SchedulerJobCatalogEntry[
   platformCronEntry({
     jobName: SCHEDULER_JOB_NAMES.expensePlanAutoDue,
     title: 'Expense plan auto-due',
-    description: 'Creates expense cards from due plans daily at 02:00.',
+    description:
+      'Creates expense cards for the current Yerevan month, including overdue dates, daily at 02:00.',
     ownerModule: 'Finance',
     group: SCHEDULER_JOB_GROUP.tasksAndPlans,
     defaultExpression: EXPENSE_PLAN_AUTO_DUE_DEFAULT_CRON,
