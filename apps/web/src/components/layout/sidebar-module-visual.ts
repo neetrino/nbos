@@ -84,11 +84,11 @@ export const SIDEBAR_MODULE_VISUALS: Record<SidebarModuleKey, SidebarModuleVisua
   },
   messenger: {
     Icon: MessagesSquare,
-    iconClass: 'text-purple-600 dark:text-purple-400',
+    iconClass: 'text-purple-600 dark:text-purple-300',
   },
   'client-messenger': {
     Icon: MessageCircle,
-    iconClass: 'text-teal-800 dark:text-teal-300',
+    iconClass: 'text-teal-800 dark:text-emerald-400',
   },
   calls: {
     Icon: Phone,

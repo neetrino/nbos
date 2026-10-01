@@ -80,8 +80,8 @@ function RailShortcut({ shortcut }: { shortcut: MessengerQuickRailShortcut }) {
   const unread = shortcut.unreadCount;
   const tone =
     shortcut.id === 'client-messenger'
-      ? 'bg-teal-800/10 hover:bg-teal-800/15'
-      : 'bg-purple-600/10 hover:bg-purple-600/15';
+      ? 'bg-emerald-500/25 hover:bg-emerald-500/35'
+      : 'bg-purple-500/25 hover:bg-purple-500/35';
   return (
     <button
       type="button"
