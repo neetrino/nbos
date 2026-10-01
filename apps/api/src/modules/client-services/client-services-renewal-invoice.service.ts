@@ -17,7 +17,7 @@ export class ClientServicesRenewalInvoiceService {
     private readonly domainRegistry: DomainRegistryService,
   ) {}
 
-  /** Idempotent daily pass: Invoice Cards for WE_PAY services within the renewal window. */
+  /** Idempotent daily pass: Invoice Cards for CLIENT_CHARGE services within the renewal window. */
   async runDueRenewalInvoices(
     params?: ClientServicesRenewalInvoiceParams,
   ): Promise<ClientServicesRenewalInvoiceResult> {

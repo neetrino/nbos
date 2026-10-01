@@ -2,6 +2,8 @@
 
 **Delivery Compensation v2, 2026-09-18/19:** для новых Product/Extension delivery-бонус считается каталогом функций и конфигуратором, не developer pool 70/30 и не Bonus-вкладкой Delivery. Канон: [11-Delivery-Compensation-Configurator.md](03-Business-Logic/11-Delivery-Compensation-Configurator.md). Сверка: [06-CANON-RECONCILIATION.md](../implementation/delivery-compensation/06-CANON-RECONCILIATION.md). Реализация не начата.
 
+**Client Services billing, 2026-10-01:** три модели. `CLIENT_CHARGE` (Client Charge) — счёт клиенту, расход после оплаты или за 30 дней. `WE_PAY` (We Pay) — счёта нет, расход за 30 дней, платит компания. `REMINDER_ONLY` (Remember Only) — ни счёта, ни расхода. Существующие строки `WE_PAY` переименовываются в `CLIENT_CHARGE`, затем новое значение `WE_PAY` означает оплату компании.
+
 **Client Services / Domains, 2026-09-17:** [обязательное целевое решение](02-Modules/04-Finance/08-Domain-Purchase-and-Connection.md). Старт из Product/Delivery или Invoice Board / Deal «Домен»; карточка Client Service не форма запуска. Новая покупка с суммой сразу создаёт Invoice и Expense; продление — Invoice на D−60 и Expense на первое из Paid или D−30. DNS-gate = выполненная prep Task. `Product.sellerId` пишется явно, Deal.seller не меняется. Без workflow engine, RegistrantProfile и many-to-many Invoice–Service. [План](../implementation/CLIENT-SERVICES-IMPLEMENTATION-PLAN.md).
 
 **Cross-module i18n, 2026-09-12:** утверждён next-intl без изменения URL, персональная Employee.interfaceLocale и поэтапный EN/RU → HY. Реализация ещё не начата. Обязательный [канон локализации](01-Platform-Overview/07-Interface-Localization.md).

@@ -283,7 +283,7 @@ At least one must exist:
 `MAINTENANCE`
 
 - maintenance scope
-- billing model
+- billing model (`paymentType` is always `SUBSCRIPTION`; the Classic/Subscription control is not shown)
 - planned start date or service start logic
 - linked project
 - linked product

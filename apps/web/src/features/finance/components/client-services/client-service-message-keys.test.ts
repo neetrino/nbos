@@ -32,7 +32,11 @@ describe('client-service message catalogs', () => {
       'EXPIRED',
       'CANCELLED',
     ]);
-    expect(Object.keys(CLIENT_SERVICE_BILLING_MESSAGE_KEYS)).toEqual(['WE_PAY', 'REMINDER_ONLY']);
+    expect(Object.keys(CLIENT_SERVICE_BILLING_MESSAGE_KEYS)).toEqual([
+      'CLIENT_CHARGE',
+      'WE_PAY',
+      'REMINDER_ONLY',
+    ]);
     expect(Object.keys(CLIENT_SERVICE_FREQUENCY_MESSAGE_KEYS)).toEqual([
       'ONE_TIME',
       'MONTHLY',

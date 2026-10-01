@@ -29,7 +29,7 @@ describe('ClientServiceFlowsService', () => {
 
   it('creates linked invoice for we-pay service', async () => {
     prisma.clientServiceRecord.findUnique.mockResolvedValue(
-      buildService({ billingModel: 'WE_PAY', productId: 'prod-1' }),
+      buildService({ billingModel: 'CLIENT_CHARGE', productId: 'prod-1' }),
     );
 
     await service.createInvoice('svc-1', {});
@@ -46,11 +46,37 @@ describe('ClientServiceFlowsService', () => {
 
   it('rejects invoice when the service has no product', async () => {
     prisma.clientServiceRecord.findUnique.mockResolvedValue(
-      buildService({ billingModel: 'WE_PAY', productId: null }),
+      buildService({ billingModel: 'CLIENT_CHARGE', productId: null }),
     );
 
     await expect(service.createInvoice('svc-1', {})).rejects.toBeInstanceOf(BadRequestException);
     expect(invoicesService.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects invoice for We Pay', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue(
+      buildService({ billingModel: 'WE_PAY' }),
+    );
+
+    await expect(service.createInvoice('svc-1', {})).rejects.toBeInstanceOf(BadRequestException);
+    expect(invoicesService.create).not.toHaveBeenCalled();
+  });
+
+  it('creates a company expense for We Pay without pass-through', async () => {
+    prisma.clientServiceRecord.findUnique.mockResolvedValue(
+      buildService({ billingModel: 'WE_PAY' }),
+    );
+
+    await service.createExpense('svc-1', { amount: 40 });
+
+    expect(expensesService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clientServiceRecordId: 'svc-1',
+        amount: 40,
+        isPassThrough: false,
+        sourceInvoiceId: undefined,
+      }),
+    );
   });
 
   it('rejects invoice for reminder-only service', async () => {
@@ -126,7 +152,7 @@ function buildService(overrides: Record<string, unknown> = {}) {
     provider: 'Cloudflare',
     providerAccountId: null,
     status: 'ACTIVE',
-    billingModel: 'WE_PAY',
+    billingModel: 'CLIENT_CHARGE',
     pricingModel: 'FIXED',
     frequency: 'MONTHLY',
     ourCost: new Decimal('99'),

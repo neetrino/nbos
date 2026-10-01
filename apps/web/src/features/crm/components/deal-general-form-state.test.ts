@@ -76,6 +76,22 @@ describe('buildDealTypeChangePatch', () => {
     });
   });
 
+  it('locks MAINTENANCE to an open-ended subscription', () => {
+    const draft: DealGeneralDraft = {
+      ...baseDraft,
+      paymentType: 'CLASSIC',
+      subscriptionTermMonths: 6,
+    };
+    expect(buildDealTypeChangePatch(draft, 'MAINTENANCE')).toEqual({
+      type: 'MAINTENANCE',
+      productCategory: null,
+      productType: null,
+      productPlatform: null,
+      subscriptionTermMonths: null,
+      paymentType: 'SUBSCRIPTION',
+    });
+  });
+
   it('clears subscription term when switching to MAINTENANCE', () => {
     const draft: DealGeneralDraft = {
       ...baseDraft,

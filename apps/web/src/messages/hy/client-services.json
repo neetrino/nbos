@@ -43,12 +43,14 @@
     "CANCELLED": "Չեղարկ."
   },
   "billing": {
+    "CLIENT_CHARGE": "Client Charge",
     "WE_PAY": "We Pay",
-    "REMINDER_ONLY": "Reminder Only"
+    "REMINDER_ONLY": "Remember Only"
   },
   "billingShort": {
-    "WE_PAY": "Մենք ենք վճարում",
-    "REMINDER_ONLY": "Հիշեցում"
+    "CLIENT_CHARGE": "Client Charge",
+    "WE_PAY": "We Pay",
+    "REMINDER_ONLY": "Remember Only"
   },
   "pricing": {
     "FIXED": "Ֆիքսված",
@@ -165,7 +167,7 @@
   "invoicesTab": {
     "title": "Հաշվի քարտեր",
     "create": "Ստեղծել հաշիվ",
-    "wePayOnly": "Ընկերության կողմից վճարվող ծառայությունները հաշիվ չեն օգտագործում։",
+    "wePayOnly": "Հաշիվները ստեղծվում են միայն Client Charge-ի համար։",
     "viewAria": "Հաշիվների ցանկի տեսք",
     "emptyTitle": "Հաշիվներ չկան",
     "emptyDescription": "Այս ծառայությանը դեռ կապված հաշվի քարտեր չկան։",
@@ -174,7 +176,7 @@
   "expensesTab": {
     "title": "Ծախսի քարտեր",
     "create": "Ստեղծել ծախս",
-    "reminderOnly": "Միայն հիշեցման ծառայությունները ծախս չեն օգտագործում։",
+    "reminderOnly": "Remember Only-ը ծախս չի ստեղծում։",
     "viewAria": "Ծախսերի ցանկի տեսք",
     "emptyTitle": "Ծախսի քարտեր չկան",
     "emptyDescription": "Այս ծառայությանը դեռ կապված ծախսի քարտեր չկան։",

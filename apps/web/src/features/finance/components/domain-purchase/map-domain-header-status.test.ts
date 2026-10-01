@@ -12,7 +12,7 @@ function service(overrides: Partial<ClientServiceRecord>): ClientServiceRecord {
     provider: null,
     providerAccountId: null,
     status: 'PENDING',
-    billingModel: 'WE_PAY',
+    billingModel: 'CLIENT_CHARGE',
     pricingModel: 'FIXED',
     frequency: 'YEARLY',
     ourCost: null,

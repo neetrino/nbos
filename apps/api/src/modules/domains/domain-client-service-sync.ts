@@ -30,9 +30,9 @@ export function mapDomainStatusToClientServiceStatus(
 
 function resolveBillingModel(
   clientCharge: DomainSyncRow['clientCharge'],
-): 'WE_PAY' | 'REMINDER_ONLY' {
+): 'CLIENT_CHARGE' | 'REMINDER_ONLY' {
   if (clientCharge != null && clientCharge.gt(0)) {
-    return 'WE_PAY';
+    return 'CLIENT_CHARGE';
   }
   return 'REMINDER_ONLY';
 }

@@ -55,11 +55,11 @@ describe('findRenewalCycleInvoice', () => {
 });
 
 describe('buildRenewalExpenseEligibleWhere', () => {
-  it('targets WE_PAY services in the D−30 window', () => {
+  it('targets CLIENT_CHARGE services in the D−30 window', () => {
     const where = buildRenewalExpenseEligibleWhere(AS_OF);
     expect(where).toEqual(
       expect.objectContaining({
-        billingModel: 'WE_PAY',
+        billingModel: 'CLIENT_CHARGE',
         status: { not: 'CANCELLED' },
         renewalDate: expect.objectContaining({ not: null }),
       }),
