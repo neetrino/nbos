@@ -115,7 +115,7 @@ export function ClientConversationThread({
   const contextLabel = clientConversationTitle(conversation.title, conversation.provider ?? null);
 
   return (
-    <section className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+    <section className="bg-card text-card-foreground relative flex min-h-0 min-w-0 flex-1 flex-col">
       <ClientThreadHeader
         conversation={conversation}
         title={contextLabel}

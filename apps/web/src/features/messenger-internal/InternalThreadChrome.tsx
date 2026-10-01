@@ -67,7 +67,7 @@ export function MessageSelect({
         onToggle();
       }}
       className={`mt-2 ml-2 flex size-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-        selected ? 'border-[#4f46e5] bg-[#4f46e5] text-white' : 'border-[#cbd5e1] bg-white'
+        selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card'
       } ${selecting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
     >
       {selected ? <Check size={14} strokeWidth={3} aria-hidden /> : null}

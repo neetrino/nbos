@@ -99,7 +99,7 @@ function RailShortcut({ shortcut }: { shortcut: MessengerQuickRailShortcut }) {
 }
 
 function RailDivider() {
-  return <div aria-hidden className="my-0.5 h-px w-10 shrink-0 bg-[#e2e8f0]" />;
+  return <div aria-hidden className="bg-border my-0.5 h-px w-10 shrink-0" />;
 }
 
 function QuickAvatar({
@@ -152,7 +152,7 @@ function RailUnreadBadge({ count }: { count: number }) {
   return (
     <span
       aria-hidden
-      className="pointer-events-none absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] leading-none font-semibold text-white tabular-nums ring-2 ring-[#f8fafc]"
+      className="ring-sidebar pointer-events-none absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] leading-none font-semibold text-white tabular-nums ring-2"
     >
       {label}
     </span>

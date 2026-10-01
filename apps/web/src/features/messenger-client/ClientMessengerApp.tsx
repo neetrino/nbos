@@ -35,7 +35,8 @@ import {
   toggleClientFavorite,
 } from './client-messenger-cache-ops';
 
-const CLIENT_SHEET_SHELL_CLASS = 'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-white';
+const CLIENT_SHEET_SHELL_CLASS =
+  'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-card text-card-foreground';
 
 export function ClientMessengerApp({
   embedded = false,
@@ -233,7 +234,7 @@ function ClientMessengerScreen({
             }}
           />
         ) : (
-          <div className="flex min-h-0 flex-1 items-center justify-center bg-white text-sm text-black/40">
+          <div className="text-muted-foreground bg-card flex min-h-0 flex-1 items-center justify-center text-sm">
             Select a Client conversation
           </div>
         )}
