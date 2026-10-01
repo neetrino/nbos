@@ -76,7 +76,11 @@ function activeProjectWhere(): Prisma.ProjectWhereInput {
   const open = openDeliveryWhere();
   return {
     OR: [
-      { products: { some: open } },
+      {
+        products: {
+          some: { OR: [{ deliveryEnabled: false }, { deliveryEnabled: true, ...open }] },
+        },
+      },
       { extensions: { some: open } },
       { subscriptions: { some: liveMaintenanceWhere() } },
     ],
@@ -88,7 +92,11 @@ function closedProjectWhere(): Prisma.ProjectWhereInput {
   return {
     AND: [
       { OR: [{ products: { some: {} } }, { extensions: { some: {} } }] },
-      { products: { none: open } },
+      {
+        products: {
+          none: { OR: [{ deliveryEnabled: false }, { deliveryEnabled: true, ...open }] },
+        },
+      },
       { extensions: { none: open } },
       { subscriptions: { none: liveMaintenanceWhere() } },
     ],

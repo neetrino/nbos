@@ -82,6 +82,7 @@ describe('classifyProductHubViewFromRow', () => {
 describe('buildProductHubViewWhere', () => {
   it('uses open delivery for delivery view', () => {
     expect(buildProductHubViewWhere('delivery')).toEqual({
+      deliveryEnabled: true,
       deliveryResolution: null,
       status: { notIn: ['DONE', 'LOST'] },
     });
@@ -123,5 +124,28 @@ describe('applyProductHubAndSearch', () => {
     expect(where.OR).toEqual(
       expect.arrayContaining([{ name: { contains: 'site', mode: 'insensitive' } }]),
     );
+  });
+});
+
+describe('registered products', () => {
+  it('classifies a product without development as registered, not closed', () => {
+    expect(
+      classifyProductHubViewFromRow({
+        deliveryEnabled: false,
+        deliveryResolution: null,
+        status: 'NEW',
+        subscriptions: [],
+      }),
+    ).toBe('registered');
+  });
+  it('classifies a registered product with maintenance as maintenance', () => {
+    expect(
+      classifyProductHubViewFromRow({
+        deliveryEnabled: false,
+        deliveryResolution: null,
+        status: 'NEW',
+        subscriptions: [{}],
+      }),
+    ).toBe('maintenance');
   });
 });

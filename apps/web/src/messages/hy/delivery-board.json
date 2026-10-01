@@ -211,7 +211,8 @@
     "cancelledPrefix": "Չեղարկված՝"
   },
   "hub": {
-    "maintenance": "Սպասարկում"
+    "maintenance": "Սպասարկում",
+    "registered": "Առանց մշակման"
   },
   "acceptance": {
     "title": "Հաճախորդի ընդունում",

@@ -1,5 +1,7 @@
 # Products and Extensions
 
+**Дополнение 2026-10-02:** [Регистрация готового продукта без Delivery](../../03-Business-Logic/12-Product-Registration-Without-Delivery.md). Product может создаваться вместе с новым Project и optional Company без разработки.
+
 ## Обзор
 
 Внутри `Project` ведётся реальная delivery-работа. Основные рабочие сущности здесь:

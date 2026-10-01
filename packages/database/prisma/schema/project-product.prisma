@@ -178,6 +178,8 @@ model Product {
   /// WEB / APP / DESKTOP for Code, WordPress, Shopify. Null for Marketing (no platform).
   productPlatform      ProductPlatformEnum?    @default(WEB) @map("product_platform")
   status               ProductStatusEnum       @default(NEW)
+  /// False for registered existing products: no development lifecycle or delivery board card.
+  deliveryEnabled      Boolean                 @default(true) @map("delivery_enabled")
   deliveryStage        DeliveryStageEnum?      @default(STARTING) @map("delivery_stage")
   deliveryWorkStatus   DeliveryWorkStatusEnum  @default(ACTIVE) @map("delivery_work_status")
   deliveryResolution   DeliveryResolutionEnum? @map("delivery_resolution")

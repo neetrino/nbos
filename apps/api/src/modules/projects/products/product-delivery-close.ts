@@ -17,6 +17,7 @@ import {
 import { maybeEnqueueTechnicalSpecialist } from './product-team-side-effects';
 import {
   ensureActiveForStageMove,
+  ensureProductDeliveryEnabled,
   ensureNotTerminal,
   parseFutureDate,
   publishProductChanged,
@@ -35,6 +36,7 @@ export async function pauseProduct(
   data: PauseDeliveryDto,
 ) {
   const product = await findProductById(deps.prisma, id);
+  ensureProductDeliveryEnabled(product);
   ensureNotTerminal(product.deliveryLifecycle.resolution);
   const reason = requireText(data.reason, 'reason');
   const onHoldUntil = parseFutureDate(data.onHoldUntil, 'onHoldUntil');
@@ -52,6 +54,7 @@ export async function pauseProduct(
 
 export async function resumeProduct(deps: ProductDeliveryCommandDeps, id: string) {
   const product = await findProductById(deps.prisma, id);
+  ensureProductDeliveryEnabled(product);
   ensureNotTerminal(product.deliveryLifecycle.resolution);
   if (product.deliveryLifecycle.workStatus !== 'ON_HOLD') {
     throw new BadRequestException('Product is not on hold');
@@ -81,6 +84,7 @@ export async function cancelProduct(
   actorId: string,
 ) {
   const product = await findProductById(deps.prisma, id);
+  ensureProductDeliveryEnabled(product);
   ensureNotTerminal(product.deliveryLifecycle.resolution);
   const reason = requireText(data.reason, 'reason');
   const closedAt = new Date();
@@ -126,6 +130,7 @@ export async function completeProduct(
   actorId: string,
 ) {
   const product = await findProductById(deps.prisma, id);
+  ensureProductDeliveryEnabled(product);
   ensureActiveForStageMove(product.deliveryLifecycle);
   const target = 'DONE' as ProductStatusEnum;
 
@@ -174,6 +179,7 @@ export async function confirmProductAcceptance(
   data: ConfirmAcceptanceDto,
 ) {
   const product = await findProductById(deps.prisma, id);
+  ensureProductDeliveryEnabled(product);
   ensureNotTerminal(product.deliveryLifecycle.resolution);
   const updatedProduct = await deps.prisma.product.update({
     where: { id },

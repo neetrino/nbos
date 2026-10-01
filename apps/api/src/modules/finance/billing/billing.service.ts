@@ -41,6 +41,7 @@ const subscriptionBillingInclude = {
     select: {
       companyId: true,
       company: { select: { name: true, legalName: true, taxId: true } },
+      deliveryEnabled: true,
       deadline: true,
       status: true,
       deliveryResolution: true,

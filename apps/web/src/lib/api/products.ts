@@ -16,9 +16,10 @@ export interface ProductClosedByRef {
   lastName: string;
 }
 
-export type ProductHubView = 'delivery' | 'maintenance' | 'closed';
+export type ProductHubView = 'delivery' | 'maintenance' | 'closed' | 'registered';
 
 export interface ProductListParams {
+  deliveryEnabled?: boolean;
   page?: number;
   pageSize?: number;
   search?: string;
@@ -36,6 +37,7 @@ export interface ProductListParams {
 }
 
 export interface Product {
+  deliveryEnabled?: boolean;
   id: string;
   projectId: string;
   name: string;
@@ -221,6 +223,21 @@ interface ListData {
   meta: { total: number; page: number; pageSize: number; totalPages: number };
 }
 
+export interface RegisterProductData {
+  name: string;
+  productCategory: string;
+  productType: string;
+  productPlatform?: string | null;
+  startDelivery: boolean;
+  projectId?: string;
+  createProject?: boolean;
+  contactId: string;
+  companyId?: string | null;
+  createCompany?: boolean;
+  taxStatus?: 'TAX' | 'TAX_FREE';
+  description?: string;
+}
+
 export interface CreateProductData {
   projectId: string;
   name: string;
@@ -331,6 +348,11 @@ export const productsApi = {
   async getById(id: string): Promise<FullProduct> {
     const resp = await api.get<FullProduct>(`/api/projects/products/${id}`);
     return resp.data;
+  },
+
+  async register(data: RegisterProductData): Promise<Product> {
+    const res = await api.post<Product>('/api/projects/products/register', data);
+    return res.data;
   },
 
   async create(data: CreateProductData): Promise<Product> {

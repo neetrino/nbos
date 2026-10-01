@@ -53,6 +53,7 @@ export type ChecklistStageProgress = {
 };
 
 export interface ProjectProductSummary {
+  deliveryEnabled?: boolean;
   id: string;
   name: string;
   status: string;
@@ -77,7 +78,7 @@ export interface ProjectProductSummary {
   qaLead?: EmployeeRef | null;
   deliveryLifecycle?: DeliveryLifecycleProjection;
   /** Computed Product Hub directory view. Present on company-wide list items. */
-  hubView?: 'delivery' | 'maintenance' | 'closed';
+  hubView?: 'delivery' | 'maintenance' | 'closed' | 'registered';
   /** Present when item comes from list/global board (not embedded project bundle). */
   projectId?: string;
   project?: {

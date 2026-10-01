@@ -23,11 +23,12 @@ export class DeliveryStageChecklistSyncService {
         id: true,
         deliveryStage: true,
         deliveryResolution: true,
+        deliveryEnabled: true,
         productCategory: true,
         productType: true,
       },
     });
-    if (!product || !entityHasOpenDeliveryContext(product)) {
+    if (!product || product.deliveryEnabled === false || !entityHasOpenDeliveryContext(product)) {
       return;
     }
 

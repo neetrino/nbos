@@ -54,7 +54,9 @@ export function SubscriptionFormDialog({
 
   const searchProducts = useProductRelationSearch(null);
   const searchPartners = usePartnerRelationSearch();
-  const productPicker = useRelationPickerActions('product');
+  const productPicker = useRelationPickerActions('product', undefined, {
+    taxStatus: form.taxStatus === 'TAX' ? 'TAX' : 'TAX_FREE',
+  });
   const partnerPicker = useRelationPickerActions('partner');
 
   const {

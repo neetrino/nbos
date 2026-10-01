@@ -183,9 +183,12 @@ function ProductListRow({
   const dealId = getEntityOrderDealId(product.order);
   const status = getProductStatus(product.status);
   const productTypeLabel = tForms(formsProductTypeKey(product.productType) as never);
-  const statusLabel = product.deliveryLifecycle
-    ? translateDeliveryLifecycleLabel(product.deliveryLifecycle, t)
-    : status?.label;
+  const statusLabel =
+    product.deliveryEnabled === false
+      ? t('hub.registered')
+      : product.deliveryLifecycle
+        ? translateDeliveryLifecycleLabel(product.deliveryLifecycle, t)
+        : status?.label;
 
   return (
     <div className={`${PROJECT_ENTITY_LIST_ROW_CLASS} group/entity-row`}>
@@ -198,7 +201,7 @@ function ProductListRow({
           {status && statusLabel ? (
             <StatusBadge
               label={statusLabel}
-              variant={status.variant}
+              variant={product.deliveryEnabled === false ? 'gray' : status.variant}
               className="shrink-0 self-center"
             />
           ) : null}

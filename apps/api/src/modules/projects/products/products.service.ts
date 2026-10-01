@@ -1,3 +1,6 @@
+import { registerProduct } from './product-registration';
+import type { RegisterProductDto } from './register-product.dto';
+import type { CurrentUserPayload } from '../../../common/decorators';
 import { Injectable, Inject, ConflictException, Logger } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
@@ -122,6 +125,15 @@ export class ProductsService {
       }
     }
     await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
+    await syncProductTeamAccess(this.prisma, this.productTeamSync, product);
+    return findProductById(this.prisma, product.id);
+  }
+
+  async register(data: RegisterProductDto, user: CurrentUserPayload) {
+    const product = await registerProduct(this.prisma, data, user);
+    if (product.deliveryEnabled) {
+      await this.deliveryStageChecklistSync.syncProductAfterLifecycleWrite(product.id);
+    }
     await syncProductTeamAccess(this.prisma, this.productTeamSync, product);
     return findProductById(this.prisma, product.id);
   }

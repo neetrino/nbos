@@ -25,10 +25,12 @@ export type RelationCreatePrefill = {
   name?: string;
   firstName?: string;
   lastName?: string;
+  taxStatus?: 'TAX' | 'TAX_FREE';
   projectId?: string;
 };
 
 export type RelationCreateContext = {
+  taxStatus?: 'TAX' | 'TAX_FREE';
   projectId?: string;
 };
 
@@ -52,6 +54,8 @@ type RelationPickerBaseProps = {
   /** Opens create flow; `searchQuery` is set when user typed in the search box. */
   onCreate?: (searchQuery: string) => void;
   /** Default `bottom`. Use `top` to pin Create above the list. */
+  /** Matches the creation result to this specific field. */
+  createIntent?: string;
   createPlacement?: 'bottom' | 'top';
   /** Controlled open state. When omitted, the picker manages open internally. */
   open?: boolean;

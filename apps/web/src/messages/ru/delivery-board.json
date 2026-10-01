@@ -211,7 +211,8 @@
     "cancelledPrefix": "Отменено:"
   },
   "hub": {
-    "maintenance": "Сопровождение"
+    "maintenance": "Сопровождение",
+    "registered": "Без разработки"
   },
   "acceptance": {
     "title": "Приёмка клиентом",

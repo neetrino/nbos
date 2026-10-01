@@ -12,6 +12,7 @@ export const SUBSCRIPTION_TYPES_SUBJECT_TO_DELIVERY_DEADLINE: SubscriptionTypeEn
 ];
 
 export type ProductForBillingPause = {
+  deliveryEnabled?: boolean;
   deadline: Date | null;
   status: ProductStatusEnum;
   deliveryResolution: DeliveryResolutionEnum | null;
@@ -82,7 +83,7 @@ export function subscriptionBillingPausedForLateDelivery(input: {
       isProductDeliveredOrAbandoned(p.status, p.deliveryResolution),
       input.billingDate,
     );
-    if (productLate) return true;
+    if (p.deliveryEnabled !== false && productLate) return true;
 
     for (const x of p.extensions) {
       const extLate = isUndeliveredAfterDeadline(

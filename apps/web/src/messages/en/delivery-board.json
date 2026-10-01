@@ -211,7 +211,8 @@
     "cancelledPrefix": "Cancelled:"
   },
   "hub": {
-    "maintenance": "Maintenance"
+    "maintenance": "Maintenance",
+    "registered": "Without development"
   },
   "acceptance": {
     "title": "Client acceptance",

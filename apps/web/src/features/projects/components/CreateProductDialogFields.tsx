@@ -17,7 +17,6 @@ export interface CreateProductFormState {
   productType: string;
   productPlatform: string;
   description: string;
-  deadline: string;
 }
 
 interface CreateProductDialogFieldsProps {
@@ -44,28 +43,14 @@ export function CreateProductDialogFields({
         placeholder={t('product.placeholders.name')}
         onValueChange={(name) => onFormChange({ name })}
       />
-      <CreateProductTaxonomyFields
-        form={form}
-        categoryOptions={categoryOptions}
-        typeOptions={typeOptions}
-        onFormChange={onFormChange}
-      />
-      <InlineField
-        variant="controlled"
-        label={t('product.fields.deadline')}
-        type="date"
-        datePickerVariant="extended"
-        value={form.deadline}
-        onValueChange={(deadline) => onFormChange({ deadline })}
-      />
-      <InlineField
-        variant="controlled"
-        label={t('product.fields.description')}
-        type="textarea"
-        value={form.description}
-        placeholder={t('product.placeholders.description')}
-        onValueChange={(description) => onFormChange({ description })}
-      />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <CreateProductTaxonomyFields
+          form={form}
+          categoryOptions={categoryOptions}
+          typeOptions={typeOptions}
+          onFormChange={onFormChange}
+        />
+      </div>
     </>
   );
 }

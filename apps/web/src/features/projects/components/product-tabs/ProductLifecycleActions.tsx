@@ -22,7 +22,7 @@ export function ProductLifecycleActions({
 }: ProductLifecycleActionsProps) {
   const t = useTranslations('deliveryBoard');
   const lifecycle = product.deliveryLifecycle;
-  if (!lifecycle || lifecycle.isTerminal) return null;
+  if (product.deliveryEnabled === false || !lifecycle || lifecycle.isTerminal) return null;
 
   return (
     <div className="flex flex-wrap gap-2">

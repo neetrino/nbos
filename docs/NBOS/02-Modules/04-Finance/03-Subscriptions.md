@@ -1,5 +1,7 @@
 # Подписки (Subscriptions)
 
+**Дополнение 2026-10-02:** [Регистрация готового продукта без Delivery](../../03-Business-Logic/12-Product-Registration-Without-Delivery.md). Product может создаваться вместе с новым Project и optional Company без разработки.
+
 ## Общая концепция
 
 `Subscription / Подписка` — это долгоживущая договорённость о регулярных деньгах.

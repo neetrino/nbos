@@ -15,7 +15,10 @@ export function buildRelationCreatePrefill(
   const trimmed = searchQuery.trim();
   const { projectId: intentProjectId } = parseRelationCreateIntent(intent);
   const projectId = context?.projectId ?? intentProjectId;
-  const base: RelationCreatePrefill = projectId ? { projectId } : {};
+  const base: RelationCreatePrefill = {
+    ...(projectId ? { projectId } : {}),
+    ...(context?.taxStatus ? { taxStatus: context.taxStatus } : {}),
+  };
 
   if (!trimmed) return base;
   if (kind === 'contact') {

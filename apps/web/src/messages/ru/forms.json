@@ -322,6 +322,22 @@
       "WEB": "Веб",
       "APP": "Приложение",
       "DESKTOP": "Desktop"
+    },
+    "registration": {
+      "project": "Проект",
+      "company": "Компания",
+      "create": "Создать",
+      "namePlaceholder": "Название продукта",
+      "searchProject": "Найти проект…",
+      "searchCompany": "Найти компанию…",
+      "contact": "Основной контакт",
+      "searchContact": "Найти или создать контакт…",
+      "mode": "Создание",
+      "withoutDelivery": "Без разработки",
+      "withDelivery": "С разработкой",
+      "submit": "Создать и выбрать",
+      "createError": "Не удалось создать продукт. Проверьте поля и повторите попытку.",
+      "contextError": "Не удалось загрузить проект. Выберите его повторно."
     }
   },
   "errors": {

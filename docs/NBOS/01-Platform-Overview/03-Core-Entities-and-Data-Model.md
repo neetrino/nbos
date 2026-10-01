@@ -1,5 +1,7 @@
 # NBOS Platform — Core Entities & Data Model
 
+**Дополнение 2026-10-02:** [Регистрация готового продукта без Delivery](../03-Business-Logic/12-Product-Registration-Without-Delivery.md). Product может создаваться вместе с новым Project и optional Company без разработки.
+
 **Дополнение 2026-09-18:** [Delivery Compensation v2](../03-Business-Logic/11-Delivery-Compensation-Configurator.md) определяет новые версионные нормативы, конфигурацию функций и распределение delivery-бонусов. В этом ограниченном scope новый канон имеет приоритет; целевые сущности из [технического контракта](../../implementation/delivery-compensation/01-TECHNICAL-CONTRACT.md) ещё не означают существующую схему БД. Остальные связи и правила этого документа сохраняются.
 
 ## Обзор
