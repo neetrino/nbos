@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const SHEET_PANEL_CLASS =
-  'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-card text-card-foreground shadow-[var(--shadow-panel)]';
+  'flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-card text-card-foreground shadow-[var(--shadow-panel)] dark:border-t-[0.5px] dark:border-white/45';
 
 export function InternalMessengerSheetFrame({
   embedded,
@@ -16,7 +16,7 @@ export function InternalMessengerSheetFrame({
 }) {
   if (embedded) {
     return (
-      <div className="bg-card text-card-foreground flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="bg-card text-card-foreground flex h-full min-h-0 flex-1 flex-col overflow-hidden dark:border-t-[0.5px] dark:border-white/45">
         {children}
       </div>
     );
