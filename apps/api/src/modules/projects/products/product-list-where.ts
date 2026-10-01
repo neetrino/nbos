@@ -8,6 +8,7 @@ import { buildProductSearchOr } from './product-search.where';
 
 export const PRODUCT_HUB_VIEWS = ['delivery', 'maintenance', 'closed'] as const;
 export type ProductHubView = (typeof PRODUCT_HUB_VIEWS)[number];
+export type ProductCatalogView = ProductHubView | 'registered';
 
 export function parseProductHubView(value?: string): ProductHubView | undefined {
   if (value === 'delivery' || value === 'maintenance' || value === 'closed') return value;
@@ -27,10 +28,12 @@ export function shouldClassifyProductHubView(
 }
 
 export function isOpenDeliveryProduct(product: {
+  deliveryEnabled?: boolean;
   deliveryResolution: string | null;
   status: string;
 }): boolean {
   return (
+    product.deliveryEnabled !== false &&
     product.deliveryResolution == null &&
     !(TERMINAL_LEGACY_STATUSES as readonly string[]).includes(product.status)
   );
@@ -46,10 +49,14 @@ export function classifyProductHubView(input: {
 }
 
 export function classifyProductHubViewFromRow(product: {
+  deliveryEnabled?: boolean;
   deliveryResolution: string | null;
   status: string;
   subscriptions?: ReadonlyArray<unknown>;
-}): ProductHubView {
+}): ProductCatalogView {
+  if (product.deliveryEnabled === false) {
+    return product.subscriptions?.length ? 'maintenance' : 'registered';
+  }
   return classifyProductHubView({
     isOpenDelivery: isOpenDeliveryProduct(product),
     hasLiveMaintenance: (product.subscriptions?.length ?? 0) > 0,
@@ -57,10 +64,13 @@ export function classifyProductHubViewFromRow(product: {
 }
 
 export function buildProductHubViewWhere(view: ProductHubView): Prisma.ProductWhereInput {
-  if (view === 'delivery') return openDeliveryWhere();
+  if (view === 'delivery') return { deliveryEnabled: true, ...openDeliveryWhere() };
   if (view === 'maintenance') {
     return {
-      AND: [closedDeliveryWhere(), { subscriptions: { some: liveMaintenanceWhere() } }],
+      AND: [
+        { OR: [{ deliveryEnabled: false }, closedDeliveryWhere()] },
+        { subscriptions: { some: liveMaintenanceWhere() } },
+      ],
     };
   }
   return {
@@ -89,6 +99,7 @@ export function applyProductHubAndSearch(
 
 function closedDeliveryWhere(): Prisma.ProductWhereInput {
   return {
+    deliveryEnabled: true,
     OR: [{ deliveryResolution: { not: null } }, { status: { in: [...TERMINAL_LEGACY_STATUSES] } }],
   };
 }

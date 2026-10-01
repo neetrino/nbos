@@ -209,7 +209,7 @@ export function EntityRelationHost({
       }
       if (kind === 'product') {
         const prefill = buildRelationCreatePrefill(kind, searchQuery, context, intent);
-        if (!prefill.projectId) return;
+
         setCreatePrefill(prefill);
         setCreateIntent(intent);
         setCreateKind('product');
@@ -458,18 +458,17 @@ export function EntityRelationHost({
           onCreated={handlePartnerCreated}
         />
 
-        {createPrefill?.projectId ? (
-          <CreateProductDialog
-            open={createKind === 'product'}
-            projectId={createPrefill.projectId}
-            defaultName={createPrefill.name}
-            forceNestedBackdrop={nested}
-            onOpenChange={(next) => {
-              if (!next) closeCreate();
-            }}
-            onCreated={handleProductCreated}
-          />
-        ) : null}
+        <CreateProductDialog
+          open={createKind === 'product'}
+          projectId={createPrefill?.projectId}
+          taxStatus={createPrefill?.taxStatus}
+          defaultName={createPrefill?.name}
+          forceNestedBackdrop={nested}
+          onOpenChange={(next) => {
+            if (!next) closeCreate();
+          }}
+          onCreated={handleProductCreated}
+        />
       </RelationEntitySheetStackProvider>
     </EntityRelationsProvider>
   );

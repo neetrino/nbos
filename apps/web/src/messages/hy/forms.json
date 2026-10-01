@@ -322,6 +322,22 @@
       "WEB": "Web",
       "APP": "App",
       "DESKTOP": "Desktop"
+    },
+    "registration": {
+      "project": "Նախագիծ",
+      "company": "Ընկերություն",
+      "create": "Ստեղծել",
+      "namePlaceholder": "Պրոդուկտի անվանում",
+      "searchProject": "Գտնել նախագիծ…",
+      "searchCompany": "Գտնել ընկերություն…",
+      "contact": "Հիմնական կոնտակտ",
+      "searchContact": "Գտնել կամ ստեղծել կոնտակտ…",
+      "mode": "Ստեղծում",
+      "withoutDelivery": "Առանց մշակման",
+      "withDelivery": "Մշակմամբ",
+      "submit": "Ստեղծել և ընտրել",
+      "createError": "Չհաջողվեց ստեղծել պրոդուկտը։ Ստուգեք դաշտերը և կրկին փորձեք։",
+      "contextError": "Չհաջողվեց բեռնել նախագիծը։ Կրկին ընտրեք այն։"
     }
   },
   "errors": {

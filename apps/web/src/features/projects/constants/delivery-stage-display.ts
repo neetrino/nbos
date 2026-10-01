@@ -28,6 +28,7 @@ function deliveryStageBadge(stage: DeliveryStage): { label: string; variant: Sta
 }
 
 function resolveDeliveryStage(product: {
+  deliveryEnabled?: boolean;
   status: string;
   deliveryLifecycle?: { stage: string | null; resolution: string | null };
 }): DeliveryStage | null {
@@ -40,12 +41,14 @@ function resolveDeliveryStage(product: {
 
 /** Canonical delivery stage badge — same labels as Delivery Board columns. */
 export function getProductDeliveryStageBadgeDisplay(product: {
+  deliveryEnabled?: boolean;
   status: string;
   deliveryLifecycle?: {
     stage: string | null;
     resolution: string | null;
   };
 }): { label: string; variant: StatusVariant } | undefined {
+  if (product.deliveryEnabled === false) return undefined;
   const lc = product.deliveryLifecycle;
   if (lc?.resolution === 'DONE') return getProductStatus('DONE');
   if (lc?.resolution === 'CANCELLED') {

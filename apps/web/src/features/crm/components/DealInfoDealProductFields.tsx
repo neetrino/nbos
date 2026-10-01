@@ -202,11 +202,11 @@ function DealInfoExistingProductField({
   DealInfoDealProductFieldsProps,
   'draft' | 'patchDraft' | 'searchProducts' | 'disabled' | 'gateRequiredFields'
 >) {
-  const productPicker = useRelationPickerActions(
-    'product',
-    'deal-existing-product',
-    draft.projectId ? { projectId: draft.projectId } : undefined,
-  );
+  const productPicker = useRelationPickerActions('product', 'deal-existing-product', {
+    projectId: draft.projectId ?? undefined,
+    taxStatus:
+      draft.taxStatus === 'TAX' || draft.taxStatus === 'TAX_FREE' ? draft.taxStatus : undefined,
+  });
   const t = useTranslations('crm');
 
   return (
@@ -226,7 +226,8 @@ function DealInfoExistingProductField({
       }}
       onClear={() => patchDraft(buildDealExistingProductChangePatch(null, null, null, null))}
       onOpenSelected={productPicker.onOpenSelected}
-      {...(draft.projectId ? { onCreate: productPicker.onCreate } : {})}
+      onCreate={productPicker.onCreate}
+      createIntent={productPicker.createIntent}
     />
   );
 }

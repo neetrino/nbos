@@ -35,6 +35,7 @@ export function ProductAcceptanceAction({
   }
 
   if (
+    product.deliveryEnabled === false ||
     product.deliveryLifecycle?.isTerminal ||
     product.deliveryLifecycle?.workStatus === 'ON_HOLD'
   ) {

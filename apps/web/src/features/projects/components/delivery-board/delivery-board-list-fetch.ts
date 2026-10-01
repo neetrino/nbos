@@ -7,7 +7,11 @@ export async function fetchAllProductsList(): Promise<Product[]> {
   const all: Product[] = [];
   let page = 1;
   for (;;) {
-    const { items, meta } = await productsApi.getAll({ page, pageSize: PAGE_SIZE });
+    const { items, meta } = await productsApi.getAll({
+      page,
+      pageSize: PAGE_SIZE,
+      deliveryEnabled: true,
+    });
     all.push(...items);
     if (page >= meta.totalPages) break;
     page += 1;

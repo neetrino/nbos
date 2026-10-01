@@ -45,3 +45,9 @@ export function parseFutureDate(value: string | undefined, field: string) {
   if (Number.isNaN(date.getTime())) throw new BadRequestException(`${field} is invalid`);
   return date;
 }
+
+export function ensureProductDeliveryEnabled(product: { deliveryEnabled?: boolean }) {
+  if (product.deliveryEnabled === false) {
+    throw new BadRequestException('This product has no development delivery lifecycle');
+  }
+}

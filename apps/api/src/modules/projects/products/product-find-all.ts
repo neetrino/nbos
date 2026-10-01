@@ -30,6 +30,7 @@ import {
 } from './product-list-query';
 
 export interface ProductQueryParams {
+  deliveryEnabled?: string;
   page?: number;
   pageSize?: number;
   projectId?: string;
@@ -70,6 +71,8 @@ export async function findAllProducts(
   const classifyHubView = shouldClassifyProductHubView(hubView, includeHubView);
   const where: Prisma.ProductWhereInput = {};
 
+  if (params.deliveryEnabled !== undefined)
+    where.deliveryEnabled = params.deliveryEnabled === 'true';
   if (projectId) where.projectId = projectId;
   if (companyId) {
     Object.assign(where, productBillingCompanyWhere(companyId));
@@ -143,6 +146,7 @@ export async function findAllProducts(
         ...(classifyHubView
           ? {
               hubView: classifyProductHubViewFromRow({
+                deliveryEnabled: product.deliveryEnabled,
                 deliveryResolution: product.deliveryResolution,
                 status: product.status,
                 subscriptions: liveSubscriptions,

@@ -73,3 +73,17 @@ describe('delivery lifecycle projection', () => {
     });
   });
 });
+
+describe('registered product without development', () => {
+  it('does not synthesize Starting from the legacy NEW status', () => {
+    const lifecycle = buildProductDeliveryLifecycle({
+      status: 'NEW',
+      deliveryEnabled: false,
+      deliveryStage: null,
+    });
+    expect(lifecycle.stage).toBeNull();
+    expect(lifecycle.isActive).toBe(false);
+    expect(lifecycle.isTerminal).toBe(false);
+    expect(lifecycle.resolution).toBeNull();
+  });
+});

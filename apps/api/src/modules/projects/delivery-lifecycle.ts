@@ -19,6 +19,7 @@ export interface DeliveryLifecycleProjection {
 
 export interface DeliveryStatusCarrier {
   status?: string | null;
+  deliveryEnabled?: boolean;
   deliveryStage?: DeliveryStage;
   deliveryWorkStatus?: DeliveryWorkStatus | null;
   deliveryResolution?: DeliveryResolution;
@@ -84,19 +85,21 @@ function buildDeliveryLifecycle(
   legacyStatus: string | null,
   source?: DeliveryStatusCarrier,
 ): DeliveryLifecycleProjection {
+  const enabled = source?.deliveryEnabled !== false;
   const resolution = source?.deliveryResolution ?? mapDeliveryResolution(legacyStatus);
   const workStatus = source?.deliveryWorkStatus ?? mapDeliveryWorkStatus(legacyStatus);
   return {
     entityKind,
     legacyStatus,
-    stage: resolution ? null : (source?.deliveryStage ?? mapDeliveryStage(legacyStatus)),
+    stage:
+      !enabled || resolution ? null : (source?.deliveryStage ?? mapDeliveryStage(legacyStatus)),
     workStatus,
     resolution,
     onHoldReason: source?.onHoldReason ?? null,
     onHoldUntil: toIsoDate(source?.onHoldUntil),
     cancellationReason: source?.cancellationReason ?? null,
-    isActive: !resolution,
-    isTerminal: Boolean(resolution),
+    isActive: enabled && !resolution,
+    isTerminal: enabled && Boolean(resolution),
   };
 }
 

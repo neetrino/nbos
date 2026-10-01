@@ -16,6 +16,7 @@ import {
 import { maybeEnqueueTechnicalSpecialist } from './product-team-side-effects';
 import {
   ensureActiveForStageMove,
+  ensureProductDeliveryEnabled,
   parseDeliveryStage,
   publishProductChanged,
 } from './product-delivery-guards';
@@ -28,6 +29,7 @@ export async function updateProductStatus(
   actorId: string,
 ) {
   const product = await findProductById(deps.prisma, id);
+  ensureProductDeliveryEnabled(product);
   const current = product.status as ProductStatusEnum;
   const target = newStatus as ProductStatusEnum;
 
@@ -94,6 +96,7 @@ export async function moveProductStage(
   actorId?: string,
 ) {
   const product = await findProductById(deps.prisma, id);
+  ensureProductDeliveryEnabled(product);
   ensureActiveForStageMove(product.deliveryLifecycle);
   const stage = parseDeliveryStage(data.stage);
   const target = productLegacyStatusForStage(stage) as ProductStatusEnum;

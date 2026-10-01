@@ -133,4 +133,38 @@ describe('subscriptionBillingPausedForLateDelivery', () => {
     });
     expect(paused).toBe(false);
   });
+  it('ignores a registered product deadline but still pauses for its late extension', () => {
+    const product = {
+      deliveryEnabled: false,
+      deadline: new Date(2026, 3, 1),
+      status: ProductStatusEnum.NEW,
+      deliveryResolution: null,
+      extensions: [],
+    };
+    expect(
+      subscriptionBillingPausedForLateDelivery({
+        subscriptionType: SubscriptionTypeEnum.DEV_ONLY,
+        products: [product],
+        billingDate,
+      }),
+    ).toBe(false);
+    expect(
+      subscriptionBillingPausedForLateDelivery({
+        subscriptionType: SubscriptionTypeEnum.DEV_ONLY,
+        products: [
+          {
+            ...product,
+            extensions: [
+              {
+                deadline: new Date(2026, 3, 1),
+                status: ExtensionStatusEnum.DEVELOPMENT,
+                deliveryResolution: null,
+              },
+            ],
+          },
+        ],
+        billingDate,
+      }),
+    ).toBe(true);
+  });
 });
