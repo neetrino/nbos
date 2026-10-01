@@ -14,7 +14,7 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { type MessengerLegacyAccessContext } from '../access/messenger-legacy-channel-access.op';
 import { MessengerGateway } from '../messenger.gateway';
-import { MESSENGER_WS_READ_UPDATED_SCOPE } from '@nbos/shared';
+import { publishCommittedRead } from './messenger-core-lifecycle-publish';
 import { evictIfCoreReadLost } from './messenger-core-access-revoke.ops';
 import { resolveCoreConversationRead } from './messenger-core-read-authorize';
 import {
@@ -172,13 +172,13 @@ export class MessengerCoreService {
       employeeId,
       new Date(),
     );
-    this.messengerGateway.emitConversationReadUpdated(employeeId, {
-      scope: MESSENGER_WS_READ_UPDATED_SCOPE.CONVERSATION,
+    publishCommittedRead(
+      this.messengerGateway,
+      employeeId,
+      resolved.facts.zone,
       conversationId,
-      unreadCount: 0,
-      zone: resolved.facts.zone,
-      lastReadAt: lastReadAt.toISOString(),
-    });
+      lastReadAt,
+    );
   }
 
   async inviteParticipant(

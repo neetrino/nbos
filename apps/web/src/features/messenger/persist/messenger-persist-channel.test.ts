@@ -1,6 +1,11 @@
 import { QueryClient } from '@tanstack/react-query';
-import { afterEach, describe, expect, it } from 'vitest';
-import { ingestChannelMessage, parseChannelMessage } from './messenger-persist-channel';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { MessengerPersistEnvelope } from './messenger-persist-envelope';
+import {
+  ingestChannelMessage,
+  openMessengerPersistChannel,
+  parseChannelMessage,
+} from './messenger-persist-channel';
 import { MESSENGER_CACHE_SCHEMA_VERSION } from './messenger-persist.constants';
 import {
   beginMessengerPersistHydration,
@@ -33,7 +38,8 @@ describe('Messenger persist channel freshness', () => {
     expect(parseChannelMessage(message(), NOW)).toMatchObject({ identityId: IDENTITY });
     expect(parseChannelMessage(message({ identityId: OTHER }), NOW)?.identityId).toBe(OTHER);
     expect(parseChannelMessage(message({ schemaVersion: 1 }), NOW)).toBeNull();
-    expect(parseChannelMessage(message({ schemaVersion: 3 }), NOW)).toBeNull();
+    expect(parseChannelMessage(message({ schemaVersion: 2 }), NOW)).toBeNull();
+    expect(parseChannelMessage(message({ schemaVersion: 4 }), NOW)).toBeNull();
     expect(
       parseChannelMessage(message({ capturedAt: NOW + 1, writtenAt: NOW + 1 }), NOW),
     ).toBeNull();
@@ -58,6 +64,41 @@ describe('Messenger persist channel freshness', () => {
     expect(readMessengerPersistLastSeenCapturedAt(IDENTITY)).toBe(0);
     expect(ingestChannelMessage(IDENTITY, message(), NOW)).not.toBeNull();
     expect(readMessengerPersistLastSeenCapturedAt(IDENTITY)).toBe(NOW - 1_000);
+  });
+
+  it('lets a second tab accept a stored envelope as a header-only announcement', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    beginMessengerPersistHydration(queryClient, IDENTITY);
+    const now = Date.now();
+    const envelope: MessengerPersistEnvelope = {
+      schemaVersion: MESSENGER_CACHE_SCHEMA_VERSION,
+      identityId: IDENTITY,
+      capturedAt: now - 1_000,
+      writtenAt: now - 500,
+      queries: [],
+      checkpoints: {},
+      outbox: [],
+    };
+    expect(parseChannelMessage(envelope, now)).toBeNull();
+    const received: Array<{ capturedAt: number }> = [];
+    const reader = openMessengerPersistChannel(IDENTITY, (message) => {
+      received.push(message);
+    });
+    const writer = openMessengerPersistChannel(IDENTITY, () => undefined);
+    expect(reader).not.toBeNull();
+    expect(writer).not.toBeNull();
+    writer?.post(envelope);
+    await vi.waitFor(() => expect(received).toHaveLength(1));
+    expect(received[0]).toEqual({
+      identityId: IDENTITY,
+      capturedAt: now - 1_000,
+      writtenAt: now - 500,
+      schemaVersion: MESSENGER_CACHE_SCHEMA_VERSION,
+    });
+    expect(received[0]).not.toHaveProperty('outbox');
+    expect(received[0]).not.toHaveProperty('queries');
+    reader?.close();
+    writer?.close();
   });
 
   it('tracks last-seen capture recency per identity and clears on account switch', () => {

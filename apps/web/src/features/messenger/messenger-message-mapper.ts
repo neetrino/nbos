@@ -9,6 +9,8 @@ export interface MessengerViewMessage {
   timestamp: string;
   attachments: Array<{ id: string; fileAssetId: string }>;
   deliveryLabel?: string | null;
+  /** Set only while a failed local send can be retried with the same key. */
+  localSendKey?: string | null;
 }
 
 export function initialsFromDisplayName(name: string): string {

@@ -15,6 +15,10 @@ import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
+import {
+  failedLocalSendKey,
+  localSendReceiptLabel,
+} from '@/features/messenger/query/messenger-local-send';
 import { conversationListTitle } from './internal-messenger-section';
 import { InternalCreateTaskFromMessages } from './InternalCreateTaskFromMessages';
 import { InternalForwardDialog } from './InternalForwardDialog';
@@ -23,8 +27,8 @@ import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadPa
 import { useInternalThreadActions } from './use-internal-thread-actions';
 
 function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
-  return rows.map((row) =>
-    mapMessengerRowToView({
+  return rows.map((row) => ({
+    ...mapMessengerRowToView({
       id: row.id,
       channelId: row.conversationId,
       senderId: row.senderId ?? '',
@@ -34,7 +38,9 @@ function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[]
       editedAt: row.editedAt,
       attachments: row.attachments,
     }),
-  );
+    deliveryLabel: localSendReceiptLabel(row),
+    localSendKey: failedLocalSendKey(row),
+  }));
 }
 
 export type InternalSendExtras = {
@@ -173,17 +179,16 @@ function ThreadScaffold(props: {
         onClearReply={actions.clearReply}
         mentions={props.mentions}
         onMentionsChange={props.setMentions}
-        onSend={() =>
-          void Promise.resolve(
-            props.onSend({
-              replyToMessageId: actions.replyTo?.id,
-              mentionedEmployeeIds: props.mentions.map((row) => row.id),
-            }),
-          ).then(() => {
-            actions.clearReply();
-            props.setMentions([]);
-          })
-        }
+        onSend={() => {
+          if (!props.newMessage.trim()) return;
+          const extras = {
+            replyToMessageId: actions.replyTo?.id,
+            mentionedEmployeeIds: props.mentions.map((row) => row.id),
+          };
+          actions.clearReply();
+          props.setMentions([]);
+          void props.onSend(extras);
+        }}
       />
       <ThreadActionDialogs
         conversation={conversation}

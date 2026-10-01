@@ -33,13 +33,13 @@ export function EntityConversationPanel({
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-black/[0.06]">
       <InternalConversationThread
         conversation={state.conversation}
-        messages={state.messages}
+        messages={state.revoked ? [] : state.messages}
         messagesLoading={state.messagesLoading}
         newMessage={state.newMessage}
         onNewMessageChange={state.setNewMessage}
         onSend={state.send}
-        canSend={Boolean(state.conversation.canWrite)}
-        sendDisabled={state.sendBusy}
+        canSend={Boolean(state.conversation.canWrite) && !state.revoked}
+        sendDisabled={state.revoked}
         onToggleFavorite={state.toggleFavorite}
         collections={[]}
         onAddToCollection={() => undefined}

@@ -35,6 +35,7 @@ import {
   loadLatestPortfolioDriveFile,
   portfolioDriveLoadErrorMessage,
 } from './portfolio-drive-file.util';
+import { portfolioClientMessengerLabel } from './portfolio-client-messenger-label';
 
 function firstProjectId(data: ContactPortfolioResponse | CompanyPortfolioResponse): string | null {
   if (data.scope === 'contact') {
@@ -231,6 +232,11 @@ export function ClientPortfolioQuickActions({
         dealContactId={dealContactId}
         projectId={projectId}
         driveFile={driveFile}
+        messenger={{
+          contactId: variant === 'contact' ? entityId : undefined,
+          companyId: variant === 'company' ? entityId : undefined,
+          label: portfolioClientMessengerLabel(data),
+        }}
       />
     </>
   );

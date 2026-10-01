@@ -196,7 +196,24 @@ export function applyMessengerRealtimeMessage(
   queryClient: QueryClient,
   message: MessengerCoreMessageRow,
 ): void {
+  if (message.deletedAt) {
+    removeCachedMessage(queryClient, message.conversationId, message.id);
+    return;
+  }
   patchMessengerMessages(queryClient, message.conversationId, message);
+}
+
+function removeCachedMessage(
+  queryClient: QueryClient,
+  conversationId: string,
+  messageId: string,
+): void {
+  const key = messengerQueryKeys.messages(conversationId);
+  queryClient.setQueryData<MessengerMessagesPage>(key, (page) => {
+    if (!page) return page;
+    const items = page.items.filter((row) => row.id !== messageId);
+    return items.length === page.items.length ? page : { ...page, items };
+  });
 }
 
 function applyMessageToSummaries(

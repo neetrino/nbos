@@ -39,6 +39,55 @@ describe('Slice 10 finance reminder Core persist', () => {
     );
   });
 
+  it('publishes the queued Core message after the outbox offer', async () => {
+    const prisma = reminderPrisma({ financeChat: 'finance@g.us', workChat: 'work@g.us' });
+    const order: string[] = [];
+    const outbound = {
+      enqueue: vi.fn(async () => {
+        order.push('enqueue');
+      }),
+      isAvailable: () => true,
+    };
+    const publisher = {
+      publishPersistedCoreMessage: vi.fn(() => {
+        order.push('publish');
+      }),
+    };
+    await deliverFinanceClientReminder(
+      prisma as never,
+      outbound as never,
+      {
+        productId: 'prod-1',
+        text: 'Please pay invoice INV-1',
+        idempotencyKey: 'finance.invoice.payment_reminder_due:inv-1',
+      },
+      publisher,
+    );
+    expect(order).toEqual(['enqueue', 'publish']);
+    expect(publisher.publishPersistedCoreMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        conversationId: 'conv-finance',
+        provenance: 'SYSTEM',
+        direction: 'OUTBOUND',
+        status: 'QUEUED',
+      }),
+    );
+  });
+
+  it('does not publish when no Client destination exists', async () => {
+    const prisma = reminderPrisma({ financeChat: null, workChat: '' });
+    prisma.productCommunicationBinding.findUnique.mockResolvedValue(null);
+    const publisher = { publishPersistedCoreMessage: vi.fn() };
+    const delivered = await deliverFinanceClientReminder(
+      prisma as never,
+      undefined,
+      { productId: 'prod-1', text: 'Please pay', idempotencyKey: 'k-missing' },
+      publisher,
+    );
+    expect(delivered).toBeNull();
+    expect(publisher.publishPersistedCoreMessage).not.toHaveBeenCalled();
+  });
+
   it('falls back to WORK when FINANCE is not explicit', async () => {
     const prisma = reminderPrisma({ financeChat: null, workChat: 'work@g.us' });
     const outbound = { enqueue: vi.fn().mockResolvedValue(undefined), isAvailable: () => true };

@@ -2,10 +2,19 @@ import { Logger } from '@nestjs/common';
 import type { MessengerConversationType, PrismaClient } from '@nbos/database';
 import type { Server } from 'socket.io';
 import {
+  MESSENGER_WS_SERVER_CHANNEL_PEER_READ,
   MESSENGER_WS_SERVER_CONVERSATION_ACCESS_CHANGED,
+  MESSENGER_WS_SERVER_CONVERSATION_FAVORITE,
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
+  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
+  MESSENGER_WS_SERVER_DM_PEER_READ,
+  type MessengerWsChannelPeerReadPayload,
+  type MessengerWsConversationFavoritePayload,
+  type MessengerWsConversationPeerReadPayload,
+  type MessengerWsDmPeerReadPayload,
   type MessengerWsZone,
+  messengerSocketChannelRoom,
   messengerSocketConversationRoom,
   messengerSocketUserRoom,
 } from '@nbos/shared';
@@ -66,7 +75,7 @@ async function runPersistedSummaryFanout(input: PublishPersistedCoreMessageInput
       conversationType: facts.conversationType,
       senderId: input.message.senderId,
       lastMessageAt: input.message.createdAt,
-      lastMessagePreview: input.message.content,
+      lastMessagePreview: lifecyclePreview(input.message),
     });
   } catch (error) {
     input.logger.error('Failed to publish Core conversation summaries', error);
@@ -103,6 +112,55 @@ export async function publishCoreConversationSummariesToConnected(input: {
   } catch (error) {
     input.logger.error('Failed to publish Core conversation summaries', error);
   }
+}
+
+function lifecyclePreview(message: MessengerCoreMessageDto): string | null {
+  if (message.deletedAt) return null;
+  return message.content;
+}
+
+export function emitUserRoomFavorite(
+  server: Server | undefined,
+  employeeId: string,
+  payload: MessengerWsConversationFavoritePayload,
+): void {
+  if (!server) return;
+  server
+    .to(messengerSocketUserRoom(employeeId))
+    .emit(MESSENGER_WS_SERVER_CONVERSATION_FAVORITE, payload);
+}
+
+export function emitConversationRoomPeerRead(
+  server: Server | undefined,
+  conversationId: string,
+  payload: MessengerWsConversationPeerReadPayload,
+): void {
+  if (!server) return;
+  server
+    .to(messengerSocketConversationRoom(conversationId))
+    .emit(MESSENGER_WS_SERVER_CONVERSATION_PEER_READ, payload);
+}
+
+export function emitUserRoomDmPeerRead(
+  server: Server | undefined,
+  peerEmployeeId: string,
+  payload: MessengerWsDmPeerReadPayload,
+): void {
+  if (!server) return;
+  server
+    .to(messengerSocketUserRoom(peerEmployeeId))
+    .emit(MESSENGER_WS_SERVER_DM_PEER_READ, payload);
+}
+
+export function emitChannelRoomPeerRead(
+  server: Server | undefined,
+  channelId: string,
+  payload: MessengerWsChannelPeerReadPayload,
+): void {
+  if (!server) return;
+  server
+    .to(messengerSocketChannelRoom(channelId))
+    .emit(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, payload);
 }
 
 function emitSummaryPayloads(

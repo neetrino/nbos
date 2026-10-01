@@ -11,11 +11,29 @@ function readRepo(relativePath: string): string {
 }
 
 describe('Slice 2 binding is not ACL', () => {
-  it('access loader does not query ConversationLink, Product team, or Collections', () => {
+  it('access loader does not query ConversationLink, Product team, Collections, or bindings', () => {
     const load = readRepo('apps/api/src/modules/messenger/core/messenger-core-access-load.ts');
     expect(load).not.toMatch(/messengerConversationLink/);
     expect(load).not.toMatch(/productTeamMember/);
     expect(load).not.toMatch(/messengerConversationCollection/);
+    expect(load).not.toMatch(/productCommunicationBinding/);
+  });
+
+  it('keeps Client SEND closed when clientSendScope is NONE', () => {
+    const decision = evaluateMessengerCoreAccess({
+      conversationId: 'c-ext',
+      zone: 'CLIENT',
+      viewScope: 'ALL',
+      editScope: 'ALL',
+      clientReadScope: 'ALL',
+      clientSendScope: 'NONE',
+      isActiveParticipant: true,
+      participantRole: 'MEMBER',
+      grantLevel: null,
+    });
+    expect(decision.canRead).toBe(true);
+    expect(decision.canSend).toBe(false);
+    expect(decision.sendDeniedBecause).toBe('NO_SEND');
   });
 
   it('SHARED Collection membership is not an access fact', () => {

@@ -48,8 +48,12 @@ export type MessengerCoreMessageDto = {
   provenance: MessengerMessageProvenance;
   replyToMessageId: string | null;
   threadRootMessageId: string | null;
+  /** Present when the writer supplied a Core idempotency key. Null on older rows. */
+  idempotencyKey?: string | null;
   createdAt: Date;
   editedAt: Date | null;
+  /** Set when a provider revoke or other durable delete removed the row from the thread. */
+  deletedAt?: Date | null;
   attachments: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
   mentionedEmployeeIds: string[];
   references: MessengerCoreMessageReferenceDto[];

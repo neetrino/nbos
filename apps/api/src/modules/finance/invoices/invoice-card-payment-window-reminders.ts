@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { PrismaClient, SubscriptionReminderLanguage } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
+import type { FinanceClientReminderPublisher } from '../../messenger/core/messenger-finance-reminder.ops';
 import {
   findPaymentReminderCoreMessage,
   tryDeliverPaymentReminderWhatsApp,
@@ -21,6 +22,14 @@ import {
 } from './subscription-payment-reminder.constants';
 
 const logger = new Logger('InvoicePaymentWindowReminders');
+
+type PaymentWindowRunArgs = {
+  prisma: InstanceType<typeof PrismaClient>;
+  outbound?: WhatsAppOutboundQueueService;
+  publisher?: FinanceClientReminderPublisher | null;
+  asOf: Date;
+  asOfKey: string;
+};
 
 const OPEN_MONEY_STATUSES = ['NEW', 'AWAITING_PAYMENT'] as const;
 
@@ -56,12 +65,7 @@ export interface PaymentWindowReminderCreated {
   invoiceId: string;
 }
 
-export async function runSubscriptionPaymentWindowReminders(args: {
-  prisma: InstanceType<typeof PrismaClient>;
-  outbound?: WhatsAppOutboundQueueService;
-  asOf: Date;
-  asOfKey: string;
-}): Promise<{
+export async function runSubscriptionPaymentWindowReminders(args: PaymentWindowRunArgs): Promise<{
   eligibleCount: number;
   created: PaymentWindowReminderCreated[];
   skippedExisting: number;
@@ -81,13 +85,9 @@ export async function runSubscriptionPaymentWindowReminders(args: {
   return { eligibleCount: candidates.length, created, skippedExisting, skippedNoWhatsApp };
 }
 
-export async function tryEnqueueSubscriptionPaymentWindowForInvoice(args: {
-  prisma: InstanceType<typeof PrismaClient>;
-  outbound?: WhatsAppOutboundQueueService;
-  invoiceId: string;
-  asOf: Date;
-  asOfKey: string;
-}): Promise<void> {
+export async function tryEnqueueSubscriptionPaymentWindowForInvoice(
+  args: PaymentWindowRunArgs & { invoiceId: string },
+): Promise<void> {
   const invoice = await args.prisma.invoice.findUnique({
     where: { id: args.invoiceId },
     select: paymentReminderSelect,
@@ -129,12 +129,7 @@ function isPaymentWindowEligible(invoice: PaymentWindowCandidate, asOf: Date): b
 }
 
 async function createPaymentWindowJob(
-  args: {
-    prisma: InstanceType<typeof PrismaClient>;
-    outbound?: WhatsAppOutboundQueueService;
-    asOf: Date;
-    asOfKey: string;
-  },
+  args: PaymentWindowRunArgs,
   invoice: PaymentWindowCandidate,
 ): Promise<
   | PaymentWindowReminderCreated
@@ -177,12 +172,7 @@ async function createPaymentWindowJob(
 }
 
 async function enqueuePaymentWindowJob(
-  args: {
-    prisma: InstanceType<typeof PrismaClient>;
-    outbound?: WhatsAppOutboundQueueService;
-    asOf: Date;
-    asOfKey: string;
-  },
+  args: PaymentWindowRunArgs,
   invoice: PaymentWindowCandidate,
   dueDate: Date,
   resolved: NonNullable<ReturnType<typeof resolvePaymentReminderRenderInput>>,
@@ -203,6 +193,7 @@ async function enqueuePaymentWindowJob(
   const delivered = await tryDeliverPaymentReminderWhatsApp({
     prisma: args.prisma,
     outbound: args.outbound,
+    publisher: args.publisher,
     productId: productWhatsApp.productId,
     text: messageText,
     idempotencyKey: dedupeKey,

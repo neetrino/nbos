@@ -1,38 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { MessageSquare } from 'lucide-react';
 import { DetailSheetSection } from '@/components/shared';
-import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { CLIENT_OPEN_CONVERSATION_QUERY } from '@/features/messenger-client/client-messenger.constants';
+import { useMessengerConversationSubscription } from '@/features/messenger/realtime/use-messenger-realtime';
+import { useTicketSourceMessages } from './use-ticket-source-messages';
 
-type TicketSourceRow = Awaited<ReturnType<typeof messengerCoreApi.listTicketSources>>[number];
+type TicketSourceRow = NonNullable<
+  ReturnType<typeof useTicketSourceMessages>['query']['data']
+>[number];
 
 export function SupportTicketSourceMessages({ ticketId }: { ticketId: string }) {
   const t = useTranslations('support');
-  const [items, setItems] = useState<TicketSourceRow[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    void messengerCoreApi
-      .listTicketSources(ticketId)
-      .then((rows) => {
-        if (!cancelled) setItems(rows);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [ticketId]);
+  const { query, conversationIds } = useTicketSourceMessages(ticketId);
+  const items = query.data ?? [];
 
   return (
     <DetailSheetSection title={t('sheet.sourceMessages')} icon={<MessageSquare size={12} />}>
-      {loading ? (
+      <TicketSourceSubscriptions ids={conversationIds} />
+      {query.isPending ? (
         <p className="text-muted-foreground text-sm">{t('sheet.sourceLoading')}</p>
       ) : items.length === 0 ? (
         <p className="text-muted-foreground text-sm">{t('sheet.noSourceMessages')}</p>
@@ -45,6 +33,15 @@ export function SupportTicketSourceMessages({ ticketId }: { ticketId: string }) 
       )}
     </DetailSheetSection>
   );
+}
+
+function TicketSourceSubscriptions({ ids }: { ids: readonly string[] }) {
+  return ids.map((id) => <TicketSourceSubscription key={id} conversationId={id} />);
+}
+
+function TicketSourceSubscription({ conversationId }: { conversationId: string }) {
+  useMessengerConversationSubscription(conversationId);
+  return null;
 }
 
 function TicketSourceRowItem({ row }: { row: TicketSourceRow }) {

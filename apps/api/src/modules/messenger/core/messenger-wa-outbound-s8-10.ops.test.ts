@@ -120,9 +120,17 @@ function casPrisma(status: string) {
       findFirst: vi.fn().mockResolvedValue(null),
       findUnique: vi.fn().mockResolvedValue({ messageId: 'msg-1' }),
     },
-    $queryRaw: vi.fn(async () => [
-      canonicalCommand({ status: status === 'OUTCOME_UNKNOWN' ? 'OUTCOME_UNKNOWN' : 'PENDING' }),
-    ]),
+    $queryRaw: vi.fn(async (query: { strings?: readonly string[] }) => {
+      const text = query?.strings?.join(' ') ?? '';
+      if (text.includes('messenger_zone_revision_counters')) return [{ revision: 4n }];
+      return [
+        canonicalCommand({ status: status === 'OUTCOME_UNKNOWN' ? 'OUTCOME_UNKNOWN' : 'PENDING' }),
+      ];
+    }),
+    messengerConversation: {
+      findUnique: vi.fn().mockResolvedValue({ zone: 'CLIENT' }),
+    },
+    messengerConversationRevision: { upsert: vi.fn().mockResolvedValue({}) },
     messengerCommand: {
       findUnique: vi.fn().mockResolvedValue(
         canonicalCommand({

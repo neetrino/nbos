@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaClient, type SubscriptionReminderLanguage } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
+import { MessengerGateway } from '../../messenger/messenger.gateway';
 import { isOfficialRequestBlockingTaxReminders } from './invoice-official-request';
 import { resolveInvoiceProductWhatsAppGroup } from './invoice-product-whatsapp-resolve';
 import { overdueReminderSelect } from './invoice-overdue-reminder-selects';
@@ -99,6 +100,7 @@ export class InvoiceOverdueRemindersService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
+    @Optional() private readonly messengerGateway?: MessengerGateway,
   ) {}
 
   async preview(params: { asOf?: Date } = {}): Promise<OverdueReminderPreviewResult> {
@@ -120,6 +122,7 @@ export class InvoiceOverdueRemindersService {
       const result = await sendOverdueReminderWave(
         this.prisma,
         this.outbound,
+        this.messengerGateway,
         item,
         classified.asOf,
         classified.asOfKey,

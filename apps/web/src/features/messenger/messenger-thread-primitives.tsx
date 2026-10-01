@@ -1,4 +1,5 @@
 import { Paperclip, Send } from 'lucide-react';
+import { retryTrackedCoreSend } from '@/features/messenger/query/messenger-optimistic-send';
 import type { MessengerViewMessage } from './messenger-message-mapper';
 import { formatMessengerTime } from './messenger-format';
 import {
@@ -64,8 +65,23 @@ export function MessengerThreadMessageBubble({
         {readReceiptLabel ? (
           <p className="mt-0.5 text-[10px] font-medium text-black/35">{readReceiptLabel}</p>
         ) : null}
+        {message.localSendKey ? (
+          <MessengerLocalSendRetry idempotencyKey={message.localSendKey} />
+        ) : null}
       </div>
     </div>
+  );
+}
+
+function MessengerLocalSendRetry({ idempotencyKey }: { idempotencyKey: string }) {
+  return (
+    <button
+      type="button"
+      className="mt-0.5 text-[10px] font-medium text-black/55 underline"
+      onClick={() => void retryTrackedCoreSend(idempotencyKey)}
+    >
+      Retry
+    </button>
   );
 }
 

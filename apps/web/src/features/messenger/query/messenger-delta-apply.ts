@@ -1,15 +1,15 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import type { MessengerDeltaPage } from '@/lib/api/messenger-core-delta';
-import { applyMessengerAccessChanged } from './messenger-realtime-cache';
 import { upsertConversationSummary } from './messenger-cache';
 import { messengerQueryKeys, type MessengerZone } from './messenger-query-keys';
+import {
+  applyMessengerAccessChanged,
+  type MessengerRecoverySession,
+} from './messenger-realtime-cache';
 import { clearReadWatermark } from './messenger-realtime-watermarks';
 
-export type MessengerRecoverySession = {
-  activeId: string | null;
-  clearActive: () => void;
-};
+export type { MessengerRecoverySession };
 
 export function applyMessengerDeltaPages(
   queryClient: QueryClient,
@@ -54,7 +54,7 @@ function invalidateChangedThreads(
 ): void {
   const ids = new Set([...page.changedConversationIds, ...page.removedConversationIds]);
   for (const conversationId of ids) {
-    if (!shouldInvalidateThread(queryClient, conversationId, session?.activeId ?? null)) continue;
+    if (!shouldInvalidateThread(queryClient, conversationId, session)) continue;
     void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.messages(conversationId) });
   }
   void zone;
@@ -63,8 +63,9 @@ function invalidateChangedThreads(
 function shouldInvalidateThread(
   queryClient: QueryClient,
   conversationId: string,
-  activeId: string | null,
+  session?: MessengerRecoverySession,
 ): boolean {
-  if (activeId === conversationId) return true;
+  if (session?.activeId === conversationId) return true;
+  if (session?.openConversationIds?.includes(conversationId)) return true;
   return queryClient.getQueryState(messengerQueryKeys.messages(conversationId)) !== undefined;
 }

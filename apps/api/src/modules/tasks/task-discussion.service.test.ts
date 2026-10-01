@@ -155,6 +155,20 @@ describe('TaskDiscussionService', () => {
     expect(entry.conversation).toBeUndefined();
   });
 
+  it('stores a client idempotency key on the Core message', async () => {
+    await service.addEntry(
+      'task-1',
+      actorContextFromEmployee({ id: 'emp-1', firstName: 'Ada', lastName: 'Lovelace' }),
+      'Looks good',
+      undefined,
+      undefined,
+      'client-key-1',
+    );
+    expect(core.persistAndBroadcast).toHaveBeenCalledWith(
+      expect.objectContaining({ idempotencyKey: 'client-key-1' }),
+    );
+  });
+
   it('rejects an empty body', async () => {
     await expect(service.addEntry('task-1', actorContextFromUser(), '   ')).rejects.toBeInstanceOf(
       BadRequestException,

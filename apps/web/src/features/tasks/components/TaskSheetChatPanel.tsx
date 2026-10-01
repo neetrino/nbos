@@ -24,19 +24,29 @@ export interface TaskLocalMessage {
   body: string;
   createdAt: string;
   authorLabel: string;
+  receiptLabel?: string | null;
+  localSendKey?: string | null;
 }
 
 interface TaskSheetChatPanelProps {
   task: Task;
   messages: TaskLocalMessage[];
+  composerDisabled: boolean;
   onSend: (body: string) => void;
+  onDraftChange?: (value: string) => void;
 }
 
 type TimelineRow =
   | { kind: 'activity'; id: string; label: string; time: string; at: string }
   | { kind: 'note'; id: string; at: string; message: MessengerViewMessage };
 
-export function TaskSheetChatPanel({ task, messages, onSend }: TaskSheetChatPanelProps) {
+export function TaskSheetChatPanel({
+  task,
+  messages,
+  composerDisabled,
+  onSend,
+  onDraftChange,
+}: TaskSheetChatPanelProps) {
   const t = useTranslations('tasks');
   const dateLocale = resolveDatePickerLocale(useLocale());
   const isMobileViewport = useIsMobileViewport();
@@ -110,7 +120,7 @@ export function TaskSheetChatPanel({ task, messages, onSend }: TaskSheetChatPane
 
   const submit = () => {
     const body = draft.trim();
-    if (!body) return;
+    if (!body || composerDisabled) return;
     onSend(body);
     setDraft('');
   };
@@ -158,7 +168,7 @@ export function TaskSheetChatPanel({ task, messages, onSend }: TaskSheetChatPane
             <MessengerThreadMessageBubble
               key={row.key}
               message={row.message}
-              readReceiptLabel={null}
+              readReceiptLabel={row.message.deliveryLabel ?? null}
             />
           );
         })}
@@ -168,11 +178,14 @@ export function TaskSheetChatPanel({ task, messages, onSend }: TaskSheetChatPane
       <div className="border-t border-black/[0.06] px-5 py-3">
         <MessengerThreadComposerRow
           value={draft}
-          onChange={setDraft}
+          onChange={(value) => {
+            onDraftChange?.(value);
+            setDraft(value);
+          }}
           onSend={submit}
           placeholder={t('sheet.chat.addNote')}
-          disabled={false}
-          sendDisabled={!draft.trim()}
+          disabled={composerDisabled}
+          sendDisabled={composerDisabled || !draft.trim()}
         />
       </div>
     </div>
@@ -188,6 +201,8 @@ function taskLocalMessageToView(message: TaskLocalMessage): MessengerViewMessage
     content: message.body,
     timestamp: message.createdAt,
     attachments: [],
+    deliveryLabel: message.receiptLabel ?? null,
+    localSendKey: message.localSendKey ?? null,
   };
 }
 

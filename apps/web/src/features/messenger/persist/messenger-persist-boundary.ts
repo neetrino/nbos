@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { clearAllMessengerHttpCheckpoints } from '../query/messenger-checkpoint-store';
+import { resetOptimisticCoreSendState } from '../query/messenger-optimistic-send';
 import { messengerQueryKeys } from '../query/messenger-query-keys';
 import { deleteMessengerPersistRecord } from './messenger-persist-controller';
 import { isMessengerPersistenceEnabled } from './messenger-persist.constants';
@@ -35,6 +36,7 @@ export function applyMessengerPersistSessionIdentity(
   if (ready.sessionIdentityId === nextIdentity && ready.preparedIdentityId === nextIdentity) {
     return;
   }
+  resetOptimisticCoreSendState();
   if (nextIdentity === null) {
     purgeMessengerPersistForSignOut();
     return;

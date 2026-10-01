@@ -106,6 +106,18 @@ export interface MessengerWsConversationAccessChangedPayload {
   zone: MessengerWsZone;
 }
 
+/**
+ * Server → client: this employee's favorite flag for one conversation.
+ * Absolute value. User room only. Not a toggle.
+ */
+export const MESSENGER_WS_SERVER_CONVERSATION_FAVORITE = 'messenger.conversation.favorite';
+
+export interface MessengerWsConversationFavoritePayload {
+  conversationId: string;
+  zone: MessengerWsZone;
+  favorite: boolean;
+}
+
 /** Server → client: DM peer advanced their read cursor (notify the other participant). */
 export const MESSENGER_WS_SERVER_DM_PEER_READ = 'messenger.dm.peer_read';
 

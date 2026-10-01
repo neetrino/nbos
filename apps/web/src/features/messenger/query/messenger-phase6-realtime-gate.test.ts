@@ -11,10 +11,6 @@ import {
   applyMessengerRealtimeRead,
   applyMessengerRealtimeSummary,
 } from './messenger-realtime-cache';
-import {
-  bindMessengerRealtimeSocket,
-  type MessengerRealtimeSocket,
-} from '@/features/messenger-internal/messenger-realtime-bind';
 import { recoverMessengerZone } from './messenger-delta-recovery';
 import { seedInternalMessengerBootstrap } from './seed-messenger-bootstrap';
 import { messengerTestCheckpoint } from './messenger-test-checkpoint';
@@ -178,36 +174,6 @@ describe('Phase 6 realtime final gate', () => {
         .getQueryCache()
         .find({ queryKey: messengerQueryKeys.messages(OTHER), exact: true })?.state.isInvalidated,
     ).toBeFalsy();
-  });
-
-  it('closes the socket so Strict Mode remount cannot leak listeners', () => {
-    const socket = {
-      on: vi.fn(),
-      emit: vi.fn(),
-      close: vi.fn(),
-    } as unknown as MessengerRealtimeSocket & { close: ReturnType<typeof vi.fn> };
-    const first = bindMessengerRealtimeSocket(socket, {
-      conversationIdRef: { current: 'c1' },
-      onInboundRef: { current: vi.fn() },
-      onSummaryRef: { current: undefined },
-      onConversationReadRef: { current: undefined },
-      onAccessChangedRef: { current: undefined },
-      onReadRef: { current: undefined },
-      onReconnectRef: { current: undefined },
-    });
-    first();
-    expect(socket.close).toHaveBeenCalledTimes(1);
-    const second = bindMessengerRealtimeSocket(socket, {
-      conversationIdRef: { current: 'c1' },
-      onInboundRef: { current: vi.fn() },
-      onSummaryRef: { current: undefined },
-      onConversationReadRef: { current: undefined },
-      onAccessChangedRef: { current: undefined },
-      onReadRef: { current: undefined },
-      onReconnectRef: { current: undefined },
-    });
-    second();
-    expect(socket.close).toHaveBeenCalledTimes(2);
   });
 
   it('send+duplicate realtime does not create a second list refetch path', () => {

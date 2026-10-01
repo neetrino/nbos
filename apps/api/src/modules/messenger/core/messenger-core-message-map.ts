@@ -14,8 +14,10 @@ type MessageRow = {
   provenance: MessengerCoreMessageDto['provenance'];
   replyToMessageId: string | null;
   threadRootMessageId: string | null;
+  idempotencyKey?: string | null;
   createdAt: Date;
   editedAt: Date | null;
+  deletedAt?: Date | null;
   attachments?: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
   mentions?: Array<{ employeeId: string }>;
   referencesAsTarget?: Array<{
@@ -44,8 +46,10 @@ export function mapCoreMessage(
     provenance: row.provenance,
     replyToMessageId: row.replyToMessageId,
     threadRootMessageId: row.threadRootMessageId,
+    idempotencyKey: row.idempotencyKey ?? null,
     createdAt: row.createdAt,
     editedAt: row.editedAt,
+    deletedAt: row.deletedAt ?? null,
     attachments: (row.attachments ?? []).map((attachment) => ({
       id: attachment.id,
       fileAssetId: attachment.fileAssetId,

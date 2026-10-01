@@ -37,6 +37,7 @@ export function ClientConversationList({
   filter,
   provider,
   listPending = false,
+  emptyCopy,
   onSearchChange,
   onFilterChange,
   onProviderChange,
@@ -50,6 +51,7 @@ export function ClientConversationList({
   filter: 'all' | MessengerClientListFilter;
   provider: '' | MessengerClientProvider;
   listPending?: boolean;
+  emptyCopy?: string;
   onSearchChange: (value: string) => void;
   onFilterChange: (value: 'all' | MessengerClientListFilter) => void;
   onProviderChange: (value: '' | MessengerClientProvider) => void;
@@ -108,7 +110,7 @@ export function ClientConversationList({
         ) : null}
         {!listPending && items.length === 0 ? (
           <p className="px-2 py-6 text-center text-xs leading-relaxed text-black/40">
-            {CLIENT_MESSENGER_EMPTY_COPY[section]}
+            {emptyCopy ?? CLIENT_MESSENGER_EMPTY_COPY[section]}
           </p>
         ) : null}
         {items.map((row) => (

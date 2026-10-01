@@ -75,10 +75,11 @@ export function TaskSheet({
     onDelete,
     onRestore,
   });
-  const discussion = useTaskDiscussion(sheetId, open);
+  const [chatOpen, setChatOpen] = useState(false);
+  const discussionOpen = open && (!isMobileViewport || chatOpen);
+  const discussion = useTaskDiscussion(sheetId, discussionOpen);
   const [extrasOpen, setExtrasOpen] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
 
   if (!open && chatOpen) {
     setChatOpen(false);
@@ -256,6 +257,8 @@ export function TaskSheet({
                   <TaskSheetChatPanel
                     task={state.task}
                     messages={discussion.messages}
+                    composerDisabled={discussion.composerDisabled}
+                    onDraftChange={discussion.noteDraft}
                     onSend={(body) => {
                       void discussion.send(body);
                     }}
@@ -275,6 +278,8 @@ export function TaskSheet({
           onOpenChange={setChatOpen}
           task={state.task}
           messages={discussion.messages}
+          composerDisabled={discussion.composerDisabled}
+          onDraftChange={discussion.noteDraft}
           onSend={(body) => {
             void discussion.send(body);
           }}

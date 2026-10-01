@@ -4,13 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
-import { applyMessengerRealtimeMessage } from '@/features/messenger/query/messenger-cache';
-import {
-  applyMessengerAccessChanged,
-  applyMessengerRealtimeRead,
-  applyMessengerRealtimeSummary,
-} from '@/features/messenger/query/messenger-realtime-cache';
-import { recoverMessengerZone } from '@/features/messenger/query/messenger-delta-recovery';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
@@ -21,10 +14,13 @@ import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
 import { InternalMessengerNav } from './InternalMessengerNav';
 import { InternalStartBar } from './InternalStartBar';
+import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
+import { noteMessengerComposerDraft } from '@/features/messenger/query/messenger-send-claim';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerQueries } from './use-internal-messenger-queries';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
+import { VisibleThreadRead } from '@/features/messenger/query/use-visible-conversation-read';
 import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
 
 export function InternalMessengerApp({ embedded = false }: { embedded?: boolean }) {
@@ -64,31 +60,9 @@ function InternalMessengerScreen({
   useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
+    zone: 'INTERNAL',
     conversationId: session.activeId,
-    onInboundMessage: (_conversationId, message) => {
-      applyMessengerRealtimeMessage(queryClient, message);
-    },
-    onConversationSummary: (payload) => {
-      applyMessengerRealtimeSummary(queryClient, 'INTERNAL', payload);
-    },
-    onConversationRead: (payload) => {
-      applyMessengerRealtimeRead(queryClient, 'INTERNAL', payload);
-    },
-    onAccessChanged: (payload) => {
-      applyMessengerAccessChanged(queryClient, 'INTERNAL', payload.conversationId, payload.zone, {
-        activeId: session.activeId,
-        clearActive: () => session.setActiveId(null),
-      });
-    },
-    onReconnect: () => {
-      void recoverMessengerZone(queryClient, 'INTERNAL', {
-        activeId: session.activeId,
-        clearActive: () => session.setActiveId(null),
-      });
-    },
-    onReadListsInvalidate: () => {
-      void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
-    },
+    clearActive: () => session.setActiveId(null),
   });
 
   if (permsLoading) return <div className={INTERNAL_MESSENGER_SHELL_CLASS} />;
@@ -104,6 +78,12 @@ function InternalMessengerScreen({
 
   return (
     <div className={INTERNAL_MESSENGER_SHELL_CLASS}>
+      <VisibleThreadRead
+        zone="INTERNAL"
+        conversationId={session.activeId}
+        threadMounted={Boolean(active)}
+        items={data.messages.data?.items}
+      />
       <InternalMessengerNav section={section} />
       <InternalStartBar
         section={section}
@@ -177,21 +157,27 @@ function InternalMessengerScreen({
             messages={data.messages.data?.items ?? []}
             messagesLoading={data.messages.isPending && data.messages.data === undefined}
             newMessage={session.newMessage}
-            onNewMessageChange={session.setNewMessage}
+            onNewMessageChange={(value) => {
+              noteMessengerComposerDraft(session.activeId, value);
+              session.setNewMessage(value);
+            }}
             onSend={(extras) =>
               void sendInternalThreadMessage({
                 conversationId: session.activeId,
                 canWrite: Boolean(active.canWrite),
-                sendBusy: session.sendBusy,
                 content: session.newMessage,
                 extras,
-                setSendBusy: session.setSendBusy,
-                setNewMessage: session.setNewMessage,
+                setNewMessage: (value) => {
+                  noteMessengerComposerDraft(session.activeId, value);
+                  session.setNewMessage(value);
+                },
                 queryClient,
+                senderId: me?.id ?? null,
+                senderName: messengerComposerSenderName(me),
               })
             }
             canSend={Boolean(active.canWrite)}
-            sendDisabled={session.sendBusy}
+            sendDisabled={false}
             onToggleFavorite={() => void toggleInternalFavorite(queryClient, active.id)}
             collections={data.collections.data ?? []}
             onAddToCollection={(collectionId) =>

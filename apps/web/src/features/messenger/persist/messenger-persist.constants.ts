@@ -1,5 +1,10 @@
 export const MESSENGER_PERSISTENCE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
-export const MESSENGER_CACHE_SCHEMA_VERSION = 2;
+/** v3 adds the logical-send outbox. Older envelopes are rejected. */
+export const MESSENGER_CACHE_SCHEMA_VERSION = 3;
+/** Matches `MESSENGER_MESSAGE_BODY_MAX_LENGTH` on the API. */
+export const MESSENGER_OUTBOX_CONTENT_MAX = 10_000;
+export const MESSENGER_OUTBOX_MENTION_MAX = 20;
+export const MESSENGER_PERSIST_OUTBOX_MAX = 20;
 export const MESSENGER_PERSIST_DB_NAME = 'nbos-messenger-cache';
 export const MESSENGER_PERSIST_STORE_NAME = 'records';
 export const MESSENGER_PERSIST_DB_VERSION = 1;

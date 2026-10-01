@@ -18,6 +18,7 @@ import {
 import { InviteClientReadOnlyDto } from './dto/invite-client-read-only.dto';
 import { AssignClientAttentionDto } from './dto/assign-client-attention.dto';
 import { ListClientConversationsQueryDto } from './dto/list-client-conversations.query';
+import { PortfolioClientScopeQueryDto } from './dto/portfolio-client-scope.query';
 import { ListMessengerDeltaQueryDto } from './dto/list-messenger-delta.query';
 import { ListCoreMessagesQueryDto } from './dto/list-core-messages.query';
 import { SendCoreMessageDto } from './dto/send-core-message.dto';
@@ -55,6 +56,19 @@ export class MessengerCoreClientController {
   })
   listDelta(@CurrentUser() user: CurrentUserPayload, @Query() query: ListMessengerDeltaQueryDto) {
     return this.client.listDelta(user.id, query);
+  }
+
+  @Get('portfolio-scope')
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary:
+      'Client conversations for a Contact or Company portfolio. Binding does not grant SEND.',
+  })
+  portfolioScope(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query() query: PortfolioClientScopeQueryDto,
+  ) {
+    return this.client.portfolioScope(user.id, query);
   }
 
   @Get('conversations')

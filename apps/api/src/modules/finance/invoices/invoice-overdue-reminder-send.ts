@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { PrismaClient, SubscriptionReminderLanguage } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
+import type { FinanceClientReminderPublisher } from '../../messenger/core/messenger-finance-reminder.ops';
 import {
   findPaymentReminderCoreMessage,
   tryDeliverPaymentReminderWhatsApp,
@@ -56,6 +57,7 @@ export type OverdueSendItem = {
 export async function sendOverdueReminderWave(
   prisma: PrismaLike,
   outbound: WhatsAppOutboundQueueService | undefined,
+  publisher: FinanceClientReminderPublisher | null | undefined,
   item: OverdueSendItem,
   asOf: Date,
   asOfKey: string,
@@ -67,7 +69,7 @@ export async function sendOverdueReminderWave(
     await ensureOverdueJob(prisma, item, asOf, asOfKey, existingJob != null);
     return { kind: 'skip', reason: 'already_sent' };
   }
-  const persisted = await persistOverdueCore(prisma, outbound, item, dedupeKey);
+  const persisted = await persistOverdueCore(prisma, outbound, publisher, item, dedupeKey);
   if (persisted.kind === 'skip') return persisted;
   await ensureOverdueJob(prisma, item, asOf, asOfKey, existingJob != null, persisted.messageText);
   return { kind: 'sent' };
@@ -76,6 +78,7 @@ export async function sendOverdueReminderWave(
 async function persistOverdueCore(
   prisma: PrismaLike,
   outbound: WhatsAppOutboundQueueService | undefined,
+  publisher: FinanceClientReminderPublisher | null | undefined,
   item: OverdueSendItem,
   dedupeKey: string,
 ): Promise<
@@ -87,6 +90,7 @@ async function persistOverdueCore(
     const delivered = await tryDeliverPaymentReminderWhatsApp({
       prisma,
       outbound,
+      publisher,
       productId: item.productId,
       text: resolved.messageText,
       idempotencyKey: dedupeKey,

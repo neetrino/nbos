@@ -101,16 +101,24 @@ describe('WhatsApp webhook retryable ACK miss (FINDING-S8-07)', () => {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         update: vi.fn().mockResolvedValue({}),
       },
-      $queryRaw: vi.fn().mockResolvedValue([
-        {
-          id: 'cmd-1',
-          idempotencyKey: 'core-wa-send:msg-1',
-          kind: 'SEND_MESSAGE',
-          status: 'PENDING',
-          resultMessageId: 'msg-1',
-          conversationId: 'conv-1',
-        },
-      ]),
+      $queryRaw: vi.fn(async (query: { strings?: readonly string[] }) => {
+        const text = query?.strings?.join(' ') ?? '';
+        if (text.includes('messenger_zone_revision_counters')) return [{ revision: 4n }];
+        return [
+          {
+            id: 'cmd-1',
+            idempotencyKey: 'core-wa-send:msg-1',
+            kind: 'SEND_MESSAGE',
+            status: 'PENDING',
+            resultMessageId: 'msg-1',
+            conversationId: 'conv-1',
+          },
+        ];
+      }),
+      messengerConversation: {
+        findUnique: vi.fn().mockResolvedValue({ zone: 'CLIENT' }),
+      },
+      messengerConversationRevision: { upsert: vi.fn().mockResolvedValue({}) },
       auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     };
     const service = new WhatsAppGatewayWebhookService(

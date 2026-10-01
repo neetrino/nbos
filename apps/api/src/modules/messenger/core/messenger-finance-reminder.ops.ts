@@ -2,6 +2,7 @@ import type { PrismaClient } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
 import { FINANCE_REMINDER_SENDER_NAME } from './messenger-core-attention.constants';
 import { persistCoreMessage } from './messenger-core-message.ops';
+import type { MessengerCoreMessageDto } from './messenger-core.types';
 import {
   offerWhatsAppCoreSendJob,
   whatsAppCoreSendJobFromMessage,
@@ -9,6 +10,11 @@ import {
 import { resolveClientDestination } from './product-communication-resolver';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
+
+/** Post-commit fan-out. API callers use the gateway; the worker uses the cross-process bus. */
+export type FinanceClientReminderPublisher = {
+  publishPersistedCoreMessage: (message: MessengerCoreMessageDto) => void | Promise<void>;
+};
 
 export type FinanceClientReminderDelivery = {
   conversationId: string;
@@ -24,6 +30,7 @@ export async function deliverFinanceClientReminder(
   prisma: PrismaLike,
   outbound: WhatsAppOutboundQueueService | undefined,
   input: { productId: string; text: string; idempotencyKey: string },
+  publisher?: FinanceClientReminderPublisher | null,
 ): Promise<FinanceClientReminderDelivery | null> {
   const destination = await resolveClientDestination(prisma, input.productId, 'FINANCE');
   if (!destination) return null;
@@ -47,6 +54,7 @@ export async function deliverFinanceClientReminder(
     { mapping },
   );
   await offerWhatsAppCoreSendJob(outbound, whatsAppCoreSendJobFromMessage(message, mapping));
+  await publisher?.publishPersistedCoreMessage(message);
   return {
     conversationId: destination.conversationId,
     messageId: message.id,

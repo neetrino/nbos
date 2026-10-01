@@ -86,6 +86,7 @@ describe('InvoiceOverdueRemindersService', () => {
       prisma,
       outbound,
       expect.objectContaining({ productId: 'prod-1' }),
+      undefined,
     );
   });
 

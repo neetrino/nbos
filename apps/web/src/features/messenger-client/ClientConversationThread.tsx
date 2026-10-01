@@ -26,6 +26,10 @@ import { ClientThreadHeader } from './ClientThreadHeader';
 import { CLIENT_MESSAGE_ACTION_HOOKS } from '@/features/messenger-internal/client-message-action-hooks';
 import { clientConversationTitle } from './client-messenger-section';
 import { canUnlockClientComposer, isClientComposerUnlocked } from './client-composer-unlock';
+import {
+  failedLocalSendKey,
+  localSendReceiptLabel,
+} from '@/features/messenger/query/messenger-local-send';
 import { clientOutboundDeliveryLabel } from './client-delivery-label';
 
 function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
@@ -40,7 +44,8 @@ function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[]
       editedAt: row.editedAt,
       attachments: row.attachments,
     }),
-    deliveryLabel: clientOutboundDeliveryLabel(row),
+    deliveryLabel: localSendReceiptLabel(row) ?? clientOutboundDeliveryLabel(row),
+    localSendKey: failedLocalSendKey(row),
   }));
 }
 
@@ -148,9 +153,12 @@ export function ClientConversationThread({
             mentions={[]}
             onMentionsChange={() => undefined}
             placeholder="Type a message to the client…"
-            onSend={() =>
-              void Promise.resolve(onSend(actions.replyTo?.id)).then(() => actions.clearReply())
-            }
+            onSend={() => {
+              if (!newMessage.trim()) return;
+              const replyToMessageId = actions.replyTo?.id;
+              actions.clearReply();
+              void onSend(replyToMessageId);
+            }}
           />
         </>
       ) : (
