@@ -81,7 +81,7 @@ export function useMessengerOverlayOptional(): MessengerOverlayValue | null {
 }
 
 const MESSENGER_SHEET_PANEL_CLASS =
-  'flex h-[calc(100vh-2.5vh)] min-h-0 w-full max-w-[100vw] flex-col gap-0 overflow-hidden p-0 dark:border-t-[0.5px] dark:border-white/45 data-[side=right]:w-[92vw] sm:max-w-none sm:data-[side=right]:w-[min(92vw,calc(100vw-2rem-2.75rem))]';
+  'flex h-[calc(100vh-2.5vh)] min-h-0 w-full max-w-[100vw] flex-col gap-0 overflow-hidden p-0 data-[side=right]:w-[92vw] sm:max-w-none sm:data-[side=right]:w-[min(92vw,calc(100vw-2rem-2.75rem))]';
 
 const MESSENGER_SHEET_RAIL_ANCHOR_CLASS = cn(
   SHEET_MOBILE_FLOATING_RAIL_ANCHOR_CLASS,
