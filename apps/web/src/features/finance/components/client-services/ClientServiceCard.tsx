@@ -6,6 +6,7 @@ import { KanbanCardShell, StatusBadge } from '@/components/shared';
 import { formatAmount } from '@/features/finance/constants/finance';
 import {
   CLIENT_SERVICE_BILLING_MODELS,
+  CLIENT_SERVICE_TYPES,
   clientServiceOptionLabel,
 } from '@/features/finance/constants/client-services';
 import { parseMoneyAmount } from '@/lib/format/money';
@@ -15,7 +16,12 @@ import { isClientServiceDomain } from '@/features/finance/constants/client-servi
 import { ClientServiceRegistryBadge } from './ClientServiceRegistryBadge';
 import { ClientServiceRegistryCheckButton } from './ClientServiceRegistryCheckButton';
 import { ClientServiceStageBadge } from './ClientServiceStageBadge';
-import { translateClientServiceBilling, useClientServicesT } from './client-service-message-keys';
+import {
+  translateClientServiceBilling,
+  translateClientServiceType,
+  useClientServicesT,
+} from './client-service-message-keys';
+import { getClientServiceCardCategory } from './client-service-card-category';
 import { useLocale } from 'next-intl';
 
 interface ClientServiceCardProps {
@@ -41,6 +47,13 @@ export function ClientServiceCard({
 }: ClientServiceCardProps) {
   const t = useClientServicesT();
   const locale = useLocale();
+  const category = getClientServiceCardCategory(service.type);
+  const CategoryIcon = category.icon;
+  const categoryLabel = translateClientServiceType(
+    t,
+    service.type,
+    clientServiceOptionLabel(CLIENT_SERVICE_TYPES, service.type),
+  );
   const billingLabel = translateClientServiceBilling(
     t,
     service.billingModel,
@@ -55,7 +68,7 @@ export function ClientServiceCard({
       padding="none"
       baseShadow="sm"
       hoverShadow="md"
-      className={cn(service.overdue && 'border-red-300 dark:border-red-900/50')}
+      className={cn('border-l-4', category.surface)}
     >
       <div
         role="button"
@@ -63,11 +76,21 @@ export function ClientServiceCard({
         className={cn(
           'cursor-pointer space-y-3 rounded-xl p-4',
           'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-          service.overdue && 'bg-red-50/60 dark:bg-red-950/20',
         )}
         onClick={() => onOpen(service)}
         onKeyDown={(event) => handleCardKeyDown(event, service, onOpen)}
       >
+        <div>
+          <span
+            className={cn(
+              'inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] leading-4 font-semibold',
+              category.label,
+            )}
+          >
+            <CategoryIcon size={13} className="shrink-0" aria-hidden />
+            <span className="truncate">{categoryLabel}</span>
+          </span>
+        </div>
         <div className="flex min-w-0 items-start justify-between gap-2">
           <p className="text-foreground min-w-0 truncate text-sm leading-snug font-bold">
             {service.name}
