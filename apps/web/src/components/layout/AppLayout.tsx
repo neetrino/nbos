@@ -110,7 +110,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                             <div
                               className="nbos-app-canvas grid h-dvh overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out"
                               style={{
-                                gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr) ${rightRailPx}px`,
+                                gridTemplateColumns: `${mainOffsetPx}px minmax(0, 1fr)`,
                               }}
                             >
                               <Sidebar
@@ -119,29 +119,38 @@ export function AppLayout({ children }: AppLayoutProps) {
                                 mobileOpen={isMobileViewport ? mobileNavOpen : undefined}
                                 onMobileOpenChange={isMobileViewport ? setMobileNavOpen : undefined}
                               />
-                              <div className="relative flex min-h-0 min-w-0 flex-col overflow-hidden">
-                                <Topbar />
-                                <main
-                                  className={cn(
-                                    'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
-                                    isCanvasRoute
-                                      ? 'overflow-hidden'
-                                      : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
-                                    APP_MAIN_CONTENT_INSET,
-                                  )}
-                                >
-                                  {children}
-                                </main>
-                                {isMobileViewport ? (
-                                  <MobileBottomNav
-                                    menuOpen={mobileNavOpen}
-                                    onMoreClick={() => setMobileNavOpen((open) => !open)}
-                                  />
-                                ) : null}
-                                <MessengerOverlay />
-                                <ClientMessengerOverlay />
+                              <div
+                                className="grid min-h-0 min-w-0 grid-rows-[auto_minmax(0,1fr)]"
+                                style={{
+                                  gridTemplateColumns: `minmax(0, 1fr) ${rightRailPx}px`,
+                                }}
+                              >
+                                <div className="col-span-2 min-w-0">
+                                  <Topbar />
+                                </div>
+                                <div className="relative flex min-h-0 min-w-0 flex-col overflow-hidden">
+                                  <main
+                                    className={cn(
+                                      'flex min-h-0 min-w-0 flex-1 flex-col overscroll-contain bg-transparent',
+                                      isCanvasRoute
+                                        ? 'overflow-hidden'
+                                        : 'overflow-y-auto [scrollbar-gutter:stable] max-md:overflow-x-hidden max-md:[scrollbar-gutter:auto]',
+                                      APP_MAIN_CONTENT_INSET,
+                                    )}
+                                  >
+                                    {children}
+                                  </main>
+                                  {isMobileViewport ? (
+                                    <MobileBottomNav
+                                      menuOpen={mobileNavOpen}
+                                      onMoreClick={() => setMobileNavOpen((open) => !open)}
+                                    />
+                                  ) : null}
+                                  <MessengerOverlay />
+                                  <ClientMessengerOverlay />
+                                </div>
+                                {showMessengerRightRail ? <AppMessengerRightRail /> : null}
                               </div>
-                              {showMessengerRightRail ? <AppMessengerRightRail /> : null}
                             </div>
                           </ClientMessengerOverlayProvider>
                         </MessengerOverlayProvider>

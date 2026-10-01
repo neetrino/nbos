@@ -101,7 +101,9 @@ function ClientInboxFilterStrip({
           type="button"
           onClick={() => onFilterChange(item.id)}
           className={`${FILTER_TAB_CLASS} ${
-            filter === item.id ? 'text-teal-950' : 'text-black/45 hover:text-teal-950'
+            filter === item.id
+              ? 'text-sidebar-foreground'
+              : 'text-sidebar-muted hover:text-sidebar-foreground'
           }`}
         >
           {item.label}
@@ -153,10 +155,13 @@ export function ClientConversationList({
   onToggleFavorite: (id: string) => void;
 }) {
   return (
-    <aside className="border-border bg-card flex min-h-0 w-72 shrink-0 flex-col border-r">
+    <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border flex min-h-0 w-72 shrink-0 flex-col border-r">
       <div className="p-3">
         <div className="relative">
-          <Search size={15} className="absolute top-1/2 left-2.5 -translate-y-1/2 text-black/30" />
+          <Search
+            size={15}
+            className="text-muted-foreground absolute top-1/2 left-2.5 -translate-y-1/2"
+          />
           <input
             {...LIST_SEARCH_INPUT_PROPS}
             type="text"
@@ -164,7 +169,7 @@ export function ClientConversationList({
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search Client Messenger..."
             role="searchbox"
-            className="w-full rounded-lg border border-teal-900/10 bg-[#F4F7F7] py-1.5 pr-3 pl-8 text-sm text-black placeholder:text-black/35 focus:ring-2 focus:ring-teal-800/25 focus:outline-none"
+            className="border-sidebar-border bg-card text-foreground placeholder:text-muted-foreground w-full rounded-lg border py-1.5 pr-3 pl-8 text-sm focus:ring-2 focus:ring-teal-800/25 focus:outline-none"
           />
         </div>
         <ClientInboxFilterStrip filter={filter} onFilterChange={onFilterChange} />
@@ -172,12 +177,12 @@ export function ClientConversationList({
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-3">
         {listPending ? (
-          <p className="px-2 py-6 text-center text-xs leading-relaxed text-black/40">
+          <p className="text-sidebar-muted px-2 py-6 text-center text-xs leading-relaxed">
             Loading conversations…
           </p>
         ) : null}
         {!listPending && items.length === 0 ? (
-          <p className="px-2 py-6 text-center text-xs leading-relaxed text-black/40">
+          <p className="text-sidebar-muted px-2 py-6 text-center text-xs leading-relaxed">
             {CLIENT_MESSENGER_EMPTY_COPY[section]}
           </p>
         ) : null}
@@ -212,7 +217,7 @@ function ClientListRow({
   return (
     <div
       className={`mb-0.5 flex items-center rounded-lg ${
-        active ? 'bg-teal-800/10' : 'hover:bg-black/[0.03]'
+        active ? 'bg-teal-800/20' : 'hover:bg-white/5'
       }`}
     >
       <button
@@ -220,10 +225,10 @@ function ClientListRow({
         onClick={() => onSelect(row.id)}
         className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm"
       >
-        <Globe size={15} className={active ? 'text-teal-800' : 'text-black/30'} />
+        <Globe size={15} className={active ? 'text-teal-300' : 'text-sidebar-muted'} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium text-black">{title}</span>
-          <span className="block truncate text-[11px] text-black/40">
+          <span className="text-sidebar-foreground block truncate font-medium">{title}</span>
+          <span className="text-sidebar-muted block truncate text-[11px]">
             {clientProviderLabel(row.provider)}
             {attentionLabel ? ` · ${attentionLabel}` : ''}
             {row.lastMessagePreview ? ` · ${row.lastMessagePreview}` : ''}
@@ -241,7 +246,7 @@ function ClientListRow({
         type="button"
         aria-label={row.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
         onClick={() => onToggleFavorite(row.id)}
-        className="shrink-0 px-2 py-1.5 text-black/30 hover:text-teal-800"
+        className="text-sidebar-muted shrink-0 px-2 py-1.5 hover:text-teal-300"
       >
         <Star size={14} className={row.isFavorite ? 'fill-teal-800 text-teal-800' : ''} />
       </button>

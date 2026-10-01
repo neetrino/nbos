@@ -18,18 +18,18 @@ export function InternalReplyQuote({
   return (
     <div className={`${SHEET_COMPOSER_GUTTER_CLASS} pb-1`}>
       <div
-        className={`flex min-w-0 items-center overflow-hidden ${SHEET_BUBBLE_LARGE_RADIUS_CLASS} bg-white px-3 py-2 shadow-[0_1px_2px_rgba(15,23,42,0.06)]`}
+        className={`bg-card flex min-w-0 items-center overflow-hidden ${SHEET_BUBBLE_LARGE_RADIUS_CLASS} px-3 py-2 shadow-[var(--shadow-panel)]`}
       >
         <span className="mr-2 h-8 w-0.5 shrink-0 rounded-full bg-[#4f46e5]" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-semibold text-[#4f46e5]">{senderName}</p>
-          <p className="truncate text-xs text-[#64748b]">{content}</p>
+          <p className="text-primary truncate text-xs font-semibold">{senderName}</p>
+          <p className="text-muted-foreground truncate text-xs">{content}</p>
         </div>
         <button
           type="button"
           aria-label="Cancel reply"
           onClick={onClear}
-          className="ml-1 flex size-8 shrink-0 items-center justify-center rounded-full text-[#64748b] hover:bg-[#f8fafc]"
+          className="text-muted-foreground hover:bg-muted ml-1 flex size-8 shrink-0 items-center justify-center rounded-full"
         >
           <X size={16} />
         </button>

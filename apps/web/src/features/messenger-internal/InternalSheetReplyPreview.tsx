@@ -12,9 +12,9 @@ export function InternalSheetReplyPreview({
   mine: boolean;
   onJump: (id: string) => void;
 }) {
-  const tone = mine ? 'bg-white/15 text-white' : 'bg-[#eef2ff] text-[#334155]';
-  const name = mine ? 'text-white' : 'text-[#4f46e5]';
-  const bar = mine ? 'bg-white/80' : 'bg-[#4f46e5]';
+  const tone = mine ? 'bg-white/15 text-white' : 'bg-primary/10 text-foreground';
+  const name = mine ? 'text-white' : 'text-primary';
+  const bar = mine ? 'bg-white/80' : 'bg-primary';
   return (
     <button
       type="button"

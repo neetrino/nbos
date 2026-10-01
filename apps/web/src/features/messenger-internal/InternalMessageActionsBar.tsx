@@ -68,54 +68,54 @@ export function InternalMessageActionsBar({
       onMouseDown={(event) => event.stopPropagation()}
     >
       <MenuRow
-        icon={<CornerUpLeft size={16} />}
+        icon={<CornerUpLeft size={14} />}
         label="Reply"
         onClick={() => run(onReply, onClose)}
       />
       <MenuRow
-        icon={<Forward size={16} />}
+        icon={<Forward size={14} />}
         label="Forward"
         onClick={() => run(onForward, onClose)}
       />
       {canCreateTask ? (
         <MenuRow
-          icon={<ListTodo size={16} />}
+          icon={<ListTodo size={14} />}
           label="Create Task"
           onClick={() => run(onCreateTask, onClose)}
         />
       ) : null}
       {canCreateTicket && onCreateTicket ? (
         <MenuRow
-          icon={<Ticket size={16} />}
+          icon={<Ticket size={14} />}
           label="Create Ticket"
           onClick={() => run(onCreateTicket, onClose)}
         />
       ) : null}
       {canLinkTicket && onLinkTicket ? (
         <MenuRow
-          icon={<Link2 size={16} />}
+          icon={<Link2 size={14} />}
           label="Link Ticket"
           onClick={() => run(onLinkTicket, onClose)}
         />
       ) : null}
       <MenuRow
-        icon={<CircleCheck size={16} />}
+        icon={<CircleCheck size={14} />}
         label="Select"
         onClick={() => run(onSelect, onClose)}
       />
       {onUnpin ? (
-        <MenuRow icon={<PinOff size={16} />} label="Unpin" onClick={() => run(onUnpin, onClose)} />
+        <MenuRow icon={<PinOff size={14} />} label="Unpin" onClick={() => run(onUnpin, onClose)} />
       ) : onPin ? (
-        <MenuRow icon={<Pin size={16} />} label="Pin" onClick={() => run(onPin, onClose)} />
+        <MenuRow icon={<Pin size={14} />} label="Pin" onClick={() => run(onPin, onClose)} />
       ) : null}
       <MenuDivider />
       <MenuRow
-        icon={<ExternalLink size={16} />}
+        icon={<ExternalLink size={14} />}
         label="Open original"
         onClick={() => run(onOpenOriginal, onClose)}
       />
       <MenuRow
-        icon={<ClipboardCopy size={16} />}
+        icon={<ClipboardCopy size={14} />}
         label="Copy source"
         onClick={() => run(onCopySource, onClose)}
       />
@@ -123,7 +123,7 @@ export function InternalMessageActionsBar({
         <>
           <MenuDivider />
           <MenuRow
-            icon={<Trash2 size={16} />}
+            icon={<Trash2 size={14} />}
             label="Delete"
             tone="danger"
             onClick={() => run(onDelete, onClose)}
@@ -137,7 +137,7 @@ export function InternalMessageActionsBar({
 function menuMotionClass(visible: boolean, opensUp?: boolean): string {
   const origin = opensUp ? 'origin-bottom-left' : 'origin-top-left';
   const motion = visible ? 'scale-100 opacity-100' : 'scale-90 opacity-0';
-  return `${PORTAL_DROPDOWN_Z_CLASS} ${origin} fixed min-w-56 overflow-hidden rounded-2xl bg-[#2b2b2b] text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${motion}`;
+  return `${PORTAL_DROPDOWN_Z_CLASS} ${origin} fixed min-w-48 overflow-hidden rounded-xl bg-[#2b2b2b] text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${motion}`;
 }
 
 function useHeldMenuAnchor(anchor: MessageActionMenuAnchor | null): MessageActionMenuAnchor | null {
@@ -185,7 +185,7 @@ function MenuRow({
       role="menuitem"
       onMouseDown={(event) => event.stopPropagation()}
       onClick={onClick}
-      className={`flex w-full items-center gap-3 px-3.5 py-2.5 text-left text-sm hover:bg-white/10 ${
+      className={`flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-[13px] leading-5 hover:bg-white/10 ${
         danger ? 'text-[#fca5a5] hover:bg-white/10' : ''
       }`}
     >

@@ -186,7 +186,7 @@ function InternalMessengerScreen({
     return (
       <InternalMessengerSheetFrame embedded={embedded}>
         <div
-          className={`${INTERNAL_MESSENGER_SHELL_CLASS} items-center justify-center p-6 text-sm text-[#64748b]`}
+          className={`${INTERNAL_MESSENGER_SHELL_CLASS} text-muted-foreground items-center justify-center p-6 text-sm`}
         >
           You do not have access to Internal Messenger.
         </div>
@@ -216,7 +216,7 @@ function InternalMessengerScreen({
               onSelect={(id) => session.setActiveCollectionId(id)}
             />
           ) : (
-            <div className="flex w-80 max-w-[46%] shrink-0 flex-col border-r border-[#f1f5f9] bg-[#fafbfc]">
+            <div className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-80 max-w-[46%] shrink-0 flex-col border-r">
               <InternalConversationList
                 section={section}
                 items={data.items}
@@ -288,7 +288,7 @@ function InternalMessengerScreen({
           ) : section === 'groups' ? (
             <InternalGroupsEmptyPane onCreateGroup={createGroup} />
           ) : (
-            <div className="flex min-h-0 flex-1 items-center justify-center bg-[#eef2ff] text-sm text-[#64748b]">
+            <div className="text-muted-foreground dark:bg-background flex min-h-0 flex-1 items-center justify-center bg-[#eef2ff] text-sm">
               Select an Internal conversation
             </div>
           )}

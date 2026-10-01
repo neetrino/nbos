@@ -40,7 +40,7 @@ export function InternalConversationList({
   const listRef = useRef<HTMLDivElement>(null);
   const selection = useConversationSelection(listRef, activeId);
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#fafbfc]">
+    <div className="bg-sidebar text-sidebar-foreground flex min-h-0 flex-1 flex-col">
       <ListSearch
         search={search}
         filter={filter}
@@ -48,7 +48,7 @@ export function InternalConversationList({
         onFilterChange={onFilterChange}
         createGroup={section === 'groups' ? onCreateGroup : undefined}
       />
-      <div ref={listRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#f8fafc] px-2 pb-6">
+      <div ref={listRef} className="relative min-h-0 flex-1 overflow-y-auto px-2 pb-6">
         <ConversationSelectionCard rect={selection.rect} ready={selection.ready} />
         <ListStatus section={section} pending={listPending} empty={items.length === 0} />
         <ConversationRows
@@ -131,8 +131,8 @@ function ListSearch({
 }) {
   return (
     <div className="flex items-center gap-3 p-3">
-      <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-2xl border border-[#e2e8f0] bg-white px-3">
-        <Search size={16} className="shrink-0 text-[#94a3b8]" />
+      <label className="border-border bg-card flex h-9 min-w-0 flex-1 items-center gap-2 rounded-2xl border px-3">
+        <Search size={16} className="text-muted-foreground shrink-0" />
         <input
           {...LIST_SEARCH_INPUT_PROPS}
           type="text"
@@ -140,7 +140,7 @@ function ListSearch({
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Search"
           role="searchbox"
-          className="w-full bg-transparent text-xs text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none"
+          className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-xs focus:outline-none"
         />
       </label>
       {createGroup ? <InternalCreateMenu onCreateGroup={createGroup} /> : null}
@@ -178,7 +178,9 @@ function FilterToggle({
       aria-pressed={pressed}
       onClick={onClick}
       className={`flex size-8 items-center justify-center rounded-lg ${
-        pressed ? 'bg-[#eef2ff] text-[#4f46e5]' : 'text-[#64748b] hover:bg-white'
+        pressed
+          ? 'bg-primary/15 text-primary'
+          : 'text-muted-foreground hover:bg-card hover:text-foreground'
       }`}
     >
       {icon}

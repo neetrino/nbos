@@ -30,7 +30,7 @@ export const INTERNAL_MESSENGER_EMPTY_COPY: Record<InternalMessengerSectionId, s
 };
 
 export const INTERNAL_MESSENGER_SHELL_CLASS =
-  'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-white';
+  'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-card text-card-foreground';
 
 /** Space under the last bubble so the overlay composer does not cover it. */
 export const SHEET_COMPOSER_OVERLAY_PAD_CLASS = 'pb-16';
@@ -52,12 +52,12 @@ export const SHEET_COMPOSER_RADIUS_BY_ROWS = [
   'rounded-[12px]',
 ] as const;
 export const SHEET_COMPOSER_FIELD_BASE_CLASS =
-  'flex min-w-0 flex-1 items-center border border-[#e2e8f0] bg-white px-4 transition-[border-radius] duration-150';
+  'flex min-w-0 flex-1 items-center border border-border bg-card px-4 transition-[border-radius] duration-150';
 export const SHEET_COMPOSER_TEXTAREA_CLASS =
-  'max-h-[105px] min-h-[21px] min-w-0 flex-1 resize-none overflow-y-auto bg-transparent text-sm leading-[21px] text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none disabled:opacity-50';
+  'max-h-[105px] min-h-[21px] min-w-0 flex-1 resize-none overflow-y-auto bg-transparent text-sm leading-[21px] text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50';
 
 export const SHEET_JUMP_TO_END_BUTTON_CLASS =
-  'absolute right-4 bottom-16 z-30 flex size-10 items-center justify-center rounded-full bg-white text-[#334155] shadow-[0_2px_10px_rgba(15,23,42,0.16)] transition-[opacity,transform] duration-200 ease-out hover:bg-[#f8fafc]';
+  'absolute right-4 bottom-16 z-30 flex size-10 items-center justify-center rounded-full bg-card text-foreground shadow-[var(--shadow-panel)] transition-[opacity,transform] duration-200 ease-out hover:bg-muted';
 
 export const SHEET_BUBBLE_LARGE_RADIUS_CLASS = 'rounded-[15px]';
 export const SHEET_REPLY_QUOTE_RADIUS_CLASS = 'rounded-[10px]';
@@ -70,6 +70,7 @@ export const SHEET_ACTION_MENU_FADE_MS = 280;
 export const SHEET_REPLY_JUMP_FLASH_DELAY_MS = 280;
 export const SHEET_REPLY_JUMP_FLASH_MS = 500;
 export const SHEET_MESSAGE_BUBBLE_ATTR = 'data-sheet-bubble';
-export const MESSAGE_ACTION_MENU_WIDTH_PX = 224;
-export const MESSAGE_ACTION_MENU_HEIGHT_PX = 280;
+export const MESSAGE_ACTION_MENU_WIDTH_PX = 192;
+export const MESSAGE_ACTION_MENU_HEIGHT_PX = 248;
+export const MESSAGE_ACTION_MENU_GAP_PX = 4;
 export const MESSAGE_ACTION_MENU_VIEW_PAD_PX = 8;

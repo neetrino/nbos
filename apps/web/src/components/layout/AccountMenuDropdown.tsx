@@ -163,9 +163,11 @@ function AccountMenuPanel({
 
 type AccountMenuDropdownProps = {
   me: MeResponse | null | undefined;
+  /** Same circle size as the direct-message rail, still opened from the header. */
+  placement?: 'header' | 'rail';
 };
 
-export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
+export function AccountMenuDropdown({ me, placement = 'header' }: AccountMenuDropdownProps) {
   const t = useTranslations('account');
   const tQuick = useTranslations('quick');
   const router = useRouter();
@@ -181,9 +183,16 @@ export function AccountMenuDropdown({ me }: AccountMenuDropdownProps) {
       <DropdownMenuTrigger
         type="button"
         aria-label={t('accountMenuAria', { name: displayName })}
-        className="border-border bg-muted/30 text-foreground hover:bg-muted/55 focus-visible:ring-ring flex size-9 shrink-0 items-center justify-center rounded-full border p-0 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className={
+          placement === 'rail'
+            ? 'flex size-10 shrink-0 items-center justify-center rounded-full p-0 outline-none focus-visible:ring-2 focus-visible:ring-[#a5b4fc] focus-visible:ring-offset-1'
+            : 'border-border bg-muted/30 text-foreground hover:bg-muted/55 focus-visible:ring-ring flex size-9 shrink-0 items-center justify-center rounded-full border p-0 shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none'
+        }
       >
-        <Avatar className="size-8 shadow-sm" size="default">
+        <Avatar
+          className={placement === 'rail' ? 'size-10' : 'size-8 shadow-sm'}
+          size={placement === 'rail' ? 'lg' : 'default'}
+        >
           {photo ? (
             <AvatarImage src={photo} alt={photoAlt} loading="eager" decoding="async" />
           ) : null}

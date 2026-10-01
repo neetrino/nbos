@@ -48,7 +48,7 @@ function CreateGroupTrigger({ variant }: { variant: 'icon' | 'button' }) {
           className={
             variant === 'button'
               ? 'inline-flex items-center gap-2 rounded-full bg-[#4f46e5] px-4 py-2 text-sm font-medium text-white hover:bg-[#4338ca]'
-              : 'flex size-9 shrink-0 items-center justify-center rounded-full border border-[#e2e8f0] bg-white text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5]'
+              : 'border-border bg-card text-muted-foreground hover:bg-muted hover:text-primary flex size-9 shrink-0 items-center justify-center rounded-full border'
           }
         >
           <Plus size={variant === 'button' ? 16 : 18} aria-hidden />
@@ -81,7 +81,7 @@ function GroupNameForm({ busy, onCreate }: { busy: boolean; onCreate: (title: st
         onChange={(event) => setTitle(event.target.value)}
         placeholder="Group name"
         aria-label="Group name"
-        className="rounded-lg border border-black/[0.08] bg-white px-2 py-1.5 text-sm text-black placeholder:text-black/35 focus:outline-none"
+        className="border-border bg-card text-foreground placeholder:text-muted-foreground rounded-lg border px-2 py-1.5 text-sm focus:outline-none"
       />
       <button
         type="submit"

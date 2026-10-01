@@ -79,9 +79,9 @@ export function ThreadMessages({
   return (
     <div ref={scrollerRef} className={`flex min-h-0 flex-1 flex-col overflow-y-auto ${canvas}`}>
       {messagesLoading ? (
-        <p className="px-5 py-8 text-center text-sm text-[#64748b]">Loading…</p>
+        <p className="text-muted-foreground px-5 py-8 text-center text-sm">Loading…</p>
       ) : views.length === 0 ? (
-        <p className="px-5 py-8 text-center text-sm text-[#64748b]">No messages yet.</p>
+        <p className="text-muted-foreground px-5 py-8 text-center text-sm">No messages yet.</p>
       ) : (
         <ThreadRows
           views={views}

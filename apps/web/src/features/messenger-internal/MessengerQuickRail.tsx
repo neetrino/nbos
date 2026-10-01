@@ -42,33 +42,35 @@ export function MessengerQuickRail({
   return (
     <aside
       aria-label="Employees"
-      className={`border-sidebar-border bg-sidebar hidden h-full w-16 shrink-0 flex-col items-center gap-2.5 overflow-y-auto border-l pt-3 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex [&::-webkit-scrollbar]:hidden ${className}`}
+      className={`border-sidebar-border bg-sidebar hidden h-full min-h-0 w-16 shrink-0 flex-col border-l lg:flex ${className}`}
     >
-      {hasShortcuts
-        ? shortcuts!.map((shortcut) => <RailShortcut key={shortcut.id} shortcut={shortcut} />)
-        : null}
-      {hasShortcuts && hasPeople ? <RailDivider /> : null}
-      {pinned.length > 0 ? (
-        <>
-          {pinned.map((person) => (
-            <QuickAvatar
-              key={person.id}
-              person={person}
-              active={person.id === activePersonId}
-              onSelect={() => onSelect(person.id)}
-            />
-          ))}
-          {rest.length > 0 ? <RailDivider /> : null}
-        </>
-      ) : null}
-      {rest.map((person) => (
-        <QuickAvatar
-          key={person.id}
-          person={person}
-          active={person.id === activePersonId}
-          onSelect={() => onSelect(person.id)}
-        />
-      ))}
+      <div className="mt-auto flex min-h-0 w-full flex-col items-center gap-2.5 overflow-y-auto px-0 py-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {hasShortcuts
+          ? shortcuts!.map((shortcut) => <RailShortcut key={shortcut.id} shortcut={shortcut} />)
+          : null}
+        {hasShortcuts && hasPeople ? <RailDivider /> : null}
+        {pinned.length > 0 ? (
+          <>
+            {pinned.map((person) => (
+              <QuickAvatar
+                key={person.id}
+                person={person}
+                active={person.id === activePersonId}
+                onSelect={() => onSelect(person.id)}
+              />
+            ))}
+            {rest.length > 0 ? <RailDivider /> : null}
+          </>
+        ) : null}
+        {rest.map((person) => (
+          <QuickAvatar
+            key={person.id}
+            person={person}
+            active={person.id === activePersonId}
+            onSelect={() => onSelect(person.id)}
+          />
+        ))}
+      </div>
     </aside>
   );
 }
@@ -78,8 +80,8 @@ function RailShortcut({ shortcut }: { shortcut: MessengerQuickRailShortcut }) {
   const unread = shortcut.unreadCount;
   const tone =
     shortcut.id === 'client-messenger'
-      ? 'bg-teal-800/10 hover:bg-teal-800/15'
-      : 'bg-purple-600/10 hover:bg-purple-600/15';
+      ? 'bg-emerald-500/25 hover:bg-emerald-500/35'
+      : 'bg-purple-500/25 hover:bg-purple-500/35';
   return (
     <button
       type="button"
@@ -97,7 +99,7 @@ function RailShortcut({ shortcut }: { shortcut: MessengerQuickRailShortcut }) {
 }
 
 function RailDivider() {
-  return <div aria-hidden className="my-0.5 h-px w-10 shrink-0 bg-[#e2e8f0]" />;
+  return <div aria-hidden className="bg-border my-0.5 h-px w-10 shrink-0" />;
 }
 
 function QuickAvatar({
@@ -150,7 +152,7 @@ function RailUnreadBadge({ count }: { count: number }) {
   return (
     <span
       aria-hidden
-      className="pointer-events-none absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] leading-none font-semibold text-white tabular-nums ring-2 ring-[#f8fafc]"
+      className="ring-sidebar pointer-events-none absolute -top-1 -right-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] leading-none font-semibold text-white tabular-nums ring-2"
     >
       {label}
     </span>

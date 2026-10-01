@@ -23,16 +23,16 @@ export function InternalMessageSelectionBar({
   onDone: () => void;
 }) {
   return (
-    <div className="flex h-12 items-center gap-1 border-b border-[#e2e8f0] bg-white px-2">
+    <div className="border-border bg-card flex h-12 items-center gap-1 border-b px-2">
       <button
         type="button"
         aria-label="Done"
         onClick={onDone}
-        className="flex size-9 items-center justify-center rounded-full text-[#64748b] hover:bg-[#f1f5f9]"
+        className="text-muted-foreground hover:bg-muted flex size-9 items-center justify-center rounded-full"
       >
         <X size={20} />
       </button>
-      <p className="min-w-0 flex-1 truncate text-sm font-semibold text-[#0f172a]">
+      <p className="text-foreground min-w-0 flex-1 truncate text-sm font-semibold">
         {selectedCount}
       </p>
       {onReply ? (

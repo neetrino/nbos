@@ -30,7 +30,7 @@ export function ClientInviteDialog({
 
   return (
     <div className="absolute inset-0 z-10 flex items-end justify-end bg-black/20 p-4">
-      <div className="w-80 rounded-xl border border-teal-900/15 bg-white p-4 shadow-lg">
+      <div className="bg-card text-card-foreground w-80 rounded-xl border border-teal-900/15 p-4 shadow-lg dark:border-teal-700/30">
         <h3 className="text-sm font-semibold text-black">Invite read-only specialist</h3>
         <p className="mt-1 text-[11px] text-black/50">
           Membership is READ_ONLY. Invite never grants Client SEND.

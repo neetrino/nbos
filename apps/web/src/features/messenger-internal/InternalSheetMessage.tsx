@@ -86,7 +86,7 @@ function IncomingSheetMessage({
       />
       <div
         data-sheet-bubble=""
-        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message, 'tl')} bg-white text-[#1e293b] shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
+        className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message, 'tl')} bg-card text-card-foreground dark:bg-secondary shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
         <SheetQuote message={message} mine={false} onOpenForwardSource={onOpenForwardSource} />
         <BubbleBody
@@ -230,7 +230,7 @@ function MessageAvatar({
   label: string;
 }) {
   const palette = useSheetMessengerPalette();
-  const tone = mine ? 'bg-white text-[#334155]' : palette.incomingAvatar;
+  const tone = mine ? 'bg-card text-foreground' : palette.incomingAvatar;
   return (
     <MessengerPersonAvatar
       employeeId={employeeId}
@@ -249,7 +249,7 @@ function AttachmentRow({
   light?: boolean;
 }) {
   if (message.attachments.length === 0) return null;
-  const tone = light ? 'bg-white/15 text-white' : 'bg-[#f8fafc] text-[#64748b]';
+  const tone = light ? 'bg-white/15 text-white' : 'bg-muted text-muted-foreground';
   return (
     <div className="mt-2 flex flex-wrap gap-1.5">
       {message.attachments.map((attachment) => (

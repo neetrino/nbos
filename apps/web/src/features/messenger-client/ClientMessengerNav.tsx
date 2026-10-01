@@ -32,7 +32,7 @@ export function ClientMessengerNav({
   return (
     <nav
       aria-label="Client Messenger"
-      className="flex h-12 shrink-0 items-center gap-2 border-b border-[#f1f5f9] bg-[#fafbfc] pr-2 pl-6"
+      className="bg-sidebar text-sidebar-foreground border-sidebar-border flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-6"
     >
       <div ref={groupRef} className={`${SECTION_STRIP_CLASS} min-w-0 flex-1`}>
         <SlidingPillBackdrop
@@ -92,7 +92,7 @@ function SectionTab({
   itemRef: (node: HTMLElement | null) => void;
 }) {
   const className = `${SECTION_TAB_CLASS} ${
-    active ? 'text-white' : 'text-[#64748b] hover:text-[#0f172a]'
+    active ? 'text-white' : 'text-muted-foreground hover:text-foreground'
   }`;
   if (onSectionChange) {
     return (
