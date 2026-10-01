@@ -190,7 +190,7 @@ function HeaderIcon({ label, src }: { label: string; src: string }) {
       aria-label={label}
       className="flex items-center justify-center rounded-lg p-1.5"
     >
-      <img src={src} alt="" />
+      <img src={src} alt="" className="dark:brightness-0 dark:invert" />
     </button>
   );
 }

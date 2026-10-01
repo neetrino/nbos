@@ -90,7 +90,7 @@ function SheetHeaderActions({
 function HeaderIconButton({ label, src }: { label: string; src: string }) {
   return (
     <button type="button" aria-label={label} className={HEADER_ICON_BUTTON_CLASS}>
-      <img src={src} alt="" />
+      <img src={src} alt="" className="dark:brightness-0 dark:invert" />
     </button>
   );
 }
@@ -108,7 +108,11 @@ function HeaderMore({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger aria-label="More" className={HEADER_ICON_BUTTON_CLASS}>
-        <img src="/messenger/sheet-header-more.svg" alt="" />
+        <img
+          src="/messenger/sheet-header-more.svg"
+          alt=""
+          className="dark:brightness-0 dark:invert"
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48 p-2">
         <AddToCollectionSelect collections={collections} onAdd={onAdd} />
