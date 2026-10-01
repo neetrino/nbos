@@ -19,7 +19,7 @@ Controllers: `apps/api/src/modules/scheduler/scheduler.controller.ts` (`@Control
   Same service call as the Finance action below; no request body; HTTP 200 on success (see Swagger for response shape).
 
 - **Finance action (human operator, optional `asOf`):** `POST /api/expense-plans/actions/auto-generate-due`  
-  Optional query: `asOf` — ISO-8601 instant; eligibility uses **end of that UTC calendar day**. The scheduler route calls the service with `{}` (current instant).
+  Optional query: `asOf` — ISO-8601 instant; eligibility uses the **end of the Asia/Yerevan month** that contains that instant (overdue earlier dates included; the next month excluded). The scheduler route calls the service with `{}` (current instant).
 
 ## Authentication
 
