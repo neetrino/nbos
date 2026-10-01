@@ -9,7 +9,10 @@ import {
 } from '@/components/shared/detail-sheet-classes';
 import { formatAmount } from '../constants/dealPipeline';
 import { deriveDealSubscriptionContractTotal } from '@/features/crm/utils/deal-subscription-contract-total';
-import { DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS } from '@/features/crm/constants/deal-subscription-term';
+import {
+  DEAL_SUBSCRIPTION_TERM_ANNUAL_MONTHS,
+  dealSubscriptionTermFieldVisible,
+} from '@/features/crm/constants/deal-subscription-term';
 import { dealStageGateFieldClass } from '@/features/crm/deal-stage-gate-highlight';
 import { cn } from '@/lib/utils';
 import type { DealGeneralDraft } from './deal-general-form-state';
@@ -99,7 +102,7 @@ export function DealSubscriptionTermField({
 }
 
 export function showDealSubscriptionTermFields(draft: DealGeneralDraft): boolean {
-  return draft.paymentType === 'SUBSCRIPTION';
+  return dealSubscriptionTermFieldVisible(draft.type, draft.paymentType);
 }
 
 export function dealAmountFieldLabel(paymentType: string | null): string {
