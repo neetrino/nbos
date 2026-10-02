@@ -45,11 +45,10 @@ describe('subscription payment reminder templates', () => {
       taxStatus: 'TAX',
     });
     expect(hy).toContain('Խնդրում ենք 5 օրվա ընթացքում');
-    expect(hy).toContain('բաժանորդագրության');
-    expect(hy).toContain('Site A');
+    expect(hy).toContain('«Site A» ամենամսյա վճարը');
     expect(hy).toContain('120.000 դրամ');
-    expect(ru).toContain('Просим в течение 5 дней оплатить ежемесячную подписку');
-    expect(en).toContain('monthly subscription payment');
+    expect(ru).toContain('ежемесячный платёж «Site A»');
+    expect(en).toContain('monthly payment for «Site A»');
     expect(en).toContain('within 5 days');
   });
 
@@ -81,7 +80,7 @@ describe('subscription payment reminder templates', () => {
     expect(hy).toContain('Խնդրում ենք 5 օրվա ընթացքում');
     expect(hy).toContain(TAX_FREE_PAYMENT_CARD);
     expect(ru).toContain('Просим в течение 5 дней оплатить');
-    expect(en).toContain('Please make the monthly subscription payment');
+    expect(en).toContain('Please make the monthly payment');
     expect(en).toContain('within 5 days');
   });
 });

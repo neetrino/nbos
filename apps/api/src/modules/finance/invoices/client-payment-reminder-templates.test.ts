@@ -42,7 +42,7 @@ describe('client payment reminder templates', () => {
       amount: 50000,
       taxStatus: 'TAX_FREE',
     });
-    expect(message).toContain('Просим в течение 5 дней оплатить');
+    expect(message).toContain('ежемесячный платёж');
     expect(message).toContain('Site B');
     expect(message).toContain('50.000 драм');
     expect(message).toContain(TAX_FREE_PAYMENT_CARD);
@@ -61,7 +61,7 @@ describe('client payment reminder templates', () => {
       amount: 25000,
       taxStatus: 'TAX',
     });
-    expect(message).toContain('service payment');
+    expect(message).toContain('monthly payment');
     expect(message).toContain('example.com');
     expect(message).toContain('25.000 AMD');
     expect(message).toContain('official invoice');
@@ -81,7 +81,7 @@ describe('client payment reminder templates', () => {
     expect(formatCoveragePeriodLabel('2026-04', 3, 'EN').toLowerCase()).toContain('june');
   });
 
-  it('drops monthly wording when coverage is more than one month', () => {
+  it('names the monthly payment without the coverage month in the sentence', () => {
     const message = renderClientPaymentReminderMessage({
       language: 'RU',
       source: 'subscription',
@@ -91,10 +91,8 @@ describe('client payment reminder templates', () => {
       taxStatus: 'TAX',
       coverageMonthCount: 3,
     });
-    expect(message).toContain('подписку');
-    expect(message).not.toContain('ежемесячную');
+    expect(message).toContain('ежемесячный платёж «Site B»');
     expect(message).toContain('150.000');
-    expect(message.toLowerCase()).toContain('апрель');
-    expect(message.toLowerCase()).toContain('июнь');
+    expect(message.toLowerCase()).not.toContain('апрель');
   });
 });

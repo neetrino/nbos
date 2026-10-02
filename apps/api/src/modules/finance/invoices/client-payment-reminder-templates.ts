@@ -48,15 +48,15 @@ interface TemplateCopy {
 const COPY: Record<SubscriptionReminderLanguage, TemplateCopy> = {
   HY: {
     greeting: '🤖 Ողջույն հարգելի գործընկեր',
-    purpose: `Խնդրում ենք ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} օրվա ընթացքում կատարել «{serviceLabel}» {serviceKind} վճարը՝ {periodLabel}{periodSuffix}`,
+    purpose: `Խնդրում ենք ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} օրվա ընթացքում կատարել «{serviceLabel}» ամենամսյա վճարը։`,
     amountLine: 'Գումար՝ {amount} դրամ',
-    taxPayByInvoice: 'Խնդրում ենք կատարել վճարումը ըստ դուրս գրված հաշվի:',
+    taxPayByInvoice: 'Խնդրում ենք կատարել վճարումը ըստ դուրս գրված հաշվի։',
     taxFreePayBlockHeader: 'Վճարման տվյալներ՝',
     closing: 'Կանխավ շնորհակալություն',
   },
   RU: {
     greeting: '🤖 Здравствуйте, уважаемый партнёр',
-    purpose: `Просим в течение ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} дней оплатить {serviceKind} «{serviceLabel}» {periodLabel}{periodSuffix}`,
+    purpose: `Просим в течение ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} дней оплатить ежемесячный платёж «{serviceLabel}».`,
     amountLine: 'Сумма: {amount} драм',
     taxPayByInvoice: 'Пожалуйста, оплатите по выставленному счёту.',
     taxFreePayBlockHeader: 'Реквизиты для оплаты:',
@@ -64,60 +64,11 @@ const COPY: Record<SubscriptionReminderLanguage, TemplateCopy> = {
   },
   EN: {
     greeting: '🤖 Hello, dear partner',
-    purpose: `Please make the {serviceKind} payment for «{serviceLabel}» {periodLabel}{periodSuffix} within ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} days`,
+    purpose: `Please make the monthly payment for «{serviceLabel}» within ${CLIENT_PAYMENT_REMINDER_PAY_WITHIN_DAYS} days.`,
     amountLine: 'Amount: {amount} AMD',
     taxPayByInvoice: 'Please pay using the official invoice issued to you.',
     taxFreePayBlockHeader: 'Payment details:',
     closing: 'Thank you in advance',
-  },
-};
-
-const SERVICE_KIND: Record<
-  ClientPaymentReminderSource,
-  Record<SubscriptionReminderLanguage, string>
-> = {
-  subscription: {
-    HY: 'բաժանորդագրության ամենամսյա',
-    RU: 'ежемесячную подписку',
-    EN: 'monthly subscription',
-  },
-  client_service: {
-    HY: 'ծառայության',
-    RU: 'услугу',
-    EN: 'service',
-  },
-};
-
-const MULTI_PERIOD_SUBSCRIPTION_KIND: Record<SubscriptionReminderLanguage, string> = {
-  HY: 'բաժանորդագրության',
-  RU: 'подписку',
-  EN: 'subscription',
-};
-
-export function resolveClientReminderServiceKind(
-  source: ClientPaymentReminderSource,
-  language: SubscriptionReminderLanguage,
-  coverageMonthCount = 1,
-): string {
-  if (source === 'subscription' && coverageMonthCount > 1) {
-    return MULTI_PERIOD_SUBSCRIPTION_KIND[language];
-  }
-  return SERVICE_KIND[source][language];
-}
-
-const PERIOD_SUFFIX: Record<
-  ClientPaymentReminderSource,
-  Record<SubscriptionReminderLanguage, string>
-> = {
-  subscription: {
-    HY: ' ամսվա համար',
-    RU: '',
-    EN: '',
-  },
-  client_service: {
-    HY: ' մինչև',
-    RU: '',
-    EN: '',
   },
 };
 
@@ -225,21 +176,8 @@ export function renderClientPaymentReminderMessage(
   input: RenderClientPaymentReminderInput,
 ): string {
   const copy = COPY[input.language];
-  const purposeTemplate = copy.purpose;
+  const purpose = fillTemplate(copy.purpose, { serviceLabel: input.serviceLabel });
   const closing = copy.closing;
-  const serviceKind = resolveClientReminderServiceKind(
-    input.source,
-    input.language,
-    input.coverageMonthCount ?? 1,
-  );
-  const periodSuffix = PERIOD_SUFFIX[input.source][input.language];
-
-  const purpose = fillTemplate(purposeTemplate, {
-    serviceLabel: input.serviceLabel,
-    serviceKind,
-    periodLabel: input.periodLabel,
-    periodSuffix,
-  });
   const amountLine = fillTemplate(copy.amountLine, {
     amount: formatAmdAmount(input.amount),
   });
