@@ -146,7 +146,10 @@ export function TaskSheetChatPanel({
   if (linkedConversationId) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <TaskLinkedMessengerThread conversationId={linkedConversationId} />
+        <TaskLinkedMessengerThread
+          conversationId={linkedConversationId}
+          composerDisabled={composerDisabled}
+        />
       </div>
     );
   }

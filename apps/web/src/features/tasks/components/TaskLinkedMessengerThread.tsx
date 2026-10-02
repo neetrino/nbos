@@ -15,7 +15,15 @@ import { sendInternalThreadMessage } from '@/features/messenger-internal/send-in
 import { toggleInternalFavorite } from '@/features/messenger-internal/internal-messenger-cache-ops';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 
-export function TaskLinkedMessengerThread({ conversationId }: { conversationId: string }) {
+type TaskLinkedThreadProps = {
+  conversationId: string;
+  composerDisabled: boolean;
+};
+
+export function TaskLinkedMessengerThread({
+  conversationId,
+  composerDisabled,
+}: TaskLinkedThreadProps) {
   const queryClient = useQueryClient();
   const { me } = usePermission();
   const [draft, setDraft] = useState('');
@@ -42,7 +50,7 @@ export function TaskLinkedMessengerThread({ conversationId }: { conversationId: 
       onSend={(extras) =>
         void sendInternalThreadMessage({
           conversationId,
-          canWrite: Boolean(row.canWrite),
+          canWrite: Boolean(row.canWrite) && !composerDisabled,
           content: draft,
           extras,
           setNewMessage: setDraft,
@@ -51,8 +59,8 @@ export function TaskLinkedMessengerThread({ conversationId }: { conversationId: 
           senderName: messengerComposerSenderName(me),
         })
       }
-      canSend={Boolean(row.canWrite)}
-      sendDisabled={false}
+      canSend={Boolean(row.canWrite) && !composerDisabled}
+      sendDisabled={composerDisabled}
       onToggleFavorite={() => void toggleInternalFavorite(queryClient, conversationId)}
       collections={[]}
       onAddToCollection={() => undefined}

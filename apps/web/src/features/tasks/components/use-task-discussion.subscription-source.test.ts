@@ -12,8 +12,10 @@ describe('task discussion subscription wiring', () => {
     expect(sheet).toContain('const discussionOpen = open && (!isMobileViewport || chatOpen)');
     expect(sheet).toContain('useTaskDiscussion(sheetId, discussionOpen)');
     expect(sheet.match(/composerDisabled=\{discussion\.composerDisabled\}/g)).toHaveLength(2);
-    expect(panel).toContain('disabled={composerDisabled}');
+    expect(panel).toContain('composerDisabled={composerDisabled}');
+    expect(panel).toContain('canSend={!composerDisabled}');
     expect(panel).not.toContain('disabled={false}');
+    expect(panel).not.toContain('sendDisabled={false}');
   });
 });
 
