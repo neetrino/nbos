@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { actorContextFromEmployee } from '@nbos/shared';
 import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
 import { tasksAccessFromUser } from './tasks-scoped-access';
+import { readDiscussionIdempotencyKey } from './task-discussion.rules';
 import { TaskDiscussionService } from './task-discussion.service';
 
 @ApiTags('Tasks')
@@ -37,7 +38,7 @@ export class TaskDiscussionController {
   async create(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-    @Body() body: { body?: unknown },
+    @Body() body: { body?: unknown; idempotencyKey?: unknown },
   ) {
     return this.discussion.addEntry(
       id,
@@ -47,6 +48,8 @@ export class TaskDiscussionController {
       ),
       body.body,
       tasksAccessFromUser(user),
+      undefined,
+      readDiscussionIdempotencyKey(body.idempotencyKey),
     );
   }
 }

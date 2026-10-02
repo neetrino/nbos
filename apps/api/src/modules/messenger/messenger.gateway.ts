@@ -22,15 +22,11 @@ import {
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
-  MESSENGER_WS_SERVER_CHANNEL_PEER_READ,
-  MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
-  MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
-  MESSENGER_WS_SERVER_DM_PEER_READ,
-  MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_READ_UPDATED,
   type MessengerWsChannelPeerReadPayload,
+  type MessengerWsConversationFavoritePayload,
   type MessengerWsConversationPeerReadPayload,
   type MessengerWsConversationReadUpdatedPayload,
   type MessengerWsDmPeerReadPayload,
@@ -39,17 +35,22 @@ import {
   messengerSocketUserRoom,
 } from '@nbos/shared';
 import {
+  emitLegacyChannelTyping,
+  emitLegacyDmTyping,
   employeeMayUseMessengerChannel,
-  messengerTypingDisplayLabel,
-} from './messenger-gateway-channel-access';
+} from './messenger-gateway-channel';
+import { beginMessengerSocketAuthentication } from './messenger-gateway-auth';
 import { emitMessengerUserEvent } from './messenger-user-event';
-import { authenticateMessengerSocket } from './messenger-gateway-auth';
 import {
   leaveSocketCoreConversation,
-  subscribeSocketToCoreConversation,
+  subscribeSocketAfterAuth,
 } from './messenger-gateway-core-subscribe';
 import {
+  emitChannelRoomPeerRead,
+  emitConversationRoomPeerRead,
   emitCoreConversationRoomMessage,
+  emitUserRoomDmPeerRead,
+  emitUserRoomFavorite,
   evictEmployeeFromConversationRoom,
   loadConversationPublishFacts,
   publishCoreConversationSummariesToConnected,
@@ -57,7 +58,7 @@ import {
   type PersistedCoreMessageFacts,
 } from './messenger-gateway-fanout';
 import { handleCoreConversationTyping } from './messenger-gateway-conversation-typing';
-import { extractChannelId, extractRecipientId } from './messenger-gateway-parse';
+import { extractChannelId } from './messenger-gateway-parse';
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
@@ -85,7 +86,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   handleConnection(client: Socket): void {
-    void authenticateMessengerSocket({
+    beginMessengerSocketAuthentication({
       client,
       server: this.server,
       prisma: this.prisma,
@@ -128,12 +129,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() body: unknown,
   ): Promise<{ ok: boolean }> {
-    return subscribeSocketToCoreConversation(
-      this.prisma,
-      client.data.employeeId as string | undefined,
-      body,
-      (room) => client.join(room),
-    );
+    return subscribeSocketAfterAuth(this.prisma, client, body, (room) => client.join(room));
   }
 
   @SubscribeMessage(MESSENGER_WS_CLIENT_LEAVE_CONVERSATION)
@@ -151,21 +147,13 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() body: unknown,
   ): Promise<{ ok: boolean }> {
-    const employeeId = client.data.employeeId as string | undefined;
-    if (!employeeId) return { ok: false };
-    const channelId = extractChannelId(body);
-    if (!channelId) return { ok: false };
-    if (!(await employeeMayUseMessengerChannel(this.prisma, employeeId, channelId))) {
-      return { ok: false };
-    }
-    if (!this.typingThrottle.allow(client.id)) return { ok: true };
-    const label = await messengerTypingDisplayLabel(this.prisma, employeeId);
-    client.to(messengerSocketChannelRoom(channelId)).emit(MESSENGER_WS_SERVER_CHANNEL_TYPING, {
-      channelId,
-      employeeId,
-      label,
-    });
-    return { ok: true };
+    return emitLegacyChannelTyping(
+      this.prisma,
+      client,
+      client.data.employeeId as string | undefined,
+      body,
+      this.typingThrottle,
+    );
   }
 
   @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_DM)
@@ -173,23 +161,13 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() body: unknown,
   ): Promise<{ ok: boolean }> {
-    const employeeId = client.data.employeeId as string | undefined;
-    if (!employeeId) return { ok: false };
-    const recipientId = extractRecipientId(body);
-    if (!recipientId || recipientId === employeeId) return { ok: false };
-    const recipient = await this.prisma.employee.findUnique({
-      where: { id: recipientId },
-      select: { id: true, status: true },
-    });
-    if (!recipient || recipient.status === 'TERMINATED') return { ok: false };
-    if (!this.typingThrottle.allow(client.id)) return { ok: true };
-    const label = await messengerTypingDisplayLabel(this.prisma, employeeId);
-    client.to(messengerSocketUserRoom(recipientId)).emit(MESSENGER_WS_SERVER_DM_TYPING, {
-      counterpartId: employeeId,
-      employeeId,
-      label,
-    });
-    return { ok: true };
+    return emitLegacyDmTyping(
+      this.prisma,
+      client,
+      client.data.employeeId as string | undefined,
+      body,
+      this.typingThrottle,
+    );
   }
 
   @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_CONVERSATION)
@@ -275,18 +253,6 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     emitMessengerUserEvent(this.server, employeeId, MESSENGER_WS_SERVER_READ_UPDATED, payload);
   }
 
-  emitConversationPeerRead(
-    employeeId: string,
-    payload: MessengerWsConversationPeerReadPayload,
-  ): void {
-    emitMessengerUserEvent(
-      this.server,
-      employeeId,
-      MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
-      payload,
-    );
-  }
-
   async evictEmployeeFromConversation(
     employeeId: string,
     conversationId: string,
@@ -296,13 +262,26 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   emitDmPeerRead(peerEmployeeId: string, payload: MessengerWsDmPeerReadPayload): void {
-    emitMessengerUserEvent(this.server, peerEmployeeId, MESSENGER_WS_SERVER_DM_PEER_READ, payload);
+    emitUserRoomDmPeerRead(this.server, peerEmployeeId, payload);
   }
 
   emitChannelPeerRead(channelId: string, payload: MessengerWsChannelPeerReadPayload): void {
-    if (!this.server) return;
-    this.server
-      .to(messengerSocketChannelRoom(channelId))
-      .emit(MESSENGER_WS_SERVER_CHANNEL_PEER_READ, payload);
+    emitChannelRoomPeerRead(this.server, channelId, payload);
+  }
+
+  /** After the read transaction commits. Conversation room, not the reader user room. */
+  emitConversationPeerRead(
+    conversationId: string,
+    payload: MessengerWsConversationPeerReadPayload,
+  ): void {
+    emitConversationRoomPeerRead(this.server, conversationId, payload);
+  }
+
+  /** After the favorite transaction commits. Absolute flag for this employee only. */
+  emitConversationFavorite(
+    employeeId: string,
+    payload: MessengerWsConversationFavoritePayload,
+  ): void {
+    emitUserRoomFavorite(this.server, employeeId, payload);
   }
 }

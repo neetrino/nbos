@@ -1,200 +1,77 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { io } from 'socket.io-client';
-import { MESSENGER_SOCKET_NAMESPACE, MESSENGER_TYPING_EMIT_MIN_MS } from '@nbos/shared';
-import type {
-  MessengerWsConversationAccessChangedPayload,
-  MessengerWsConversationReadUpdatedPayload,
-  MessengerWsConversationSummaryPayload,
-} from '@nbos/shared';
-import { recoverRealtimeSession } from '@/lib/auth/realtime-session';
-import type { MessengerCoreMessageRow } from '@/lib/api/messenger-core';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { MESSENGER_TYPING_EMIT_MIN_MS } from '@nbos/shared';
 import { MESSENGER_REMOTE_TYPING_HINT_MS } from '@/features/messenger/messenger-typing-ui.constants';
+import type { MessengerZone } from '@/features/messenger/query/messenger-query-keys';
+import { useMessengerRealtimeHub } from '@/features/messenger/realtime/MessengerRealtimeProvider';
 import {
-  bindMessengerRealtimeSocket,
-  emitConversationLeave,
-  emitConversationSubscribe,
-  emitConversationTyping,
-  type MessengerRealtimeBindRefs,
-} from './messenger-realtime-bind';
+  useMessengerConversationSubscription,
+  useMessengerConversationTyping,
+  useMessengerPresenceIds,
+  useMessengerSurfaceBinding,
+} from '@/features/messenger/realtime/use-messenger-realtime';
 import type { ConversationTypingPeer } from './messenger-conversation-typing';
-import { useMessengerOnlineIds } from './use-messenger-online-ids';
-import type { ConversationPeerRead } from './messenger-peer-read';
-
-const MESSENGER_SOCKET_DEV_ORIGIN = 'http://localhost:4000';
-
-function messengerSocketOrigin(): string {
-  const origin = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
-  return origin && origin.length > 0 ? origin : MESSENGER_SOCKET_DEV_ORIGIN;
-}
 
 export type InternalMessengerRealtimeOptions = {
   canViewMessenger: boolean;
   meId: string | undefined;
+  zone: MessengerZone;
   conversationId: string | null;
-  onInboundMessage: (conversationId: string, message: MessengerCoreMessageRow) => void;
-  onConversationSummary?: (payload: MessengerWsConversationSummaryPayload) => void;
-  onConversationRead?: (payload: MessengerWsConversationReadUpdatedPayload) => void;
-  onAccessChanged?: (payload: MessengerWsConversationAccessChangedPayload) => void;
-  onReconnect?: () => void;
-  onReadListsInvalidate?: () => void;
-  onPeerRead?: (payload: ConversationPeerRead) => void;
+  clearActive: () => void;
 };
 
+/** Subscribes the open thread to the shared runtime. Does not open a socket. */
 export function useInternalMessengerRealtime(options: InternalMessengerRealtimeOptions): {
   onlineIds: ReadonlySet<string>;
   typingPeer: ConversationTypingPeer | null;
   emitConversationTyping: () => void;
 } {
-  const [token, setToken] = useState<string | null>(null);
-  const [typingPeer, setTypingPeer] = useState<ConversationTypingPeer | null>(null);
-  const socketRef = useRef<ReturnType<typeof io> | null>(null);
-  const lastTypingEmitRef = useRef(0);
-  const typingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const presence = useMessengerOnlineIds();
-  const onTyping = useRef((peer: ConversationTypingPeer) => {
-    setTypingPeer(peer);
-    if (typingClearRef.current) clearTimeout(typingClearRef.current);
-    typingClearRef.current = setTimeout(() => setTypingPeer(null), MESSENGER_REMOTE_TYPING_HINT_MS);
+  const enabled = options.canViewMessenger && Boolean(options.meId);
+  useMessengerConversationSubscription(enabled ? options.conversationId : null);
+  useMessengerSurfaceBinding({
+    enabled,
+    zone: options.zone,
+    activeId: options.conversationId,
+    clearActive: options.clearActive,
   });
-  const refs = useRealtimeCallbackRefs(options, presence, onTyping);
-
-  useRealtimeAccessToken(options.canViewMessenger, options.meId, setToken);
-  useRealtimeSocketSession(options.canViewMessenger, options.meId, token, socketRef, refs);
-  useActiveConversationRoom(socketRef, options.conversationId);
-
-  const emitTyping = useCallback(() => {
-    const conversationId = options.conversationId;
-    if (!conversationId) return;
-    const now = Date.now();
-    if (now - lastTypingEmitRef.current < MESSENGER_TYPING_EMIT_MIN_MS) return;
-    lastTypingEmitRef.current = now;
-    emitConversationTyping(socketRef.current, conversationId);
-  }, [options.conversationId]);
-
-  const visibleTyping =
-    typingPeer && typingPeer.conversationId === options.conversationId ? typingPeer : null;
   return {
-    onlineIds: presence.onlineIds,
-    typingPeer: visibleTyping,
-    emitConversationTyping: emitTyping,
+    onlineIds: useMessengerPresenceIds(),
+    typingPeer: useVisibleTypingPeer(options.conversationId, options.meId),
+    emitConversationTyping: useThrottledConversationTyping(options.conversationId),
   };
 }
 
-function useRealtimeCallbackRefs(
-  options: InternalMessengerRealtimeOptions,
-  presence: ReturnType<typeof useMessengerOnlineIds>,
-  onTyping: { current: (peer: ConversationTypingPeer) => void },
-): MessengerRealtimeBindRefs {
-  const conversationIdRef = useRef(options.conversationId);
-  const meIdRef = useRef(options.meId);
-  const onInboundRef = useRef(options.onInboundMessage);
-  const onSummaryRef = useRef(options.onConversationSummary);
-  const onConversationReadRef = useRef(options.onConversationRead);
-  const onAccessChangedRef = useRef(options.onAccessChanged);
-  const onReadRef = useRef(options.onReadListsInvalidate);
-  const onReconnectRef = useRef(options.onReconnect);
-  const onPeerReadRef = useRef(options.onPeerRead);
-  useLayoutEffect(() => {
-    conversationIdRef.current = options.conversationId;
-    meIdRef.current = options.meId;
-    onInboundRef.current = options.onInboundMessage;
-    onSummaryRef.current = options.onConversationSummary;
-    onConversationReadRef.current = options.onConversationRead;
-    onAccessChangedRef.current = options.onAccessChanged;
-    onReadRef.current = options.onReadListsInvalidate;
-    onReconnectRef.current = options.onReconnect;
-    onPeerReadRef.current = options.onPeerRead;
-  });
-  return useMemo(
-    () => ({
-      conversationIdRef,
-      meIdRef,
-      onInboundRef,
-      onSummaryRef,
-      onConversationReadRef,
-      onAccessChangedRef,
-      onReadRef,
-      onReconnectRef,
-      onPeerReadRef,
-      onConversationTypingRef: onTyping,
-      onPresenceSnapshotRef: presence.onPresenceSnapshotRef,
-      onPresenceDeltaRef: presence.onPresenceDeltaRef,
-    }),
-    [
-      conversationIdRef,
-      meIdRef,
-      onInboundRef,
-      onSummaryRef,
-      onConversationReadRef,
-      onAccessChangedRef,
-      onReadRef,
-      onReconnectRef,
-      onPeerReadRef,
-      onTyping,
-      presence.onPresenceDeltaRef,
-      presence.onPresenceSnapshotRef,
-    ],
-  );
-}
-
-function useRealtimeAccessToken(
-  canViewMessenger: boolean,
-  meId: string | undefined,
-  setToken: (token: string | null) => void,
-): void {
-  useEffect(() => {
-    if (!canViewMessenger || !meId) {
-      queueMicrotask(() => setToken(null));
-      return;
-    }
-    let cancelled = false;
-    void recoverRealtimeSession().then((result) => {
-      if (cancelled) return;
-      setToken(result.kind === 'available' ? result.accessToken : null);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [canViewMessenger, meId, setToken]);
-}
-
-function useRealtimeSocketSession(
-  canViewMessenger: boolean,
-  meId: string | undefined,
-  token: string | null,
-  socketRef: { current: ReturnType<typeof io> | null },
-  refs: MessengerRealtimeBindRefs,
-): void {
-  useEffect(() => {
-    if (!canViewMessenger || !token || !meId) {
-      socketRef.current?.close();
-      socketRef.current = null;
-      return;
-    }
-    const socket = io(`${messengerSocketOrigin()}${MESSENGER_SOCKET_NAMESPACE}`, {
-      auth: { token },
-      transports: ['websocket'],
-    });
-    socketRef.current = socket;
-    const unbind = bindMessengerRealtimeSocket(socket, refs);
-    return () => {
-      unbind();
-      socketRef.current = null;
-    };
-  }, [canViewMessenger, meId, token, socketRef, refs]);
-}
-
-function useActiveConversationRoom(
-  socketRef: { current: ReturnType<typeof io> | null },
+function useVisibleTypingPeer(
   conversationId: string | null,
-): void {
+  meId: string | undefined,
+): ConversationTypingPeer | null {
+  const hub = useMessengerRealtimeHub();
+  const [peer, setPeer] = useState<ConversationTypingPeer | null>(null);
   useEffect(() => {
-    const socket = socketRef.current;
-    if (conversationId) emitConversationSubscribe(socket, conversationId);
-    return () => {
-      if (conversationId) emitConversationLeave(socket, conversationId);
-    };
-  }, [conversationId, socketRef]);
+    return hub.subscribeConversationTyping((next) => {
+      if (next.employeeId === meId) return;
+      if (next.conversationId !== conversationId) return;
+      setPeer(next);
+    });
+  }, [conversationId, hub, meId]);
+  useEffect(() => {
+    if (!peer) return;
+    const timer = setTimeout(() => setPeer(null), MESSENGER_REMOTE_TYPING_HINT_MS);
+    return () => clearTimeout(timer);
+  }, [peer]);
+  if (!peer || peer.conversationId !== conversationId) return null;
+  return peer;
+}
+
+function useThrottledConversationTyping(conversationId: string | null): () => void {
+  const emitTyping = useMessengerConversationTyping();
+  const lastEmitRef = useRef(0);
+  return useCallback(() => {
+    if (!conversationId) return;
+    const now = Date.now();
+    if (now - lastEmitRef.current < MESSENGER_TYPING_EMIT_MIN_MS) return;
+    lastEmitRef.current = now;
+    emitTyping(conversationId);
+  }, [conversationId, emitTyping]);
 }

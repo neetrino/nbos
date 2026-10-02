@@ -15,20 +15,24 @@ import {
 } from '@/features/messenger/messenger-thread-primitives';
 import { ThreadComposer } from '@/features/messenger-internal/InternalThreadParts';
 import { TaskLinkedMessengerThread } from './TaskLinkedMessengerThread';
-import { useCachedTaskConversationId } from './use-task-discussion';
+import { useCachedTaskConversationId } from './task-cached-conversation';
 
 export interface TaskLocalMessage {
   id: string;
   body: string;
   createdAt: string;
   authorLabel: string;
+  receiptLabel?: string | null;
+  localSendKey?: string | null;
 }
 
 interface TaskSheetChatPanelProps {
   task: Task;
   messages: TaskLocalMessage[];
+  composerDisabled: boolean;
   conversationId?: string | null;
   onSend: (body: string) => void;
+  onDraftChange?: (value: string) => void;
 }
 
 type TimelineRow =
@@ -38,8 +42,10 @@ type TimelineRow =
 export function TaskSheetChatPanel({
   task,
   messages,
+  composerDisabled,
   conversationId = null,
   onSend,
+  onDraftChange,
 }: TaskSheetChatPanelProps) {
   const cachedConversationId = useCachedTaskConversationId(task.id);
   const linkedConversationId = conversationId ?? cachedConversationId;
@@ -114,7 +120,7 @@ export function TaskSheetChatPanel({
 
   const submit = () => {
     const body = draft.trim();
-    if (!body) return;
+    if (!body || composerDisabled) return;
     onSend(body);
     setDraft('');
   };
@@ -140,7 +146,10 @@ export function TaskSheetChatPanel({
   if (linkedConversationId) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <TaskLinkedMessengerThread conversationId={linkedConversationId} />
+        <TaskLinkedMessengerThread
+          conversationId={linkedConversationId}
+          composerDisabled={composerDisabled}
+        />
       </div>
     );
   }
@@ -161,7 +170,7 @@ export function TaskSheetChatPanel({
             <MessengerThreadMessageBubble
               key={row.key}
               message={row.message}
-              readReceiptLabel={null}
+              readReceiptLabel={row.message.deliveryLabel ?? null}
             />
           );
         })}
@@ -170,10 +179,13 @@ export function TaskSheetChatPanel({
 
       <ThreadComposer
         sheet
-        canSend
-        sendDisabled={false}
+        canSend={!composerDisabled}
+        sendDisabled={composerDisabled || !draft.trim()}
         newMessage={draft}
-        onNewMessageChange={setDraft}
+        onNewMessageChange={(value) => {
+          onDraftChange?.(value);
+          setDraft(value);
+        }}
         replyTo={null}
         onClearReply={() => undefined}
         onSend={submit}
@@ -204,6 +216,8 @@ function taskLocalMessageToView(message: TaskLocalMessage): MessengerViewMessage
     content: message.body,
     timestamp: message.createdAt,
     attachments: [],
+    deliveryLabel: message.receiptLabel ?? null,
+    localSendKey: message.localSendKey ?? null,
   };
 }
 

@@ -9,14 +9,24 @@ import {
   MESSENGER_QUERY_GC_TIME_MS,
   MESSENGER_QUERY_STALE_TIME_MS,
 } from '@/features/messenger/query/messenger-query-policy';
+import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
 import { InternalConversationThread } from '@/features/messenger-internal/InternalConversationThread';
 import { sendInternalThreadMessage } from '@/features/messenger-internal/send-internal-thread-message';
 import { toggleInternalFavorite } from '@/features/messenger-internal/internal-messenger-cache-ops';
+import { usePermission } from '@/lib/permissions/PermissionContext';
 
-export function TaskLinkedMessengerThread({ conversationId }: { conversationId: string }) {
+type TaskLinkedThreadProps = {
+  conversationId: string;
+  composerDisabled: boolean;
+};
+
+export function TaskLinkedMessengerThread({
+  conversationId,
+  composerDisabled,
+}: TaskLinkedThreadProps) {
   const queryClient = useQueryClient();
+  const { me } = usePermission();
   const [draft, setDraft] = useState('');
-  const [sendBusy, setSendBusy] = useState(false);
   const conversation = useQuery({
     queryKey: ['messenger', 'conversation', conversationId],
     queryFn: () => messengerCoreApi.getConversation(conversationId),
@@ -40,17 +50,17 @@ export function TaskLinkedMessengerThread({ conversationId }: { conversationId: 
       onSend={(extras) =>
         void sendInternalThreadMessage({
           conversationId,
-          canWrite: Boolean(row.canWrite),
-          sendBusy,
+          canWrite: Boolean(row.canWrite) && !composerDisabled,
           content: draft,
           extras,
-          setSendBusy,
           setNewMessage: setDraft,
           queryClient,
+          senderId: me?.id ?? null,
+          senderName: messengerComposerSenderName(me),
         })
       }
-      canSend={Boolean(row.canWrite)}
-      sendDisabled={sendBusy}
+      canSend={Boolean(row.canWrite) && !composerDisabled}
+      sendDisabled={composerDisabled}
       onToggleFavorite={() => void toggleInternalFavorite(queryClient, conversationId)}
       collections={[]}
       onAddToCollection={() => undefined}

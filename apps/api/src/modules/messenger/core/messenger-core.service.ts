@@ -14,7 +14,7 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { AuditService } from '../../audit/audit.service';
 import { type MessengerLegacyAccessContext } from '../access/messenger-legacy-channel-access.op';
 import { MessengerGateway } from '../messenger.gateway';
-import { MESSENGER_WS_READ_UPDATED_SCOPE } from '@nbos/shared';
+import { publishCommittedRead } from './messenger-core-lifecycle-publish';
 import { evictIfCoreReadLost } from './messenger-core-access-revoke.ops';
 import { resolveCoreConversationRead } from './messenger-core-read-authorize';
 import {
@@ -49,7 +49,6 @@ import {
   leaveCoreParticipant,
   markCoreConversationRead,
 } from './messenger-core-participant.ops';
-import { notifyCoreConversationPeerRead } from './messenger-core-peer-read.ops';
 import {
   MESSENGER_CORE_CLIENT_CREATE_FORBIDDEN,
   MESSENGER_CORE_CLIENT_WRITE_FORBIDDEN,
@@ -167,20 +166,18 @@ export class MessengerCoreService {
 
   async markRead(conversationId: string, employeeId: string): Promise<void> {
     const resolved = await this.requireRead(conversationId, employeeId);
-    const lastReadAt = (
-      await markCoreConversationRead(this.prisma, conversationId, employeeId, new Date())
-    ).toISOString();
-    this.messengerGateway.emitConversationReadUpdated(employeeId, {
-      scope: MESSENGER_WS_READ_UPDATED_SCOPE.CONVERSATION,
-      conversationId,
-      unreadCount: 0,
-      zone: resolved.facts.zone,
-      lastReadAt,
-    });
-    await notifyCoreConversationPeerRead(
+    const lastReadAt = await markCoreConversationRead(
       this.prisma,
-      (peerId, payload) => this.messengerGateway.emitConversationPeerRead(peerId, payload),
-      { conversationId, readerId: employeeId, lastReadAt },
+      conversationId,
+      employeeId,
+      new Date(),
+    );
+    publishCommittedRead(
+      this.messengerGateway,
+      employeeId,
+      resolved.facts.zone,
+      conversationId,
+      lastReadAt,
     );
   }
 

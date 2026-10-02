@@ -62,8 +62,20 @@ export interface MessengerCoreMessageRow {
   content: string;
   createdAt: string;
   editedAt: string | null;
+  /** Present when a durable delete or provider revoke removed this row. */
+  deletedAt?: string | null;
   replyToMessageId?: string | null;
   threadRootMessageId?: string | null;
+  /** Server correlation. Matches the key sent with this logical message. */
+  idempotencyKey?: string | null;
+  /**
+   * Client-only lifecycle. Never a provider delivery status.
+   * Absent on server payloads. Dropped when the canonical row arrives.
+   */
+  localSend?: {
+    idempotencyKey: string;
+    phase: 'pending' | 'sending' | 'failed' | 'retrying';
+  };
   direction?: 'INTERNAL' | 'INBOUND' | 'OUTBOUND';
   status?:
     | 'QUEUED'

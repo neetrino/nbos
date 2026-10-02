@@ -37,14 +37,27 @@ export function openMessengerPersistChannel(
   channel.addEventListener('message', handleMessage);
   return {
     post: (message) => {
-      if (!isActivePersistChannelIdentity(activeIdentityId, message.identityId)) return;
-      noteMessengerPersistCapturedAt(message.identityId, message.capturedAt);
-      channel.postMessage(message);
+      const header = toMessengerPersistChannelMessage(message);
+      if (!isActivePersistChannelIdentity(activeIdentityId, header.identityId)) return;
+      noteMessengerPersistCapturedAt(header.identityId, header.capturedAt);
+      channel.postMessage(header);
     },
     close: () => {
       channel.removeEventListener('message', handleMessage);
       channel.close();
     },
+  };
+}
+
+/** Wire shape only. A full persist envelope must not ride BroadcastChannel. */
+function toMessengerPersistChannelMessage(
+  message: MessengerPersistChannelMessage,
+): MessengerPersistChannelMessage {
+  return {
+    identityId: message.identityId,
+    capturedAt: message.capturedAt,
+    writtenAt: message.writtenAt,
+    schemaVersion: message.schemaVersion,
   };
 }
 

@@ -30,6 +30,10 @@ import { ClientThreadHeader } from './ClientThreadHeader';
 import { CLIENT_MESSAGE_ACTION_HOOKS } from '@/features/messenger-internal/client-message-action-hooks';
 import { clientConversationTitle } from './client-messenger-section';
 import { canUnlockClientComposer, isClientComposerUnlocked } from './client-composer-unlock';
+import {
+  failedLocalSendKey,
+  localSendReceiptLabel,
+} from '@/features/messenger/query/messenger-local-send';
 import { clientOutboundDeliveryLabel } from './client-delivery-label';
 
 function toViewMessages(
@@ -58,7 +62,8 @@ function viewClientMessage(
   return {
     ...mapped,
     senderId: outbound && meId ? meId : mapped.senderId,
-    deliveryLabel: clientOutboundDeliveryLabel(row),
+    deliveryLabel: localSendReceiptLabel(row) ?? clientOutboundDeliveryLabel(row),
+    localSendKey: failedLocalSendKey(row),
     replyTo: replyPreviewForMessage(row, rows),
     replyToMessageId: row.replyToMessageId,
   };

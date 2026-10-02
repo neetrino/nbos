@@ -18,8 +18,10 @@ interface TaskSheetChatSheetProps {
   onOpenChange: (open: boolean) => void;
   task: Task | null;
   messages: TaskLocalMessage[];
+  composerDisabled: boolean;
   conversationId?: string | null;
   onSend: (body: string) => void;
+  onDraftChange?: (value: string) => void;
   sourcePageHref: string;
 }
 
@@ -29,8 +31,10 @@ export function TaskSheetChatSheet({
   onOpenChange,
   task,
   messages,
+  composerDisabled,
   conversationId = null,
   onSend,
+  onDraftChange,
   sourcePageHref,
 }: TaskSheetChatSheetProps) {
   const { persistedValue: renderTask, onOpenChangeComplete } = useSheetPersistedValue(task);
@@ -57,7 +61,9 @@ export function TaskSheetChatSheet({
             task={renderTask}
             messages={messages}
             conversationId={conversationId}
+            composerDisabled={composerDisabled}
             onSend={onSend}
+            onDraftChange={onDraftChange}
           />
         ) : null}
       </EntityDetailSheetContent>

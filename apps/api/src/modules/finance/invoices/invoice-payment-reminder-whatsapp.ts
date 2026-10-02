@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
 import type { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
-import { deliverFinanceClientReminder } from '../../messenger/core/messenger-finance-reminder.ops';
+import {
+  deliverFinanceClientReminder,
+  type FinanceClientReminderPublisher,
+} from '../../messenger/core/messenger-finance-reminder.ops';
 
 const logger = new Logger('InvoicePaymentReminderWhatsApp');
 
@@ -26,12 +29,18 @@ export async function tryDeliverPaymentReminderWhatsApp(params: {
   productId: string;
   text: string;
   idempotencyKey: string;
+  publisher?: FinanceClientReminderPublisher | null;
 }): Promise<boolean> {
-  const delivered = await deliverFinanceClientReminder(params.prisma, params.outbound, {
-    productId: params.productId,
-    text: params.text,
-    idempotencyKey: params.idempotencyKey,
-  });
+  const delivered = await deliverFinanceClientReminder(
+    params.prisma,
+    params.outbound,
+    {
+      productId: params.productId,
+      text: params.text,
+      idempotencyKey: params.idempotencyKey,
+    },
+    params.publisher,
+  );
   if (delivered) return true;
   logger.warn(`Finance reminder skipped (no FINANCE/WORK destination): ${params.idempotencyKey}`);
   return false;

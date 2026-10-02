@@ -4,10 +4,15 @@ import { openMessengerPersistChannel } from './messenger-persist-channel';
 import { applyMessengerPersistSessionIdentity } from './messenger-persist-boundary';
 import {
   hydrateMessengerPersistCache,
+  importMessengerPersistOutbox,
   persistMessengerCacheNow,
 } from './messenger-persist-controller';
 import { isPersistedMessengerQueryKey } from './messenger-persist-allowlist';
 import { isMessengerPersistenceEnabled } from './messenger-persist.constants';
+import {
+  registerMessengerOutboxPersistScheduler,
+  shouldAdoptRemoteMessengerOutbox,
+} from './messenger-outbox-store';
 import {
   isMessengerPersistHydrating,
   registerMessengerPersistHost,
@@ -48,18 +53,8 @@ function startMessengerPersistSession(queryClient: QueryClient, identityId: stri
   let cancelled = false;
   let writing = false;
   let queued = false;
-  const channel = openMessengerPersistChannel(identityId, () => undefined);
+  const peer = openPersistPeer(queryClient, identityId);
   void hydrateMessengerPersistCache(queryClient, identityId);
-
-  const announce = channel
-    ? (envelope: {
-        identityId: string;
-        capturedAt: number;
-        writtenAt: number;
-        schemaVersion: number;
-      }) => channel.post(envelope)
-    : null;
-
   const flush = () => {
     if (cancelled || writing) return;
     writing = true;
@@ -70,27 +65,40 @@ function startMessengerPersistSession(queryClient: QueryClient, identityId: stri
       (value) => {
         queued = value;
       },
-      announce,
+      peer.announce,
     ).finally(() => {
       writing = false;
       if (!cancelled && queued) flush();
     });
   };
-
   const schedule = () => {
     if (cancelled || isMessengerPersistHydrating()) return;
     queued = true;
     flush();
   };
-
+  registerMessengerOutboxPersistScheduler(schedule);
   const unsubscribe = subscribeAllowlistedSuccess(queryClient, schedule);
   const stopLifecycle = listenPersistLifecycle(schedule);
   return () => {
     cancelled = true;
     queued = false;
+    registerMessengerOutboxPersistScheduler(null);
     unsubscribe();
     stopLifecycle();
-    channel?.close();
+    peer.close();
+  };
+}
+
+function openPersistPeer(queryClient: QueryClient, identityId: string) {
+  const channel = openMessengerPersistChannel(identityId, (message) => {
+    if (!shouldAdoptRemoteMessengerOutbox(message.capturedAt)) return;
+    void importMessengerPersistOutbox(queryClient, identityId);
+  });
+  return {
+    announce: channel
+      ? (envelope: Parameters<NonNullable<typeof channel.post>>[0]) => channel.post(envelope)
+      : null,
+    close: () => channel?.close(),
   };
 }
 

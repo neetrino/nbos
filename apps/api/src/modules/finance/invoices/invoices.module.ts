@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { BonusModule } from '../../bonus/bonus.module';
 import { DealsModule } from '../../crm/deals/deals.module';
 import { WhatsAppGatewayModule } from '../../integrations/whatsapp-gateway/whatsapp-gateway.module';
+import { MessengerModule } from '../../messenger/messenger.module';
 import { OperationalJournalModule } from '../journal/operational-journal.module';
 import { InvoiceCardRemindersService } from './invoice-card-reminders.service';
 import { InvoiceOfficialWhatsAppModule } from './invoice-official-whatsapp.module';
@@ -15,6 +16,7 @@ import { InvoicesService } from './invoices.service';
     DealsModule,
     OperationalJournalModule,
     WhatsAppGatewayModule,
+    MessengerModule,
     InvoiceOfficialWhatsAppModule,
   ],
   controllers: [InvoicesController],

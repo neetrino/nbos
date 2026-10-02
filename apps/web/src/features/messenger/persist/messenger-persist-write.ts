@@ -14,6 +14,7 @@ import {
   readMessengerPersistLastSeenCapturedAt,
 } from './messenger-persist-session';
 import { MESSENGER_PERSIST_ENVELOPE_MAX_BYTES } from './messenger-persist.constants';
+import { noteMessengerOutboxCapturedAt } from './messenger-outbox-store';
 import { utf8ByteLength } from './messenger-utf8-bytes';
 
 export function shouldReplacePersistedEnvelope(
@@ -55,7 +56,10 @@ export async function commitMessengerPersistCapture(
     capturedAt: capture.capturedAt,
     generation,
   });
-  if (wrote) announce?.(envelope.value);
+  if (wrote) {
+    noteMessengerOutboxCapturedAt(capture.capturedAt);
+    announce?.(envelope.value);
+  }
   return wrote;
 }
 

@@ -3,6 +3,7 @@ import { isActorChannelSource, isActorType, type ActorContext } from '@nbos/shar
 import {
   TASK_DISCUSSION_BODY_MAX_LENGTH,
   TASK_DISCUSSION_DEFAULT_PAGE_SIZE,
+  TASK_DISCUSSION_IDEMPOTENCY_KEY_MAX_LENGTH,
   TASK_DISCUSSION_MAX_PAGE_SIZE,
   TASK_DISCUSSION_MIN_PAGE_SIZE,
 } from './task-discussion.constants';
@@ -21,6 +22,19 @@ export function requireDiscussionBody(raw: unknown): string {
     );
   }
   return body;
+}
+
+/** Optional client key. Empty means the actor correlation id remains the fallback. */
+export function readDiscussionIdempotencyKey(raw: unknown): string | undefined {
+  if (raw === undefined || raw === null || raw === '') return undefined;
+  if (typeof raw !== 'string') {
+    throw new BadRequestException('idempotencyKey must be a string');
+  }
+  const key = raw.trim();
+  if (!key || key.length > TASK_DISCUSSION_IDEMPOTENCY_KEY_MAX_LENGTH) {
+    throw new BadRequestException('idempotencyKey is invalid');
+  }
+  return key;
 }
 
 export function clampDiscussionPage(page: number | undefined): number {

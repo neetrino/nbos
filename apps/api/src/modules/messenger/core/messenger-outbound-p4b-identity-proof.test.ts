@@ -51,7 +51,15 @@ function proofPrisma(input: {
   const audits: unknown[] = [];
   let rolledBack = false;
   const tx = {
-    $queryRaw: vi.fn(async () => [{ ...live }]),
+    $queryRaw: vi.fn(async (query: { strings?: readonly string[] }) => {
+      const text = query?.strings?.join(' ') ?? '';
+      if (text.includes('messenger_zone_revision_counters')) return [{ revision: 4n }];
+      return [{ ...live }];
+    }),
+    messengerConversation: {
+      findUnique: vi.fn().mockResolvedValue({ zone: 'CLIENT' }),
+    },
+    messengerConversationRevision: { upsert: vi.fn().mockResolvedValue({}) },
     messengerCommand: {
       findUnique: vi.fn(async () => ({ ...live })),
       updateMany: vi.fn(),

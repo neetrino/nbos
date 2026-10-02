@@ -10,7 +10,7 @@ import {
   parseCorsOriginsFromEnv,
 } from './security/cors-origins';
 import { createHelmetMiddleware } from './security/helmet.middleware';
-import { SocketIoCorsAdapter } from './socket-io.adapter';
+import { installMessengerSocketIoAdapter } from './socket-io.adapter';
 import { BullmqWorkerRegistry } from './runtime/bullmq-worker-registry';
 import { assertProcessRoleForEntrypoint } from './runtime/process-role';
 import { logProcessStartup } from './runtime/process-startup-log';
@@ -72,7 +72,7 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: URLENCODED_BODY_LIMIT }));
   app.use(createAgentBodyLimitErrorHandler());
 
-  app.useWebSocketAdapter(new SocketIoCorsAdapter(app));
+  const socketAdapter = await installMessengerSocketIoAdapter(app);
 
   if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
@@ -136,10 +136,16 @@ async function bootstrap() {
     if (shuttingDown) return;
     shuttingDown = true;
     logger.log(`Received ${signal}; starting graceful API shutdown`);
-    const ok = await runGracefulShutdown([{ name: 'nest-close', run: () => app.close() }], {
-      timeoutMs: Number(process.env.API_SHUTDOWN_TIMEOUT_MS ?? DEFAULT_SHUTDOWN_TIMEOUT_MS),
-      log: (message) => logger.log(message),
-    });
+    const ok = await runGracefulShutdown(
+      [
+        { name: 'nest-close', run: () => app.close() },
+        { name: 'socket-io-redis', run: () => socketAdapter.closeRedis() },
+      ],
+      {
+        timeoutMs: Number(process.env.API_SHUTDOWN_TIMEOUT_MS ?? DEFAULT_SHUTDOWN_TIMEOUT_MS),
+        log: (message) => logger.log(message),
+      },
+    );
     process.exitCode = ok ? 0 : 1;
   };
 

@@ -301,8 +301,15 @@ export const tasksApi = {
     const resp = await api.get<TaskDiscussionList>(`/api/tasks/${id}/discussion`, { params });
     return resp.data;
   },
-  async addDiscussion(id: string, body: string): Promise<TaskDiscussionEntry> {
-    const resp = await api.post<TaskDiscussionEntry>(`/api/tasks/${id}/discussion`, { body });
+  async addDiscussion(
+    id: string,
+    body: string,
+    idempotencyKey?: string,
+  ): Promise<TaskDiscussionEntry> {
+    const resp = await api.post<TaskDiscussionEntry>(`/api/tasks/${id}/discussion`, {
+      body,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
     return resp.data;
   },
   async reorder(taskIds: string[], scope: 'workspace' | 'my-plan'): Promise<{ success: true }> {

@@ -103,6 +103,7 @@ describe('core message persistence', () => {
       provenance: 'EMPLOYEE',
       replyToMessageId: null,
       threadRootMessageId: null,
+      idempotencyKey: 'k1',
       createdAt: new Date(),
       editedAt: null,
       attachments: [],
@@ -118,6 +119,7 @@ describe('core message persistence', () => {
       [],
     );
     expect(first.id).toBe('msg-dup');
+    expect(first.idempotencyKey).toBe('k1');
     expect(second.id).toBe('msg-dup');
     expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
   });

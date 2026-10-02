@@ -42,6 +42,8 @@ import {
   markWhatsAppCoreSendExhausted,
 } from '../../messenger/core/messenger-wa-outbound-dispatch.ops';
 import { MessengerDeliveryStatusBus } from '../../messenger/core/messenger-delivery-status-bus';
+import { MessengerPersistedCoreMessageBus } from '../../messenger/core/messenger-persisted-core-message-bus';
+import { financeReminderBusPublisher } from './whatsapp-outbound-finance-reminder-publish';
 
 @Injectable()
 export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDestroy {
@@ -57,6 +59,7 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
     @Optional() private readonly opsAlerts?: OpsJobFailureAlertService,
     @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
     @Optional() private readonly deliveryBus?: MessengerDeliveryStatusBus,
+    @Optional() private readonly persistedMessages?: MessengerPersistedCoreMessageBus,
   ) {}
 
   onModuleInit() {
@@ -169,6 +172,7 @@ export class WhatsAppOutboundMessagesWorker implements OnModuleInit, OnModuleDes
       await tryEnqueueSubscriptionPaymentWindowForInvoice({
         prisma: this.prisma,
         outbound: this.outbound,
+        publisher: financeReminderBusPublisher(this.persistedMessages),
         invoiceId: data.invoiceId,
         asOf,
         asOfKey: yerevanCalendarDateKey(asOf),

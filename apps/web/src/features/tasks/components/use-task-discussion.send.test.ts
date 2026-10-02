@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import type { MessengerMessagesPage } from '@/features/messenger/query/messenger-cache';
+import {
+  resetOptimisticCoreSendState,
+  retryTrackedCoreSend,
+} from '@/features/messenger/query/messenger-optimistic-send';
 import { sendTaskDiscussionNote } from './use-task-discussion';
 import { tasksApi, type TaskDiscussionEntry } from '@/lib/api/tasks';
 
@@ -61,6 +65,7 @@ describe('sendTaskDiscussionNote inbox reconciliation', () => {
 
   beforeEach(() => {
     addDiscussion.mockReset().mockResolvedValue(ENTRY);
+    resetOptimisticCoreSendState();
   });
 
   it('upserts the returned Task summary into a fresh inbox without a list refetch', async () => {
@@ -78,6 +83,46 @@ describe('sendTaskDiscussionNote inbox reconciliation', () => {
     );
     expect(thread?.items.map((row) => row.id)).toEqual(['msg-1']);
     expect(invalidate).not.toHaveBeenCalled();
-    expect(addDiscussion).toHaveBeenCalledWith('task-1', 'First note');
+    expect(addDiscussion).toHaveBeenCalledWith('task-1', 'First note', expect.any(String));
+  });
+
+  it('posts a second note while the first request is still open', async () => {
+    const queryClient = createClient();
+    let releaseFirst: (entry: TaskDiscussionEntry) => void = () => undefined;
+    addDiscussion.mockReset();
+    addDiscussion.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseFirst = resolve;
+        }),
+    );
+    addDiscussion.mockResolvedValueOnce({ ...ENTRY, id: 'msg-2', body: 'Second note' });
+    const first = sendTaskDiscussionNote(queryClient, 'task-1', null, 'First note');
+    const second = sendTaskDiscussionNote(queryClient, 'task-1', null, 'Second note');
+    expect(addDiscussion).toHaveBeenCalledTimes(2);
+    const firstKey = addDiscussion.mock.calls[0]?.[2];
+    const secondKey = addDiscussion.mock.calls[1]?.[2];
+    expect(firstKey).toEqual(expect.any(String));
+    expect(secondKey).not.toBe(firstKey);
+    releaseFirst(ENTRY);
+    await Promise.all([first, second]);
+    const thread = queryClient.getQueryData<MessengerMessagesPage>(
+      messengerQueryKeys.messages('conv-task'),
+    );
+    expect(thread?.items.map((row) => row.id).sort()).toEqual(['msg-1', 'msg-2']);
+  });
+
+  it('retries a failed note with the original idempotency key', async () => {
+    const queryClient = createClient();
+    addDiscussion.mockReset();
+    addDiscussion.mockRejectedValueOnce(new Error('down')).mockResolvedValueOnce(ENTRY);
+    await sendTaskDiscussionNote(queryClient, 'task-1', 'conv-task', 'First note');
+    const key = addDiscussion.mock.calls[0]?.[2] ?? '';
+    await retryTrackedCoreSend(key);
+    expect(addDiscussion.mock.calls[1]?.[2]).toBe(key);
+    const thread = queryClient.getQueryData<MessengerMessagesPage>(
+      messengerQueryKeys.messages('conv-task'),
+    );
+    expect(thread?.items.map((row) => row.id)).toEqual(['msg-1']);
   });
 });

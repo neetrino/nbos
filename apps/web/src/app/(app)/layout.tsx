@@ -6,6 +6,7 @@ import { PWA_MAIN_ICON_CACHE } from '@/components/pwa/pwa-constants';
 import { PermissionProvider } from '@/lib/permissions';
 import { fetchPlatformAppearance } from '@/lib/platform-appearance/fetch-platform-appearance';
 import { MessengerPersistProvider } from '@/features/messenger/persist/MessengerPersistProvider';
+import { MessengerRealtimeProvider } from '@/features/messenger/realtime/MessengerRealtimeProvider';
 
 /** Apple touch icon stays off the root layout so /quick/task does not inherit the NBOS N. */
 export const metadata: Metadata = {
@@ -35,10 +36,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <PermissionProvider>
       <MessengerPersistProvider>
-        <PlatformWallpaperStyle appearance={appearance} />
-        <AppLayout>
-          <ModuleAccessGate>{children}</ModuleAccessGate>
-        </AppLayout>
+        <MessengerRealtimeProvider>
+          <PlatformWallpaperStyle appearance={appearance} />
+          <AppLayout>
+            <ModuleAccessGate>{children}</ModuleAccessGate>
+          </AppLayout>
+        </MessengerRealtimeProvider>
       </MessengerPersistProvider>
     </PermissionProvider>
   );

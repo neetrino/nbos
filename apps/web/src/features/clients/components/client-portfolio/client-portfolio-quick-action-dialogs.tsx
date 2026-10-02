@@ -10,6 +10,7 @@ import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Deal } from '@/lib/api/deals';
 import type { Invoice } from '@/lib/api/finance';
 import type { FileAsset } from '@/lib/api/drive';
+import type { PortfolioClientTarget } from '@/features/messenger-client/use-portfolio-client-scope';
 import { PortfolioDriveFileSheet } from './PortfolioDriveFileSheet';
 import { PortfolioMessengerSheet } from './PortfolioMessengerSheet';
 
@@ -22,6 +23,7 @@ export interface ClientPortfolioQuickActionDialogsProps {
   dealContactId: string | null;
   projectId: string | null;
   driveFile: FileAsset | null;
+  messenger: PortfolioClientTarget;
 }
 
 export function ClientPortfolioQuickActionDialogs({
@@ -30,6 +32,7 @@ export function ClientPortfolioQuickActionDialogs({
   dealContactId,
   projectId,
   driveFile,
+  messenger,
 }: ClientPortfolioQuickActionDialogsProps) {
   const [ticketTitle, setTicketTitle] = useState('');
   const [ticketProjectId, setTicketProjectId] = useState('');
@@ -145,6 +148,7 @@ export function ClientPortfolioQuickActionDialogs({
 
       <PortfolioMessengerSheet
         open={openDialog === 'messenger'}
+        portfolio={messenger}
         onOpenChange={(open) => {
           if (!open) closeDialog();
         }}

@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
@@ -30,6 +31,11 @@ import type {
 } from './messenger-core-internal.types';
 import { mapAllLegacyInternalToCore } from './messenger-legacy-mapper.ops';
 import { mapAllTaskDiscussionsToCore } from './messenger-task-discussion-mapper.ops';
+import { MessengerGateway } from '../messenger.gateway';
+import {
+  publishCommittedFavorite,
+  requireMessengerGateway,
+} from './messenger-core-lifecycle-publish';
 import { MessengerCoreService } from './messenger-core.service';
 import { isInternalZone } from './messenger-core-zone';
 import { toggleInternalFavorite } from './messenger-core-favorites.ops';
@@ -63,6 +69,7 @@ export class MessengerCoreInternalService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly core: MessengerCoreService,
     private readonly actions: MessengerCoreActionsService,
+    @Optional() private readonly messengerGateway?: MessengerGateway,
   ) {}
 
   async mapLegacyInternal(): Promise<{ channels: number; threads: number }> {
@@ -194,7 +201,15 @@ export class MessengerCoreInternalService {
     employeeId: string,
   ): Promise<{ favorite: boolean; collectionId: string }> {
     await this.getConversation(conversationId, employeeId);
-    return toggleInternalFavorite(this.prisma, employeeId, conversationId);
+    const result = await toggleInternalFavorite(this.prisma, employeeId, conversationId);
+    publishCommittedFavorite(
+      requireMessengerGateway(this.messengerGateway),
+      employeeId,
+      MESSENGER_CORE_INTERNAL_ZONE,
+      conversationId,
+      result.favorite,
+    );
+    return result;
   }
 
   async markRead(conversationId: string, employeeId: string): Promise<void> {

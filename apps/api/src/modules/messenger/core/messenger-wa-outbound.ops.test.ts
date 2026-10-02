@@ -299,23 +299,31 @@ function createCasPrisma(initialStatus: string, findStatus?: string) {
       findFirst: vi.fn().mockResolvedValue(null),
       createMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
-    $queryRaw: vi.fn().mockResolvedValue([
-      {
-        id: 'cmd-1',
-        conversationId: 'conv-1',
-        resultMessageId: 'msg-1',
-        idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
-        kind: 'SEND_MESSAGE',
-        status: 'PENDING',
-        payload: { accountId: 'acc_a', chatId: CHAT },
-        firstAttemptAt: null,
-        createdAt: new Date(),
-        invalidReason: null,
-        nextReconcileAt: null,
-        dispatchToken: null,
-        dispatchClaimedAt: null,
-      },
-    ]),
+    $queryRaw: vi.fn(async (query: { strings?: readonly string[] }) => {
+      const text = query?.strings?.join(' ') ?? '';
+      if (text.includes('messenger_zone_revision_counters')) return [{ revision: 4n }];
+      return [
+        {
+          id: 'cmd-1',
+          conversationId: 'conv-1',
+          resultMessageId: 'msg-1',
+          idempotencyKey: `${WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX}msg-1`,
+          kind: 'SEND_MESSAGE',
+          status: 'PENDING',
+          payload: { accountId: 'acc_a', chatId: CHAT },
+          firstAttemptAt: null,
+          createdAt: new Date(),
+          invalidReason: null,
+          nextReconcileAt: null,
+          dispatchToken: null,
+          dispatchClaimedAt: null,
+        },
+      ];
+    }),
+    messengerConversation: {
+      findUnique: vi.fn().mockResolvedValue({ zone: 'CLIENT' }),
+    },
+    messengerConversationRevision: { upsert: vi.fn().mockResolvedValue({}) },
     messengerCommand: {
       findUnique: vi.fn().mockResolvedValue({
         id: 'cmd-1',

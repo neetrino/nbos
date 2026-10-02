@@ -47,6 +47,23 @@ export const messengerClientApi = {
     return resp.data;
   },
 
+  async portfolioScope(params: { contactId?: string; companyId?: string }): Promise<{
+    scope: 'contact' | 'company';
+    entityId: string;
+    label: string;
+    conversationIds: string[];
+    uniqueConversationId: string | null;
+  }> {
+    const resp = await api.get<{
+      scope: 'contact' | 'company';
+      entityId: string;
+      label: string;
+      conversationIds: string[];
+      uniqueConversationId: string | null;
+    }>(`${CLIENT_ROOT}/portfolio-scope`, { params });
+    return resp.data;
+  },
+
   async bootstrap(): Promise<{
     summaries: { items: MessengerClientConversationRow[]; hasMore?: boolean };
     collections: MessengerCoreCollectionRow[];

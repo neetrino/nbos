@@ -66,6 +66,7 @@ export class TaskDiscussionService {
     rawBody: unknown,
     access?: TasksAccessContext,
     tx?: TasksDbClient,
+    clientIdempotencyKey?: string,
   ): Promise<TaskDiscussionEntryView> {
     void TASK_DISCUSSION_LEGACY_WRITES_DISABLED;
     const db = tx ?? this.prisma;
@@ -74,7 +75,16 @@ export class TaskDiscussionService {
     const actorFields = discussionActorFields(actor);
     const opener = actor.actor.type === 'USER' ? actor.actor.id : undefined;
     const conversation = await ensureTaskConversation(db as never, taskId, access, opener);
-    return this.persistCoreNote(db, conversation.id, actor, actorFields, body, Boolean(tx), access);
+    return this.persistCoreNote(
+      db,
+      conversation.id,
+      actor,
+      actorFields,
+      body,
+      Boolean(tx),
+      access,
+      clientIdempotencyKey,
+    );
   }
 
   async listEntries(
@@ -102,6 +112,7 @@ export class TaskDiscussionService {
     body: string,
     inTransaction: boolean,
     access?: TasksAccessContext,
+    clientIdempotencyKey?: string,
   ): Promise<TaskDiscussionEntryView> {
     const actorType = isActorType(actor.actor.type) ? actor.actor.type : 'SYSTEM';
     const input = {
@@ -110,7 +121,7 @@ export class TaskDiscussionService {
       senderNameSnapshot: actorFields.actorDisplayName,
       content: body,
       provenance: provenanceForActorType(actorType),
-      idempotencyKey: actorFields.correlationId ?? undefined,
+      idempotencyKey: clientIdempotencyKey ?? actorFields.correlationId ?? undefined,
       metadata: taskDiscussionMetadata({
         actorType: actorFields.actorType,
         actorId: actorFields.actorId,

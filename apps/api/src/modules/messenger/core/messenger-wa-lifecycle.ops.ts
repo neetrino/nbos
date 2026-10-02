@@ -1,5 +1,6 @@
 import { PrismaClient, type MessengerMessageStatus } from '@nbos/database';
 import { mapCoreMessage } from './messenger-core-message-map';
+import { commitWhatsAppMessageRevision } from './messenger-wa-lifecycle-revision';
 import { runMessengerWriteTx } from './messenger-core-revision-tx';
 import type { MessengerCoreMessageDto } from './messenger-core.types';
 import { messengerGatewayAuditActor } from './messenger-outbound-audit';
@@ -38,9 +39,11 @@ export async function applyWhatsAppAck(
       skipReason: next ? WHATSAPP_LIFECYCLE_MESSAGE_NOT_FOUND : 'UNKNOWN_ACK',
     };
   }
-  const messageChanged = await runMessengerWriteTx(prisma, (tx) =>
-    persistWhatsAppAckProof(tx, found, next),
-  );
+  const messageChanged = await runMessengerWriteTx(prisma, async (tx) => {
+    const changed = await persistWhatsAppAckProof(tx, found, next);
+    if (changed) await commitWhatsAppMessageRevision(tx, found.conversationId);
+    return changed;
+  });
   const current = (await reloadLifecycleMessage(prisma, found.id)) ?? found;
   if (!messageChanged) {
     return { message: mapCoreMessage(current), skipped: true, skipReason: 'ACK_NOT_ADVANCED' };
@@ -91,10 +94,14 @@ export async function applyWhatsAppEdit(
   if (!found) {
     return { message: null, skipped: true, skipReason: WHATSAPP_LIFECYCLE_MESSAGE_NOT_FOUND };
   }
-  const updated = await prisma.messengerMessage.update({
-    where: { id: found.id },
-    data: { content: input.body, editedAt: input.editedAt },
-    include: { attachments: true, mentions: true, referencesAsTarget: true },
+  const updated = await runMessengerWriteTx(prisma, async (tx) => {
+    const row = await tx.messengerMessage.update({
+      where: { id: found.id },
+      data: { content: input.body, editedAt: input.editedAt },
+      include: LIFECYCLE_INCLUDE,
+    });
+    await commitWhatsAppMessageRevision(tx, found.conversationId);
+    return row;
   });
   return { message: mapCoreMessage(updated), skipped: false, skipReason: null };
 }
@@ -107,10 +114,14 @@ export async function applyWhatsAppRevoke(
   if (!found) {
     return { message: null, skipped: true, skipReason: WHATSAPP_LIFECYCLE_MESSAGE_NOT_FOUND };
   }
-  const updated = await prisma.messengerMessage.update({
-    where: { id: found.id },
-    data: { deletedAt: input.revokedAt },
-    include: { attachments: true, mentions: true, referencesAsTarget: true },
+  const updated = await runMessengerWriteTx(prisma, async (tx) => {
+    const row = await tx.messengerMessage.update({
+      where: { id: found.id },
+      data: { deletedAt: input.revokedAt },
+      include: LIFECYCLE_INCLUDE,
+    });
+    await commitWhatsAppMessageRevision(tx, found.conversationId);
+    return row;
   });
   return { message: mapCoreMessage(updated), skipped: false, skipReason: null };
 }

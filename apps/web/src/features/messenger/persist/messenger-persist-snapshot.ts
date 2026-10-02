@@ -20,6 +20,7 @@ import {
   MESSENGER_PERSIST_QUERY_COUNT_MAX,
 } from './messenger-persist.constants';
 import { isValidPersistTimestamp } from './messenger-persist-envelope';
+import { readMessengerOutbox } from './messenger-outbox-store';
 import { clonePlainJson } from './messenger-persist-plain';
 
 export type MessengerPersistCapture = {
@@ -33,7 +34,8 @@ export function captureMessengerPersistSnapshot(
   capturedAt: number,
 ): MessengerPersistCapture | null {
   const queries = collectCanonicalPersistedQueries(queryClient, capturedAt);
-  if (queries.length === 0) return null;
+  const outbox = readMessengerOutbox(identityId);
+  if (queries.length === 0 && outbox.length === 0) return null;
   return {
     capturedAt,
     envelope: {
@@ -42,6 +44,7 @@ export function captureMessengerPersistSnapshot(
       capturedAt,
       queries,
       checkpoints: collectPersistedCheckpoints(queryClient),
+      outbox,
     },
   };
 }

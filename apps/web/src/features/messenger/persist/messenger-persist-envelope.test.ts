@@ -76,7 +76,8 @@ describe('Messenger persist envelope validation', () => {
     ).toBeNull();
     expect(parseMessengerPersistEnvelope('{not-json', IDENTITY, NOW)).toBeNull();
     expect(parseMessengerPersistEnvelope(envelope({ schemaVersion: 1 }), IDENTITY, NOW)).toBeNull();
-    expect(parseMessengerPersistEnvelope(envelope({ schemaVersion: 3 }), IDENTITY, NOW)).toBeNull();
+    expect(parseMessengerPersistEnvelope(envelope({ schemaVersion: 2 }), IDENTITY, NOW)).toBeNull();
+    expect(parseMessengerPersistEnvelope(envelope({ schemaVersion: 4 }), IDENTITY, NOW)).toBeNull();
     expect(parseMessengerPersistEnvelope(envelope(), 'employee-user-bbbb', NOW)).toBeNull();
   });
 

@@ -2,7 +2,6 @@ import type { QueryClient } from '@tanstack/react-query';
 import {
   invalidateMessengerCollections,
   patchConversationFavorite,
-  patchConversationUnread,
   upsertConversationSummary,
 } from '@/features/messenger/query/messenger-cache';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
@@ -21,8 +20,6 @@ export async function openClientConversation(
   const conversation = await messengerClientApi.getConversation(conversationId);
   upsertConversationSummary(queryClient, 'CLIENT', conversation);
   setOpenedConversation?.(conversation);
-  await messengerClientApi.markRead(conversationId);
-  patchConversationUnread(queryClient, 'CLIENT', conversationId, 0);
 }
 
 export async function toggleClientFavorite(

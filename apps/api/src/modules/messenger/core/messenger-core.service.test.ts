@@ -158,6 +158,7 @@ function createService() {
     emitReadListsUpdated: vi.fn(),
     emitConversationReadUpdated: vi.fn(),
     emitConversationPeerRead: vi.fn(),
+    emitConversationFavorite: vi.fn(),
     publishPersistedCoreMessage: vi.fn(),
     evictEmployeeFromConversation: vi.fn().mockResolvedValue(undefined),
   };
@@ -240,6 +241,14 @@ describe('MessengerCoreService persist-before-emit', () => {
         conversationId: 'conv-1',
         unreadCount: 0,
         zone: 'INTERNAL',
+        lastReadAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      }),
+    );
+    expect(gateway.emitConversationPeerRead).toHaveBeenCalledWith(
+      'conv-1',
+      expect.objectContaining({
+        conversationId: 'conv-1',
+        readerId: 'e1',
         lastReadAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       }),
     );

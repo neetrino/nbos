@@ -47,7 +47,9 @@ describe('P4B-19 command-first lock order', () => {
     const order: string[] = [];
     const live = command();
     const prisma = {
-      $queryRaw: vi.fn(async () => {
+      $queryRaw: vi.fn(async (query: { strings?: readonly string[] }) => {
+        const text = query?.strings?.join(' ') ?? '';
+        if (text.includes('messenger_zone_revision_counters')) return [{ revision: 4n }];
         order.push('command-lock');
         return [{ ...live }];
       }),
@@ -69,6 +71,10 @@ describe('P4B-19 command-first lock order', () => {
         }),
       },
       messengerCommand: { update: vi.fn().mockResolvedValue({}) },
+      messengerConversation: {
+        findUnique: vi.fn().mockResolvedValue({ zone: 'CLIENT' }),
+      },
+      messengerConversationRevision: { upsert: vi.fn().mockResolvedValue({}) },
       auditLog: { create: vi.fn().mockResolvedValue({ id: 'a1' }) },
     };
     await applyWhatsAppAck(prisma as never, {

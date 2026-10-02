@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  TAX_FREE_PAYMENT_ACCOUNT,
-  TAX_FREE_PAYMENT_CARD,
-  TAX_FREE_PAYMENT_NAME,
-} from './client-payment-requisites';
+import { TAX_FREE_PAYMENT_CARD } from './client-payment-requisites';
 import { formatCoverageMonthLabel, formatDueDateLabel } from './client-payment-reminder-templates';
 import { renderOverdueReminderMessage } from './invoice-overdue-reminder-templates';
 
@@ -28,7 +24,7 @@ describe('overdue reminder templates', () => {
     expect(message).not.toContain(TAX_FREE_PAYMENT_CARD);
   });
 
-  it('renders wave 2 TAX_FREE in RU with pay-to block', () => {
+  it('renders wave 2 by the issued invoice even when the invoice is tax free', () => {
     const message = renderOverdueReminderMessage({
       wave: 2,
       language: 'RU',
@@ -39,11 +35,10 @@ describe('overdue reminder templates', () => {
       taxStatus: 'TAX_FREE',
     });
     expect(message).toContain('всё ещё не поступила');
-    expect(message).toContain('Site B');
+    expect(message).toContain('ежемесячный платёж «Site B»');
     expect(message).toContain('50.000 драм');
-    expect(message).toContain(TAX_FREE_PAYMENT_CARD);
-    expect(message).toContain(TAX_FREE_PAYMENT_ACCOUNT);
-    expect(message).toContain(TAX_FREE_PAYMENT_NAME);
+    expect(message).toContain('выставленному счёту');
+    expect(message).not.toContain(TAX_FREE_PAYMENT_CARD);
     expect(message).toContain('напишите нам, чтобы избежать отключения');
   });
 

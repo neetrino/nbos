@@ -2,6 +2,10 @@ import type { QueryClient } from '@tanstack/react-query';
 import { clearAllMessengerHttpCheckpoints } from '../query/messenger-checkpoint-store';
 import { messengerQueryKeys } from '../query/messenger-query-keys';
 import {
+  clearMessengerOutboxMemory,
+  releaseMessengerOutboxForIdentity,
+} from './messenger-outbox-store';
+import {
   MESSENGER_PERSIST_IDENTITY_PATTERN,
   resetMessengerPersistEnabledForTests,
 } from './messenger-persist.constants';
@@ -59,6 +63,7 @@ export function installMessengerPersistSessionGate(
   identityId: string,
   options: { persistable: boolean; settled: boolean },
 ): void {
+  releaseMessengerOutboxForIdentity(identityId);
   persistChannelIdentity = options.persistable ? identityId : null;
   writeMessengerPersistReadyIdentities({
     preparedIdentityId: identityId,
@@ -128,6 +133,7 @@ export function purgeMessengerPersistForSignOut(): void {
   generation += 1;
   persistChannelIdentity = null;
   clearMessengerPersistLastSeen();
+  clearMessengerOutboxMemory();
   writeMessengerPersistReadyIdentities({
     preparedIdentityId: null,
     sessionIdentityId: null,
@@ -145,6 +151,7 @@ export function resetMessengerPersistSessionForTests(): void {
   boundQueryClient = null;
   persistChannelIdentity = null;
   clearMessengerPersistLastSeen();
+  clearMessengerOutboxMemory();
   resetMessengerPersistEnabledForTests();
   resetMessengerPersistReadyForTests();
 }

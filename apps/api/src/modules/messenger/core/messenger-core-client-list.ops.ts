@@ -101,6 +101,28 @@ export async function listAccessibleClientConversationsByIds(
   });
 }
 
+/** Readable Client conversation ids. Binding membership is not an access grant. */
+export async function selectReadableClientConversationIds(
+  prisma: PrismaLike,
+  employeeId: string,
+  clientReadScope: string,
+  conversationIds: string[],
+): Promise<string[]> {
+  if (conversationIds.length === 0) return [];
+  const snap = await createMessengerGrantSnapshot(prisma, employeeId, 'CLIENT');
+  const rows = await prisma.messengerConversation.findMany({
+    where: {
+      AND: [
+        accessibleClientWhere(employeeId, clientReadScope, snap),
+        { id: { in: conversationIds } },
+      ],
+    },
+    select: { id: true },
+  });
+  const allowed = new Set(rows.map((row) => row.id));
+  return conversationIds.filter((id) => allowed.has(id));
+}
+
 async function listClientPlainPage(
   prisma: PrismaLike,
   employeeId: string,

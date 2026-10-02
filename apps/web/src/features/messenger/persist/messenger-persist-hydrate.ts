@@ -1,5 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { restoreMessengerHttpCheckpoint } from '../query/messenger-checkpoint-store';
+import { mergeRemoteMessengerOutbox } from './messenger-outbox-store';
+import { showMessengerOutboxEntries } from './messenger-outbox-restore';
 import {
   isMessengerPersistGenerationCurrent,
   readMessengerPersistChannelIdentity,
@@ -25,6 +27,8 @@ export function applyMessengerPersistEnvelope(
     queryClient.setQueryData(record.queryKey, record.data, { updatedAt: record.dataUpdatedAt });
   }
   restorePersistedCheckpoints(queryClient, envelope);
+  const added = mergeRemoteMessengerOutbox(envelope.identityId, envelope.outbox ?? []);
+  showMessengerOutboxEntries(queryClient, added);
   return true;
 }
 

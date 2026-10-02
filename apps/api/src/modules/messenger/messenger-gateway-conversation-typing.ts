@@ -5,7 +5,7 @@ import {
 } from '@nbos/shared';
 import type { Socket } from 'socket.io';
 import { employeeMayUseCoreConversation } from './core/messenger-core-read-authorize';
-import { messengerTypingDisplayLabel } from './messenger-gateway-channel-access';
+import { messengerTypingDisplayLabel } from './messenger-gateway-channel';
 import { extractConversationId } from './messenger-gateway-parse';
 import type { MessengerTypingThrottle } from './messenger-typing-throttle';
 

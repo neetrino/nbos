@@ -11,6 +11,7 @@ import {
   beginMessengerPersistHydration,
   isMessengerPersistGenerationCurrent,
   isMessengerPersistIdentity,
+  readMessengerPersistChannelIdentity,
   readMessengerPersistGeneration,
   settleMessengerPersistHydration,
 } from './messenger-persist-session';
@@ -19,6 +20,12 @@ import {
   readMessengerPersistReadyState,
 } from './messenger-persist-ready';
 import { writeMessengerPersistCapture } from './messenger-persist-write';
+import {
+  noteMessengerOutboxHydrated,
+  requestMessengerOutboxReplay,
+} from '../query/messenger-outbox-replay';
+import { mergeRemoteMessengerOutbox } from './messenger-outbox-store';
+import { showMessengerOutboxEntries } from './messenger-outbox-restore';
 import type { MessengerPersistEnvelope } from './messenger-persist-envelope';
 
 let backendOverride: MessengerPersistBackend | null = null;
@@ -61,7 +68,9 @@ export async function hydrateMessengerPersistCache(
   } catch {
     return;
   } finally {
+    const current = isMessengerPersistGenerationCurrent(generation);
     settleMessengerPersistHydration(queryClient, generation);
+    if (current) noteMessengerOutboxHydrated(queryClient);
   }
 }
 
@@ -101,6 +110,25 @@ export async function persistMessengerCacheNow(
   }
 }
 
+export async function importMessengerPersistOutbox(
+  queryClient: QueryClient,
+  identityId: string,
+): Promise<void> {
+  if (readMessengerPersistChannelIdentity() !== identityId) return;
+  const generation = readMessengerPersistGeneration();
+  try {
+    const raw = await getMessengerPersistBackend().read(identityId);
+    if (!isOutboxImportCurrent(identityId, generation)) return;
+    const envelope = raw ? parseSerializedEnvelope(raw, identityId) : null;
+    if (!envelope) return;
+    const added = mergeRemoteMessengerOutbox(identityId, envelope.outbox ?? []);
+    showMessengerOutboxEntries(queryClient, added);
+    requestMessengerOutboxReplay(queryClient);
+  } catch {
+    return;
+  }
+}
+
 export async function deleteMessengerPersistRecord(identityId: string): Promise<void> {
   if (!isMessengerPersistIdentity(identityId)) return;
   try {
@@ -120,6 +148,13 @@ export async function clearMessengerPersistStore(): Promise<void> {
 
 export function scheduleMessengerPersistStoreClear(): void {
   void clearMessengerPersistStore();
+}
+
+function isOutboxImportCurrent(identityId: string, generation: number): boolean {
+  return (
+    isMessengerPersistGenerationCurrent(generation) &&
+    readMessengerPersistChannelIdentity() === identityId
+  );
 }
 
 function ensureHydrationGeneration(queryClient: QueryClient, identityId: string): number {

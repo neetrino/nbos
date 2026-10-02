@@ -16,7 +16,10 @@ export function reduceConversationSummary(
   }
   const unreadCount = resolveSummaryUnread(payload.lastMessageAt, payload.unreadCount, watermark);
   if (cachedAt && compareIsoInstants(payload.lastMessageAt, cachedAt) === 0) {
-    return row.unreadCount === unreadCount ? row : { ...row, unreadCount };
+    if (row.unreadCount === unreadCount && row.lastMessagePreview === payload.lastMessagePreview) {
+      return row;
+    }
+    return { ...row, unreadCount, lastMessagePreview: payload.lastMessagePreview };
   }
   return {
     ...row,

@@ -23,7 +23,7 @@ export type ConversationSummaryPublishInput = {
   conversationType?: MessengerConversationType;
   senderId: string | null;
   lastMessageAt: Date | string;
-  lastMessagePreview: string;
+  lastMessagePreview: string | null;
   connectedEmployeeIds: string[];
 };
 

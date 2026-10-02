@@ -5,10 +5,10 @@ import {
 } from './messenger-delivery-status';
 
 describe('mergeMessengerDeliveryStatus', () => {
-  it('does not let SENT overwrite DELIVERED or READ', () => {
-    expect(mergeMessengerDeliveryStatus('DELIVERED', 'SENT')).toBe('DELIVERED');
+  it('does not let DELIVERED or SENT overwrite READ', () => {
+    expect(mergeMessengerDeliveryStatus('READ', 'DELIVERED')).toBe('READ');
     expect(mergeMessengerDeliveryStatus('READ', 'SENT')).toBe('READ');
-    expect(canAdvanceMessengerDeliveryStatus('DELIVERED', 'SENT')).toBe(false);
+    expect(canAdvanceMessengerDeliveryStatus('READ', 'DELIVERED')).toBe(false);
   });
 
   it('does not let late SENDING overwrite terminal or ACK states', () => {

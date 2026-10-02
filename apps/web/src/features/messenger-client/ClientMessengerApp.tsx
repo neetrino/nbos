@@ -6,13 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { useInternalMessengerRealtime } from '@/features/messenger-internal/useInternalMessengerRealtime';
-import { applyMessengerRealtimeMessage } from '@/features/messenger/query/messenger-cache';
-import {
-  applyMessengerAccessChanged,
-  applyMessengerRealtimeRead,
-  applyMessengerRealtimeSummary,
-} from '@/features/messenger/query/messenger-realtime-cache';
-import { recoverMessengerZone } from '@/features/messenger/query/messenger-delta-recovery';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
 import { messengerClientApi } from '@/lib/api/messenger-core-client';
@@ -25,27 +18,38 @@ import {
   type ClientMessengerSectionId,
 } from './client-messenger.constants';
 import { clientSectionFromPathname } from './client-messenger-section';
+import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
+import { noteMessengerComposerDraft } from '@/features/messenger/query/messenger-send-claim';
 import { sendClientThreadMessage } from './send-client-thread-message';
 import { useClientOpenConversationQuery } from './use-client-open-conversation-query';
 import { useClientMessengerQueries } from './use-client-messenger-queries';
 import { useClientMessengerSession } from './use-client-messenger-session';
+import { VisibleThreadRead } from '@/features/messenger/query/use-visible-conversation-read';
 import {
   openClientConversation,
   patchClientAttention,
   toggleClientFavorite,
 } from './client-messenger-cache-ops';
+import {
+  portfolioScopeEmptyCopy,
+  usePortfolioClientScope,
+  usePortfolioTargetFromLocation,
+  type PortfolioClientTarget,
+} from './use-portfolio-client-scope';
 
 const CLIENT_SHEET_SHELL_CLASS =
   'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-card text-card-foreground';
 
 export function ClientMessengerApp({
   embedded = false,
+  portfolio = null,
   section: sectionOverride,
   onSectionChange,
   requestedConversationId = null,
   onRequestedConversationHandled,
 }: {
   embedded?: boolean;
+  portfolio?: PortfolioClientTarget | null;
   section?: ClientMessengerSectionId;
   onSectionChange?: (section: ClientMessengerSectionId) => void;
   requestedConversationId?: string | null;
@@ -53,10 +57,12 @@ export function ClientMessengerApp({
 }) {
   const pathname = usePathname();
   const section = sectionOverride ?? clientSectionFromPathname(pathname);
+  const fromLocation = usePortfolioTargetFromLocation();
   return (
     <ClientMessengerScreen
       section={section}
       embedded={embedded}
+      portfolio={portfolio ?? fromLocation}
       onSectionChange={onSectionChange}
       requestedConversationId={requestedConversationId}
       onRequestedConversationHandled={onRequestedConversationHandled}
@@ -67,12 +73,14 @@ export function ClientMessengerApp({
 function ClientMessengerScreen({
   section,
   embedded,
+  portfolio,
   onSectionChange,
   requestedConversationId,
   onRequestedConversationHandled,
 }: {
   section: ClientMessengerSectionId;
   embedded: boolean;
+  portfolio: PortfolioClientTarget | null;
   onSectionChange?: (section: ClientMessengerSectionId) => void;
   requestedConversationId?: string | null;
   onRequestedConversationHandled?: () => void;
@@ -81,6 +89,7 @@ function ClientMessengerScreen({
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
   useHeaderModuleTitle('Client Messenger', !embedded);
+  const portfolioScope = usePortfolioClientScope(portfolio);
   const session = useClientMessengerSession(section);
   const enabled = Boolean(canView && me);
   const data = useClientMessengerQueries({
@@ -92,11 +101,8 @@ function ClientMessengerScreen({
     activeCollectionId: session.activeCollectionId,
     enabled,
   });
-  const active = resolveActiveConversation(
-    data.items,
-    session.activeId,
-    session.openedConversation,
-  );
+  const listItems = portfolio ? portfolioScope.rows : data.items;
+  const active = resolveActiveConversation(listItems, session.activeId, session.openedConversation);
   const openConversation = useCallback(
     (id: string) =>
       openClientConversation(queryClient, id, session.setActiveId, session.setOpenedConversation),
@@ -104,6 +110,18 @@ function ClientMessengerScreen({
   );
 
   useClientOpenConversationQuery(openConversation);
+  const portfolioContactId = portfolio?.contactId ?? null;
+  const portfolioCompanyId = portfolio?.companyId ?? null;
+  useEffect(() => {
+    if ((!portfolioContactId && !portfolioCompanyId) || !portfolioScope.uniqueConversationId)
+      return;
+    void openConversation(portfolioScope.uniqueConversationId);
+  }, [
+    openConversation,
+    portfolioCompanyId,
+    portfolioContactId,
+    portfolioScope.uniqueConversationId,
+  ]);
   useEffect(() => {
     if (!requestedConversationId) return;
     void openConversation(requestedConversationId).finally(() =>
@@ -114,31 +132,9 @@ function ClientMessengerScreen({
   useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
+    zone: 'CLIENT',
     conversationId: session.activeId,
-    onInboundMessage: (_conversationId, message) => {
-      applyMessengerRealtimeMessage(queryClient, message);
-    },
-    onConversationSummary: (payload) => {
-      applyMessengerRealtimeSummary(queryClient, 'CLIENT', payload);
-    },
-    onConversationRead: (payload) => {
-      applyMessengerRealtimeRead(queryClient, 'CLIENT', payload);
-    },
-    onAccessChanged: (payload) => {
-      applyMessengerAccessChanged(queryClient, 'CLIENT', payload.conversationId, payload.zone, {
-        activeId: session.activeId,
-        clearActive: () => session.setActiveId(null),
-      });
-    },
-    onReconnect: () => {
-      void recoverMessengerZone(queryClient, 'CLIENT', {
-        activeId: session.activeId,
-        clearActive: () => session.setActiveId(null),
-      });
-    },
-    onReadListsInvalidate: () => {
-      void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.clientSummariesRoot });
-    },
+    clearActive: () => session.setActiveId(null),
   });
 
   if (permsLoading) return <div className={CLIENT_MESSENGER_SHELL_CLASS} />;
@@ -152,13 +148,26 @@ function ClientMessengerScreen({
     );
   }
 
+  const shellClass = embedded ? CLIENT_SHEET_SHELL_CLASS : CLIENT_MESSENGER_SHELL_CLASS;
   return (
-    <div className={embedded ? CLIENT_SHEET_SHELL_CLASS : CLIENT_MESSENGER_SHELL_CLASS}>
+    <div className={shellClass}>
+      <VisibleThreadRead
+        zone="CLIENT"
+        conversationId={session.activeId}
+        threadMounted={Boolean(active)}
+        items={data.messages.data?.items}
+      />
       <ClientMessengerNav section={section} onSectionChange={onSectionChange} />
-      {session.bootError || data.listError ? (
+      {session.bootError || data.listError || portfolioScope.error ? (
         <p className="px-3 py-1 text-xs text-red-600">
-          {session.bootError ?? 'Could not refresh Client Messenger.'}
+          {session.bootError ??
+            (portfolioScope.error
+              ? 'Could not open Client Messenger for this portfolio.'
+              : 'Could not refresh Client Messenger.')}
         </p>
+      ) : null}
+      {portfolio ? (
+        <p className="px-3 pt-2 text-xs text-teal-900">Client Messenger · {portfolioScope.label}</p>
       ) : null}
       <div className="flex min-h-0 flex-1">
         {section === 'collections' && !session.activeCollectionId ? (
@@ -175,12 +184,17 @@ function ClientMessengerScreen({
         ) : (
           <ClientConversationList
             section={section}
-            items={data.items}
+            items={listItems}
+            emptyCopy={
+              portfolio && portfolioScope.empty
+                ? portfolioScopeEmptyCopy(portfolioScope.label)
+                : undefined
+            }
             activeId={session.activeId}
             search={session.search}
             filter={session.filter}
             provider={session.provider}
-            listPending={data.listPending}
+            listPending={portfolio ? portfolioScope.loading : data.listPending}
             onSearchChange={session.setSearch}
             onFilterChange={session.setFilter}
             onProviderChange={session.setProvider}
@@ -201,7 +215,10 @@ function ClientMessengerScreen({
             messages={data.messages.data?.items ?? []}
             messagesLoading={data.messages.isPending && data.messages.data === undefined}
             newMessage={session.newMessage}
-            onNewMessageChange={session.setNewMessage}
+            onNewMessageChange={(value) => {
+              noteMessengerComposerDraft(session.activeId, value);
+              session.setNewMessage(value);
+            }}
             unlockedConversationId={session.unlockedId}
             onUnlock={() => {
               if (active.canSend) session.setUnlockedId(active.id);
@@ -212,15 +229,18 @@ function ClientMessengerScreen({
                 canSend: Boolean(active.canSend),
                 unlocked: session.unlockedId === session.activeId,
                 unlockedConversationId: session.unlockedId,
-                sendBusy: session.sendBusy,
                 content: session.newMessage,
                 replyToMessageId,
-                setSendBusy: session.setSendBusy,
-                setNewMessage: session.setNewMessage,
+                setNewMessage: (value) => {
+                  noteMessengerComposerDraft(session.activeId, value);
+                  session.setNewMessage(value);
+                },
                 queryClient,
+                senderId: me?.id ?? null,
+                senderName: messengerComposerSenderName(me),
               })
             }
-            sendDisabled={session.sendBusy}
+            sendDisabled={false}
             onToggleFavorite={() => void toggleClientFavorite(queryClient, active.id)}
             collections={data.collections.data ?? []}
             onAddToCollection={(collectionId) =>

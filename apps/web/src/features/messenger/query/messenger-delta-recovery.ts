@@ -96,8 +96,16 @@ async function fallbackMessengerRecovery(
 ): Promise<void> {
   clearMessengerHttpCheckpoint(queryClient, zone);
   await ensureMessengerBootstrap(queryClient, zone);
-  if (!session?.activeId) return;
-  void queryClient.invalidateQueries({
-    queryKey: messengerQueryKeys.messages(session.activeId),
-  });
+  for (const conversationId of recoveredThreadIds(session)) {
+    void queryClient.invalidateQueries({
+      queryKey: messengerQueryKeys.messages(conversationId),
+    });
+  }
+}
+
+function recoveredThreadIds(session?: MessengerRecoverySession): string[] {
+  const ids = new Set<string>();
+  if (session?.activeId) ids.add(session.activeId);
+  for (const id of session?.openConversationIds ?? []) ids.add(id);
+  return [...ids];
 }

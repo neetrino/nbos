@@ -2,6 +2,7 @@ import { Inject, Injectable, Optional } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { WhatsAppOutboundQueueService } from '../../integrations/whatsapp-gateway/whatsapp-outbound-queue.service';
+import { MessengerGateway } from '../../messenger/messenger.gateway';
 import { runSubscriptionPaymentWindowReminders } from './invoice-card-payment-window-reminders';
 import { notifyOfficialAfterInvoiceWrite } from './invoice-card-persist';
 import { InvoiceOfficialWhatsAppService } from './invoice-official-whatsapp.service';
@@ -23,6 +24,7 @@ export class InvoiceCardRemindersService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     @Optional() private readonly officialWhatsApp?: InvoiceOfficialWhatsAppService,
     @Optional() private readonly outbound?: WhatsAppOutboundQueueService,
+    @Optional() private readonly messengerGateway?: MessengerGateway,
   ) {}
 
   /**
@@ -36,6 +38,7 @@ export class InvoiceCardRemindersService {
     const payment = await runSubscriptionPaymentWindowReminders({
       prisma: this.prisma,
       outbound: this.outbound,
+      publisher: this.messengerGateway,
       asOf,
       asOfKey,
     });

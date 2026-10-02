@@ -1,4 +1,10 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../../database.module';
 import { loadMessengerLegacyAccess } from '../access/messenger-legacy-channel-access.op';
@@ -12,6 +18,11 @@ import {
 import { evaluateMessengerCoreAccess } from './messenger-core-access';
 import { loadMessengerCoreAccessFacts } from './messenger-core-access-load';
 import { listAccessibleClientConversations } from './messenger-core-client-list.ops';
+import {
+  portfolioScopeInput,
+  resolvePortfolioClientScope,
+  type PortfolioClientScopeResult,
+} from './messenger-portfolio-client-scope.ops';
 import { loadClientMessengerBootstrap } from './messenger-core-bootstrap.ops';
 import type { MessengerClientBootstrapResult } from './messenger-core-bootstrap.ops';
 import { loadClientMessengerDelta } from './messenger-core-delta.ops';
@@ -28,6 +39,11 @@ import { toggleClientFavorite } from './messenger-core-favorites.ops';
 import { listCoreConversationMessages } from './messenger-core-internal-messages.ops';
 import { listCoreConversationLinks } from './messenger-core-link.ops';
 import { mapAllMetaSalesToCore } from './messenger-meta-mapper.ops';
+import { MessengerGateway } from '../messenger.gateway';
+import {
+  publishCommittedFavorite,
+  requireMessengerGateway,
+} from './messenger-core-lifecycle-publish';
 import { MessengerCoreService } from './messenger-core.service';
 import type {
   MessengerCoreMessageDto,
@@ -44,10 +60,24 @@ export class MessengerCoreClientService {
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly core: MessengerCoreService,
+    @Optional() private readonly messengerGateway?: MessengerGateway,
   ) {}
 
   async mapMetaSales(): Promise<ReturnType<typeof mapAllMetaSalesToCore>> {
     return mapAllMetaSalesToCore(this.prisma);
+  }
+
+  async portfolioScope(
+    employeeId: string,
+    query: { contactId?: string; companyId?: string },
+  ): Promise<PortfolioClientScopeResult> {
+    const access = await this.requireView(employeeId);
+    return resolvePortfolioClientScope(
+      this.prisma,
+      employeeId,
+      access.clientReadScope,
+      portfolioScopeInput(query),
+    );
   }
 
   async listConversations(
@@ -133,7 +163,15 @@ export class MessengerCoreClientService {
 
   async toggleFavorite(conversationId: string, employeeId: string) {
     await this.getConversation(conversationId, employeeId);
-    return toggleClientFavorite(this.prisma, employeeId, conversationId);
+    const result = await toggleClientFavorite(this.prisma, employeeId, conversationId);
+    publishCommittedFavorite(
+      requireMessengerGateway(this.messengerGateway),
+      employeeId,
+      MESSENGER_CORE_CLIENT_ZONE,
+      conversationId,
+      result.favorite,
+    );
+    return result;
   }
 
   async inviteReadOnly(conversationId: string, actorId: string, employeeId: string) {

@@ -14,6 +14,10 @@ import type {
   MessengerCoreMessageRow,
 } from '@/lib/api/messenger-core';
 import {
+  failedLocalSendKey,
+  localSendReceiptLabel,
+} from '@/features/messenger/query/messenger-local-send';
+import {
   internalSheetDeliveryLabel,
   internalSheetMessageSeen,
 } from './internal-sheet-delivery-label';
@@ -63,7 +67,8 @@ function toViewMessages(
       editedAt: row.editedAt,
       attachments: row.attachments,
     }),
-    deliveryLabel: internalSheetDeliveryLabel(row.status),
+    deliveryLabel: localSendReceiptLabel(row) ?? internalSheetDeliveryLabel(row.status),
+    localSendKey: failedLocalSendKey(row),
     receiptSeen: internalSheetMessageSeen(row.status, row.createdAt, peerLastReadAt),
     replyTo: quoteForThreadRow(row, rows),
     replyToMessageId: row.replyToMessageId,

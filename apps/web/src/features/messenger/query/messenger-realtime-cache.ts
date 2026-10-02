@@ -43,6 +43,13 @@ export function applyMessengerRealtimeRead(
   patchConversationUnread(queryClient, zone, payload.conversationId, payload.unreadCount);
 }
 
+export type MessengerRecoverySession = {
+  activeId: string | null;
+  clearActive: () => void;
+  openConversationIds?: readonly string[];
+  onRemoved?: (conversationId: string) => void;
+};
+
 export function recoverMessengerRealtimeQueries(
   queryClient: QueryClient,
   zone: MessengerZone,
@@ -58,14 +65,15 @@ export function applyMessengerAccessChanged(
   zone: MessengerZone,
   conversationId: string,
   payloadZone: MessengerZone,
-  session?: { activeId: string | null; clearActive: () => void },
+  session?: MessengerRecoverySession,
 ): boolean {
   if (payloadZone !== zone) return false;
   removeConversationFromSummaries(queryClient, zone, conversationId);
   queryClient.removeQueries({ queryKey: messengerQueryKeys.messages(conversationId) });
   purgeEntityAndCollectionCaches(queryClient, zone, conversationId);
   clearReadWatermark(queryClient, zone, conversationId);
-  if (session && session.activeId === conversationId) session.clearActive();
+  if (session?.activeId === conversationId) session.clearActive();
+  session?.onRemoved?.(conversationId);
   return true;
 }
 

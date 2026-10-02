@@ -18,14 +18,23 @@ interface JwtSubPayload {
   authVersion?: number;
 }
 
-export async function authenticateMessengerSocket(input: {
+export type MessengerSocketAuthInput = {
   client: Socket;
   server: Server;
   prisma: PrismaLike;
   jwtSecret: string;
   presenceTracker: MessengerPresenceTracker;
   logger: Logger;
-}): Promise<void> {
+};
+
+/** Starts authentication and stores its promise for subscribe handlers that arrive early. */
+export function beginMessengerSocketAuthentication(input: MessengerSocketAuthInput): void {
+  const pending = authenticateMessengerSocket(input);
+  const data = input.client.data as { messengerAuthReady?: Promise<void> };
+  data.messengerAuthReady = pending;
+}
+
+export async function authenticateMessengerSocket(input: MessengerSocketAuthInput): Promise<void> {
   const token = readSocketToken(input.client);
   if (!token) {
     input.client.disconnect(true);

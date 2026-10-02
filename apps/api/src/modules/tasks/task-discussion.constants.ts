@@ -9,5 +9,8 @@ export const TASK_DISCUSSION_MIN_PAGE_SIZE = 1;
 /** Maximum stored body length for one discussion entry. */
 export const TASK_DISCUSSION_BODY_MAX_LENGTH = 8_000;
 
+/** Client send key stored on the existing Core message idempotency column. */
+export const TASK_DISCUSSION_IDEMPOTENCY_KEY_MAX_LENGTH = 128;
+
 /** Legacy TaskDiscussionEntry writes are frozen after Slice 5 cutover. Table is DELETE-LATER. */
 export const TASK_DISCUSSION_LEGACY_WRITES_DISABLED = true;

@@ -24,7 +24,8 @@ describe('Internal Messenger web client', () => {
       'features/clients/components/client-portfolio/PortfolioMessengerSheet.tsx',
     );
     const app = readWeb('features/messenger-internal/InternalMessengerApp.tsx');
-    expect(sheet).toMatch(/InternalMessengerApp/);
+    expect(sheet).toMatch(/ClientMessengerApp/);
+    expect(sheet).not.toMatch(/InternalMessengerApp/);
     expect(sheet).not.toMatch(/MessengerClient/);
     expect(sheet).not.toMatch(/\/api\/messenger\/channels/);
     expect(sheet).not.toMatch(/\/api\/messenger\/dm/);

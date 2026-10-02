@@ -41,8 +41,8 @@ export function EntityConversationPanel({
           newMessage={state.newMessage}
           onNewMessageChange={state.setNewMessage}
           onSend={state.send}
-          canSend={Boolean(state.conversation.canWrite)}
-          sendDisabled={state.sendBusy}
+          canSend={Boolean(state.conversation.canWrite) && !state.revoked}
+          sendDisabled={state.revoked}
           onToggleFavorite={state.toggleFavorite}
           collections={[]}
           onAddToCollection={() => undefined}

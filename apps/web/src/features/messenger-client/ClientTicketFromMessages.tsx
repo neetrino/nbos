@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { SupportCreateTicketDialog } from '@/features/support/components/SupportCreateTicketDialog';
 import { CLIENT_MESSAGE_ACTION_HOOKS } from '@/features/messenger-internal/client-message-action-hooks';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { supportApi } from '@/lib/api/support';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { toast } from 'sonner';
+import { invalidateTicketSourceList } from '@/features/support/components/ticket-source-query';
 import { ClientLinkTicketDialog } from './ClientLinkTicketDialog';
 
 export function ClientTicketFromMessages({
@@ -28,6 +30,7 @@ export function ClientTicketFromMessages({
   onOpenLinkChange: (open: boolean) => void;
   onAttached: () => void;
 }) {
+  const queryClient = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
   if (!CLIENT_MESSAGE_ACTION_HOOKS.createTicket) return null;
   return (
@@ -46,6 +49,7 @@ export function ClientTicketFromMessages({
             setSubmitting,
             onOpenCreateChange,
             onAttached,
+            queryClient,
           })
         }
       />
@@ -60,6 +64,7 @@ export function ClientTicketFromMessages({
             setSubmitting,
             onOpenLinkChange,
             onAttached,
+            queryClient,
           })
         }
       />
@@ -127,6 +132,7 @@ async function submitCreateTicket(input: {
   setSubmitting: (value: boolean) => void;
   onOpenCreateChange: (open: boolean) => void;
   onAttached: () => void;
+  queryClient: ReturnType<typeof useQueryClient>;
 }): Promise<void> {
   const title = input.title.trim();
   if (!title) {
@@ -143,6 +149,7 @@ async function submitCreateTicket(input: {
       description: input.description.trim() || undefined,
     });
     await messengerCoreApi.attachTicketSources(input.selectedMessageIds, ticket.id);
+    invalidateTicketSourceList(input.queryClient, ticket.id);
     toast.success('Ticket created with source references');
     input.onOpenCreateChange(false);
     input.onAttached();
@@ -159,10 +166,12 @@ async function submitLinkTicket(input: {
   setSubmitting: (value: boolean) => void;
   onOpenLinkChange: (open: boolean) => void;
   onAttached: () => void;
+  queryClient: ReturnType<typeof useQueryClient>;
 }): Promise<void> {
   input.setSubmitting(true);
   try {
     await messengerCoreApi.attachTicketSources(input.selectedMessageIds, input.ticketId);
+    invalidateTicketSourceList(input.queryClient, input.ticketId);
     toast.success('Ticket linked to source messages');
     input.onOpenLinkChange(false);
     input.onAttached();

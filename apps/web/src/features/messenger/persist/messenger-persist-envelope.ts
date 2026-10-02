@@ -5,10 +5,15 @@ import type { MessengerZone } from '../query/messenger-query-keys';
 import { isPersistedMessengerQueryKey } from './messenger-persist-allowlist';
 import { parsePersistedQueryData } from './messenger-persist-dto';
 import {
+  parseMessengerPersistOutbox,
+  type MessengerPersistOutboxEntry,
+} from './messenger-persist-outbox';
+import {
   MESSENGER_CACHE_SCHEMA_VERSION,
   MESSENGER_PERSISTENCE_MAX_AGE_MS,
   MESSENGER_PERSIST_ENVELOPE_MAX_BYTES,
   MESSENGER_PERSIST_IDENTITY_PATTERN,
+  MESSENGER_PERSIST_OUTBOX_MAX,
   MESSENGER_PERSIST_QUERY_COUNT_MAX,
 } from './messenger-persist.constants';
 import { isPlainRecord } from './messenger-persist-plain';
@@ -27,6 +32,8 @@ export type MessengerPersistEnvelope = {
   writtenAt: number;
   queries: MessengerPersistQueryRecord[];
   checkpoints: Partial<Record<MessengerZone, MessengerHttpCheckpoint>>;
+  /** Logical sends that must survive reload. Absent on older in-memory fixtures. */
+  outbox?: MessengerPersistOutboxEntry[];
 };
 
 const checkpointSchema = z
@@ -49,6 +56,7 @@ const envelopeHeaderSchema = z
         CLIENT: checkpointSchema.optional(),
       })
       .strict(),
+    outbox: z.array(z.unknown()).max(MESSENGER_PERSIST_OUTBOX_MAX).optional(),
   })
   .strict();
 
@@ -68,10 +76,12 @@ export function parseMessengerPersistEnvelope(
   if (!isValidPersistTimestamp(header.writtenAt, now)) return null;
   if (header.writtenAt < header.capturedAt) return null;
   if (now - header.capturedAt > MESSENGER_PERSISTENCE_MAX_AGE_MS) return null;
-  if (header.queries.length === 0 || header.queries.length > MESSENGER_PERSIST_QUERY_COUNT_MAX)
-    return null;
+  if (header.queries.length > MESSENGER_PERSIST_QUERY_COUNT_MAX) return null;
   const queries = parseEnvelopeQueries(header.queries, header.capturedAt, now);
   if (!queries) return null;
+  const outbox = parseMessengerPersistOutbox(header.outbox);
+  if (!outbox) return null;
+  if (queries.length === 0 && outbox.length === 0) return null;
   const checkpoints = parsePersistCheckpoints(header.checkpoints);
   if (!checkpoints) return null;
   const envelope: MessengerPersistEnvelope = {
@@ -81,6 +91,7 @@ export function parseMessengerPersistEnvelope(
     writtenAt: header.writtenAt,
     queries,
     checkpoints,
+    outbox,
   };
   if (jsonSize(envelope) > MESSENGER_PERSIST_ENVELOPE_MAX_BYTES) return null;
   return envelope;
@@ -102,7 +113,7 @@ function parseEnvelopeQueries(
     if (parsed.kind === 'omit') continue;
     queries.push(parsed.record);
   }
-  return queries.length === 0 ? null : queries;
+  return queries;
 }
 
 function classifyEnvelopeQueryRecord(

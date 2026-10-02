@@ -5,17 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { useHeaderModuleTitle } from '@/components/layout/header-context';
 import { usePermission } from '@/lib/permissions/PermissionContext';
-import {
-  applyMessengerRealtimeMessage,
-  patchConversationLastMessageSeen,
-  syncConversationListReceipt,
-} from '@/features/messenger/query/messenger-cache';
-import {
-  applyMessengerAccessChanged,
-  applyMessengerRealtimeRead,
-  applyMessengerRealtimeSummary,
-} from '@/features/messenger/query/messenger-realtime-cache';
-import { recoverMessengerZone } from '@/features/messenger/query/messenger-delta-recovery';
+import { syncConversationListReceipt } from '@/features/messenger/query/messenger-cache';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
@@ -28,10 +18,14 @@ import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
 import { InternalGroupsEmptyPane } from './InternalGroupsEmptyPane';
 import { InternalMessengerNav } from './InternalMessengerNav';
+import { InternalStartBar } from './InternalStartBar';
+import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
+import { noteMessengerComposerDraft } from '@/features/messenger/query/messenger-send-claim';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 import { useInternalMessengerQueries } from './use-internal-messenger-queries';
 import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
+import { VisibleThreadRead } from '@/features/messenger/query/use-visible-conversation-read';
 import { createInternalGroupConversation } from './create-internal-group';
 import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
 import { useMessengerConversationLaunch } from './use-messenger-conversation-launch';
@@ -119,42 +113,9 @@ function InternalMessengerScreen({
   const { onlineIds, typingPeer, emitConversationTyping } = useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId: me?.id,
+    zone: 'INTERNAL',
     conversationId: session.activeId,
-    onInboundMessage: (_conversationId, message) => {
-      applyMessengerRealtimeMessage(queryClient, message);
-    },
-    onConversationSummary: (payload) => {
-      applyMessengerRealtimeSummary(queryClient, 'INTERNAL', payload);
-    },
-    onConversationRead: (payload) => {
-      applyMessengerRealtimeRead(queryClient, 'INTERNAL', payload);
-    },
-    onAccessChanged: (payload) => {
-      applyMessengerAccessChanged(queryClient, 'INTERNAL', payload.conversationId, payload.zone, {
-        activeId: session.activeId,
-        clearActive: () => session.setActiveId(null),
-      });
-    },
-    onReconnect: () => {
-      void recoverMessengerZone(queryClient, 'INTERNAL', {
-        activeId: session.activeId,
-        clearActive: () => session.setActiveId(null),
-      });
-    },
-    onReadListsInvalidate: () => {
-      void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
-    },
-    onPeerRead: (payload) => {
-      patchConversationLastMessageSeen(
-        queryClient,
-        'INTERNAL',
-        payload.conversationId,
-        payload.lastReadAt,
-      );
-      void queryClient.invalidateQueries({
-        queryKey: messengerQueryKeys.messages(payload.conversationId),
-      });
-    },
+    clearActive: () => session.setActiveId(null),
   });
 
   useEffect(() => {
@@ -197,7 +158,30 @@ function InternalMessengerScreen({
   return (
     <MessengerPresenceProvider onlineIds={onlineIds}>
       <InternalMessengerSheetFrame embedded={embedded}>
+        <VisibleThreadRead
+          zone="INTERNAL"
+          conversationId={session.activeId}
+          threadMounted={Boolean(active)}
+          items={data.messages.data?.items}
+        />
         <InternalMessengerNav section={section} onSectionChange={onSectionChange} />
+        <InternalStartBar
+          section={section}
+          canEdit={can('EDIT', 'MESSENGER')}
+          onCreateGroup={createGroup}
+          onStartDirect={async (peerEmployeeId) => {
+            const created = await messengerCoreApi.createConversation({
+              type: 'DIRECT',
+              peerEmployeeId,
+            });
+            await openInternalConversation(
+              queryClient,
+              created.id,
+              session.setActiveId,
+              session.setOpenedConversation,
+            );
+          }}
+        />
         {session.bootError || data.listError ? (
           <p className="px-3 py-1 text-xs text-red-600">
             {session.bootError ?? 'Could not refresh Internal Messenger.'}
@@ -246,7 +230,10 @@ function InternalMessengerScreen({
               peerLastReadAt={data.messages.data?.meta.peerLastReadAt ?? null}
               messagesLoading={data.messages.isPending && data.messages.data === undefined}
               newMessage={session.newMessage}
-              onNewMessageChange={session.setNewMessage}
+              onNewMessageChange={(value) => {
+                noteMessengerComposerDraft(session.activeId, value);
+                session.setNewMessage(value);
+              }}
               pendingForward={session.pendingForward}
               onClearPendingForward={() => session.setPendingForward(null)}
               onBeginForward={(target, draft) => session.beginForwardTo(target, draft)}
@@ -254,16 +241,19 @@ function InternalMessengerScreen({
                 void sendInternalThreadMessage({
                   conversationId: session.activeId,
                   canWrite: Boolean(active.canWrite),
-                  sendBusy: session.sendBusy,
                   content: session.newMessage,
                   extras,
-                  setSendBusy: session.setSendBusy,
-                  setNewMessage: session.setNewMessage,
+                  setNewMessage: (value) => {
+                    noteMessengerComposerDraft(session.activeId, value);
+                    session.setNewMessage(value);
+                  },
                   queryClient,
+                  senderId: me?.id ?? null,
+                  senderName: messengerComposerSenderName(me),
                 })
               }
               canSend={Boolean(active.canWrite)}
-              sendDisabled={session.sendBusy}
+              sendDisabled={false}
               onToggleFavorite={() => void toggleInternalFavorite(queryClient, active.id)}
               collections={data.collections.data ?? []}
               onAddToCollection={(collectionId) =>

@@ -2,6 +2,8 @@ import {
   MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_ZONE,
   type MessengerWsConversationAccessChangedPayload,
+  type MessengerWsConversationFavoritePayload,
+  type MessengerWsConversationPeerReadPayload,
   type MessengerWsConversationReadUpdatedPayload,
   type MessengerWsConversationSummaryPayload,
   type MessengerWsZone,
@@ -47,6 +49,30 @@ export function isConversationAccessChangedPayload(
   if (!payload || typeof payload !== 'object') return false;
   const row = payload as Record<string, unknown>;
   return isNonEmptyString(row.conversationId) && isMessengerWsZone(row.zone);
+}
+
+export function isConversationFavoritePayload(
+  payload: unknown,
+): payload is MessengerWsConversationFavoritePayload {
+  if (!payload || typeof payload !== 'object') return false;
+  const row = payload as Record<string, unknown>;
+  return (
+    isNonEmptyString(row.conversationId) &&
+    isMessengerWsZone(row.zone) &&
+    typeof row.favorite === 'boolean'
+  );
+}
+
+export function isConversationPeerReadPayload(
+  payload: unknown,
+): payload is MessengerWsConversationPeerReadPayload {
+  if (!payload || typeof payload !== 'object') return false;
+  const row = payload as Record<string, unknown>;
+  return (
+    isNonEmptyString(row.conversationId) &&
+    isNonEmptyString(row.readerId) &&
+    isIsoTimestamp(row.lastReadAt)
+  );
 }
 
 export function isCoreConversationMessagePayload(

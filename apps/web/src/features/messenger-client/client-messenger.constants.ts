@@ -25,3 +25,5 @@ export const CLIENT_REPLY_LABEL = 'Reply to client';
 export const INTERNAL_COMPOSER_DRAFT_STORE_KEY = 'nbos:internal-messenger:draft';
 export const CLIENT_COMPOSER_DRAFT_STORE_KEY = 'nbos:client-messenger:draft';
 export const CLIENT_OPEN_CONVERSATION_QUERY = 'conversation';
+export const PORTFOLIO_CLIENT_CONTACT_QUERY = 'portfolioContactId';
+export const PORTFOLIO_CLIENT_COMPANY_QUERY = 'portfolioCompanyId';

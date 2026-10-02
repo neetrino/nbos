@@ -1,29 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { messengerCoreApi, type MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { useInternalMessengerRealtime } from '@/features/messenger-internal/useInternalMessengerRealtime';
 import {
-  applyMessengerRealtimeMessage,
   invalidateMessengerCollections,
   patchConversationFavorite,
-  patchConversationLastMessageSeen,
+  patchConversationUnread,
   syncConversationListReceipt,
 } from '@/features/messenger/query/messenger-cache';
-import {
-  applyMessengerAccessChanged,
-  applyMessengerRealtimeRead,
-  applyMessengerRealtimeSummary,
-} from '@/features/messenger/query/messenger-realtime-cache';
-import { recoverMessengerZone } from '@/features/messenger/query/messenger-delta-recovery';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import {
   MESSENGER_QUERY_GC_TIME_MS,
   MESSENGER_QUERY_STALE_TIME_MS,
 } from '@/features/messenger/query/messenger-query-policy';
 import { useMessengerMessages } from '@/features/messenger/query/use-messenger-messages';
+import { latestCanonicalMessageId } from '@/features/messenger/query/messenger-visible-read';
+import { useVisibleConversationRead } from '@/features/messenger/query/use-visible-conversation-read';
+import { noteMessengerComposerDraft } from '@/features/messenger/query/messenger-send-claim';
+import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 import type { EntityConversationKind } from './entity-conversation-kind';
 import type { InternalSendExtras } from './InternalConversationThread';
@@ -33,39 +30,43 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
   const { me, can } = usePermission();
   const canView = can('VIEW', 'MESSENGER');
   const [newMessage, setNewMessage] = useState('');
-  const [sendBusy, setSendBusy] = useState(false);
   const conversation = useEntityEnsureQuery(kind, entityId, Boolean(canView && me));
-  const messagesQuery = useMessengerMessages(conversation.data?.id ?? null, {
-    enabled: Boolean(canView && conversation.data?.id),
+  const revocation = useEntityAccessRevocation(entityId);
+  const loadedId = conversation.data?.id ?? null;
+  const revoked = loadedId !== null && loadedId === revocation.revokedId;
+  const threadId = revoked ? null : loadedId;
+  const messagesQuery = useMessengerMessages(threadId, {
+    enabled: Boolean(canView && threadId),
     zone: 'INTERNAL',
   });
-  const { onlineIds } = useEntityRealtime(
-    canView,
-    me?.id,
-    conversation.data?.id ?? null,
-    queryClient,
-    () => setNewMessage(''),
-  );
+  const loadedRef = useRef(loadedId);
+  const revokeRef = useRef(revocation.revoke);
+  useLayoutEffect(() => {
+    loadedRef.current = loadedId;
+    revokeRef.current = revocation.revoke;
+  });
+  const { onlineIds } = useEntityRealtime(canView, me?.id, threadId, () => {
+    const id = loadedRef.current;
+    if (id) revokeRef.current(id);
+    setNewMessage('');
+  });
+  useEntityVisibleRead(queryClient, canView, loadedId, conversation.error, messagesQuery, revoked);
   useEffect(() => {
-    if (!conversation.data?.id) return;
-    void messengerCoreApi.markRead(conversation.data.id);
-  }, [conversation.data?.id]);
-  useEffect(() => {
-    const conversationId = conversation.data?.id;
     const messages = messagesQuery.data?.items;
-    if (!conversationId || !me?.id || !messages?.length) return;
+    if (!threadId || !me?.id || !messages?.length || revoked) return;
     syncConversationListReceipt(queryClient, 'INTERNAL', {
-      conversationId,
+      conversationId: threadId,
       viewerId: me.id,
       messages,
       peerLastReadAt: messagesQuery.data?.meta.peerLastReadAt ?? null,
     });
   }, [
-    queryClient,
-    conversation.data?.id,
     me?.id,
     messagesQuery.data?.items,
     messagesQuery.data?.meta.peerLastReadAt,
+    queryClient,
+    revoked,
+    threadId,
   ]);
 
   return buildEntityConversationState({
@@ -76,10 +77,14 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     conversation,
     messagesQuery,
     newMessage,
-    setNewMessage,
-    sendBusy,
-    setSendBusy,
+    setNewMessage: (value: string) => {
+      noteMessengerComposerDraft(conversation.data?.id ?? null, value);
+      setNewMessage(value);
+    },
+    senderId: me?.id ?? null,
+    senderName: messengerComposerSenderName(me),
     queryClient,
+    revoked,
     onlineIds,
   });
 }
@@ -94,49 +99,42 @@ function useEntityEnsureQuery(kind: EntityConversationKind, entityId: string, en
   });
 }
 
+function useEntityVisibleRead(
+  queryClient: QueryClient,
+  canView: boolean,
+  loadedId: string | null,
+  conversationError: unknown,
+  messagesQuery: ReturnType<typeof useMessengerMessages>,
+  revoked: boolean,
+): void {
+  useVisibleConversationRead({
+    conversationId: loadedId,
+    threadMounted: entityThreadMounted(
+      canView,
+      loadedId,
+      conversationError,
+      messagesQuery.error,
+      revoked,
+    ),
+    latestMessageId: latestCanonicalMessageId(messagesQuery.data?.items),
+    markRead: (id) => {
+      void markVisibleEntityRead(queryClient, id);
+    },
+  });
+}
+
 function useEntityRealtime(
   canView: boolean,
   meId: string | undefined,
   conversationId: string | null,
-  queryClient: QueryClient,
   clearComposer: () => void,
 ): { onlineIds: ReadonlySet<string> } {
   return useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId,
+    zone: 'INTERNAL',
     conversationId,
-    onInboundMessage: (_id, message) => {
-      applyMessengerRealtimeMessage(queryClient, message);
-    },
-    onConversationSummary: (payload) => {
-      applyMessengerRealtimeSummary(queryClient, 'INTERNAL', payload);
-    },
-    onConversationRead: (payload) => {
-      applyMessengerRealtimeRead(queryClient, 'INTERNAL', payload);
-    },
-    onAccessChanged: (payload) => {
-      applyMessengerAccessChanged(queryClient, 'INTERNAL', payload.conversationId, payload.zone, {
-        activeId: conversationId,
-        clearActive: clearComposer,
-      });
-    },
-    onReconnect: () => {
-      void recoverMessengerZone(queryClient, 'INTERNAL', {
-        activeId: conversationId,
-        clearActive: clearComposer,
-      });
-    },
-    onPeerRead: (payload) => {
-      patchConversationLastMessageSeen(
-        queryClient,
-        'INTERNAL',
-        payload.conversationId,
-        payload.lastReadAt,
-      );
-      void queryClient.invalidateQueries({
-        queryKey: messengerQueryKeys.messages(payload.conversationId),
-      });
-    },
+    clearActive: clearComposer,
   });
 }
 
@@ -149,16 +147,17 @@ function buildEntityConversationState(input: {
   messagesQuery: ReturnType<typeof useMessengerMessages>;
   newMessage: string;
   setNewMessage: (value: string) => void;
-  sendBusy: boolean;
-  setSendBusy: (busy: boolean) => void;
+  senderId: string | null;
+  senderName: string;
   queryClient: QueryClient;
+  revoked: boolean;
   onlineIds: ReadonlySet<string>;
 }) {
   const row = input.conversation.data ?? null;
   return {
     canView: input.canView,
     conversation: row,
-    messages: input.messagesQuery.data?.items ?? [],
+    messages: input.revoked ? [] : (input.messagesQuery.data?.items ?? []),
     peerLastReadAt: input.messagesQuery.data?.meta.peerLastReadAt ?? null,
     newMessage: input.newMessage,
     setNewMessage: input.setNewMessage,
@@ -169,27 +168,62 @@ function buildEntityConversationState(input: {
       input.conversation.isPending &&
       input.conversation.data === undefined,
     ),
-    sendBusy: input.sendBusy,
     messagesLoading: input.messagesQuery.isPending && input.messagesQuery.data === undefined,
     error:
       input.conversation.error || input.messagesQuery.error
         ? 'Could not open this Internal conversation.'
         : null,
+    revoked: input.revoked,
     send: (extras: InternalSendExtras) =>
       void sendInternalThreadMessage({
-        conversationId: row?.id ?? null,
-        canWrite: Boolean(row?.canWrite),
-        sendBusy: input.sendBusy,
+        conversationId: input.revoked ? null : (row?.id ?? null),
+        canWrite: Boolean(row?.canWrite) && !input.revoked,
         content: input.newMessage,
         extras,
-        setSendBusy: input.setSendBusy,
         setNewMessage: input.setNewMessage,
         queryClient: input.queryClient,
+        senderId: input.senderId,
+        senderName: input.senderName,
       }),
     toggleFavorite: () =>
       void toggleEntityFavorite(input.queryClient, input.kind, input.entityId, row),
     onlineIds: input.onlineIds,
   };
+}
+
+function useEntityAccessRevocation(entityId: string): {
+  revokedId: string | null;
+  revoke: (conversationId: string) => void;
+} {
+  const [state, setState] = useState<{ entityId: string; revokedId: string | null }>({
+    entityId,
+    revokedId: null,
+  });
+  if (state.entityId !== entityId) setState({ entityId, revokedId: null });
+  const revokedId = state.entityId === entityId ? state.revokedId : null;
+  const revoke = useCallback(
+    (conversationId: string) => setState({ entityId, revokedId: conversationId }),
+    [entityId],
+  );
+  return { revokedId, revoke };
+}
+
+function entityThreadMounted(
+  canView: boolean,
+  loadedId: string | null,
+  conversationError: unknown,
+  messagesError: unknown,
+  revoked: boolean,
+): boolean {
+  return Boolean(canView && loadedId && !conversationError && !messagesError && !revoked);
+}
+
+async function markVisibleEntityRead(
+  queryClient: QueryClient,
+  conversationId: string,
+): Promise<void> {
+  await messengerCoreApi.markRead(conversationId);
+  patchConversationUnread(queryClient, 'INTERNAL', conversationId, 0);
 }
 
 async function ensureEntityConversation(
