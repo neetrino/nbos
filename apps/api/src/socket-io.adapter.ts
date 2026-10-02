@@ -64,7 +64,7 @@ export async function installMessengerSocketIoAdapter(
   return adapter;
 }
 
-function withSocketCors(options?: ServerOptions): ServerOptions {
+function withSocketCors(options?: ServerOptions): Partial<ServerOptions> {
   return {
     ...options,
     cors: {
