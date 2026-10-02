@@ -57,10 +57,6 @@
     "YEARLY": "Ежегодно",
     "MULTI_YEAR": "Многолетний"
   },
-  "tax": {
-    "TAX": "С налогом",
-    "TAX_FREE": "Без налога"
-  },
   "backlogReason": {
     "none": "Нет",
     "DEBT_PAY_LATER": "Долг на потом",
@@ -157,6 +153,7 @@
   },
   "sheet": {
     "loading": "Загрузка…",
+    "renameHint": "Нажмите, чтобы изменить название",
     "tabs": {
       "general": "Общие",
       "payments": "Платежи"
@@ -176,7 +173,6 @@
     "category": "Категория",
     "frequency": "Периодичность",
     "backlogReason": "Причина отложения",
-    "taxStatus": "Налог",
     "passThrough": "Транзитный",
     "sourceInvoice": "Счёт клиента",
     "notes": "Описание",
@@ -189,10 +185,19 @@
     "notes": "Заметки",
     "actions": "Действия",
     "removeAria": "Удалить платёж {amount}",
+    "refundAria": "Вернуть платёж {amount}",
+    "refundReason": "Причина",
     "amountRequired": "Сумма *",
     "dateRequired": "Дата платежа *",
     "dateAria": "Дата платежа",
-    "notesOptional": "Необязательно"
+    "notesOptional": "Необязательно",
+    "salaryPart": "Оклад в этом платеже: {amount}",
+    "bonusAssignHint": "Сумму сверх оклада нужно отнести на конкретный бонус.",
+    "bonusUntitled": "Бонус",
+    "bonusField": "{name}, остаток {amount}",
+    "carryField": "Ранее невыплаченный остаток",
+    "carryPart": "Ранее невыплаченный остаток в этом платеже: {amount}",
+    "assignShort": "Отнесите оставшиеся {amount} на бонус."
   },
   "dialogs": {
     "addPaymentTitle": "Добавить платёж",
@@ -204,7 +209,10 @@
     "cancelConfirm": "Отменить расход",
     "removePaymentTitle": "Удалить платёж?",
     "removePaymentDescription": "Эта строка платежа будет удалена из расхода. Позже её можно записать снова.",
-    "removePaymentConfirm": "Удалить"
+    "removePaymentConfirm": "Удалить",
+    "refundPaymentTitle": "Вернуть платёж",
+    "refundPaymentDescription": "Сначала возвращает бонус из этого платежа. Оклад остаётся выплаченным, пока бонусная часть не возвращена полностью.",
+    "refundPaymentConfirm": "Вернуть"
   },
   "banners": {
     "projectFilter": "Показаны расходы этого проекта (серверный фильтр).",
@@ -241,7 +249,8 @@
     "statusUpdate": "Не удалось обновить статус расхода. Попробуйте снова.",
     "statusUpdateKanban": "Не удалось обновить статус расхода. Откройте карточку или попробуйте снова.",
     "recordPayment": "Не удалось записать платёж. Проверьте сумму и попробуйте снова.",
-    "removePayment": "Не удалось удалить платёж. Попробуйте снова."
+    "removePayment": "Не удалось удалить платёж. Попробуйте снова.",
+    "refundPayment": "Не удалось вернуть платёж. Проверьте сумму и попробуйте снова."
   },
   "gate": {
     "completeBefore": "Заполните поля перед сменой статуса",

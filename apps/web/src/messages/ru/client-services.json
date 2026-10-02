@@ -43,12 +43,14 @@
     "CANCELLED": "Отменён"
   },
   "billing": {
-    "WE_PAY": "Платим мы",
-    "REMINDER_ONLY": "Только напоминание"
+    "CLIENT_CHARGE": "Client Charge",
+    "WE_PAY": "We Pay",
+    "REMINDER_ONLY": "Remember Only"
   },
   "billingShort": {
-    "WE_PAY": "Платим мы",
-    "REMINDER_ONLY": "Напоминание"
+    "CLIENT_CHARGE": "Client Charge",
+    "WE_PAY": "We Pay",
+    "REMINDER_ONLY": "Remember Only"
   },
   "pricing": {
     "FIXED": "Фиксированная",
@@ -165,7 +167,7 @@
   "invoicesTab": {
     "title": "Карточки счетов",
     "create": "Создать счёт",
-    "wePayOnly": "Сервисы, которые оплачивает компания, не используют счета.",
+    "wePayOnly": "Счета создаются только для Client Charge.",
     "viewAria": "Вид списка счетов",
     "emptyTitle": "Нет счетов",
     "emptyDescription": "К этому сервису ещё не привязаны карточки счетов.",
@@ -174,7 +176,7 @@
   "expensesTab": {
     "title": "Карточки расходов",
     "create": "Создать расход",
-    "reminderOnly": "Сервисы только с напоминанием не используют расходы.",
+    "reminderOnly": "Remember Only не создаёт расходы.",
     "viewAria": "Вид списка расходов",
     "emptyTitle": "Нет карточек расходов",
     "emptyDescription": "К этому сервису ещё не привязаны карточки расходов.",

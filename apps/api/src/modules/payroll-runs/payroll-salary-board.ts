@@ -84,6 +84,8 @@ export interface SalaryBoardResponseDto {
 export interface SalaryBoardQueryParams {
   payrollMonthFrom?: string;
   payrollMonthTo?: string;
+  /** When set, only these employees appear. Omit for the company board. */
+  employeeIds?: string[];
 }
 
 function moneyToString(value: { toFixed: (n: number) => string }): string {
@@ -149,9 +151,14 @@ export async function querySalaryBoard(
 ): Promise<SalaryBoardResponseDto> {
   const { from, to, months } = resolveMonthRange(params);
 
+  const employeeWhere =
+    params.employeeIds != null
+      ? { status: { not: 'TERMINATED' as const }, id: { in: params.employeeIds } }
+      : { status: { not: 'TERMINATED' as const } };
+
   const [employees, runs, lines] = await Promise.all([
     prisma.employee.findMany({
-      where: { status: { not: 'TERMINATED' } },
+      where: employeeWhere,
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
       select: {
         id: true,
@@ -167,7 +174,10 @@ export async function querySalaryBoard(
       select: { id: true, payrollMonth: true, status: true },
     }),
     prisma.salaryLine.findMany({
-      where: { payrollRun: { payrollMonth: { gte: from, lte: to } } },
+      where: {
+        payrollRun: { payrollMonth: { gte: from, lte: to } },
+        ...(params.employeeIds != null ? { employeeId: { in: params.employeeIds } } : {}),
+      },
       select: {
         id: true,
         payrollRunId: true,

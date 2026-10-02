@@ -28,6 +28,7 @@ export function Topbar() {
         moduleTitle={moduleTitle}
         isMobileViewport={isMobileViewport}
         showQuickNote={showQuickNote}
+        alignAccountWithRail={!isMobileViewport && can('VIEW', 'MESSENGER')}
         me={me}
       />
     </>

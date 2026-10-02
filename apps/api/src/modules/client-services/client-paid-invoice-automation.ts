@@ -54,7 +54,7 @@ export async function runClientPaidInvoicePaidAutomation(
     },
   });
 
-  if (!service || service.billingModel !== 'WE_PAY') {
+  if (!service || service.billingModel !== 'CLIENT_CHARGE') {
     return { taskId: null, expenseId: null };
   }
 

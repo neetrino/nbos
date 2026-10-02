@@ -1,5 +1,15 @@
 /** Default title for an instant standalone meeting (no Calendar / entity). */
-export const VIDEO_MEETING_DEFAULT_TITLE = 'Instant meeting' as const;
+export const VIDEO_MEETING_DEFAULT_TITLE = 'Мгновенная встреча' as const;
+
+/** Legacy English default — map to localized UI title when still stored. */
+export const VIDEO_MEETING_LEGACY_DEFAULT_TITLE = 'Instant meeting' as const;
+
+/** In-app notification type for colleague video-meeting invites. */
+export const VIDEO_MEETING_COLLEAGUE_INVITE_NOTIFICATION_TYPE =
+  'video_meeting.colleague_invite' as const;
+
+/** Max colleagues invited in one host request. */
+export const VIDEO_MEETING_COLLEAGUE_INVITE_MAX_BATCH = 20 as const;
 
 /** Opaque LiveKit room-name placeholder prefix. */
 export const VIDEO_MEETING_ROOM_NAME_PREFIX = 'vm_' as const;
@@ -13,11 +23,29 @@ export const VIDEO_MEETING_LIST_MAX_PAGE_SIZE = 100 as const;
 /** Default page size for list / history. */
 export const VIDEO_MEETING_LIST_DEFAULT_PAGE_SIZE = 20 as const;
 
+/** Max characters in one persisted room chat message (after trim). */
+export const VIDEO_MEETING_MESSAGE_MAX_LENGTH = 4000 as const;
+
+/** Most recent messages returned in one room thread payload. */
+export const VIDEO_MEETING_THREAD_MAX_MESSAGES = 500 as const;
+
+/** Linked rooms scanned when resolving the latest room for a business entity. */
+export const VIDEO_MEETING_BY_ENTITY_SCAN_LIMIT = 50 as const;
+
 /** LiveKit AccessToken TTL for join JWTs (seconds). */
 export const VIDEO_MEETING_LIVEKIT_TOKEN_TTL_SECONDS = 3600 as const;
 
-/** Empty-room timeout passed to LiveKit CreateRoom (seconds). */
-export const VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS = 600 as const;
+/**
+ * How long LiveKit keeps a room with nobody in it (seconds).
+ * `emptyTimeout` applies before the first join. `departureTimeout` applies after
+ * the last person leaves — that is the office-network drop. Both must outlast
+ * the duration-guard gap (about 70 minutes). CreateRoom does not update a room
+ * that already exists.
+ */
+const VIDEO_MEETING_EMPTY_ROOM_TIMEOUT_HOURS = 4;
+const SECONDS_PER_HOUR = 3600;
+export const VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS =
+  VIDEO_MEETING_EMPTY_ROOM_TIMEOUT_HOURS * SECONDS_PER_HOUR;
 
 /**
  * DI token: tests may inject `true` to enable the module without env.

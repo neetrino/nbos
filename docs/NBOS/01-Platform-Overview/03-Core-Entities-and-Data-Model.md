@@ -1,5 +1,7 @@
 # NBOS Platform — Core Entities & Data Model
 
+**Дополнение 2026-10-02:** [Регистрация готового продукта без Delivery](../03-Business-Logic/12-Product-Registration-Without-Delivery.md). Product может создаваться вместе с новым Project и optional Company без разработки.
+
 **Дополнение 2026-09-18:** [Delivery Compensation v2](../03-Business-Logic/11-Delivery-Compensation-Configurator.md) определяет новые версионные нормативы, конфигурацию функций и распределение delivery-бонусов. В этом ограниченном scope новый канон имеет приоритет; целевые сущности из [технического контракта](../../implementation/delivery-compensation/01-TECHNICAL-CONTRACT.md) ещё не означают существующую схему БД. Остальные связи и правила этого документа сохраняются.
 
 ## Обзор
@@ -467,7 +469,7 @@ Contact (человек)
 
 - Expense Plan → many Expense Cards
 - Expense Card → many Expense Payments
-- Client Service Record (`billing_model`: `WE_PAY` | `REMINDER_ONLY`) → Invoice Card → Payment → Expense Card → Task (только для `WE_PAY`)
+- Client Service Record (`billing_model`: `CLIENT_CHARGE` | `WE_PAY` | `REMINDER_ONLY`) → для `CLIENT_CHARGE`: Invoice Card → Payment → Expense Card; для `WE_PAY`: Expense Card без счёта; `REMINDER_ONLY` денег не двигает
 - Payroll Run → Expense Card
 - Expense Plan / Expense Card → optional Product (owner of delivery bind); `project_id` denormalized from Product
 - Expense Plan / Expense Card → optional Credential (login for paying the vendor)
@@ -901,7 +903,7 @@ Contact (человек)
 
 - Domain → one Project
 - Domain → one Credential (аккаунт провайдера)
-- Domain may generate: Invoice Card for client + Expense + renewal task (when linked `Client Service Record` has `billing_model = WE_PAY`); for `REMINDER_ONLY` — only control tasks and reminders
+- Domain may generate: Invoice Card for client + Expense (when linked `Client Service Record` has `billing_model = CLIENT_CHARGE`); Expense without an invoice when `billing_model = WE_PAY`; for `REMINDER_ONLY` — only control tasks and reminders
 
 ---
 

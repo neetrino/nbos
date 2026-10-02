@@ -36,6 +36,7 @@ import {
 import type {
   PayrollAllocationMatrix,
   PayrollAllocationMatrixCell,
+  PayrollMatrixCellSavePayload,
   PayrollMatrixViewMode,
 } from '@/lib/api/payroll-allocation-matrix';
 import { cn } from '@/lib/utils';
@@ -79,7 +80,7 @@ export function PayrollAllocationMatrixGrid(props: {
   onManualCellRequest: (cell: PayrollAllocationMatrixCell) => void;
   onReleaseSave: (
     cell: PayrollAllocationMatrixCell,
-    payload: { releaseThisMonth: string; reason?: string },
+    payload: PayrollMatrixCellSavePayload,
   ) => Promise<void>;
   onOpenSalaryLine?: (salaryLineId: string) => void;
   fullscreen?: boolean;

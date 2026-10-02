@@ -289,7 +289,7 @@ Calls
 
 ### Video Meetings
 
-Dedicated top-level user module for instant/unlinked video meetings, secure guest invitations, room, recording history and optional business links. **Not** nested inside Calendar or Calls. Planned Video Meetings may opt into existing Calendar, but an instant call never requires a CalendarMeeting. [Module 22](../02-Modules/22-Video-Meetings/00-Video-Meetings-Overview.md) · [UI spec](16-Video-Meetings.md).
+Dedicated top-level user module for durable video rooms, secure guest invitations, a room thread (messages and recordings) and optional business links. The same room is started again; past calls are not a separate archive. **Not** nested inside Calendar or Calls. Planned rooms may opt into existing Calendar, but an instant call never requires a CalendarMeeting. [Module 22](../02-Modules/22-Video-Meetings/00-Video-Meetings-Overview.md) · [UI spec](16-Video-Meetings.md).
 
 ### Calendar
 

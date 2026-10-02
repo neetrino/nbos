@@ -1,4 +1,4 @@
-import { isOrderPaymentGateSatisfied, PRODUCT_GATE_CLOSED_TASK_STATUSES } from '@nbos/shared';
+import { PRODUCT_GATE_CLOSED_TASK_STATUSES } from '@nbos/shared';
 
 export interface ProductDoneReadiness {
   canCompleteWithRuntimeData: boolean;
@@ -60,7 +60,6 @@ export function buildProductDoneReadiness(product: ProductForDoneReadiness): Pro
   const blockers = [
     ...buildClientAcceptanceBlockers(summary),
     ...buildOpenWorkBlockers(summary),
-    ...buildFinanceBlockers(product.order, summary.unpaidInvoiceCount),
     ...buildHandoffBlockers(summary),
   ];
   const warnings = buildDocumentationWarnings(summary);
@@ -109,21 +108,8 @@ function buildClientAcceptanceBlockers(summary: ProductDoneReadiness['summary'])
 function buildOpenWorkBlockers(summary: ProductDoneReadiness['summary']) {
   return [
     ...buildCountBlocker('OPEN_EXTENSIONS', 'Extensions', summary.openExtensionCount),
-    ...buildCountBlocker('OPEN_TASKS', 'Tasks', summary.openTaskCount),
     ...buildCountBlocker('OPEN_TICKETS', 'Support tickets', summary.openTicketCount),
   ];
-}
-
-function buildFinanceBlockers(order: ProductForDoneReadiness['order'], unpaidInvoiceCount: number) {
-  const blockers = buildCountBlocker('UNPAID_INVOICES', 'Finance', unpaidInvoiceCount);
-  if (!isOrderPaymentGateSatisfied(order)) {
-    blockers.push({
-      code: 'ORDER_NOT_CLOSED',
-      label: 'Finance',
-      message: `Linked order is ${order?.status}; it must be fully paid or closed before Done.`,
-    });
-  }
-  return blockers;
 }
 
 function buildHandoffBlockers(summary: ProductDoneReadiness['summary']) {

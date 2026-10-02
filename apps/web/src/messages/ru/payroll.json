@@ -207,6 +207,7 @@
     "bonusReleases": "Выпуски бонусов",
     "payable": "К выплате",
     "paid": "Оплачено",
+    "paidUnconfirmed": "Не подтверждено",
     "remaining": "Остаток",
     "cell": {
       "state": {
@@ -221,6 +222,9 @@
       },
       "placeholder": "Введите премию",
       "releaseAria": "Выпуск премии в этом месяце",
+      "sourceAmountPlaceholder": "Сумма",
+      "sourceAmountAria": "Выпуск для {title}",
+      "sourceRemaining": "Остаток {amount}",
       "createManualAria": "Создать ручную премию",
       "updateError": "Не удалось обновить выпуск.",
       "salesNotReady": "Премия продаж не готова к ведомости (месяц начисления {period}). Синхронизируйте Sales KPI за этот месяц и повторите."

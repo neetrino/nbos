@@ -1,5 +1,6 @@
 'use client';
 
+import { clientServiceBillsClient } from '@/features/finance/constants/client-services';
 import type { ClientServiceFormState } from '@/features/finance/utils/client-service-form-state';
 import type {
   ClientServiceRecord,
@@ -65,7 +66,7 @@ export function ClientServiceDetailSheetBody({
       <ClientServiceInvoicesTab
         links={service.financeLinks}
         canCreateInvoice={canCreateInvoice}
-        showWePayOnly={service.billingModel !== 'WE_PAY'}
+        showWePayOnly={!clientServiceBillsClient(service.billingModel)}
         onCreate={onCreateInvoice}
       />
     );
@@ -76,7 +77,7 @@ export function ClientServiceDetailSheetBody({
       <ClientServiceExpensesTab
         links={service.financeLinks}
         canCreate={canCreateExpense}
-        showReminderOnly={service.billingModel !== 'WE_PAY'}
+        showReminderOnly={service.billingModel === 'REMINDER_ONLY'}
         onCreateExpense={onCreateExpense}
       />
     );

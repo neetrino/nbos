@@ -107,6 +107,7 @@ function appendExpenseBuckets(rows: string[], data: FinanceDashboardData): void 
 
 function appendPayrollRuns(rows: string[], data: FinanceDashboardData): void {
   const p = data.payrollRuns;
+  if (!p) return;
   rows.push(csvLine(['payroll_runs', 'runCount', String(p.runCount), '', '', '']));
   rows.push(csvLine(['payroll_runs', 'totalPayable', p.totalPayable.toFixed(2), '', '', '']));
   rows.push(csvLine(['payroll_runs', 'totalPaid', p.totalPaid.toFixed(2), '', '', '']));

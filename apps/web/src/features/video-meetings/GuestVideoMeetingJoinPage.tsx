@@ -1,16 +1,14 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LoadingState } from '@/components/shared';
 import {
-  guestDecideConsent,
   guestPrejoin,
   guestToken,
-  type ConsentDecision,
   type GuestPrejoinResult,
   type GuestJoinResult,
 } from '@/lib/api/video-meetings';
@@ -22,7 +20,6 @@ type GuestPhase = 'form' | 'waiting' | 'rejected' | 'room' | 'error';
 
 function GuestJoinContent() {
   const t = useTranslations('videoMeetings.guest');
-  const tRecording = useTranslations('videoMeetings.recording');
   const params = useSearchParams();
   const inviteToken = params.get('invite')?.trim() ?? '';
   const [displayName, setDisplayName] = useState('');
@@ -30,13 +27,7 @@ function GuestJoinContent() {
   const [prejoin, setPrejoin] = useState<GuestPrejoinResult | null>(null);
   const [join, setJoin] = useState<GuestJoinResult | null>(null);
   const [error, setError] = useState('');
-  const [consentBusy, setConsentBusy] = useState(false);
-  const [consentMessage, setConsentMessage] = useState<string | null>(null);
-
-  const consentBody = useMemo(() => {
-    const override = process.env.NEXT_PUBLIC_VIDEO_MEETINGS_CONSENT_DISCLOSURE?.trim();
-    return override && override.length > 0 ? override : t('consentBody');
-  }, [t]);
+  const leavingRef = useRef(false);
 
   const pollForToken = useCallback(async () => {
     if (!inviteToken) return;
@@ -71,20 +62,6 @@ function GuestJoinContent() {
     }
   };
 
-  const handleConsent = async (decision: ConsentDecision) => {
-    if (!inviteToken) return;
-    setConsentBusy(true);
-    setConsentMessage(null);
-    try {
-      await guestDecideConsent(inviteToken, decision);
-      setConsentMessage(tRecording('consentSaved'));
-    } catch {
-      setConsentMessage(tRecording('consentError'));
-    } finally {
-      setConsentBusy(false);
-    }
-  };
-
   useEffect(() => {
     if (phase !== 'waiting') {
       return;
@@ -100,36 +77,32 @@ function GuestJoinContent() {
   if (phase === 'room' && join) {
     return (
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={consentBusy}
-            onClick={() => void handleConsent('GRANTED')}
-          >
-            {tRecording('consentGrant')}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={consentBusy}
-            onClick={() => void handleConsent('REVOKED')}
-          >
-            {tRecording('consentRevoke')}
-          </Button>
-        </div>
-        {consentMessage && <p className="text-muted-foreground text-xs">{consentMessage}</p>}
         <VideoMeetingLiveKitRoom
           credentials={join}
-          guestInviteToken={inviteToken}
+          self={{ name: join.displayName }}
+          chatMode={{ kind: 'guest', inviteToken }}
+          chatSelfDisplayName={join.displayName}
+          canEnd={false}
+          onArmLeave={() => {
+            leavingRef.current = true;
+          }}
+          onLeave={() => {
+            leavingRef.current = true;
+            setJoin(null);
+            setPhase('form');
+          }}
+          onAbortLeave={() => {
+            leavingRef.current = false;
+          }}
+          onEnd={async () => undefined}
           onDisconnected={() => {
+            if (leavingRef.current) return;
             setJoin(null);
             setPhase('waiting');
             void pollForToken();
           }}
         />
+        <VideoMeetingRecordingIndicator guestInviteToken={inviteToken} compact />
       </div>
     );
   }
@@ -147,10 +120,6 @@ function GuestJoinContent() {
               placeholder={t('displayNamePlaceholder')}
             />
           </label>
-          <div className="border-border bg-muted/30 rounded-lg border p-3 text-sm">
-            <p className="font-medium">{t('consentLabel')}</p>
-            <p className="text-muted-foreground mt-1 text-xs">{consentBody}</p>
-          </div>
           <Button type="button" onClick={() => void handlePrejoin()} disabled={!displayName.trim()}>
             {t('joinWaitingRoom')}
           </Button>
@@ -165,33 +134,6 @@ function GuestJoinContent() {
               <Button type="button" className="mt-3" onClick={() => void pollForToken()}>
                 {t('enterRoom')}
               </Button>
-            )}
-          </div>
-          <div className="border-border bg-muted/30 rounded-lg border p-3 text-sm">
-            <p className="font-medium">{t('consentLabel')}</p>
-            <p className="text-muted-foreground mt-1 text-xs">{consentBody}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={consentBusy}
-                onClick={() => void handleConsent('GRANTED')}
-              >
-                {tRecording('consentGrant')}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={consentBusy}
-                onClick={() => void handleConsent('DECLINED')}
-              >
-                {tRecording('consentDecline')}
-              </Button>
-            </div>
-            {consentMessage && (
-              <p className="text-muted-foreground mt-2 text-xs">{consentMessage}</p>
             )}
           </div>
           <VideoMeetingRecordingIndicator guestInviteToken={inviteToken} compact />

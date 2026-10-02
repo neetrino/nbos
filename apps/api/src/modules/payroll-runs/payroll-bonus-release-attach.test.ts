@@ -46,6 +46,7 @@ function createTxMock() {
     bonusRelease: {
       findMany: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
+      aggregate: vi.fn().mockResolvedValue({ _sum: { amount: null } }),
     },
     bonusEntry: {
       findUnique: vi.fn(),
@@ -56,9 +57,14 @@ function createTxMock() {
       findUnique: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
       aggregate: vi.fn(),
+      create: vi.fn(),
+    },
+    employee: {
+      findUnique: vi.fn(),
     },
     compensationProfile: {
       findFirst: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
     },
     kpiPolicy: {
       findFirst: vi.fn(),
@@ -247,6 +253,101 @@ describe('attachBonusReleasesToPayrollRun', () => {
     expect(tx.payrollRun.update).toHaveBeenCalled();
   });
 
+  it('rejects attach when ordinary Sales releases together exceed payable', async () => {
+    const tx = createTxMock();
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-05',
+    });
+    mockAttachReleaseFindMany(tx, [
+      {
+        id: 'rel1',
+        employeeId: 'e1',
+        amount: new Decimal(100_000),
+        status: 'APPROVED',
+        payrollRunId: null,
+        releaseType: 'MANUAL',
+        bonusEntry: bonusEntry('SALES'),
+      },
+      {
+        id: 'rel2',
+        employeeId: 'e1',
+        amount: new Decimal(100_000),
+        status: 'APPROVED',
+        payrollRunId: null,
+        releaseType: 'MANUAL',
+        bonusEntry: bonusEntry('SALES'),
+      },
+    ]);
+    tx.salaryLine.findUnique.mockResolvedValue({
+      id: 'sl1',
+      baseSalary: new Decimal(100),
+      bonusesTotal: new Decimal(0),
+      paidAmount: new Decimal(0),
+      payrollCarryAppliedAmount: null,
+    });
+    tx.bonusEntry.findUnique.mockResolvedValue(
+      salesBonusEntryMock({
+        amount: new Decimal(200_000),
+        payableAmount: new Decimal(100_000),
+        kpiPayoutFactor: new Decimal('0.5'),
+      }),
+    );
+    tx.bonusRelease.aggregate.mockResolvedValue({ _sum: { amount: new Decimal(200_000) } });
+
+    await expect(
+      attachBonusReleasesToPayrollRun(tx as never, {
+        payrollRunId: 'run1',
+        releaseIds: ['rel1', 'rel2'],
+      }),
+    ).rejects.toThrow(/ordinary releases exceed the Sales KPI payable/);
+    expect(tx.salaryLine.update).not.toHaveBeenCalled();
+    expect(tx.bonusRelease.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects a SALES release larger than the stored payable', async () => {
+    const tx = createTxMock();
+    tx.payrollRun.findUnique.mockResolvedValue({
+      id: 'run1',
+      status: 'DRAFT',
+      payrollMonth: '2026-05',
+    });
+    mockAttachReleaseFindMany(tx, [
+      {
+        id: 'rel1',
+        employeeId: 'e1',
+        amount: new Decimal(200_000),
+        status: 'APPROVED',
+        payrollRunId: null,
+        bonusEntry: bonusEntry('SALES'),
+      },
+    ]);
+    tx.salaryLine.findUnique.mockResolvedValue({
+      id: 'sl1',
+      baseSalary: new Decimal(100),
+      bonusesTotal: new Decimal(0),
+      paidAmount: new Decimal(0),
+      payrollCarryAppliedAmount: null,
+    });
+    tx.bonusEntry.findUnique.mockResolvedValue(
+      salesBonusEntryMock({
+        amount: new Decimal(200_000),
+        payableAmount: new Decimal(100_000),
+        kpiPayoutFactor: new Decimal('0.5'),
+      }),
+    );
+
+    await expect(
+      attachBonusReleasesToPayrollRun(tx as never, {
+        payrollRunId: 'run1',
+        releaseIds: ['rel1'],
+      }),
+    ).rejects.toThrow(/exceeds the Sales KPI payable/);
+    expect(tx.salaryLine.update).not.toHaveBeenCalled();
+    expect(tx.bonusRelease.update).not.toHaveBeenCalled();
+  });
+
   it('includes release amount for SALES without payroll-side KPI scaling', async () => {
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
@@ -379,39 +480,54 @@ describe('attachBonusReleasesToPayrollRun', () => {
     });
   });
 
-  it('defers excess as carry-over when monthly bonus cap is reached', async () => {
+  it('includes 300000 in full with no new carry and leaves a 50000 unpaid carry stored', async () => {
+    const EXISTING_CARRY_RELEASE_ID = 'carry-rel-1';
+    const pendingCarryRow = {
+      id: EXISTING_CARRY_RELEASE_ID,
+      payrollCarryOverRemaining: new Decimal(50_000),
+    };
     const tx = createTxMock();
     tx.payrollRun.findUnique.mockResolvedValue({
       id: 'run1',
       status: 'DRAFT',
       payrollMonth: '2026-05',
     });
-    mockAttachReleaseFindMany(tx, [
-      {
-        id: 'rel1',
-        employeeId: 'e1',
-        amount: new Decimal(80),
-        status: 'APPROVED',
-        payrollRunId: null,
-        bonusEntry: bonusEntry('DELIVERY'),
+    tx.bonusRelease.findMany.mockImplementation(
+      (args: { where?: { id?: { in?: string[] }; payrollCarryOverRemaining?: unknown } }) => {
+        if (args.where?.id?.in) {
+          return Promise.resolve([
+            {
+              id: 'rel1',
+              employeeId: 'e1',
+              amount: new Decimal(300_000),
+              status: 'APPROVED',
+              payrollRunId: null,
+              bonusEntry: bonusEntry('DELIVERY'),
+            },
+          ]);
+        }
+        if (args.where?.payrollCarryOverRemaining) {
+          return Promise.resolve([pendingCarryRow]);
+        }
+        return Promise.resolve([]);
       },
-    ]);
+    );
     tx.salaryLine.findUnique.mockResolvedValue({
       id: 'sl1',
       payrollRunId: 'run1',
       employeeId: 'e1',
-      baseSalary: new Decimal(100),
-      bonusesTotal: new Decimal(150),
-      totalPayable: new Decimal(250),
+      baseSalary: new Decimal(100_000),
+      bonusesTotal: new Decimal(0),
+      totalPayable: new Decimal(100_000),
       paidAmount: new Decimal(0),
-      remainingAmount: new Decimal(250),
+      remainingAmount: new Decimal(100_000),
       status: 'PENDING',
     });
     tx.salaryLine.aggregate.mockResolvedValue({
       _sum: {
-        baseSalary: new Decimal(100),
-        bonusesTotal: new Decimal(200),
-        totalPayable: new Decimal(300),
+        baseSalary: new Decimal(100_000),
+        bonusesTotal: new Decimal(300_000),
+        totalPayable: new Decimal(400_000),
         paidAmount: new Decimal(0),
       },
     });
@@ -421,25 +537,29 @@ describe('attachBonusReleasesToPayrollRun', () => {
       releaseIds: ['rel1'],
     });
 
-    expect(events).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          kind: 'CARRY_DEFERRED',
-          employeeId: 'e1',
-          releaseId: 'rel1',
-          amount: new Decimal(30),
+    expect(events).toEqual([]);
+    expect(tx.salaryLine.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'sl1' },
+        data: expect.objectContaining({
+          bonusesTotal: new Decimal(300_000),
+          totalPayable: new Decimal(400_000),
         }),
-      ]),
+      }),
     );
-
+    expect(tx.bonusRelease.update).toHaveBeenCalledTimes(1);
     expect(tx.bonusRelease.update).toHaveBeenCalledWith({
       where: { id: 'rel1' },
       data: expect.objectContaining({
-        payrollIncludedAmount: new Decimal(50),
-        payrollCarryOverAmount: new Decimal(30),
-        payrollCarryOverRemaining: new Decimal(30),
+        payrollIncludedAmount: new Decimal(300_000),
+        payrollCarryOverAmount: null,
+        payrollCarryOverRemaining: null,
         kpiBurnedAmount: null,
       }),
     });
+    expect(tx.bonusRelease.update).not.toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: EXISTING_CARRY_RELEASE_ID } }),
+    );
+    expect(pendingCarryRow.payrollCarryOverRemaining.toString()).toBe('50000');
   });
 });

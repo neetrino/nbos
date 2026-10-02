@@ -1,16 +1,14 @@
 import { GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import type { Readable } from 'node:stream';
 import type { CurrentUserPayload } from '../../../common/decorators';
 import { PRISMA_TOKEN } from '../../../database.module';
-import { DriveAccessContextService } from '../../drive/drive-access-context.service';
 import { DriveR2Client } from '../../drive/drive-r2.client';
 import { recordingPlaybackMime } from '../../integrations/ats/ats-recording-mime';
-import { findCallRecordingStorage, hasDriveViewPermission } from './call-recording-storage.op';
+import { findCallRecordingStorage } from './call-recording-storage.op';
 import { CallAccessPolicyService } from './call-access-policy.service';
 import { callAccessActorFromUser } from './call-access.types';
-import { assertCanPlayCallRecording } from './calls-recording-play';
 import {
   fullRecordingHeaders,
   partialRecordingHeaders,
@@ -45,7 +43,6 @@ export class CallsRecordingService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly r2: DriveR2Client,
     private readonly access: CallAccessPolicyService,
-    private readonly driveAccess: DriveAccessContextService,
   ) {}
 
   async streamRecording(
@@ -55,9 +52,8 @@ export class CallsRecordingService {
   ): Promise<RecordingPlaybackResult> {
     const actor = callAccessActorFromUser(user);
     await this.access.assertCanViewCallForJournalOrCrm(actor, callId);
-    assertCanPlayCallRecording(user.permissions);
     const recording = await this.loadReadyRecording(callId);
-    return this.streamAuthorizedRecording(recording.recordingFileAssetId, user, rangeHeader);
+    return this.streamAuthorizedRecording(recording.recordingFileAssetId, rangeHeader);
   }
 
   private async loadReadyRecording(callId: string): Promise<ReadyRecording> {
@@ -73,13 +69,8 @@ export class CallsRecordingService {
 
   private async streamAuthorizedRecording(
     fileAssetId: string,
-    user: CurrentUserPayload,
     rangeHeader: string | undefined,
   ): Promise<RecordingPlaybackResult> {
-    if (!hasDriveViewPermission(user.permissions)) {
-      throw new ForbiddenException('No permission: DRIVE.VIEW');
-    }
-    await this.driveAccess.fromRequest(user, user.permissions.DRIVE_VIEW);
     const file = await findCallRecordingStorage(this.prisma, fileAssetId);
     if (!file?.storageKey) {
       throw new NotFoundException(CALL_RECORDING_UNAVAILABLE_MESSAGE);

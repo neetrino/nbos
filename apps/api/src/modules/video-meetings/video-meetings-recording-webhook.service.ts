@@ -4,6 +4,7 @@ import type { WebhookEvent } from 'livekit-server-sdk';
 import { TrackType } from 'livekit-server-sdk';
 import { PRISMA_TOKEN } from '../../database.module';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
+import { closeMeetingAfterLiveKitRoomFinished } from './video-meetings-room-finished';
 
 /**
  * Handles LiveKit egress + track webhooks for consented recording.
@@ -36,6 +37,24 @@ export class VideoMeetingsRecordingWebhookService {
 
     if (name === 'track_unpublished') {
       await this.onTrackUnpublished(event);
+      return;
+    }
+
+    if (name === 'room_finished') {
+      await this.onRoomFinished(event);
+    }
+  }
+
+  private async onRoomFinished(event: WebhookEvent): Promise<void> {
+    const roomName = event.room?.name;
+    if (!roomName) return;
+    const closed = await closeMeetingAfterLiveKitRoomFinished(
+      this.prisma,
+      this.recordings,
+      roomName,
+    );
+    if (closed) {
+      this.logger.log(`Closed meeting after LiveKit room finished: ${roomName}`);
     }
   }
 

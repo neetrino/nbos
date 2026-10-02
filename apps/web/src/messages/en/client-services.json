@@ -43,12 +43,14 @@
     "CANCELLED": "Cancelled"
   },
   "billing": {
+    "CLIENT_CHARGE": "Client Charge",
     "WE_PAY": "We Pay",
-    "REMINDER_ONLY": "Reminder Only"
+    "REMINDER_ONLY": "Remember Only"
   },
   "billingShort": {
-    "WE_PAY": "We pay",
-    "REMINDER_ONLY": "Reminder"
+    "CLIENT_CHARGE": "Client Charge",
+    "WE_PAY": "We Pay",
+    "REMINDER_ONLY": "Remember Only"
   },
   "pricing": {
     "FIXED": "Fixed",
@@ -165,7 +167,7 @@
   "invoicesTab": {
     "title": "Invoice cards",
     "create": "Create invoice",
-    "wePayOnly": "Company-paid services do not use invoices.",
+    "wePayOnly": "Invoices are created only for Client Charge.",
     "viewAria": "Invoice list view",
     "emptyTitle": "No invoices",
     "emptyDescription": "No invoice cards linked to this service yet.",
@@ -174,7 +176,7 @@
   "expensesTab": {
     "title": "Expense cards",
     "create": "Create expense",
-    "reminderOnly": "Reminder-only services do not use expenses.",
+    "reminderOnly": "Remember Only does not create expenses.",
     "viewAria": "Expense list view",
     "emptyTitle": "No expense cards",
     "emptyDescription": "No expense cards linked to this service yet.",

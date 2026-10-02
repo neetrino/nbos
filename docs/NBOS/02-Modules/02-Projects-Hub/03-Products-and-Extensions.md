@@ -1,5 +1,7 @@
 # Products and Extensions
 
+**Дополнение 2026-10-02:** [Регистрация готового продукта без Delivery](../../03-Business-Logic/12-Product-Registration-Without-Delivery.md). Product может создаваться вместе с новым Project и optional Company без разработки.
+
 ## Обзор
 
 Внутри `Project` ведётся реальная delivery-работа. Основные рабочие сущности здесь:
@@ -350,10 +352,7 @@ Blocks on the first screen:
 
 Карточка уходит в `Closed` как успешно закрытая.
 
-Финансовый close-gate:
-
-- classic-заказ (`paymentType = CLASSIC`) должен быть `FULLY_PAID` или `CLOSED`, и не должно быть outstanding invoice;
-- subscription-заказ (`paymentType = SUBSCRIPTION`) не требует полной оплаты контракта — достаточно, что нет outstanding invoice. Разработка по подписке сдаётся в середине срока, оставшиеся периоды оплачиваются уже за поставленный продукт.
+Оплата не закрывает delivery. `Order` и `Invoice` идут отдельным финансовым процессом: статус заказа и неоплаченные счета не блокируют переход в `Done`.
 
 ### 4.6. Cancelled
 
@@ -420,7 +419,10 @@ Stage gate requirements и checklist items не являются одним и �
 Stage readiness = Stage Requirements.
 Checklist instance completion = one possible Stage Requirement.
 Checklist items = internal checklist system, not direct stage-gate fields.
+Open tasks are not a stage requirement.
 ```
+
+Открытые задачи не блокируют переход Product или Extension. Их можно оставлять на QA, Transfer, Done и после закрытия карточки: будущая работа не является условием движения стадии. Stage gate не считает строки Task. Work Space остаётся местом исполнения.
 
 Например `Development Checklist completed` может быть одним requirement внутри stage. Stage gate проверяет только статус checklist instance: completed или open. Внутри checklist есть свои пункты, комментарии, `Done / Not Done / Pending` и собственная логика завершения. Эти checklist templates создаются и версионируются в `07-My-Company/08-Checklist-Template-Builder.md`.
 

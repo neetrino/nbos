@@ -55,6 +55,11 @@ import type {
 } from './messenger-core.types';
 import { listCoreConversationLinks } from './messenger-core-link.ops';
 import { defaultTaskLinksFromPrimary } from './messenger-core-task-default-links';
+import {
+  mapPinnedMessagePreview,
+  pinCoreConversationMessage,
+  unpinCoreConversationMessage,
+} from './messenger-core-pin-message.ops';
 import { MessengerCoreActionsService } from './messenger-core-actions.service';
 import type { TasksAccessContext } from '../../tasks/tasks-scoped-access';
 
@@ -127,20 +132,47 @@ export class MessengerCoreInternalService {
     const loaded = await loadMessengerCoreAccessFacts(this.prisma, employeeId, conversationId);
     const canWrite = loaded.facts ? evaluateMessengerCoreAccess(loaded.facts).canWrite : false;
     const links = await listCoreConversationLinks(this.prisma, conversationId);
+    const pinned = await this.prisma.messengerConversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        pinnedMessage: {
+          select: { id: true, senderNameSnapshot: true, content: true, deletedAt: true },
+        },
+      },
+    });
     return {
       ...conversation,
       canWrite,
       primaryLinks: defaultTaskLinksFromPrimary(links),
+      pinnedMessage: mapPinnedMessagePreview(pinned?.pinnedMessage),
     };
+  }
+
+  async pinMessage(employeeId: string, conversationId: string, messageId: string) {
+    await this.getConversation(conversationId, employeeId);
+    await this.core.requireWrite(conversationId, employeeId);
+    return pinCoreConversationMessage(this.prisma, conversationId, messageId);
+  }
+
+  async unpinMessage(employeeId: string, conversationId: string) {
+    await this.getConversation(conversationId, employeeId);
+    await this.core.requireWrite(conversationId, employeeId);
+    await unpinCoreConversationMessage(this.prisma, conversationId);
   }
 
   async forwardMessages(
     employeeId: string,
     targetConversationId: string,
     sourceMessageIds: string[],
+    comment?: string,
   ) {
     await this.getConversation(targetConversationId, employeeId);
-    return this.actions.forwardMessages(employeeId, targetConversationId, sourceMessageIds);
+    return this.actions.forwardMessages(
+      employeeId,
+      targetConversationId,
+      sourceMessageIds,
+      comment,
+    );
   }
 
   async listMessages(
@@ -151,6 +183,7 @@ export class MessengerCoreInternalService {
     const conversation = await this.getConversation(conversationId, employeeId);
     return listCoreConversationMessages(this.prisma, conversationId, query, {
       excludeHiddenTaskNotes: conversation.type === 'TASK',
+      viewerId: employeeId,
     });
   }
 

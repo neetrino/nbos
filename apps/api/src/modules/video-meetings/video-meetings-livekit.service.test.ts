@@ -8,6 +8,7 @@ import {
   LIVEKIT_API_SECRET_ENV_KEY,
   LIVEKIT_PUBLIC_URL_ENV_KEY,
   LIVEKIT_URL_ENV_KEY,
+  VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
 } from './video-meetings.constants';
 
 function configWith(values: Record<string, string | undefined>): ConfigService {
@@ -146,6 +147,29 @@ describe('VideoMeetingsLivekitService ensureRoom', () => {
       }
     ).getRoomClient = () => ({ createRoom });
     await service.ensureRoom('vm_x');
-    expect(createRoom).toHaveBeenCalledWith(expect.objectContaining({ name: 'vm_x' }));
+    expect(VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS).toBe(4 * 3600);
+    expect(createRoom).toHaveBeenCalledWith({
+      name: 'vm_x',
+      emptyTimeout: VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
+      departureTimeout: VIDEO_MEETING_LIVEKIT_EMPTY_TIMEOUT_SECONDS,
+    });
+  });
+
+  it('maps a rejected LiveKit key to service unavailable', async () => {
+    const service = new VideoMeetingsLivekitService(
+      configWith({
+        [LIVEKIT_URL_ENV_KEY]: 'http://127.0.0.1:7880',
+        [LIVEKIT_API_KEY_ENV_KEY]: 'devkey',
+        [LIVEKIT_API_SECRET_ENV_KEY]: 'secret',
+      }),
+    );
+    const createRoom = vi.fn().mockRejectedValue(new Error('Unauthorized: invalid API key'));
+    (
+      service as unknown as {
+        getRoomClient: () => { createRoom: typeof createRoom };
+      }
+    ).getRoomClient = () => ({ createRoom });
+
+    await expect(service.ensureRoom('vm_x')).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
 });

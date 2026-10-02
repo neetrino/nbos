@@ -57,10 +57,6 @@
     "YEARLY": "Yearly",
     "MULTI_YEAR": "Multi-year"
   },
-  "tax": {
-    "TAX": "Tax",
-    "TAX_FREE": "Free"
-  },
   "backlogReason": {
     "none": "None",
     "DEBT_PAY_LATER": "Debt to pay later",
@@ -157,6 +153,7 @@
   },
   "sheet": {
     "loading": "Loading…",
+    "renameHint": "Click to edit name",
     "tabs": {
       "general": "General",
       "payments": "Payments"
@@ -176,7 +173,6 @@
     "category": "Category",
     "frequency": "Frequency",
     "backlogReason": "Backlog reason",
-    "taxStatus": "Tax status",
     "passThrough": "Pass-through",
     "sourceInvoice": "Client invoice",
     "notes": "Description",
@@ -189,10 +185,19 @@
     "notes": "Notes",
     "actions": "Actions",
     "removeAria": "Remove payment {amount}",
+    "refundAria": "Refund payment {amount}",
+    "refundReason": "Reason",
     "amountRequired": "Amount *",
     "dateRequired": "Payment date *",
     "dateAria": "Payment date",
-    "notesOptional": "Optional"
+    "notesOptional": "Optional",
+    "salaryPart": "Salary in this payment: {amount}",
+    "bonusAssignHint": "Assign the amount above salary to a specific bonus.",
+    "bonusUntitled": "Bonus",
+    "bonusField": "{name}, left {amount}",
+    "carryField": "Earlier unpaid amount",
+    "carryPart": "Earlier unpaid amount in this payment: {amount}",
+    "assignShort": "Assign the remaining {amount} to a bonus."
   },
   "dialogs": {
     "addPaymentTitle": "Add payment",
@@ -204,7 +209,10 @@
     "cancelConfirm": "Cancel expense",
     "removePaymentTitle": "Remove payment?",
     "removePaymentDescription": "This payment line will be removed from the expense. You can record it again later.",
-    "removePaymentConfirm": "Remove"
+    "removePaymentConfirm": "Remove",
+    "refundPaymentTitle": "Refund payment",
+    "refundPaymentDescription": "Returns bonus cash from this payment first. Salary stays paid until the bonus part is fully returned.",
+    "refundPaymentConfirm": "Refund"
   },
   "banners": {
     "projectFilter": "Showing expenses for this project (server filter).",
@@ -241,7 +249,8 @@
     "statusUpdate": "Expense status could not be updated. Try again.",
     "statusUpdateKanban": "Expense status could not be updated. Open the card or try again.",
     "recordPayment": "Payment could not be recorded. Check the amount and try again.",
-    "removePayment": "Payment could not be removed. Try again."
+    "removePayment": "Payment could not be removed. Try again.",
+    "refundPayment": "Payment could not be refunded. Check the amount and try again."
   },
   "gate": {
     "completeBefore": "Complete before changing status",

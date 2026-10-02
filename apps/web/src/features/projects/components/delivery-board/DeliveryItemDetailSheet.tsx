@@ -73,6 +73,7 @@ interface DeliveryItemDetailSheetProps {
   /** When set (global Delivery Board), stage actions match board + server RBAC. */
   boardMutations?: UseDeliveryBoardMutationsResult;
   stageGateHighlight?: DeliverySheetStageGateHighlight | null;
+  forceNestedBackdrop?: boolean;
 }
 
 function isActivePipelineStage(key: DeliveryPipelineClickKey): key is DeliveryActiveStage {
@@ -92,6 +93,7 @@ export function DeliveryItemDetailSheet({
   onTitleSaved,
   boardMutations,
   stageGateHighlight = null,
+  forceNestedBackdrop = false,
 }: DeliveryItemDetailSheetProps) {
   const t = useTranslations('deliveryBoard');
   const { persistedValue: renderItem, onOpenChangeComplete } = useSheetPersistedValue(item);
@@ -407,6 +409,7 @@ export function DeliveryItemDetailSheet({
           showRailActions={Boolean(headerProps)}
           sourcePageHref={headerProps?.sourcePageHref ?? '#'}
           workspaceHref={headerProps?.workSpaceHref}
+          forceNestedBackdrop={forceNestedBackdrop}
         >
           {!renderItem ? null : (
             <>

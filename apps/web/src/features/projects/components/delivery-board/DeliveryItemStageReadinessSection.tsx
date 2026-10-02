@@ -16,15 +16,12 @@ import {
   buildExtensionStageReadinessRows,
   buildProductStageReadinessRows,
 } from './delivery-stage-readiness-rows';
-import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
-
 interface DeliveryItemStageReadinessSectionProps {
   kind: 'PRODUCT' | 'EXTENSION';
   product: FullProduct | null;
   extension: FullExtension | null;
   lifecycle: DeliveryLifecycleProjection | undefined;
   checklistProgress: ChecklistStageProgress | null | undefined;
-  gateRequiredFields?: ReadonlySet<string>;
   stageGateActionBlockers?: ApiFieldError[];
 }
 
@@ -34,7 +31,6 @@ export function DeliveryItemStageReadinessSection({
   extension,
   lifecycle,
   checklistProgress,
-  gateRequiredFields = new Set(),
   stageGateActionBlockers = [],
 }: DeliveryItemStageReadinessSectionProps) {
   const t = useTranslations('deliveryBoard');
@@ -69,7 +65,6 @@ export function DeliveryItemStageReadinessSection({
       icon={<Gauge size={15} />}
       title={t('readiness.title')}
       hint={t('sheetHints.readiness')}
-      className={deliveryStageGateSectionClass(gateRequiredFields, 'clientAcceptance')}
       trailing={
         <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
           {progress}

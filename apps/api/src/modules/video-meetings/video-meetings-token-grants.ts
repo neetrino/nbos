@@ -13,24 +13,13 @@ export type VideoMeetingVideoGrantOptions = {
 /**
  * Least-privilege LiveKit video grant for a single room.
  * Never sets roomCreate, roomAdmin, roomRecord, recorder, or ingressAdmin.
- * While recording is active, unknown/non-GRANTED consent cannot publish media.
+ * Recording does not revoke publish: the host starts capture without a consent step.
  */
 export function buildVideoMeetingVideoGrant(
   roomName: string,
   role: VideoMeetingTokenRole,
-  options?: VideoMeetingVideoGrantOptions,
+  _options?: VideoMeetingVideoGrantOptions,
 ): VideoGrant {
-  const mayPublish = !options?.recordingActive || options.consentGranted === true;
-  if (!mayPublish) {
-    return {
-      room: roomName,
-      roomJoin: true,
-      canPublish: false,
-      canSubscribe: true,
-      canPublishData: true,
-    };
-  }
-
   const sources =
     role === 'host'
       ? [

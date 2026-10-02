@@ -129,14 +129,14 @@ On manual host start after affirmative consent: one **watchable room-composite M
 
 Keep independent state machines:
 
-| Layer           | Examples                                                    |
-| --------------- | ----------------------------------------------------------- |
-| Logical meeting | CREATED → WAITING → ACTIVE → ENDED / CANCELLED              |
-| Session         | room ref, start/end                                         |
-| Recording job   | PENDING → RECORDING → FINALIZING → READY / PARTIAL / FAILED |
-| Each asset      | independent READY / FAILED / missing                        |
+| Layer           | Examples                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Logical meeting | CREATED / WAITING → ACTIVE → IDLE, then ACTIVE again. CANCELLED only if never held. Supersedes terminal ENDED: [canon 07](../../NBOS/02-Modules/22-Video-Meetings/07-Durable-Room-and-Thread.md) |
+| Session         | room ref, start/end                                                                                                                                                                              |
+| Recording job   | PENDING → RECORDING → FINALIZING → READY / PARTIAL / FAILED                                                                                                                                      |
+| Each asset      | independent READY / FAILED / missing                                                                                                                                                             |
 
-Meeting ENDED does not imply recording READY.
+Room IDLE does not imply recording READY. The S00–S07 code wrote terminal `ENDED`; the next slice follows canon 07 and stops writing `ENDED`.
 
 ---
 

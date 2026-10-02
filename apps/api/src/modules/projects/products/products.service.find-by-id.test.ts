@@ -148,14 +148,14 @@ describe('ProductsService', () => {
         },
       });
       expect(result.doneReadiness.blockers.map((item) => item.code)).toEqual(
-        expect.arrayContaining([
-          'OPEN_EXTENSIONS',
-          'OPEN_TASKS',
-          'OPEN_TICKETS',
-          'CLIENT_ACCEPTANCE_MISSING',
-          'UNPAID_INVOICES',
-          'ORDER_NOT_CLOSED',
-        ]),
+        expect.arrayContaining(['OPEN_EXTENSIONS', 'OPEN_TICKETS', 'CLIENT_ACCEPTANCE_MISSING']),
+      );
+      expect(result.doneReadiness.blockers.map((item) => item.code)).not.toContain('OPEN_TASKS');
+      expect(result.doneReadiness.blockers.map((item) => item.code)).not.toContain(
+        'UNPAID_INVOICES',
+      );
+      expect(result.doneReadiness.blockers.map((item) => item.code)).not.toContain(
+        'ORDER_NOT_CLOSED',
       );
       expect(result.doneReadiness.warnings.map((item) => item.code)).toEqual([
         'NO_PROJECT_CREDENTIALS',

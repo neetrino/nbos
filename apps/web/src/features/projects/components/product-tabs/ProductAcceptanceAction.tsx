@@ -1,6 +1,6 @@
 'use client';
 
-import { Handshake, PencilLine } from 'lucide-react';
+import { Handshake } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import type { FullProduct } from '@/lib/api/products';
@@ -23,6 +23,7 @@ export function ProductAcceptanceAction({
 }: ProductAcceptanceActionProps) {
   const t = useTranslations('deliveryBoard');
   const requiredFields = highlightRequired ? new Set(['clientAcceptance']) : new Set<string>();
+
   if (product.clientAcceptedAt) {
     return (
       <p className="text-xs text-emerald-700 dark:text-emerald-300">
@@ -34,6 +35,7 @@ export function ProductAcceptanceAction({
   }
 
   if (
+    product.deliveryEnabled === false ||
     product.deliveryLifecycle?.isTerminal ||
     product.deliveryLifecycle?.workStatus === 'ON_HOLD'
   ) {
@@ -41,33 +43,22 @@ export function ProductAcceptanceAction({
   }
 
   return (
-    <div
-      className={productStageGateFieldClass(
-        requiredFields,
-        'clientAcceptance',
-        'rounded-xl border border-dashed border-violet-300/80 bg-violet-500/5 p-3.5 transition-[border-color,background-color] hover:border-violet-400/80 hover:bg-violet-500/10',
-      )}
-    >
-      <div className="flex items-start gap-2.5">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-700 dark:text-violet-300">
-          <Handshake className="size-4" aria-hidden />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">{t('acceptance.title')}</p>
-          <p className="text-muted-foreground mt-0.5 text-xs">{t('acceptance.description')}</p>
-        </div>
-      </div>
+    <div className="flex w-full flex-col gap-2">
       <Button
-        variant="outline"
-        size="sm"
+        type="button"
         disabled={disabled}
+        aria-invalid={highlightRequired || undefined}
         onClick={onConfirm}
-        className="mt-3 border-violet-300/80 bg-violet-500/10 text-violet-800 hover:bg-violet-500/15 hover:text-violet-900 dark:text-violet-200"
+        className={productStageGateFieldClass(
+          requiredFields,
+          'clientAcceptance',
+          'h-9 w-full gap-2 rounded-xl bg-violet-600 px-3.5 text-white hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400',
+        )}
       >
-        <PencilLine className="size-3.5" aria-hidden />
-        {t('acceptance.record')}
+        <Handshake className="size-4" aria-hidden />
+        {t('acceptance.title')}
       </Button>
-      {error ? <p className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
     </div>
   );
 }

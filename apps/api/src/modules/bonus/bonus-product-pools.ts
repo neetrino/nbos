@@ -26,6 +26,8 @@ export interface BonusProductPoolRow {
   sumTotalAmount: string;
   sumPipelineAmount: string;
   sumPaidAmount: string;
+  /** CONFIRMED cash, or an old PAID mark with no release and no payment. */
+  paidCashState: 'CONFIRMED' | 'UNCONFIRMED';
   sumClawbackAmount: string;
   /** From `product_bonus_pools` when present (else null until synced). */
   ledgerPlannedAmount: string | null;
@@ -217,6 +219,7 @@ export function foldBonusProductPools(
       sumTotalAmount: toMoneyString(sumTotal),
       sumPipelineAmount: toMoneyString(acc.pipeline),
       sumPaidAmount: toMoneyString(acc.paid),
+      paidCashState: 'CONFIRMED',
       sumClawbackAmount: toMoneyString(acc.clawback),
       ledgerPlannedAmount: null,
       ledgerReleasedAmount: null,

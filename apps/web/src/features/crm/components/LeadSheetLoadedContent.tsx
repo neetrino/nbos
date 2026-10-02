@@ -68,6 +68,7 @@ export interface LeadSheetLoadedContentProps {
   onAttached: (lead: Lead) => void;
   onAttachedAndTrashed: () => void;
   onRefresh?: () => void;
+  forceNestedBackdrop?: boolean;
   onTaskCreateOpenChange: (open: boolean) => void;
   taskListRefreshSignal: number;
 }
@@ -131,6 +132,7 @@ export function LeadSheetLoadedContent(props: LeadSheetLoadedContentProps) {
       contentClassName={LEAD_DETAIL_SHEET_WIDTH_CLASS}
       railAnchorClassName={LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
       sourcePageHref={`/crm/leads?${CRM_OPEN_LEAD_QUERY}=${encodeURIComponent(renderLead.id)}`}
+      forceNestedBackdrop={props.forceNestedBackdrop}
     >
       <CrmSheetEntityHeader
         title={headerTitle}

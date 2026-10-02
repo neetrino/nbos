@@ -5,6 +5,7 @@ import {
   mapMessengerRowToView,
   type MessengerViewMessage,
 } from '@/features/messenger/messenger-message-mapper';
+import { replyPreviewForMessage } from '@/features/messenger/reply-preview';
 import { usePermission } from '@/lib/permissions';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
@@ -14,9 +15,12 @@ import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import type { Task } from '@/lib/api/tasks';
 import { InternalCreateTaskFromMessages } from '@/features/messenger-internal/InternalCreateTaskFromMessages';
+import { InternalDeleteMessagesDialog } from '@/features/messenger-internal/InternalDeleteMessagesDialog';
 import { InternalForwardDialog } from '@/features/messenger-internal/InternalForwardDialog';
 import { InternalMessageActionsBar } from '@/features/messenger-internal/InternalMessageActionsBar';
+import { InternalMessageSelectionBar } from '@/features/messenger-internal/InternalMessageSelectionBar';
 import { ThreadComposer, ThreadMessages } from '@/features/messenger-internal/InternalThreadParts';
+import { SheetMessengerPaletteProvider } from '@/features/messenger-internal/sheet-messenger-palette';
 import { useInternalThreadActions } from '@/features/messenger-internal/use-internal-thread-actions';
 import { ClientAiPlaceholder } from './ClientAiPlaceholder';
 import { ClientInviteDialog } from './ClientInviteDialog';
@@ -32,21 +36,37 @@ import {
 } from '@/features/messenger/query/messenger-local-send';
 import { clientOutboundDeliveryLabel } from './client-delivery-label';
 
-function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
-  return rows.map((row) => ({
-    ...mapMessengerRowToView({
-      id: row.id,
-      channelId: row.conversationId,
-      senderId: row.senderId ?? '',
-      senderName: row.senderName,
-      content: row.content,
-      createdAt: row.createdAt,
-      editedAt: row.editedAt,
-      attachments: row.attachments,
-    }),
+function toViewMessages(
+  rows: MessengerCoreMessageRow[],
+  meId: string | null,
+): MessengerViewMessage[] {
+  return rows.map((row) => viewClientMessage(row, meId, rows));
+}
+
+function viewClientMessage(
+  row: MessengerCoreMessageRow,
+  meId: string | null,
+  rows: MessengerCoreMessageRow[],
+): MessengerViewMessage {
+  const outbound = row.direction === 'OUTBOUND';
+  const mapped = mapMessengerRowToView({
+    id: row.id,
+    channelId: row.conversationId,
+    senderId: row.senderId ?? '',
+    senderName: row.senderName,
+    content: row.content,
+    createdAt: row.createdAt,
+    editedAt: row.editedAt,
+    attachments: row.attachments,
+  });
+  return {
+    ...mapped,
+    senderId: outbound && meId ? meId : mapped.senderId,
     deliveryLabel: localSendReceiptLabel(row) ?? clientOutboundDeliveryLabel(row),
     localSendKey: failedLocalSendKey(row),
-  }));
+    replyTo: replyPreviewForMessage(row, rows),
+    replyToMessageId: row.replyToMessageId,
+  };
 }
 
 export function ClientConversationThread({
@@ -81,9 +101,9 @@ export function ClientConversationThread({
   onAttentionChange?: (attention: NonNullable<MessengerClientConversationRow['attention']>) => void;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
-  const { can } = usePermission();
+  const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const actions = useInternalThreadActions(messages);
+  const actions = useInternalThreadActions(messages, undefined, me?.id);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [createTicketOpen, setCreateTicketOpen] = useState(false);
   const [linkTicketOpen, setLinkTicketOpen] = useState(false);
@@ -100,7 +120,7 @@ export function ClientConversationThread({
   const contextLabel = clientConversationTitle(conversation.title, conversation.provider ?? null);
 
   return (
-    <section className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+    <section className="bg-card text-card-foreground relative flex min-h-0 min-w-0 flex-1 flex-col">
       <ClientThreadHeader
         conversation={conversation}
         title={contextLabel}
@@ -112,68 +132,96 @@ export function ClientConversationThread({
         onAttentionChange={onAttentionChange}
       />
       <InternalMessageActionsBar
-        selectedCount={actions.selectedMessages.length}
-        canReply={actions.selectedMessages.length === 1}
+        anchor={actions.menuAnchor}
+        onClose={actions.closeActionMenu}
         canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
         canCreateTicket={canTicket}
         canLinkTicket={canTicket}
-        onReply={actions.startReply}
+        onReply={() => actions.startReply(actions.selectedIds[0])}
         onForward={() => actions.setForwardOpen(true)}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onCreateTicket={() => setCreateTicketOpen(true)}
         onLinkTicket={() => setLinkTicketOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
-        onClear={actions.clearSelection}
+        onSelect={actions.startSelecting}
+        onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
       />
-      <ThreadMessages
-        views={toViewMessages(messages)}
-        messages={messages}
-        messagesLoading={messagesLoading}
-        selectedIds={actions.selectedIds}
-        onToggleSelect={actions.toggleSelect}
-        onOpenOriginalSource={actions.openOriginalBySourceId}
-        remoteTypingHint={null}
-        endRef={endRef}
-      />
-      <ClientAiPlaceholder />
-      {unlocked && canUnlockClientComposer(canSend) ? (
-        <>
-          <ClientUnlockedComposerBanner
+      {actions.selecting ? (
+        <InternalMessageSelectionBar
+          selectedCount={actions.selectedMessages.length}
+          canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
+          onReply={
+            actions.selectedMessages.length === 1
+              ? () => actions.startReply(actions.selectedIds[0])
+              : undefined
+          }
+          onForward={() => actions.setForwardOpen(true)}
+          onCreateTask={() => actions.setCreateTaskOpen(true)}
+          onCopySource={() => void actions.copySource()}
+          onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
+          onDone={actions.clearSelection}
+        />
+      ) : null}
+      <SheetMessengerPaletteProvider kind="client">
+        <ThreadMessages
+          views={toViewMessages(messages, me?.id ?? null)}
+          messages={messages}
+          messagesLoading={messagesLoading}
+          selectedIds={actions.selectedIds}
+          selecting={actions.selecting}
+          onToggleSelect={actions.toggleSelect}
+          onMessageContextMenu={actions.openActionMenu}
+          onOpenOriginalSource={actions.openOriginalBySourceId}
+          remoteTypingHint={null}
+          scrollerRef={endRef}
+          sheet
+          meId={me?.id ?? null}
+          replyActive={Boolean(actions.replyTo)}
+        />
+        <ClientAiPlaceholder />
+        {unlocked && canUnlockClientComposer(canSend) ? (
+          <>
+            <ClientUnlockedComposerBanner
+              provider={conversation.provider}
+              contextLabel={contextLabel}
+            />
+            <ThreadComposer
+              canSend={canSend}
+              sendDisabled={sendDisabled}
+              newMessage={newMessage}
+              onNewMessageChange={onNewMessageChange}
+              replyTo={actions.replyTo}
+              onClearReply={actions.clearReply}
+              placeholder="Type a message to the client…"
+              sheet
+              onSend={() =>
+                void Promise.resolve(onSend(actions.replyTo?.id)).then(() => actions.clearReply())
+              }
+            />
+          </>
+        ) : (
+          <ClientLockedComposer
+            canSend={canSend}
             provider={conversation.provider}
             contextLabel={contextLabel}
+            onUnlock={onUnlock}
           />
-          <ThreadComposer
-            canSend={canSend}
-            sendDisabled={sendDisabled}
-            newMessage={newMessage}
-            onNewMessageChange={onNewMessageChange}
-            replyTo={actions.replyTo}
-            onClearReply={actions.clearReply}
-            mentions={[]}
-            onMentionsChange={() => undefined}
-            placeholder="Type a message to the client…"
-            onSend={() => {
-              if (!newMessage.trim()) return;
-              const replyToMessageId = actions.replyTo?.id;
-              actions.clearReply();
-              void onSend(replyToMessageId);
-            }}
-          />
-        </>
-      ) : (
-        <ClientLockedComposer
-          canSend={canSend}
-          provider={conversation.provider}
-          contextLabel={contextLabel}
-          onUnlock={onUnlock}
-        />
-      )}
+        )}
+      </SheetMessengerPaletteProvider>
       <InternalForwardDialog
         open={actions.forwardOpen}
         currentConversationId={conversation.id}
         onClose={() => actions.setForwardOpen(false)}
         onForward={(targetConversationId) => forwardSelected(targetConversationId, actions)}
+      />
+      <InternalDeleteMessagesDialog
+        open={actions.deleteConfirmOpen}
+        count={actions.deleteOwnCount}
+        isSubmitting={actions.deleteSubmitting}
+        errorMessage={actions.deleteError}
+        onOpenChange={actions.setDeleteConfirmOpen}
+        onConfirm={actions.confirmDelete}
       />
       {creatorId ? (
         <InternalCreateTaskFromMessages
@@ -215,7 +263,9 @@ async function forwardSelected(
 ): Promise<void> {
   const result = await messengerCoreApi.forwardMessages(
     targetConversationId,
-    actions.selectedMessages.map((row) => row.id),
+    actions.forwardSourceIds.length > 0
+      ? actions.forwardSourceIds
+      : actions.selectedMessages.map((row) => row.id),
   );
   if (result.createdConversation !== false) return;
   toast.success('Forwarded internally as a reference');

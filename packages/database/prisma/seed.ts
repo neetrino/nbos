@@ -1583,7 +1583,6 @@ async function main() {
       status: 'PAID',
       projectId: project1.id,
       isPassThrough: true,
-      taxStatus: 'TAX_FREE',
     },
   });
   await prisma.expense.create({
@@ -1606,7 +1605,6 @@ async function main() {
       amount: 72000,
       frequency: 'YEARLY',
       status: 'PAID',
-      taxStatus: 'TAX_FREE',
     },
   });
   await prisma.expense.create({

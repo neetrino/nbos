@@ -236,27 +236,33 @@ export class OperationalJournalService {
     });
   }
 
-  async appendExpensePaymentLine(input: ExpensePaymentJournalLineInput) {
-    const postingPeriod = await this.ensureOpenPostingPeriod(input.bookedAt);
+  async appendExpensePaymentLine(
+    input: ExpensePaymentJournalLineInput,
+    db: Pick<PrismaClient, 'operationalJournalEntry' | 'financePostingPeriod'> = this.prisma,
+  ) {
+    const postingPeriod = await this.ensureOpenPostingPeriod(input.bookedAt, db);
     const description = input.expenseName
       ? `Cash expense payment: ${input.expenseName}`
       : 'Cash expense payment';
-    const outflow = -Math.abs(input.amount);
+    const outflow = -input.amount;
 
-    return this.upsertJournalLine({
-      idempotencyKey: `expense-payment:${input.expensePaymentId}`,
-      amount: input.amount,
-      functionalAmount: outflow,
-      bookedAt: input.bookedAt,
-      recognitionBasis: 'CASH',
-      postingPeriodId: postingPeriod.id,
-      sourceType: 'EXPENSE_PAYMENT',
-      sourceId: input.expensePaymentId,
-      description,
-      companyId: input.companyId,
-      projectId: input.projectId,
-      productId: input.productId,
-    });
+    return this.upsertJournalLine(
+      {
+        idempotencyKey: `expense-payment:${input.expensePaymentId}`,
+        amount: input.amount,
+        functionalAmount: outflow,
+        bookedAt: input.bookedAt,
+        recognitionBasis: 'CASH',
+        postingPeriodId: postingPeriod.id,
+        sourceType: 'EXPENSE_PAYMENT',
+        sourceId: input.expensePaymentId,
+        description,
+        companyId: input.companyId,
+        projectId: input.projectId,
+        productId: input.productId,
+      },
+      db,
+    );
   }
 
   async appendInvoiceCardAccrualLine(input: InvoiceAccrualJournalLineInput) {
@@ -304,12 +310,16 @@ export class OperationalJournalService {
     });
   }
 
-  /** Marks an accrual line reversed (Profile D void/cancel). No-op when missing or already reversed. */
+  /**
+   * Marks an accrual line reversed (Profile D void/cancel). No-op when missing or already reversed.
+   * Pass the expense-payment transaction client so a failed reverse rolls the delete back.
+   */
   async reverseJournalLineByIdempotencyKey(
     idempotencyKey: string,
     reversalNote: string,
+    db: Pick<PrismaClient, 'operationalJournalEntry'> = this.prisma,
   ): Promise<void> {
-    const row = await this.prisma.operationalJournalEntry.findUnique({
+    const row = await db.operationalJournalEntry.findUnique({
       where: { idempotencyKey },
       select: { id: true, status: true, description: true },
     });
@@ -319,7 +329,7 @@ export class OperationalJournalService {
       ? `${row.description} — ${reversalNote}`
       : reversalNote;
 
-    await this.prisma.operationalJournalEntry.update({
+    await db.operationalJournalEntry.update({
       where: { idempotencyKey },
       data: { status: 'REVERSED', description },
     });
@@ -348,24 +358,27 @@ export class OperationalJournalService {
     });
   }
 
-  private async upsertJournalLine(data: {
-    idempotencyKey: string;
-    amount: number;
-    functionalAmount: number;
-    bookedAt: Date;
-    recognitionBasis: JournalRecognitionBasisEnum;
-    postingPeriodId: string;
-    sourceType: Prisma.OperationalJournalEntryCreateInput['sourceType'];
-    sourceId: string;
-    description: string;
-    companyId?: string | null;
-    projectId?: string | null;
-    productId?: string | null;
-    orderId?: string | null;
-    partnerId?: string | null;
-    employeeId?: string | null;
-  }) {
-    return this.prisma.operationalJournalEntry.upsert({
+  private async upsertJournalLine(
+    data: {
+      idempotencyKey: string;
+      amount: number;
+      functionalAmount: number;
+      bookedAt: Date;
+      recognitionBasis: JournalRecognitionBasisEnum;
+      postingPeriodId: string;
+      sourceType: Prisma.OperationalJournalEntryCreateInput['sourceType'];
+      sourceId: string;
+      description: string;
+      companyId?: string | null;
+      projectId?: string | null;
+      productId?: string | null;
+      orderId?: string | null;
+      partnerId?: string | null;
+      employeeId?: string | null;
+    },
+    db: Pick<PrismaClient, 'operationalJournalEntry'> = this.prisma,
+  ) {
+    return db.operationalJournalEntry.upsert({
       where: { idempotencyKey: data.idempotencyKey },
       update: {},
       create: {
@@ -390,13 +403,16 @@ export class OperationalJournalService {
     });
   }
 
-  private async ensureOpenPostingPeriod(bookedAt: Date): Promise<PostingPeriod> {
-    await assertPostingPeriodOpenForBookedAt(this.prisma, bookedAt);
+  private async ensureOpenPostingPeriod(
+    bookedAt: Date,
+    db: Pick<PrismaClient, 'financePostingPeriod'> = this.prisma,
+  ): Promise<PostingPeriod> {
+    await assertPostingPeriodOpenForBookedAt(db as InstanceType<typeof PrismaClient>, bookedAt);
     const monthKey = resolvePostingMonthKey(bookedAt);
-    const existing = await this.prisma.financePostingPeriod.findUnique({ where: { monthKey } });
+    const existing = await db.financePostingPeriod.findUnique({ where: { monthKey } });
     if (existing) return existing;
 
-    return this.prisma.financePostingPeriod.create({
+    return db.financePostingPeriod.create({
       data: {
         monthKey,
         startsAt: resolvePostingPeriodStart(bookedAt),

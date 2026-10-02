@@ -16,6 +16,9 @@ export function getProductDirectoryBadge(
   if (product.hubView === 'maintenance') {
     return { label: t('hub.maintenance'), variant: 'green' };
   }
+  if (product.deliveryEnabled === false || product.hubView === 'registered') {
+    return { label: t('hub.registered'), variant: 'gray' };
+  }
   if (product.hubView === 'closed') {
     const cancelled = product.deliveryLifecycle?.resolution === 'CANCELLED';
     return {

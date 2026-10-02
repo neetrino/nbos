@@ -9,15 +9,15 @@ describe('getProductStageGateErrors', () => {
     );
   });
 
-  it('blocks DEVELOPMENT → QA when tasks are open', () => {
-    const errors = getProductStageGateErrors(
-      { status: 'DEVELOPMENT', tasks: [{ status: 'IN_PROGRESS' }] },
-      'QA',
+  it('allows DEVELOPMENT → QA and QA → TRANSFER when tasks are open', () => {
+    const openTasks = [{ status: 'IN_PROGRESS' }];
+    expect(getProductStageGateErrors({ status: 'DEVELOPMENT', tasks: openTasks }, 'QA')).toEqual(
+      [],
     );
-    expect(errors).toEqual([{ field: 'tasks', message: expect.any(String) }]);
+    expect(getProductStageGateErrors({ status: 'QA', tasks: openTasks }, 'TRANSFER')).toEqual([]);
   });
 
-  it('blocks TRANSFER → DONE when linked CLASSIC order is not fully paid', () => {
+  it('does not block TRANSFER → DONE when the order is unpaid or only partially paid', () => {
     const errors = getProductStageGateErrors(
       {
         status: 'TRANSFER',
@@ -29,54 +29,12 @@ describe('getProductStageGateErrors', () => {
           id: 'ord-1',
           status: 'PARTIALLY_PAID',
           paymentType: 'CLASSIC',
-          invoices: [{ moneyStatus: 'PAID' }],
-        },
-      },
-      'DONE',
-    );
-    expect(errors).toEqual([
-      { field: 'finance', message: expect.stringContaining('PARTIALLY_PAID') },
-    ]);
-  });
-
-  it('regression: allows TRANSFER → DONE when a subscription order is PARTIALLY_PAID and no invoices are unpaid', () => {
-    const errors = getProductStageGateErrors(
-      {
-        status: 'TRANSFER',
-        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
-        extensions: [],
-        tasks: [],
-        tickets: [],
-        order: {
-          id: 'ord-1',
-          status: 'PARTIALLY_PAID',
-          paymentType: 'SUBSCRIPTION',
-          invoices: [{ moneyStatus: 'PAID' }],
-        },
-      },
-      'DONE',
-    );
-    expect(errors).toEqual([]);
-  });
-
-  it('still blocks TRANSFER → DONE when a subscription order has an unpaid invoice', () => {
-    const errors = getProductStageGateErrors(
-      {
-        status: 'TRANSFER',
-        clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
-        extensions: [],
-        tasks: [],
-        tickets: [],
-        order: {
-          id: 'ord-1',
-          status: 'PARTIALLY_PAID',
-          paymentType: 'SUBSCRIPTION',
           invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
         },
       },
       'DONE',
     );
-    expect(errors).toEqual([{ field: 'finance', message: expect.stringContaining('invoices') }]);
+    expect(errors).toEqual([]);
   });
 
   it('blocks TRANSFER → DONE when required access slots are empty', () => {
@@ -134,7 +92,7 @@ describe('getProductStageGateErrors', () => {
         status: 'TRANSFER',
         clientAcceptedAt: new Date('2026-04-29T09:00:00.000Z'),
         extensions: [],
-        tasks: [],
+        tasks: [{ status: 'IN_PROGRESS' }],
         tickets: [],
         order: {
           id: 'ord-1',

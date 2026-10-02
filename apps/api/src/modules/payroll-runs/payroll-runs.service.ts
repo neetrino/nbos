@@ -1,56 +1,47 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  BadRequestException,
-  ConflictException,
-} from '@nestjs/common';
-import { Decimal, PrismaClient, type Prisma } from '@nbos/database';
+import { Injectable, Inject, BadRequestException, ConflictException } from '@nestjs/common';
+import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
 import { NotificationService } from '../notifications/notification.service';
 import { isValidPayrollMonth } from './payroll-runs.constants';
-import { parsePayrollRunStatusQuery } from './payroll-run-list-scope';
 import {
   queryPayrollRunList,
   queryPayrollRunListStats,
   type PayrollRunListParams,
 } from './payroll-run-list-queries';
-import { canTransitionPayrollRun } from './payroll-run-status-transitions';
-import { materializePayrollExpensesForApprovedRun } from './payroll-materialize-expenses';
 import {
-  materializePayrollBonusAllocationDrafts,
-  type PayrollBonusAllocationMaterializeResult,
-} from './payroll-bonus-allocation-materialize';
+  commitLockedPayrollRunStatus,
+  preparePayrollRunStatusUpdate,
+} from './payroll-run-status-commit';
+import { publishPayrollStatusSideEffects } from './payroll-run-status-side-effects';
 import { recalculatePayrollRunTotalsFromSalaryLines } from './payroll-run-line-totals';
-import { buildPayrollRunJournal } from './payroll-run-journal';
 import {
   PAYROLL_RUN_AUDIT_ACTION_CREATED,
-  PAYROLL_RUN_AUDIT_ACTION_STATUS_CHANGED,
   PAYROLL_RUN_AUDIT_ENTITY_TYPE,
 } from './payroll-run-audit.constants';
-import { loadPayrollRunAuditTrail } from './payroll-run-audit-trail';
-import { fetchMaterializedSalaryLineCountByPayrollRunId } from './payroll-run-materialized-line-counts';
 import { type PayrollRunStatsResult } from './payroll-run-list-stats';
-import { notifyPayrollCarryEventsOnAttach } from './payroll-bonus-carry-notify';
-import {
-  refreshBonusEntryStatusesForReleases,
-  syncProductBonusPoolsForBonusReleases,
-} from './payroll-run-bonus-release-side-effects';
-import {
-  notifyEmployeesOnPayrollRunClosed,
-  notifyEmployeesOnPayrollRunCreated,
-} from './payroll-run-employee-wallet-notify';
-import { loadSalaryLinesBlockingPayrollCloseCount } from './payroll-run-close-validation';
-import { validatePayrollMatrixForApproval } from './payroll-matrix-approval-validation';
-import { omitLegacyPayrollKpiFields } from './payroll-run-api-response';
+import { notifyEmployeesOnPayrollRunCreated } from './payroll-run-employee-wallet-notify';
 import {
   querySalaryBoard,
   type SalaryBoardQueryParams,
   type SalaryBoardResponseDto,
 } from './payroll-salary-board';
-import { resolveCompensationProfileForPayrollMonth } from '../compensation-profiles/resolve-active-compensation-profile';
+import type { FinancePayActor } from '../compensation-profiles/finance-pay-access';
+import { seedPayrollRunSalaryLines } from './seed-payroll-run-salary-lines';
 import { querySalaryLineMonthDetail } from './salary-line-month-detail';
+import {
+  assignEmployeeSalesKpiPlan,
+  type AssignEmployeeSalesKpiPlanInput,
+  type AssignedEmployeeSalesKpiPlan,
+} from './assign-employee-sales-kpi-plan';
 import type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
+import {
+  assertPayrollWriteAccess,
+  assertSalaryLineReadable,
+  overlayPayrollRunListTotals,
+  resolvePayrollReadAccess,
+} from './payroll-run-access';
+import { loadPayrollRunDetail } from './payroll-run-detail';
+import { queryDepartmentPayrollRunListStats } from './payroll-run-scoped-stats';
 
 export type { SalaryLineMonthDetailDto } from './salary-line-month-detail.types';
 
@@ -60,14 +51,8 @@ export type { SalaryBoardQueryParams, SalaryBoardResponseDto } from './payroll-s
 
 export interface CreatePayrollRunBody {
   payrollMonth: string;
-  /** When true (default), seed salary lines from active compensation profiles (fallback: `Employee.baseSalary`). */
+  /** When true (default), seed salary lines from approved profiles covering the payroll month. */
   seedLines?: boolean;
-}
-
-/** Actor for audit rows on status transitions (`PATCH …/status`). */
-export interface PayrollRunStatusMeta {
-  actorUserId: string;
-  approvedById?: string | null;
 }
 
 @Injectable()
@@ -77,64 +62,60 @@ export class PayrollRunsService {
     private readonly notifications: NotificationService,
   ) {}
 
-  async findAll(params: PayrollRunListParams) {
-    return queryPayrollRunList(this.prisma, params);
-  }
-
-  async getStats(
-    params: Pick<PayrollRunListParams, 'status' | 'payrollMonthFrom' | 'payrollMonthTo'>,
-  ): Promise<PayrollRunStatsResult> {
-    return queryPayrollRunListStats(this.prisma, params);
-  }
-
-  /** NBOS Salary Board: employees × payroll months with salary line status and links to runs/lines. */
-  async getSalaryBoard(params: SalaryBoardQueryParams): Promise<SalaryBoardResponseDto> {
-    return querySalaryBoard(this.prisma, params);
-  }
-
-  /** Employee + month compensation detail for Salary Board sheet and Wallet (read-only). */
-  async getSalaryLineMonthDetail(salaryLineId: string): Promise<SalaryLineMonthDetailDto> {
-    return querySalaryLineMonthDetail(this.prisma, salaryLineId);
-  }
-
-  async findById(id: string) {
-    const run = await this.prisma.payrollRun.findUnique({
-      where: { id },
-      include: {
-        salaryLines: {
-          orderBy: { createdAt: 'asc' },
-          include: {
-            employee: { select: { id: true, firstName: true, lastName: true, email: true } },
-            expense: { select: { id: true, name: true, amount: true, status: true } },
-          },
-        },
-        createdBy: { select: { id: true, firstName: true, lastName: true } },
-        approvedBy: { select: { id: true, firstName: true, lastName: true } },
-      },
-    });
-    if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
-
-    const [materializedByRun, auditTrail, includedBonusReleaseCount] = await Promise.all([
-      fetchMaterializedSalaryLineCountByPayrollRunId(this.prisma, [id]),
-      loadPayrollRunAuditTrail(this.prisma, PAYROLL_RUN_AUDIT_ENTITY_TYPE, id),
-      this.prisma.bonusRelease.count({
-        where: { payrollRunId: id, status: 'INCLUDED_IN_PAYROLL' },
-      }),
-    ]);
-
-    const salaryLines = run.salaryLines.map((line) => omitLegacyPayrollKpiFields(line));
-
+  async findAll(actor: FinancePayActor, params: PayrollRunListParams) {
+    const accessible = await resolvePayrollReadAccess(this.prisma, actor);
+    const result = await queryPayrollRunList(this.prisma, params);
     return {
-      ...omitLegacyPayrollKpiFields(run),
-      salaryLines,
-      materializedExpenseLineCount: materializedByRun.get(id) ?? 0,
-      journal: buildPayrollRunJournal(run),
-      auditTrail,
-      includedBonusReleaseCount,
+      ...result,
+      items: await overlayPayrollRunListTotals(this.prisma, result.items, accessible),
     };
   }
 
-  async create(body: CreatePayrollRunBody, createdById?: string | null) {
+  async getStats(
+    actor: FinancePayActor,
+    params: Pick<PayrollRunListParams, 'status' | 'payrollMonthFrom' | 'payrollMonthTo'>,
+  ): Promise<PayrollRunStatsResult> {
+    const accessible = await resolvePayrollReadAccess(this.prisma, actor);
+    if (accessible === 'ALL') {
+      return queryPayrollRunListStats(this.prisma, params);
+    }
+    return queryDepartmentPayrollRunListStats(this.prisma, params, accessible);
+  }
+
+  async getSalaryBoard(
+    actor: FinancePayActor,
+    params: SalaryBoardQueryParams,
+  ): Promise<SalaryBoardResponseDto> {
+    const accessible = await resolvePayrollReadAccess(this.prisma, actor);
+    return querySalaryBoard(this.prisma, {
+      ...params,
+      employeeIds: accessible === 'ALL' ? undefined : accessible,
+    });
+  }
+
+  async getSalaryLineMonthDetail(
+    actor: FinancePayActor,
+    salaryLineId: string,
+  ): Promise<SalaryLineMonthDetailDto> {
+    await assertSalaryLineReadable(this.prisma, actor, salaryLineId);
+    return querySalaryLineMonthDetail(this.prisma, salaryLineId);
+  }
+
+  async assignEmployeeSalesKpiPlan(
+    actor: FinancePayActor,
+    body: AssignEmployeeSalesKpiPlanInput,
+  ): Promise<AssignedEmployeeSalesKpiPlan> {
+    return assignEmployeeSalesKpiPlan(this.prisma, actor, body);
+  }
+
+  async findById(actor: FinancePayActor, id: string) {
+    const accessible = await resolvePayrollReadAccess(this.prisma, actor);
+    return loadPayrollRunDetail(this.prisma, id, accessible);
+  }
+
+  async create(actor: FinancePayActor, body: CreatePayrollRunBody) {
+    assertPayrollWriteAccess(actor, 'ADD');
+    const createdById = actor.id;
     const month = body.payrollMonth.trim();
     if (!isValidPayrollMonth(month)) {
       throw new BadRequestException('payrollMonth must be YYYY-MM');
@@ -156,31 +137,7 @@ export class PayrollRunsService {
       });
 
       if (seedLines) {
-        const employees = await tx.employee.findMany({
-          where: { status: { not: 'TERMINATED' } },
-          select: { id: true, baseSalary: true },
-        });
-
-        for (const emp of employees) {
-          const profile = await resolveCompensationProfileForPayrollMonth(tx, emp.id, month);
-          const base = profile
-            ? new Decimal(profile.baseSalary.toString())
-            : (emp.baseSalary ?? new Decimal(0));
-          const zero = new Decimal(0);
-          const totalPayable = base;
-          await tx.salaryLine.create({
-            data: {
-              payrollRunId: run.id,
-              employeeId: emp.id,
-              compensationProfileId: profile?.id ?? null,
-              baseSalary: base,
-              bonusesTotal: zero,
-              totalPayable,
-              paidAmount: zero,
-              remainingAmount: totalPayable,
-            },
-          });
-        }
+        await seedPayrollRunSalaryLines(tx, run.id, month);
       }
 
       await recalculatePayrollRunTotalsFromSalaryLines(tx, run.id);
@@ -204,108 +161,26 @@ export class PayrollRunsService {
       await notifyEmployeesOnPayrollRunCreated(this.prisma, this.notifications, newId, month);
     }
 
-    return this.findById(newId);
+    return this.findById(actor, newId);
   }
 
-  async updateStatus(id: string, nextStatus: string, meta: PayrollRunStatusMeta) {
-    const status = parsePayrollRunStatusQuery(nextStatus);
-    const run = await this.prisma.payrollRun.findUnique({ where: { id } });
-    if (!run) throw new NotFoundException(`Payroll run ${id} not found`);
-
-    if (!canTransitionPayrollRun(run.status, status)) {
-      throw new ConflictException(`Cannot transition payroll run from ${run.status} to ${status}`);
-    }
-
-    if (status === 'APPROVED') {
-      const matrixIssues = await validatePayrollMatrixForApproval(this.prisma, id);
-      if (matrixIssues.length > 0) {
-        throw new BadRequestException({
-          message: 'Payroll matrix validation failed',
-          issues: matrixIssues,
-        });
-      }
-    }
-
-    if (status === 'CLOSED') {
-      const blockingCount = await loadSalaryLinesBlockingPayrollCloseCount(this.prisma, id);
-      if (blockingCount > 0) {
-        throw new ConflictException(
-          `Cannot close payroll run: ${blockingCount} salary line(s) are not fully paid or held.`,
-        );
-      }
-    }
-
-    const data: Prisma.PayrollRunUpdateInput = { status };
-    let materializedBonusResult: PayrollBonusAllocationMaterializeResult | undefined;
-
-    if (status === 'APPROVED') {
-      data.approvedAt = new Date();
-      if (meta.approvedById) {
-        data.approvedBy = { connect: { id: meta.approvedById } };
-      }
-    }
-
-    if (status === 'CLOSED') {
-      data.closedAt = new Date();
-    }
-
-    await this.prisma.$transaction(async (tx) => {
-      if (run.status === 'REVIEW' && status === 'APPROVED') {
-        materializedBonusResult = await materializePayrollBonusAllocationDrafts(tx, {
-          payrollRunId: id,
-          payrollMonth: run.payrollMonth,
-          actorUserId: meta.actorUserId,
-        });
-      }
-      await tx.payrollRun.update({ where: { id }, data });
-      let materializedExpenseIds: string[] | undefined;
-      if (status === 'APPROVED') {
-        const { createdExpenseIds } = await materializePayrollExpensesForApprovedRun(tx, {
-          payrollRunId: id,
-          payrollMonth: run.payrollMonth,
-        });
-        if (createdExpenseIds.length > 0) {
-          materializedExpenseIds = createdExpenseIds;
-        }
-      }
-      await tx.auditLog.create({
-        data: {
-          entityType: PAYROLL_RUN_AUDIT_ENTITY_TYPE,
-          entityId: id,
-          action: PAYROLL_RUN_AUDIT_ACTION_STATUS_CHANGED,
-          userId: meta.actorUserId,
-          changes:
-            materializedExpenseIds && materializedExpenseIds.length > 0
-              ? { from: run.status, to: status, materializedExpenseIds }
-              : { from: run.status, to: status },
-        },
-      });
+  async updateStatus(actor: FinancePayActor, id: string, nextStatus: string) {
+    assertPayrollWriteAccess(actor, 'EDIT');
+    const prepared = await preparePayrollRunStatusUpdate(this.prisma, id, nextStatus, actor.id);
+    const committed = await this.prisma.$transaction((tx) =>
+      commitLockedPayrollRunStatus(tx, {
+        payrollRunId: id,
+        nextStatus: prepared.status,
+        data: prepared.data,
+        actorUserId: actor.id,
+      }),
+    );
+    await publishPayrollStatusSideEffects(this.prisma, this.notifications, {
+      payrollRunId: id,
+      payrollMonth: prepared.payrollMonth,
+      nextStatus: prepared.status,
+      bonus: committed.materializedBonus,
     });
-
-    const bonusResult = materializedBonusResult;
-    if (bonusResult !== undefined) {
-      await refreshBonusEntryStatusesForReleases(this.prisma, bonusResult.releaseIds);
-      await syncProductBonusPoolsForBonusReleases(
-        this.prisma,
-        bonusResult.releaseIds,
-        this.notifications,
-      );
-      await notifyPayrollCarryEventsOnAttach(
-        this.prisma,
-        this.notifications,
-        bonusResult.carryNotifyEvents,
-      );
-    }
-
-    if (status === 'CLOSED') {
-      await notifyEmployeesOnPayrollRunClosed(
-        this.prisma,
-        this.notifications,
-        id,
-        run.payrollMonth,
-      );
-    }
-
-    return this.findById(id);
+    return this.findById(actor, id);
   }
 }

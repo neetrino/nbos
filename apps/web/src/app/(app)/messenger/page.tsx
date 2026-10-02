@@ -1,9 +1,7 @@
-import { InternalMessengerApp } from '@/features/messenger-internal/InternalMessengerApp';
+'use client';
+
+import { OpenMessengerRoute } from '@/features/messenger-internal/OpenMessengerRoute';
 
 export default function MessengerPage() {
-  return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <InternalMessengerApp />
-    </div>
-  );
+  return <OpenMessengerRoute section="all" />;
 }

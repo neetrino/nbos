@@ -30,6 +30,47 @@ export const INTERNAL_MESSENGER_EMPTY_COPY: Record<InternalMessengerSectionId, s
 };
 
 export const INTERNAL_MESSENGER_SHELL_CLASS =
-  'flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-black/[0.06] bg-[#F5F5F0]';
+  'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-card text-card-foreground';
+
+/** Space under the last bubble so the overlay composer does not cover it. */
+export const SHEET_COMPOSER_OVERLAY_PAD_CLASS = 'pb-16';
+export const SHEET_COMPOSER_REPLY_PAD_CLASS = 'pb-28';
+
+/** Gap from the visible bottom before we treat the thread as “reading history”. */
+export const SHEET_THREAD_NEAR_END_PX = 80;
+
+/** Same gutter as the sheet composer send control (`px-4` → `right-4`). */
+export const SHEET_COMPOSER_GUTTER_CLASS = 'px-4';
+export const SHEET_COMPOSER_MAX_ROWS = 5;
+export const SHEET_COMPOSER_WRAP_CHAR_COUNT = 48;
+/** More rows → tighter corners (pill → almost rectangular). */
+export const SHEET_COMPOSER_RADIUS_BY_ROWS = [
+  'rounded-full',
+  'rounded-[20px]',
+  'rounded-[16px]',
+  'rounded-[14px]',
+  'rounded-[12px]',
+] as const;
+export const SHEET_COMPOSER_FIELD_BASE_CLASS =
+  'flex min-w-0 flex-1 items-center border border-border bg-card px-4 transition-[border-radius] duration-150';
+export const SHEET_COMPOSER_TEXTAREA_CLASS =
+  'max-h-[105px] min-h-[21px] min-w-0 flex-1 resize-none overflow-y-auto bg-transparent text-sm leading-[21px] text-foreground placeholder:text-muted-foreground focus:outline-none disabled:opacity-50';
+
+export const SHEET_JUMP_TO_END_BUTTON_CLASS =
+  'absolute right-4 bottom-16 z-30 flex size-10 items-center justify-center rounded-full bg-card text-foreground shadow-[var(--shadow-panel)] transition-[opacity,transform] duration-200 ease-out hover:bg-muted';
+
+export const SHEET_BUBBLE_LARGE_RADIUS_CLASS = 'rounded-[15px]';
+export const SHEET_REPLY_QUOTE_RADIUS_CLASS = 'rounded-[10px]';
+export const SHEET_BUBBLE_WRAP_CHAR_COUNT = 56;
 
 export const INTERNAL_FORWARD_PREVIEW_MAX_LENGTH = 140;
+
+export const SHEET_DIALOG_FADE_MS = 240;
+export const SHEET_ACTION_MENU_FADE_MS = 280;
+export const SHEET_REPLY_JUMP_FLASH_DELAY_MS = 280;
+export const SHEET_REPLY_JUMP_FLASH_MS = 500;
+export const SHEET_MESSAGE_BUBBLE_ATTR = 'data-sheet-bubble';
+export const MESSAGE_ACTION_MENU_WIDTH_PX = 192;
+export const MESSAGE_ACTION_MENU_HEIGHT_PX = 248;
+export const MESSAGE_ACTION_MENU_GAP_PX = 4;
+export const MESSAGE_ACTION_MENU_VIEW_PAD_PX = 8;

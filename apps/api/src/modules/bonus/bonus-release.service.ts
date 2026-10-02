@@ -6,11 +6,24 @@ import {
   type BonusReleaseTypeEnum,
 } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  FINANCE_SALARY_MODULE,
+  assertCompanyWideFinanceAccess,
+  bindAuthenticatedApprover,
+  type FinancePayActor,
+} from '../compensation-profiles/finance-pay-access';
+import {
+  assertBonusEmployeeAccess,
+  resolveBonusReadAccess,
+  resolveBonusWriteAccess,
+} from './bonus-access';
 import { notifyBonusReleaseCorrected } from '../employees/employee-wallet-notify.ops';
 import { NotificationService } from '../notifications/notification.service';
 import { decimalFrom } from './bonus-pool-decimal';
 import { syncProductBonusPoolForOrder } from './product-bonus-pool-sync';
 import { BONUS_RELEASE_COUNTING_STATUSES } from './product-bonus-pool.constants';
+import { resolveDirectBonusReleaseCreateStatus } from './bonus-release-create-status';
+import { assertBonusReleaseWithinEntryCap } from './bonus-release-entry-cap';
 
 const REASON_REQUIRED_TYPES: BonusReleaseTypeEnum[] = [
   'EARLY',
@@ -40,7 +53,9 @@ type BonusEntryForRelease = {
   employeeId: string;
   orderId: string;
   projectId: string;
+  type: string;
   amount: Decimal;
+  payableAmount: Decimal | null;
   order: { productId: string | null; extensionId: string | null; code: string };
 };
 
@@ -58,6 +73,7 @@ export class BonusReleaseService {
    * Page/size are clamped to protect the API from abuse.
    */
   async listForEntry(
+    actor: FinancePayActor,
     bonusEntryId: string,
     opts?: { page?: number; pageSize?: number },
   ): Promise<{
@@ -66,11 +82,13 @@ export class BonusReleaseService {
   }> {
     const entry = await this.prisma.bonusEntry.findUnique({
       where: { id: bonusEntryId },
-      select: { id: true },
+      select: { id: true, employeeId: true },
     });
     if (!entry) {
       throw new NotFoundException(`Bonus entry ${bonusEntryId} not found`);
     }
+    const accessible = await resolveBonusReadAccess(this.prisma, actor);
+    assertBonusEmployeeAccess(entry.employeeId, accessible);
 
     const rawPage = opts?.page;
     const rawSize = opts?.pageSize;
@@ -101,14 +119,25 @@ export class BonusReleaseService {
     };
   }
 
-  async createForEntry(bonusEntryId: string, input: CreateBonusReleaseInput) {
+  async createForEntry(
+    actor: FinancePayActor,
+    bonusEntryId: string,
+    input: CreateBonusReleaseInput,
+  ) {
     const entry = await this.loadEntryForRelease(bonusEntryId);
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'ADD');
+    assertBonusEmployeeAccess(entry.employeeId, accessible);
+    input = {
+      ...input,
+      approvedById: bindAuthenticatedApprover(actor.id, input.approvedById),
+    };
     this.validateAmount(input.amount);
     this.validateReasonAndApproval(input);
+    this.assertPayrollRunAttachAccess(actor, input.payrollRunId);
     await this.assertPayrollRunExists(input.payrollRunId);
 
-    const status = input.status ?? 'APPROVED';
-    if (status !== 'DRAFT') {
+    const status = resolveDirectBonusReleaseCreateStatus(input.status);
+    if (entry.type === 'SALES' || status !== 'DRAFT') {
       await this.assertWithinEntryCap(entry, input.amount, input.releaseType);
     }
 
@@ -133,8 +162,19 @@ export class BonusReleaseService {
     return created;
   }
 
-  async patchForEntry(bonusEntryId: string, releaseId: string, input: PatchBonusReleaseInput) {
+  async patchForEntry(
+    actor: FinancePayActor,
+    bonusEntryId: string,
+    releaseId: string,
+    input: PatchBonusReleaseInput,
+  ) {
     const entry = await this.loadEntryForRelease(bonusEntryId);
+    const accessible = await resolveBonusWriteAccess(this.prisma, actor, 'EDIT');
+    assertBonusEmployeeAccess(entry.employeeId, accessible);
+    input = {
+      ...input,
+      approvedById: bindAuthenticatedApprover(actor.id, input.approvedById),
+    };
     const release = await this.prisma.bonusRelease.findUnique({
       where: { id: releaseId },
       select: {
@@ -206,7 +246,9 @@ export class BonusReleaseService {
         employeeId: true,
         orderId: true,
         projectId: true,
+        type: true,
         amount: true,
+        payableAmount: true,
         order: { select: { productId: true, extensionId: true, code: true } },
       },
     });
@@ -237,6 +279,14 @@ export class BonusReleaseService {
     }
   }
 
+  private assertPayrollRunAttachAccess(
+    actor: FinancePayActor,
+    payrollRunId: string | undefined,
+  ): void {
+    if (!payrollRunId?.trim()) return;
+    assertCompanyWideFinanceAccess(actor, FINANCE_SALARY_MODULE, 'EDIT');
+  }
+
   private async assertPayrollRunExists(payrollRunId: string | undefined): Promise<void> {
     const id = payrollRunId?.trim();
     if (!id) return;
@@ -254,9 +304,6 @@ export class BonusReleaseService {
     addAmount: number,
     releaseType: BonusReleaseTypeEnum,
   ): Promise<void> {
-    if (releaseType === 'EXTRA' || releaseType === 'OVER_FUNDING') {
-      return;
-    }
     const agg = await this.prisma.bonusRelease.aggregate({
       where: {
         bonusEntryId: entry.id,
@@ -264,13 +311,12 @@ export class BonusReleaseService {
       },
       _sum: { amount: true },
     });
-    const prior = decimalFrom(agg._sum.amount);
-    const cap = new Decimal(entry.amount);
-    if (prior.plus(addAmount).gt(cap)) {
-      throw new BadRequestException(
-        'Release amount exceeds remaining planned amount for this bonus entry',
-      );
-    }
+    assertBonusReleaseWithinEntryCap({
+      entry,
+      priorCounting: decimalFrom(agg._sum.amount),
+      addAmount: new Decimal(addAmount),
+      releaseType,
+    });
   }
 
   private async assertWithinEntryCapOnUpdate(
@@ -279,9 +325,6 @@ export class BonusReleaseService {
     newAmount: number,
     releaseType: BonusReleaseTypeEnum,
   ): Promise<void> {
-    if (releaseType === 'EXTRA' || releaseType === 'OVER_FUNDING') {
-      return;
-    }
     const agg = await this.prisma.bonusRelease.aggregate({
       where: {
         bonusEntryId: entry.id,
@@ -290,13 +333,12 @@ export class BonusReleaseService {
       },
       _sum: { amount: true },
     });
-    const priorOthers = decimalFrom(agg._sum.amount);
-    const cap = new Decimal(entry.amount);
-    if (priorOthers.plus(newAmount).gt(cap)) {
-      throw new BadRequestException(
-        'Release amount exceeds remaining planned amount for this bonus entry',
-      );
-    }
+    assertBonusReleaseWithinEntryCap({
+      entry,
+      priorCounting: decimalFrom(agg._sum.amount),
+      addAmount: new Decimal(newAmount),
+      releaseType,
+    });
   }
 }
 

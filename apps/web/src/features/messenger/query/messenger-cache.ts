@@ -17,8 +17,26 @@ import {
 
 export type MessengerMessagesPage = {
   items: MessengerCoreMessageRow[];
-  meta: { hasMoreOlder: boolean };
+  meta: { hasMoreOlder: boolean; peerLastReadAt?: string | null };
 };
+
+export function removeMessengerMessages(
+  queryClient: QueryClient,
+  conversationId: string,
+  messageIds: string[],
+): void {
+  const removed = new Set(messageIds);
+  const key = messengerQueryKeys.messages(conversationId);
+  queryClient.setQueryData<MessengerMessagesPage>(key, (page) => {
+    if (!page) return page;
+    return {
+      items: page.items.filter((row) => !removed.has(row.id)),
+      meta: page.meta,
+    };
+  });
+  void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.internalSummariesRoot });
+  void queryClient.invalidateQueries({ queryKey: messengerQueryKeys.clientSummariesRoot });
+}
 
 export function patchMessengerMessages(
   queryClient: QueryClient,
@@ -140,6 +158,30 @@ function summaryMembershipForKey(
   return 'unknown';
 }
 
+export function patchConversationPinnedMessage(
+  queryClient: QueryClient,
+  zone: MessengerZone,
+  conversationId: string,
+  pinnedMessage: MessengerCoreConversationRow['pinnedMessage'],
+): void {
+  queryClient.setQueriesData<{ items: MessengerCoreConversationRow[] }>(
+    { queryKey: summariesRoot(zone) },
+    (current) => {
+      if (!current?.items) return current;
+      return {
+        ...current,
+        items: current.items.map((row) =>
+          row.id === conversationId ? { ...row, pinnedMessage } : row,
+        ),
+      };
+    },
+  );
+  queryClient.setQueryData<MessengerCoreConversationRow>(
+    ['messenger', 'conversation', conversationId],
+    (current) => (current ? { ...current, pinnedMessage } : current),
+  );
+}
+
 export function patchConversationFavorite(
   queryClient: QueryClient,
   zone: MessengerZone,
@@ -192,6 +234,12 @@ export function patchConversationUnread(
   );
 }
 
+/** Marks the sidebar receipt as seen when a peer advances past our latest send. */
+export {
+  patchConversationLastMessageSeen,
+  syncConversationListReceipt,
+} from './messenger-list-receipt-cache';
+
 export function applyMessengerRealtimeMessage(
   queryClient: QueryClient,
   message: MessengerCoreMessageRow,
@@ -229,6 +277,8 @@ function applyMessageToSummaries(
             ...row,
             lastMessageAt: message.createdAt,
             lastMessagePreview: message.content,
+            lastMessageMine: true,
+            lastMessageSeen: false,
           }
         : row,
     ),
@@ -258,10 +308,31 @@ function mergeConversationSummaryRow(
       ...incoming,
       lastMessageAt: current.lastMessageAt,
       lastMessagePreview: current.lastMessagePreview,
+      lastMessageMine: current.lastMessageMine,
+      lastMessageSeen: current.lastMessageSeen,
       unreadCount: current.unreadCount,
     };
   }
-  return { ...current, ...incoming };
+  return {
+    ...current,
+    ...incoming,
+    lastMessageAt: incomingAt ?? currentAt ?? null,
+    lastMessagePreview:
+      incoming.lastMessagePreview !== undefined
+        ? incoming.lastMessagePreview
+        : current.lastMessagePreview,
+    lastMessageMine:
+      incoming.lastMessageMine !== undefined ? incoming.lastMessageMine : current.lastMessageMine,
+    lastMessageSeen:
+      incoming.lastMessageSeen !== undefined ? incoming.lastMessageSeen : current.lastMessageSeen,
+    unreadCount: incoming.unreadCount !== undefined ? incoming.unreadCount : current.unreadCount,
+    peerEmployeeId:
+      incoming.peerEmployeeId !== undefined ? incoming.peerEmployeeId : current.peerEmployeeId,
+    peerName: incoming.peerName !== undefined ? incoming.peerName : current.peerName,
+    peerPosition:
+      incoming.peerPosition !== undefined ? incoming.peerPosition : current.peerPosition,
+    isFavorite: incoming.isFavorite !== undefined ? incoming.isFavorite : current.isFavorite,
+  };
 }
 
 function sortSummariesByRecent(

@@ -427,7 +427,6 @@ model Expense {
   clientServiceRecordId String?                   @map("client_service_record_id")
   sourceInvoiceId       String?                   @unique @map("source_invoice_id")
   isPassThrough         Boolean                   @default(false) @map("is_pass_through")
-  taxStatus             TaxStatus                 @default(TAX) @map("tax_status")
   backlogReason         ExpenseBacklogReasonEnum? @map("backlog_reason")
   notes                 String?
   createdAt             DateTime                  @default(now()) @map("created_at")
@@ -492,11 +491,16 @@ model SalesBonusPolicy {
   sellerPercent    Decimal                    @map("seller_percent") @db.Decimal(5, 2)
   assistantPercent Decimal                    @map("assistant_percent") @db.Decimal(5, 2)
   effectiveFrom    DateTime                   @map("effective_from")
+  /// Exclusive end of this version. Null means the version is still open.
+  effectiveTo      DateTime?                  @map("effective_to")
   isActive         Boolean                    @default(true) @map("is_active")
   createdAt        DateTime                   @default(now()) @map("created_at")
   updatedAt        DateTime                   @updatedAt @map("updated_at")
 
   @@index([fromCategory, paymentModel, isActive])
+  @@index([fromCategory, paymentModel, effectiveFrom])
+  /// Partial unique: `sales_bonus_policies_one_open_per_key`
+  /// (`from_category`, `payment_model`) WHERE `effective_to` IS NULL.
   @@map("sales_bonus_policies")
 }
 
@@ -538,6 +542,8 @@ model BonusEntry {
   /// Invoice whose PAID event triggered this accrual (subscription recurring idempotency; audit).
   salesAccrualInvoiceId String?             @map("sales_accrual_invoice_id")
   salesBonusSlot        SalesBonusSlotEnum? @map("sales_bonus_slot")
+  /// Recurring (unslotted) Seller/Assistant identity. Null on slotted first-month rows.
+  salesAccrualRole      SalesBonusSlotEnum? @map("sales_accrual_role")
   calculationSnapshot   Json?               @map("calculation_snapshot")
   /// v2 configurator source. Null keeps legacy/manual/sales entries unchanged.
   deliverySource        DeliveryBonusSourceEnum? @map("delivery_source")
@@ -582,7 +588,10 @@ model BonusEntry {
   @@index([orderId, salesAccrualInvoiceId])
   @@index([deliveryConfigurationId])
   @@index([deliverySource])
-  /// Partial unique indexes: `bonus_entries_sales_slotted_unique`, `bonus_entries_sales_invoice_employee_unique`.
+  /// Partial unique indexes: `bonus_entries_sales_slotted_unique`,
+  /// `bonus_entries_sales_invoice_employee_slot_unique`,
+  /// `bonus_entries_sales_invoice_employee_unslotted_unique`
+  /// (unslotted includes `sales_accrual_role`, not `sales_bonus_slot` or `percent`).
   @@map("bonus_entries")
 }
 

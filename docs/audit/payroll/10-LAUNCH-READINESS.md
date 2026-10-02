@@ -1,105 +1,89 @@
 # Payroll — launch readiness
 
-**Assessment date:** 2026-09-26. **Basis:** completed independent verification of revision `68465d3148d104261729351b0b94cd86e3135115`; see [09-INDEPENDENT-VERIFICATION](09-INDEPENDENT-VERIFICATION.md). This document records that audit and does not assert a newly inspected deployment state.
+**Audit basis:** completed independent verification dated 2026-09-26 at revision `68465d3148d104261729351b0b94cd86e3135115`, recorded in [09-INDEPENDENT-VERIFICATION](09-INDEPENDENT-VERIFICATION.md). **Decision consolidation:** 2026-09-27, after direct Owner answers through Q-38 and delegated small technical choices Q-39–Q-46 in [11-FINAL-COMPLETION-PLAN](11-FINAL-COMPLETION-PLAN.md). No new deployment audit or application change is asserted.
 
-**Decision: launch conditions are not satisfied. Do not treat the existing implementation as approved for real employee payroll operations.** This is an evidence-based readiness assessment, not a claim that a production financial incident occurred.
+**Readiness: not accepted for real payroll. Business rules are now resolved for the bounded launch, but required fixes and end-to-end acceptance remain outstanding.** Documentation approval and decision closure do not authorize real payments, migration or deployment.
 
 ## 1. Product Owner explanation
 
-The system contains much of the intended workflow: salary terms, bonus calculations, monthly payroll, approval, expense cards, payment recording and employee balances. The central problem is that these parts do not yet reliably preserve the same amount and history throughout the complete process.
+The main business uncertainty has been removed: salary months, Sales KPI, Probation, the per-order Sales ceiling, manual project payments, corrections and first-launch scope are recorded. The existing software still has confirmed financial-integrity defects. It also contains a salary-linked monthly bonus ceiling the Owner explicitly rejected; the desired 300,000 AMD Sales order ceiling was not established in the inspected calculation path.
 
-For example, a future salary can replace today's fallback, two legitimate Sales roles can collide during saving, several bonuses can appear as only one in payroll, and a deferred bonus portion can appear already paid. Removing a payment can leave other financial records unchanged. These are launch blockers even when individual formula tests pass.
+A future salary can affect the wrong period, one of two legitimate Sales roles can be lost on saving, multiple project bonuses can appear as only one, and deferred money can appear already paid. Removing a payment can leave other financial records unchanged. Resolving policy does not repair these paths.
 
-**Verified:** 646 existing automated tests passed in 141 files, plus 11 completed isolated source-function probes. **Not verified:** the deployed system, real PostgreSQL concurrency and constraints, actual pay terms, full browser journeys, migration state, or a complete staged payroll rehearsal.
+**Historical test evidence:** 646 automated tests in 141 files passed, plus 11 completed isolated source-function probes. These are results of the completed audit, not tests rerun during document consolidation. **Not verified:** deployed settings/data, real PostgreSQL races/installed constraints, full browser journeys, actual employee balances, or complete staged payroll acceptance.
 
-## 2. Readiness conditions
+## 2. Agreed first-launch scope
 
-| Condition                                                                       | Current evidence                                                              | Status                                                                          |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Salary plus bonus formula exists                                                | Decimal addition in salary-line total helper; component tests passed          | Satisfied at component level only                                               |
-| Sales rates and payment models exist                                            | Independent rates; Classic/first subscription/recurring paths                 | Implemented; correctness blocked by D-03/D-05/D-07/N-02                         |
-| Delivery v2 component calculation exists                                        | Role units × rates, snapshots, readiness/locking, rounding tests              | Satisfied at component level; complete payroll integration unverified/defective |
-| Monthly payroll lifecycle exists                                                | Draft/review/approval/payment/close paths and tests                           | Implemented, not operationally accepted                                         |
-| Some duplicate constraints exist                                                | Unique run/month, line/run/employee, Sales indexes, Delivery allocation links | Source/schema evidence only; N-02 conflict and concurrency gaps remain          |
-| Employee Wallet ownership control exists                                        | Month-detail owner check                                                      | Positive control; broad financial API gaps remain                               |
-| Financial operations limited to authorized people                               | D-01/D-06 and alternate paths N-04                                            | Not satisfied                                                                   |
-| Every included employee has approved period-correct terms                       | D-02/N-01                                                                     | Not satisfied                                                                   |
-| Every legitimate bonus component is retained and payable once                   | N-02/N-03/N-07/N-09                                                           | Not satisfied                                                                   |
-| Currency stays explicit and compatible                                          | N-05                                                                          | Not satisfied                                                                   |
-| Paid amounts reflect actual payment records                                     | D-04/N-07/N-08                                                                | Not satisfied                                                                   |
-| Reversal preserves consistent financial history                                 | D-03/D-04/N-08                                                                | Not satisfied                                                                   |
-| Concurrent requests cannot exceed obligations or duplicate records              | N-06; other races unverified                                                  | Not satisfied                                                                   |
-| Missing KPI, zero Fix and incomplete employment periods have approved treatment | BD-02/03/07/08                                                                | Unresolved requirements                                                         |
-| Intended launch departments and payroll boundary are approved                   | BD-09/10/13 and policy hierarchy scope                                        | Unresolved scope                                                                |
-| Real Delivery norms/rates and applicable migrations are accepted                | TODO records outstanding rollout/acceptance work                              | Unverified; Owner publication and environment evidence required                 |
-| Finance independently reconciled a full staging payroll                         | No such execution in this audit                                               | Unverified                                                                      |
+| Area                  | Current approved outcome                                                                                                                                                   | Remaining implementation/validation                                                                     |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Periods               | Full fixed salary from chosen current/future month; prior service month ordinarily paid next month; no hard days 1–15 restriction                                          | Historical/current/future terms, explicit period labels and manual corrections                          |
+| Currency/accounting   | AMD amounts payable to employee; taxes/accounting/bank transfers handled externally                                                                                        | Reject incompatible inputs, reconcile actual employee receipts, no double deduction                     |
+| Salary/access         | Access date independent of salary start; manual final salary and absence adjustments; valid old obligations retained                                                       | Distinguish missing terms, agreed no-fixed-salary Sales Probation and future salary; preserve history   |
+| Sales Probation       | Same calendar-month model and KPI scale as active Sales; individually assigned monthly targets; Owner/CEO decides hiring freely                                            | No whole-probation accumulator or automatic hiring gate; no target day-proration                        |
+| KPI                   | >=70% → full; >=50% and <70% → half; below50% → zero payout; missing required facts hold affected bonus                                                                    | Stable earned-month snapshots and current/future target changes, no missing-data full-factor default    |
+| Sales order bonus     | Both roles required, same employee may occupy both; combined maximum 300,000 AMD per order before KPI, including cumulative subscription first/recurring accrual           | Preserve both role amounts, proportional split, no duplicate per-role/per-invoice allowance             |
+| Monthly bonus ceiling | No limit derived from salary, regardless of number of eligible orders                                                                                                      | Remove rejected shared cap mechanism; preserve/reconcile existing unpaid carry                          |
+| Invoice eligibility   | First fully paid qualifying product invoice; exclude domain/unrelated service; unpaid duplicate replacement allowed; creation minimum covers combined capped Sales accrual | Validate all entry/edit paths and event-date rates, no hidden minimum override                          |
+| Project payments      | Finance/CEO/Owner manually selects employee/project amounts; hired Development installments allowed before completion; extra reward separate from original plan            | Reuse matrix, aggregate every source, show actual paid versus selected allocation and remaining amounts |
+| Actual partial payout | Fixed salary first; explicitly chosen project allocation thereafter, no project FIFO                                                                                       | Allocation totals equal actual payout; reverse original allocations exactly                             |
+| Authority             | One authorized Finance/Director/CEO/Owner can prepare and approve alone                                                                                                    | Actual actor and scoped permissions, reasons, lifecycle and cash evidence                               |
+| Manual scope          | Manual monthly run, manual Marketing/Support, no department fixed-salary split                                                                                             | Existing paths correctly materialize and reconcile; no new scheduler/formula engine required            |
+| History/cutover       | New rules from selected month; Finance reviews old unpaid balances; paid history preserved; rare current-period manual corrections and residual recovery                   | No mass retroactive repricing, debt erasure, fixed-salary clawback or unapproved live mutation          |
 
-“Component-level satisfied” is not permission to use that feature for real pay while its surrounding safeguards fail.
+Detailed provenance and bounded delegated defaults are in document 11. Actual salaries, targets, effective cutover month and Delivery tariffs are inputs still to be supplied by authorized people, not values to invent.
 
-## 3. Mandatory launch blockers
+## 3. Readiness conditions
 
-| Blocker                                  | Evidence IDs                          | Business consequence                                                      | Required exit evidence                                                                         |
-| ---------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Financial access and authentic approvals | D-01/D-06                             | Salary disclosure and unauthorized or falsely attributed decisions        | Action/object permission matrix; negative/positive HTTP tests; actor spoofing rejected         |
-| Salary source and effective periods      | D-02/N-01                             | Wrong fixed pay or payroll without agreed terms                           | Historical/current/future fixtures; missing-profile rejection; approved period examples        |
-| Complete Sales entitlements              | D-05/D-07/N-02                        | Wrong rate, missing role amount, or missed bonus after failure            | Two-role database test; event-date snapshots; idempotent recovery and exception reconciliation |
-| Multiple bonus entries reach payroll     | N-03                                  | Underpayment of legitimate roles/components                               | Exact source-entry-to-line sum across multiple entries and orders                              |
-| Bonus release invariants                 | N-04                                  | False PAID records or exceptions without reasons                          | All write paths reject unsupported status/approval/reason combinations                         |
-| Explicit currency handling               | N-05                                  | Wrong-unit payment or mixed-currency addition                             | Approved currency contract; incompatible inputs blocked or explicitly handled                  |
-| Debt/carry and final settlement          | N-07/N-09                             | Deferred or old amounts omitted; terminated employee obligations stranded | Carry-only month, late-funded work and final-settlement scenarios pass                         |
-| Reversal and history integrity           | D-03/D-04/N-08                        | Cash, salary, bonus and journal disagree                                  | Audited corrections reconcile every affected register before/after payout                      |
-| Atomic financial writes                  | N-06/U-04                             | Excessive or duplicate financial records                                  | Concurrent PostgreSQL and failure-retry tests with no excess or duplicate effect               |
-| Unresolved applicable business rules     | Normalized BD register in document 11 | Different operators can produce different pay for the same facts          | Owner-selected rules, effective scope and acceptance examples                                  |
-| Unverified complete workflow             | V-01–V-17 in document 11              | Unit tests miss integration errors                                        | Independent expected payroll, staging execution, browser checks and Finance/Owner acceptance   |
+| Condition                                                                              | Evidence                                                          | Status                                                                       |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Salary-plus-bonus math, Sales/Delivery component calculations, payroll lifecycle exist | Original source review and component tests                        | Component-level evidence only                                                |
+| Business model and launch scope resolved                                               | BR record, Q-37/38 and delegated Q-39–46 in document 11           | Satisfied as decision record, not implementation                             |
+| Authorized access and truthful approval/payment facts                                  | D-01/D-06/N-04                                                    | Not satisfied                                                                |
+| Period-correct approved compensation and explicit Probation terms                      | D-02/N-01/N-09, current Owner decisions                           | Not satisfied                                                                |
+| Desired Sales ceiling/invoice rules and no salary ceiling                              | Targeted source findings in document 09 addendum; BR-29–36        | Source-policy conflict/gaps require implementation; live settings unverified |
+| All legitimate bonus components reach payment once                                     | N-02/N-03/N-07/N-09                                               | Not satisfied                                                                |
+| AMD compatibility and accurate actual-paid balances                                    | N-05/D-04/N-07/N-08                                               | Not satisfied                                                                |
+| Reversal/history and atomic writes                                                     | D-03/D-04/N-06/N-08                                               | Not satisfied; PostgreSQL race verification also outstanding                 |
+| Commercial inputs, deployed constraints and migration state accepted                   | No production inspection; Delivery rollout inputs belong to Owner | Unverified execution prerequisites                                           |
+| Full independent payroll comparison, API/database/browser rehearsal                    | No such completed acceptance in this audit                        | Unverified                                                                   |
 
-An organization-wide launch is not supported by the available evidence. A narrower first launch is a possible future Owner scope decision, not an approved workaround. Excluded populations, currencies and pay types must be explicit and enforced; a scope restriction does not excuse common-path defects such as missing authorization or false paid balances.
+Component evidence or an approved rule is not permission for real payroll while its surrounding controls fail.
 
-## 4. Separate defects, requirements and optional work
+## 4. Mandatory launch blockers and exit evidence
 
-### Confirmed defects requiring correction
+| Blocker                                       | Evidence / business impact                                                                                   | Mandatory exit evidence                                                                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Financial permissions and authentic approvals | D-01/D-06: unauthorized disclosure/changes or false approver                                                 | M-01/M-08, real guard/API positive and negative tests, actual actor cannot be forged                                            |
+| Salary periods and employee inclusion         | D-02/N-01/N-09: wrong current/history/final salary or missing terms silently zero                            | M-02, chosen-month and explicit Probation fixtures, no fallback errors, valid terminated obligations payable                    |
+| Sales entitlements, limit and event selection | D-05/D-07/N-02 and post-audit policy clarification: lost roles, wrong rates, missing accrual, wrong ceilings | M-04/M-06/M-08, both roles on real constraints, invoice minimum, cumulative order cap, cap-before-KPI, no salary ceiling, retry |
+| Project aggregation and old obligations       | N-03/N-09: underpayment or forgotten old amount                                                              | M-05/M-06, multiple sources summed, manual project selections, late funding/final settlement without fake new bonuses           |
+| Unsupported PAID and unaudited exceptions     | N-04: false payout/extra award records                                                                       | All paths enforce cash evidence, reason and genuine authorization, while allowing authorized early/extra workflow               |
+| Currency contract                             | N-05: wrong currency interpreted as AMD                                                                      | M-03, incompatible currency rejected and intended AMD/net meaning preserved                                                     |
+| Paid/deferred/history reconciliation          | D-03/D-04/N-07/N-08: balances/journal disagree                                                               | M-06/M-07, partial payments and exact reversals, preserved old carry and manual corrections                                     |
+| Concurrency/recovery                          | N-06/U-04: excess, duplicate or partial records                                                              | M-09, isolated PostgreSQL races and failure replay with one financial effect                                                    |
+| Controlled transition of old records          | Q-37 A: old data not inspected and may use rejected/absent rules                                             | V-18, approved cutover month, reviewed old unpaid inventory, no automatic repricing of paid history                             |
+| Complete operational proof                    | Component-only audit evidence                                                                                | M-11, V-01–V-19 executed with expected/actual reconciliation, browser acceptance and Finance/Owner sign-off                     |
 
-D-01–D-07 and N-01–N-08 require correction or a complete, explicitly approved control satisfying the underlying requirement. N-09 requires completion and validation of old-obligation/final-settlement paths. Changing payroll permissions alone does not address salary history, amount aggregation or ledger integrity.
+## 5. Distinguish required fixes from deferred scope
 
-### Missing documented functionality
+**Confirmed defects:** original D-01–D-07 and N-01–N-08 remain defects unless later verified fixes demonstrate otherwise. N-09 is a confirmed restrictive path and incomplete settlement workflow. Removing the salary ceiling does not forgive existing carried debt or fix incorrect paid projections by itself. No production incident or affected amount was established.
 
-The full company/department/seat/level/employee policy hierarchy was not established as implemented. Automated Marketing incentives are documented but not demonstrated. Support has a manual template, not a verified complete automatic compensation process. A complete paid-salary correction workflow and terminated-employee settlement path were not established. These gaps must be completed for the populations/processes relying on them, or formally excluded from an explicitly approved initial scope with a controlled alternative.
+**Newly clarified requirement conflicts/gaps:** salary-multiple monthly ceiling is contrary to Owner policy; the desired shared 300,000 order ceiling and exact invoice-minimum/role-closure rules need implementation verification and any missing work. The audit did not prove every live path/configuration lacks those checks; do not claim a complete deployed absence.
 
-### Unresolved business requirements
+**Mandatory, using existing architecture:** simple manual adjustments, partial/early Development payouts, extra entries, authentic approval, period correctness, residual debt visibility and final settlement. “Keep it simple” does not mean a manual edit may lose money or history. No separate large correction subsystem is required.
 
-The normalized register in document 11 includes partial Classic payment triggering, missing KPI facts, zero-base cap, currencies, midmonth changes, hire/termination/leave proration, approval separation, reversal attribution, department cost treatment, launch departments, statutory/bank scope, and failed-accrual operations.
+**Deferred/external:** automatic monthly payroll creation; automatic Marketing/Support formulas; department fixed-salary allocation; general non-Delivery hierarchy; FX/multi-currency payroll; statutory/tax/payslip/bank execution engines; nonessential dashboards. Existing real agreements that cannot be represented in the approved bounded scope must be explicitly reviewed, not silently ignored. Delivery v2 units/rates remain the existing calculation model, without legacy70/30 or employee-grade overrides.
 
-Existing requirements must not be relabeled as optional decisions: payroll needs a valid effective profile; one employee in both Sales roles receives both amounts; clawback is not deducted from fixed salary; Active termination bonuses remain payable; Delivery v2 does not inherit legacy 70/30 or employee-grade rate overrides.
+## 6. Required acceptance and handoff
 
-### Optional or conditional future improvements
+The business-decision phase is closed for this scope. Proceed to the ordered implementation plan only under separate authorization; do not restart the general questionnaire. Small delegated choices and responsibilities are recorded in document 11. Real inputs and implementation evidence remain outstanding:
 
-| Item                                                                                 | Treatment                                                                                                                       |
-| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Richer department comparisons, scheduled reporting packets and additional dashboards | Can be deferred if first-launch reconciliation and required cost attribution remain sufficient                                  |
-| Additional UI convenience, bulk operations and nonessential reporting automation     | Optional after correctness and access controls                                                                                  |
-| Automated Marketing/Support calculations                                             | Conditional: mandatory if the launch relies on them; otherwise require an explicit approved manual process/scope restriction    |
-| Full non-Delivery policy hierarchy                                                   | Conditional on first-launch compensation agreements; do not silently disregard existing overrides                               |
-| Multiple-currency payroll                                                            | Conditional scope; an enforced incompatibility blocker is mandatory even for an AMD-only launch                                 |
-| Tax calculation, statutory deductions, payslips, bank transfer execution             | Scope decision, not automatically optional or automatically required; jurisdiction/accountability must be specified if included |
-| Automatic monthly run creation                                                       | Decide operational ownership and scope; no verified payroll cron should be assumed                                              |
+1. Select the cutover month and supply explicit employee terms, individual monthly targets and approved policies/norms. Finance owns input/exception reconciliation, with CEO/Owner substitution.
+2. Prepare independent synthetic expected amounts for every supported scenario, including same-person Sales roles, both-role cap/KPI, no-salary Probation, early Development installments, manual extras and old unpaid balances.
+3. Validate relevant migrations, constraints and permission grants in an explicitly isolated nonproduction database; execute real API authorization, concurrency and failure-recovery tests.
+4. Execute V-01–V-19 from document 11, including worked Owner examples, late records and transition inventory. Preserve legitimate old debts rather than silently applying new caps to them.
+5. Reconcile SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, historical carry, Wallet, ProductBonusPool and operational journal. Draft/release/approval is not actual payment.
+6. Complete desktop/mobile verification of terms, matrix, boards, Wallet and actual payout recording. Have Finance compare expected versus actual results and the Owner accept the operational scope.
+7. Obtain separate authorization for any real deployment, migration, live record correction or launch. Recording these decisions performs none of those actions.
 
-## 5. Required acceptance package
-
-The detailed V-01–V-17 scenarios are specified in [11-FINAL-COMPLETION-PLAN](11-FINAL-COMPLETION-PLAN.md). Before launch the evidence package must contain:
-
-1. An approved rule record identifying launch employees/pay types/currencies, effective dates, unresolved exclusions and accountable approvers.
-2. An independently calculated synthetic expected payroll, including amount, currency, source profile, source bonus entries, expected debt/carry and payment dates.
-3. An isolated nonproduction database with verified relevant migrations, indexes and grants. Source SQL presence alone does not prove installation.
-4. Executed positive and negative API tests through real authorization boundaries, including alternate financial write paths.
-5. Concurrency and failure-injection tests for payouts, releases, approval and activation, with idempotent replay checks.
-6. A complete employee-to-bonus-to-payroll-to-payment-to-report rehearsal, including partial payment, later funding, reversal, closed-history adjustment and final settlement.
-7. Reconciliation by employee and run across SalaryLine, PayrollRun, Expense, ExpensePayment, BonusRelease, carry balances, Wallet, ProductBonusPool and operational journal. No unexplained difference is acceptable.
-8. Desktop/mobile browser acceptance for compensation, matrix, Salary Board, Bonus Board, Wallet and payment recording, with correct visibility and currency labels.
-9. Finance acceptance of the expected/actual comparison and Product Owner acceptance of scope and unresolved exclusions.
-
-Real commercial Delivery norms/rates remain the Owner's responsibility. Synthetic test values must not become production pay terms. Production deployment, migration, cutover and financial corrections require separate authorization; this audit and these documents do not grant it.
-
-## 6. Current decision status
-
-No new compensation rule is approved merely because the Product Owner authorized these documents. Interactive decision-making follows document creation, in Russian, two or three related questions at a time. Recommendations and selected rules must be stored separately.
-
-Until the relevant decisions, corrections and acceptance evidence are complete, the appropriate status is **not accepted for real payroll**, not “ready with minor improvements.”
+**Status:** requirements/documentation complete at the chosen scope; implementation, commercial-input review and real-payroll acceptance incomplete. No readiness percentage, production discrepancy total or release date is supported.

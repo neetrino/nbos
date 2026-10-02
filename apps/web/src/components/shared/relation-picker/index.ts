@@ -23,6 +23,7 @@ export {
   usePartnerRelationSearch,
   useEmployeeRelationSearch,
   useOrderRelationSearch,
+  useDealRelationSearch,
   useCredentialRelationSearch,
   useAccessSlotCredentialSearch,
 } from './relation-search-loaders';

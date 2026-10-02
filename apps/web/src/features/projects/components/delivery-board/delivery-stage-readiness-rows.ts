@@ -1,4 +1,3 @@
-import { isOrderPaymentGateSatisfied } from '@nbos/shared';
 import type { FullExtension } from '@/lib/api/extensions';
 import type { FullProduct } from '@/lib/api/products';
 import type { ChecklistStageProgress, DeliveryLifecycleProjection } from '@/lib/api/projects';
@@ -14,13 +13,9 @@ export interface StageReadinessRow {
 /** English VALUES kept here; translate at render via `READINESS_LABEL_MESSAGE_KEYS`. */
 export const STAGE_READINESS_LABELS = {
   deadlineSet: 'Deadline set',
-  noOpenWorkSpaceTasks: 'No open Work Space tasks',
   noOpenExtensions: 'No open extensions',
-  noOpenTasks: 'No open tasks',
   noOpenTickets: 'No open tickets',
   clientAcceptance: 'Client acceptance recorded',
-  orderClosed: 'Order financially closed',
-  noUnpaidInvoices: 'No unpaid invoices',
   scopeFilled: 'Scope & notes filled',
   ownerAssigned: 'Owner assigned',
   stageChecklist: 'Stage checklist',
@@ -47,13 +42,8 @@ function checklistReadinessDetail(checklist: ChecklistStageProgress): {
   };
 }
 
-const CLOSED_TASK = new Set(['DONE', 'ON_HOLD', 'COMPLETED']);
 const CLOSED_TICKET = new Set(['RESOLVED', 'CLOSED']);
 const CLOSED_EXTENSION = new Set(['DONE', 'LOST']);
-
-function countOpenTasks(tasks: { status: string }[]): number {
-  return tasks.filter((t) => !CLOSED_TASK.has(t.status)).length;
-}
 
 function countOpenTickets(tickets: { status: string }[]): number {
   return tickets.filter((t) => !CLOSED_TICKET.has(t.status)).length;
@@ -74,27 +64,12 @@ export function buildProductStageReadinessRows(
       label: STAGE_READINESS_LABELS.deadlineSet,
       done: Boolean(product.deadline),
     });
-  } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
-    const open = countOpenTasks(product.tasks ?? []);
-    rows.push({
-      key: 'tasks',
-      label: STAGE_READINESS_LABELS.noOpenWorkSpaceTasks,
-      done: open === 0,
-    });
   } else if (stage === 'TRANSFER') {
-    const invoices = product.order?.invoices ?? [];
-    const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
-    const orderOk = isOrderPaymentGateSatisfied(product.order);
     const extOpen = (product.extensions ?? []).filter(
       (e) => !CLOSED_EXTENSION.has(e.status),
     ).length;
     rows.push(
       { key: 'ext', label: STAGE_READINESS_LABELS.noOpenExtensions, done: extOpen === 0 },
-      {
-        key: 'tasks',
-        label: STAGE_READINESS_LABELS.noOpenTasks,
-        done: countOpenTasks(product.tasks ?? []) === 0,
-      },
       {
         key: 'tickets',
         label: STAGE_READINESS_LABELS.noOpenTickets,
@@ -105,8 +80,6 @@ export function buildProductStageReadinessRows(
         label: STAGE_READINESS_LABELS.clientAcceptance,
         done: Boolean(product.clientAcceptedAt),
       },
-      { key: 'order', label: STAGE_READINESS_LABELS.orderClosed, done: orderOk },
-      { key: 'inv', label: STAGE_READINESS_LABELS.noUnpaidInvoices, done: unpaid === 0 },
     );
   }
 
@@ -139,26 +112,6 @@ export function buildExtensionStageReadinessRows(
         label: STAGE_READINESS_LABELS.ownerAssigned,
         done: Boolean(extension.assignedTo),
       },
-    );
-  } else if (stage === 'DEVELOPMENT' || stage === 'QA') {
-    const open = countOpenTasks(extension.tasks ?? []);
-    rows.push({
-      key: 'tasks',
-      label: STAGE_READINESS_LABELS.noOpenWorkSpaceTasks,
-      done: open === 0,
-    });
-  } else if (stage === 'TRANSFER') {
-    const invoices = extension.order?.invoices ?? [];
-    const unpaid = invoices.filter((i) => i.moneyStatus !== 'PAID').length;
-    const orderOk = isOrderPaymentGateSatisfied(extension.order);
-    rows.push(
-      {
-        key: 'tasks',
-        label: STAGE_READINESS_LABELS.noOpenTasks,
-        done: countOpenTasks(extension.tasks ?? []) === 0,
-      },
-      { key: 'order', label: STAGE_READINESS_LABELS.orderClosed, done: orderOk },
-      { key: 'inv', label: STAGE_READINESS_LABELS.noUnpaidInvoices, done: unpaid === 0 },
     );
   }
 

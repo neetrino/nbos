@@ -1,5 +1,7 @@
 # Delivery Board
 
+**Дополнение 2026-10-02:** [Регистрация готового продукта без Delivery](../../03-Business-Logic/12-Product-Registration-Without-Delivery.md). Product может создаваться вместе с новым Project и optional Company без разработки.
+
 > NBOS Delivery Board - главный рабочий экран процесса разработки и передачи Product / Extension.
 
 ## 1. Назначение
@@ -558,6 +560,7 @@ Transfer      0/6 Future
 
 ```text
 Card cannot move to the next stage until all required stage requirements are satisfied.
+Open tasks are not a stage requirement and do not block QA, Transfer, or Done.
 ```
 
 Если пользователь пытается прыгнуть через stage или сразу закрыть `Done`, система выполняет cumulative validation по всем пропущенным stages.

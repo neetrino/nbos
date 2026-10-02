@@ -8,11 +8,15 @@ export const WALLPAPER_MIME = 'image/webp';
 
 export const WALLPAPER_EXTENSION = '.webp';
 
-export const MAX_WALLPAPER_BYTES = 400 * 1024;
+const BYTES_PER_MEGABYTE = 1024 * 1024;
+
+export const MAX_WALLPAPER_MEGABYTES = 1;
+
+export const MAX_WALLPAPER_BYTES = MAX_WALLPAPER_MEGABYTES * BYTES_PER_MEGABYTE;
 
 export const MAX_WALLPAPER_EDGE_PX = 2560;
 
-export const MIN_WALLPAPER_EDGE_PX = 1280;
+export const MIN_WALLPAPER_EDGE_PX = 1080;
 
 export const WALLPAPER_PUBLIC_PATH_PREFIX = '/api/v1/platform/appearance/wallpaper';
 

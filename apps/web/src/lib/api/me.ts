@@ -21,6 +21,8 @@ export interface EmployeeWalletBonusRow {
   percent: string;
   releasedAmount: string;
   paidAmount: string;
+  /** Absent on older snapshots. UNCONFIRMED is a historical PAID mark with no release. */
+  cashConfirmation?: 'CONFIRMED' | 'UNCONFIRMED';
   remainingAmount: string;
   payrollMonth: string | null;
   /** Sum of persisted SALES KPI burned on releases for this bonus entry. */
@@ -69,7 +71,7 @@ export interface EmployeeWalletProjectBreakdownRow {
   poolAvailableFunding: string | null;
   poolOverFunding: string | null;
   entryStatusesSummary: string;
-  payoutState: 'UNPAID' | 'PARTIAL' | 'PAID';
+  payoutState: 'UNPAID' | 'PARTIAL' | 'PAID' | 'UNCONFIRMED';
 }
 
 export type EmployeeWalletActivityKind = 'BONUS_RELEASE' | 'SALARY_PAYMENT' | 'PAYROLL_CLOSED';

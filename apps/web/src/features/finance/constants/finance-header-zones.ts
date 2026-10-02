@@ -1,4 +1,7 @@
-import { FINANCE_EXPENSES_ZONE_VIEW_REQUIREMENT } from '@/lib/navigation/finance-nav-permissions';
+import {
+  FINANCE_EXPENSES_ZONE_VIEW_REQUIREMENT,
+  FINANCE_PAYROLL_ZONE_VIEW_REQUIREMENT,
+} from '@/lib/navigation/finance-nav-permissions';
 import type { PermissionRequirement } from '@/lib/navigation/nav-config';
 import type { FinanceSectionId } from '@/lib/navigation/module-last-visit';
 
@@ -24,7 +27,7 @@ export const FINANCE_HEADER_ZONES: FinanceHeaderZoneDefinition[] = [
   {
     zone: 'payroll',
     label: 'Payroll & bonus',
-    permission: { module: 'FINANCE_INVOICES', action: 'VIEW' },
+    permission: FINANCE_PAYROLL_ZONE_VIEW_REQUIREMENT,
   },
   {
     zone: 'overview',

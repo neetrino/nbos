@@ -22,6 +22,8 @@ export type CreateInviteResult = {
   expiresAt: string;
   /** Raw invite secret — returned ONCE; never persisted. */
   token: string;
+  /** Absolute or path join URL for guests without an NBOS account. */
+  joinUrl: string;
   revokedAt: null;
 };
 
@@ -61,6 +63,7 @@ export class VideoMeetingsInvitesService {
       meetingId: invite.meetingId,
       expiresAt: invite.expiresAt.toISOString(),
       token,
+      joinUrl: buildGuestJoinUrl(token),
       revokedAt: null,
     };
   }
@@ -86,7 +89,7 @@ export class VideoMeetingsInvitesService {
   }
 
   async list(user: CurrentUserPayload, meetingId: string): Promise<InviteListItemDto[]> {
-    await this.requireHostOrOwner(meetingId, user.id);
+    await this.requireHostOrOwner(meetingId, user.id, { allowClosed: true });
     const rows = await this.prisma.videoMeetingInvite.findMany({
       where: { meetingId },
       orderBy: { createdAt: 'desc' },
@@ -114,17 +117,19 @@ export class VideoMeetingsInvitesService {
     return invite;
   }
 
-  private async requireHostOrOwner(meetingId: string, employeeId: string) {
+  private async requireHostOrOwner(
+    meetingId: string,
+    employeeId: string,
+    options?: { allowClosed?: boolean },
+  ) {
     const meeting = await this.prisma.videoMeeting.findUnique({ where: { id: meetingId } });
     if (!meeting) throw new NotFoundException('Meeting not found');
     if (meeting.hostEmployeeId !== employeeId && meeting.ownerEmployeeId !== employeeId) {
       throw new ForbiddenException('Only host or owner may manage invites');
     }
-    if (
-      meeting.status === VideoMeetingStatus.ENDED ||
-      meeting.status === VideoMeetingStatus.CANCELLED
-    ) {
-      throw new BadRequestException('Cannot manage invites for an ended or cancelled meeting');
+    const closed = meeting.status === VideoMeetingStatus.CANCELLED;
+    if (closed && !options?.allowClosed) {
+      throw new BadRequestException('Cannot manage invites for a cancelled meeting');
     }
     return meeting;
   }
@@ -138,4 +143,11 @@ function serializeInvite(invite: VideoMeetingInviteRow): InviteListItemDto {
     revokedAt: invite.revokedAt ? invite.revokedAt.toISOString() : null,
     createdAt: invite.createdAt.toISOString(),
   };
+}
+
+/** Prefer APP_URL when set; otherwise return a relative path the web client can absolutize. */
+function buildGuestJoinUrl(token: string): string {
+  const path = `/video-meetings/join?invite=${encodeURIComponent(token)}`;
+  const base = process.env.APP_URL?.trim().replace(/\/$/, '') ?? '';
+  return base ? `${base}${path}` : path;
 }

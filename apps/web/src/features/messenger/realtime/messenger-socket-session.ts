@@ -4,6 +4,7 @@ import {
   MESSENGER_WS_SERVER_CONVERSATION_MESSAGE,
   MESSENGER_WS_SERVER_CONVERSATION_PEER_READ,
   MESSENGER_WS_SERVER_CONVERSATION_SUMMARY,
+  MESSENGER_WS_SERVER_CONVERSATION_TYPING,
   MESSENGER_WS_SERVER_READ_UPDATED,
 } from '@nbos/shared';
 import type { RealtimeSessionResult } from '@/lib/auth/realtime-session';
@@ -20,6 +21,7 @@ export type MessengerConnectionState =
 export type MessengerSocketSessionHooks = {
   onConnected: (reconnected: boolean) => void;
   onCoreEvent: (event: string, payload: unknown) => void;
+  onConversationTyping: (payload: unknown) => void;
   legacyFanout: MessengerLegacyFanout;
 };
 
@@ -98,6 +100,7 @@ export class MessengerSocketSession {
     });
     this.bindManager(socket);
     this.bindCoreEvents(socket);
+    this.bindConversationTyping(socket);
     bindMessengerLegacySocket(socket, this.hooks().legacyFanout);
   }
 
@@ -109,6 +112,13 @@ export class MessengerSocketSession {
     socket.io.on('reconnect_failed', () => {
       if (this.socket !== socket) return;
       this.setState('disconnected');
+    });
+  }
+
+  private bindConversationTyping(socket: MessengerClientSocket): void {
+    socket.on(MESSENGER_WS_SERVER_CONVERSATION_TYPING, (payload: unknown) => {
+      if (this.socket !== socket) return;
+      this.hooks().onConversationTyping(payload);
     });
   }
 

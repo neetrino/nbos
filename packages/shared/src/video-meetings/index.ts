@@ -42,3 +42,19 @@ export {
   VIDEO_MEETINGS_VIEW_KEY,
 } from './permissions';
 export type { PermissionMap, VideoMeetingEntityLinkRef } from './permissions';
+
+export {
+  DURATION_GUARD_CHECKPOINT_MS,
+  DURATION_GUARD_WARNING_LEAD_MS,
+  DURATION_GUARD_CENTER_LEAD_MS,
+  durationGuardSnapshot,
+} from './duration-guard';
+export type { DurationGuardPhase, DurationGuardSnapshot } from './duration-guard';
+
+export {
+  VIDEO_MEETING_TOKEN_KIND_EMPLOYEE,
+  VIDEO_MEETING_TOKEN_KIND_GUEST,
+  videoMeetingTokenMetadata,
+  readVideoMeetingTokenKind,
+} from './participant-kind';
+export type { VideoMeetingTokenKind } from './participant-kind';

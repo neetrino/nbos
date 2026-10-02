@@ -146,6 +146,7 @@ export function createMockPrisma() {
     videoMeetingRecording: createModelMock(),
     videoMeetingRecordingAsset: createModelMock(),
     videoMeetingEntityLink: createModelMock(),
+    videoMeetingMessage: createModelMock(),
     personalCalendarEvent: createModelMock(),
     messengerChannel: createModelMock(),
     messengerDirectThread: createModelMock(),
@@ -199,6 +200,7 @@ export function createMockPrisma() {
     extensionDeliveryRoleAssignment: createModelMock(),
     $disconnect: vi.fn(),
     $queryRaw: vi.fn().mockResolvedValue([]),
+    $executeRaw: vi.fn().mockResolvedValue(1),
     $transaction: vi.fn(),
   };
 

@@ -207,6 +207,7 @@
     "bonusReleases": "Bonus releases",
     "payable": "Payable",
     "paid": "Paid",
+    "paidUnconfirmed": "Unconfirmed",
     "remaining": "Remaining",
     "cell": {
       "state": {
@@ -221,6 +222,9 @@
       },
       "placeholder": "Enter bonus",
       "releaseAria": "Bonus release this month",
+      "sourceAmountPlaceholder": "Amount",
+      "sourceAmountAria": "Release for {title}",
+      "sourceRemaining": "Remaining {amount}",
       "createManualAria": "Create manual bonus",
       "updateError": "Could not update release.",
       "salesNotReady": "Sales bonus is not ready for payroll (earned month {period}). Sync Sales KPI for that month, then retry."

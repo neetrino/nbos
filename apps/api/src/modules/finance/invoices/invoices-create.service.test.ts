@@ -199,26 +199,34 @@ describe('InvoicesService create', () => {
     expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 
-  it('rejects first classic order invoice below 10% of order total', async () => {
+  it('rejects first classic product invoice below combined sales accrual', async () => {
     prisma.order.findUnique.mockResolvedValue({
       taxStatus: 'TAX',
       paymentType: 'CLASSIC',
       totalAmount: 500000,
+      deal: { source: 'SALES' },
     });
     prisma.invoice.count.mockResolvedValue(0);
+    prisma.salesBonusPolicy.findMany.mockResolvedValue([
+      {
+        sellerPercent: 10,
+        assistantPercent: 2,
+        effectiveFrom: new Date('2020-01-01T00:00:00.000Z'),
+      },
+    ]);
 
     await expect(
       service.create({
         orderId: 'ord-1',
         projectId: 'p1',
-        amount: 49999,
+        amount: 59999,
         type: 'DEVELOPMENT',
       }),
     ).rejects.toThrow(BadRequestException);
     expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 
-  it('allows second classic order invoice below 10% of order total', async () => {
+  it('allows second classic order invoice below the combined sales accrual', async () => {
     prisma.order.findUnique.mockResolvedValue({
       taxStatus: 'TAX',
       paymentType: 'CLASSIC',
@@ -264,7 +272,7 @@ describe('InvoicesService create', () => {
     expect(prisma.invoice.create).not.toHaveBeenCalled();
   });
 
-  it('skips classic 10% rule for subscription payment type orders', async () => {
+  it('skips classic combined sales minimum for subscription payment type orders', async () => {
     prisma.order.findUnique.mockResolvedValue({
       taxStatus: 'TAX',
       paymentType: 'SUBSCRIPTION',

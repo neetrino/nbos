@@ -125,3 +125,7 @@ docs/NBOS/.../99-Video-Meetings-Cleanup-Register.md
 ## Prior slices
 
 S01–S06 summaries remain valid.
+
+## Duration guard (accepted)
+
+Owner decisions from 2026-09-27 live in [07-DURATION-GUARD-DECISIONS.md](07-DURATION-GUARD-DECISIONS.md). The continuation clock, teammate start/stop, and last-teammate end are in code. File roll at 3 hours and deleting the local copy after a verified R2 upload are not. Do not reopen the accepted choices.

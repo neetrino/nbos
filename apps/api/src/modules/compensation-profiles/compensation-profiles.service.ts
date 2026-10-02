@@ -10,6 +10,30 @@ import type {
   CreateCompensationProfileBody,
   PatchCompensationProfileDraftBody,
 } from './compensation-profiles.types';
+import { activateCompensationProfileInTransaction } from './activate-compensation-profile';
+import {
+  FINANCE_SALARY_MODULE,
+  assertEmployeeAccessible,
+  assertFinancePayScope,
+  bindAuthenticatedApprover,
+  resolveAccessibleEmployeeIds,
+  type FinancePayActor,
+} from './finance-pay-access';
+import {
+  approvedProfileCoversPayrollMonth,
+  endOfPayrollMonthUtc,
+  payrollMonthForInstant,
+  startOfPayrollMonthUtc,
+} from './compensation-profile-payroll-month';
+import {
+  APPROVED_COMPENSATION_PROFILE_STATUS,
+  uniqueCoveringProfilePerEmployee,
+} from './resolve-active-compensation-profile';
+import {
+  assertEmployeeTakeHomeCurrency,
+  resolveCreateCompensationProfileCurrency,
+  resolvePatchCompensationProfileCurrency,
+} from './compensation-profile-currency';
 
 const PROFILE_STATUSES: CompensationProfileStatusEnum[] = ['DRAFT', 'REVIEW', 'ACTIVE', 'ARCHIVED'];
 const include = compensationProfileInclude();
@@ -18,7 +42,8 @@ const include = compensationProfileInclude();
 export class CompensationProfilesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async listForEmployee(employeeId: string) {
+  async listForEmployee(actor: FinancePayActor, employeeId: string) {
+    await this.assertProfileAccess(actor, 'VIEW', employeeId);
     await this.assertEmployeeExists(employeeId);
     const rows = await this.prisma.compensationProfile.findMany({
       where: { employeeId },
@@ -28,12 +53,18 @@ export class CompensationProfilesService {
     return { items: rows.map(serializeCompensationProfile) };
   }
 
-  async createDraft(employeeId: string, body: CreateCompensationProfileBody) {
+  async createDraft(
+    actor: FinancePayActor,
+    employeeId: string,
+    body: CreateCompensationProfileBody,
+  ) {
+    await this.assertProfileAccess(actor, 'EDIT', employeeId);
     await this.assertEmployeeExists(employeeId);
     const effectiveFrom = parseDateOnly(body.effectiveFrom, 'effectiveFrom');
     if (!Number.isFinite(body.baseSalary) || body.baseSalary < 0) {
       throw new BadRequestException('baseSalary must be a non-negative number');
     }
+    const currency = resolveCreateCompensationProfileCurrency(body.currency);
 
     const bonusPolicyId = body.bonusPolicyId?.trim() || null;
     if (bonusPolicyId != null) {
@@ -49,7 +80,7 @@ export class CompensationProfilesService {
       data: {
         employeeId,
         baseSalary: body.baseSalary,
-        currency: body.currency?.trim() || 'AMD',
+        currency,
         payoutSchedule: body.payoutSchedule,
         bonusPolicyId,
         kpiPolicyId,
@@ -63,30 +94,26 @@ export class CompensationProfilesService {
     return serializeCompensationProfile(row);
   }
 
-  async patchDraft(profileId: string, body: PatchCompensationProfileDraftBody) {
+  async patchDraft(
+    actor: FinancePayActor,
+    profileId: string,
+    body: PatchCompensationProfileDraftBody,
+  ) {
     const profile = await this.prisma.compensationProfile.findUnique({ where: { id: profileId } });
     if (!profile) {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
+    await this.assertProfileAccess(actor, 'EDIT', profile.employeeId);
     if (profile.status !== 'DRAFT') {
       throw new BadRequestException('Only DRAFT compensation profiles can be edited');
     }
-
-    let bonusPolicyId: string | null | undefined;
-    if (body.bonusPolicyId !== undefined) {
-      bonusPolicyId = body.bonusPolicyId?.trim() || null;
-      if (bonusPolicyId != null) {
-        await this.assertActiveBonusPolicyExists(bonusPolicyId);
-      }
-    }
-
-    let kpiPolicyId: string | null | undefined;
-    if (body.kpiPolicyId !== undefined) {
-      kpiPolicyId = body.kpiPolicyId?.trim() || null;
-      if (kpiPolicyId != null) {
-        await this.assertActiveKpiPolicyExists(kpiPolicyId);
-      }
-    }
+    const currency = resolvePatchCompensationProfileCurrency(body.currency);
+    const bonusPolicyId = await resolveOptionalPolicyId(body.bonusPolicyId, (id) =>
+      this.assertActiveBonusPolicyExists(id),
+    );
+    const kpiPolicyId = await resolveOptionalPolicyId(body.kpiPolicyId, (id) =>
+      this.assertActiveKpiPolicyExists(id),
+    );
 
     if (body.baseSalary != null && (!Number.isFinite(body.baseSalary) || body.baseSalary < 0)) {
       throw new BadRequestException('baseSalary must be a non-negative number');
@@ -96,7 +123,7 @@ export class CompensationProfilesService {
       where: { id: profileId },
       data: {
         baseSalary: body.baseSalary,
-        currency: body.currency?.trim(),
+        currency,
         bonusPolicyId,
         kpiPolicyId,
         effectiveFrom:
@@ -110,60 +137,47 @@ export class CompensationProfilesService {
     return serializeCompensationProfile(row);
   }
 
-  async activate(profileId: string, meta: ActivateCompensationProfileMeta) {
+  async activate(actor: FinancePayActor, profileId: string, meta: ActivateCompensationProfileMeta) {
     const profile = await this.prisma.compensationProfile.findUnique({ where: { id: profileId } });
     if (!profile) {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
+    await this.assertProfileAccess(actor, 'EDIT', profile.employeeId);
+    const approvedById = bindAuthenticatedApprover(actor.id, meta.approvedById);
     if (profile.status === 'ARCHIVED') {
       throw new BadRequestException('Archived compensation profiles cannot be activated');
     }
+    assertEmployeeTakeHomeCurrency(profile.currency, `Compensation profile ${profile.id}`);
     if (profile.status === 'ACTIVE') {
-      await this.copyBaseSalaryToEmployee(profile.employeeId, profile.baseSalary);
-      return this.findById(profileId);
+      if (approvedProfileCoversPayrollMonth(profile, payrollMonthForInstant(new Date()))) {
+        await this.copyBaseSalaryToEmployee(profile.employeeId, profile.baseSalary);
+      }
+      return this.findById(actor, profileId);
     }
     if (!PROFILE_STATUSES.includes(profile.status)) {
       throw new BadRequestException(`Unsupported profile status: ${profile.status}`);
     }
 
     const now = new Date();
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const priorActive = await tx.compensationProfile.findMany({
-        where: { employeeId: profile.employeeId, status: 'ACTIVE', id: { not: profileId } },
-      });
-      for (const prior of priorActive) {
-        await tx.compensationProfile.update({
-          where: { id: prior.id },
-          data: {
-            status: 'ARCHIVED',
-            effectiveTo: profile.effectiveFrom,
-          },
-        });
-      }
-
-      const activated = await tx.compensationProfile.update({
-        where: { id: profileId },
-        data: {
-          status: 'ACTIVE',
-          approvedById: meta.approvedById ?? undefined,
-          approvedAt: now,
-        },
-        include,
-      });
-      await tx.employee.update({
-        where: { id: profile.employeeId },
-        data: { baseSalary: profile.baseSalary },
-      });
-      return activated;
-    });
+    const updated = await this.prisma.$transaction(async (tx) =>
+      activateCompensationProfileInTransaction(tx, profile, approvedById, now),
+    );
 
     return serializeCompensationProfile(updated);
   }
 
-  async listActiveSummaries() {
+  async listActiveSummaries(actor: FinancePayActor) {
+    const accessible = await this.resolveCompensationAccess(actor, 'VIEW');
+    const payrollMonth = payrollMonthForInstant(new Date());
+    const monthStart = startOfPayrollMonthUtc(payrollMonth);
+    const monthEnd = endOfPayrollMonthUtc(payrollMonth);
     const rows = await this.prisma.compensationProfile.findMany({
-      where: { status: 'ACTIVE' },
-      orderBy: { effectiveFrom: 'desc' },
+      where: {
+        status: APPROVED_COMPENSATION_PROFILE_STATUS,
+        effectiveFrom: { lte: monthEnd },
+        OR: [{ effectiveTo: null }, { effectiveTo: { gte: monthStart } }],
+        ...(accessible === 'ALL' ? {} : { employeeId: { in: accessible } }),
+      },
       select: {
         employeeId: true,
         baseSalary: true,
@@ -172,8 +186,9 @@ export class CompensationProfilesService {
         kpiPolicy: { select: { name: true } },
       },
     });
+    const unique = uniqueCoveringProfilePerEmployee(rows, payrollMonth);
     return {
-      items: rows.map((row) => ({
+      items: unique.map((row) => ({
         employeeId: row.employeeId,
         baseSalary: row.baseSalary.toString(),
         currency: row.currency,
@@ -184,7 +199,7 @@ export class CompensationProfilesService {
     };
   }
 
-  async findById(profileId: string) {
+  async findById(actor: FinancePayActor, profileId: string) {
     const row = await this.prisma.compensationProfile.findUnique({
       where: { id: profileId },
       include,
@@ -192,7 +207,26 @@ export class CompensationProfilesService {
     if (!row) {
       throw new NotFoundException(`Compensation profile ${profileId} not found`);
     }
+    await this.assertProfileAccess(actor, 'VIEW', row.employeeId);
     return serializeCompensationProfile(row);
+  }
+
+  private async resolveCompensationAccess(actor: FinancePayActor, action: 'VIEW' | 'EDIT') {
+    const scope = assertFinancePayScope(actor, FINANCE_SALARY_MODULE, action, [
+      'ALL',
+      'DEPARTMENT',
+      'OWN',
+    ]);
+    return resolveAccessibleEmployeeIds(this.prisma, actor, scope);
+  }
+
+  private async assertProfileAccess(
+    actor: FinancePayActor,
+    action: 'VIEW' | 'EDIT',
+    employeeId: string,
+  ) {
+    const accessible = await this.resolveCompensationAccess(actor, action);
+    assertEmployeeAccessible(employeeId, accessible);
   }
 
   private async copyBaseSalaryToEmployee(employeeId: string, baseSalary: { toString(): string }) {
@@ -239,4 +273,18 @@ function parseDateOnly(value: string, field: string): Date {
     throw new BadRequestException(`${field} must be a valid ISO date`);
   }
   return d;
+}
+
+async function resolveOptionalPolicyId(
+  raw: string | null | undefined,
+  assertActiveExists: (id: string) => Promise<void>,
+): Promise<string | null | undefined> {
+  if (raw === undefined) {
+    return undefined;
+  }
+  const policyId = raw?.trim() || null;
+  if (policyId != null) {
+    await assertActiveExists(policyId);
+  }
+  return policyId;
 }

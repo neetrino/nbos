@@ -257,6 +257,7 @@ export function TaskSheet({
                   <TaskSheetChatPanel
                     task={state.task}
                     messages={discussion.messages}
+                    conversationId={discussion.conversationId}
                     composerDisabled={discussion.composerDisabled}
                     onDraftChange={discussion.noteDraft}
                     onSend={(body) => {
@@ -278,6 +279,7 @@ export function TaskSheet({
           onOpenChange={setChatOpen}
           task={state.task}
           messages={discussion.messages}
+          conversationId={discussion.conversationId}
           composerDisabled={discussion.composerDisabled}
           onDraftChange={discussion.noteDraft}
           onSend={(body) => {

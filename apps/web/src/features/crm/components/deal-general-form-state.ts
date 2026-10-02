@@ -218,6 +218,10 @@ export function buildDealTypeChangePatch(
     patch.existingProductId = null;
     patch.existingProductPickLabel = null;
   }
+  if (nextType === 'MAINTENANCE') {
+    if (draft.subscriptionTermMonths != null) patch.subscriptionTermMonths = null;
+    if (draft.paymentType !== 'SUBSCRIPTION') patch.paymentType = 'SUBSCRIPTION';
+  }
 
   return patch;
 }

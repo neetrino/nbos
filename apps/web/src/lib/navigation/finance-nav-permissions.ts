@@ -11,6 +11,16 @@ export const FINANCE_INVOICES_VIEW_REQUIREMENT: PermissionClause = {
   action: VIEW_ACTION,
 };
 
+export const FINANCE_SALARY_VIEW_REQUIREMENT: PermissionClause = {
+  module: 'FINANCE_SALARY',
+  action: VIEW_ACTION,
+};
+
+export const FINANCE_BONUSES_VIEW_REQUIREMENT: PermissionClause = {
+  module: 'FINANCE_BONUSES',
+  action: VIEW_ACTION,
+};
+
 /**
  * VIEW on any Finance module that currently has a reachable page. Used for the
  * `/finance` sidebar row and the module index so a delegated section can open
@@ -24,7 +34,14 @@ export const FINANCE_MODULE_VIEW_REQUIREMENT: PermissionRequirement = {
     { module: 'FINANCE_EXPENSES', action: VIEW_ACTION },
     { module: FINANCE_EXPENSE_PLANS_MODULE, action: VIEW_ACTION },
     { module: FINANCE_CLIENT_SERVICES_MODULE, action: VIEW_ACTION },
+    FINANCE_SALARY_VIEW_REQUIREMENT,
+    FINANCE_BONUSES_VIEW_REQUIREMENT,
   ],
+};
+
+/** Payroll header zone: salary runs or bonus board. */
+export const FINANCE_PAYROLL_ZONE_VIEW_REQUIREMENT: PermissionRequirement = {
+  anyOf: [FINANCE_SALARY_VIEW_REQUIREMENT, FINANCE_BONUSES_VIEW_REQUIREMENT],
 };
 
 /** Expenses header zone: Pay Now, Expenses Plan, or Client services. */

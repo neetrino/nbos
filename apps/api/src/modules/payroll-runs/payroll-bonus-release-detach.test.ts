@@ -5,12 +5,14 @@ import { detachBonusReleasesFromPayrollRun } from './payroll-bonus-release-detac
 
 function createTxMock() {
   return {
+    $queryRaw: vi.fn().mockResolvedValue([]),
     payrollRun: {
       findUnique: vi.fn(),
       update: vi.fn().mockResolvedValue({}),
     },
     bonusRelease: {
       findMany: vi.fn(),
+      findUnique: vi.fn().mockResolvedValue(null),
       update: vi.fn().mockResolvedValue({}),
       count: vi.fn().mockResolvedValue(0),
     },
@@ -59,6 +61,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         amount: new Decimal(50),
         payrollIncludedAmount: new Decimal(50),
         payrollCarryOverAmount: null,
+        payrollCarryOverRemaining: null,
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId: 'run1',
       },
@@ -113,57 +116,66 @@ describe('detachBonusReleasesFromPayrollRun', () => {
     expect(tx.payrollRun.update).toHaveBeenCalled();
   });
 
-  it('restores payrollCarryOverRemaining when release had deferred carry', async () => {
-    const tx = createTxMock();
-    tx.payrollRun.findUnique.mockResolvedValue({
-      id: 'run1',
-      status: 'DRAFT',
-      payrollMonth: '2026-05',
-    });
-    tx.bonusRelease.findMany.mockResolvedValue([
-      {
-        id: 'rel1',
-        employeeId: 'e1',
-        amount: new Decimal(80),
-        payrollIncludedAmount: new Decimal(50),
-        payrollCarryOverAmount: new Decimal(30),
-        status: 'INCLUDED_IN_PAYROLL',
+  it.each([
+    { remaining: null, label: 'fully consumed' },
+    { remaining: new Decimal(100_000), label: 'unconsumed' },
+    { remaining: new Decimal(40_000), label: 'partially unpaid' },
+  ])(
+    'preserves $label carry remaining on detach and does not restore it',
+    async ({ remaining }) => {
+      const tx = createTxMock();
+      tx.payrollRun.findUnique.mockResolvedValue({
+        id: 'run1',
+        status: 'DRAFT',
+        payrollMonth: '2026-05',
+      });
+      tx.bonusRelease.findMany.mockResolvedValue([
+        {
+          id: 'rel1',
+          employeeId: 'e1',
+          amount: new Decimal(300_000),
+          payrollIncludedAmount: new Decimal(200_000),
+          payrollCarryOverAmount: new Decimal(100_000),
+          payrollCarryOverRemaining: remaining,
+          status: 'INCLUDED_IN_PAYROLL',
+          payrollRunId: 'run1',
+        },
+      ]);
+      tx.salaryLine.findUnique.mockResolvedValue({
+        id: 'sl1',
         payrollRunId: 'run1',
-      },
-    ]);
-    tx.salaryLine.findUnique.mockResolvedValue({
-      id: 'sl1',
-      payrollRunId: 'run1',
-      employeeId: 'e1',
-      baseSalary: new Decimal(100),
-      bonusesTotal: new Decimal(200),
-      payrollCarryAppliedAmount: null,
-      totalPayable: new Decimal(300),
-      paidAmount: new Decimal(0),
-      remainingAmount: new Decimal(300),
-      status: 'APPROVED',
-    });
-    tx.salaryLine.aggregate.mockResolvedValue({
-      _sum: {
-        baseSalary: new Decimal(100),
-        bonusesTotal: new Decimal(150),
-        totalPayable: new Decimal(250),
+        employeeId: 'e1',
+        baseSalary: new Decimal(100_000),
+        bonusesTotal: new Decimal(200_000),
+        payrollCarryAppliedAmount: null,
+        totalPayable: new Decimal(300_000),
         paidAmount: new Decimal(0),
-      },
-    });
+        remainingAmount: new Decimal(300_000),
+        status: 'APPROVED',
+      });
+      tx.salaryLine.aggregate.mockResolvedValue({
+        _sum: {
+          baseSalary: new Decimal(100_000),
+          bonusesTotal: new Decimal(0),
+          totalPayable: new Decimal(100_000),
+          paidAmount: new Decimal(0),
+        },
+      });
 
-    await detachBonusReleasesFromPayrollRun(tx as never, {
-      payrollRunId: 'run1',
-      releaseIds: ['rel1'],
-    });
+      await detachBonusReleasesFromPayrollRun(tx as never, {
+        payrollRunId: 'run1',
+        releaseIds: ['rel1'],
+      });
 
-    expect(tx.bonusRelease.update).toHaveBeenCalledWith({
-      where: { id: 'rel1' },
-      data: expect.objectContaining({
-        payrollCarryOverRemaining: new Decimal(30),
-      }),
-    });
-  });
+      expect(tx.bonusRelease.update).toHaveBeenCalledWith({
+        where: { id: 'rel1' },
+        data: expect.objectContaining({
+          payrollCarryOverAmount: new Decimal(100_000),
+          payrollCarryOverRemaining: remaining,
+        }),
+      });
+    },
+  );
 
   it('subtracts payrollIncludedAmount when it differs from release amount', async () => {
     const tx = createTxMock();
@@ -179,6 +191,7 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         amount: new Decimal(100),
         payrollIncludedAmount: new Decimal(40),
         payrollCarryOverAmount: null,
+        payrollCarryOverRemaining: null,
         status: 'INCLUDED_IN_PAYROLL',
         payrollRunId: 'run1',
       },
@@ -232,15 +245,21 @@ describe('detachBonusReleasesFromPayrollRun', () => {
       amount: new Decimal(50),
       payrollIncludedAmount: new Decimal(50),
       payrollCarryOverAmount: null,
+      payrollCarryOverRemaining: null,
       status: 'INCLUDED_IN_PAYROLL' as const,
       payrollRunId: 'run1',
     };
+    // prettier-ignore
+    const priorCarry = { id: 'rel-april', status: 'APPROVED', employeeId: 'e1', payrollRunId: null, payrollRun: null, payrollIncludedAmount: null, payrollCarryOverAmount: new Decimal(25), payrollCarryOverRemaining: new Decimal(0) };
     tx.bonusRelease.findMany.mockImplementation((args: { where?: { id?: { in?: string[] } } }) => {
       if (args.where?.id?.in) {
         return Promise.resolve([detachRelease]);
       }
-      return Promise.resolve([]);
+      return Promise.resolve([priorCarry]);
     });
+    tx.bonusRelease.findUnique.mockImplementation((args: { where: { id: string } }) =>
+      Promise.resolve(args.where.id === priorCarry.id ? priorCarry : null),
+    );
     tx.bonusRelease.count.mockResolvedValue(0);
     tx.salaryLine.findUnique
       .mockResolvedValueOnce({
@@ -261,14 +280,8 @@ describe('detachBonusReleasesFromPayrollRun', () => {
         paidAmount: new Decimal(0),
         payrollCarryAppliedAmount: new Decimal(25),
       });
-    tx.salaryLine.aggregate.mockResolvedValue({
-      _sum: {
-        baseSalary: new Decimal(100),
-        bonusesTotal: new Decimal(0),
-        totalPayable: new Decimal(100),
-        paidAmount: new Decimal(0),
-      },
-    });
+    // prettier-ignore
+    tx.salaryLine.aggregate.mockResolvedValue({ _sum: { baseSalary: new Decimal(100), bonusesTotal: new Decimal(0), totalPayable: new Decimal(100), paidAmount: new Decimal(0) } });
 
     await detachBonusReleasesFromPayrollRun(tx as never, {
       payrollRunId: 'run1',

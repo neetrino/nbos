@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Building2, FolderKanban } from 'lucide-react';
 import {
@@ -67,6 +68,20 @@ export function DealInfoProjectBillingFields({
   );
 }
 
+function useAlignMaintenanceCommercialFields(
+  draft: DealGeneralDraft,
+  patchDraft: (partial: Partial<DealGeneralDraft>) => void,
+): void {
+  useEffect(() => {
+    if (draft.type !== 'MAINTENANCE') return;
+    const patch: Partial<DealGeneralDraft> = {};
+    if (draft.paymentType !== 'SUBSCRIPTION') patch.paymentType = 'SUBSCRIPTION';
+    if (draft.subscriptionTermMonths != null) patch.subscriptionTermMonths = null;
+    if (Object.keys(patch).length === 0) return;
+    patchDraft(patch);
+  }, [draft.type, draft.paymentType, draft.subscriptionTermMonths, patchDraft]);
+}
+
 function DealInfoCommercialFields({
   draft,
   patchDraft,
@@ -74,14 +89,18 @@ function DealInfoCommercialFields({
   gateRequiredFields = new Set(),
 }: Omit<DealInfoProjectBillingFieldsProps, 'searchProjects' | 'searchCompanies'>) {
   const t = useTranslations('crm');
+  const isMaintenance = draft.type === 'MAINTENANCE';
   const showSubscriptionTerm = showDealSubscriptionTermFields(draft);
+  useAlignMaintenanceCommercialFields(draft, patchDraft);
 
   return (
     <>
       <InlineField
         variant="controlled"
         label={
-          draft.paymentType === 'SUBSCRIPTION' ? t('dealSheet.amountPerMonth') : t('dealSheet.cost')
+          isMaintenance || draft.paymentType === 'SUBSCRIPTION'
+            ? t('dealSheet.amountPerMonth')
+            : t('dealSheet.cost')
         }
         type="money"
         value={draft.amount ?? ''}
@@ -92,18 +111,20 @@ function DealInfoCommercialFields({
         onValueChange={(v) => patchDraft({ amount: v === '' ? null : Number(v) })}
       />
 
-      <DetailSheetFieldSegmented
-        label={t('dealSheet.paymentType')}
-        hideLabel
-        value={draft.paymentType}
-        options={PAYMENT_TYPES.map((option) => ({
-          value: option.value,
-          label: translatePaymentTypeLabel(t, option.value),
-        }))}
-        disabled={disabled}
-        className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
-        onValueChange={(paymentType) => patchDraft({ paymentType })}
-      />
+      {isMaintenance ? null : (
+        <DetailSheetFieldSegmented
+          label={t('dealSheet.paymentType')}
+          hideLabel
+          value={draft.paymentType}
+          options={PAYMENT_TYPES.map((option) => ({
+            value: option.value,
+            label: translatePaymentTypeLabel(t, option.value),
+          }))}
+          disabled={disabled}
+          className={dealStageGateFieldClass(gateRequiredFields, 'paymentType')}
+          onValueChange={(paymentType) => patchDraft({ paymentType })}
+        />
+      )}
 
       {showSubscriptionTerm ? (
         <DealSubscriptionTermField

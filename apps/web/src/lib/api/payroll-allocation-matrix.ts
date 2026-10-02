@@ -27,6 +27,7 @@ export type DeliveryPayableUnit = {
   totalPlannedBonus: string;
   totalReleasedBonus: string;
   totalPaidBonus: string;
+  paidCashState?: 'CONFIRMED' | 'UNCONFIRMED';
   totalRemainingBonus: string;
   availableFunding: string;
   overFundingAmount: string;
@@ -44,6 +45,17 @@ export type PayrollAllocationMatrixEmployee = {
   payableTotal: string;
 };
 
+export type PayrollAllocationMatrixCellSource = {
+  bonusEntryId: string;
+  plannedAmount: string;
+  originalAmount: string;
+  remainingAmount: string;
+  /** Amount already included on this payroll run. Absent on older payloads. */
+  includedThisMonth?: string;
+  title: string | null;
+  type: string;
+};
+
 export type PayrollAllocationMatrixCell = {
   employeeId: string;
   orderId: string;
@@ -51,6 +63,8 @@ export type PayrollAllocationMatrixCell = {
   linked: boolean;
   bonusTitle: string | null;
   bonusEntryId: string | null;
+  /** Every visible source entry in this employee/order cell. */
+  sourceEntries: PayrollAllocationMatrixCellSource[];
   bonusReleaseId: string | null;
   plannedAmount: string;
   originalAmount: string | null;
@@ -62,7 +76,19 @@ export type PayrollAllocationMatrixCell = {
   releaseThisMonth: string;
   warning: string | null;
   reasonRequired: boolean;
+  bonusType: string | null;
   editable: boolean;
+};
+
+export type PayrollMatrixCellSourceAmount = {
+  bonusEntryId: string;
+  amount: string;
+};
+
+export type PayrollMatrixCellSavePayload = {
+  releaseThisMonth: string;
+  reason?: string;
+  sourceAmounts?: PayrollMatrixCellSourceAmount[];
 };
 
 export type PayrollAllocationMatrix = {
@@ -138,6 +164,7 @@ export const payrollAllocationMatrixApi = {
       orderId: string;
       releaseThisMonth: string;
       reason?: string;
+      sourceAmounts?: PayrollMatrixCellSourceAmount[];
     },
   ): Promise<PayrollAllocationMatrix> {
     const resp = await api.patch<PayrollAllocationMatrix>(

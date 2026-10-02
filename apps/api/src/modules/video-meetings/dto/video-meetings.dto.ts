@@ -1,4 +1,8 @@
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  ArrayUnique,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsISO8601,
@@ -9,6 +13,14 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
+import { VIDEO_MEETING_COLLEAGUE_INVITE_MAX_BATCH } from '../video-meetings.constants';
+
+export class RenameVideoMeetingDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  title!: string;
+}
 
 export class CreateVideoMeetingDto {
   @IsOptional()
@@ -73,7 +85,9 @@ export enum VideoMeetingStatusFilterDto {
   CREATED = 'CREATED',
   WAITING = 'WAITING',
   ACTIVE = 'ACTIVE',
+  /** Legacy alias; filters to the same rooms as IDLE. */
   ENDED = 'ENDED',
+  IDLE = 'IDLE',
   CANCELLED = 'CANCELLED',
 }
 
@@ -94,6 +108,15 @@ export class ListVideoMeetingsQueryDto {
 export class CreateVideoMeetingInviteDto {
   @IsISO8601()
   expiresAt!: string;
+}
+
+export class InviteVideoMeetingColleaguesDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(VIDEO_MEETING_COLLEAGUE_INVITE_MAX_BATCH)
+  @ArrayUnique()
+  @IsUUID('4', { each: true })
+  employeeIds!: string[];
 }
 
 export class VideoMeetingTokenRequestDto {

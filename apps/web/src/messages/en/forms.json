@@ -322,6 +322,22 @@
       "WEB": "Web",
       "APP": "App",
       "DESKTOP": "Desktop"
+    },
+    "registration": {
+      "project": "Project",
+      "company": "Company",
+      "create": "Create",
+      "namePlaceholder": "Product name",
+      "searchProject": "Find project…",
+      "searchCompany": "Find company…",
+      "contact": "Primary contact",
+      "searchContact": "Find or create contact…",
+      "mode": "Creation",
+      "withoutDelivery": "Without development",
+      "withDelivery": "With development",
+      "submit": "Create and select",
+      "createError": "Could not create the product. Check the fields and try again.",
+      "contextError": "Could not load the project. Select it again."
     }
   },
   "errors": {

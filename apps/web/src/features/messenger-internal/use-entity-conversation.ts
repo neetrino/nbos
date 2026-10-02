@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 import { messengerCoreApi, type MessengerCoreConversationRow } from '@/lib/api/messenger-core';
@@ -9,6 +9,7 @@ import {
   invalidateMessengerCollections,
   patchConversationFavorite,
   patchConversationUnread,
+  syncConversationListReceipt,
 } from '@/features/messenger/query/messenger-cache';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import {
@@ -44,12 +45,29 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     loadedRef.current = loadedId;
     revokeRef.current = revocation.revoke;
   });
-  useEntityRealtime(canView, me?.id, threadId, () => {
+  const { onlineIds } = useEntityRealtime(canView, me?.id, threadId, () => {
     const id = loadedRef.current;
     if (id) revokeRef.current(id);
     setNewMessage('');
   });
   useEntityVisibleRead(queryClient, canView, loadedId, conversation.error, messagesQuery, revoked);
+  useEffect(() => {
+    const messages = messagesQuery.data?.items;
+    if (!threadId || !me?.id || !messages?.length || revoked) return;
+    syncConversationListReceipt(queryClient, 'INTERNAL', {
+      conversationId: threadId,
+      viewerId: me.id,
+      messages,
+      peerLastReadAt: messagesQuery.data?.meta.peerLastReadAt ?? null,
+    });
+  }, [
+    me?.id,
+    messagesQuery.data?.items,
+    messagesQuery.data?.meta.peerLastReadAt,
+    queryClient,
+    revoked,
+    threadId,
+  ]);
 
   return buildEntityConversationState({
     canView,
@@ -67,6 +85,7 @@ export function useEntityConversation(kind: EntityConversationKind, entityId: st
     senderName: messengerComposerSenderName(me),
     queryClient,
     revoked,
+    onlineIds,
   });
 }
 
@@ -109,8 +128,8 @@ function useEntityRealtime(
   meId: string | undefined,
   conversationId: string | null,
   clearComposer: () => void,
-): void {
-  useInternalMessengerRealtime({
+): { onlineIds: ReadonlySet<string> } {
+  return useInternalMessengerRealtime({
     canViewMessenger: canView,
     meId,
     zone: 'INTERNAL',
@@ -132,12 +151,14 @@ function buildEntityConversationState(input: {
   senderName: string;
   queryClient: QueryClient;
   revoked: boolean;
+  onlineIds: ReadonlySet<string>;
 }) {
   const row = input.conversation.data ?? null;
   return {
     canView: input.canView,
     conversation: row,
     messages: input.revoked ? [] : (input.messagesQuery.data?.items ?? []),
+    peerLastReadAt: input.messagesQuery.data?.meta.peerLastReadAt ?? null,
     newMessage: input.newMessage,
     setNewMessage: input.setNewMessage,
     loading: Boolean(
@@ -166,6 +187,7 @@ function buildEntityConversationState(input: {
       }),
     toggleFavorite: () =>
       void toggleEntityFavorite(input.queryClient, input.kind, input.entityId, row),
+    onlineIds: input.onlineIds,
   };
 }
 

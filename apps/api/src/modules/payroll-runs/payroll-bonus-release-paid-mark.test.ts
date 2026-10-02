@@ -21,6 +21,17 @@ describe('markPayrollBonusReleasesPaidForSalaryLine', () => {
     expect(prisma.bonusRelease.updateMany).not.toHaveBeenCalled();
   });
 
+  it('does not mark any release when attributed cash names none as fully paid', async () => {
+    await markPayrollBonusReleasesPaidForSalaryLine(prisma as never, {
+      payrollRunId: 'pr1',
+      employeeId: 'e1',
+      releaseIds: [],
+    });
+
+    expect(prisma.bonusRelease.findMany).not.toHaveBeenCalled();
+    expect(prisma.bonusRelease.updateMany).not.toHaveBeenCalled();
+  });
+
   it('marks releases PAID, closes bonus entry, and resyncs pool', async () => {
     prisma.bonusRelease.findMany
       .mockResolvedValueOnce([{ id: 'r1', bonusEntryId: 'be1', amount: new Decimal(100) }])

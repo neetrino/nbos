@@ -1,8 +1,28 @@
 'use client';
 
+import { useEffect, useState, type ReactNode } from 'react';
+import { SHEET_ACTION_MENU_FADE_MS } from './internal-messenger.constants';
+import { useSheetDialogFade } from './use-sheet-dialog-fade';
+import {
+  ClipboardCopy,
+  CornerUpLeft,
+  ExternalLink,
+  Forward,
+  ListTodo,
+  Ticket,
+  Link2,
+  CircleCheck,
+  Pin,
+  PinOff,
+  Trash2,
+} from 'lucide-react';
+import { PORTAL_DROPDOWN_Z_CLASS } from '@/lib/overlay-z-index';
+
+export type MessageActionMenuAnchor = { x: number; y: number; opensUp?: boolean };
+
 export function InternalMessageActionsBar({
-  selectedCount,
-  canReply,
+  anchor,
+  onClose,
   canCreateTask,
   canCreateTicket = false,
   canLinkTicket = false,
@@ -13,10 +33,13 @@ export function InternalMessageActionsBar({
   onLinkTicket,
   onOpenOriginal,
   onCopySource,
-  onClear,
+  onSelect,
+  onPin,
+  onUnpin,
+  onDelete,
 }: {
-  selectedCount: number;
-  canReply: boolean;
+  anchor: MessageActionMenuAnchor | null;
+  onClose: () => void;
   canCreateTask: boolean;
   canCreateTicket?: boolean;
   canLinkTicket?: boolean;
@@ -27,36 +50,151 @@ export function InternalMessageActionsBar({
   onLinkTicket?: () => void;
   onOpenOriginal: () => void;
   onCopySource: () => void;
-  onClear: () => void;
+  onSelect: () => void;
+  onPin?: () => void;
+  onUnpin?: () => void;
+  onDelete?: () => void;
 }) {
-  if (selectedCount === 0) return null;
+  const open = Boolean(anchor);
+  const { mounted, visible } = useSheetDialogFade(open, SHEET_ACTION_MENU_FADE_MS);
+  const point = useHeldMenuAnchor(anchor);
+  useDismissMessageMenu(open, onClose);
+  if (!mounted || !point) return null;
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-black/[0.06] px-3 py-2">
-      <span className="mr-1 text-[11px] text-black/45">{selectedCount} selected</span>
-      {canReply ? <ActionButton label="Reply" onClick={onReply} /> : null}
-      <ActionButton label="Forward" onClick={onForward} />
-      {canCreateTask ? <ActionButton label="Create Task" onClick={onCreateTask} /> : null}
+    <div
+      role="menu"
+      className={menuMotionClass(visible, point.opensUp)}
+      style={{ left: point.x, top: point.y }}
+      onMouseDown={(event) => event.stopPropagation()}
+    >
+      <MenuRow
+        icon={<CornerUpLeft size={14} />}
+        label="Reply"
+        onClick={() => run(onReply, onClose)}
+      />
+      <MenuRow
+        icon={<Forward size={14} />}
+        label="Forward"
+        onClick={() => run(onForward, onClose)}
+      />
+      {canCreateTask ? (
+        <MenuRow
+          icon={<ListTodo size={14} />}
+          label="Create Task"
+          onClick={() => run(onCreateTask, onClose)}
+        />
+      ) : null}
       {canCreateTicket && onCreateTicket ? (
-        <ActionButton label="Create Ticket" onClick={onCreateTicket} />
+        <MenuRow
+          icon={<Ticket size={14} />}
+          label="Create Ticket"
+          onClick={() => run(onCreateTicket, onClose)}
+        />
       ) : null}
       {canLinkTicket && onLinkTicket ? (
-        <ActionButton label="Link Ticket" onClick={onLinkTicket} />
+        <MenuRow
+          icon={<Link2 size={14} />}
+          label="Link Ticket"
+          onClick={() => run(onLinkTicket, onClose)}
+        />
       ) : null}
-      <ActionButton label="Open original" onClick={onOpenOriginal} />
-      <ActionButton label="Copy source" onClick={onCopySource} />
-      <ActionButton label="Clear" onClick={onClear} />
+      <MenuRow
+        icon={<CircleCheck size={14} />}
+        label="Select"
+        onClick={() => run(onSelect, onClose)}
+      />
+      {onUnpin ? (
+        <MenuRow icon={<PinOff size={14} />} label="Unpin" onClick={() => run(onUnpin, onClose)} />
+      ) : onPin ? (
+        <MenuRow icon={<Pin size={14} />} label="Pin" onClick={() => run(onPin, onClose)} />
+      ) : null}
+      <MenuDivider />
+      <MenuRow
+        icon={<ExternalLink size={14} />}
+        label="Open original"
+        onClick={() => run(onOpenOriginal, onClose)}
+      />
+      <MenuRow
+        icon={<ClipboardCopy size={14} />}
+        label="Copy source"
+        onClick={() => run(onCopySource, onClose)}
+      />
+      {onDelete ? (
+        <>
+          <MenuDivider />
+          <MenuRow
+            icon={<Trash2 size={14} />}
+            label="Delete"
+            tone="danger"
+            onClick={() => run(onDelete, onClose)}
+          />
+        </>
+      ) : null}
     </div>
   );
 }
 
-function ActionButton({ label, onClick }: { label: string; onClick: () => void }) {
+function menuMotionClass(visible: boolean, opensUp?: boolean): string {
+  const origin = opensUp ? 'origin-bottom-left' : 'origin-top-left';
+  const motion = visible ? 'scale-100 opacity-100' : 'scale-90 opacity-0';
+  return `${PORTAL_DROPDOWN_Z_CLASS} ${origin} fixed min-w-48 overflow-hidden rounded-xl bg-[#2b2b2b] text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition-[opacity,transform] duration-[280ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${motion}`;
+}
+
+function useHeldMenuAnchor(anchor: MessageActionMenuAnchor | null): MessageActionMenuAnchor | null {
+  const [held, setHeld] = useState(anchor);
+  if (anchor && held !== anchor) setHeld(anchor);
+  return held;
+}
+
+function run(action: () => void, onClose: () => void): void {
+  action();
+  onClose();
+}
+
+function useDismissMessageMenu(open: boolean, onClose: () => void): void {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    const onPointer = () => onClose();
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('mousedown', onPointer);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('mousedown', onPointer);
+    };
+  }, [open, onClose]);
+}
+
+function MenuRow({
+  icon,
+  label,
+  onClick,
+  tone = 'default',
+}: {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  tone?: 'default' | 'danger';
+}) {
+  const danger = tone === 'danger';
   return (
     <button
       type="button"
+      role="menuitem"
+      onMouseDown={(event) => event.stopPropagation()}
       onClick={onClick}
-      className="rounded-md px-2 py-1 text-[11px] font-medium text-black hover:bg-[#E5A84B]/15"
+      className={`flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-[13px] leading-5 hover:bg-white/10 ${
+        danger ? 'text-[#fca5a5] hover:bg-white/10' : ''
+      }`}
     >
+      <span className={danger ? 'text-[#fca5a5]' : 'text-white/70'}>{icon}</span>
       {label}
     </button>
   );
+}
+
+function MenuDivider() {
+  return <div className="h-px bg-white/10" />;
 }

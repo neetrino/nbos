@@ -7,6 +7,7 @@ import { TASK_SHEET_CHAT_COLUMN_CLASS, TASK_SHEET_DETAIL_COLUMN_CLASS } from './
 import {
   TASK_SHEET_CHAT_MIN_PX,
   TASK_SHEET_DETAIL_MIN_PX,
+  TASK_SHEET_SPLIT_BAR_PX,
   TASK_SHEET_SPLIT_HIT_PX,
 } from './task-sheet-split-constants';
 import { useTaskSheetSplit } from './use-task-sheet-split';
@@ -87,13 +88,17 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
             event.preventDefault();
             nudgeDetailRatio(event.key === 'ArrowLeft' ? -0.02 : 0.02);
           }}
-          className={cn(
-            'group relative z-20 shrink-0 cursor-col-resize touch-none',
-            'bg-border/60',
-            isDragging && 'bg-primary/30',
-          )}
+          className="group relative z-20 shrink-0 cursor-col-resize touch-none"
           style={{ width: TASK_SHEET_SPLIT_HIT_PX }}
         >
+          <div
+            aria-hidden
+            className={cn(
+              'bg-border/60 pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 rounded-t-full',
+              isDragging && 'bg-primary/30',
+            )}
+            style={{ width: TASK_SHEET_SPLIT_BAR_PX }}
+          />
           <div
             className={cn(
               'pointer-events-none absolute top-1/2 left-1/2 flex h-10 w-1.5 -translate-x-1/2 -translate-y-1/2',
@@ -110,7 +115,7 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
         className={cn(
           TASK_SHEET_CHAT_COLUMN_CLASS,
           'bg-background min-h-0 min-w-0',
-          isSplitRow && 'relative z-10 shrink-0',
+          isSplitRow && 'relative z-10 shrink-0 border-t-0',
         )}
         style={chatColumnStyle(isSplitRow)}
       >

@@ -121,13 +121,9 @@
     "title": "Stage readiness",
     "empty": "No stage requirement rows for this state.",
     "deadlineSet": "Deadline set",
-    "noOpenWorkSpaceTasks": "No open Work Space tasks",
     "noOpenExtensions": "No open extensions",
-    "noOpenTasks": "No open tasks",
     "noOpenTickets": "No open tickets",
     "clientAcceptance": "Client acceptance recorded",
-    "orderClosed": "Order financially closed",
-    "noUnpaidInvoices": "No unpaid invoices",
     "scopeFilled": "Scope & notes filled",
     "ownerAssigned": "Owner assigned",
     "stageChecklist": "Stage checklist",
@@ -215,7 +211,8 @@
     "cancelledPrefix": "Cancelled:"
   },
   "hub": {
-    "maintenance": "Maintenance"
+    "maintenance": "Maintenance",
+    "registered": "Without development"
   },
   "acceptance": {
     "title": "Client acceptance",

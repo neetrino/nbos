@@ -1,0 +1,122 @@
+'use client';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import type { MessengerCoreConversationRow } from '@/lib/api/messenger-core';
+import { AddToCollectionSelect } from './AddToCollectionSelect';
+import { FavoriteStar, ThreadAvatar } from './InternalThreadChrome';
+import { conversationTypeBadge } from './internal-messenger-section';
+
+const HEADER_ICON_BUTTON_CLASS = 'flex items-center justify-center rounded-lg p-1.5';
+
+export function SheetThreadHeader({
+  conversation,
+  title,
+  collections,
+  onToggleFavorite,
+  onAddToCollection,
+}: {
+  conversation: MessengerCoreConversationRow;
+  title: string;
+  collections: Array<{ id: string; name: string }>;
+  onToggleFavorite: () => void;
+  onAddToCollection: (collectionId: string) => void;
+}) {
+  return (
+    <header className="border-border bg-card flex h-12 items-center justify-between border-b px-4">
+      <HeaderIdentity
+        conversation={conversation}
+        title={title}
+        onToggleFavorite={onToggleFavorite}
+      />
+      <SheetHeaderActions collections={collections} onAdd={onAddToCollection} />
+    </header>
+  );
+}
+
+function HeaderIdentity({
+  conversation,
+  title,
+  onToggleFavorite,
+}: {
+  conversation: MessengerCoreConversationRow;
+  title: string;
+  onToggleFavorite: () => void;
+}) {
+  const direct = conversation.type === 'DIRECT';
+  return (
+    <div className="group flex min-w-0 items-center gap-2">
+      <ThreadAvatar title={title} direct={direct} employeeId={conversation.peerEmployeeId} />
+      <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <h2 className="text-foreground truncate text-sm leading-5 font-medium">{title}</h2>
+          <span className="shrink-0 rounded-full border border-[#c7d2fe] bg-[#eef2ff] px-1.5 py-px text-[10px] leading-[15px] text-[#4338ca]">
+            {headerPill(conversation)}
+          </span>
+          <FavoriteStar favorite={Boolean(conversation.isFavorite)} onToggle={onToggleFavorite} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function headerPill(conversation: MessengerCoreConversationRow): string {
+  const position = conversation.peerPosition?.trim();
+  if (conversation.type === 'DIRECT' && position) return position;
+  return conversationTypeBadge(conversation.type);
+}
+
+function SheetHeaderActions({
+  collections,
+  onAdd,
+}: {
+  collections: Array<{ id: string; name: string }>;
+  onAdd: (collectionId: string) => void;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-1.5">
+      <div className="flex items-center">
+        <HeaderIconButton label="Search" src="/messenger/sheet-header-search.svg" />
+        <HeaderIconButton label="Video" src="/messenger/sheet-header-video.svg" />
+      </div>
+      <HeaderMore collections={collections} onAdd={onAdd} />
+    </div>
+  );
+}
+
+function HeaderIconButton({ label, src }: { label: string; src: string }) {
+  return (
+    <button type="button" aria-label={label} className={HEADER_ICON_BUTTON_CLASS}>
+      <img src={src} alt="" className="dark:brightness-0 dark:invert" />
+    </button>
+  );
+}
+
+function HeaderMore({
+  collections,
+  onAdd,
+}: {
+  collections: Array<{ id: string; name: string }>;
+  onAdd: (collectionId: string) => void;
+}) {
+  if (collections.length === 0) {
+    return <HeaderIconButton label="More" src="/messenger/sheet-header-more.svg" />;
+  }
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger aria-label="More" className={HEADER_ICON_BUTTON_CLASS}>
+        <img
+          src="/messenger/sheet-header-more.svg"
+          alt=""
+          className="dark:brightness-0 dark:invert"
+        />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48 p-2">
+        <AddToCollectionSelect collections={collections} onAdd={onAdd} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

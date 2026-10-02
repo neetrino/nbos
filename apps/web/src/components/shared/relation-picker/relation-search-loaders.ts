@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { contactsApi, companiesApi } from '@/lib/api/clients';
+import { dealsApi } from '@/lib/api/deals';
 import { ordersApi } from '@/lib/api/finance';
 import { partnersApi } from '@/lib/api/partners';
 import { projectsApi } from '@/lib/api/projects';
@@ -65,7 +66,7 @@ export function useProjectRelationSearch(pageSize = DEFAULT_PAGE_SIZE): Relation
   );
 }
 
-/** Cached ACTIVE directory, then local filter + rank. */
+/** Cached non-terminated directory, then local filter + rank. */
 export function useEmployeeRelationSearch(
   excludeIds?: ReadonlySet<string>,
 ): RelationPickerSearchFn {
@@ -171,6 +172,24 @@ export function useCredentialRelationSearch(
       }));
     },
     [productId, pageSize],
+  );
+}
+
+/** Search CRM deals for {@link RelationPickerField}. */
+export function useDealRelationSearch(pageSize = DEFAULT_PAGE_SIZE): RelationPickerSearchFn {
+  return useCallback(
+    async (query: string) => {
+      const res = await dealsApi.getAll({
+        pageSize,
+        search: query.trim() || undefined,
+      });
+      return res.items.map((deal) => ({
+        value: deal.id,
+        label: deal.name?.trim() || deal.code,
+        subtitle: deal.code,
+      }));
+    },
+    [pageSize],
   );
 }
 

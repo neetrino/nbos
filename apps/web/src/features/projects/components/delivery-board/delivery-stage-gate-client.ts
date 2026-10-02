@@ -52,7 +52,6 @@ function toProductGateInput(
     clientAcceptedAt: product.clientAcceptedAt ?? null,
     order: product.order ?? null,
     extensions: openItemsFromCount(product._count.extensions),
-    tasks: openItemsFromCount(product._count.tasks),
     tickets: openItemsFromCount(product._count.tickets),
   };
 }
@@ -66,7 +65,6 @@ function toExtensionGateInput(
     description: extension.description ?? null,
     assignedTo: extension.assignedTo ?? null,
     order: extension.order ?? null,
-    tasks: openItemsFromCount(extension._count.tasks),
   };
 }
 

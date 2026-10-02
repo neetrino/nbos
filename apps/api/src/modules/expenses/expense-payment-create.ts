@@ -1,9 +1,24 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Decimal, PrismaClient } from '@nbos/database';
+import { refreshConfirmedPoolPaidForExpense } from '../bonus/product-bonus-pool-paid-cash';
 import { notifySalaryExpensePayment } from '../employees/employee-wallet-notify.ops';
+import { bufferWalletNotifications } from '../employees/wallet-notify-buffer';
 import type { WalletInAppNotifySink } from '../employees/employee-wallet-notify.types';
 import { syncPartnerPayoutPaidFromExpense } from '../partners/partner-payout-batch.ops';
+import {
+  loadPayrollCashReleasesForExpense,
+  preparePayrollCashPayment,
+} from '../payroll-runs/payroll-salary-first-cash-apply';
+import { findPayrollCashPaymentByIdempotencyKey } from '../payroll-runs/payroll-salary-first-cash-notes';
+import { lockPayrollCashHistoryForUpdate } from '../payroll-runs/payroll-salary-first-cash-reverse-apply';
+import { PAYROLL_CASH_TRANSACTION_TIMEOUT_MS } from '../payroll-runs/payroll-salary-first-cash-reverse';
+import type { PayrollCashBonusAssignmentInput } from '../payroll-runs/payroll-salary-first-cash';
 import { syncSalaryLinePaidFromExpenseLedger } from '../payroll-runs/payroll-salary-line-ledger-sync';
+import { hasEncodedPayrollCash } from '../payroll-runs/payroll-salary-first-cash-notes';
+import {
+  hasPayrollCashRefundNotes,
+  payrollCashLedgerPaidAmount,
+} from '../payroll-runs/payroll-salary-first-cash-reverse-paid';
 import { sumExpensePaymentAmounts } from './expense-payment-rollup';
 import { syncExpenseStatusWithPaymentLedger } from './expense-status-ledger-sync';
 import { assertPostingPeriodOpenForBookedAt } from '../finance/journal/posting-period-guard';
@@ -13,6 +28,10 @@ export interface AddExpensePaymentInput {
   amount: number;
   paymentDate: string;
   notes?: string;
+  bonusAssignments?: PayrollCashBonusAssignmentInput[];
+  carryAmount?: string;
+  idempotencyKey?: string;
+  assignRemainingBonusCash?: boolean;
 }
 
 const PAYMENT_ERRORS = {
@@ -30,59 +49,232 @@ export async function createExpensePaymentRecord(
     journal?: OperationalJournalService;
   },
 ): Promise<string> {
-  const expense = await prisma.expense.findUnique({
-    where: { id: expenseId },
-    include: { expensePayments: true },
-  });
-  if (!expense) throw new NotFoundException(`Expense ${expenseId} not found`);
+  const paymentDate = parsePaymentDate(input);
+  const newPayment = parsePaymentAmount(input.amount);
+  await assertPostingPeriodOpenForBookedAt(prisma, paymentDate);
+  const written = await writeExpensePayment(
+    prisma,
+    expenseId,
+    input,
+    newPayment,
+    paymentDate,
+    opts,
+  );
+  if (written.replayed) {
+    return written.paymentId;
+  }
+  await refreshConfirmedPoolPaidForExpense(prisma, expenseId);
+  await syncPartnerPayoutPaidFromExpense(prisma, expenseId);
+  await notifyPayrollExpensePayment(prisma, expenseId, written.paymentId, newPayment, opts?.notify);
+  return written.paymentId;
+}
 
-  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+function parsePaymentAmount(amount: number): Decimal {
+  if (!Number.isFinite(amount) || amount <= 0) {
     throw new BadRequestException(PAYMENT_ERRORS.amountPositive);
   }
+  return new Decimal(amount);
+}
 
-  const paid = sumExpensePaymentAmounts(expense.expensePayments);
-  const remaining = expense.amount.minus(paid);
-  const newPayment = new Decimal(input.amount);
-
-  if (newPayment.gt(remaining)) {
-    throw new BadRequestException(PAYMENT_ERRORS.exceedsRemaining);
-  }
-
+function parsePaymentDate(input: AddExpensePaymentInput): Date {
   const when = new Date(input.paymentDate);
   if (Number.isNaN(when.getTime())) {
     throw new BadRequestException(PAYMENT_ERRORS.dateInvalid);
   }
+  return when;
+}
 
-  await assertPostingPeriodOpenForBookedAt(prisma, when);
+type ExpensePaymentWriteDb = Pick<
+  InstanceType<typeof PrismaClient>,
+  'expense' | 'expensePayment' | 'salaryLine' | 'bonusRelease' | '$queryRaw'
+>;
 
-  const payment = await prisma.expensePayment.create({
+type WrittenExpensePayment = {
+  paymentId: string;
+  expenseName: string;
+  projectId: string | null;
+  productId: string | null;
+  replayed: boolean;
+};
+
+async function writeExpensePayment(
+  prisma: InstanceType<typeof PrismaClient>,
+  expenseId: string,
+  input: AddExpensePaymentInput,
+  newPayment: Decimal,
+  paymentDate: Date,
+  opts?: {
+    notify?: WalletInAppNotifySink;
+    journal?: OperationalJournalService;
+  },
+): Promise<WrittenExpensePayment> {
+  const buffered = bufferWalletNotifications();
+  const written = await prisma.$transaction(
+    async (tx) => {
+      const committed = await commitLockedExpensePayment(
+        tx,
+        expenseId,
+        input,
+        newPayment,
+        paymentDate,
+      );
+      if (committed.replayed) {
+        return committed;
+      }
+      const db = tx as InstanceType<typeof PrismaClient>;
+      await syncExpenseStatusWithPaymentLedger(db, expenseId);
+      await syncSalaryLinePaidFromExpenseLedger(
+        db,
+        expenseId,
+        opts?.notify == null ? undefined : buffered.sink,
+      );
+      await appendExpensePaymentJournal(committed, newPayment, paymentDate, opts?.journal, tx);
+      return committed;
+    },
+    { timeout: PAYROLL_CASH_TRANSACTION_TIMEOUT_MS },
+  );
+  await buffered.flush(opts?.notify);
+  return written;
+}
+
+async function commitLockedExpensePayment(
+  tx: ExpensePaymentWriteDb,
+  expenseId: string,
+  input: AddExpensePaymentInput,
+  newPayment: Decimal,
+  paymentDate: Date,
+): Promise<WrittenExpensePayment> {
+  await tx.$queryRaw`SELECT id FROM expenses WHERE id = ${expenseId} FOR UPDATE`;
+  const expense = await tx.expense.findUnique({
+    where: { id: expenseId },
+    include: { expensePayments: true },
+  });
+  if (!expense) {
+    throw new NotFoundException(`Expense ${expenseId} not found`);
+  }
+  const replay = findPayrollCashPaymentByIdempotencyKey(
+    expense.expensePayments,
+    input.idempotencyKey,
+  );
+  if (replay?.id != null) {
+    return writtenPayment(replay.id, expense, true);
+  }
+  await lockPayrollCashHistoryForUpdate(tx, expenseId);
+  const paid = sumExpensePaymentAmounts(expense.expensePayments);
+  const remaining = expense.amount.minus(paid);
+  const notes = await notesForExpensePayment(
+    tx,
+    expenseId,
+    input,
+    newPayment,
+    paid,
+    remaining,
+    expense.expensePayments,
+  );
+  if (notes.existingPaymentId != null) {
+    return writtenPayment(notes.existingPaymentId, expense, true);
+  }
+  const payment = await tx.expensePayment.create({
     data: {
       expenseId,
       amount: input.amount,
-      paymentDate: when,
-      notes: input.notes?.trim() ? input.notes.trim() : null,
+      paymentDate,
+      notes: notes.notes,
     },
   });
+  return writtenPayment(payment.id, expense, false);
+}
 
-  await syncExpenseStatusWithPaymentLedger(prisma, expenseId);
-  await syncSalaryLinePaidFromExpenseLedger(prisma, expenseId, opts?.notify);
-  await syncPartnerPayoutPaidFromExpense(prisma, expenseId);
+function writtenPayment(
+  paymentId: string,
+  expense: { name: string; projectId: string | null; productId: string | null },
+  replayed: boolean,
+): WrittenExpensePayment {
+  return {
+    paymentId,
+    expenseName: expense.name,
+    projectId: expense.projectId,
+    productId: expense.productId,
+    replayed,
+  };
+}
 
-  if (opts?.journal) {
-    await opts.journal.appendExpensePaymentLine({
-      expensePaymentId: payment.id,
-      expenseName: expense.name,
-      amount: input.amount,
-      bookedAt: when,
-      projectId: expense.projectId,
-      productId: expense.productId,
-    });
+async function notesForExpensePayment(
+  prisma: Pick<InstanceType<typeof PrismaClient>, 'salaryLine' | 'bonusRelease'>,
+  expenseId: string,
+  input: AddExpensePaymentInput,
+  newPayment: Decimal,
+  alreadyPaid: Decimal,
+  remaining: Decimal,
+  existingPayments: { id: string; amount: Decimal; notes: string | null }[],
+): Promise<{ notes: string | null; existingPaymentId: string | null }> {
+  const payroll = await loadPayrollCashReleasesForExpense(prisma, expenseId);
+  if (payroll.salaryLine == null) {
+    if (newPayment.gt(remaining)) {
+      throw new BadRequestException(PAYMENT_ERRORS.exceedsRemaining);
+    }
+    return { notes: input.notes?.trim() ? input.notes.trim() : null, existingPaymentId: null };
   }
-
-  if (!opts?.notify) {
-    return payment.id;
+  const prepared = preparePayrollCashPayment({
+    cash: newPayment,
+    alreadyPaidCash: payrollAlreadyPaidCash(existingPayments, alreadyPaid),
+    baseSalary: payroll.salaryLine.baseSalary,
+    carryAppliedAmount: payroll.salaryLine.payrollCarryAppliedAmount,
+    releases: payroll.releases,
+    existingPayments,
+    assignments: input.bonusAssignments,
+    carryAmount: input.carryAmount,
+    assignRemainingBonusCash: input.assignRemainingBonusCash,
+    userNotes: input.notes,
+    idempotencyKey: input.idempotencyKey,
+  });
+  if (prepared.existingPayment?.id != null) {
+    return { notes: prepared.notes, existingPaymentId: prepared.existingPayment.id };
   }
+  if (newPayment.gt(remaining)) {
+    throw new BadRequestException(PAYMENT_ERRORS.exceedsRemaining);
+  }
+  return { notes: prepared.notes, existingPaymentId: null };
+}
 
+async function appendExpensePaymentJournal(
+  written: {
+    paymentId: string;
+    expenseName: string;
+    projectId: string | null;
+    productId: string | null;
+  },
+  amount: Decimal,
+  bookedAt: Date,
+  journal: OperationalJournalService | undefined,
+  db: Pick<PrismaClient, 'operationalJournalEntry' | 'financePostingPeriod'>,
+): Promise<void> {
+  if (journal == null) {
+    return;
+  }
+  await journal.appendExpensePaymentLine(
+    {
+      expensePaymentId: written.paymentId,
+      expenseName: written.expenseName,
+      amount: amount.toNumber(),
+      bookedAt,
+      projectId: written.projectId,
+      productId: written.productId,
+    },
+    db,
+  );
+}
+
+async function notifyPayrollExpensePayment(
+  prisma: InstanceType<typeof PrismaClient>,
+  expenseId: string,
+  paymentId: string,
+  amount: Decimal,
+  notify?: WalletInAppNotifySink,
+): Promise<void> {
+  if (!notify) {
+    return;
+  }
   const salaryCtx = await prisma.expense.findUnique({
     where: { id: expenseId },
     select: {
@@ -97,17 +289,24 @@ export async function createExpensePaymentRecord(
   });
   const sl = salaryCtx?.salaryLine;
   if (!sl?.payrollRun) {
-    return payment.id;
+    return;
   }
-
-  await notifySalaryExpensePayment(opts.notify, {
+  await notifySalaryExpensePayment(notify, {
     employeeId: sl.employeeId,
-    paymentId: payment.id,
+    paymentId,
     payrollMonth: sl.payrollRun.payrollMonth,
-    amountLabel: payment.amount.toFixed(2),
+    amountLabel: amount.toFixed(2),
     expenseId,
     lineStatus: sl.status,
   });
+}
 
-  return payment.id;
+export function payrollAlreadyPaidCash(
+  existingPayments: { id: string; amount: Decimal; notes: string | null }[],
+  alreadyPaid: Decimal,
+): Decimal {
+  if (hasEncodedPayrollCash(existingPayments) || hasPayrollCashRefundNotes(existingPayments)) {
+    return payrollCashLedgerPaidAmount(existingPayments);
+  }
+  return alreadyPaid;
 }

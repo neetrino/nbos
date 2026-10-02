@@ -54,6 +54,7 @@ export async function settleExpenseMarkPaidIfOutstanding(
       amount: outstanding.toNumber(),
       paymentDate: markPaidExpensePaymentDateIso(opts?.now ?? new Date()),
       notes: MARK_PAID_AUTO_EXPENSE_PAYMENT_NOTE,
+      assignRemainingBonusCash: true,
     },
     { notify: opts?.notify, journal: opts?.journal },
   );

@@ -35,6 +35,7 @@ import {
   type PayrollRunStatus,
 } from '@/lib/api/payroll-runs';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
+import { PermissionGate } from '@/lib/permissions';
 import { PayrollRunsBoardView } from '@/features/finance/components/payroll/PayrollRunsBoardView';
 import { PayrollRunsCalendarView } from '@/features/finance/components/payroll/PayrollRunsCalendarView';
 import { PayrollRunsCreateRunDialog } from '@/features/finance/components/payroll/PayrollRunsCreateRunDialog';
@@ -299,10 +300,12 @@ export function PayrollRunsListPageContent() {
             onExportScopeStatsCsv={handleExportScopeStatsCsv}
             onExportCsv={handleExportCsv}
           />
-          <Button type="button" onClick={openDialog}>
-            <Plus size={16} className="mr-1.5" aria-hidden />
-            {t('list.newRun')}
-          </Button>
+          <PermissionGate module="FINANCE_SALARY" action="ADD">
+            <Button type="button" onClick={openDialog}>
+              <Plus size={16} className="mr-1.5" aria-hidden />
+              {t('list.newRun')}
+            </Button>
+          </PermissionGate>
         </>
       ),
     }),
@@ -352,9 +355,11 @@ export function PayrollRunsListPageContent() {
                   })
             }
             action={
-              <Button type="button" onClick={openDialog}>
-                {t('list.newRun')}
-              </Button>
+              <PermissionGate module="FINANCE_SALARY" action="ADD">
+                <Button type="button" onClick={openDialog}>
+                  {t('list.newRun')}
+                </Button>
+              </PermissionGate>
             }
           />
         }

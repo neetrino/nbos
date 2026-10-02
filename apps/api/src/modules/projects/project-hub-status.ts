@@ -23,10 +23,12 @@ export function classifyProjectHubStatus(input: {
   productCount: number;
   extensionCount: number;
   hasOpenDelivery: boolean;
+  hasRegisteredProduct?: boolean;
   hasLiveMaintenance: boolean;
 }): ProjectHubStatus {
   if (input.trashedAt != null) return 'trash';
   if (input.productCount === 0 && input.extensionCount === 0) return 'incoming';
-  if (input.hasOpenDelivery || input.hasLiveMaintenance) return 'active';
+  if (input.hasOpenDelivery || input.hasLiveMaintenance || input.hasRegisteredProduct)
+    return 'active';
   return 'closed';
 }

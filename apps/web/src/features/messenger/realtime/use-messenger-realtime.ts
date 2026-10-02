@@ -1,7 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useSyncExternalStore } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import type { MessengerZone } from '@/features/messenger/query/messenger-query-keys';
+import { applyPresenceIds } from './messenger-legacy-parse';
 import type { MessengerConnectionState } from './messenger-realtime-hub';
 import { useMessengerRealtimeHub } from './MessengerRealtimeProvider';
 
@@ -46,7 +55,22 @@ export function useMessengerConnectionState(): MessengerConnectionState {
   return useSyncExternalStore(hub.subscribeState, hub.getState, hub.getState);
 }
 
-/** Ephemeral Core typing. Not wired into composer UX. */
+/** Online employees from the shared socket presence snapshot. */
+export function useMessengerPresenceIds(): ReadonlySet<string> {
+  const hub = useMessengerRealtimeHub();
+  const [ids, setIds] = useState<readonly string[]>([]);
+  useEffect(() => {
+    return hub.addLegacyListener({
+      onPresenceSnapshot: (employeeIds) => setIds(employeeIds),
+      onPresenceDelta: (employeeId, state) => {
+        setIds((current) => applyPresenceIds(current, employeeId, state));
+      },
+    });
+  }, [hub]);
+  return useMemo(() => new Set(ids), [ids]);
+}
+
+/** Ephemeral Core typing emit. The composer throttles repeats. */
 export function useMessengerConversationTyping(): (conversationId: string) => void {
   const hub = useMessengerRealtimeHub();
   return useCallback((conversationId: string) => hub.emitConversationTyping(conversationId), [hub]);

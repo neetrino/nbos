@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { VideoMeetingStatus } from '@nbos/database';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { createMockPrisma } from '../../test-utils/mock-prisma';
-import { VideoMeetingsConsentService } from './video-meetings-consent.service';
 import { VideoMeetingsRecordingFinalizeService } from './video-meetings-recording-finalize.service';
 import { VideoMeetingsRecordingLifecycleService } from './video-meetings-recording-lifecycle.service';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
@@ -79,28 +78,26 @@ describe('recording capacity (S07)', () => {
       }),
       headObject: vi.fn(),
     };
-    const consent = {
-      listLatestByParticipantIds: vi
-        .fn()
-        .mockResolvedValue(new Map([['p1', { decision: 'GRANTED' }]])),
-      isGranted: vi.fn().mockReturnValue(true),
-    };
     const finalize = { finalizeAsset: vi.fn(), refreshGroupStatus: vi.fn() };
     const lifecycle = new VideoMeetingsRecordingLifecycleService(
       prisma as never,
-      consent as unknown as VideoMeetingsConsentService,
       finalize as unknown as VideoMeetingsRecordingFinalizeService,
       egress,
     );
     const service = new VideoMeetingsRecordingService(
       prisma as never,
-      consent as unknown as VideoMeetingsConsentService,
       lifecycle,
       { get: () => '1' } as never,
       egress,
       objectStore,
     );
 
+    prisma.videoMeetingParticipant.findFirst = vi.fn().mockResolvedValue({
+      id: 'p-host',
+      employeeId: HOST.id,
+      kind: 'EMPLOYEE',
+      leftAt: null,
+    });
     prisma.videoMeeting.findUnique = vi.fn().mockResolvedValue({
       id: MEETING_ID,
       status: VideoMeetingStatus.ACTIVE,

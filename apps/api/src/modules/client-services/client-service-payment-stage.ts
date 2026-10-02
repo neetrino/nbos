@@ -69,7 +69,8 @@ export function computeClientServicePaymentStage(
   now: Date = new Date(),
 ): ClientServiceStageResult {
   const { renewalDate, billingModel } = input;
-  const isWePay = billingModel === 'WE_PAY';
+  const billsClient = billingModel === 'CLIENT_CHARGE';
+  const paysProvider = billsClient || billingModel === 'WE_PAY';
   const hasActiveExpense = input.expenseStatuses.some((status) => !isInactiveExpenseStatus(status));
   const hasActiveInvoice = input.invoiceMoneyStatuses.some(
     (status) => !isInactiveInvoiceStatus(status),
@@ -81,7 +82,8 @@ export function computeClientServicePaymentStage(
   const stage = resolveStage({
     hasActiveExpense,
     hasActiveInvoice,
-    isWePay,
+    billsClient,
+    paysProvider,
     renewalDate,
     invoiceWindowEnd,
     upcomingWindowEnd,
@@ -101,20 +103,21 @@ export function computeClientServicePaymentStage(
 interface ResolveStageInput {
   hasActiveExpense: boolean;
   hasActiveInvoice: boolean;
-  isWePay: boolean;
+  billsClient: boolean;
+  paysProvider: boolean;
   renewalDate: Date | null;
   invoiceWindowEnd: Date;
   upcomingWindowEnd: Date;
 }
 
 function resolveStage(input: ResolveStageInput): ClientServicePaymentStage {
-  if (input.isWePay && input.hasActiveExpense) return 'pay_now';
-  if (input.isWePay && input.hasActiveInvoice) return 'invoice';
+  if (input.paysProvider && input.hasActiveExpense) return 'pay_now';
+  if (input.billsClient && input.hasActiveInvoice) return 'invoice';
 
   const due = input.renewalDate?.getTime();
   if (due === undefined) return 'active';
   if (due <= input.invoiceWindowEnd.getTime()) {
-    return input.isWePay ? 'invoice' : 'upcoming';
+    return input.billsClient ? 'invoice' : 'upcoming';
   }
   if (due <= input.upcomingWindowEnd.getTime()) return 'upcoming';
   return 'active';
@@ -125,72 +128,107 @@ function resolveStage(input: ResolveStageInput): ClientServicePaymentStage {
  * database level. The four stage predicates partition the record set and mirror
  * {@link computeClientServicePaymentStage}.
  */
+const PROVIDER_PAID_MODELS = ['CLIENT_CHARGE', 'WE_PAY'] as const;
+const NO_INVOICE_MODELS = ['REMINDER_ONLY', 'WE_PAY'] as const;
+
 export function buildClientServiceStageWhere(
   stage: ClientServicePaymentStage,
   now: Date = new Date(),
 ): Prisma.ClientServiceRecordWhereInput {
   const invoiceWindowEnd = addDays(now, INVOICE_WINDOW_DAYS);
   const upcomingWindowEnd = addDays(now, UPCOMING_WINDOW_DAYS);
-
-  const activeExpense: Prisma.ClientServiceRecordWhereInput = {
-    expenses: { some: { status: { notIn: INACTIVE_EXPENSE_STATUSES } } },
-  };
-  const noActiveExpense: Prisma.ClientServiceRecordWhereInput = {
-    expenses: { none: { status: { notIn: INACTIVE_EXPENSE_STATUSES } } },
-  };
-  const activeInvoice: Prisma.ClientServiceRecordWhereInput = {
-    invoices: { some: { moneyStatus: { notIn: INACTIVE_INVOICE_STATUSES } } },
-  };
-  const noActiveInvoice: Prisma.ClientServiceRecordWhereInput = {
-    invoices: { none: { moneyStatus: { notIn: INACTIVE_INVOICE_STATUSES } } },
-  };
-
   switch (stage) {
     case 'pay_now':
-      return {
-        AND: [{ billingModel: 'WE_PAY' }, activeExpense],
-      };
+      return payNowWhere();
     case 'invoice':
-      return {
-        AND: [
-          noActiveExpense,
-          { billingModel: 'WE_PAY' },
-          {
-            OR: [
-              activeInvoice,
-              { AND: [noActiveInvoice, { renewalDate: { lte: invoiceWindowEnd } }] },
-            ],
-          },
-        ],
-      };
+      return invoiceStageWhere(invoiceWindowEnd);
     case 'upcoming':
-      return {
-        AND: [
-          noActiveExpense,
-          noActiveInvoice,
-          {
-            OR: [
-              { renewalDate: { gt: invoiceWindowEnd, lte: upcomingWindowEnd } },
-              {
-                AND: [
-                  { billingModel: 'REMINDER_ONLY' },
-                  { renewalDate: { lte: invoiceWindowEnd } },
-                ],
-              },
-            ],
-          },
-        ],
-      };
+      return upcomingStageWhere(invoiceWindowEnd, upcomingWindowEnd);
     case 'active':
     default:
-      return {
-        AND: [
-          noActiveExpense,
-          noActiveInvoice,
-          { OR: [{ renewalDate: null }, { renewalDate: { gt: upcomingWindowEnd } }] },
-        ],
-      };
+      return activeStageWhere(upcomingWindowEnd);
   }
+}
+
+function payNowWhere(): Prisma.ClientServiceRecordWhereInput {
+  return {
+    AND: [{ billingModel: { in: [...PROVIDER_PAID_MODELS] } }, activeExpenseWhere()],
+  };
+}
+
+function invoiceStageWhere(invoiceWindowEnd: Date): Prisma.ClientServiceRecordWhereInput {
+  return {
+    AND: [
+      noActiveExpenseWhere(),
+      { billingModel: 'CLIENT_CHARGE' },
+      {
+        OR: [
+          activeInvoiceWhere(),
+          { AND: [noActiveInvoiceWhere(), { renewalDate: { lte: invoiceWindowEnd } }] },
+        ],
+      },
+    ],
+  };
+}
+
+function upcomingStageWhere(
+  invoiceWindowEnd: Date,
+  upcomingWindowEnd: Date,
+): Prisma.ClientServiceRecordWhereInput {
+  return {
+    AND: [
+      noActiveExpenseWhere(),
+      {
+        OR: [
+          {
+            AND: [
+              noActiveInvoiceWhere(),
+              { renewalDate: { gt: invoiceWindowEnd, lte: upcomingWindowEnd } },
+            ],
+          },
+          {
+            AND: [
+              { billingModel: { in: [...NO_INVOICE_MODELS] } },
+              { renewalDate: { lte: upcomingWindowEnd } },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function activeStageWhere(upcomingWindowEnd: Date): Prisma.ClientServiceRecordWhereInput {
+  const farRenewal: Prisma.ClientServiceRecordWhereInput = {
+    OR: [{ renewalDate: null }, { renewalDate: { gt: upcomingWindowEnd } }],
+  };
+  return {
+    AND: [
+      noActiveExpenseWhere(),
+      {
+        OR: [
+          { AND: [noActiveInvoiceWhere(), farRenewal] },
+          { AND: [{ billingModel: { in: [...NO_INVOICE_MODELS] } }, farRenewal] },
+        ],
+      },
+    ],
+  };
+}
+
+function activeExpenseWhere(): Prisma.ClientServiceRecordWhereInput {
+  return { expenses: { some: { status: { notIn: INACTIVE_EXPENSE_STATUSES } } } };
+}
+
+function noActiveExpenseWhere(): Prisma.ClientServiceRecordWhereInput {
+  return { expenses: { none: { status: { notIn: INACTIVE_EXPENSE_STATUSES } } } };
+}
+
+function activeInvoiceWhere(): Prisma.ClientServiceRecordWhereInput {
+  return { invoices: { some: { moneyStatus: { notIn: INACTIVE_INVOICE_STATUSES } } } };
+}
+
+function noActiveInvoiceWhere(): Prisma.ClientServiceRecordWhereInput {
+  return { invoices: { none: { moneyStatus: { notIn: INACTIVE_INVOICE_STATUSES } } } };
 }
 
 /** Prisma `where` predicate for the overdue overlay flag. */

@@ -16,6 +16,7 @@ import type {
   ProductPlanSnapshot,
 } from './delivery-item-detail-planning-state';
 import { deliveryStageGateSectionClass } from './delivery-stage-gate-highlight';
+import { DeliveryClientAcceptanceAction } from './DeliveryClientAcceptanceAction';
 import { DeliveryItemStageReadinessSection } from './DeliveryItemStageReadinessSection';
 import { DeliveryStageChecklistPanel } from './DeliveryStageChecklistPanel';
 import { DeliveryItemTeamSection } from './DeliveryItemTeamSection';
@@ -170,9 +171,15 @@ export function DeliveryItemDetailGeneralTab({
             extension={extension}
             lifecycle={lifecycle}
             checklistProgress={checklistProgress}
-            gateRequiredFields={gateRequiredFields}
             stageGateActionBlockers={stageGateActionBlockers}
           />
+          {product && lifecycle?.stage === 'TRANSFER' ? (
+            <DeliveryClientAcceptanceAction
+              product={product}
+              highlightRequired={gateRequiredFields.has('clientAcceptance')}
+              onRecorded={onRefreshDetail}
+            />
+          ) : null}
           <DeliveryItemCompositionSection
             target={
               kind === 'PRODUCT'

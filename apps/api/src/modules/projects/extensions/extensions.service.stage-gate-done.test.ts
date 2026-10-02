@@ -1,12 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BadRequestException } from '@nestjs/common';
-import { EXTENSION_STAGE_GATE_ERROR_CODE } from './extension-stage-gates';
 import { DEPRECATED_PATCH_STATUS_TERMINAL_AUDIT_ACTION } from '../delivery-status-deprecation';
 import {
   createExtensionsServiceHarness,
   clearExtensionsServiceHarness,
   type ExtensionsServiceHarness,
-  readExceptionResponse,
   stubExtensionReadyForDone,
 } from './extensions.service.test-harness';
 
@@ -36,23 +33,25 @@ describe('ExtensionsService', () => {
   });
 
   describe('updateStatus — stage gate', () => {
-    it('blocks TRANSFER → DONE when extension tasks are still open', async () => {
+    it('allows TRANSFER → DONE when extension tasks are still open', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         tasks: [{ status: 'IN_PROGRESS' }, { status: 'DONE' }],
+        order: {
+          id: 'ord-1',
+          status: 'FULLY_PAID',
+          paymentType: 'CLASSIC',
+          invoices: [{ moneyStatus: 'PAID' }],
+        },
       });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
-      const error = await service
-        .updateStatus('e1', 'DONE', 'emp-audit')
-        .catch((caught: unknown) => caught);
+      const result = await service.updateStatus('e1', 'DONE', 'emp-audit');
 
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect(readExceptionResponse(error)).toMatchObject({
-        code: EXTENSION_STAGE_GATE_ERROR_CODE,
-        errors: [{ field: 'tasks', message: expect.any(String) }],
-      });
-      expect(prisma.extension.update).not.toHaveBeenCalled();
+      expect(result.status).toBe('DONE');
+      expect(prisma.extension.update).toHaveBeenCalled();
     });
 
     it('allows TRANSFER → DONE when extension tasks are closed', async () => {
@@ -143,29 +142,25 @@ describe('ExtensionsService', () => {
       expect(syncProductBonusPoolForOrder).not.toHaveBeenCalled();
     });
 
-    it('blocks TRANSFER → DONE when linked CLASSIC order is not fully paid', async () => {
+    it('allows TRANSFER → DONE when the classic order is only partially paid and an invoice is unpaid', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }],
         order: {
           id: 'ord-1',
           status: 'PARTIALLY_PAID',
           paymentType: 'CLASSIC',
-          invoices: [{ moneyStatus: 'PAID' }],
+          invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
         },
       });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
-      const error = await service
-        .updateStatus('e1', 'DONE', 'emp-audit')
-        .catch((caught: unknown) => caught);
+      const result = await service.updateStatus('e1', 'DONE', 'emp-audit');
 
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect(readExceptionResponse(error)).toMatchObject({
-        code: EXTENSION_STAGE_GATE_ERROR_CODE,
-        errors: [{ field: 'finance', message: expect.stringContaining('Order PARTIALLY_PAID') }],
-      });
-      expect(prisma.extension.update).not.toHaveBeenCalled();
+      expect(result.status).toBe('DONE');
+      expect(prisma.extension.update).toHaveBeenCalled();
     });
 
     it('regression: allows TRANSFER → DONE when a subscription order is PARTIALLY_PAID and no invoices are unpaid', async () => {
@@ -189,9 +184,10 @@ describe('ExtensionsService', () => {
       expect(prisma.extension.update).toHaveBeenCalled();
     });
 
-    it('blocks TRANSFER → DONE when a subscription order has an unpaid invoice', async () => {
+    it('allows TRANSFER → DONE when a subscription order has an unpaid invoice', async () => {
       prisma.extension.findUnique.mockResolvedValue({
         id: 'e1',
+        projectId: 'proj-1',
         status: 'TRANSFER',
         tasks: [{ status: 'DONE' }],
         order: {
@@ -201,17 +197,12 @@ describe('ExtensionsService', () => {
           invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
         },
       });
+      prisma.extension.update.mockResolvedValue({ id: 'e1', status: 'DONE' });
 
-      const error = await service
-        .updateStatus('e1', 'DONE', 'emp-audit')
-        .catch((caught: unknown) => caught);
+      const result = await service.updateStatus('e1', 'DONE', 'emp-audit');
 
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect(readExceptionResponse(error)).toMatchObject({
-        code: EXTENSION_STAGE_GATE_ERROR_CODE,
-        errors: [{ field: 'finance', message: expect.any(String) }],
-      });
-      expect(prisma.extension.update).not.toHaveBeenCalled();
+      expect(result.status).toBe('DONE');
+      expect(prisma.extension.update).toHaveBeenCalled();
     });
   });
 });

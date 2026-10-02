@@ -31,6 +31,8 @@ export type ConsentResultDto = {
 
 const ALLOWED: ReadonlySet<ConsentDecisionDto> = new Set(['GRANTED', 'DECLINED', 'REVOKED']);
 
+const OPEN_SESSION_CONSENT = { session: { endedAt: null } } as const;
+
 @Injectable()
 export class VideoMeetingsConsentService {
   constructor(
@@ -78,9 +80,10 @@ export class VideoMeetingsConsentService {
     return this.upsertDecision(invite.meetingId, participant.id, decision, participant.sessionId);
   }
 
+  /** Latest decision in the open session only; earlier sessions never authorize recording. */
   async getLatestForParticipant(participantId: string) {
     return this.prisma.videoMeetingConsent.findFirst({
-      where: { participantId },
+      where: { participantId, ...OPEN_SESSION_CONSENT },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -88,7 +91,7 @@ export class VideoMeetingsConsentService {
   async listLatestByParticipantIds(participantIds: readonly string[]) {
     if (participantIds.length === 0) return new Map<string, { decision: ConsentDecision }>();
     const rows = await this.prisma.videoMeetingConsent.findMany({
-      where: { participantId: { in: [...participantIds] } },
+      where: { participantId: { in: [...participantIds] }, ...OPEN_SESSION_CONSENT },
       orderBy: { createdAt: 'desc' },
     });
     const map = new Map<string, { decision: ConsentDecision }>();

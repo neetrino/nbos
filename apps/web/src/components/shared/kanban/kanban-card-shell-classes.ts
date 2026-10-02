@@ -17,8 +17,8 @@ export const KANBAN_CARD_SHELL_BASE_SHADOW_CLASS = {
 } as const;
 
 export const KANBAN_CARD_SHELL_HOVER_SHADOW_CLASS = {
-  sm: 'hover:shadow-[var(--shadow-panel)]',
-  md: 'hover:shadow-[var(--shadow-panel-hover)]',
+  sm: '',
+  md: '',
 } as const;
 
 export const KANBAN_CARD_SHELL_TRANSITION_CLASS = {

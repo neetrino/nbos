@@ -160,10 +160,10 @@ export default function FinanceDashboardPage() {
         ) : null}
 
         {data &&
-        (matchesOverviewSearch('Payroll runs', query) ||
+        ((data.payrollRuns != null && matchesOverviewSearch('Payroll runs', query)) ||
           matchesOverviewSearch('Expense cards', query)) ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {matchesOverviewSearch('Payroll runs', query) ? (
+            {data.payrollRuns != null && matchesOverviewSearch('Payroll runs', query) ? (
               <PayrollRunsSnapshot payroll={data.payrollRuns} />
             ) : null}
             {matchesOverviewSearch('Expense cards', query) ? (

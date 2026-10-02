@@ -98,11 +98,21 @@ export function BonusPoolSheetGeneralTab({
               accentClass="text-teal-700 dark:text-teal-400"
             />
             <SnapshotTile
-              label="Paid"
-              value={formatBonusPoolMoney(pool.sumPaidAmount)}
+              label={pool.paidCashState === 'UNCONFIRMED' ? 'Paid (unconfirmed)' : 'Paid'}
+              value={
+                pool.paidCashState === 'UNCONFIRMED'
+                  ? '—'
+                  : formatBonusPoolMoney(pool.sumPaidAmount)
+              }
               accentClass="text-emerald-700 dark:text-emerald-400"
             />
           </div>
+          {pool.paidCashState === 'UNCONFIRMED' ? (
+            <p className="text-muted-foreground text-[11px] leading-snug">
+              Historical paid mark has no release or payment. The planned amount is not confirmed
+              cash.
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={() => onOpenTab('bonuses')}

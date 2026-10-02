@@ -137,7 +137,7 @@ function buildService(overrides: Record<string, unknown> = {}): Record<string, u
     type: 'DOMAIN',
     name: 'example.com',
     provider: 'Namecheap',
-    billingModel: 'WE_PAY',
+    billingModel: 'CLIENT_CHARGE',
     ourCost: new Decimal('12'),
     renewalDate: new Date('2026-06-01'),
     connectionMode: 'PURCHASE',

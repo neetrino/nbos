@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { useRegisterRelationCreated } from './use-register-relation-created';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -30,6 +31,15 @@ import {
 } from './relation-picker.types';
 
 export function RelationPickerField(props: RelationPickerFieldProps) {
+  useRegisterRelationCreated((event) => {
+    if (
+      props.entityKind !== 'product' ||
+      !props.createIntent ||
+      event.intent !== props.createIntent
+    )
+      return;
+    if (event.kind === 'product' && !isMultiProps(props)) props.onSelect(event.id, event.label);
+  });
   const t = useTranslations('forms');
   const {
     label,

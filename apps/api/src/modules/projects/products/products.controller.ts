@@ -1,3 +1,4 @@
+import { RegisterProductDto } from './register-product.dto';
 import {
   Controller,
   Get,
@@ -20,7 +21,11 @@ import {
   GENERIC_STATUS_DEPRECATION_DESCRIPTION,
   GENERIC_STATUS_DEPRECATION_HEADER,
 } from '../delivery-status-deprecation';
-import { CurrentUser, type CurrentUserPayload } from '../../../common/decorators';
+import {
+  CurrentUser,
+  RequirePermission,
+  type CurrentUserPayload,
+} from '../../../common/decorators';
 import { credentialsAccessFromUser } from '../../credentials/credentials-access';
 
 @ApiTags('Products')
@@ -32,6 +37,15 @@ export class ProductsController {
     private readonly productAccessSlotBindings: ProductAccessSlotBindingsService,
     private readonly productTeamService: ProductTeamService,
   ) {}
+
+  @Post('register')
+  @RequirePermission('PROJECTS', 'ADD')
+  @ApiOperation({
+    summary: 'Register product with an existing or new project and optional company',
+  })
+  async register(@Body() body: RegisterProductDto, @CurrentUser() user: CurrentUserPayload) {
+    return this.productsService.register(body, user);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get all products with filters' })
@@ -62,6 +76,7 @@ export class ProductsController {
     description: 'Attach derived hubView (All catalog). Implied when hubView is set.',
   })
   async findAll(
+    @Query('deliveryEnabled') deliveryEnabled?: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('projectId') projectId?: string,
@@ -78,6 +93,7 @@ export class ProductsController {
     @Query('includeHubView') includeHubView?: string,
   ) {
     return this.productsService.findAll({
+      deliveryEnabled,
       page: page ? parseInt(page, 10) : undefined,
       pageSize: pageSize ? parseInt(pageSize, 10) : undefined,
       projectId,

@@ -4,6 +4,7 @@ import { isInvoiceOrderComment, isInvoicePayerContextLocked } from '@nbos/shared
 import { parseOptionalEntityNotes } from '../parse-entity-notes';
 import { sumAmounts } from '../finance-status.utils';
 import { resolveInvoiceProductOwnership } from './invoice-product-ownership';
+import { assertFirstInvoiceMinimums } from './invoice-first-payment-minimums';
 
 const INVOICE_PAYER_ISSUED_ERROR =
   'Company and product cannot be changed after the invoice is issued';
@@ -105,6 +106,7 @@ export async function applyInvoiceGeneralUpdate(
       id: true,
       type: true,
       orderId: true,
+      subscriptionId: true,
       amount: true,
       taxStatus: true,
       moneyStatus: true,
@@ -125,6 +127,16 @@ export async function applyInvoiceGeneralUpdate(
   const paid = sumAmounts(invoice.payments);
   if (input.amount !== undefined && input.amount < paid) {
     throw new BadRequestException(`Invoice amount cannot be less than recorded payments (${paid})`);
+  }
+
+  if (input.amount !== undefined) {
+    await assertFirstInvoiceMinimums(prisma, {
+      orderId: invoice.orderId ?? undefined,
+      subscriptionId: invoice.subscriptionId ?? undefined,
+      amount: input.amount,
+      type: invoice.type,
+      excludeInvoiceId: invoice.id,
+    });
   }
 
   const data: Prisma.InvoiceUpdateInput = {};

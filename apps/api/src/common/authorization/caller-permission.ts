@@ -17,7 +17,7 @@ export function hasCallerPermission(
 /**
  * Conjunctive second-permission check. PermissionGuard arrays are OR, so cross-entity
  * actions assert the target module here (same ForbiddenException shape as the guard /
- * `assertCallCreatePermission` / `assertCanPlayCallRecording`).
+ * `assertCallCreatePermission`).
  */
 export function assertCallerHasPermission(
   user: CurrentUserPayload,

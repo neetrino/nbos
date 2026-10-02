@@ -1,8 +1,6 @@
-import { isOrderPaymentGateSatisfied } from '@nbos/shared';
 import type { DeliveryLifecycleProjection } from '../delivery-lifecycle';
 
 export interface ProductOpenCounts {
-  openTasks: number;
   openTickets: number;
   openExtensions: number;
 }
@@ -35,23 +33,11 @@ export function buildProductCurrentStageReadiness(
     return { completed, total: checks.length };
   }
 
-  if (stage === 'DEVELOPMENT' || stage === 'QA') {
-    const clear = open.openTasks === 0;
-    return { completed: clear ? 1 : 0, total: 1 };
-  }
-
   if (stage === 'TRANSFER') {
-    const invoices = product.order?.invoices ?? [];
-    const unpaidInvoices = invoices.filter((inv) => inv.moneyStatus !== 'PAID').length;
-    const orderOk = isOrderPaymentGateSatisfied(product.order);
-
     const checks = [
       open.openExtensions === 0,
-      open.openTasks === 0,
       open.openTickets === 0,
       Boolean(product.clientAcceptedAt),
-      orderOk,
-      unpaidInvoices === 0,
     ];
     const completed = checks.filter(Boolean).length;
     return { completed, total: checks.length };

@@ -13,7 +13,10 @@ import { ClientCollectionsPanel } from './ClientCollectionsPanel';
 import { ClientConversationList } from './ClientConversationList';
 import { ClientConversationThread } from './ClientConversationThread';
 import { ClientMessengerNav } from './ClientMessengerNav';
-import { CLIENT_MESSENGER_SHELL_CLASS } from './client-messenger.constants';
+import {
+  CLIENT_MESSENGER_SHELL_CLASS,
+  type ClientMessengerSectionId,
+} from './client-messenger.constants';
 import { clientSectionFromPathname } from './client-messenger-section';
 import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
 import { noteMessengerComposerDraft } from '@/features/messenger/query/messenger-send-claim';
@@ -34,21 +37,35 @@ import {
   type PortfolioClientTarget,
 } from './use-portfolio-client-scope';
 
+const CLIENT_SHEET_SHELL_CLASS =
+  'flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-card text-card-foreground';
+
 export function ClientMessengerApp({
   embedded = false,
   portfolio = null,
+  section: sectionOverride,
+  onSectionChange,
+  requestedConversationId = null,
+  onRequestedConversationHandled,
 }: {
   embedded?: boolean;
   portfolio?: PortfolioClientTarget | null;
+  section?: ClientMessengerSectionId;
+  onSectionChange?: (section: ClientMessengerSectionId) => void;
+  requestedConversationId?: string | null;
+  onRequestedConversationHandled?: () => void;
 }) {
   const pathname = usePathname();
-  const section = clientSectionFromPathname(pathname);
+  const section = sectionOverride ?? clientSectionFromPathname(pathname);
   const fromLocation = usePortfolioTargetFromLocation();
   return (
     <ClientMessengerScreen
       section={section}
       embedded={embedded}
       portfolio={portfolio ?? fromLocation}
+      onSectionChange={onSectionChange}
+      requestedConversationId={requestedConversationId}
+      onRequestedConversationHandled={onRequestedConversationHandled}
     />
   );
 }
@@ -57,10 +74,16 @@ function ClientMessengerScreen({
   section,
   embedded,
   portfolio,
+  onSectionChange,
+  requestedConversationId,
+  onRequestedConversationHandled,
 }: {
-  section: ReturnType<typeof clientSectionFromPathname>;
+  section: ClientMessengerSectionId;
   embedded: boolean;
   portfolio: PortfolioClientTarget | null;
+  onSectionChange?: (section: ClientMessengerSectionId) => void;
+  requestedConversationId?: string | null;
+  onRequestedConversationHandled?: () => void;
 }) {
   const queryClient = useQueryClient();
   const { me, isLoading: permsLoading, meLoadError, can } = usePermission();
@@ -99,6 +122,12 @@ function ClientMessengerScreen({
     portfolioContactId,
     portfolioScope.uniqueConversationId,
   ]);
+  useEffect(() => {
+    if (!requestedConversationId) return;
+    void openConversation(requestedConversationId).finally(() =>
+      onRequestedConversationHandled?.(),
+    );
+  }, [openConversation, onRequestedConversationHandled, requestedConversationId]);
 
   useInternalMessengerRealtime({
     canViewMessenger: canView,
@@ -119,15 +148,16 @@ function ClientMessengerScreen({
     );
   }
 
+  const shellClass = embedded ? CLIENT_SHEET_SHELL_CLASS : CLIENT_MESSENGER_SHELL_CLASS;
   return (
-    <div className={CLIENT_MESSENGER_SHELL_CLASS}>
+    <div className={shellClass}>
       <VisibleThreadRead
         zone="CLIENT"
         conversationId={session.activeId}
         threadMounted={Boolean(active)}
         items={data.messages.data?.items}
       />
-      <ClientMessengerNav section={section} />
+      <ClientMessengerNav section={section} onSectionChange={onSectionChange} />
       {session.bootError || data.listError || portfolioScope.error ? (
         <p className="px-3 py-1 text-xs text-red-600">
           {session.bootError ??
@@ -224,7 +254,7 @@ function ClientMessengerScreen({
             }}
           />
         ) : (
-          <div className="flex min-h-0 flex-1 items-center justify-center bg-white text-sm text-black/40">
+          <div className="text-muted-foreground bg-card flex min-h-0 flex-1 items-center justify-center text-sm">
             Select a Client conversation
           </div>
         )}

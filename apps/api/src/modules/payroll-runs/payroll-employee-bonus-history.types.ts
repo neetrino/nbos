@@ -26,6 +26,7 @@ export type PayrollEmployeeBonusHistoryProjectDto = {
   totalPlannedBonus: string;
   totalReleasedBonus: string;
   totalPaidBonus: string;
+  paidCashState?: 'CONFIRMED' | 'UNCONFIRMED';
   totalRemainingBonus: string;
   availableFunding: string;
   /** One entry per month in `months` (same order). */

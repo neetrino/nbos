@@ -57,6 +57,7 @@ export function useTaskDiscussion(taskId: string | null, open: boolean) {
     send,
     noteDraft,
     composerDisabled: thread.revoked,
+    conversationId: thread.conversationId,
   };
 }
 

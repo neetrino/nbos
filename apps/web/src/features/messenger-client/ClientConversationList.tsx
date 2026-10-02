@@ -1,7 +1,19 @@
 'use client';
 
+import { useCallback, useRef } from 'react';
 import { Globe, Search, Star } from 'lucide-react';
 import { LIST_SEARCH_INPUT_PROPS } from '@/components/shared/list-search-input-props';
+import {
+  SlidingPillBackdrop,
+  useSlidingPillIndicator,
+} from '@/components/shared/page-hero/sliding-pill-indicator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { MESSENGER_SIDEBAR_UNREAD_DISPLAY_MAX } from '@/features/messenger/messenger-sidebar.constants';
 import type { MessengerClientConversationRow } from '@/lib/api/messenger-core-client';
 import type {
@@ -15,6 +27,9 @@ import {
 import { uniqueAttentionLabels } from './client-attention-view';
 import { clientConversationTitle, clientProviderLabel } from './client-messenger-section';
 
+const FILTER_TAB_CLASS =
+  'relative z-10 rounded-full px-2 py-1 text-[11px] font-medium transition-colors duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
 const INBOX_FILTERS: Array<{ id: 'all' | MessengerClientListFilter; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'unread', label: 'Unread' },
@@ -22,12 +37,95 @@ const INBOX_FILTERS: Array<{ id: 'all' | MessengerClientListFilter; label: strin
   { id: 'assigned', label: 'Assigned' },
 ];
 
-const PROVIDERS: Array<{ id: '' | MessengerClientProvider; label: string }> = [
-  { id: '', label: 'All providers' },
+const ALL_PROVIDERS_ID = 'all';
+const ALL_PROVIDERS_LABEL = 'All providers';
+const PROVIDER_FILTER_LABEL = 'Filter by provider';
+
+const PROVIDERS: Array<{ id: typeof ALL_PROVIDERS_ID | MessengerClientProvider; label: string }> = [
+  { id: ALL_PROVIDERS_ID, label: ALL_PROVIDERS_LABEL },
   { id: 'INSTAGRAM', label: 'Instagram' },
   { id: 'FACEBOOK', label: 'Facebook' },
   { id: 'WHATSAPP', label: 'WhatsApp' },
 ];
+
+function ClientProviderSelect({
+  provider,
+  onProviderChange,
+}: {
+  provider: '' | MessengerClientProvider;
+  onProviderChange: (value: '' | MessengerClientProvider) => void;
+}) {
+  const label = PROVIDERS.find((item) => item.id === (provider || ALL_PROVIDERS_ID))?.label;
+  return (
+    <Select
+      value={provider || ALL_PROVIDERS_ID}
+      onValueChange={(next) => onProviderChange(providerFromSelect(next))}
+    >
+      <SelectTrigger size="sm" aria-label={PROVIDER_FILTER_LABEL} className="mt-2 w-full">
+        <SelectValue>{label}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {PROVIDERS.map((item) => (
+          <SelectItem key={item.id} value={item.id}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function ClientInboxFilterStrip({
+  filter,
+  onFilterChange,
+}: {
+  filter: 'all' | MessengerClientListFilter;
+  onFilterChange: (value: 'all' | MessengerClientListFilter) => void;
+}) {
+  const groupRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef(new Map<string, HTMLButtonElement>());
+  const getActiveElement = useCallback(() => itemRefs.current.get(filter), [filter]);
+  const { indicator, ready } = useSlidingPillIndicator(groupRef, getActiveElement, filter, false);
+
+  return (
+    <div ref={groupRef} className="relative mt-2 flex items-center gap-1">
+      <SlidingPillBackdrop
+        indicator={indicator}
+        ready={ready}
+        className="top-0 bottom-0 bg-teal-800/15"
+      />
+      {INBOX_FILTERS.map((item) => (
+        <button
+          key={item.id}
+          ref={(node) => rememberFilter(itemRefs.current, item.id, node)}
+          type="button"
+          onClick={() => onFilterChange(item.id)}
+          className={`${FILTER_TAB_CLASS} ${
+            filter === item.id
+              ? 'text-sidebar-foreground'
+              : 'text-sidebar-muted hover:text-sidebar-foreground'
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function rememberFilter(
+  refs: Map<string, HTMLButtonElement>,
+  id: string,
+  node: HTMLButtonElement | null,
+) {
+  if (node) refs.set(id, node);
+  else refs.delete(id);
+}
+
+function providerFromSelect(value: string | null): '' | MessengerClientProvider {
+  if (value === 'INSTAGRAM' || value === 'FACEBOOK' || value === 'WHATSAPP') return value;
+  return '';
+}
 
 export function ClientConversationList({
   section,
@@ -59,10 +157,13 @@ export function ClientConversationList({
   onToggleFavorite: (id: string) => void;
 }) {
   return (
-    <aside className="border-border bg-card flex min-h-0 w-72 shrink-0 flex-col border-r">
+    <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border flex min-h-0 w-72 shrink-0 flex-col border-r">
       <div className="p-3">
         <div className="relative">
-          <Search size={15} className="absolute top-1/2 left-2.5 -translate-y-1/2 text-black/30" />
+          <Search
+            size={15}
+            className="text-muted-foreground absolute top-1/2 left-2.5 -translate-y-1/2"
+          />
           <input
             {...LIST_SEARCH_INPUT_PROPS}
             type="text"
@@ -70,46 +171,20 @@ export function ClientConversationList({
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search Client Messenger..."
             role="searchbox"
-            className="w-full rounded-lg border border-teal-900/10 bg-[#F4F7F7] py-1.5 pr-3 pl-8 text-sm text-black placeholder:text-black/35 focus:ring-2 focus:ring-teal-800/25 focus:outline-none"
+            className="border-sidebar-border bg-card text-foreground placeholder:text-muted-foreground w-full rounded-lg border py-1.5 pr-3 pl-8 text-sm focus:ring-2 focus:ring-teal-800/25 focus:outline-none"
           />
         </div>
-        <div className="mt-2 flex flex-wrap gap-1">
-          {INBOX_FILTERS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onFilterChange(item.id)}
-              className={`rounded-md px-2 py-1 text-[11px] font-medium ${
-                filter === item.id
-                  ? 'bg-teal-800/15 text-teal-950'
-                  : 'text-black/45 hover:bg-black/[0.04]'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-        <select
-          aria-label="Filter by provider"
-          value={provider}
-          onChange={(event) => onProviderChange(event.target.value as '' | MessengerClientProvider)}
-          className="mt-2 w-full rounded-lg border border-teal-900/10 bg-[#F4F7F7] px-2 py-1 text-[11px] text-black"
-        >
-          {PROVIDERS.map((item) => (
-            <option key={item.id || 'all'} value={item.id}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+        <ClientInboxFilterStrip filter={filter} onFilterChange={onFilterChange} />
+        <ClientProviderSelect provider={provider} onProviderChange={onProviderChange} />
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-3">
         {listPending ? (
-          <p className="px-2 py-6 text-center text-xs leading-relaxed text-black/40">
+          <p className="text-sidebar-muted px-2 py-6 text-center text-xs leading-relaxed">
             Loading conversations…
           </p>
         ) : null}
         {!listPending && items.length === 0 ? (
-          <p className="px-2 py-6 text-center text-xs leading-relaxed text-black/40">
+          <p className="text-sidebar-muted px-2 py-6 text-center text-xs leading-relaxed">
             {emptyCopy ?? CLIENT_MESSENGER_EMPTY_COPY[section]}
           </p>
         ) : null}
@@ -144,7 +219,7 @@ function ClientListRow({
   return (
     <div
       className={`mb-0.5 flex items-center rounded-lg ${
-        active ? 'bg-teal-800/10' : 'hover:bg-black/[0.03]'
+        active ? 'bg-teal-800/20' : 'hover:bg-white/5'
       }`}
     >
       <button
@@ -152,10 +227,10 @@ function ClientListRow({
         onClick={() => onSelect(row.id)}
         className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm"
       >
-        <Globe size={15} className={active ? 'text-teal-800' : 'text-black/30'} />
+        <Globe size={15} className={active ? 'text-teal-300' : 'text-sidebar-muted'} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate font-medium text-black">{title}</span>
-          <span className="block truncate text-[11px] text-black/40">
+          <span className="text-sidebar-foreground block truncate font-medium">{title}</span>
+          <span className="text-sidebar-muted block truncate text-[11px]">
             {clientProviderLabel(row.provider)}
             {attentionLabel ? ` · ${attentionLabel}` : ''}
             {row.lastMessagePreview ? ` · ${row.lastMessagePreview}` : ''}
@@ -173,7 +248,7 @@ function ClientListRow({
         type="button"
         aria-label={row.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
         onClick={() => onToggleFavorite(row.id)}
-        className="shrink-0 px-2 py-1.5 text-black/30 hover:text-teal-800"
+        className="text-sidebar-muted shrink-0 px-2 py-1.5 hover:text-teal-300"
       >
         <Star size={14} className={row.isFavorite ? 'fill-teal-800 text-teal-800' : ''} />
       </button>

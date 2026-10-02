@@ -100,20 +100,30 @@ export function ClientServiceGeneralBasicsSection({
           formDisabled={formDisabled}
           patchDraft={patchDraft}
         />
-        <ClientServiceProviderField
-          providerName={draft.provider}
-          disabled={formDisabled}
-          onProviderChange={(provider) => patchDraft({ provider })}
-        />
         {draft.type === 'DOMAIN' ? (
-          <ClientServiceConnectionScenarioField
-            draft={draft}
-            formDisabled={formDisabled}
-            patchDraft={patchDraft}
-            credentialLabel={credentialLabel}
-            onCredentialCleared={() => setCredentialLabel(null)}
+          <div className={EXPENSE_SHEET_FIELD_ROW_2_CLASS}>
+            <ClientServiceProviderField
+              providerName={draft.provider}
+              disabled={formDisabled}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onProviderChange={(provider) => patchDraft({ provider })}
+            />
+            <ClientServiceConnectionScenarioField
+              draft={draft}
+              formDisabled={formDisabled}
+              patchDraft={patchDraft}
+              credentialLabel={credentialLabel}
+              className={EXPENSE_SHEET_FIELD_CELL_CLASS}
+              onCredentialCleared={() => setCredentialLabel(null)}
+            />
+          </div>
+        ) : (
+          <ClientServiceProviderField
+            providerName={draft.provider}
+            disabled={formDisabled}
+            onProviderChange={(provider) => patchDraft({ provider })}
           />
-        ) : null}
+        )}
         {showClientServiceCredentialField(draft) ? (
           <ClientServiceCredentialField
             credentialId={draft.providerAccountId}

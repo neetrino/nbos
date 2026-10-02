@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { RequirePermission } from '../../common/decorators';
+import { CurrentUser, RequirePermission, type CurrentUserPayload } from '../../common/decorators';
+import { FINANCE_SALARY_MODULE } from '../compensation-profiles/finance-pay-access';
 import { KpiPoliciesService } from './kpi-policies.service';
 import type { CreateKpiPolicyBody, UpdateKpiPolicyBody } from './kpi-policies.types';
 
@@ -11,30 +12,34 @@ export class KpiPoliciesController {
   constructor(private readonly service: KpiPoliciesService) {}
 
   @Get()
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({ summary: 'List KPI gate payout policies' })
-  list() {
-    return this.service.list();
+  list(@CurrentUser() user: CurrentUserPayload) {
+    return this.service.list(user);
   }
 
   @Get(':id')
-  @RequirePermission('COMPANY', 'VIEW')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'VIEW')
   @ApiOperation({ summary: 'Get KPI policy by id' })
-  findById(@Param('id') id: string) {
-    return this.service.findById(id);
+  findById(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.service.findById(user, id);
   }
 
   @Post()
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Create KPI gate payout policy' })
-  create(@Body() body: CreateKpiPolicyBody) {
-    return this.service.create(body);
+  create(@CurrentUser() user: CurrentUserPayload, @Body() body: CreateKpiPolicyBody) {
+    return this.service.create(user, body);
   }
 
   @Patch(':id')
-  @RequirePermission('COMPANY', 'EDIT')
+  @RequirePermission(FINANCE_SALARY_MODULE, 'EDIT')
   @ApiOperation({ summary: 'Update KPI policy bands or metadata' })
-  update(@Param('id') id: string, @Body() body: UpdateKpiPolicyBody) {
-    return this.service.update(id, body);
+  update(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Body() body: UpdateKpiPolicyBody,
+  ) {
+    return this.service.update(user, id, body);
   }
 }

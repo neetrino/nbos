@@ -17,6 +17,11 @@ import { isNavChildLinkActive } from '@/lib/navigation/nav-route-utils';
 import { useUnsortedTaskCreate } from '@/features/tasks/components/UnsortedTaskCreateProvider';
 import { useTranslations } from 'next-intl';
 import { SidebarModuleNavRow } from './SidebarModuleNavRow';
+import { SidebarCollapsePanel } from './SidebarCollapsePanel';
+import { SidebarNavListShell } from './SidebarActiveNavPill';
+import { SIDEBAR_CHEVRON_TRANSITION_CLASS } from './sidebar-layout-constants';
+import { useMessengerOverlayOptional } from '@/features/messenger-internal/messenger-overlay-context';
+import { useClientMessengerOverlayOptional } from '@/features/messenger-client/client-messenger-overlay-context';
 
 interface SidebarNavListProps {
   collapsed: boolean;
@@ -38,6 +43,15 @@ export function SidebarNavList({
   const pathname = usePathname();
   const { openUnsortedTaskCreate } = useUnsortedTaskCreate();
   const t = useTranslations('navigation');
+  const messengerOverlay = useMessengerOverlayOptional();
+  const clientOverlay = useClientMessengerOverlayOptional();
+  const activePillWatchKey = [
+    pathname,
+    collapsed ? '1' : '0',
+    moreExpanded ? '1' : '0',
+    messengerOverlay?.isOpen ? '1' : '0',
+    clientOverlay?.isOpen ? '1' : '0',
+  ].join(':');
 
   useLayoutEffect(() => {
     writeModuleLastVisitFromPathname(pathname);
@@ -78,7 +92,7 @@ export function SidebarNavList({
   };
 
   return (
-    <ul className="relative space-y-0">
+    <SidebarNavListShell watchKey={`${activePillWatchKey}:${expandedKey ?? ''}`}>
       {primaryItems.map((item) => (
         <SidebarModuleNavRow
           key={item.key}
@@ -93,7 +107,7 @@ export function SidebarNavList({
       ))}
 
       {personalLinks.length > 0 && !collapsed && (
-        <li className="pt-1">
+        <li className="relative z-[1] pt-1">
           <button
             type="button"
             onClick={() => setLinksExpanded((value) => !value)}
@@ -105,21 +119,21 @@ export function SidebarNavList({
             </span>
             <ChevronLeft
               size={14}
-              className={cn('transition-transform', linksExpanded && '-rotate-90')}
+              className={cn(SIDEBAR_CHEVRON_TRANSITION_CLASS, linksExpanded && '-rotate-90')}
             />
           </button>
-          {linksExpanded && (
+          <SidebarCollapsePanel open={linksExpanded}>
             <ul className="mt-0.5 space-y-0.5">
               {personalLinks.map((link) => (
                 <PersonalLinkRow key={link.id} link={link} />
               ))}
             </ul>
-          )}
+          </SidebarCollapsePanel>
         </li>
       )}
 
       {hiddenItems.length > 0 && (
-        <li className="pt-2">
+        <li className="relative z-[1] pt-2">
           {collapsed ? (
             <button
               type="button"
@@ -139,10 +153,10 @@ export function SidebarNavList({
                 <span>{t('sidebar.moreHidden')}</span>
                 <ChevronLeft
                   size={14}
-                  className={cn('transition-transform', moreExpanded && '-rotate-90')}
+                  className={cn(SIDEBAR_CHEVRON_TRANSITION_CLASS, moreExpanded && '-rotate-90')}
                 />
               </button>
-              {moreExpanded && (
+              <SidebarCollapsePanel open={moreExpanded}>
                 <ul className="mt-1 space-y-0.5">
                   {hiddenItems.map((item) => (
                     <SidebarModuleNavRow
@@ -158,12 +172,12 @@ export function SidebarNavList({
                     />
                   ))}
                 </ul>
-              )}
+              </SidebarCollapsePanel>
             </>
           )}
         </li>
       )}
-    </ul>
+    </SidebarNavListShell>
   );
 }
 

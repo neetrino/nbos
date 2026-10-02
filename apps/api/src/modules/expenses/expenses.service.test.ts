@@ -357,7 +357,6 @@ describe('ExpensesService', () => {
         projectId: null,
         expensePlanId: null,
         isPassThrough: false,
-        taxStatus: 'TAX',
         backlogReason: null,
         notes: null,
         createdAt: new Date(),
@@ -395,7 +394,6 @@ describe('ExpensesService', () => {
         projectId: null,
         expensePlanId: null,
         isPassThrough: false,
-        taxStatus: 'TAX',
         backlogReason: null,
         notes: null,
         createdAt: new Date('2026-04-01T00:00:00.000Z'),
@@ -433,7 +431,6 @@ describe('ExpensesService', () => {
         projectId: null,
         expensePlanId: null,
         isPassThrough: false,
-        taxStatus: 'TAX',
         backlogReason: null,
         notes: null,
         createdAt: new Date('2026-04-01T00:00:00.000Z'),
@@ -462,7 +459,6 @@ describe('ExpensesService', () => {
         projectId: null,
         expensePlanId: 'plan-1',
         isPassThrough: false,
-        taxStatus: 'TAX',
         backlogReason: null,
         notes: null,
         createdAt: new Date('2026-04-01T00:00:00.000Z'),
@@ -638,6 +634,23 @@ describe('ExpensesService', () => {
 
       await expect(service.deletePayment('e1', 'pay-missing')).rejects.toThrow(NotFoundException);
       expect(prisma.expensePayment.delete).not.toHaveBeenCalled();
+    });
+
+    it('keeps a journal failure inside the payment delete transaction', async () => {
+      prisma.expensePayment.findFirst.mockResolvedValue({
+        id: 'pay1',
+        expenseId: 'e1',
+        amount: new Decimal(10),
+        paymentDate: new Date('2026-05-05T00:00:00.000Z'),
+        notes: null,
+      });
+      operationalJournal.reverseJournalLineByIdempotencyKey.mockRejectedValueOnce(
+        new Error('journal down'),
+      );
+
+      await expect(service.deletePayment('e1', 'pay1')).rejects.toThrow('journal down');
+      expect(prisma.$transaction).toHaveBeenCalled();
+      expect(prisma.expensePayment.delete).toHaveBeenCalled();
     });
 
     it('deletes payment and returns ledger shape', async () => {
@@ -828,6 +841,60 @@ describe('ExpensesService', () => {
       expect(result.name).toBe('Updated');
       expect(prisma.expense.update).toHaveBeenCalled();
       expect(prisma.expense.findUnique).toHaveBeenCalled();
+    });
+
+    it('renames in a closed posting period and trims the name', async () => {
+      prisma.financePostingPeriod.findUnique.mockResolvedValue({ status: 'CLOSED' });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        dueDate: new Date('2026-04-10T00:00:00.000Z'),
+        amount: new Decimal(100),
+        expensePayments: [],
+        project: null,
+      });
+
+      await service.update('e1', { name: '  Office rent  ' });
+
+      expect(prisma.financePostingPeriod.findUnique).not.toHaveBeenCalled();
+      expect(prisma.expense.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'e1' },
+          data: expect.objectContaining({ name: 'Office rent' }),
+        }),
+      );
+    });
+
+    it('rejects a blank name', async () => {
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        dueDate: new Date('2026-04-10T00:00:00.000Z'),
+        amount: new Decimal(100),
+        expensePayments: [],
+        project: null,
+      });
+
+      await expect(service.update('e1', { name: '   ' })).rejects.toThrow(BadRequestException);
+      expect(prisma.expense.update).not.toHaveBeenCalled();
+    });
+
+    it('still blocks a money change in a closed posting period', async () => {
+      prisma.financePostingPeriod.findUnique.mockResolvedValue({ status: 'CLOSED' });
+      prisma.expense.findUnique.mockResolvedValue({
+        id: 'e1',
+        name: 'Rent',
+        dueDate: new Date('2026-04-10T00:00:00.000Z'),
+        amount: new Decimal(100),
+        status: 'DUE_NOW',
+        expensePayments: [],
+        project: null,
+      });
+
+      await expect(service.update('e1', { name: 'Rent', amount: 90 })).rejects.toThrow(
+        /posting period/i,
+      );
+      expect(prisma.expense.update).not.toHaveBeenCalled();
     });
 
     it('rejects invalid category', async () => {

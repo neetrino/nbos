@@ -1,6 +1,11 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaClient, type BonusPolicyStatusEnum } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import {
+  FINANCE_BONUSES_MODULE,
+  assertCompanyWideFinanceAccess,
+  type FinancePayActor,
+} from '../compensation-profiles/finance-pay-access';
 import { parseBonusPolicyTemplateCode } from './parse-bonus-policy-template';
 import type {
   BonusPolicyDto,
@@ -48,7 +53,8 @@ function serializeBonusPolicy(
 export class BonusPoliciesService {
   constructor(@Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>) {}
 
-  async list(): Promise<{ items: BonusPolicyDto[] }> {
+  async list(actor: FinancePayActor): Promise<{ items: BonusPolicyDto[] }> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_BONUSES_MODULE, 'VIEW');
     const rows = await this.prisma.bonusPolicy.findMany({
       orderBy: [{ status: 'asc' }, { name: 'asc' }],
     });
@@ -58,7 +64,8 @@ export class BonusPoliciesService {
     };
   }
 
-  async findById(id: string): Promise<BonusPolicyDto> {
+  async findById(actor: FinancePayActor, id: string): Promise<BonusPolicyDto> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_BONUSES_MODULE, 'VIEW');
     const row = await this.prisma.bonusPolicy.findUnique({ where: { id } });
     if (!row) {
       throw new NotFoundException(`Bonus policy ${id} not found`);
@@ -69,7 +76,8 @@ export class BonusPoliciesService {
     return serializeBonusPolicy(row, count);
   }
 
-  async create(body: CreateBonusPolicyBody): Promise<BonusPolicyDto> {
+  async create(actor: FinancePayActor, body: CreateBonusPolicyBody): Promise<BonusPolicyDto> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_BONUSES_MODULE, 'ADD');
     const name = assertPolicyName(body.name);
     const templateCode = parseBonusPolicyTemplateCode(body.templateCode);
     const row = await this.prisma.bonusPolicy.create({
@@ -84,7 +92,12 @@ export class BonusPoliciesService {
     return serializeBonusPolicy(row, 0);
   }
 
-  async update(id: string, body: UpdateBonusPolicyBody): Promise<BonusPolicyDto> {
+  async update(
+    actor: FinancePayActor,
+    id: string,
+    body: UpdateBonusPolicyBody,
+  ): Promise<BonusPolicyDto> {
+    assertCompanyWideFinanceAccess(actor, FINANCE_BONUSES_MODULE, 'EDIT');
     const existing = await this.prisma.bonusPolicy.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException(`Bonus policy ${id} not found`);

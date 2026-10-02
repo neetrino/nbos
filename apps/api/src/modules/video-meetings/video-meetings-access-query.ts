@@ -4,6 +4,7 @@ import {
   VIDEO_MEETING_LIST_DEFAULT_PAGE_SIZE,
   VIDEO_MEETING_LIST_MAX_PAGE_SIZE,
 } from './video-meetings.constants';
+import { isVideoMeetingIdle, VIDEO_MEETING_IDLE_STATUSES } from './video-meetings-status';
 
 export function parseVideoMeetingPage(query: ListVideoMeetingsQueryDto): {
   page: number;
@@ -29,9 +30,16 @@ export function accessibleVideoMeetingWhere(
     ],
   };
   if (status) {
-    where.status = status as VideoMeetingStatus;
+    where.status = videoMeetingStatusFilter(status as VideoMeetingStatus);
   }
   return where;
+}
+
+/** IDLE and legacy ENDED filter to the same set of idle rooms. */
+export function videoMeetingStatusFilter(
+  status: VideoMeetingStatus,
+): Prisma.EnumVideoMeetingStatusFilter | VideoMeetingStatus {
+  return isVideoMeetingIdle(status) ? { in: [...VIDEO_MEETING_IDLE_STATUSES] } : status;
 }
 
 export function isVideoMeetingAccessible(

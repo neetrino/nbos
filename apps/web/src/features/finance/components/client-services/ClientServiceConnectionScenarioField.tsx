@@ -18,6 +18,7 @@ interface ClientServiceConnectionScenarioFieldProps {
   formDisabled: boolean;
   patchDraft: (partial: Partial<ClientServiceFormState>) => void;
   credentialLabel: string | null;
+  className?: string;
   onCredentialCleared: () => void;
 }
 
@@ -30,13 +31,15 @@ export function ClientServiceConnectionScenarioField({
   formDisabled,
   patchDraft,
   credentialLabel,
+  className,
   onCredentialCleared,
 }: ClientServiceConnectionScenarioFieldProps) {
   const t = useClientServicesT();
   const hasLinkedCredential = Boolean(draft.providerAccountId.trim());
+  const showUnlinkWarning = draft.connectionMode === 'CLIENT_DNS' && hasLinkedCredential;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={className ? 'contents' : 'flex flex-col gap-2'}>
       <InlineField
         variant="controlled"
         label={t('fields.connectionScenario')}
@@ -44,14 +47,15 @@ export function ClientServiceConnectionScenarioField({
         value={draft.connectionMode}
         icon={<GitBranch size={12} />}
         disabled={formDisabled}
+        className={className}
         options={CONNECTION_SCENARIO_OPTIONS.map((option) => ({
           value: option.value,
           label: t(option.labelKey),
         }))}
         onValueChange={(connectionMode) => patchDraft({ connectionMode })}
       />
-      {draft.connectionMode === 'CLIENT_DNS' && hasLinkedCredential ? (
-        <div className="flex flex-col gap-2 rounded-md border px-3 py-2">
+      {showUnlinkWarning ? (
+        <div className="flex flex-col gap-2 rounded-md border px-3 py-2 sm:col-span-2">
           <p className="text-muted-foreground text-xs">
             {t('domainPurchase.dnsCredentialWarning', {
               name: credentialLabel ?? t('fields.credentials'),

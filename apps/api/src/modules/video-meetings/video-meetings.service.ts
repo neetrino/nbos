@@ -9,41 +9,27 @@ import { PrismaClient, VideoMeetingStatus, type VideoMeetingEntityLinkType } fro
 import { PRISMA_TOKEN } from '../../database.module';
 import type { CurrentUserPayload } from '../../common/decorators';
 import { assertVideoMeetingEntityAccessible } from './video-meetings-entity-access';
-import {
-  accessibleVideoMeetingWhere,
-  isVideoMeetingAccessible,
-  parseVideoMeetingPage,
-} from './video-meetings-access-query';
+import { isVideoMeetingAccessible } from './video-meetings-access-query';
 import { VIDEO_MEETING_DEFAULT_TITLE } from './video-meetings.constants';
 import { generateOpaqueLivekitRoomName } from './video-meetings-room-name';
+import { closeOpenMeetingRoom } from './video-meetings-close-room';
+import { authorizeMeetingEnd } from './video-meetings-end-access';
 import { VideoMeetingsLivekitService } from './video-meetings-livekit.service';
 import {
   assertSafeVideoMeetingPayload,
   serializeVideoMeetingCard,
-  serializeVideoMeetingListItem,
   type VideoMeetingCardDto,
-  type VideoMeetingListItemDto,
 } from './video-meetings.serializer';
 import type {
   AttachVideoMeetingEntityLinkDto,
   CreateVideoMeetingDto,
-  ListVideoMeetingsQueryDto,
   VideoMeetingLifecycleConfirmDto,
 } from './dto/video-meetings.dto';
-import { VideoMeetingStatusFilterDto } from './dto/video-meetings.dto';
 import { VideoMeetingsRecordingService } from './video-meetings-recording.service';
 import type { VideoMeetingRecordingGroupDto } from './video-meetings-recording.serializer';
 import { VideoMeetingsCalendarLinkService } from './video-meetings-calendar-link.service';
-import {
-  videoMeetingCardInclude,
-  videoMeetingListInclude,
-  type VideoMeetingCardRow,
-} from './video-meetings-includes';
-
-type ListResult = {
-  items: VideoMeetingListItemDto[];
-  meta: { page: number; pageSize: number; total: number };
-};
+import { videoMeetingCardInclude, type VideoMeetingCardRow } from './video-meetings-includes';
+import { canStartVideoMeeting } from './video-meetings-status';
 
 @Injectable()
 export class VideoMeetingsService {
@@ -54,7 +40,6 @@ export class VideoMeetingsService {
     private readonly calendarLink: VideoMeetingsCalendarLinkService,
   ) {}
 
-  /** Create an instant meeting; optional Calendar link only when explicitly requested. */
   async create(user: CurrentUserPayload, dto: CreateVideoMeetingDto): Promise<VideoMeetingCardDto> {
     const title = dto.title?.trim() || VIDEO_MEETING_DEFAULT_TITLE;
     const calendarMeetingId = await this.calendarLink.resolveCalendarMeetingIdForCreate(
@@ -75,65 +60,52 @@ export class VideoMeetingsService {
     return this.toCard(meeting, user.permissions);
   }
 
-  /**
-   * Start meeting: persist session + opaque room name.
-   * When LiveKit env is configured, ensure the room server-side (never trust the browser).
-   */
-  async start(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {
-    const meeting = await this.requireHostOrOwner(meetingId, user.id);
-    if (
-      meeting.status === VideoMeetingStatus.ENDED ||
-      meeting.status === VideoMeetingStatus.CANCELLED
-    ) {
-      throw new BadRequestException('Cannot start an ended or cancelled meeting');
-    }
-    if (meeting.status === VideoMeetingStatus.ACTIVE) {
-      throw new BadRequestException('Meeting is already active');
-    }
-    const now = new Date();
-    const livekitRoomName = generateOpaqueLivekitRoomName();
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.videoMeetingSession.create({
-        data: {
-          meetingId,
-          livekitRoomName,
-          startedAt: now,
-        },
-      });
-      return tx.videoMeeting.update({
-        where: { id: meetingId },
-        data: { status: VideoMeetingStatus.ACTIVE },
-        include: videoMeetingCardInclude,
-      });
+  async rename(user: CurrentUserPayload, meetingId: string, title: string) {
+    await this.requireHostOrOwner(meetingId, user.id);
+    const trimmed = title.trim();
+    if (!trimmed) throw new BadRequestException('Title is required');
+    const updated = await this.prisma.videoMeeting.update({
+      where: { id: meetingId },
+      data: { title: trimmed },
+      include: videoMeetingCardInclude,
     });
-    if (this.livekit.isConfigured()) {
-      await this.livekit.ensureRoom(livekitRoomName);
-    }
     return this.toCard(updated, user.permissions);
   }
 
-  async list(user: CurrentUserPayload, query: ListVideoMeetingsQueryDto): Promise<ListResult> {
-    const { page, pageSize } = parseVideoMeetingPage(query);
-    const where = accessibleVideoMeetingWhere(user.id, query.status);
-    const [rows, total] = await Promise.all([
-      this.prisma.videoMeeting.findMany({
-        where,
-        include: videoMeetingListInclude,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.videoMeeting.count({ where }),
-    ]);
-    return {
-      items: rows.map(serializeVideoMeetingListItem),
-      meta: { page, pageSize, total },
-    };
-  }
-
-  /** Ended meetings the caller may access (history). */
-  async history(user: CurrentUserPayload, query: ListVideoMeetingsQueryDto): Promise<ListResult> {
-    return this.list(user, { ...query, status: VideoMeetingStatusFilterDto.ENDED });
+  async start(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {
+    const meeting = await this.requireHostOrOwner(meetingId, user.id);
+    if (meeting.status === VideoMeetingStatus.ACTIVE) {
+      throw new BadRequestException('Meeting is already active');
+    }
+    if (!canStartVideoMeeting(meeting.status)) {
+      throw new BadRequestException('Cannot start a cancelled meeting');
+    }
+    const now = new Date();
+    const livekitRoomName = generateOpaqueLivekitRoomName();
+    const liveKitConfigured = this.livekit.isConfigured();
+    if (liveKitConfigured) {
+      await this.livekit.ensureRoom(livekitRoomName);
+    }
+    try {
+      const updated = await this.prisma.$transaction(async (tx) => {
+        await tx.videoMeetingSession.create({
+          data: {
+            meetingId,
+            livekitRoomName,
+            startedAt: now,
+          },
+        });
+        return tx.videoMeeting.update({
+          where: { id: meetingId },
+          data: { status: VideoMeetingStatus.ACTIVE },
+          include: videoMeetingCardInclude,
+        });
+      });
+      return this.toCard(updated, user.permissions);
+    } catch (error) {
+      if (liveKitConfigured) await this.livekit.closeRoom(livekitRoomName);
+      throw error;
+    }
   }
 
   async getCard(user: CurrentUserPayload, meetingId: string): Promise<VideoMeetingCardDto> {
@@ -150,17 +122,20 @@ export class VideoMeetingsService {
     return this.toCard(meeting, user.permissions);
   }
 
-  /** Soft-end an active meeting (no hard delete of business history). */
+  /** End the open session; the room goes IDLE and keeps people, messages and recordings. */
   async end(
     user: CurrentUserPayload,
     meetingId: string,
     confirm?: VideoMeetingLifecycleConfirmDto,
   ): Promise<VideoMeetingCardDto> {
-    const meeting = await this.requireHostOrOwner(meetingId, user.id);
+    const meeting = await this.prisma.videoMeeting.findUnique({ where: { id: meetingId } });
+    if (!meeting) throw new NotFoundException('Meeting not found');
     if (meeting.status !== VideoMeetingStatus.ACTIVE) {
       throw new BadRequestException('Only an active meeting can be ended');
     }
+    const access = await authorizeMeetingEnd(this.prisma, this.livekit, meetingId, user.id);
     await this.recordings.stopIfRecordingOnMeetingEnd(meetingId);
+    await closeOpenMeetingRoom(this.prisma, this.livekit, meetingId);
     const now = new Date();
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.videoMeetingSession.updateMany({
@@ -169,15 +144,17 @@ export class VideoMeetingsService {
       });
       return tx.videoMeeting.update({
         where: { id: meetingId },
-        data: { status: VideoMeetingStatus.ENDED, endedAt: now },
+        data: { status: VideoMeetingStatus.IDLE, endedAt: now },
         include: videoMeetingCardInclude,
       });
     });
-    await this.calendarLink.maybeCancelLinkedCalendar(
-      user,
-      meeting.calendarMeetingId,
-      confirm?.alsoCancelCalendarMeeting,
-    );
+    if (access.mayCancelCalendar) {
+      await this.calendarLink.maybeCancelLinkedCalendar(
+        user,
+        meeting.calendarMeetingId,
+        confirm?.alsoCancelCalendarMeeting,
+      );
+    }
     return this.toCard(updated, user.permissions);
   }
 

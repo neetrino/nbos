@@ -137,7 +137,7 @@ export const PINNED_ACTIONS: PinnedAction[] = [
     label: 'Salary',
     href: '/finance/payroll',
     icon: FileText,
-    module: 'PAYROLL',
+    module: 'FINANCE_SALARY',
     action: 'VIEW',
     description: 'Review salary and payroll runs.',
   },

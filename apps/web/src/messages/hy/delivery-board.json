@@ -121,13 +121,9 @@
     "title": "Փուլի պատրաստվածություն",
     "empty": "Այս վիճակի համար փուլի պահանջների տողեր չկան։",
     "deadlineSet": "Վերջնաժամկետը սահմանված է",
-    "noOpenWorkSpaceTasks": "Աշխատանքային տարածքի բաց առաջադրանքներ չկան",
     "noOpenExtensions": "Բաց ընդլայնումներ չկան",
-    "noOpenTasks": "Բաց առաջադրանքներ չկան",
     "noOpenTickets": "Բաց տոմսեր չկան",
     "clientAcceptance": "Հաճախորդի ընդունումը գրանցված է",
-    "orderClosed": "Պատվերը ֆինանսապես փակ է",
-    "noUnpaidInvoices": "Չվճարված հաշիվներ չկան",
     "scopeFilled": "Ծավալն ու նշումները լրացված են",
     "ownerAssigned": "Պատասխանատուն նշանակված է",
     "stageChecklist": "Փուլի ստուգացանք",
@@ -215,7 +211,8 @@
     "cancelledPrefix": "Չեղարկված՝"
   },
   "hub": {
-    "maintenance": "Սպասարկում"
+    "maintenance": "Սպասարկում",
+    "registered": "Առանց մշակման"
   },
   "acceptance": {
     "title": "Հաճախորդի ընդունում",

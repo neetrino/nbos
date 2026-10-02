@@ -6,6 +6,7 @@ import {
   computePayrollIncludedBonusAmount,
   computeSalesKpiPayoutFactor,
   resolveSalesKpiPayoutFactorFromRun,
+  resolveSalesKpiPayoutFactorOrHold,
 } from './sales-kpi-payroll-payout';
 
 describe('computeSalesKpiPayoutFactor', () => {
@@ -30,13 +31,39 @@ describe('computeSalesKpiPayoutFactor', () => {
 });
 
 describe('resolveSalesKpiPayoutFactorFromRun', () => {
-  it('returns 1 when KPI fields unset', () => {
+  it('holds when KPI fields unset (does not pay factor 1 or 0)', () => {
     expect(
       resolveSalesKpiPayoutFactorFromRun({
         kpiSalesPlanAmount: null,
         kpiSalesActualAmount: null,
-      }).toString(),
-    ).toBe('1');
+      }),
+    ).toBeNull();
+  });
+});
+
+describe('resolveSalesKpiPayoutFactorOrHold', () => {
+  const examplePlan = new Decimal('1500000');
+
+  it('pays factor 1 at exactly 70 percent of an individual plan', () => {
+    expect(resolveSalesKpiPayoutFactorOrHold(examplePlan, new Decimal('1050000'))?.toString()).toBe(
+      '1',
+    );
+  });
+
+  it('pays factor 0.5 at exactly 50 percent of an individual plan', () => {
+    expect(resolveSalesKpiPayoutFactorOrHold(examplePlan, new Decimal('750000'))?.toString()).toBe(
+      '0.5',
+    );
+  });
+
+  it('pays factor 0 just below 50 percent', () => {
+    expect(
+      resolveSalesKpiPayoutFactorOrHold(examplePlan, new Decimal('749999.99'))?.toString(),
+    ).toBe('0');
+  });
+
+  it('holds when plan is missing', () => {
+    expect(resolveSalesKpiPayoutFactorOrHold(null, new Decimal('1050000'))).toBeNull();
   });
 });
 

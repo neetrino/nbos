@@ -16,6 +16,7 @@ interface EntityLeadSheetDeepLinkProps {
   onOpenChange: (open: boolean) => void;
   /** Fired after a successful save or stage change (e.g. refresh attribution list). */
   onEntityChanged?: () => void;
+  forceNestedBackdrop?: boolean;
 }
 
 export function EntityLeadSheetDeepLink({
@@ -24,6 +25,7 @@ export function EntityLeadSheetDeepLink({
   open,
   onOpenChange,
   onEntityChanged,
+  forceNestedBackdrop = false,
 }: EntityLeadSheetDeepLinkProps) {
   const t = useTranslations('crm');
   const { persistedValue: renderLeadId, onOpenChangeComplete: clearRenderLeadId } =
@@ -122,6 +124,7 @@ export function EntityLeadSheetDeepLink({
       onUpdate={handleUpdate}
       onStatusChange={handleStatusChange}
       onRefresh={handleRefresh}
+      forceNestedBackdrop={forceNestedBackdrop}
     />
   );
 }

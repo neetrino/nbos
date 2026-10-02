@@ -50,6 +50,7 @@ interface LeadSheetProps {
   blockerNavigation?: LeadSheetBlockerNavigation | null;
   onBlockerNavigationConsumed?: () => void;
   stageGateHighlight?: LeadSheetStageGateHighlight | null;
+  forceNestedBackdrop?: boolean;
 }
 
 function leadGeneralSaveErrorMessage(err: unknown, fallback: string): string {
@@ -73,6 +74,7 @@ export function LeadSheet({
   blockerNavigation = null,
   onBlockerNavigationConsumed,
   stageGateHighlight = null,
+  forceNestedBackdrop = false,
 }: LeadSheetProps) {
   const t = useTranslations('crm');
   const { persistedValue: renderLead, onOpenChangeComplete } = useSheetPersistedValue(lead);
@@ -205,6 +207,7 @@ export function LeadSheet({
             layout="full"
             contentClassName={LEAD_DETAIL_SHEET_WIDTH_CLASS}
             railAnchorClassName={LEAD_DETAIL_SHEET_RAIL_ANCHOR_CLASS}
+            forceNestedBackdrop={forceNestedBackdrop}
           >
             <div className="text-muted-foreground flex items-center gap-2 p-5 text-sm">
               <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -245,6 +248,7 @@ export function LeadSheet({
               onOpenChange(false);
             }}
             onRefresh={onRefresh}
+            forceNestedBackdrop={forceNestedBackdrop}
             onTaskCreateOpenChange={setTaskCreateOpen}
             taskListRefreshSignal={taskListRefreshSignal}
           />

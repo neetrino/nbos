@@ -8,6 +8,7 @@ export type RelationEntityKind =
   | 'product'
   | 'employee'
   | 'order'
+  | 'deal'
   | 'credential';
 
 export type RelationPickerOption = {
@@ -24,10 +25,12 @@ export type RelationCreatePrefill = {
   name?: string;
   firstName?: string;
   lastName?: string;
+  taxStatus?: 'TAX' | 'TAX_FREE';
   projectId?: string;
 };
 
 export type RelationCreateContext = {
+  taxStatus?: 'TAX' | 'TAX_FREE';
   projectId?: string;
 };
 
@@ -51,6 +54,8 @@ type RelationPickerBaseProps = {
   /** Opens create flow; `searchQuery` is set when user typed in the search box. */
   onCreate?: (searchQuery: string) => void;
   /** Default `bottom`. Use `top` to pin Create above the list. */
+  /** Matches the creation result to this specific field. */
+  createIntent?: string;
   createPlacement?: 'bottom' | 'top';
   /** Controlled open state. When omitted, the picker manages open internally. */
   open?: boolean;
@@ -99,6 +104,7 @@ export const RELATION_KIND_LABELS: Record<RelationEntityKind, string> = {
   product: 'Product',
   employee: 'Employee',
   order: 'Order',
+  deal: 'Deal',
   credential: 'Credentials',
 };
 
@@ -113,5 +119,6 @@ export const RELATION_CREATE_LABELS: Record<RelationEntityKind, string> = {
   product: 'Create product',
   employee: 'Add employee',
   order: 'Create order',
+  deal: 'Create deal',
   credential: 'Create credential',
 };

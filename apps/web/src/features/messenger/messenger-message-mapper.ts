@@ -1,4 +1,5 @@
 import type { MessengerMessageRow } from '@/lib/api/messenger';
+import type { MessengerReplyPreview } from './reply-preview';
 
 export interface MessengerViewMessage {
   id: string;
@@ -11,6 +12,12 @@ export interface MessengerViewMessage {
   deliveryLabel?: string | null;
   /** Set only while a failed local send can be retried with the same key. */
   localSendKey?: string | null;
+  receiptSeen?: boolean;
+  replyTo?: MessengerReplyPreview;
+  replyToMessageId?: string | null;
+  forwardedFrom?: string | null;
+  forwardedContent?: string | null;
+  forwardSourceMessageId?: string | null;
 }
 
 export function initialsFromDisplayName(name: string): string {

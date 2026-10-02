@@ -4,7 +4,6 @@ import {
   type ClientServiceBillingModel,
   type ClientServiceType,
   type ExpenseFrequency,
-  type TaxStatus,
 } from '@nbos/database';
 import { INVOICE_CREATE_PRODUCT_REQUIRED_MESSAGE } from '@nbos/shared';
 import { PRISMA_TOKEN } from '../../database.module';
@@ -41,7 +40,6 @@ interface ClientServiceRecordRow {
   frequency: ExpenseFrequency;
   ourCost: unknown;
   clientCharge: unknown;
-  taxStatus: TaxStatus;
   renewalDate: Date | null;
 }
 
@@ -61,8 +59,8 @@ export class ClientServiceFlowsService {
     options: ClientServiceWriteOptions = {},
   ) {
     const service = await this.loadService(serviceId, options.access);
-    if (service.billingModel !== 'WE_PAY') {
-      throw new BadRequestException('Only we-pay services can create client invoices');
+    if (service.billingModel !== 'CLIENT_CHARGE') {
+      throw new BadRequestException('Only Client Charge services can create client invoices');
     }
     const amount = requirePositiveAmount(
       body.amount ?? Number(service.clientCharge),
@@ -128,8 +126,7 @@ export class ClientServiceFlowsService {
       credentialId: service.providerAccountId,
       clientServiceRecordId: service.id,
       sourceInvoiceId: body.sourceInvoiceId?.trim() || undefined,
-      isPassThrough: service.billingModel === 'WE_PAY',
-      taxStatus: service.taxStatus,
+      isPassThrough: service.billingModel === 'CLIENT_CHARGE',
       notes,
     });
   }

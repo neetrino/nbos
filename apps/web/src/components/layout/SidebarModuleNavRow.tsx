@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SIDEBAR_NAV_ITEM_CLASS } from './sidebar-layout-constants';
+import {
+  SIDEBAR_NAV_ITEM_CLASS,
+  SIDEBAR_CHEVRON_TRANSITION_CLASS,
+} from './sidebar-layout-constants';
 import { isNavChildLink, type NavModuleDefinition } from '@/lib/navigation/nav-config';
 import { useModuleEntryHref } from '@/lib/navigation/hooks/use-module-entry-href';
 import { getFirstChildHref, isNavChildLinkActive } from '@/lib/navigation/nav-route-utils';
@@ -11,7 +14,13 @@ import { isRegisteredModuleKey } from '@/lib/navigation/module-last-visit';
 import { SidebarModuleIcon } from './SidebarModuleIcon';
 import { SidebarNavQuickActionButton } from './SidebarNavQuickActionButton';
 import { SidebarChildNavList } from './sidebar-child-nav-list';
+import { SidebarCollapsePanel } from './SidebarCollapsePanel';
+import { ModuleNavTrigger } from './sidebar-module-nav-trigger';
 import { useMessengerBootstrapPrefetch } from '@/features/messenger/persist/use-messenger-bootstrap-prefetch';
+import { useMessengerOverlayOptional } from '@/features/messenger-internal/messenger-overlay-context';
+import { sectionFromPathname } from '@/features/messenger-internal/internal-messenger-section';
+import { useClientMessengerOverlayOptional } from '@/features/messenger-client/client-messenger-overlay-context';
+import { clientSectionFromPathname } from '@/features/messenger-client/client-messenger-section';
 import { useTranslations } from 'next-intl';
 
 interface SidebarModuleNavRowProps {
@@ -36,14 +45,22 @@ export function SidebarModuleNavRow({
   muted = false,
 }: SidebarModuleNavRowProps) {
   const prefetchMessenger = useMessengerBootstrapPrefetch(item.key);
+  const messengerOverlay = useMessengerOverlayOptional();
+  const clientOverlay = useClientMessengerOverlayOptional();
   const moduleEntryHref = useModuleEntryHref(item.key, item.href, pathname);
   const moduleHref = isRegisteredModuleKey(item.key) ? moduleEntryHref : item.href;
   const childPathActive =
     item.children?.some(
       (child) => isNavChildLink(child) && isNavChildLinkActive(pathname, child, item.key),
     ) ?? false;
+  const messengerOpen = item.key === 'messenger' && Boolean(messengerOverlay?.isOpen);
+  const clientOpen = item.key === 'client-messenger' && Boolean(clientOverlay?.isOpen);
   const active =
-    childPathActive || pathname.startsWith(item.href) || pathname.startsWith(moduleHref);
+    messengerOpen ||
+    clientOpen ||
+    childPathActive ||
+    pathname.startsWith(item.href) ||
+    pathname.startsWith(moduleHref);
   const firstChildHref = isRegisteredModuleKey(item.key)
     ? moduleEntryHref
     : getFirstChildHref(item);
@@ -104,19 +121,34 @@ function ParentModuleNavRow({
 }) {
   const t = useTranslations('navigation');
   const moduleLabel = t(item.label);
+  const overlay = useMessengerOverlayOptional();
+  const clientOverlay = useClientMessengerOverlayOptional();
+  const messenger = item.key === 'messenger' || item.key === 'client-messenger';
+  const onActivate = () => {
+    onExpandOnly();
+    if (item.key === 'messenger') {
+      clientOverlay?.closeClientMessenger();
+      overlay?.openMessenger(sectionFromPathname(firstChildHref));
+    }
+    if (item.key === 'client-messenger') {
+      overlay?.closeMessenger();
+      clientOverlay?.openClientMessenger(clientSectionFromPathname(firstChildHref));
+    }
+  };
 
   if (collapsed) {
     return (
       <li className="relative z-[1]" onPointerEnter={onPrefetch} onFocusCapture={onPrefetch}>
-        <Link
+        <ModuleNavTrigger
+          messenger={messenger}
           href={firstChildHref}
-          onClick={onExpandOnly}
           title={moduleLabel}
-          data-sidebar-nav-active={isActive ? 'true' : undefined}
+          active={isActive}
           className={navLinkClass(isActive, collapsed, muted)}
+          onActivate={onActivate}
         >
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
-        </Link>
+        </ModuleNavTrigger>
       </li>
     );
   }
@@ -126,13 +158,15 @@ function ParentModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-center overflow-hidden rounded-xl transition-colors',
-          isActive ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-muted',
+          'group relative z-[1] flex w-full items-center overflow-hidden rounded-xl transition-colors duration-200',
+          isActive ? 'text-sidebar-foreground' : 'text-sidebar-muted',
         )}
       >
-        <Link
+        <ModuleNavTrigger
+          messenger={messenger}
           href={firstChildHref}
-          onClick={onExpandOnly}
+          active={isActive}
+          onActivate={onActivate}
           className={cn(
             `${SIDEBAR_NAV_ITEM_CLASS} flex min-w-0 flex-1 items-center gap-2 text-[13px] font-medium transition-colors`,
             isActive
@@ -142,7 +176,7 @@ function ParentModuleNavRow({
         >
           <SidebarModuleIcon moduleKey={item.key} active={isActive} muted={muted} />
           <span className="truncate">{moduleLabel}</span>
-        </Link>
+        </ModuleNavTrigger>
         <button
           type="button"
           aria-expanded={expanded}
@@ -156,10 +190,15 @@ function ParentModuleNavRow({
             isActive && 'text-sidebar-foreground',
           )}
         >
-          <ChevronLeft size={14} className={cn('transition-transform', expanded && '-rotate-90')} />
+          <ChevronLeft
+            size={14}
+            className={cn(SIDEBAR_CHEVRON_TRANSITION_CLASS, expanded && '-rotate-90')}
+          />
         </button>
       </div>
-      {expanded ? <SidebarChildNavList item={item} pathname={pathname} /> : null}
+      <SidebarCollapsePanel open={expanded}>
+        <SidebarChildNavList item={item} pathname={pathname} />
+      </SidebarCollapsePanel>
     </li>
   );
 }
@@ -205,9 +244,9 @@ function LeafModuleNavRow({
       <div
         data-sidebar-nav-active={isActive ? 'true' : undefined}
         className={cn(
-          'group relative flex w-full items-center overflow-hidden rounded-xl transition-colors',
+          'group relative z-[1] flex w-full items-center overflow-hidden rounded-xl transition-colors duration-200',
           isActive
-            ? 'bg-sidebar-accent text-sidebar-foreground'
+            ? 'text-sidebar-foreground'
             : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
           muted && !isActive && 'opacity-60',
         )}
@@ -231,10 +270,10 @@ function LeafModuleNavRow({
 
 function navLinkClass(active: boolean, collapsed: boolean, muted: boolean): string {
   return cn(
-    'group relative flex items-center gap-2 rounded-xl text-[13px] font-medium transition-colors duration-150',
+    'group relative z-[1] flex items-center gap-2 rounded-xl text-[13px] font-medium transition-colors duration-200',
     SIDEBAR_NAV_ITEM_CLASS,
     active
-      ? 'bg-sidebar-accent text-sidebar-foreground'
+      ? 'text-sidebar-foreground'
       : 'text-sidebar-muted hover:bg-secondary/50 hover:text-sidebar-foreground',
     muted && !active && 'opacity-60',
     collapsed && 'justify-center px-1.5 py-1',

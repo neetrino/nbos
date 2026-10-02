@@ -2,8 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { Decimal, type TransactionClient } from '@nbos/database';
 
 import type { CompensationPayrollPolicy } from '../compensation-profiles/resolve-compensation-payroll-policy';
-import { computeKpiGatePayoutFactor } from './kpi-gate-payout';
 import type { KpiGateRules } from './kpi-gate-rules.types';
+import { resolveSalesKpiPayoutFactorOrHold } from './sales-kpi-payroll-payout';
 
 export type SalesKpiAmountSnapshot = {
   kpiSalesPlanAmount: Decimal | null;
@@ -61,13 +61,12 @@ export function assertEmployeeSalesKpiComplete(snapshot: SalesKpiAmountSnapshot)
 export function salesKpiPayoutFactorFromSnapshot(
   snapshot: SalesKpiAmountSnapshot,
   gateRules: KpiGateRules,
-): Decimal {
-  const plan = snapshot.kpiSalesPlanAmount;
-  const actual = snapshot.kpiSalesActualAmount;
-  if (plan == null || actual == null || plan.lte(0)) {
-    return new Decimal(1);
-  }
-  return computeKpiGatePayoutFactor(plan, actual, gateRules);
+): Decimal | null {
+  return resolveSalesKpiPayoutFactorOrHold(
+    snapshot.kpiSalesPlanAmount,
+    snapshot.kpiSalesActualAmount,
+    gateRules,
+  );
 }
 
 type AttachKpiTx = Pick<TransactionClient, 'salaryLine'>;
@@ -100,14 +99,13 @@ export function resolveSalesKpiFactorForEmployee(params: {
   line: LineKpiFields;
   runKpiSnapshot: SalesKpiAmountSnapshot;
   payrollPolicy: CompensationPayrollPolicy;
-  cache: Map<string, Decimal>;
-}): Decimal {
+  cache: Map<string, Decimal | null>;
+}): Decimal | null {
   if (params.bonusType !== 'SALES') {
     return new Decimal(1);
   }
-  const cached = params.cache.get(params.employeeId);
-  if (cached != null) {
-    return cached;
+  if (params.cache.has(params.employeeId)) {
+    return params.cache.get(params.employeeId) ?? null;
   }
   const resolved = resolveEmployeeSalesKpi(params.line, params.runKpiSnapshot);
   const factor = salesKpiPayoutFactorFromSnapshot(resolved, params.payrollPolicy.gateRules);

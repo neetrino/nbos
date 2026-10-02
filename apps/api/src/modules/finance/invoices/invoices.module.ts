@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BonusModule } from '../../bonus/bonus.module';
 import { DealsModule } from '../../crm/deals/deals.module';
 import { WhatsAppGatewayModule } from '../../integrations/whatsapp-gateway/whatsapp-gateway.module';
 import { MessengerModule } from '../../messenger/messenger.module';
@@ -11,6 +12,7 @@ import { InvoicesService } from './invoices.service';
 
 @Module({
   imports: [
+    BonusModule,
     DealsModule,
     OperationalJournalModule,
     WhatsAppGatewayModule,

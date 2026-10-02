@@ -125,6 +125,7 @@ function createService() {
     },
     messengerConversationParticipant: {
       findFirst: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
       upsert: vi.fn(),
     },
     resourceAccessGrant: { findFirst: vi.fn().mockResolvedValue(null), upsert: vi.fn() },

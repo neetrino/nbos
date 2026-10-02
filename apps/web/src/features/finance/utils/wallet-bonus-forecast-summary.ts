@@ -15,7 +15,7 @@ export type WalletBonusForecastSummary = {
 
 /**
  * Client-side bonus forecast from wallet snapshot (NBOS — not bank balance).
- * Incoming = potential + in-progress planned; earned path = next payroll remaining + paid.
+ * Incoming = potential + in-progress planned. Paid is cash already attributed, never the accrued amount.
  */
 export function summarizeWalletBonusForecast(
   bonuses: readonly EmployeeWalletBonusRow[],
@@ -43,7 +43,9 @@ export function summarizeWalletBonusForecast(
         paidFromReleases += paid;
         break;
       case 'PAID':
-        paidFromReleases += paid > 0 ? paid : planned;
+        if (row.cashConfirmation !== 'UNCONFIRMED') {
+          paidFromReleases += paid;
+        }
         break;
       case 'CORRECTIONS':
         correctionsPlanned += planned;

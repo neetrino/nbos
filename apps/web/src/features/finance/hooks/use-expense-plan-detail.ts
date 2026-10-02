@@ -11,7 +11,7 @@ interface UseExpensePlanDetailOptions {
 
 export function useExpensePlanDetail(planId: string, options?: UseExpensePlanDetailOptions) {
   const open = options?.open ?? Boolean(planId);
-  const { entity, loading, hydrating, error, refresh } = useEntityDetailHydration({
+  const { entity, setEntity, loading, hydrating, error, refresh } = useEntityDetailHydration({
     entityId: planId,
     open: open && Boolean(planId),
     initialEntity: options?.initialPlan,
@@ -24,5 +24,5 @@ export function useExpensePlanDetail(planId: string, options?: UseExpensePlanDet
     await refresh();
   }, [refresh]);
 
-  return { plan: entity, loading, hydrating, error, fetchPlan };
+  return { plan: entity, setPlan: setEntity, loading, hydrating, error, fetchPlan };
 }

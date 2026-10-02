@@ -22,21 +22,22 @@ Media must **not** pass through ordinary NBOS API HTTP handlers. Treat media Red
 
 ## Proposed domain entities (schema contract to reconcile before coding)
 
-| Concept                      | Purpose                                                                                                           |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `VideoMeeting`               | Logical identity, title, host/owner, lifecycle, optional schedule and optional external business links            |
-| `VideoMeetingSession`        | Actual room run, start/end, LiveKit room reference; one logical meeting may have several sessions                 |
-| `VideoMeetingParticipant`    | Stable opaque session identity, employee **or unverified guest**, join/leave, track timeline                      |
-| `VideoMeetingInvite`         | Single-room, expiring/revocable guest invitation; store token **digest**, never plaintext                         |
-| `VideoMeetingConsent`        | Notice version and affirmative consent/revocation by participant/session                                          |
-| `VideoMeetingRecording`      | Recording group, composite job, start/stop and reconciliation/status                                              |
-| `VideoMeetingRecordingAsset` | Individual video/audio output, participant/track/time range, Egress id, Drive FileAsset id and independent status |
-| `VideoMeetingEntityLink`     | Optional validated references to Deal/Project/Product/Contact, editable **after** the meeting                     |
-| `CalendarMeeting`            | Existing scheduling record only where the user explicitly enables Calendar integration                            |
+| Concept                      | Purpose                                                                                                                                            |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VideoMeeting`               | Durable room: title, host/owner, lifecycle, optional schedule and optional external business links. Survives every session                         |
+| `VideoMeetingSession`        | One run of that room, start/end, LiveKit room reference. Ending a run leaves the room reusable                                                     |
+| `VideoMeetingMessage`        | Persisted plain-text chat for the room. LiveKit is the live transport; PostgreSQL is the record. See [durable room](07-Durable-Room-and-Thread.md) |
+| `VideoMeetingParticipant`    | Stable opaque session identity, employee **or unverified guest**, join/leave, track timeline                                                       |
+| `VideoMeetingInvite`         | Single-room, expiring/revocable guest invitation; store token **digest**, never plaintext                                                          |
+| `VideoMeetingConsent`        | Notice version and affirmative consent/revocation by participant/session                                                                           |
+| `VideoMeetingRecording`      | Recording group, composite job, start/stop and reconciliation/status                                                                               |
+| `VideoMeetingRecordingAsset` | Individual video/audio output, participant/track/time range, Egress id, Drive FileAsset id and independent status                                  |
+| `VideoMeetingEntityLink`     | Optional validated references to Deal/Project/Product/Contact, editable **after** the meeting                                                      |
+| `CalendarMeeting`            | Existing scheduling record only where the user explicitly enables Calendar integration                                                             |
 
 Avoid representing session reconnect as a different person. A guest's display name is not a stable track key; backend mints opaque identities and persists participant/track mappings. Never infer verified Contact association just because a guest typed their name.
 
-**Source of truth:** Video Meetings owns room status; Calendar owns schedule for explicitly linked Calendar events; Drive owns files; linked modules own business objects. Avoid reciprocal automatic updates/duplicate calendar events.
+**Source of truth:** Video Meetings owns room status and the persisted room thread; Calendar owns schedule for explicitly linked Calendar events; Drive owns files; linked modules own business objects. Avoid reciprocal automatic updates/duplicate calendar events.
 
 ## Reliable recording pipeline
 

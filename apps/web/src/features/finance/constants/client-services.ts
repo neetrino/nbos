@@ -30,15 +30,27 @@ export const CLIENT_SERVICE_STATUS_SEGMENTED_OPTIONS = [
 export const CLIENT_SERVICE_TYPE_SEGMENTED_OPTIONS = CLIENT_SERVICE_TYPES;
 
 export const CLIENT_SERVICE_BILLING_MODELS = [
+  { value: 'CLIENT_CHARGE', label: 'Client Charge' },
   { value: 'WE_PAY', label: 'We Pay' },
-  { value: 'REMINDER_ONLY', label: 'Reminder Only' },
+  { value: 'REMINDER_ONLY', label: 'Remember Only' },
 ] as const;
 
 /** Compact labels for client service billing model segmented control. */
 export const CLIENT_SERVICE_BILLING_MODEL_SEGMENTED_OPTIONS = [
-  { value: 'WE_PAY', label: 'We pay' },
-  { value: 'REMINDER_ONLY', label: 'Reminder' },
+  { value: 'CLIENT_CHARGE', label: 'Client Charge' },
+  { value: 'WE_PAY', label: 'We Pay' },
+  { value: 'REMINDER_ONLY', label: 'Remember Only' },
 ] as const;
+
+/** Client pays us, then we pay the provider. */
+export function clientServiceBillsClient(billingModel: string | null | undefined): boolean {
+  return billingModel === 'CLIENT_CHARGE';
+}
+
+/** We pay the provider: Client Charge or We Pay. Remember Only does not. */
+export function clientServicePaysProvider(billingModel: string | null | undefined): boolean {
+  return billingModel === 'CLIENT_CHARGE' || billingModel === 'WE_PAY';
+}
 
 export const CLIENT_SERVICE_PRICING_MODELS = [
   { value: 'FIXED', label: 'Fixed' },

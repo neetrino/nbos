@@ -244,7 +244,6 @@ export interface Expense {
   projectId: string | null;
   credentialId: string | null;
   isPassThrough: boolean;
-  taxStatus: string;
   backlogReason: string | null;
   notes: string | null;
   createdAt: string;
@@ -253,6 +252,18 @@ export interface Expense {
     payrollRunId: string;
     payrollMonth: string;
     salaryLineId: string;
+  } | null;
+  /** Included bonuses the financier can name when this payment exceeds remaining salary. */
+  payrollCash?: {
+    baseSalary: string;
+    salaryRemaining: string;
+    carryRemaining: string;
+    bonuses: {
+      bonusReleaseId: string;
+      title: string | null;
+      orderCode: string | null;
+      remaining: string;
+    }[];
   } | null;
   /** Present when this expense was created from an Expense Plan (Plan→Card). */
   linkedExpensePlan?: { id: string; name: string } | null;
@@ -349,7 +360,6 @@ export interface CreateExpensePayload {
   expensePlanId?: string | null;
   clientServiceRecordId?: string | null;
   isPassThrough?: boolean;
-  taxStatus?: string;
   backlogReason?: string | null;
   notes?: string | null;
 }
@@ -359,6 +369,9 @@ export interface AddExpensePaymentPayload {
   amount: number;
   paymentDate: string;
   notes?: string;
+  bonusAssignments?: { bonusReleaseId: string; amount: string }[];
+  carryAmount?: string;
+  idempotencyKey?: string;
 }
 
 export interface UpdateExpensePayload {
@@ -372,7 +385,6 @@ export interface UpdateExpensePayload {
   productId?: string | null;
   credentialId?: string | null;
   isPassThrough?: boolean;
-  taxStatus?: string;
   backlogReason?: string | null;
   notes?: string | null;
 }
@@ -499,7 +511,7 @@ export interface FinanceDashboardSummary {
     company: { id: string; name: string } | null;
     projectId: string;
   }>;
-  payrollRuns: FinanceDashboardPayrollRuns;
+  payrollRuns: FinanceDashboardPayrollRuns | null;
 }
 
 export const invoicesApi = {
@@ -670,6 +682,17 @@ export const expensesApi = {
   },
   async deletePayment(expenseId: string, paymentId: string): Promise<Expense> {
     const resp = await api.delete<Expense>(`/api/expenses/${expenseId}/payments/${paymentId}`);
+    return resp.data;
+  },
+  async refundPayment(
+    expenseId: string,
+    paymentId: string,
+    data: { amount: number; paymentDate: string; reason: string },
+  ): Promise<Expense> {
+    const resp = await api.post<Expense>(
+      `/api/expenses/${expenseId}/payments/${paymentId}/refund`,
+      data,
+    );
     return resp.data;
   },
   async getStats(params?: ExpenseStatsQueryParams): Promise<ExpenseStats> {

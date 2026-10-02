@@ -4,6 +4,8 @@
 
 **Rules:** one coherent slice → checks → commit. No production deploy/migration. No secrets in git. Feature-flagged until S07 gate. V2 out of scope.
 
+S00–S07 are the conferencing baseline already written against a terminal `ENDED` room. The next slice is not a change to those done rows. Follow [durable room and thread](../../NBOS/02-Modules/22-Video-Meetings/07-Durable-Room-and-Thread.md): room returns to `IDLE`, chat is persisted, the sheet is one thread.
+
 Status values: `TODO` | `IN_PROGRESS` | `DONE` | `BLOCKED`.
 
 ---

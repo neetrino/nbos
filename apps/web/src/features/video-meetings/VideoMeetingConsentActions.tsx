@@ -7,10 +7,15 @@ import { videoMeetingsApi, type ConsentDecision } from '@/lib/api/video-meetings
 
 type VideoMeetingConsentActionsProps = {
   meetingId: string;
+  /** Quiet text buttons for the call header. */
+  compact?: boolean;
 };
 
 /** Employee self-consent actions for the current meeting participant. */
-export function VideoMeetingConsentActions({ meetingId }: VideoMeetingConsentActionsProps) {
+export function VideoMeetingConsentActions({
+  meetingId,
+  compact = false,
+}: VideoMeetingConsentActionsProps) {
   const t = useTranslations('videoMeetings.recording');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -27,6 +32,30 @@ export function VideoMeetingConsentActions({ meetingId }: VideoMeetingConsentAct
       setBusy(false);
     }
   };
+
+  if (compact) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className="text-muted-foreground hover:text-foreground text-xs"
+          disabled={busy}
+          onClick={() => void decide('GRANTED')}
+        >
+          {t('consentGrant')}
+        </button>
+        <button
+          type="button"
+          className="text-muted-foreground hover:text-foreground text-xs"
+          disabled={busy}
+          onClick={() => void decide('REVOKED')}
+        >
+          {t('consentRevoke')}
+        </button>
+        {message && <span className="text-muted-foreground text-xs">{message}</span>}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-2">

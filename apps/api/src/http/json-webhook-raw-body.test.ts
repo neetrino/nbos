@@ -7,6 +7,7 @@ import { verifyWhatsAppGatewayWebhook } from '../modules/integrations/whatsapp-g
 import {
   captureJsonWebhookRawBody,
   shouldCaptureJsonWebhookRawBody,
+  shouldParseJsonBody,
 } from './json-webhook-raw-body';
 
 const SECRET = 'gateway-project-signing-key-test';
@@ -73,12 +74,25 @@ describe('json webhook rawBody capture (FINDING-S8-01)', () => {
     expect(result).toEqual({ ok: false, reason: 'SIGNATURE' });
   });
 
+  it('captures the LiveKit recording webhook path', () => {
+    const raw = Buffer.from('{"event":"egress_ended"}');
+    const req = requestWithUrl('/api/video-meetings/livekit/webhook');
+    captureJsonWebhookRawBody(req as never, raw);
+    expect(req.rawBody?.equals(raw)).toBe(true);
+  });
+
   it('still captures the Meta webhook path', () => {
     const raw = Buffer.from('{"object":"page","entry":[]}');
     const req = requestWithUrl(META_PATH);
     captureJsonWebhookRawBody(req as never, raw);
     expect(req.rawBody?.equals(raw)).toBe(true);
     expect(shouldCaptureJsonWebhookRawBody(META_PATH)).toBe(true);
+  });
+
+  it('parses LiveKit application/webhook+json bodies', () => {
+    expect(shouldParseJsonBody('application/webhook+json')).toBe(true);
+    expect(shouldParseJsonBody('application/json; charset=utf-8')).toBe(true);
+    expect(shouldParseJsonBody('text/plain')).toBe(false);
   });
 
   it('is wired from main.ts json verify for both webhook paths', () => {

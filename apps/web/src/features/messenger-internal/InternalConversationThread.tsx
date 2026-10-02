@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useRef, type RefObject } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   mapMessengerRowToView,
   type MessengerViewMessage,
 } from '@/features/messenger/messenger-message-mapper';
+import { replyPreviewForMessage } from '@/features/messenger/reply-preview';
 import { usePermission } from '@/lib/permissions';
 import { useTaskCreatorId } from '@/features/tasks/use-task-creator-id';
-import { messengerCoreApi } from '@/lib/api/messenger-core';
-import type { Task } from '@/lib/api/tasks';
-import { toast } from 'sonner';
-import { getApiErrorMessage } from '@/lib/api-errors';
 import type {
   MessengerCoreConversationRow,
   MessengerCoreMessageRow,
@@ -19,14 +17,45 @@ import {
   failedLocalSendKey,
   localSendReceiptLabel,
 } from '@/features/messenger/query/messenger-local-send';
+import {
+  internalSheetDeliveryLabel,
+  internalSheetMessageSeen,
+} from './internal-sheet-delivery-label';
 import { conversationListTitle } from './internal-messenger-section';
-import { InternalCreateTaskFromMessages } from './InternalCreateTaskFromMessages';
-import { InternalForwardDialog } from './InternalForwardDialog';
 import { InternalMessageActionsBar } from './InternalMessageActionsBar';
+import { InternalPinnedMessageBar } from './InternalPinnedMessageBar';
+import { pinConversationMessage, unpinConversationMessage } from './pin-conversation-message';
+import { InternalMessageSelectionBar } from './InternalMessageSelectionBar';
+import { InternalJumpToEndButton } from './InternalJumpToEndButton';
+import { InternalThreadActionDialogs } from './InternalThreadActionDialogs';
 import { ThreadComposer, ThreadHeader, ThreadMessages } from './InternalThreadParts';
+import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useInternalThreadActions } from './use-internal-thread-actions';
+import { composerQuoteFromForward, type PendingForwardDraft } from './pending-forward-draft';
+import { useSheetMessengerPalette } from './sheet-messenger-palette';
+import { useScrollThreadToEnd } from './use-scroll-thread-to-end';
 
-function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[] {
+function quoteForThreadRow(
+  row: MessengerCoreMessageRow,
+  rows: MessengerCoreMessageRow[],
+): MessengerViewMessage['replyTo'] {
+  const reply = replyPreviewForMessage(row, rows);
+  if (reply) return reply;
+  if (!row.forwardedFrom) return undefined;
+  return {
+    id:
+      row.forwardSourceMessageId ??
+      row.references?.find((item) => item.purpose === 'FORWARD')?.sourceMessageId ??
+      row.id,
+    senderName: row.forwardedFrom,
+    content: row.forwardedContent ?? row.content,
+  };
+}
+
+function toViewMessages(
+  rows: MessengerCoreMessageRow[],
+  peerLastReadAt: string | null,
+): MessengerViewMessage[] {
   return rows.map((row) => ({
     ...mapMessengerRowToView({
       id: row.id,
@@ -38,14 +67,24 @@ function toViewMessages(rows: MessengerCoreMessageRow[]): MessengerViewMessage[]
       editedAt: row.editedAt,
       attachments: row.attachments,
     }),
-    deliveryLabel: localSendReceiptLabel(row),
+    deliveryLabel: localSendReceiptLabel(row) ?? internalSheetDeliveryLabel(row.status),
     localSendKey: failedLocalSendKey(row),
+    receiptSeen: internalSheetMessageSeen(row.status, row.createdAt, peerLastReadAt),
+    replyTo: quoteForThreadRow(row, rows),
+    replyToMessageId: row.replyToMessageId,
+    forwardedFrom: row.forwardedFrom ?? null,
+    forwardedContent: row.forwardedContent ?? null,
+    forwardSourceMessageId:
+      row.forwardSourceMessageId ??
+      row.references?.find((item) => item.purpose === 'FORWARD')?.sourceMessageId ??
+      null,
   }));
 }
 
 export type InternalSendExtras = {
   replyToMessageId?: string;
   mentionedEmployeeIds?: string[];
+  forwardSourceIds?: string[];
 };
 
 export function InternalConversationThread({
@@ -61,7 +100,13 @@ export function InternalConversationThread({
   collections,
   onAddToCollection,
   remoteTypingHint,
+  typingPeer = null,
+  onTypingIntent,
   onOpenInternalSource,
+  peerLastReadAt = null,
+  pendingForward = null,
+  onClearPendingForward,
+  onBeginForward,
 }: {
   conversation: MessengerCoreConversationRow;
   messages: MessengerCoreMessageRow[];
@@ -75,24 +120,32 @@ export function InternalConversationThread({
   collections: Array<{ id: string; name: string }>;
   onAddToCollection: (collectionId: string) => void;
   remoteTypingHint: string | null;
-  onOpenInternalSource?: (conversationId: string) => void;
+  typingPeer?: ConversationTypingPeer | null;
+  onTypingIntent?: () => void;
+  onOpenInternalSource?: (conversationId: string, seed?: MessengerCoreConversationRow) => void;
+  peerLastReadAt?: string | null;
+  pendingForward?: PendingForwardDraft | null;
+  onClearPendingForward?: () => void;
+  onBeginForward?: (target: MessengerCoreConversationRow, draft: PendingForwardDraft) => void;
 }) {
-  const endRef = useRef<HTMLDivElement>(null);
-  const { can } = usePermission();
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const { can, me } = usePermission();
   const { creatorId, creatorReady } = useTaskCreatorId();
-  const actions = useInternalThreadActions(messages, onOpenInternalSource);
-  const [mentions, setMentions] = useState<Array<{ id: string; label: string }>>([]);
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages.length]);
+  const actions = useInternalThreadActions(messages, onOpenInternalSource, me?.id);
+  const last = messages.at(-1);
+  const endScroll = useScrollThreadToEnd(
+    scrollerRef,
+    last?.id,
+    conversation.id,
+    Boolean(me && last?.senderId === me.id),
+  );
 
   return (
     <ThreadScaffold
       conversation={conversation}
       messages={messages}
       messagesLoading={messagesLoading}
-      views={toViewMessages(messages)}
+      views={toViewMessages(messages, peerLastReadAt ?? null)}
       newMessage={newMessage}
       onNewMessageChange={onNewMessageChange}
       onSend={onSend}
@@ -102,13 +155,20 @@ export function InternalConversationThread({
       collections={collections}
       onAddToCollection={onAddToCollection}
       remoteTypingHint={remoteTypingHint}
+      typingPeer={typingPeer}
+      onTypingIntent={onTypingIntent}
       canCreateTask={can('EDIT', 'TASKS') && Boolean(creatorId)}
       creatorId={creatorId}
       creatorReady={creatorReady}
       actions={actions}
-      mentions={mentions}
-      setMentions={setMentions}
-      endRef={endRef}
+      scrollerRef={scrollerRef}
+      showJumpToEnd={endScroll.showJumpToEnd}
+      onJumpToEnd={endScroll.jumpToEnd}
+      meId={me?.id ?? null}
+      onOpenTarget={onOpenInternalSource}
+      pendingForward={pendingForward}
+      onClearPendingForward={onClearPendingForward}
+      onBeginForward={onBeginForward}
     />
   );
 }
@@ -127,17 +187,36 @@ function ThreadScaffold(props: {
   collections: Array<{ id: string; name: string }>;
   onAddToCollection: (collectionId: string) => void;
   remoteTypingHint: string | null;
+  typingPeer?: ConversationTypingPeer | null;
+  onTypingIntent?: () => void;
   canCreateTask: boolean;
   creatorId: string | null;
   creatorReady: boolean;
   actions: ReturnType<typeof useInternalThreadActions>;
-  mentions: Array<{ id: string; label: string }>;
-  setMentions: (next: Array<{ id: string; label: string }>) => void;
-  endRef: RefObject<HTMLDivElement | null>;
+  scrollerRef: RefObject<HTMLDivElement | null>;
+  showJumpToEnd: boolean;
+  onJumpToEnd: () => void;
+  meId: string | null;
+  onOpenTarget?: (conversationId: string, seed?: MessengerCoreConversationRow) => void;
+  pendingForward?: PendingForwardDraft | null;
+  onClearPendingForward?: () => void;
+  onBeginForward?: (target: MessengerCoreConversationRow, draft: PendingForwardDraft) => void;
 }) {
   const { conversation, actions } = props;
+  const pending =
+    props.pendingForward?.conversationId === conversation.id ? props.pendingForward : null;
+  const composerQuote = pending
+    ? composerQuoteFromForward(pending)
+    : actions.replyTo
+      ? { senderName: actions.replyTo.senderName, content: actions.replyTo.content }
+      : null;
+  const palette = useSheetMessengerPalette();
+  const queryClient = useQueryClient();
+  const selectedId = actions.selectedIds[0];
+  const pinned = conversation.pinnedMessage ?? null;
+  const canWrite = Boolean(conversation.canWrite);
   return (
-    <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+    <section className={`relative flex min-h-0 min-w-0 flex-1 flex-col ${palette.canvas}`}>
       <ThreadHeader
         conversation={conversation}
         title={conversationListTitle(
@@ -149,117 +228,103 @@ function ThreadScaffold(props: {
         onToggleFavorite={props.onToggleFavorite}
         onAddToCollection={props.onAddToCollection}
       />
+      {pinned ? (
+        <InternalPinnedMessageBar
+          pinned={pinned}
+          canUnpin={canWrite}
+          onUnpin={() => void unpinConversationMessage(queryClient, conversation.id)}
+        />
+      ) : null}
       <InternalMessageActionsBar
-        selectedCount={actions.selectedMessages.length}
-        canReply={actions.selectedMessages.length === 1}
+        anchor={actions.menuAnchor}
+        onClose={actions.closeActionMenu}
         canCreateTask={props.canCreateTask}
-        onReply={actions.startReply}
-        onForward={() => actions.setForwardOpen(true)}
+        onReply={() => actions.startReply(actions.selectedIds[0])}
+        onForward={actions.openForward}
         onCreateTask={() => actions.setCreateTaskOpen(true)}
         onOpenOriginal={() => void actions.openOriginal()}
         onCopySource={() => void actions.copySource()}
-        onClear={actions.clearSelection}
+        onSelect={actions.startSelecting}
+        onPin={
+          canWrite && selectedId && pinned?.id !== selectedId
+            ? () => void pinConversationMessage(queryClient, conversation.id, selectedId)
+            : undefined
+        }
+        onUnpin={
+          canWrite && selectedId && pinned?.id === selectedId
+            ? () => void unpinConversationMessage(queryClient, conversation.id)
+            : undefined
+        }
+        onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
       />
-      <ThreadMessages
-        views={props.views}
-        messages={props.messages}
-        messagesLoading={props.messagesLoading}
-        selectedIds={actions.selectedIds}
-        onToggleSelect={actions.toggleSelect}
-        onOpenOriginalSource={actions.openOriginalBySourceId}
-        remoteTypingHint={props.remoteTypingHint}
-        endRef={props.endRef}
-      />
+      {actions.selecting ? (
+        <InternalMessageSelectionBar
+          selectedCount={actions.selectedMessages.length}
+          canCreateTask={props.canCreateTask}
+          onReply={
+            actions.selectedMessages.length === 1
+              ? () => actions.startReply(actions.selectedIds[0])
+              : undefined
+          }
+          onForward={actions.openForward}
+          onCreateTask={() => actions.setCreateTaskOpen(true)}
+          onCopySource={() => void actions.copySource()}
+          onDelete={actions.canDeleteOwn ? actions.requestDelete : undefined}
+          onDone={actions.clearSelection}
+        />
+      ) : null}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <ThreadMessages
+          views={props.views}
+          messages={props.messages}
+          messagesLoading={props.messagesLoading}
+          selectedIds={actions.selectedIds}
+          selecting={actions.selecting}
+          onToggleSelect={actions.toggleSelect}
+          onMessageContextMenu={actions.openActionMenu}
+          onOpenOriginalSource={actions.openOriginalBySourceId}
+          remoteTypingHint={props.remoteTypingHint}
+          typingPeer={props.typingPeer}
+          scrollerRef={props.scrollerRef}
+          sheet
+          meId={props.meId}
+          replyActive={Boolean(composerQuote)}
+        />
+        <InternalJumpToEndButton visible={props.showJumpToEnd} onJump={props.onJumpToEnd} />
+      </div>
       <ThreadComposer
         canSend={props.canSend}
         sendDisabled={props.sendDisabled}
         newMessage={props.newMessage}
         onNewMessageChange={props.onNewMessageChange}
-        replyTo={actions.replyTo}
-        onClearReply={actions.clearReply}
-        mentions={props.mentions}
-        onMentionsChange={props.setMentions}
-        onSend={() => {
-          if (!props.newMessage.trim()) return;
-          const extras = {
-            replyToMessageId: actions.replyTo?.id,
-            mentionedEmployeeIds: props.mentions.map((row) => row.id),
-          };
-          actions.clearReply();
-          props.setMentions([]);
-          void props.onSend(extras);
+        replyTo={composerQuote}
+        allowEmptySend={Boolean(pending)}
+        onClearReply={() => {
+          if (pending) props.onClearPendingForward?.();
+          else actions.clearReply();
         }}
+        onTypingIntent={props.onTypingIntent}
+        sheet
+        onSend={() =>
+          void Promise.resolve(
+            props.onSend({
+              replyToMessageId: pending ? undefined : actions.replyTo?.id,
+              forwardSourceIds: pending?.sourceMessageIds,
+            }),
+          ).then(() => {
+            if (pending) props.onClearPendingForward?.();
+            else actions.clearReply();
+          })
+        }
       />
-      <ThreadActionDialogs
+      <InternalThreadActionDialogs
         conversation={conversation}
         actions={actions}
         creatorId={props.creatorId}
         creatorReady={props.creatorReady}
+        onOpenTarget={props.onOpenTarget}
+        onBeginForward={props.onBeginForward}
       />
     </section>
   );
-}
-
-function ThreadActionDialogs({
-  conversation,
-  actions,
-  creatorId,
-  creatorReady,
-}: {
-  conversation: MessengerCoreConversationRow;
-  actions: ReturnType<typeof useInternalThreadActions>;
-  creatorId: string | null;
-  creatorReady: boolean;
-}) {
-  return (
-    <>
-      <InternalForwardDialog
-        open={actions.forwardOpen}
-        currentConversationId={conversation.id}
-        onClose={() => actions.setForwardOpen(false)}
-        onForward={(targetConversationId) => forwardSelected(targetConversationId, actions)}
-      />
-      {creatorId ? (
-        <InternalCreateTaskFromMessages
-          open={actions.createTaskOpen}
-          creatorId={creatorId}
-          creatorReady={creatorReady}
-          defaultLinks={conversation.primaryLinks}
-          selectedCount={actions.selectedMessages.length}
-          onOpenChange={actions.setCreateTaskOpen}
-          onCreated={(task) => void attachSources(task, actions)}
-        />
-      ) : null}
-    </>
-  );
-}
-
-async function forwardSelected(
-  targetConversationId: string,
-  actions: ReturnType<typeof useInternalThreadActions>,
-): Promise<void> {
-  const result = await messengerCoreApi.forwardMessages(
-    targetConversationId,
-    actions.selectedMessages.map((row) => row.id),
-  );
-  if (result.createdConversation !== false) return;
-  toast.success('Forwarded as a reference');
-  actions.clearSelection();
-}
-
-async function attachSources(
-  task: Task,
-  actions: ReturnType<typeof useInternalThreadActions>,
-): Promise<void> {
-  try {
-    await messengerCoreApi.attachTaskSources(
-      actions.selectedMessages.map((row) => row.id),
-      task.id,
-    );
-    toast.success('Task created with source references');
-    actions.clearSelection();
-    actions.setCreateTaskOpen(false);
-  } catch (error) {
-    toast.error(getApiErrorMessage(error, 'Task was created but source references failed.'));
-  }
 }

@@ -15,56 +15,20 @@ describe('extension stage gates', () => {
     expect(summary.missing).toHaveLength(2);
   });
 
-  it('blocks TRANSFER → DONE when linked CLASSIC order is not fully paid', () => {
+  it('does not block TRANSFER → DONE when the order is unpaid or only partially paid', () => {
     const errors = getExtensionStageGateErrors(
       {
         status: 'TRANSFER',
-        tasks: [{ status: 'DONE' }],
+        tasks: [{ status: 'IN_PROGRESS' }],
         order: {
           id: 'ord-1',
           status: 'PARTIALLY_PAID',
           paymentType: 'CLASSIC',
-          invoices: [{ moneyStatus: 'PAID' }],
-        },
-      },
-      'DONE',
-    );
-    expect(errors).toEqual([
-      { field: 'finance', message: expect.stringContaining('PARTIALLY_PAID') },
-    ]);
-  });
-
-  it('regression: allows TRANSFER → DONE when a subscription order is PARTIALLY_PAID and no invoices are unpaid', () => {
-    const errors = getExtensionStageGateErrors(
-      {
-        status: 'TRANSFER',
-        tasks: [{ status: 'DONE' }],
-        order: {
-          id: 'ord-1',
-          status: 'PARTIALLY_PAID',
-          paymentType: 'SUBSCRIPTION',
-          invoices: [{ moneyStatus: 'PAID' }],
-        },
-      },
-      'DONE',
-    );
-    expect(errors).toEqual([]);
-  });
-
-  it('still blocks TRANSFER → DONE when a subscription order has an unpaid invoice', () => {
-    const errors = getExtensionStageGateErrors(
-      {
-        status: 'TRANSFER',
-        tasks: [{ status: 'DONE' }],
-        order: {
-          id: 'ord-1',
-          status: 'PARTIALLY_PAID',
-          paymentType: 'SUBSCRIPTION',
           invoices: [{ moneyStatus: 'AWAITING_PAYMENT' }],
         },
       },
       'DONE',
     );
-    expect(errors).toEqual([{ field: 'finance', message: expect.stringContaining('invoices') }]);
+    expect(errors).toEqual([]);
   });
 });

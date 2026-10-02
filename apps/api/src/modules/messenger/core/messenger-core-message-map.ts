@@ -1,3 +1,8 @@
+import {
+  readForwardedContent,
+  readForwardedFrom,
+  readForwardSourceMessageId,
+} from './messenger-core-forward-meta';
 import type {
   MessengerCoreMessageDto,
   MessengerCoreMessageReferenceDto,
@@ -20,6 +25,7 @@ type MessageRow = {
   deletedAt?: Date | null;
   attachments?: Array<{ id: string; fileAssetId: string; createdAt: Date }>;
   mentions?: Array<{ employeeId: string }>;
+  metadata?: unknown;
   referencesAsTarget?: Array<{
     id: string;
     purpose: MessengerCoreMessageReferenceDto['purpose'];
@@ -28,6 +34,7 @@ type MessageRow = {
     sortOrder: number;
     entityType: string | null;
     entityId: string | null;
+    sourceMessage?: { senderNameSnapshot: string; content: string };
   }>;
 };
 
@@ -66,5 +73,25 @@ export function mapCoreMessage(
       entityType: reference.entityType,
       entityId: reference.entityId,
     })),
+    forwardedFrom:
+      readForwardedFrom(row.metadata) ?? firstForwardSource(row)?.senderNameSnapshot ?? null,
+    forwardedContent:
+      readForwardedContent(row.metadata) ?? firstForwardSource(row)?.content ?? null,
+    forwardSourceMessageId:
+      readForwardSourceMessageId(row.metadata) ?? firstForwardSource(row)?.sourceMessageId ?? null,
+  };
+}
+
+function firstForwardSource(row: MessageRow): {
+  senderNameSnapshot: string;
+  content: string;
+  sourceMessageId: string;
+} | null {
+  const ref = (row.referencesAsTarget ?? []).find((item) => item.purpose === 'FORWARD');
+  if (!ref?.sourceMessage) return null;
+  return {
+    senderNameSnapshot: ref.sourceMessage.senderNameSnapshot,
+    content: ref.sourceMessage.content,
+    sourceMessageId: ref.sourceMessageId,
   };
 }

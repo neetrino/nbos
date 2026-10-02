@@ -1,12 +1,13 @@
 'use client';
 
+import { useId } from 'react';
 import { usePermission } from '@/lib/permissions';
 import { notifyPermissionDenied } from '@/lib/permissions/permission-denied';
 import { useEntityRelations } from './entity-relations-context';
 import type { RelationCreateContext, RelationEntityKind } from './relation-picker.types';
 import { buildRelationCreateIntent } from './parse-relation-create-intent';
 
-const CREATE_DISABLED_KINDS = new Set<RelationEntityKind>(['employee', 'order']);
+const CREATE_DISABLED_KINDS = new Set<RelationEntityKind>(['employee', 'order', 'deal']);
 
 const RELATION_CREATE_PERMISSION: Partial<
   Record<RelationEntityKind, { module: string; action: string }>
@@ -21,7 +22,7 @@ const RELATION_CREATE_PERMISSION: Partial<
 
 function canCreateEntity(kind: RelationEntityKind, context?: RelationCreateContext): boolean {
   if (CREATE_DISABLED_KINDS.has(kind)) return false;
-  if (kind === 'product') return Boolean(context?.projectId);
+  void context;
   return true;
 }
 
@@ -31,12 +32,15 @@ export function useRelationPickerActions(
   createIntent?: string,
   createContext?: RelationCreateContext,
 ) {
+  const generatedIntent = useId();
+  const fieldIntent = createIntent ?? generatedIntent;
   const { can } = usePermission();
   const relations = useEntityRelations();
   const canCreate = canCreateEntity(entityKind, createContext);
-  const resolvedIntent = buildRelationCreateIntent(createIntent ?? '', createContext?.projectId);
+  const resolvedIntent = buildRelationCreateIntent(fieldIntent, createContext?.projectId);
 
   return {
+    createIntent: fieldIntent,
     onCreate: canCreate
       ? (searchQuery: string) => {
           const requirement = RELATION_CREATE_PERMISSION[entityKind];

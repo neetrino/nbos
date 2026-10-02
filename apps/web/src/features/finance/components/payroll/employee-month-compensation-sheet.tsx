@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatAmount } from '@/features/finance/constants/finance';
+import { visibleFinanceNote } from '@/features/finance/utils/visible-finance-note';
 import { expensesPayrollPresetHref } from '@/features/finance/constants/expense-payroll-filter';
 import { EmployeeMonthCompensationKpiSection } from '@/features/finance/components/payroll/employee-month-compensation-kpi-section';
 import { EmployeeMonthCompensationKpiSummaryLine } from '@/features/finance/components/payroll/employee-month-compensation-kpi-summary-line';
@@ -118,7 +119,7 @@ function ExpensePaymentsSection({
                   {formatAmount(parseAmount(payment.amount))}
                 </TableCell>
                 <TableCell className="text-muted-foreground max-w-[12rem] truncate">
-                  {payment.notes ?? '—'}
+                  {visibleFinanceNote(payment.notes) ?? '—'}
                 </TableCell>
               </TableRow>
             ))}

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Hash } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { resolveDatePickerLocale } from '@/components/shared/date-picker/date-picker-locale';
 import type { Task } from '@/lib/api/tasks';
@@ -8,16 +7,15 @@ import {
   initialsFromDisplayName,
   type MessengerViewMessage,
 } from '@/features/messenger/messenger-message-mapper';
-import { MESSENGER_THREAD_HASH_ICON_CLASS } from '@/features/messenger/messenger-thread-ui.constants';
+import { ThreadAvatar } from '@/features/messenger-internal/InternalThreadChrome';
 import {
-  MessengerThreadComposerRow,
   MessengerThreadDateDivider,
   MessengerThreadMessageBubble,
   MessengerThreadNotice,
 } from '@/features/messenger/messenger-thread-primitives';
-import { DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS } from '@/components/shared/detail-sheet-classes';
-import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
-import { cn } from '@/lib/utils';
+import { ThreadComposer } from '@/features/messenger-internal/InternalThreadParts';
+import { TaskLinkedMessengerThread } from './TaskLinkedMessengerThread';
+import { useCachedTaskConversationId } from './task-cached-conversation';
 
 export interface TaskLocalMessage {
   id: string;
@@ -32,6 +30,7 @@ interface TaskSheetChatPanelProps {
   task: Task;
   messages: TaskLocalMessage[];
   composerDisabled: boolean;
+  conversationId?: string | null;
   onSend: (body: string) => void;
   onDraftChange?: (value: string) => void;
 }
@@ -44,12 +43,14 @@ export function TaskSheetChatPanel({
   task,
   messages,
   composerDisabled,
+  conversationId = null,
   onSend,
   onDraftChange,
 }: TaskSheetChatPanelProps) {
+  const cachedConversationId = useCachedTaskConversationId(task.id);
+  const linkedConversationId = conversationId ?? cachedConversationId;
   const t = useTranslations('tasks');
   const dateLocale = resolveDatePickerLocale(useLocale());
-  const isMobileViewport = useIsMobileViewport();
   const [draft, setDraft] = useState('');
   const activity = useMemo(
     () =>
@@ -62,7 +63,6 @@ export function TaskSheetChatPanel({
       }),
     [dateLocale, t, task],
   );
-  const participantCount = useMemo(() => countTaskParticipants(task), [task]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,35 +126,34 @@ export function TaskSheetChatPanel({
   };
 
   const titleBlock = (
-    <>
-      <Hash size={18} className={MESSENGER_THREAD_HASH_ICON_CLASS} aria-hidden />
-      <div className="min-w-0">
-        <h2 className="text-sm font-semibold text-black">{t('sheet.openChat')}</h2>
-        <p className="text-xs text-black/40">
-          {t('sheet.chat.participants', { count: participantCount })}
-        </p>
+    <header className="bg-card flex h-12 w-full items-center justify-between px-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <ThreadAvatar title={task.title} direct={false} />
+        <div className="flex min-w-0 items-center gap-1.5">
+          <h2 className="text-foreground truncate text-sm leading-5 font-medium">{task.title}</h2>
+          <span className="border-primary/30 bg-primary/10 text-primary shrink-0 rounded-full border px-1.5 py-px text-[10px] leading-[15px]">
+            Task
+          </span>
+        </div>
       </div>
-    </>
+      <div className="flex shrink-0 items-center">
+        <HeaderIcon label="Search" src="/messenger/sheet-header-search.svg" />
+        <HeaderIcon label="Video" src="/messenger/sheet-header-video.svg" />
+      </div>
+    </header>
   );
 
+  if (linkedConversationId) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <TaskLinkedMessengerThread conversationId={linkedConversationId} />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {isMobileViewport ? (
-        <div
-          className={cn(
-            DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS,
-            'mt-4 justify-start gap-3 border-b border-black/[0.06] pb-4',
-          )}
-        >
-          {/* Clears floating Back (`left-4` + `size-9`) so the title sits to its right. */}
-          <span className="size-9 shrink-0" aria-hidden />
-          {titleBlock}
-        </div>
-      ) : (
-        <div className="flex items-center gap-3 border-b border-black/[0.06] px-5 py-3">
-          {titleBlock}
-        </div>
-      )}
+    <div className="dark:bg-background relative flex min-h-0 flex-1 flex-col bg-[#eef2ff]">
+      <div className="border-border border-b">{titleBlock}</div>
 
       <div className="min-h-0 flex-1 overflow-y-auto py-4">
         {rows.map((row) => {
@@ -175,20 +174,33 @@ export function TaskSheetChatPanel({
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-black/[0.06] px-5 py-3">
-        <MessengerThreadComposerRow
-          value={draft}
-          onChange={(value) => {
-            onDraftChange?.(value);
-            setDraft(value);
-          }}
-          onSend={submit}
-          placeholder={t('sheet.chat.addNote')}
-          disabled={composerDisabled}
-          sendDisabled={composerDisabled || !draft.trim()}
-        />
-      </div>
+      <ThreadComposer
+        sheet
+        canSend={!composerDisabled}
+        sendDisabled={composerDisabled || !draft.trim()}
+        newMessage={draft}
+        onNewMessageChange={(value) => {
+          onDraftChange?.(value);
+          setDraft(value);
+        }}
+        replyTo={null}
+        onClearReply={() => undefined}
+        onSend={submit}
+        placeholder={t('sheet.chat.addNote')}
+      />
     </div>
+  );
+}
+
+function HeaderIcon({ label, src }: { label: string; src: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      className="flex items-center justify-center rounded-lg p-1.5"
+    >
+      <img src={src} alt="" className="dark:brightness-0 dark:invert" />
+    </button>
   );
 }
 
@@ -223,13 +235,4 @@ function buildTaskActivity(
     at: event.at,
     time: formatTaskSheetDateTime(event.at, locale),
   }));
-}
-
-function countTaskParticipants(task: Task): number {
-  const ids = new Set<string>();
-  ids.add(task.creator.id);
-  if (task.assignee) ids.add(task.assignee.id);
-  task.coAssignees.forEach((id) => ids.add(id));
-  task.observers.forEach((id) => ids.add(id));
-  return ids.size;
 }

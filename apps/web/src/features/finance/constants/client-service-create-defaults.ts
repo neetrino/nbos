@@ -2,6 +2,7 @@ import { defaultCreateInvoiceDueDateIso } from '@/features/finance/components/in
 import type { CreateInvoiceFormState } from '@/features/finance/components/invoices/create-invoice-dialog-utils';
 import type { CreateExpenseFormState } from '@/features/finance/utils/expense-create-defaults';
 import { parseExpenseDraftAmount } from '@/features/finance/utils/expense-general-form-state';
+import { clientServiceBillsClient } from '@/features/finance/constants/client-services';
 import type { ClientServiceRecord } from '@/lib/api/client-services';
 import type { CreateExpensePayload } from '@/lib/api/finance';
 import { clientServiceTaskDefaultDueDate } from './client-service-task-links';
@@ -58,8 +59,7 @@ export function buildClientServiceExpensePayload(
     productId: service.productId,
     credentialId: service.providerAccountId,
     clientServiceRecordId: service.id,
-    isPassThrough: service.billingModel === 'WE_PAY',
-    taxStatus: service.taxStatus,
+    isPassThrough: clientServiceBillsClient(service.billingModel),
     notes: `From client service: ${service.name}`,
   };
 }

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { computeClientServicePaymentStage } from './client-service-payment-stage';
+import {
+  buildClientServiceStageWhere,
+  computeClientServicePaymentStage,
+} from './client-service-payment-stage';
 
 const NOW = new Date('2026-06-01T12:00:00.000Z');
 
@@ -10,7 +13,7 @@ describe('computeClientServicePaymentStage', () => {
     const result = computeClientServicePaymentStage(
       {
         renewalDate,
-        billingModel: 'WE_PAY',
+        billingModel: 'CLIENT_CHARGE',
         invoiceMoneyStatuses: [],
         expenseStatuses: [],
       },
@@ -40,7 +43,7 @@ describe('computeClientServicePaymentStage', () => {
     const result = computeClientServicePaymentStage(
       {
         renewalDate: new Date('2027-01-01T00:00:00.000Z'),
-        billingModel: 'WE_PAY',
+        billingModel: 'CLIENT_CHARGE',
         invoiceMoneyStatuses: [],
         expenseStatuses: ['DUE_NOW'],
       },
@@ -65,5 +68,42 @@ describe('computeClientServicePaymentStage', () => {
 
     expect(result.stage).not.toBe('pay_now');
     expect(result.stage).not.toBe('invoice');
+  });
+
+  it('returns upcoming for We Pay near renewal before an expense exists', () => {
+    const result = computeClientServicePaymentStage(
+      {
+        renewalDate: new Date('2026-07-01T00:00:00.000Z'),
+        billingModel: 'WE_PAY',
+        invoiceMoneyStatuses: [],
+        expenseStatuses: [],
+      },
+      NOW,
+    );
+
+    expect(result.stage).toBe('upcoming');
+  });
+
+  it('returns pay_now for We Pay with an active expense', () => {
+    const result = computeClientServicePaymentStage(
+      {
+        renewalDate: new Date('2027-01-01T00:00:00.000Z'),
+        billingModel: 'WE_PAY',
+        invoiceMoneyStatuses: [],
+        expenseStatuses: ['DUE_NOW'],
+      },
+      NOW,
+    );
+
+    expect(result.stage).toBe('pay_now');
+  });
+
+  it('puts We Pay with an open expense on the pay_now board', () => {
+    expect(buildClientServiceStageWhere('pay_now', NOW)).toEqual({
+      AND: [
+        { billingModel: { in: ['CLIENT_CHARGE', 'WE_PAY'] } },
+        { expenses: { some: { status: { notIn: ['PAID', 'CANCELLED'] } } } },
+      ],
+    });
   });
 });

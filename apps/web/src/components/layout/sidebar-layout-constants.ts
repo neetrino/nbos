@@ -29,3 +29,13 @@ export const SIDEBAR_NAV_CHILD_LIST_CLASS = 'mt-0.5 ml-9 space-y-0';
 
 export const SIDEBAR_NAV_CHILD_LINK_CLASS =
   'block rounded-lg px-3 py-1.5 text-[13px] transition-colors';
+
+/** Chevron rotate on expand/collapse affordances. */
+export const SIDEBAR_CHEVRON_TRANSITION_CLASS = 'transition-transform duration-200 ease-out';
+
+/** Nested sidebar section open/close shell (grid-rows height animation). */
+export const SIDEBAR_COLLAPSE_PANEL_CLASS =
+  'grid transition-[grid-template-rows] duration-200 ease-out';
+export const SIDEBAR_COLLAPSE_PANEL_OPEN_CLASS = 'grid-rows-[1fr]';
+export const SIDEBAR_COLLAPSE_PANEL_CLOSED_CLASS = 'grid-rows-[0fr]';
+export const SIDEBAR_COLLAPSE_PANEL_INNER_CLASS = 'min-h-0 overflow-hidden';

@@ -44,21 +44,50 @@ describe('absoluteConversationUnreadCount', () => {
     const hiddenLater = mapListRow({
       lastMessageAt: hiddenAt,
       messages: [{ content: 'visible', senderId: 'e2', createdAt: visibleAt }],
-      readStates: [{ lastReadAt: readAt }],
+      readStates: [{ employeeId: 'e1', lastReadAt: readAt }],
     });
     const visibleLater = mapListRow({
       lastMessageAt: hiddenAt,
       messages: [{ content: 'new', senderId: 'e2', createdAt: hiddenAt }],
-      readStates: [{ lastReadAt: readAt }],
+      readStates: [{ employeeId: 'e1', lastReadAt: readAt }],
     });
     const ownSend = mapListRow({
       lastMessageAt: hiddenAt,
       messages: [{ content: 'mine', senderId: 'e1', createdAt: hiddenAt }],
-      readStates: [{ lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
+      readStates: [{ employeeId: 'e1', lastReadAt: new Date('2020-01-01T00:00:00.000Z') }],
     });
     expect(hiddenLater.unreadCount).toBe(0);
     expect(visibleLater.unreadCount).toBe(1);
     expect(ownSend.unreadCount).toBe(0);
+    expect(ownSend.lastMessageMine).toBe(true);
+    expect(ownSend.lastMessageSeen).toBe(false);
+  });
+
+  it('marks own latest message seen when a peer read cursor covers it', () => {
+    const sentAt = new Date('2026-09-05T12:00:00.000Z');
+    const unseen = mapListRow({
+      messages: [{ content: 'mine', senderId: 'e1', createdAt: sentAt }],
+      readStates: [{ employeeId: 'e1', lastReadAt: sentAt }],
+    });
+    const seen = mapListRow({
+      messages: [{ content: 'mine', senderId: 'e1', createdAt: sentAt }],
+      readStates: [
+        { employeeId: 'e1', lastReadAt: sentAt },
+        { employeeId: 'e2', lastReadAt: sentAt },
+      ],
+    });
+    const peerSend = mapListRow({
+      messages: [{ content: 'theirs', senderId: 'e2', createdAt: sentAt }],
+      readStates: [
+        { employeeId: 'e1', lastReadAt: sentAt },
+        { employeeId: 'e2', lastReadAt: sentAt },
+      ],
+    });
+    expect(unseen.lastMessageMine).toBe(true);
+    expect(unseen.lastMessageSeen).toBe(false);
+    expect(seen.lastMessageSeen).toBe(true);
+    expect(peerSend.lastMessageMine).toBe(false);
+    expect(peerSend.lastMessageSeen).toBe(false);
   });
 });
 

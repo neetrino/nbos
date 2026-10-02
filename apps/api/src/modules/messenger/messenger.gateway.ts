@@ -18,12 +18,11 @@ import {
   MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL,
   MESSENGER_WS_CLIENT_SUBSCRIBE_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_CHANNEL,
+  MESSENGER_WS_CLIENT_TYPING_CONVERSATION,
   MESSENGER_WS_CLIENT_TYPING_DM,
   MESSENGER_WS_READ_UPDATED_SCOPE,
   MESSENGER_WS_SERVER_CHANNEL_MESSAGE,
-  MESSENGER_WS_SERVER_CHANNEL_TYPING,
   MESSENGER_WS_SERVER_DM_MESSAGE,
-  MESSENGER_WS_SERVER_DM_TYPING,
   MESSENGER_WS_SERVER_PRESENCE,
   MESSENGER_WS_SERVER_READ_UPDATED,
   type MessengerWsChannelPeerReadPayload,
@@ -36,10 +35,12 @@ import {
   messengerSocketUserRoom,
 } from '@nbos/shared';
 import {
+  emitLegacyChannelTyping,
+  emitLegacyDmTyping,
   employeeMayUseMessengerChannel,
-  messengerTypingDisplayLabel,
 } from './messenger-gateway-channel';
 import { beginMessengerSocketAuthentication } from './messenger-gateway-auth';
+import { emitMessengerUserEvent } from './messenger-user-event';
 import {
   leaveSocketCoreConversation,
   subscribeSocketAfterAuth,
@@ -56,7 +57,8 @@ import {
   publishPersistedCoreConversationMessage,
   type PersistedCoreMessageFacts,
 } from './messenger-gateway-fanout';
-import { extractChannelId, extractRecipientId } from './messenger-gateway-parse';
+import { handleCoreConversationTyping } from './messenger-gateway-conversation-typing';
+import { extractChannelId } from './messenger-gateway-parse';
 import { MessengerPresenceTracker } from './messenger-presence-tracker';
 import { MessengerTypingThrottle } from './messenger-typing-throttle';
 import type { MessengerMessageDto } from './messenger.types';
@@ -145,21 +147,13 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() body: unknown,
   ): Promise<{ ok: boolean }> {
-    const employeeId = client.data.employeeId as string | undefined;
-    if (!employeeId) return { ok: false };
-    const channelId = extractChannelId(body);
-    if (!channelId) return { ok: false };
-    if (!(await employeeMayUseMessengerChannel(this.prisma, employeeId, channelId))) {
-      return { ok: false };
-    }
-    if (!this.typingThrottle.allow(client.id)) return { ok: true };
-    const label = await messengerTypingDisplayLabel(this.prisma, employeeId);
-    client.to(messengerSocketChannelRoom(channelId)).emit(MESSENGER_WS_SERVER_CHANNEL_TYPING, {
-      channelId,
-      employeeId,
-      label,
-    });
-    return { ok: true };
+    return emitLegacyChannelTyping(
+      this.prisma,
+      client,
+      client.data.employeeId as string | undefined,
+      body,
+      this.typingThrottle,
+    );
   }
 
   @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_DM)
@@ -167,23 +161,27 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     @ConnectedSocket() client: Socket,
     @MessageBody() body: unknown,
   ): Promise<{ ok: boolean }> {
-    const employeeId = client.data.employeeId as string | undefined;
-    if (!employeeId) return { ok: false };
-    const recipientId = extractRecipientId(body);
-    if (!recipientId || recipientId === employeeId) return { ok: false };
-    const recipient = await this.prisma.employee.findUnique({
-      where: { id: recipientId },
-      select: { id: true, status: true },
-    });
-    if (!recipient || recipient.status === 'TERMINATED') return { ok: false };
-    if (!this.typingThrottle.allow(client.id)) return { ok: true };
-    const label = await messengerTypingDisplayLabel(this.prisma, employeeId);
-    client.to(messengerSocketUserRoom(recipientId)).emit(MESSENGER_WS_SERVER_DM_TYPING, {
-      counterpartId: employeeId,
-      employeeId,
-      label,
-    });
-    return { ok: true };
+    return emitLegacyDmTyping(
+      this.prisma,
+      client,
+      client.data.employeeId as string | undefined,
+      body,
+      this.typingThrottle,
+    );
+  }
+
+  @SubscribeMessage(MESSENGER_WS_CLIENT_TYPING_CONVERSATION)
+  async handleTypingConversation(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: unknown,
+  ): Promise<{ ok: boolean }> {
+    return handleCoreConversationTyping(
+      this.prisma,
+      client,
+      client.data.employeeId as string | undefined,
+      body,
+      this.typingThrottle,
+    );
   }
 
   emitChannelMessage(channelId: string, message: MessengerMessageDto): void {
@@ -243,8 +241,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
 
   /** Notifies all `/messenger` tabs for this employee to refresh list unread (after REST mark-read). */
   emitReadListsUpdated(employeeId: string): void {
-    if (!this.server) return;
-    this.server.to(messengerSocketUserRoom(employeeId)).emit(MESSENGER_WS_SERVER_READ_UPDATED, {
+    emitMessengerUserEvent(this.server, employeeId, MESSENGER_WS_SERVER_READ_UPDATED, {
       scope: MESSENGER_WS_READ_UPDATED_SCOPE.LISTS,
     });
   }
@@ -253,10 +250,7 @@ export class MessengerGateway implements OnGatewayConnection, OnGatewayDisconnec
     employeeId: string,
     payload: MessengerWsConversationReadUpdatedPayload,
   ): void {
-    if (!this.server) return;
-    this.server
-      .to(messengerSocketUserRoom(employeeId))
-      .emit(MESSENGER_WS_SERVER_READ_UPDATED, payload);
+    emitMessengerUserEvent(this.server, employeeId, MESSENGER_WS_SERVER_READ_UPDATED, payload);
   }
 
   async evictEmployeeFromConversation(

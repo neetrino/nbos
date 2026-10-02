@@ -10,6 +10,10 @@ import {
 import type { RealtimeSessionResult } from '@/lib/auth/realtime-session';
 import type { MessengerZone } from '../query/messenger-query-keys';
 import type { MessengerRecoverySession } from '../query/messenger-realtime-cache';
+import {
+  parseConversationTyping,
+  type ConversationTypingPeer,
+} from '@/features/messenger-internal/messenger-conversation-typing';
 import { applyPresenceIds } from './messenger-legacy-parse';
 import type { MessengerLegacyFanout, MessengerLegacyListener } from './messenger-legacy-socket';
 import { applyMessengerCoreSocketEvent } from './messenger-realtime-cache-bind';
@@ -56,6 +60,7 @@ export class MessengerRealtimeHub {
   private readonly registry = new MessengerSubscriptionRegistry();
   private readonly surfaces = new Set<MessengerSurfaceBinding>();
   private readonly legacy = new Set<MessengerLegacyListener>();
+  private readonly typingListeners = new Set<(peer: ConversationTypingPeer) => void>();
   private readonly legacyFanout: MessengerLegacyFanout;
   private readonly session: MessengerSocketSession;
 
@@ -64,6 +69,7 @@ export class MessengerRealtimeHub {
     this.session = new MessengerSocketSession(options.connect, options.recoverSession, () => ({
       onConnected: (reconnected) => this.onConnected(reconnected, options),
       onCoreEvent: (event, payload) => this.onCoreEvent(event, payload),
+      onConversationTyping: (payload) => this.deliverConversationTyping(payload),
       legacyFanout: this.legacyFanout,
     }));
     this.getState = this.session.getState;
@@ -103,6 +109,11 @@ export class MessengerRealtimeHub {
     this.legacyChannelId = channelId;
     if (!channelId) return;
     this.session.emit(MESSENGER_WS_CLIENT_SUBSCRIBE_CHANNEL, { channelId });
+  }
+
+  subscribeConversationTyping(listener: (peer: ConversationTypingPeer) => void): () => void {
+    this.typingListeners.add(listener);
+    return () => this.typingListeners.delete(listener);
   }
 
   emitConversationTyping(conversationId: string): void {
@@ -157,6 +168,12 @@ export class MessengerRealtimeHub {
       openConversationIds,
       onRemoved: (conversationId) => this.clearSurfaces(zone, conversationId),
     };
+  }
+
+  private deliverConversationTyping(payload: unknown): void {
+    const peer = parseConversationTyping(payload);
+    if (!peer) return;
+    for (const listener of this.typingListeners) listener(peer);
   }
 
   private onCoreEvent(event: string, payload: unknown): void {

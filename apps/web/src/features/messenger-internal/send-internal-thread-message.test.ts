@@ -8,7 +8,10 @@ import { noteMessengerComposerDraft } from '@/features/messenger/query/messenger
 import { sendInternalThreadMessage } from './send-internal-thread-message';
 
 vi.mock('@/lib/api/messenger-core', () => ({
-  messengerCoreApi: { sendMessage: vi.fn() },
+  messengerCoreApi: {
+    sendMessage: vi.fn(),
+    forwardMessages: vi.fn(),
+  },
 }));
 
 const sendMessage = vi.mocked(messengerCoreApi.sendMessage);

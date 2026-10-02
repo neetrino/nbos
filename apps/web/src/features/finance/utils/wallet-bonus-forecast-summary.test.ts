@@ -44,4 +44,12 @@ describe('summarizeWalletBonusForecast', () => {
     expect(summary.nextPayrollRemaining).toBe(150);
     expect(summary.paidFromReleases).toBe(130);
   });
+
+  it('keeps an unconfirmed historical paid mark out of confirmed cash', () => {
+    const historical = row('PAID', '20000', '20000', '20000');
+    historical.cashConfirmation = 'UNCONFIRMED';
+    const summary = summarizeWalletBonusForecast([historical]);
+    expect(summary.paidFromReleases).toBe(0);
+    expect(summary.nextPayrollRemaining).toBe(0);
+  });
 });

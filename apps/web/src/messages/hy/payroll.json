@@ -207,6 +207,7 @@
     "bonusReleases": "Բոնուսների թողարկումներ",
     "payable": "Վճարման ենթակա",
     "paid": "Վճարված",
+    "paidUnconfirmed": "Չհաստատված",
     "remaining": "Մնացորդ",
     "cell": {
       "state": {
@@ -221,6 +222,9 @@
       },
       "placeholder": "Մուտքագրեք բոնուսը",
       "releaseAria": "Այս ամսվա բոնուսի թողարկումը",
+      "sourceAmountPlaceholder": "Գումար",
+      "sourceAmountAria": "Թողարկում՝ {title}",
+      "sourceRemaining": "Մնացորդ {amount}",
       "createManualAria": "Ստեղծել ձեռքով բոնուս",
       "updateError": "Չհաջողվեց թարմացնել թողարկումը։",
       "salesNotReady": "Վաճառքի բոնուսը դեռ պատրաստ չէ Payroll-ի համար (վաստակած ամիս՝ {period})։ Համաժամացրեք Sales KPI-ն այդ ամսվա համար, հետո կրկին փորձեք։"
