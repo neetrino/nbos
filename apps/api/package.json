@@ -51,7 +51,7 @@
     "livekit-server-sdk": "2.19.1",
     "mailparser": "^3.9.9",
     "nestjs-pino": "^4.6.1",
-    "nodemailer": "^10.0.2",
+    "nodemailer": "^10.0.9",
     "pdfkit": "^0.18.0",
     "pino": "^10.3.1",
     "reflect-metadata": "^0.2.2",
