@@ -199,13 +199,13 @@ REDIS_URL=rediss://... # same queue Redis as API producers
 
 ### 4.2c Scheduler — `nbos-scheduler` (same image as API)
 
-| Параметр      | Значение                                             |
-| ------------- | ---------------------------------------------------- |
-| Build         | Same as `nbos-api`                                   |
-| Start command | `cd apps/api && node --import tsx dist/scheduler.js` |
-| Port          | `4002` (`SCHEDULER_HEALTH_PORT`)                     |
-| Health check  | `GET /api/health` → 200; ready: `GET /api/ready`     |
-| Replicas      | **1** on first rollout                               |
+| Параметр      | Значение                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| Build         | Same as `nbos-api`                                                                              |
+| Start command | `cd apps/api && node --import tsx dist/scheduler.js`                                            |
+| Port          | `4002` (`SCHEDULER_HEALTH_PORT`)                                                                |
+| Health check  | `GET /api/health` → 200; ready: `GET /api/ready`                                                |
+| Replicas      | **1**. Do not scale above one replica: queue concurrency is per process, not a global semaphore |
 
 ```env
 NODE_ENV=production

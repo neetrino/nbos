@@ -54,15 +54,38 @@ describe('WhatsApp delivery decisions', () => {
 });
 
 describe('legacy default WhatsApp mappings', () => {
-  const row = { id: 'map-1', conversationId: 'conv-1', externalConversationId: '120@g.us' };
+  const row = {
+    id: 'map-1',
+    conversationId: 'conv-1',
+    externalConversationId: '120363408874132550@g.us',
+  };
 
-  it('migrates a default mapping when the target chat is free', () => {
-    expect(planLegacyDefaultMapping({ row, conflictConversationId: null }).action).toBe('migrate');
+  it('migrates a default mapping only when the gateway can see the group', () => {
+    expect(
+      planLegacyDefaultMapping({ row, conflictConversationId: null, destination: 'accessible' })
+        .action,
+    ).toBe('migrate');
+  });
+
+  it('does not migrate when the gateway says the group is missing', () => {
+    expect(
+      planLegacyDefaultMapping({ row, conflictConversationId: null, destination: 'missing' }),
+    ).toEqual(expect.objectContaining({ action: 'manual_review', reason: 'group_not_accessible' }));
+  });
+
+  it('does not migrate when the gateway is unavailable', () => {
+    expect(
+      planLegacyDefaultMapping({ row, conflictConversationId: null, destination: 'unavailable' }),
+    ).toEqual(expect.objectContaining({ action: 'manual_review', reason: 'gateway_unavailable' }));
   });
 
   it('does not rewrite a chat that already belongs to another conversation', () => {
-    expect(planLegacyDefaultMapping({ row, conflictConversationId: 'conv-2' })).toEqual(
-      expect.objectContaining({ action: 'manual_review' }),
-    );
+    expect(
+      planLegacyDefaultMapping({
+        row,
+        conflictConversationId: 'conv-2',
+        destination: 'accessible',
+      }),
+    ).toEqual(expect.objectContaining({ action: 'manual_review' }));
   });
 });

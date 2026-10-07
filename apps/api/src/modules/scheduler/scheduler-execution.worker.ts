@@ -57,6 +57,9 @@ export class SchedulerExecutionWorker implements OnModuleInit, OnModuleDestroy {
         `scheduler_occurrence_attempt_failed occurrenceId=${job?.data.occurrenceId ?? ''} error=${error.message}`,
       );
     });
+    this.logger.log(
+      `scheduler_execution_worker_started concurrency=${resolveDbPoolRuntimeConfig().schedulerMaxConcurrentRuns} replicaInvariant=single`,
+    );
   }
 
   async onModuleDestroy(): Promise<void> {

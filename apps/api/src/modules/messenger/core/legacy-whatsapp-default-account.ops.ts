@@ -1,5 +1,12 @@
+import { Logger } from '@nestjs/common';
 import type { PrismaClient } from '@nbos/database';
+import type {
+  WhatsAppDestinationVerdict,
+  WhatsAppGroupAccessProbe,
+} from '../../integrations/whatsapp-gateway/whatsapp-destination-access';
 import { WHATSAPP_FALLBACK_ACCOUNT_ID } from './product-communication.constants';
+
+const logger = new Logger('LegacyWhatsAppDefaultAccount');
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -29,28 +36,42 @@ export function assertRealWhatsAppAccountId(accountId: string): string {
   return trimmed;
 }
 
-/** Unambiguous `default` mappings can move. Conflicting chats stay for a person. */
+/**
+ * `migrate` requires no database conflict and a Gateway-confirmed group.
+ * Timeout, 5xx, and an unknown destination stay `manual_review`.
+ */
 export function planLegacyDefaultMapping(input: {
   row: LegacyDefaultMapping;
   conflictConversationId: string | null;
+  destination: WhatsAppDestinationVerdict | null;
 }): LegacyAccountPlanItem {
   const base = {
     mappingId: input.row.id,
     conversationId: input.row.conversationId,
     externalConversationId: input.row.externalConversationId,
   };
-  if (!input.conflictConversationId) {
-    return { ...base, action: 'migrate', reason: 'no_target_mapping' };
+  if (input.conflictConversationId && input.conflictConversationId !== input.row.conversationId) {
+    return { ...base, action: 'manual_review', reason: 'target_chat_owned_by_other_conversation' };
   }
   if (input.conflictConversationId === input.row.conversationId) {
     return { ...base, action: 'skip', reason: 'already_on_target' };
   }
-  return { ...base, action: 'manual_review', reason: 'target_chat_owned_by_other_conversation' };
+  if (!input.row.externalConversationId.endsWith('@g.us')) {
+    return { ...base, action: 'manual_review', reason: 'destination_not_group' };
+  }
+  if (input.destination === 'accessible') {
+    return { ...base, action: 'migrate', reason: 'gateway_verified' };
+  }
+  if (input.destination === 'missing') {
+    return { ...base, action: 'manual_review', reason: 'group_not_accessible' };
+  }
+  return { ...base, action: 'manual_review', reason: 'gateway_unavailable' };
 }
 
 export async function planLegacyDefaultAccountMigration(
   prisma: PrismaLike,
   targetAccountId: string,
+  probe: WhatsAppGroupAccessProbe,
 ): Promise<LegacyAccountPlanItem[]> {
   const target = assertRealWhatsAppAccountId(targetAccountId);
   const rows = await prisma.messengerExternalConversationMapping.findMany({
@@ -59,7 +80,9 @@ export async function planLegacyDefaultAccountMigration(
   });
   const plans: LegacyAccountPlanItem[] = [];
   for (const row of rows) {
-    plans.push(await planOneMapping(prisma, row, target));
+    const plan = await planOneMapping(prisma, row, target, probe);
+    logMappingPlan(plan);
+    plans.push(plan);
   }
   return plans;
 }
@@ -76,8 +99,10 @@ export async function applyLegacyDefaultAccountMigration(
     if (plan.action === 'manual_review') manualReview += 1;
     if (plan.action !== 'migrate') continue;
     const updated = await migrateOne(prisma, plan, target);
-    if (updated) migrated += 1;
-    else manualReview += 1;
+    if (updated) {
+      migrated += 1;
+      logger.log(`whatsapp_legacy_mapping_migrated mappingId=${plan.mappingId}`);
+    } else manualReview += 1;
   }
   return { migrated, manualReview };
 }
@@ -86,6 +111,7 @@ async function planOneMapping(
   prisma: PrismaLike,
   row: LegacyDefaultMapping,
   targetAccountId: string,
+  probe: WhatsAppGroupAccessProbe,
 ): Promise<LegacyAccountPlanItem> {
   const conflict = await prisma.messengerExternalConversationMapping.findUnique({
     where: {
@@ -97,10 +123,35 @@ async function planOneMapping(
     },
     select: { conversationId: true },
   });
-  return planLegacyDefaultMapping({
-    row,
-    conflictConversationId: conflict?.conversationId ?? null,
-  });
+  const conflictConversationId = conflict?.conversationId ?? null;
+  if (conflictConversationId) {
+    return planLegacyDefaultMapping({ row, conflictConversationId, destination: null });
+  }
+  const destination = await readDestination(probe, row.externalConversationId);
+  return planLegacyDefaultMapping({ row, conflictConversationId: null, destination });
+}
+
+async function readDestination(
+  probe: WhatsAppGroupAccessProbe,
+  chatId: string,
+): Promise<WhatsAppDestinationVerdict> {
+  try {
+    return await probe(chatId);
+  } catch {
+    return 'unavailable';
+  }
+}
+
+function logMappingPlan(plan: LegacyAccountPlanItem): void {
+  if (plan.action === 'migrate') {
+    logger.log(`whatsapp_legacy_mapping_verified mappingId=${plan.mappingId}`);
+    return;
+  }
+  if (plan.action === 'manual_review') {
+    logger.warn(
+      `whatsapp_legacy_mapping_manual_review mappingId=${plan.mappingId} reason=${plan.reason}`,
+    );
+  }
 }
 
 async function migrateOne(

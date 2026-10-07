@@ -47,7 +47,9 @@ Cron ticks do not execute the job inline. They persist a `SchedulerOccurrence` (
 
 If Redis is down, the occurrence stays `PENDING`. `SchedulerOccurrenceReconcileService` (scheduler process, every 60s, lease `scheduler-occurrence-reconcile`) enqueues it when Redis is back. A crash after the row is written is recovered the same way. A duplicate tick from another replica hits the unique `(job_name, scheduled_for)` key and the same BullMQ job id `scheduler:{jobName}:{scheduledFor}`.
 
-Business cron timezone is `Asia/Yerevan` (`SCHEDULER_BUSINESS_TIMEZONE`), passed into `CronJob`. Occurrence slots are absolute instants, so the host `TZ` does not change the key.
+Business cron timezone is `Asia/Yerevan` (`SCHEDULER_BUSINESS_TIMEZONE`), passed into `CronJob`. The occurrence slot is the latest cron instant at or before the tick. Lookback follows the expression: about a day for daily jobs, 8 days for day-of-week jobs, 62 days for day-of-month jobs such as `0 8 1 * *`. It is not a fixed 48-hour window. The stored instant is absolute UTC, so the host `TZ` does not change the key.
+
+Production runs **one** `nbos-scheduler` replica (`docs/deploy.md` §4.2c). `SCHEDULER_MAX_CONCURRENT_RUNS` is the worker concurrency of that process and is the global cap only while the replica count stays 1. Do not scale the scheduler service above one replica without a separate global capacity lock.
 
 Settings → Run now enqueues a manual occurrence. `POST /api/scheduler/*` remains a synchronous repair path under the lease.
 
@@ -60,9 +62,20 @@ Legacy mappings (`messenger_external_conversation_mappings.external_account_id =
 ```text
 pnpm --filter @nbos/api exec tsx src/modules/messenger/core/legacy-whatsapp-default-account.cli.ts
 pnpm --filter @nbos/api exec tsx src/modules/messenger/core/legacy-whatsapp-default-account.cli.ts --apply
+pnpm --filter @nbos/api exec tsx src/modules/messenger/core/legacy-whatsapp-default-account.cli.ts --repair-message=<messageId>
 ```
 
-The command is a dry-run unless `--apply` is passed. It moves only mappings whose target chat is not already owned by another conversation. It does not enqueue sends and does not touch `SENT` messages. A failed delivery is retried by the existing outbound reconciler with the same idempotency key after the mapping account matches the command. Stale `SENDING` becomes `OUTCOME_UNKNOWN` before any same-key retry. It is not resent only because time passed.
+The command is a dry-run unless `--apply` is passed. `--apply` updates a mapping only when the target chat is free in the database and `GET /api/groups/:id` on the existing Gateway client shows that the connected account can see that group. A timeout, 5xx, missing group, or ambiguous id stays `manual_review` and is not written. The audit does not enqueue sends.
+
+Normal outbound reconciliation still rejects a command whose `accountId`/`chatId` differ from the current mapping (`FORGED_ROUTING`). That check is unchanged. The only exception is an explicit one-message repair:
+
+```text
+--repair-message=<messageId>
+```
+
+It runs only for a `FAILED` `SEND_MESSAGE` whose payload account is `default`, whose message has no `SENT`/`DELIVERED`/`READ` status and no WhatsApp external ref, and whose current mapping is a verified real account on the same chat. The same `MessengerCommand` and `whatsAppOutboundIdempotencyKey(messageId)` are kept. The command becomes `PENDING` and the message `QUEUED`, so the existing reconciler can enqueue it. A second concurrent repair loses the conditional update. Do not pass `--apply` together with `--repair-message`.
+
+Stale `SENDING` becomes `OUTCOME_UNKNOWN` before any same-key retry. It is not resent only because time passed. Already `SENT` messages are not enqueued again.
 
 ## Rollout
 
