@@ -237,6 +237,24 @@ describe('Messenger outbound reconcile', () => {
     expect(prisma).not.toHaveProperty('sendAccountTextMessage');
   });
 
+  it('does not enqueue a fresh SENDING command', async () => {
+    const prisma = reconcilePrisma([pendingRow({ firstAttemptAt: new Date() })], {
+      message: clientMessage('SENDING'),
+    });
+    const queue = { isAvailable: vi.fn().mockReturnValue(true), enqueue: vi.fn() };
+    const counts = await reconcileMessengerOutboundCommands(prisma as never, queue);
+    expect(counts.enqueued).toBe(0);
+    expect(queue.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('does not enqueue a message that is already SENT', async () => {
+    const prisma = reconcilePrisma([pendingRow()], { message: clientMessage('SENT') });
+    const queue = { isAvailable: vi.fn().mockReturnValue(true), enqueue: vi.fn() };
+    const counts = await reconcileMessengerOutboundCommands(prisma as never, queue);
+    expect(counts.enqueued).toBe(0);
+    expect(queue.enqueue).not.toHaveBeenCalled();
+  });
+
   it('second scheduler pass does not re-enqueue after a claim (empty candidate set)', async () => {
     const prisma = reconcilePrisma([pendingRow()]);
     const queue = {

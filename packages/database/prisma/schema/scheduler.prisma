@@ -34,6 +34,27 @@ model SchedulerRun {
   @@map("scheduler_runs")
 }
 
+/// One scheduled firing. Unique per job and slot so a full worker lane or a
+/// restart cannot drop it, and a second replica cannot run it twice.
+model SchedulerOccurrence {
+  id           String    @id @default(cuid())
+  jobName      String    @map("job_name")
+  scheduledFor DateTime  @map("scheduled_for")
+  trigger      String
+  status       String
+  attemptCount Int       @default(0) @map("attempt_count")
+  queueJobId   String?   @map("queue_job_id")
+  lastError    String?   @map("last_error") @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at")
+  queuedAt     DateTime? @map("queued_at")
+  startedAt    DateTime? @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
+
+  @@unique([jobName, scheduledFor])
+  @@index([status, createdAt])
+  @@map("scheduler_occurrences")
+}
+
 /// Written by nbos-scheduler only; API reads for Settings → Scheduler status.
 model SchedulerJobRuntime {
   jobName          String   @id @map("job_name")

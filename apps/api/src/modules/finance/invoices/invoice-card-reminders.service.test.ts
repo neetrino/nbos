@@ -205,6 +205,26 @@ describe('InvoiceCardRemindersService', () => {
     expect(result.skippedExisting).toBe(1);
     expect(prisma.notificationJob.create).not.toHaveBeenCalled();
   });
+
+  it('does not duplicate a window letter when the 11:00 slot runs late', async () => {
+    prisma.invoice.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      paymentCandidate({
+        billingDay: 10,
+        createdAt: new Date('2026-04-10T11:00:00+04:00'),
+        dueDate: new Date('2026-04-15T00:00:00+04:00'),
+      }),
+    ]);
+    prisma.notificationJob.findUnique.mockResolvedValue({ id: 'existing' });
+    prisma.messengerMessage.findFirst.mockResolvedValue({ id: 'msg-existing' });
+
+    const delayed = await service.runDueInvoiceCardReminders({
+      asOf: new Date('2026-04-10T11:20:00+04:00'),
+    });
+
+    expect(delayed.created).toEqual([]);
+    expect(delayed.skippedExisting).toBe(1);
+    expect(prisma.notificationJob.create).not.toHaveBeenCalled();
+  });
 });
 
 function officialCandidate(overrides: Record<string, unknown> = {}) {

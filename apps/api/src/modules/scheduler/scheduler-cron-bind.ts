@@ -4,7 +4,9 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
 import { describeCronSkipReason, shouldRunCronTick } from './scheduler-cron-gate';
+import { schedulerCronDispatch } from './scheduler-cron-dispatch';
 import { isSchedulerJobPolicyEnabled } from './scheduler-job-policy.accessor';
+import { SCHEDULER_BUSINESS_TIMEZONE } from './scheduler-timezone';
 
 export type StartSchedulerCronJobArgs = {
   jobName: string;
@@ -57,16 +59,19 @@ export function startSchedulerCronJob(args: StartSchedulerCronJobArgs): void {
   const expression = resolveCronExpressionFromEnv(args.config, cronEnvKey, defaultExpression);
   let job: CronJob;
   try {
-    job = new CronJob(expression, () => {
-      if (!shouldRunCronTick()) return;
-      if (args.jobRegistry.isShuttingDown()) return;
-      void (async () => {
-        if (!(await isSchedulerJobPolicyEnabled(jobName))) return;
-        await args.run();
-      })().catch((caught: unknown) => {
-        args.logger.error(`Cron ${jobName} failed`, caught);
-      });
-    });
+    job = new CronJob(
+      expression,
+      () => {
+        if (!shouldRunCronTick()) return;
+        if (args.jobRegistry.isShuttingDown()) return;
+        void runCronTick(args, expression).catch((caught: unknown) => {
+          args.logger.error(`Cron ${jobName} failed`, caught);
+        });
+      },
+      null,
+      false,
+      SCHEDULER_BUSINESS_TIMEZONE,
+    );
   } catch (caught) {
     args.logger.error(`Invalid cron for ${jobName}`, caught);
     writeSchedulerCronStderr(`Invalid cron for ${jobName}`);
@@ -78,11 +83,11 @@ export function startSchedulerCronJob(args: StartSchedulerCronJobArgs): void {
     args.jobRegistry.register(jobName);
     if (shouldRunCronTick()) {
       job.start();
-      const message = `Registered cron ${jobName} (${expression})`;
+      const message = `Registered cron ${jobName} (${expression} ${SCHEDULER_BUSINESS_TIMEZONE})`;
       args.logger.log(message);
       writeSchedulerCronStderr(message);
     } else {
-      const message = `Registered cron ${jobName} (paused) (${expression})`;
+      const message = `Registered cron ${jobName} (paused) (${expression} ${SCHEDULER_BUSINESS_TIMEZONE})`;
       args.logger.log(message);
       writeSchedulerCronStderr(message);
     }
@@ -96,4 +101,18 @@ export function stopSchedulerCronJob(jobName: string, schedulerRegistry: Schedul
   if (schedulerRegistry.doesExist('cron', jobName)) {
     schedulerRegistry.deleteCronJob(jobName);
   }
+}
+
+async function runCronTick(args: StartSchedulerCronJobArgs, expression: string): Promise<void> {
+  if (!(await isSchedulerJobPolicyEnabled(args.jobName))) return;
+  const dispatch = schedulerCronDispatch();
+  if (dispatch) {
+    await dispatch({ jobName: args.jobName, expression });
+    return;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    args.logger.error(`Cron ${args.jobName} has no durable dispatch; tick was not executed inline`);
+    return;
+  }
+  await args.run();
 }

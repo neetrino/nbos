@@ -12,6 +12,8 @@ import { finalizeWhatsAppTerminalMessageSkip } from './messenger-outbound-messag
 import { messengerSchedulerAuditActor } from './messenger-outbound-audit';
 import { MESSENGER_COMMAND_INVALID_REASON } from './messenger-outbound-reconcile.constants';
 import { prepareWhatsAppCoreSend } from './messenger-wa-outbound-prepare.ops';
+import { decideWhatsAppReconcileDelivery } from './messenger-outbound-reconcile-delivery';
+import { setCoreSendStatus } from './messenger-wa-outbound-complete.ops';
 import { repairWhatsAppRefProof } from './messenger-wa-outbound-repair.ops';
 import {
   type CanonicalWhatsAppCommand,
@@ -187,6 +189,9 @@ async function enqueueOrFinalizeCommand(
     }
   }
   if (row.status === 'OUTCOME_UNKNOWN' && !isUnknownAgeElapsed(row, now)) return;
+  if (await applyReconcileDeliveryDecision(prisma, row, job, messageStatus, now, publisher)) {
+    return;
+  }
   if (!queue?.isAvailable()) return;
   try {
     await queue.enqueue(job, false);
@@ -198,6 +203,33 @@ async function enqueueOrFinalizeCommand(
       `Messenger outbound enqueue failed commandId=${row.id} (${error instanceof Error ? error.name : 'error'})`,
     );
   }
+}
+
+async function applyReconcileDeliveryDecision(
+  prisma: PrismaLike,
+  row: CommandRow,
+  job: WhatsAppCoreSendJobPayload,
+  messageStatus: string,
+  now: Date,
+  publisher?: MessengerDeliveryStatusPublisher,
+): Promise<boolean> {
+  const decision = decideWhatsAppReconcileDelivery({
+    messageStatus,
+    commandStatus: row.status,
+    firstAttemptAt: row.firstAttemptAt,
+    now,
+  });
+  if (decision === 'enqueue') return false;
+  if (decision === 'skip_delivered') {
+    logger.warn(`whatsapp_delivered_skip_enqueue commandId=${row.id}`);
+    await claimCommand(prisma, row, now);
+    return true;
+  }
+  if (decision === 'mark_unknown') {
+    await setCoreSendStatus(prisma, row, job, 'OUTCOME_UNKNOWN', 'SENDING_STALE', publisher);
+    logger.warn(`whatsapp_sending_marked_unknown commandId=${row.id}`);
+  }
+  return true;
 }
 
 function isUnknownAgeElapsed(row: CommandRow, now: Date): boolean {

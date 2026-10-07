@@ -4,7 +4,10 @@ import { Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { startSchedulerCronJob } from './scheduler-cron-bind';
 import { ScheduledJobRegistry } from './scheduled-job-registry';
-import { resetSchedulerJobPolicyChecker } from './scheduler-job-policy.accessor';
+import {
+  resetSchedulerJobPolicyChecker,
+  setSchedulerJobPolicyChecker,
+} from './scheduler-job-policy.accessor';
 
 describe('startSchedulerCronJob', () => {
   const original = { ...process.env };
@@ -64,6 +67,7 @@ describe('startSchedulerCronJob', () => {
     expect(jobRegistry.list()).toContain('test-job');
     const cronJob = registry.getCronJob('test-job');
     expect(cronJob.isActive).toBe(false);
+    expect(cronJob.cronTime.timeZone).toBe('Asia/Yerevan');
     expect(stderrSpy.mock.calls.map(([chunk]) => String(chunk)).join('')).toContain(
       '[SchedulerCron] Registered cron test-job (paused)',
     );
@@ -110,5 +114,30 @@ describe('startSchedulerCronJob', () => {
     expect(stderrSpy.mock.calls.map(([chunk]) => String(chunk)).join('')).toContain(
       '[SchedulerCron] Cron test-job already exists',
     );
+  });
+
+  it('does not execute inline in production when durable dispatch is missing', async () => {
+    process.env = {
+      ...original,
+      NODE_ENV: 'production',
+      PROCESS_ROLE: 'scheduler',
+      SCHEDULER_ENABLED: 'true',
+    };
+    setSchedulerJobPolicyChecker(async () => true);
+    const registry = new SchedulerRegistry();
+    const run = vi.fn();
+    startSchedulerCronJob({
+      jobName: 'test-job',
+      enabledEnvKey: 'SCHEDULER_TEST_JOB_ENABLED',
+      cronEnvKey: 'SCHEDULER_TEST_JOB_CRON',
+      defaultExpression: '0 11 * * *',
+      config: { get: () => undefined } as unknown as ConfigService,
+      schedulerRegistry: registry,
+      jobRegistry: new ScheduledJobRegistry(),
+      logger: new Logger('test'),
+      run,
+    });
+    await registry.getCronJob('test-job').fireOnTick();
+    expect(run).not.toHaveBeenCalled();
   });
 });

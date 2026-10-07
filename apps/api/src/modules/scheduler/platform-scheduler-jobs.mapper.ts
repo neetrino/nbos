@@ -13,6 +13,7 @@ import {
   type CatalogRuntimeSnapshot,
   type SchedulerCatalogStatus,
 } from './platform-scheduler-jobs.status';
+import { isOpenSchedulerOccurrenceStatus } from './scheduler-occurrence.constants';
 import { canRunSchedulerJobNow } from './scheduler-job-runner';
 
 export type PlatformSchedulerJobRow = {
@@ -47,6 +48,7 @@ export function mapPlatformSchedulerJobRow(input: {
   runtime: CatalogRuntimeSnapshot | null;
   lastRun: CatalogLastRunSnapshot | null;
   lease: CatalogLeaseSnapshot | null;
+  openOccurrence?: { status: string; scheduledFor: Date } | null;
   policyEnabled: boolean | null;
   schedulerOnline: boolean;
   now: number;
@@ -54,6 +56,11 @@ export function mapPlatformSchedulerJobRow(input: {
 }): PlatformSchedulerJobRow {
   const { entry, runtime, lastRun, lease, policyEnabled, schedulerOnline, now, fallbackTimezone } =
     input;
+  const openOccurrence = input.openOccurrence ?? null;
+  const visibleOpen =
+    openOccurrence && isOpenSchedulerOccurrenceStatus(openOccurrence.status)
+      ? openOccurrence
+      : null;
   const expression = runtime?.expression ?? entry.defaultExpression;
   const timezone = runtime?.timezone ?? fallbackTimezone;
   const status = deriveCatalogStatus({
@@ -83,8 +90,10 @@ export function mapPlatformSchedulerJobRow(input: {
     policyEnabled,
     masterEnabled: runtime?.masterEnabled ?? null,
     registered: runtime?.registered ?? null,
-    lastRunAt: lastRun?.startedAt.toISOString() ?? null,
-    lastRunStatus: lastRun?.status ?? null,
+    lastRunAt: visibleOpen
+      ? visibleOpen.scheduledFor.toISOString()
+      : (lastRun?.startedAt.toISOString() ?? null),
+    lastRunStatus: visibleOpen ? visibleOpen.status : (lastRun?.status ?? null),
     lastErrorMessage: lastRun?.errorMessage ?? null,
     nextRunAt: computeNextRunAt(expression, timezone),
     runtimeHeartbeatAt: runtime?.heartbeatAt.toISOString() ?? null,

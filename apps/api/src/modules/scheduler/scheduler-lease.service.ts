@@ -9,7 +9,6 @@ import {
   type SchedulerTrigger,
   assertSchedulerLeaseTiming,
 } from './scheduler-lease.constants';
-import { resolveDbPoolRuntimeConfig } from '@nbos/database';
 import { SchedulerRunService } from './scheduler-run.service';
 
 export type LeaseHandle = {
@@ -50,7 +49,6 @@ type LeaseRow = {
 @Injectable()
 export class SchedulerLeaseService {
   private readonly logger = new Logger(SchedulerLeaseService.name);
-  private activeRuns = 0;
 
   constructor(
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
@@ -132,29 +130,7 @@ export class SchedulerLeaseService {
     options: RunWithLeaseOptions,
     handler: (ctx: LeaseHandlerContext) => Promise<LeaseHandlerResult | void>,
   ): Promise<{ status: SchedulerRunStatus; runId: string | null }> {
-    const maxConcurrent = resolveDbPoolRuntimeConfig().schedulerMaxConcurrentRuns;
-    if (this.activeRuns >= maxConcurrent) {
-      this.logger.warn(
-        `Scheduler backpressure: activeRuns=${this.activeRuns} max=${maxConcurrent} job=${options.jobName}`,
-      );
-      const skipped = await this.runs.create({
-        jobName: options.jobName,
-        ownerId: options.ownerId ?? `${process.pid}:backpressure`,
-        fencingToken: 0n,
-        trigger: options.trigger,
-        status: SCHEDULER_RUN_STATUS.SKIPPED_LOCKED,
-        startedAt: new Date(),
-        finishedAt: new Date(),
-        durationMs: 0,
-      });
-      return { status: SCHEDULER_RUN_STATUS.SKIPPED_LOCKED, runId: skipped.id };
-    }
-    this.activeRuns += 1;
-    try {
-      return await this.runWithLeaseInner(options, handler);
-    } finally {
-      this.activeRuns = Math.max(0, this.activeRuns - 1);
-    }
+    return this.runWithLeaseInner(options, handler);
   }
 
   private async runWithLeaseInner(
