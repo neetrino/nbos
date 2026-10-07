@@ -3,8 +3,13 @@ import type { PrismaClient } from '@nbos/database';
 import type { WhatsAppDestinationVerdict } from '../../integrations/whatsapp-gateway/whatsapp-destination-access';
 import { runMessengerWriteTx } from './messenger-core-revision-tx';
 import { parseWhatsAppSendCommandPayload } from './messenger-core-command-payload';
+import {
+  classifyLegacyRepairFailure,
+  legacyRepairPayload,
+  rejectLegacyRepairDestination,
+  rejectLegacyRepairStructure,
+} from './legacy-whatsapp-repair-eligibility';
 import { whatsAppOutboundIdempotencyKey } from './messenger-wa-identity';
-import { WHATSAPP_FALLBACK_ACCOUNT_ID } from './product-communication.constants';
 
 type PrismaLike = InstanceType<typeof PrismaClient>;
 
@@ -23,7 +28,7 @@ export type LegacySendRepairResult =
       idempotencyKey: string;
     }
   | {
-      action: 'reject' | 'lost_race';
+      action: 'reject' | 'manual_review' | 'lost_race';
       reason: string;
       messageId: string;
       commandId: string | null;
@@ -39,6 +44,10 @@ type RepairSnapshot = {
     idempotencyKey: string;
     payload: unknown;
     dispatchToken: string | null;
+    errorCode: string | null;
+    invalidReason: string | null;
+    firstAttemptAt: Date | null;
+    createdAt: Date;
   } | null;
   message: {
     id: string;
@@ -52,19 +61,22 @@ type RepairSnapshot = {
 };
 
 /**
- * Explicit repair for one FAILED WhatsApp send whose command still routes via `default`.
- * Does not create a message or a new idempotency key. Normal FORGED_ROUTING checks stay strict.
+ * Explicit repair for one proven FAILED WhatsApp send that still routes via `default`.
+ * Keeps the same message, command, and logical idempotency key. Ambiguous outcomes stay manual review.
  */
 export function decideLegacyDefaultSendRepair(input: RepairSnapshot): LegacySendRepairResult {
   const messageId = input.message?.id ?? '';
   const blocked = rejectRepair(input);
-  if (blocked || !input.command || !input.message || !input.mapping) {
+  if (blocked) {
     return {
-      action: 'reject',
-      reason: blocked?.reason ?? 'missing_message',
+      action: blocked.action,
+      reason: blocked.reason,
       messageId,
       commandId: input.command?.id ?? null,
     };
+  }
+  if (!input.command || !input.message || !input.mapping) {
+    return { action: 'reject', reason: 'missing_message', messageId, commandId: null };
   }
   const payload = parseWhatsAppSendCommandPayload(input.command.payload);
   if (!payload) {
@@ -91,13 +103,13 @@ type RepairCommit = Extract<LegacySendRepairResult, { action: 'repair' }>;
 export async function repairLegacyDefaultWhatsAppSend(
   prisma: PrismaLike,
   messageId: string,
-  probe: (chatId: string) => Promise<WhatsAppDestinationVerdict>,
+  probe: (chatId: string, targetAccountId: string) => Promise<WhatsAppDestinationVerdict>,
 ): Promise<LegacySendRepairResult> {
   logger.warn(`whatsapp_legacy_send_repair_started messageId=${messageId}`);
   const loaded = await loadRepairSnapshot(prisma, messageId);
   const optimistic = decideLegacyDefaultSendRepair({ ...loaded, destination: 'accessible' });
   if (optimistic.action !== 'repair') return reject(optimistic);
-  const destination = await readDestination(probe, optimistic.chatId);
+  const destination = await readDestination(probe, optimistic.chatId, optimistic.accountId);
   const decision = decideLegacyDefaultSendRepair({ ...loaded, destination });
   if (decision.action !== 'repair') return reject(decision);
   const committed = await commitLegacyDefaultSendRepair(prisma, decision);
@@ -128,47 +140,21 @@ export async function commitLegacyDefaultSendRepair(
   }
 }
 
-function rejectRepair(input: RepairSnapshot): { action: 'reject'; reason: string } | null {
-  const command = input.command;
-  const message = input.message;
-  const payload = parseWhatsAppSendCommandPayload(command?.payload);
-  if (!command || command.kind !== 'SEND_MESSAGE')
-    return { action: 'reject', reason: 'not_core_send' };
-  if (command.status !== 'FAILED') return { action: 'reject', reason: 'command_not_failed' };
-  if (command.dispatchToken) return { action: 'reject', reason: 'dispatch_in_progress' };
-  if (!message || message.deletedAt) return { action: 'reject', reason: 'missing_message' };
-  if (message.conversationId !== command.conversationId) {
-    return { action: 'reject', reason: 'conversation_mismatch' };
-  }
-  if (command.resultMessageId !== message.id)
-    return { action: 'reject', reason: 'message_identity' };
-  if (command.idempotencyKey !== whatsAppOutboundIdempotencyKey(message.id)) {
-    return { action: 'reject', reason: 'idempotency_mismatch' };
-  }
-  if (!payload) return { action: 'reject', reason: 'malformed_payload' };
-  if (payload.accountId !== WHATSAPP_FALLBACK_ACCOUNT_ID) {
-    return { action: 'reject', reason: 'not_legacy_account' };
-  }
-  if (DELIVERED.has(message.status) || input.hasExternalRef) {
+function rejectRepair(
+  input: RepairSnapshot,
+): { action: 'reject' | 'manual_review'; reason: string } | null {
+  const structural = rejectLegacyRepairStructure(input);
+  if (structural || !input.command || !input.message) return structural;
+  if (DELIVERED.has(input.message.status) || input.hasExternalRef) {
     return { action: 'reject', reason: 'delivery_proof' };
   }
-  if (!REPAIRABLE_MESSAGE.has(message.status)) {
+  const failure = classifyLegacyRepairFailure(input.command);
+  if (failure) return { action: 'manual_review', reason: failure };
+  if (input.command.status !== 'FAILED') return { action: 'reject', reason: 'command_not_failed' };
+  if (!REPAIRABLE_MESSAGE.has(input.message.status)) {
     return { action: 'reject', reason: 'unsafe_message_status' };
   }
-  if (!input.mapping) return { action: 'reject', reason: 'missing_mapping' };
-  if (
-    !input.mapping.externalAccountId.trim() ||
-    input.mapping.externalAccountId === WHATSAPP_FALLBACK_ACCOUNT_ID
-  ) {
-    return { action: 'reject', reason: 'current_account_not_real' };
-  }
-  if (payload.chatId !== input.mapping.externalConversationId) {
-    return { action: 'reject', reason: 'chat_mismatch' };
-  }
-  if (input.destination === 'missing') return { action: 'reject', reason: 'group_not_accessible' };
-  if (input.destination !== 'accessible')
-    return { action: 'reject', reason: 'gateway_unavailable' };
-  return null;
+  return rejectLegacyRepairDestination(input.destination);
 }
 
 async function loadRepairSnapshot(
@@ -191,6 +177,10 @@ async function loadRepairSnapshot(
           idempotencyKey: true,
           payload: true,
           dispatchToken: true,
+          errorCode: true,
+          invalidReason: true,
+          firstAttemptAt: true,
+          createdAt: true,
         },
       })
     : null;
@@ -231,7 +221,7 @@ async function writeRepair(prisma: PrismaLike, plan: RepairCommit): Promise<void
     },
     data: {
       status: 'PENDING',
-      payload: { accountId: plan.accountId, chatId: plan.chatId },
+      payload: legacyRepairPayload(plan.accountId, plan.chatId),
       errorCode: null,
       invalidReason: null,
       completedAt: null,
@@ -251,11 +241,12 @@ function reject(result: LegacySendRepairResult): LegacySendRepairResult {
 }
 
 async function readDestination(
-  probe: (chatId: string) => Promise<WhatsAppDestinationVerdict>,
+  probe: (chatId: string, targetAccountId: string) => Promise<WhatsAppDestinationVerdict>,
   chatId: string,
+  targetAccountId: string,
 ): Promise<WhatsAppDestinationVerdict> {
   try {
-    return await probe(chatId);
+    return await probe(chatId, targetAccountId);
   } catch {
     return 'unavailable';
   }

@@ -1,5 +1,9 @@
 import type { PrismaClient } from '@nbos/database';
 import { decrypt } from '../../../common/utils/crypto';
+import {
+  classifyLegacyGroupAccount,
+  type WhatsAppGatewayAccountSummary,
+} from './whatsapp-gateway-account';
 import { WhatsAppGatewayClient, type WhatsAppGatewayClientConfig } from './whatsapp-gateway.client';
 import { WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
 
@@ -7,13 +11,40 @@ type PrismaLike = InstanceType<typeof PrismaClient>;
 
 const MISSING_GROUP_CODES = new Set(['GROUP_NOT_FOUND', 'INVALID_GROUP_ID', 'HTTP_404']);
 
-export type WhatsAppDestinationVerdict = 'accessible' | 'missing' | 'unavailable';
+export type WhatsAppDestinationVerdict =
+  | 'accessible'
+  | 'missing'
+  | 'unavailable'
+  | 'account_mismatch'
+  | 'account_unknown';
 
-export type WhatsAppGroupAccessProbe = (chatId: string) => Promise<WhatsAppDestinationVerdict>;
+export type WhatsAppGroupAccessProbe = (
+  chatId: string,
+  targetAccountId: string,
+) => Promise<WhatsAppDestinationVerdict>;
 
 type GroupLookup = {
   getGroup(config: WhatsAppGatewayClientConfig, groupId: string): Promise<{ id?: string | null }>;
 };
+
+type AccountGroupLookup = GroupLookup & {
+  listAccounts(config: WhatsAppGatewayClientConfig): Promise<WhatsAppGatewayAccountSummary[]>;
+};
+
+/**
+ * Proves `targetAccountId` is the single CONNECTED account that serves legacy
+ * `GET /api/groups`, then confirms that session can see the group.
+ */
+export async function probeWhatsAppGroupForAccount(
+  client: AccountGroupLookup,
+  config: WhatsAppGatewayClientConfig,
+  chatId: string,
+  targetAccountId: string,
+): Promise<WhatsAppDestinationVerdict> {
+  const identity = await readLegacyGroupAccount(client, config, targetAccountId);
+  if (identity !== 'match') return identity === 'mismatch' ? 'account_mismatch' : 'account_unknown';
+  return probeWhatsAppGroupAccess(client, config, chatId);
+}
 
 /**
  * Confirms the connected Gateway account can see this group.
@@ -47,7 +78,21 @@ export async function createWhatsAppGroupProbe(
   const config = await readGatewayProbeConfig(prisma);
   if (!config) return async () => 'unavailable';
   const client = new WhatsAppGatewayClient();
-  return (chatId) => probeWhatsAppGroupAccess(client, config, chatId);
+  return (chatId, targetAccountId) =>
+    probeWhatsAppGroupForAccount(client, config, chatId, targetAccountId);
+}
+
+async function readLegacyGroupAccount(
+  client: AccountGroupLookup,
+  config: WhatsAppGatewayClientConfig,
+  targetAccountId: string,
+): Promise<'match' | 'mismatch' | 'unknown'> {
+  try {
+    const accounts = await client.listAccounts(config);
+    return classifyLegacyGroupAccount(accounts, targetAccountId);
+  } catch {
+    return 'unknown';
+  }
 }
 
 async function readGatewayProbeConfig(

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX } from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import { LEGACY_REPAIR_GENERATION } from './legacy-whatsapp-repair-eligibility';
 import { reconcileMessengerOutboundCommands } from './messenger-outbound-reconcile.ops';
 
 const CHAT = '37499111222@c.us';
@@ -138,6 +139,29 @@ describe('Messenger outbound reconcile', () => {
     const counts = await reconcileMessengerOutboundCommands(prisma as never, queue);
     expect(counts.repaired).toBe(1);
     expect(queue.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('enqueues a proven legacy repair that is older than 24h', async () => {
+    const prisma = reconcilePrisma([
+      pendingRow({
+        firstAttemptAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        payload: { accountId: 'acc_a', chatId: CHAT, repairGeneration: LEGACY_REPAIR_GENERATION },
+      }),
+    ]);
+    const queue = { isAvailable: vi.fn().mockReturnValue(true), enqueue: vi.fn() };
+    const counts = await reconcileMessengerOutboundCommands(prisma as never, queue);
+    expect(counts.enqueued).toBe(1);
+    expect(counts.manualReview).toBe(0);
+    expect(queue.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({ idempotencyKey: KEY }),
+      false,
+    );
+    expect(prisma.messengerCommand.update).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ invalidReason: 'GATEWAY_WINDOW_EXPIRED' }),
+      }),
+    );
   });
 
   it('retains OUTCOME_UNKNOWN beyond 24h as manual review and never auto-submits', async () => {

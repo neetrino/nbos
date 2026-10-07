@@ -9,13 +9,18 @@ import {
 const CHAT = '120363408874132550@g.us';
 const MESSAGE_ID = 'msg-1';
 
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+
 function snapshot(overrides?: {
   messageStatus?: string;
   commandAccount?: string;
   chatId?: string;
   hasExternalRef?: boolean;
-  destination?: 'accessible' | 'missing' | 'unavailable';
+  destination?: 'accessible' | 'missing' | 'unavailable' | 'account_mismatch' | 'account_unknown';
   commandStatus?: string;
+  errorCode?: string | null;
+  invalidReason?: string | null;
+  firstAttemptAt?: Date | null;
 }) {
   return {
     command: {
@@ -30,6 +35,14 @@ function snapshot(overrides?: {
         chatId: overrides?.chatId ?? CHAT,
       },
       dispatchToken: null,
+      errorCode:
+        overrides?.errorCode === undefined ? 'WHATSAPP_NOT_CONNECTED' : overrides.errorCode,
+      invalidReason: overrides?.invalidReason ?? null,
+      firstAttemptAt:
+        overrides?.firstAttemptAt === undefined
+          ? new Date(Date.now() - THREE_DAYS_MS)
+          : overrides.firstAttemptAt,
+      createdAt: new Date(Date.now() - THREE_DAYS_MS),
     },
     message: {
       id: MESSAGE_ID,
@@ -44,7 +57,7 @@ function snapshot(overrides?: {
 }
 
 describe('legacy default send repair', () => {
-  it('repairs one failed default-routed send onto the verified account', () => {
+  it('repairs a proven failure older than 24h onto the verified account', () => {
     const decision = decideLegacyDefaultSendRepair(snapshot());
     expect(decision.action).toBe('repair');
     if (decision.action !== 'repair') return;
@@ -53,8 +66,8 @@ describe('legacy default send repair', () => {
     expect(decision.idempotencyKey).toBe(whatsAppOutboundIdempotencyKey(MESSAGE_ID));
   });
 
-  it('rejects a message that is already sent', () => {
-    expect(decideLegacyDefaultSendRepair(snapshot({ messageStatus: 'SENT' })).reason).toBe(
+  it.each(['SENT', 'DELIVERED', 'READ'])('rejects a message that is %s', (messageStatus) => {
+    expect(decideLegacyDefaultSendRepair(snapshot({ messageStatus })).reason).toBe(
       'delivery_proof',
     );
   });
@@ -75,6 +88,20 @@ describe('legacy default send repair', () => {
     expect(
       decideLegacyDefaultSendRepair(snapshot({ commandAccount: 'other-account' })).reason,
     ).toBe('not_legacy_account');
+  });
+
+  it('holds an ambiguous outcome for manual review and does not resend', () => {
+    const decision = decideLegacyDefaultSendRepair(
+      snapshot({ errorCode: 'MESSAGE_OUTCOME_UNKNOWN', commandStatus: 'OUTCOME_UNKNOWN' }),
+    );
+    expect(decision.action).toBe('manual_review');
+    expect(decision.reason).toBe('unknown_previous_outcome');
+  });
+
+  it('holds a gateway account mismatch for manual review', () => {
+    const decision = decideLegacyDefaultSendRepair(snapshot({ destination: 'account_mismatch' }));
+    expect(decision.action).toBe('manual_review');
+    expect(decision.reason).toBe('account_mismatch');
   });
 
   it('lets only one of two concurrent repairs commit', async () => {
@@ -121,6 +148,32 @@ describe('legacy default send repair', () => {
     expect(updateMany).not.toHaveBeenCalled();
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
+
+  it('does not write an ambiguous command that is older than 24h', async () => {
+    const updateMany = vi.fn();
+    const command = snapshot({
+      commandStatus: 'OUTCOME_UNKNOWN',
+      errorCode: 'MESSAGE_OUTCOME_UNKNOWN',
+    }).command;
+    const prisma = {
+      messengerMessage: {
+        findUnique: vi.fn().mockResolvedValue(snapshot().message),
+        updateMany,
+      },
+      messengerCommand: { findUnique: vi.fn().mockResolvedValue(command), updateMany },
+      messengerExternalConversationMapping: {
+        findFirst: vi.fn().mockResolvedValue(snapshot().mapping),
+      },
+      messengerMessageExternalRef: { findFirst: vi.fn().mockResolvedValue(null) },
+      $transaction: vi.fn(),
+    };
+    const result = await repairLegacyDefaultWhatsAppSend(prisma as never, MESSAGE_ID, async () => {
+      throw new Error('probe should not run');
+    });
+    expect(result.action).toBe('manual_review');
+    expect(result.reason).toBe('unknown_previous_outcome');
+    expect(updateMany).not.toHaveBeenCalled();
+  });
 });
 
 function memoryPrisma(state: { messageStatus: string; commandStatus: string; writes: number }) {
@@ -135,15 +188,16 @@ function memoryPrisma(state: { messageStatus: string; commandStatus: string; wri
       }),
     },
     messengerCommand: {
-      updateMany: vi.fn(
-        async ({ data }: { data: { status: string; payload: { accountId: string } } }) => {
-          if (state.commandStatus !== 'FAILED') return { count: 0 };
-          state.commandStatus = data.status;
-          state.writes += 1;
-          expect(data.payload.accountId).toBe('acc_live');
-          return { count: 1 };
-        },
-      ),
+      updateMany: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+        if (state.commandStatus !== 'FAILED') return { count: 0 };
+        const payload = data.payload as { accountId: string; repairGeneration: number };
+        state.commandStatus = String(data.status);
+        state.writes += 1;
+        expect(payload.accountId).toBe('acc_live');
+        expect(payload.repairGeneration).toBe(1);
+        expect(data).not.toHaveProperty('firstAttemptAt');
+        return { count: 1 };
+      }),
     },
   };
   return {

@@ -24,9 +24,9 @@ import {
 } from './messenger-outbound-command-canonical';
 import { recordWhatsAppSendPayloadConflict } from './messenger-outbound-payload-conflict.ops';
 import {
-  isNeverAttemptedQueuedSend,
-  isWithinWhatsAppSameKeyWindow,
-} from './messenger-outbound-gateway-window';
+  blocksExpiredSameKeyWindow,
+  whatsAppTransportIdempotencyKey,
+} from './legacy-whatsapp-repair-eligibility';
 import { MESSENGER_COMMAND_INVALID_REASON } from './messenger-outbound-reconcile.constants';
 import { whatsAppOutboundIdempotencyKey } from './messenger-wa-identity';
 
@@ -49,18 +49,16 @@ export async function dispatchWhatsAppCoreSendJob(
   const prepared = await prepareWhatsAppCoreSend(prisma, job);
   if (await stopBeforeGateway(prisma, command, job, prepared, publisher)) return;
   if (prepared.kind !== 'ready') return;
-  if (!isNeverAttemptedQueuedSend(command.firstAttemptAt, prepared.message.status)) {
-    if (!isWithinWhatsAppSameKeyWindow(command, new Date())) {
-      await markWhatsAppCommandInvalid(
-        prisma,
-        command,
-        job,
-        MESSENGER_COMMAND_INVALID_REASON.GATEWAY_WINDOW_EXPIRED,
-        undefined,
-        publisher,
-      );
-      return;
-    }
+  if (blocksExpiredSameKeyWindow(command, prepared.message.status, new Date())) {
+    await markWhatsAppCommandInvalid(
+      prisma,
+      command,
+      job,
+      MESSENGER_COMMAND_INVALID_REASON.GATEWAY_WINDOW_EXPIRED,
+      undefined,
+      publisher,
+    );
+    return;
   }
   const attempt = await beginWhatsAppCoreSendAttempt(
     prisma,
@@ -77,6 +75,12 @@ export async function dispatchWhatsAppCoreSendJob(
     command,
     job,
     prepared,
+    whatsAppTransportIdempotencyKey(
+      command,
+      prepared.message.status,
+      job.idempotencyKey,
+      job.messageId,
+    ),
     publisher,
     attempt.token,
   );
@@ -118,6 +122,7 @@ async function submitPreparedWhatsAppSend(
   command: CanonicalWhatsAppCommand,
   job: WhatsAppCoreSendJobPayload,
   prepared: Extract<Awaited<ReturnType<typeof prepareWhatsAppCoreSend>>, { kind: 'ready' }>,
+  transportKey: string,
   publisher?: MessengerDeliveryStatusPublisher,
   token?: string,
 ): Promise<void> {
@@ -127,7 +132,7 @@ async function submitPreparedWhatsAppSend(
       config,
       prepared.accountId,
       { chatId: prepared.chatId, text: prepared.message.content },
-      job.idempotencyKey,
+      transportKey,
     );
     await completeCoreSend(
       prisma,

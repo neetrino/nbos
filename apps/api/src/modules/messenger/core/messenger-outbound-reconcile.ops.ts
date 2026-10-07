@@ -21,10 +21,7 @@ import {
   isActiveDispatchClaim,
   tryCanonicalWhatsAppSendJob,
 } from './messenger-outbound-command-canonical';
-import {
-  isNeverAttemptedQueuedSend,
-  isWithinWhatsAppSameKeyWindow,
-} from './messenger-outbound-gateway-window';
+import { blocksExpiredSameKeyWindow } from './legacy-whatsapp-repair-eligibility';
 import type { MessengerDeliveryStatusPublisher } from './messenger-delivery-status.types';
 
 const logger = new Logger('MessengerOutboundReconcile');
@@ -174,19 +171,17 @@ async function enqueueOrFinalizeCommand(
   counts: MessengerOutboundReconcileCounts,
   publisher?: MessengerDeliveryStatusPublisher,
 ): Promise<void> {
-  if (!isNeverAttemptedQueuedSend(row.firstAttemptAt, messageStatus)) {
-    if (!isWithinWhatsAppSameKeyWindow(row, now)) {
-      await markWhatsAppCommandInvalid(
-        prisma,
-        row,
-        job,
-        MESSENGER_COMMAND_INVALID_REASON.GATEWAY_WINDOW_EXPIRED,
-        messengerSchedulerAuditActor(),
-        publisher,
-      );
-      counts.manualReview += 1;
-      return;
-    }
+  if (blocksExpiredSameKeyWindow(row, messageStatus, now)) {
+    await markWhatsAppCommandInvalid(
+      prisma,
+      row,
+      job,
+      MESSENGER_COMMAND_INVALID_REASON.GATEWAY_WINDOW_EXPIRED,
+      messengerSchedulerAuditActor(),
+      publisher,
+    );
+    counts.manualReview += 1;
+    return;
   }
   if (row.status === 'OUTCOME_UNKNOWN' && !isUnknownAgeElapsed(row, now)) return;
   if (await applyReconcileDeliveryDecision(prisma, row, job, messageStatus, now, publisher)) {

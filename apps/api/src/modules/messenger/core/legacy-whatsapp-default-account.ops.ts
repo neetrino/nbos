@@ -59,6 +59,12 @@ export function planLegacyDefaultMapping(input: {
   if (!input.row.externalConversationId.endsWith('@g.us')) {
     return { ...base, action: 'manual_review', reason: 'destination_not_group' };
   }
+  if (input.destination === 'account_mismatch') {
+    return { ...base, action: 'manual_review', reason: 'account_mismatch' };
+  }
+  if (input.destination === 'account_unknown') {
+    return { ...base, action: 'manual_review', reason: 'account_identity_unavailable' };
+  }
   if (input.destination === 'accessible') {
     return { ...base, action: 'migrate', reason: 'gateway_verified' };
   }
@@ -127,16 +133,17 @@ async function planOneMapping(
   if (conflictConversationId) {
     return planLegacyDefaultMapping({ row, conflictConversationId, destination: null });
   }
-  const destination = await readDestination(probe, row.externalConversationId);
+  const destination = await readDestination(probe, row.externalConversationId, targetAccountId);
   return planLegacyDefaultMapping({ row, conflictConversationId: null, destination });
 }
 
 async function readDestination(
   probe: WhatsAppGroupAccessProbe,
   chatId: string,
+  targetAccountId: string,
 ): Promise<WhatsAppDestinationVerdict> {
   try {
-    return await probe(chatId);
+    return await probe(chatId, targetAccountId);
   } catch {
     return 'unavailable';
   }

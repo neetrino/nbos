@@ -192,6 +192,25 @@ describe('WhatsAppGatewayClient', () => {
     );
   });
 
+  it('lists v1 accounts and drops phone numbers', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: [{ id: 'acc_live', isActive: true, status: 'CONNECTED', phoneNumber: '••••1222' }],
+        }),
+      }),
+    );
+    const accounts = await client.listAccounts(config);
+    expect(accounts).toEqual([{ id: 'acc_live', isActive: true, status: 'CONNECTED' }]);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://wa-gateway.test/api/v1/accounts',
+      expect.objectContaining({ method: 'GET' }),
+    );
+  });
+
   it('sends account-scoped TEXT via v1 with Idempotency-Key', async () => {
     vi.stubGlobal(
       'fetch',

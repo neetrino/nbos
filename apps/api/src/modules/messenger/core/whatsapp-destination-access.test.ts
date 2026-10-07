@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
+import { classifyLegacyGroupAccount } from '../../integrations/whatsapp-gateway/whatsapp-gateway-account';
 import { WhatsAppGatewayHttpError } from '../../integrations/whatsapp-gateway/whatsapp-gateway.errors';
-import { probeWhatsAppGroupAccess } from '../../integrations/whatsapp-gateway/whatsapp-destination-access';
-import { planLegacyDefaultAccountMigration } from './legacy-whatsapp-default-account.ops';
+import {
+  probeWhatsAppGroupAccess,
+  probeWhatsAppGroupForAccount,
+} from '../../integrations/whatsapp-gateway/whatsapp-destination-access';
+import {
+  planLegacyDefaultAccountMigration,
+  planLegacyDefaultMapping,
+} from './legacy-whatsapp-default-account.ops';
 
 const CHAT = '120363408874132550@g.us';
 const CONFIG = { baseUrl: 'https://gateway.example', apiToken: 'secret' };
@@ -51,6 +58,77 @@ describe('WhatsApp group access probe', () => {
     expect(verdict).toBe('unavailable');
   });
 });
+
+describe('legacy group account identity', () => {
+  const row = {
+    id: 'map-1',
+    conversationId: 'conv-1',
+    externalConversationId: CHAT,
+  };
+  const connected = (id: string) => ({ id, isActive: true, status: 'CONNECTED' });
+
+  it('migrates when the single connected account matches and the group exists', async () => {
+    const verdict = await probeWhatsAppGroupForAccount(
+      accountClient('acc_live', CHAT),
+      CONFIG,
+      CHAT,
+      'acc_live',
+    );
+    expect(verdict).toBe('accessible');
+    expect(
+      planLegacyDefaultMapping({ row, conflictConversationId: null, destination: verdict }).action,
+    ).toBe('migrate');
+  });
+
+  it('holds a different gateway account for manual review', async () => {
+    const verdict = await probeWhatsAppGroupForAccount(
+      accountClient('acc_other', CHAT),
+      CONFIG,
+      CHAT,
+      'acc_live',
+    );
+    expect(verdict).toBe('account_mismatch');
+    expect(
+      planLegacyDefaultMapping({ row, conflictConversationId: null, destination: verdict }),
+    ).toEqual(expect.objectContaining({ action: 'manual_review', reason: 'account_mismatch' }));
+  });
+
+  it('holds an unavailable account identity for manual review', () => {
+    expect(
+      classifyLegacyGroupAccount([connected('acc_live'), connected('acc_other')], 'acc_live'),
+    ).toBe('unknown');
+    expect(
+      planLegacyDefaultMapping({
+        row,
+        conflictConversationId: null,
+        destination: 'account_unknown',
+      }),
+    ).toEqual(
+      expect.objectContaining({ action: 'manual_review', reason: 'account_identity_unavailable' }),
+    );
+  });
+
+  it('holds a matching account when the group is missing', async () => {
+    const client = accountClient('acc_live', CHAT);
+    client.getGroup.mockRejectedValue(
+      new WhatsAppGatewayHttpError(404, 'GROUP_NOT_FOUND', 'missing'),
+    );
+    const verdict = await probeWhatsAppGroupForAccount(client, CONFIG, CHAT, 'acc_live');
+    expect(verdict).toBe('missing');
+    expect(
+      planLegacyDefaultMapping({ row, conflictConversationId: null, destination: verdict }),
+    ).toEqual(expect.objectContaining({ action: 'manual_review', reason: 'group_not_accessible' }));
+  });
+});
+
+function accountClient(accountId: string, groupId: string) {
+  return {
+    listAccounts: vi
+      .fn()
+      .mockResolvedValue([{ id: accountId, isActive: true, status: 'CONNECTED' }]),
+    getGroup: vi.fn().mockResolvedValue({ id: groupId, name: 'Finance' }),
+  };
+}
 
 describe('legacy mapping dry-run', () => {
   it('does not write while planning a verified mapping', async () => {

@@ -65,7 +65,7 @@ pnpm --filter @nbos/api exec tsx src/modules/messenger/core/legacy-whatsapp-defa
 pnpm --filter @nbos/api exec tsx src/modules/messenger/core/legacy-whatsapp-default-account.cli.ts --repair-message=<messageId>
 ```
 
-The command is a dry-run unless `--apply` is passed. `--apply` updates a mapping only when the target chat is free in the database and `GET /api/groups/:id` on the existing Gateway client shows that the connected account can see that group. A timeout, 5xx, missing group, or ambiguous id stays `manual_review` and is not written. The audit does not enqueue sends.
+The command is a dry-run unless `--apply` is passed. `--apply` updates a mapping only when the target chat is free in the database and the Gateway proves two things: `GET /api/v1/accounts` shows exactly one active `CONNECTED` account and that id equals the configured target, and legacy `GET /api/groups/:id` (the single-active-account session) returns that group. There is no account-scoped group route. A timeout, 5xx, missing group, account mismatch, or an account list that is empty, ambiguous, or disconnected stays `manual_review` and is not written. Comparing the database id alone is not enough. The audit does not enqueue sends.
 
 Normal outbound reconciliation still rejects a command whose `accountId`/`chatId` differ from the current mapping (`FORGED_ROUTING`). That check is unchanged. The only exception is an explicit one-message repair:
 
@@ -73,7 +73,9 @@ Normal outbound reconciliation still rejects a command whose `accountId`/`chatId
 --repair-message=<messageId>
 ```
 
-It runs only for a `FAILED` `SEND_MESSAGE` whose payload account is `default`, whose message has no `SENT`/`DELIVERED`/`READ` status and no WhatsApp external ref, and whose current mapping is a verified real account on the same chat. The same `MessengerCommand` and `whatsAppOutboundIdempotencyKey(messageId)` are kept. The command becomes `PENDING` and the message `QUEUED`, so the existing reconciler can enqueue it. A second concurrent repair loses the conditional update. Do not pass `--apply` together with `--repair-message`.
+Same-key recovery and this repair are different. Inside 24 hours, `firstAttemptAt` lets the reconciler retry the same Gateway `Idempotency-Key` (`core-wa-send:<messageId>`). After that window, an unknown outcome (`OUTCOME_UNKNOWN`, timeout, HTTP 502/503/504, `WAHA_UNAVAILABLE`, `MESSAGE_OUTCOME_UNKNOWN`) is manual review. The expired key must not be treated as proof the provider never accepted the message, and it must not be replaced with a new transport key.
+
+An explicit repair is allowed only when the command is `FAILED`, the payload account is still `default`, the message is not `SENT`/`DELIVERED`/`READ`, there is no WhatsApp external ref, and `errorCode` is on the proven pre-provider allowlist (`WHATSAPP_NOT_CONNECTED`, `WHATSAPP_GATEWAY_NOT_CONFIGURED`, `FORGED_ROUTING`). The current mapping account must be the same verified Gateway account, and that account must see the group. The same `MessengerMessage` and `MessengerCommand` stay. `firstAttemptAt` is not cleared. The payload keeps the logical route and adds `repairGeneration: 1`, so the one QUEUED dispatch uses Gateway key `core-wa-send:<messageId>:repair:1`. That is a new transport attempt, because a stored `FAILED` replay would not send and an expired key may send again. A later `OUTCOME_UNKNOWN` on that attempt falls back to the old 24h rule and is not resent. A second concurrent repair loses the conditional update. Do not pass `--apply` together with `--repair-message`. Do not rerun the invoice reminder batch.
 
 Stale `SENDING` becomes `OUTCOME_UNKNOWN` before any same-key retry. It is not resent only because time passed. Already `SENT` messages are not enqueued again.
 
