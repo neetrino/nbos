@@ -100,7 +100,10 @@ export function blocksExpiredSameKeyWindow(
   return !isWithinWhatsAppSameKeyWindow(command, now);
 }
 
-/** One QUEUED dispatch of an operator repair. Later UNKNOWN retries stay on the 24h rule. */
+/**
+ * The one operator-approved QUEUED dispatch may start after the original window
+ * expired. Later same-generation retries stay on that window.
+ */
 export function isExplicitLegacyRepairDispatch(
   command: { status: string; payload: unknown },
   messageStatus: string,
@@ -113,18 +116,19 @@ export function isExplicitLegacyRepairDispatch(
 }
 
 /**
- * Logical key stays `core-wa-send:<messageId>`. The Gateway header is a new
- * transport key only for that one proven repair, because a 24h key may send again
- * after expiry and a stored FAILED replay would not send at all.
+ * Logical key stays `core-wa-send:<messageId>`. Once `repairGeneration` is stored,
+ * every Gateway call for that generation uses the same `:repair:N` header, including
+ * `OUTCOME_UNKNOWN` recovery. The 24h window is enforced before this key is sent.
  */
 export function whatsAppTransportIdempotencyKey(
-  command: { status: string; payload: unknown },
-  messageStatus: string,
+  command: { payload: unknown },
   logicalKey: string,
   messageId: string,
 ): string {
-  if (!isExplicitLegacyRepairDispatch(command, messageStatus)) return logicalKey;
-  return `${whatsAppOutboundIdempotencyKey(messageId)}:repair:${LEGACY_REPAIR_GENERATION}`;
+  const generation = readLegacyRepairGeneration(command.payload);
+  if (generation == null) return logicalKey;
+  if (logicalKey !== whatsAppOutboundIdempotencyKey(messageId)) return logicalKey;
+  return `${logicalKey}:repair:${generation}`;
 }
 
 type RepairGuardInput = {

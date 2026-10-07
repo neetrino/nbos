@@ -75,12 +75,7 @@ export async function dispatchWhatsAppCoreSendJob(
     command,
     job,
     prepared,
-    whatsAppTransportIdempotencyKey(
-      command,
-      prepared.message.status,
-      job.idempotencyKey,
-      job.messageId,
-    ),
+    whatsAppTransportIdempotencyKey(command, job.idempotencyKey, job.messageId),
     publisher,
     attempt.token,
   );

@@ -56,17 +56,29 @@ describe('explicit legacy resend allowlist', () => {
     expect(classifyLegacyRepairFailure(command, NOW)).toBe('provider_acceptance_not_disproven');
   });
 
-  it('uses a repair transport key only for the queued operator dispatch', () => {
+  it('keeps one repair transport key for the whole generation', () => {
     const logical = whatsAppOutboundIdempotencyKey('msg-1');
-    const command = {
-      status: 'PENDING',
-      payload: { accountId: 'acc_live', chatId: '1@g.us', repairGeneration: 1 },
-    };
-    expect(whatsAppTransportIdempotencyKey(command, 'QUEUED', logical, 'msg-1')).toBe(
-      `${logical}:repair:1`,
+    const payload = { accountId: 'acc_live', chatId: '1@g.us', repairGeneration: 1 };
+    const repairKey = `${logical}:repair:1`;
+    expect(whatsAppTransportIdempotencyKey({ status: 'PENDING', payload }, logical, 'msg-1')).toBe(
+      repairKey,
     );
-    expect(whatsAppTransportIdempotencyKey(command, 'OUTCOME_UNKNOWN', logical, 'msg-1')).toBe(
+    expect(
+      whatsAppTransportIdempotencyKey({ status: 'OUTCOME_UNKNOWN', payload }, logical, 'msg-1'),
+    ).toBe(repairKey);
+    expect(whatsAppTransportIdempotencyKey({ status: 'SENDING', payload }, logical, 'msg-1')).toBe(
+      repairKey,
+    );
+  });
+
+  it('leaves a normal send on the logical key', () => {
+    const logical = whatsAppOutboundIdempotencyKey('msg-1');
+    const payload = { accountId: 'acc_live', chatId: '1@g.us' };
+    expect(whatsAppTransportIdempotencyKey({ status: 'PENDING', payload }, logical, 'msg-1')).toBe(
       logical,
     );
+    expect(
+      whatsAppTransportIdempotencyKey({ status: 'OUTCOME_UNKNOWN', payload }, logical, 'msg-1'),
+    ).toBe(logical);
   });
 });
