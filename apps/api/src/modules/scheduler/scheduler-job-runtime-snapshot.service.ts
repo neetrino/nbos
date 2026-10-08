@@ -19,6 +19,7 @@ import {
   DEFAULT_SCHEDULER_RUNTIME_SNAPSHOT_INTERVAL_MS,
   isSchedulerEnabled,
 } from './scheduler-lease.constants';
+import { SCHEDULER_BUSINESS_TIMEZONE } from './scheduler-timezone';
 import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
 
 @Injectable()
@@ -61,7 +62,7 @@ export class SchedulerJobRuntimeSnapshotService implements OnApplicationBootstra
 
   async writeSnapshot(): Promise<void> {
     const masterEnabled = isSchedulerEnabled();
-    const timezone = process.env.TZ?.trim() || 'UTC';
+    const timezone = SCHEDULER_BUSINESS_TIMEZONE;
     const heartbeatAt = new Date();
     const registeredNames = new Set(this.jobRegistry.list());
     const nestCronNames = this.listNestCronNames();

@@ -8,9 +8,8 @@ import {
   PlatformSchedulerJobsService,
   SCHEDULER_CATALOG_STATUS,
 } from './platform-scheduler-jobs.service';
-import type { SchedulerAiService } from './scheduler-ai.service';
 import type { SchedulerJobPolicyService } from './scheduler-job-policy.service';
-import type { SchedulerService } from './scheduler.service';
+import type { SchedulerOccurrenceService } from './scheduler-occurrence.service';
 import { SCHEDULER_JOB_NAMES, SCHEDULER_RUN_STATUS } from './scheduler-lease.constants';
 
 const baseEntry = {
@@ -162,34 +161,40 @@ describe('runJobNow', () => {
   const ACTOR_ID = 'emp-admin';
 
   function serviceWithMocks() {
-    const runAiModelCatalogSync = vi
-      .fn()
-      .mockResolvedValue({ status: SCHEDULER_RUN_STATUS.SUCCEEDED, runId: 'run-1' });
+    const enqueueManual = vi.fn().mockResolvedValue({
+      id: 'occ-1',
+      jobName: SCHEDULER_JOB_NAMES.aiModelCatalogSync,
+      status: 'QUEUED',
+      scheduledFor: new Date('2026-10-07T07:00:00.000Z'),
+      trigger: 'manual_admin',
+      attemptCount: 0,
+      startedAt: null,
+    });
     const log = vi.fn();
     const service = new PlatformSchedulerJobsService(
       {} as never,
       {} as unknown as SchedulerJobPolicyService,
       { log } as unknown as AuditService,
-      {} as unknown as SchedulerService,
-      { runAiModelCatalogSync } as unknown as SchedulerAiService,
+      { enqueueManual } as unknown as SchedulerOccurrenceService,
     );
-    return { service, runAiModelCatalogSync, log };
+    return { service, enqueueManual, log };
   }
 
-  it('runs the AI catalog sync through its own scheduler service', async () => {
-    const { service, runAiModelCatalogSync } = serviceWithMocks();
+  it('queues a manual run instead of executing it inline', async () => {
+    const { service, enqueueManual } = serviceWithMocks();
 
     const response = await service.runJobNow({
       jobName: SCHEDULER_JOB_NAMES.aiModelCatalogSync,
       actorId: ACTOR_ID,
     });
 
-    expect(runAiModelCatalogSync).toHaveBeenCalledWith('manual_admin');
-    expect(response).toEqual({
+    expect(enqueueManual).toHaveBeenCalledWith({
       jobName: SCHEDULER_JOB_NAMES.aiModelCatalogSync,
       trigger: 'manual_admin',
-      result: { status: SCHEDULER_RUN_STATUS.SUCCEEDED, runId: 'run-1' },
     });
+    expect(response.result).toEqual(
+      expect.objectContaining({ occurrenceId: 'occ-1', status: 'QUEUED' }),
+    );
   });
 
   it('audits the manual run with the acting employee', async () => {
@@ -210,12 +215,12 @@ describe('runJobNow', () => {
   });
 
   it('refuses a job name that is not in the catalog, before any dispatch or audit', async () => {
-    const { service, runAiModelCatalogSync, log } = serviceWithMocks();
+    const { service, enqueueManual, log } = serviceWithMocks();
 
     await expect(service.runJobNow({ jobName: 'not-a-job', actorId: ACTOR_ID })).rejects.toThrow(
       NotFoundException,
     );
-    expect(runAiModelCatalogSync).not.toHaveBeenCalled();
+    expect(enqueueManual).not.toHaveBeenCalled();
     expect(log).not.toHaveBeenCalled();
   });
 });

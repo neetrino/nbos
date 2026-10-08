@@ -226,4 +226,41 @@ describe('SchedulerLeaseService acquire fencing', () => {
     expect(result.status).toBe('SKIPPED_LOCKED');
     expect(runs.create).toHaveBeenCalledWith(expect.objectContaining({ status: 'SKIPPED_LOCKED' }));
   });
+
+  it('does not drop a third job when two leases are already in flight', async () => {
+    let releaseGate: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      releaseGate = resolve;
+    });
+    const prisma = {
+      $queryRaw: vi.fn().mockResolvedValue([
+        {
+          job_name: 'job',
+          owner_id: 'owner',
+          lease_until: new Date(),
+          heartbeat_at: new Date(),
+          fencing_token: 1n,
+        },
+      ]),
+      $executeRaw: vi.fn().mockResolvedValue(1),
+    };
+    const runs = {
+      create: vi.fn().mockResolvedValue({ id: 'run-1' }),
+      touchHeartbeat: vi.fn(),
+      finish: vi.fn(),
+    };
+    process.env.SCHEDULER_LEASE_TTL_MS = '120000';
+    process.env.SCHEDULER_HEARTBEAT_INTERVAL_MS = '30000';
+    const service = new SchedulerLeaseService(prisma as never, runs as never);
+    const pending = ['job-a', 'job-b', 'job-c'].map((jobName) =>
+      service.runWithLease({ jobName, trigger: 'cron' }, async () => {
+        await gate;
+        return { processedCount: 1 };
+      }),
+    );
+    await vi.waitFor(() => expect(prisma.$queryRaw).toHaveBeenCalledTimes(3));
+    releaseGate();
+    const results = await Promise.all(pending);
+    expect(results.map((result) => result.status)).toEqual(['SUCCEEDED', 'SUCCEEDED', 'SUCCEEDED']);
+  });
 });

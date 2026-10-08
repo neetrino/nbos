@@ -135,12 +135,17 @@ export class SchedulerService {
     );
   }
 
-  async runInvoiceCardReminders(trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp) {
+  async runInvoiceCardReminders(
+    trigger: SchedulerTrigger = SCHEDULER_TRIGGER.manualHttp,
+    asOf?: Date,
+  ) {
     return this.lease.runWithLease(
       { jobName: SCHEDULER_JOB_NAMES.invoiceCardReminders, trigger },
       async ({ signal }) => {
         if (signal.aborted) return;
-        const result = await this.invoiceCardRemindersService.runDueInvoiceCardReminders();
+        const result = await this.invoiceCardRemindersService.runDueInvoiceCardReminders(
+          asOf ? { asOf } : {},
+        );
         return {
           processedCount: result.created.length,
           metadata: {

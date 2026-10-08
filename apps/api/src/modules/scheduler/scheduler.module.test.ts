@@ -6,6 +6,9 @@ import { PlatformSchedulerJobsController } from './platform-scheduler-jobs.contr
 import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
 import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
 import { SchedulerJobRuntimeSnapshotService } from './scheduler-job-runtime-snapshot.service';
+import { SchedulerExecutionWorker } from './scheduler-execution.worker';
+import { SchedulerOccurrenceReconcileService } from './scheduler-occurrence-reconcile.service';
+import { SchedulerOccurrenceService } from './scheduler-occurrence.service';
 import { SchedulerModule } from './scheduler.module';
 
 describe('SchedulerModule.forRoot', () => {
@@ -16,6 +19,8 @@ describe('SchedulerModule.forRoot', () => {
     expect(module.providers).toContain(ExpensePlanAutoDueCron);
     expect(module.providers).toContain(MessengerOutboundReconcileCron);
     expect(module.providers).toContain(SchedulerJobRuntimeSnapshotService);
+    expect(module.providers).toContain(SchedulerExecutionWorker);
+    expect(module.providers).toContain(SchedulerOccurrenceReconcileService);
   });
 
   it('omits cron providers when includeCrons is false', () => {
@@ -25,6 +30,8 @@ describe('SchedulerModule.forRoot', () => {
     expect(module.providers).not.toContain(ExpensePlanAutoDueCron);
     expect(module.providers).not.toContain(MessengerOutboundReconcileCron);
     expect(module.providers).not.toContain(SchedulerJobRuntimeSnapshotService);
+    expect(module.providers).not.toContain(SchedulerExecutionWorker);
+    expect(module.providers).toContain(SchedulerOccurrenceService);
   });
 
   it('registers Settings catalog API and policy on both roles', () => {

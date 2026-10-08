@@ -50,7 +50,8 @@ export class PlatformSchedulerJobsController {
   @RequirePermission(SETTINGS_SCHEDULER_MODULE, 'EDIT')
   @ApiOperation({
     summary: 'Run a scheduler job now from Settings',
-    description: 'Uses lease + trigger manual_admin. Audited as scheduler.job_run_now.',
+    description:
+      'Persists a scheduler occurrence and enqueues it. Audited as scheduler.job_run_now.',
   })
   runJobNow(@CurrentUser() user: CurrentUserPayload, @Param('jobName') jobName: string) {
     return this.jobsService.runJobNow({ jobName, actorId: user.id });

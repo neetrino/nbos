@@ -4,6 +4,10 @@ import {
   WHATSAPP_GATEWAY_REQUEST_TIMEOUT_MS,
 } from './whatsapp-gateway.constants';
 import { WhatsAppGatewayHttpError } from './whatsapp-gateway.errors';
+import {
+  normalizeGatewayAccountList,
+  type WhatsAppGatewayAccountSummary,
+} from './whatsapp-gateway-account';
 import type {
   WhatsAppGatewayAddParticipantsResult,
   WhatsAppGatewayChatsListData,
@@ -28,6 +32,13 @@ export interface WhatsAppGatewayClientConfig {
 @Injectable()
 export class WhatsAppGatewayClient {
   private readonly logger = new Logger(WhatsAppGatewayClient.name);
+
+  async listAccounts(
+    config: WhatsAppGatewayClientConfig,
+  ): Promise<WhatsAppGatewayAccountSummary[]> {
+    const data = await this.request<unknown>(config, 'GET', '/api/v1/accounts');
+    return normalizeGatewayAccountList(data);
+  }
 
   async health(config: WhatsAppGatewayClientConfig): Promise<WhatsAppGatewayHealthData> {
     const data = await this.request<WhatsAppGatewayHealthData>(config, 'GET', '/health', {

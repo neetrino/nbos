@@ -201,7 +201,7 @@ describe('SchedulerService', () => {
   describe('runInvoiceCardReminders', () => {
     it('delegates to InvoiceCardRemindersService', async () => {
       const result = await service.runInvoiceCardReminders();
-      expect(invoiceCardRemindersService.runDueInvoiceCardReminders).toHaveBeenCalledWith();
+      expect(invoiceCardRemindersService.runDueInvoiceCardReminders).toHaveBeenCalledWith({});
       expect(result.status).toBe('SUCCEEDED');
     });
   });

@@ -13,7 +13,7 @@ export type ProductCommunicationPurposeName = (typeof PRODUCT_COMMUNICATION_PURP
 
 export const PRODUCT_COMMUNICATION_BINDING_ACTIVE = 'ACTIVE';
 
-/** Used when WhatsAppGatewayConnection.gatewayAccountId is unset (legacy/local). */
+/** Dev/test stand-in when WhatsAppGatewayConnection.gatewayAccountId is unset. Production must not use it. */
 export const WHATSAPP_FALLBACK_ACCOUNT_ID = 'default';
 
 export const PRODUCT_COMMUNICATION_PURPOSE_ALREADY_ACTIVE =

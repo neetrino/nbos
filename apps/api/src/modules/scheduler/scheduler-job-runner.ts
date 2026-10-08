@@ -52,17 +52,19 @@ export async function runSchedulerJobByName(
   runners: SchedulerJobRunners,
   jobName: string,
   trigger: SchedulerTrigger,
+  context?: { scheduledFor?: Date },
 ): Promise<unknown> {
   if (!canRunSchedulerJobNow(jobName)) {
     throw new BadRequestException(`No runner for scheduler job: ${jobName}`);
   }
-  return dispatchRunnableJob(runners, jobName as RunnableJobName, trigger);
+  return dispatchRunnableJob(runners, jobName as RunnableJobName, trigger, context?.scheduledFor);
 }
 
 async function dispatchRunnableJob(
   runners: SchedulerJobRunners,
   jobName: RunnableJobName,
   trigger: SchedulerTrigger,
+  scheduledFor?: Date,
 ): Promise<unknown> {
   const service = runners.scheduler;
   switch (jobName) {
@@ -73,7 +75,7 @@ async function dispatchRunnableJob(
     case SCHEDULER_JOB_NAMES.overdueInvoices:
       return service.markOverdueInvoices(trigger);
     case SCHEDULER_JOB_NAMES.invoiceCardReminders:
-      return service.runInvoiceCardReminders(trigger);
+      return service.runInvoiceCardReminders(trigger, scheduledFor);
     case SCHEDULER_JOB_NAMES.expenseBacklogReminders:
       return service.runExpenseBacklogReminders(trigger);
     case SCHEDULER_JOB_NAMES.salesKpiMonthClose:

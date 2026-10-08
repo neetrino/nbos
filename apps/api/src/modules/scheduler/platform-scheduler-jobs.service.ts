@@ -23,9 +23,9 @@ import {
   type PlatformSchedulerJobsResponse,
 } from './platform-scheduler-jobs.list';
 import type { PlatformSchedulerJobRow } from './platform-scheduler-jobs.mapper';
-import { canRunSchedulerJobNow, runSchedulerJobByName } from './scheduler-job-runner';
-import { SchedulerAiService } from './scheduler-ai.service';
-import { SchedulerService } from './scheduler.service';
+import { canRunSchedulerJobNow } from './scheduler-job-runner';
+import { SchedulerOccurrenceService } from './scheduler-occurrence.service';
+import { isOpenSchedulerOccurrenceStatus } from './scheduler-occurrence.constants';
 
 export {
   computeNextRunAt,
@@ -48,8 +48,7 @@ export class PlatformSchedulerJobsService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly policyService: SchedulerJobPolicyService,
     private readonly auditService: AuditService,
-    private readonly schedulerService: SchedulerService,
-    private readonly schedulerAiService: SchedulerAiService,
+    private readonly occurrences: SchedulerOccurrenceService,
   ) {}
 
   async listJobs(): Promise<PlatformSchedulerJobsResponse> {
@@ -59,11 +58,12 @@ export class PlatformSchedulerJobsService {
     const platformNames = catalog
       .filter((entry) => entry.kind === SCHEDULER_JOB_KIND.platformCron)
       .map((entry) => entry.jobName);
-    const [runtimes, lastRuns, leases, policies] = await Promise.all([
+    const [runtimes, lastRuns, leases, policies, openOccurrences] = await Promise.all([
       this.prisma.schedulerJobRuntime.findMany({ where: { jobName: { in: jobNames } } }),
       this.loadLatestRuns(jobNames),
       this.prisma.schedulerLease.findMany({ where: { jobName: { in: jobNames } } }),
       this.policyService.listByJobNames(platformNames),
+      this.loadOpenOccurrences(jobNames),
     ]);
     return buildPlatformSchedulerJobsResponse({
       catalog,
@@ -71,6 +71,7 @@ export class PlatformSchedulerJobsService {
       lastRuns,
       leases,
       policies,
+      openOccurrences,
     });
   }
 
@@ -116,11 +117,15 @@ export class PlatformSchedulerJobsService {
     if (!canRunSchedulerJobNow(input.jobName)) {
       throw new BadRequestException(`Job ${input.jobName} cannot be run from Settings`);
     }
-    const result = await runSchedulerJobByName(
-      { scheduler: this.schedulerService, ai: this.schedulerAiService },
-      input.jobName,
-      SCHEDULER_TRIGGER.manualAdmin,
-    );
+    const occurrence = await this.occurrences.enqueueManual({
+      jobName: input.jobName,
+      trigger: SCHEDULER_TRIGGER.manualAdmin,
+    });
+    const result = {
+      occurrenceId: occurrence.id,
+      status: occurrence.status,
+      scheduledFor: occurrence.scheduledFor.toISOString(),
+    };
     await this.auditService.log({
       entityType: SCHEDULER_AUDIT_ENTITY,
       entityId: input.jobName,
@@ -178,5 +183,24 @@ export class PlatformSchedulerJobsService {
       if (latest) rows.push(latest);
     }
     return rows;
+  }
+
+  private async loadOpenOccurrences(jobNames: string[]) {
+    if (jobNames.length === 0) return [];
+    const rows = await this.prisma.schedulerOccurrence.findMany({
+      where: {
+        jobName: { in: jobNames },
+        status: { in: ['PENDING', 'QUEUED', 'RUNNING'] },
+      },
+      orderBy: { scheduledFor: 'desc' },
+      take: 200,
+      select: { jobName: true, status: true, scheduledFor: true },
+    });
+    const open = new Map<string, { jobName: string; status: string; scheduledFor: Date }>();
+    for (const row of rows) {
+      if (open.has(row.jobName) || !isOpenSchedulerOccurrenceStatus(row.status)) continue;
+      open.set(row.jobName, row);
+    }
+    return [...open.values()];
   }
 }

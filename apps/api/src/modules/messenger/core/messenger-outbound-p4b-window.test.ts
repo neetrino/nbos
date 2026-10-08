@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { WHATSAPP_CORE_SEND_IDEMPOTENCY_PREFIX } from '../../integrations/whatsapp-gateway/whatsapp-gateway.constants';
+import { WhatsAppGatewayHttpError } from '../../integrations/whatsapp-gateway/whatsapp-gateway.errors';
+import { LEGACY_REPAIR_GENERATION } from './legacy-whatsapp-repair-eligibility';
 import { reconcileMessengerOutboundCommands } from './messenger-outbound-reconcile.ops';
 import { dispatchWhatsAppCoreSendJob } from './messenger-wa-outbound-dispatch.ops';
 import { beginWhatsAppCoreSendAttempt } from './messenger-wa-outbound-attempt.ops';
@@ -168,6 +170,70 @@ describe('P4B-02 Gateway window start', () => {
           nextReconcileAt: null,
           completedAt: null,
         }),
+      }),
+    );
+  });
+
+  it('sends a proven repair older than 24h with a new transport key', async () => {
+    const live = command({
+      firstAttemptAt: new Date(Date.now() - 3 * HOUR * 24),
+      createdAt: new Date(Date.now() - 3 * HOUR * 24),
+      payload: {
+        accountId: JOB.accountId,
+        chatId: CHAT,
+        repairGeneration: LEGACY_REPAIR_GENERATION,
+      },
+    });
+    const prisma = {
+      messengerCommand: {
+        findUnique: vi.fn().mockResolvedValue(live),
+        count: vi.fn().mockResolvedValue(1),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        update: vi.fn(),
+      },
+      messengerMessage: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'msg-1',
+          conversationId: 'conv-c',
+          content: 'hi',
+          status: 'QUEUED',
+          deletedAt: null,
+          conversation: { zone: 'CLIENT' },
+        }),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+      messengerExternalConversationMapping: {
+        findFirst: vi.fn().mockResolvedValue({
+          externalAccountId: 'acc_a',
+          externalConversationId: CHAT,
+          conversation: { zone: 'CLIENT' },
+        }),
+      },
+      messengerMessageExternalRef: { findFirst: vi.fn().mockResolvedValue(null) },
+      auditLog: { create: vi.fn() },
+    };
+    const client = {
+      sendAccountTextMessage: vi
+        .fn()
+        .mockRejectedValue(new WhatsAppGatewayHttpError(502, 'HTTP_502', 'bad gateway')),
+    };
+    const connection = {
+      requireClientConfig: vi
+        .fn()
+        .mockResolvedValue({ baseUrl: 'https://wa.test', apiToken: 'tok' }),
+    };
+    await expect(
+      dispatchWhatsAppCoreSendJob(prisma as never, connection as never, client as never, JOB),
+    ).rejects.toMatchObject({ code: 'HTTP_502' });
+    expect(client.sendAccountTextMessage).toHaveBeenCalledWith(
+      expect.anything(),
+      'acc_a',
+      expect.objectContaining({ chatId: CHAT }),
+      `${JOB.idempotencyKey}:repair:1`,
+    );
+    expect(prisma.messengerCommand.update).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ invalidReason: 'GATEWAY_WINDOW_EXPIRED' }),
       }),
     );
   });

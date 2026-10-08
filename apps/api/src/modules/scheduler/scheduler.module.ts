@@ -48,6 +48,10 @@ import { PlatformSchedulerJobsController } from './platform-scheduler-jobs.contr
 import { PlatformSchedulerJobsService } from './platform-scheduler-jobs.service';
 import { SchedulerJobPolicyService } from './scheduler-job-policy.service';
 import { AuditModule } from '../audit/audit.module';
+import { SchedulerExecutionQueueService } from './scheduler-execution-queue.service';
+import { SchedulerOccurrenceService } from './scheduler-occurrence.service';
+import { SchedulerExecutionWorker } from './scheduler-execution.worker';
+import { SchedulerOccurrenceReconcileService } from './scheduler-occurrence-reconcile.service';
 
 const SCHEDULER_IMPORTS = [
   BillingModule,
@@ -122,7 +126,16 @@ export class SchedulerModule {
         ServiceApiKeyGuard,
         SchedulerJobPolicyService,
         PlatformSchedulerJobsService,
-        ...(includeCrons ? [...CRON_PROVIDERS, SchedulerJobRuntimeSnapshotService] : []),
+        SchedulerExecutionQueueService,
+        SchedulerOccurrenceService,
+        ...(includeCrons
+          ? [
+              ...CRON_PROVIDERS,
+              SchedulerJobRuntimeSnapshotService,
+              SchedulerExecutionWorker,
+              SchedulerOccurrenceReconcileService,
+            ]
+          : []),
       ],
       exports: [
         SchedulerService,
@@ -131,6 +144,7 @@ export class SchedulerModule {
         ScheduledJobRegistry,
         SchedulerRunService,
         SchedulerJobPolicyService,
+        SchedulerOccurrenceService,
       ],
     };
   }
