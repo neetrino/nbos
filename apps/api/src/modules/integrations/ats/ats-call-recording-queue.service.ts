@@ -10,8 +10,10 @@ import {
 } from '../../../runtime/queue-redis';
 import {
   ATS_CALL_RECORDING_DOWNLOAD_JOB_NAME,
+  ATS_CALL_RECORDING_JOB_ATTEMPTS,
   ATS_CALL_RECORDING_QUEUE_NAME,
   ATS_CALL_RECORDING_REPROCESS_JOB_NAME,
+  ATS_CALL_RECORDING_RETRY_DELAY_MS,
   type AtsCallRecordingJobPayload,
 } from './ats-call-recording.constants';
 import { atsCallRecordingJobId, atsCallRecordingReprocessJobId } from './ats-call-recording-job-id';
@@ -58,7 +60,11 @@ export class AtsCallRecordingQueueService implements OnModuleInit, OnModuleDestr
       const jobId = atsCallRecordingJobId(payload.callId);
       const prepared = await prepareRecordingJobId(this.queue, jobId);
       if (prepared === 'in_flight') return true;
-      await this.queue.add(ATS_CALL_RECORDING_DOWNLOAD_JOB_NAME, payload, { jobId });
+      await this.queue.add(ATS_CALL_RECORDING_DOWNLOAD_JOB_NAME, payload, {
+        jobId,
+        attempts: ATS_CALL_RECORDING_JOB_ATTEMPTS,
+        backoff: { type: 'fixed', delay: ATS_CALL_RECORDING_RETRY_DELAY_MS },
+      });
       return true;
     } catch (caught) {
       if (isDuplicateJobError(caught)) return true;

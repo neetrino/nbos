@@ -7,7 +7,8 @@ export const ATS_CALL_RECORDING_REPROCESS_JOB_NAME = 'ats-call-recording-reproce
 export const ATS_CALL_RECORD_ENDPOINT = 'https://account.ats.am/docs/api/v1/call-record';
 export const ATS_CALL_RECORD_TIMEOUT_MS = 60_000;
 export const ATS_CALL_RECORDING_MAX_BYTES = 500 * 1024 * 1024;
-export const ATS_CALL_RECORDING_JOB_ATTEMPTS = 5;
+export const ATS_CALL_RECORDING_JOB_ATTEMPTS = 3;
+export const ATS_CALL_RECORDING_RETRY_DELAY_MS = 60_000;
 
 export const ATS_CALL_RECORDING_SOURCE_MODULE = 'ats';
 export const ATS_CALL_RECORDING_FILE_LINK_TYPE = 'ATTACHMENT' as const;

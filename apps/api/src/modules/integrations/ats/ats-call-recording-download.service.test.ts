@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { ATS_CALL_RECORDING_JOB_ATTEMPTS } from './ats-call-recording.constants';
 import {
   AtsRecordingPermanentError,
   AtsRecordingTransientError,
@@ -77,7 +78,32 @@ describe('AtsCallRecordingDownloadService', () => {
     );
 
     await expect(
-      service.processJob({ callId: 'call-1', uid: 'uid-1' }, 0, 5),
+      service.processJob({ callId: 'call-1', uid: 'uid-1' }, 0, ATS_CALL_RECORDING_JOB_ATTEMPTS),
+    ).rejects.toBeInstanceOf(AtsRecordingTransientError);
+    expect(prisma.atsCallEvent.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('does not mark FAILED after the second transient attempt', async () => {
+    const prisma = {
+      atsCallEvent: {
+        findUnique: vi.fn().mockResolvedValue(CALL),
+        update: vi.fn().mockResolvedValue({}),
+        updateMany: vi.fn(),
+      },
+    };
+    const client = {
+      downloadRecording: vi.fn().mockRejectedValue(new AtsRecordingTransientError('HTTP 404')),
+    };
+    const service = new AtsCallRecordingDownloadService(
+      prisma as never,
+      client as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    await expect(
+      service.processJob({ callId: 'call-1', uid: 'uid-1' }, 1, ATS_CALL_RECORDING_JOB_ATTEMPTS),
     ).rejects.toBeInstanceOf(AtsRecordingTransientError);
     expect(prisma.atsCallEvent.updateMany).not.toHaveBeenCalled();
   });
@@ -102,7 +128,11 @@ describe('AtsCallRecordingDownloadService', () => {
     );
 
     await expect(
-      service.processJob({ callId: 'call-1', uid: 'uid-1' }, 4, 5),
+      service.processJob(
+        { callId: 'call-1', uid: 'uid-1' },
+        ATS_CALL_RECORDING_JOB_ATTEMPTS - 1,
+        ATS_CALL_RECORDING_JOB_ATTEMPTS,
+      ),
     ).rejects.toBeInstanceOf(AtsRecordingTransientError);
     expect(prisma.atsCallEvent.updateMany).toHaveBeenCalledWith({
       where: { id: 'call-1', recordingStatus: { not: 'READY' } },
