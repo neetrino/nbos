@@ -23,11 +23,11 @@ export function EntityLinkedSheetsHoverActions({
 }: EntityLinkedSheetsHoverActionsProps) {
   const hasDeal = Boolean(onOpenDeal);
   const isFooter = variant === 'card-footer';
-  const tileSize = isFooter ? 'stack' : 'card';
+  const tileSize = isFooter ? 'compact' : 'card';
   const tileClassName = isFooter ? 'w-full min-w-0' : undefined;
 
   return (
-    <ActionTileHoverBar variant={variant}>
+    <ActionTileHoverBar variant={variant} className={isFooter ? 'gap-1.5' : undefined}>
       {contextHref ? (
         <ActionTileButton
           label="Context"

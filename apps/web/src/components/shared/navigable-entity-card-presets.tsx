@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Building2,
-  Calendar,
   FolderKanban,
   Layers,
   ListChecks,
@@ -14,12 +13,7 @@ import {
   ShoppingBag,
   User,
 } from 'lucide-react';
-import {
-  EntityLinkedSheetsHoverActions,
-  NavigableEntityCard,
-  StatusBadge,
-  type NavigableEntityCardMetaLine,
-} from '@/components/shared';
+import { EntityLinkedSheetsHoverActions, StatusBadge } from '@/components/shared';
 import {
   NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS,
   PROJECT_HUB_CARD_ICON_TILE_CLASS,
@@ -33,7 +27,6 @@ import {
   buildProductDetailPageHref,
   PRODUCT_DETAIL_TAB,
 } from '@/features/projects/constants/product-detail-tab';
-import { formsProductTypeKey } from '@/features/projects/constants/projects';
 import { getProductDirectoryBadge } from '@/features/projects/utils/products-hub-directory-badge';
 import { useEntityDetailSheetUrl } from '@/features/projects/hooks/use-entity-detail-sheet-url';
 import { getEntityOrderDealId } from '@/features/projects/utils/entity-order-deal';
@@ -73,35 +66,6 @@ function WorkSpaceModeBadge({ scrumEnabled }: { scrumEnabled: boolean }) {
       className={WORK_SPACE_CARD_STATUS_BADGE_CLASS}
     />
   );
-}
-
-function buildProductCardMeta(
-  product: ProjectProductSummary,
-  showProjectContext: boolean,
-): NavigableEntityCardMetaLine[] {
-  const lines: NavigableEntityCardMetaLine[] = [];
-  if (showProjectContext && product.project) {
-    lines.push({ id: 'project', icon: FolderKanban, text: product.project.name });
-    const companyName = product.company?.name ?? product.project.company?.name;
-    if (companyName) {
-      lines.push({ id: 'company', icon: Building2, text: companyName });
-    }
-  }
-  if (product.pm) {
-    lines.push({
-      id: 'pm',
-      icon: User,
-      text: `${product.pm.firstName} ${product.pm.lastName}`,
-    });
-  }
-  if (product.deadline) {
-    lines.push({
-      id: 'deadline',
-      icon: Calendar,
-      text: new Date(product.deadline).toLocaleDateString(),
-    });
-  }
-  return lines;
 }
 
 /** Project Hub directory card. */
@@ -421,40 +385,56 @@ export function WorkSpaceNavigableCard({
   );
 }
 
-/** Project detail product card. */
+/** Product card in the same shell as a project hub card. */
 export function ProductNavigableCard({
   projectId,
   product,
   showProjectContext = false,
 }: ProductNavigableCardProps) {
   const t = useTranslations('deliveryBoard');
-  const tForms = useTranslations('forms');
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
-  const productTypeLabel = tForms(formsProductTypeKey(product.productType) as never);
   const statusBadge = getProductDirectoryBadge(product, t);
+  const projectName = showProjectContext ? product.project?.name : undefined;
 
   return (
-    <NavigableEntityCard
-      href={buildProductDetailPageHref(projectId, product.id)}
-      icon={Package}
-      eyebrow={productTypeLabel}
-      title={product.name}
-      badges={statusBadge ? [statusBadge] : undefined}
-      metaLines={buildProductCardMeta(product, showProjectContext)}
-      stats={[
-        { value: product._count.tasks, label: 'Tasks' },
-        { value: product._count.extensions, label: 'Ext.' },
-        { value: product._count.tickets, label: 'Tickets' },
-      ]}
-      hoverActions={
+    <div className={cn(PROJECT_HUB_CARD_SHELL_CLASS, NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS)}>
+      <Link
+        href={buildProductDetailPageHref(projectId, product.id)}
+        className="flex min-h-0 flex-1 flex-col p-5 pb-3 focus-visible:outline-none"
+      >
+        <div className="flex items-start gap-3">
+          <div className={PROJECT_HUB_CARD_ICON_TILE_CLASS}>
+            <Package className="size-5" aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
+                {product.name}
+              </h3>
+              {statusBadge ? (
+                <StatusBadge label={statusBadge.label} variant={statusBadge.variant} />
+              ) : null}
+            </div>
+            {projectName ? (
+              <div className="mt-3 flex flex-col gap-1.5">
+                <span className={PROJECT_HUB_CARD_META_ROW_CLASS}>
+                  <FolderKanban className="size-3.5 shrink-0" aria-hidden />
+                  <span className="truncate">{projectName}</span>
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </Link>
+      <div className="px-4 pt-0 pb-4">
         <EntityLinkedSheetsHoverActions
           contextHref={`/projects/${projectId}`}
           onOpenDelivery={() => openDeliveryItem(`product-${product.id}`)}
           onOpenDeal={dealId ? () => openDeal(dealId) : undefined}
           variant="card-footer"
         />
-      }
-    />
+      </div>
+    </div>
   );
 }
