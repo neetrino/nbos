@@ -89,6 +89,9 @@ export function MessageDate({ label, sheet }: { label: string; sheet: boolean })
 export function ComposerField({
   sheet,
   value,
+  pendingNames = [],
+  onPickFiles,
+  onRemovePending,
   onChange,
   onSend,
   disabled,
@@ -97,6 +100,9 @@ export function ComposerField({
 }: {
   sheet: boolean;
   value: string;
+  pendingNames?: string[];
+  onPickFiles?: (files: File[]) => void;
+  onRemovePending?: (index: number) => void;
   onChange: (value: string) => void;
   onSend: () => void;
   disabled: boolean;
@@ -107,6 +113,9 @@ export function ComposerField({
     return (
       <InternalSheetComposer
         value={value}
+        pendingNames={pendingNames}
+        onPickFiles={onPickFiles}
+        onRemovePending={onRemovePending}
         onChange={onChange}
         onSend={onSend}
         disabled={disabled}
