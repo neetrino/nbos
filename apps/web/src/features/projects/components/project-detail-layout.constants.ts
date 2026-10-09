@@ -22,7 +22,7 @@ export const PROJECT_DETAIL_SIDEBAR_EDGE_CLASS = [
   PROJECT_DETAIL_SIDEBAR_STICKY_CLASS,
   PROJECT_DETAIL_SIDEBAR_MOBILE_BOTTOM_GAP_CLASS,
   'max-lg:rounded-xl max-lg:border',
-  'lg:-mr-6 lg:rounded-none lg:rounded-l-xl lg:border-y-0 lg:border-r-0 lg:border-l',
+  'lg:-mr-4 lg:rounded-none lg:rounded-l-xl lg:border-y-0 lg:border-r-0 lg:border-l',
 ].join(' ');
 
 export const PROJECT_DETAIL_PAGE_ROW_CLASS =

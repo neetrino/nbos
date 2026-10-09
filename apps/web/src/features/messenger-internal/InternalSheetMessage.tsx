@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCheck, Paperclip } from 'lucide-react';
+import { CheckCheck } from 'lucide-react';
 import { formatMessengerTime } from '@/features/messenger/messenger-format';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
 import { MessengerPersonAvatar } from './MessengerPersonAvatar';
@@ -11,6 +11,7 @@ import {
 import { InternalSheetReplyPreview } from './InternalSheetReplyPreview';
 import { jumpToThreadMessage } from './jump-to-thread-message';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
+import { SheetMessageFiles } from './SheetMessageFiles';
 
 const SHEET_BUBBLE_BASE = 'max-w-lg px-3 py-1.5 text-sm leading-5';
 
@@ -89,13 +90,13 @@ function IncomingSheetMessage({
         className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message, 'tl')} bg-card text-card-foreground dark:bg-secondary shadow-[0px_1px_1px_rgba(0,0,0,0.1)]`}
       >
         <SheetQuote message={message} mine={false} onOpenForwardSource={onOpenForwardSource} />
+        <SheetMessageFiles message={message} />
         <BubbleBody
           content={forwardBodyContent(message)}
           time={formatMessengerTime(message.timestamp)}
           seen={false}
           showChecks={false}
         />
-        <AttachmentRow message={message} />
       </div>
     </div>
   );
@@ -122,13 +123,13 @@ function OwnSheetMessage({
         className={`${SHEET_BUBBLE_BASE} ${sheetBubbleRadiusClass(message, 'tr')} text-white ${palette.ownBubble}`}
       >
         <SheetQuote message={message} mine onOpenForwardSource={onOpenForwardSource} />
+        <SheetMessageFiles message={message} light />
         <BubbleBody
           content={forwardBodyContent(message)}
           time={formatMessengerTime(message.timestamp)}
           seen={readReceiptSeen}
           showChecks={Boolean(readReceiptLabel)}
         />
-        <AttachmentRow message={message} light />
       </div>
       <AvatarSlot mine show={showAvatar} employeeId={message.senderId} label={message.senderName} />
     </div>
@@ -177,7 +178,11 @@ function BubbleBody({
 }) {
   return (
     <div className="flex items-end gap-2">
-      <p className="min-w-0 flex-1 whitespace-pre-wrap">{content}</p>
+      {content ? (
+        <p className="min-w-0 flex-1 whitespace-pre-wrap">{content}</p>
+      ) : (
+        <span className="flex-1" />
+      )}
       <span className="shrink-0">
         <BubbleStamp time={time} seen={seen} showChecks={showChecks} />
       </span>
@@ -238,29 +243,5 @@ function MessageAvatar({
       sizeClassName="size-9"
       fallbackClassName={tone}
     />
-  );
-}
-
-function AttachmentRow({
-  message,
-  light = false,
-}: {
-  message: MessengerViewMessage;
-  light?: boolean;
-}) {
-  if (message.attachments.length === 0) return null;
-  const tone = light ? 'bg-white/15 text-white' : 'bg-muted text-muted-foreground';
-  return (
-    <div className="mt-2 flex flex-wrap gap-1.5">
-      {message.attachments.map((attachment) => (
-        <span
-          key={attachment.id}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] ${tone}`}
-        >
-          <Paperclip size={11} />
-          File {attachment.fileAssetId.slice(0, 8)}
-        </span>
-      ))}
-    </div>
   );
 }

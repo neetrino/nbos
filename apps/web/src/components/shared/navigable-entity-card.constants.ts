@@ -20,11 +20,10 @@ export const NAVIGABLE_ENTITY_CARD_SOFT_ELEVATED_CLASS =
 
 /**
  * Project detail product/extension cards.
- * With the narrower About sidebar, lock 3 columns from `lg` so cards stay wider.
- * Explicit columns keep a single card one-track wide (not full row).
+ * Two columns on typical screens; a third column only on wide monitors.
  */
 export const PRODUCT_DETAIL_CARD_GRID_CLASS =
-  'grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4';
+  'grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-3';
 
 /** Project detail product card — stacked header + stats strip (mock-aligned). */
 export const PRODUCT_DETAIL_CARD_SHELL_CLASS =
@@ -58,13 +57,11 @@ export const PROJECT_HUB_CARD_META_ROW_CLASS =
 export const NAVIGABLE_ENTITY_CARD_GRID_PROJECTS_CLASS = NAVIGABLE_ENTITY_CARD_GRID_CLASS;
 
 /**
- * Product Hub directory — same ~280px track as project-detail product cards.
- * Full-width hub fits ~5 columns on a 24" (1920) layout with the sidebar open.
+ * Product Hub directory.
+ * Three cards by default; a wider screen adds a fourth, then a fifth.
  */
-export const NAVIGABLE_ENTITY_CARD_PRODUCTS_MIN_TRACK = '17.5rem';
-
 export const NAVIGABLE_ENTITY_CARD_GRID_PRODUCTS_CLASS =
-  'grid w-full min-w-0 gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,17.5rem),1fr))]';
+  'grid w-full min-w-0 grid-cols-3 gap-4 min-[1600px]:grid-cols-4 min-[1920px]:grid-cols-5';
 
 /** Work Spaces product tab — slightly wider cards than default hub grid. */
 export const WORK_SPACE_PRODUCT_CARD_GRID_CLASS =

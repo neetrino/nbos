@@ -42,7 +42,7 @@ function ActionTileContent({
   trailing,
   wrapLabel = false,
 }: Pick<ActionTileButtonProps, 'label' | 'icon' | 'tone' | 'size' | 'trailing' | 'wrapLabel'>) {
-  const isStack = size === 'stack';
+  const isStack = size === 'stack' || size === 'compact';
 
   return (
     <>
