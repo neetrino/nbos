@@ -48,7 +48,6 @@ interface WorkSpaceNavigableCardProps {
 interface ProductNavigableCardProps {
   projectId: string;
   product: ProjectProductSummary;
-  showProjectContext?: boolean;
 }
 
 /** Mobile: stack in the top-right; desktop: compact horizontal cluster. */
@@ -386,16 +385,11 @@ export function WorkSpaceNavigableCard({
 }
 
 /** Product card in the same shell as a project hub card. */
-export function ProductNavigableCard({
-  projectId,
-  product,
-  showProjectContext = false,
-}: ProductNavigableCardProps) {
+export function ProductNavigableCard({ projectId, product }: ProductNavigableCardProps) {
   const t = useTranslations('deliveryBoard');
   const { openDeliveryItem, openDeal } = useEntityDetailSheetUrl();
   const dealId = getEntityOrderDealId(product.order);
   const statusBadge = getProductDirectoryBadge(product, t);
-  const projectName = showProjectContext ? product.project?.name : undefined;
 
   return (
     <div className={cn(PROJECT_HUB_CARD_SHELL_CLASS, NAVIGABLE_ENTITY_CARD_ELEVATED_CLASS)}>
@@ -403,28 +397,20 @@ export function ProductNavigableCard({
         href={buildProductDetailPageHref(projectId, product.id)}
         className="flex min-h-0 flex-1 flex-col p-5 pb-3 focus-visible:outline-none"
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           <div className={PROJECT_HUB_CARD_ICON_TILE_CLASS}>
             <Package className="size-5" aria-hidden />
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="text-foreground line-clamp-2 text-base font-bold tracking-tight">
-                {product.name}
-              </h3>
-              {statusBadge ? (
-                <StatusBadge label={statusBadge.label} variant={statusBadge.variant} />
-              ) : null}
-            </div>
-            {projectName ? (
-              <div className="mt-3 flex flex-col gap-1.5">
-                <span className={PROJECT_HUB_CARD_META_ROW_CLASS}>
-                  <FolderKanban className="size-3.5 shrink-0" aria-hidden />
-                  <span className="truncate">{projectName}</span>
-                </span>
-              </div>
-            ) : null}
-          </div>
+          <h3 className="text-foreground line-clamp-2 min-w-0 flex-1 text-base font-bold tracking-tight">
+            {product.name}
+          </h3>
+          {statusBadge ? (
+            <StatusBadge
+              label={statusBadge.label}
+              variant={statusBadge.variant}
+              className="shrink-0 px-1.5 py-px text-[10px] leading-none"
+            />
+          ) : null}
         </div>
       </Link>
       <div className="px-4 pt-0 pb-4">
