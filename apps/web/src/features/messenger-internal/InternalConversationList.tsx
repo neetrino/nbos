@@ -9,6 +9,7 @@ import {
   INTERNAL_MESSENGER_EMPTY_COPY,
   type InternalMessengerSectionId,
 } from './internal-messenger.constants';
+import { conversationListTitle } from './internal-messenger-section';
 import { InternalConversationRow } from './InternalConversationRow';
 
 export function InternalConversationList({
@@ -36,6 +37,7 @@ export function InternalConversationList({
 }) {
   const listRef = useRef<HTMLDivElement>(null);
   const selection = useConversationSelection(listRef, activeId);
+  const visibleItems = filterConversationsBySearch(items, search);
   return (
     <div className="bg-sidebar text-sidebar-foreground flex min-h-0 flex-1 flex-col">
       <ListSearch
@@ -46,9 +48,9 @@ export function InternalConversationList({
       />
       <div ref={listRef} className="relative min-h-0 flex-1 overflow-y-auto px-2 pb-6">
         <ConversationSelectionCard rect={selection.rect} ready={selection.ready} />
-        <ListStatus section={section} pending={listPending} empty={items.length === 0} />
+        <ListStatus section={section} pending={listPending} empty={visibleItems.length === 0} />
         <ConversationRows
-          items={items}
+          items={visibleItems}
           activeId={activeId}
           onSelect={onSelect}
           onToggleFavorite={onToggleFavorite}
@@ -56,6 +58,19 @@ export function InternalConversationList({
       </div>
     </div>
   );
+}
+
+function filterConversationsBySearch(
+  items: MessengerCoreConversationRow[],
+  search: string,
+): MessengerCoreConversationRow[] {
+  const query = search.trim().toLowerCase();
+  if (!query) return items;
+  return items.filter((row) => {
+    const title = conversationListTitle(row.type, row.title, row.peerName ?? null).toLowerCase();
+    const preview = row.lastMessagePreview?.toLowerCase() ?? '';
+    return title.includes(query) || preview.includes(query);
+  });
 }
 
 function ConversationRows({
