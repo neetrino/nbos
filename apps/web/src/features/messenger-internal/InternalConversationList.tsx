@@ -9,6 +9,7 @@ import {
   INTERNAL_MESSENGER_EMPTY_COPY,
   type InternalMessengerSectionId,
 } from './internal-messenger.constants';
+import { DirectEmployeeHits } from './DirectEmployeeHits';
 import { conversationListTitle } from './internal-messenger-section';
 import { InternalConversationRow } from './InternalConversationRow';
 
@@ -23,6 +24,8 @@ export function InternalConversationList({
   onFilterChange,
   onSelect,
   onToggleFavorite,
+  selfId,
+  onStartDirect,
 }: {
   section: InternalMessengerSectionId;
   items: MessengerCoreConversationRow[];
@@ -34,6 +37,8 @@ export function InternalConversationList({
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
   onSelect: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  selfId?: string;
+  onStartDirect?: (employee: { id: string; name: string }) => void;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
   const selection = useConversationSelection(listRef, activeId);
@@ -43,11 +48,15 @@ export function InternalConversationList({
       <ListSearch
         search={search}
         filter={filter}
+        placeholder={section === 'direct' ? 'Search an employee' : 'Search'}
         onSearchChange={onSearchChange}
         onFilterChange={onFilterChange}
       />
       <div ref={listRef} className="relative min-h-0 flex-1 overflow-y-auto px-2 pb-6">
         <ConversationSelectionCard rect={selection.rect} ready={selection.ready} />
+        {section === 'direct' && onStartDirect ? (
+          <DirectEmployeeHits query={search} selfId={selfId} onOpen={onStartDirect} />
+        ) : null}
         <ListStatus section={section} pending={listPending} empty={visibleItems.length === 0} />
         <ConversationRows
           items={visibleItems}
@@ -130,11 +139,13 @@ function rowDividerVisible(
 function ListSearch({
   search,
   filter,
+  placeholder,
   onSearchChange,
   onFilterChange,
 }: {
   search: string;
   filter: 'all' | 'unread' | 'mentions';
+  placeholder: string;
   onSearchChange: (value: string) => void;
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
 }) {
@@ -147,7 +158,7 @@ function ListSearch({
           type="text"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search"
+          placeholder={placeholder}
           role="searchbox"
           className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-xs focus:outline-none"
         />

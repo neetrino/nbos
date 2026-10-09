@@ -26,7 +26,11 @@ import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
 import { VisibleThreadRead } from '@/features/messenger/query/use-visible-conversation-read';
 import { createInternalGroupConversation } from './create-internal-group';
-import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
+import {
+  openDirectWithEmployee,
+  openInternalConversation,
+  toggleInternalFavorite,
+} from './internal-messenger-cache-ops';
 import { useMessengerConversationLaunch } from './use-messenger-conversation-launch';
 import { MessengerPresenceProvider } from './PresenceAvatar';
 
@@ -201,6 +205,22 @@ function InternalMessengerScreen({
                   ).catch(() => session.setBootError('Could not open that Internal conversation.'))
                 }
                 onToggleFavorite={(id) => void toggleInternalFavorite(queryClient, id)}
+                selfId={me?.id}
+                onStartDirect={
+                  section === 'direct'
+                    ? (employee) => {
+                        session.setSearch('');
+                        void openDirectWithEmployee(
+                          queryClient,
+                          employee,
+                          session.setActiveId,
+                          session.setOpenedConversation,
+                        ).catch(() =>
+                          session.setBootError('Could not open that Internal conversation.'),
+                        );
+                      }
+                    : undefined
+                }
               />
             </div>
           )}
