@@ -306,6 +306,7 @@ describe('Internal conversation list', () => {
       content: true,
       senderId: true,
       createdAt: true,
+      metadata: true,
     });
     expect(result.items.find((row) => row.id === 'mine')?.unreadCount).toBe(0);
     expect(result.items.find((row) => row.id === 'mine')?.lastMessageMine).toBe(true);
