@@ -28,7 +28,7 @@ export class DomainRegistryService {
   async checkService(
     serviceId: string,
     actor: ActorContext = SYSTEM_ACTOR,
-    options: { force?: boolean; allowEarlier?: boolean } = {},
+    options: { force?: boolean } = {},
   ): Promise<DomainRegistryCheckResult> {
     const row = await this.loadDomainService(serviceId);
     const domainName = resolveLookupDomainName({
@@ -45,7 +45,6 @@ export class DomainRegistryService {
     const decision = decideRegistryApply({
       storedRenewalDate: row.renewalDate,
       lookup,
-      allowEarlier: options.allowEarlier === true,
     });
     const checkedAt = new Date();
     const persisted = await persistRegistryDecision({

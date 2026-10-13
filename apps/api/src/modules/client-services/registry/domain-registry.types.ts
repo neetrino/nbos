@@ -35,8 +35,6 @@ export interface DomainRegistryCheckResult {
 export interface DomainRegistryApplyInput {
   storedRenewalDate: Date | null;
   lookup: RegistryLookupRaw;
-  /** Manual Check only: write an earlier registry day (typo / future-date correction). */
-  allowEarlier?: boolean;
 }
 
 export interface DomainRegistryApplyDecision {
