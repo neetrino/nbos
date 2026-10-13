@@ -14,21 +14,11 @@ describe('decideRegistryApply', () => {
     expect(decision.nextRenewalDate).toEqual(next);
   });
 
-  it('does not move the stored date earlier on scheduled checks', () => {
-    const decision = decideRegistryApply({
-      storedRenewalDate: new Date('2027-07-10T00:00:00Z'),
-      lookup: { status: 'OBSERVED', expiryDate: new Date('2026-07-10T00:00:00Z'), source: SOURCE },
-    });
-    expect(decision.outcome).toBe('unchanged');
-    expect(decision.nextRenewalDate?.toISOString()).toBe('2027-07-10T00:00:00.000Z');
-  });
-
-  it('corrects an earlier registry day on manual Check', () => {
+  it('writes an earlier registry day onto the card', () => {
     const registry = new Date('2026-07-10T00:00:00Z');
     const decision = decideRegistryApply({
       storedRenewalDate: new Date('2027-07-10T00:00:00Z'),
       lookup: { status: 'OBSERVED', expiryDate: registry, source: SOURCE },
-      allowEarlier: true,
     });
     expect(decision.outcome).toBe('corrected');
     expect(decision.nextRenewalDate).toEqual(registry);
