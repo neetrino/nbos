@@ -7,6 +7,7 @@ export function mailComposeDraftPayload(input: {
   subject: string;
   bodyText: string;
   bodyHtml: string | null;
+  fileAssetIds?: string[];
 }): CreateMailOutboundDraftPayload {
   const to = splitEmailList(input.to);
   const cc = splitEmailList(input.cc);
@@ -16,6 +17,7 @@ export function mailComposeDraftPayload(input: {
     subject: input.subject.trim(),
     bodyText: input.bodyText,
     ...(input.bodyHtml ? { bodyHtml: input.bodyHtml } : {}),
+    fileAssetIds: input.fileAssetIds ?? [],
   };
 }
 
@@ -27,6 +29,9 @@ export function isMailComposeDraftWorthSaving(payload: CreateMailOutboundDraftPa
     return true;
   }
   if ((payload.subject ?? '').trim().length > 0) {
+    return true;
+  }
+  if ((payload.fileAssetIds?.length ?? 0) > 0) {
     return true;
   }
   return (payload.bodyText ?? '').trim().length > 0;

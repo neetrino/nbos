@@ -1,5 +1,6 @@
 import type { PrismaClient, TransactionClient } from '@nbos/database';
 import type { CreateMailOutboundDraftDto } from './dto/create-mail-outbound-draft.dto';
+import { replaceOutboundDraftAttachments } from './mail-outbound-draft.ops';
 import {
   buildOutboundDraftRecipients,
   dedupeEmailsCaseInsensitive,
@@ -42,6 +43,9 @@ export async function updateOutboundDraftMessage(
       toList,
       ccList,
     });
+    if (params.dto.fileAssetIds !== undefined) {
+      await replaceOutboundDraftAttachments(tx, params.messageId, params.dto.fileAssetIds);
+    }
     await tx.emailThread.update({
       where: { id: params.threadId },
       data: {

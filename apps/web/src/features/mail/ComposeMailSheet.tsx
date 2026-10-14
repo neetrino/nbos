@@ -5,9 +5,11 @@ import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail-sheet-classes';
 import type { MailAccountRow } from '@/lib/api/mail';
+import { MailComposeAttachmentField } from './MailComposeAttachmentField';
 import { MailComposeMessageEditor } from './MailComposeMessageEditor';
 import { MailComposeIdentityFields, MailOutlinedMessageField } from './MailComposeFormFields';
 import { MailSheetPanelHeader } from './MailSheetPanelHeader';
+import { useMailComposeAttachments } from './use-mail-compose-attachments';
 import { isMailAccountSendable, preferredSendableAccountId } from './mail-sendable-account';
 import { useMailComposeDraft } from './use-mail-compose-draft';
 import { useMailComposeResume } from './use-mail-compose-resume';
@@ -43,6 +45,7 @@ export function ComposeMailSheet({
   const [bodyHtml, setBodyHtml] = useState<string | null>(null);
   const [bodyText, setBodyText] = useState('');
   const [resumeReady, setResumeReady] = useState(!resumeThreadId);
+  const attachments = useMailComposeAttachments();
 
   const { status, busy, hydrate, send, discard } = useMailComposeDraft({
     enabled: enabled && resumeReady,
@@ -52,6 +55,7 @@ export function ComposeMailSheet({
     subject,
     bodyText,
     bodyHtml,
+    fileAssetIds: attachments.fileAssetIds,
     onSent,
   });
 
@@ -66,6 +70,7 @@ export function ComposeMailSheet({
       setSubject(draft.subject);
       setBodyHtml(draft.bodyHtml);
       setBodyText(draft.bodyText);
+      attachments.hydrate(draft.attachments);
     },
     onSettled: () => setResumeReady(true),
   });
@@ -111,11 +116,18 @@ export function ComposeMailSheet({
             }}
           />
         </MailOutlinedMessageField>
+        <MailComposeAttachmentField
+          items={attachments.items}
+          disabled={busy || attachments.uploading}
+          onAdd={attachments.addFiles}
+          onRemove={attachments.remove}
+        />
       </div>
 
       <ComposeMailSheetFooter
-        draftLabel={draftLabel}
+        draftLabel={attachments.uploading ? 'Uploading attachments…' : draftLabel}
         busy={busy}
+        sendDisabled={busy || attachments.uploading}
         onDiscard={() => void discard(onClose)}
         onClose={onClose}
         onSend={() => void send()}
@@ -127,12 +139,14 @@ export function ComposeMailSheet({
 function ComposeMailSheetFooter({
   draftLabel,
   busy,
+  sendDisabled,
   onDiscard,
   onClose,
   onSend,
 }: {
   draftLabel: string | null;
   busy: boolean;
+  sendDisabled: boolean;
   onDiscard: () => void;
   onClose: () => void;
   onSend: () => void;
@@ -164,7 +178,7 @@ function ComposeMailSheetFooter({
             type="button"
             size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
             onClick={onSend}
-            disabled={busy}
+            disabled={sendDisabled}
           >
             <Send size={16} aria-hidden />
             {busy ? 'Sending…' : 'Send'}

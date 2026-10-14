@@ -10,12 +10,14 @@ describe('mailComposeDraftPayload', () => {
         subject: ' Hello ',
         bodyText: 'Hi',
         bodyHtml: '<p>Hi</p>',
+        fileAssetIds: ['file-1'],
       }),
     ).toEqual({
       to: ['a@x.com', 'b@x.com'],
       subject: 'Hello',
       bodyText: 'Hi',
       bodyHtml: '<p>Hi</p>',
+      fileAssetIds: ['file-1'],
     });
   });
 });
@@ -27,5 +29,16 @@ describe('isMailComposeDraftWorthSaving', () => {
 
   it('saves when the user has started writing', () => {
     expect(isMailComposeDraftWorthSaving({ to: [], subject: 'Hi', bodyText: '' })).toBe(true);
+  });
+
+  it('saves when only a file is attached', () => {
+    expect(
+      isMailComposeDraftWorthSaving({
+        to: [],
+        subject: '',
+        bodyText: '',
+        fileAssetIds: ['file-1'],
+      }),
+    ).toBe(true);
   });
 });

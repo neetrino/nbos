@@ -20,7 +20,7 @@ async function createDraftAttachments(
     return;
   }
   const assets = await tx.fileAsset.findMany({
-    where: { id: { in: fileAssetIds } },
+    where: { id: { in: fileAssetIds }, deletedAt: null },
     select: { id: true, displayName: true, originalName: true, mimeType: true, sizeBytes: true },
   });
   if (assets.length !== fileAssetIds.length) {
@@ -36,6 +36,17 @@ async function createDraftAttachments(
       downloadStatus: 'READY',
     })),
   });
+}
+
+/** Replaces draft attachment rows. Call inside the draft transaction so a miss rolls back. */
+export async function replaceOutboundDraftAttachments(
+  tx: TransactionClient,
+  messageId: string,
+  fileAssetIds: string[],
+): Promise<void> {
+  const unique = [...new Set(fileAssetIds.map((id) => id.trim()).filter(Boolean))];
+  await tx.emailAttachment.deleteMany({ where: { messageId } });
+  await createDraftAttachments(tx, messageId, unique);
 }
 
 export async function persistOutboundDraftMessage(

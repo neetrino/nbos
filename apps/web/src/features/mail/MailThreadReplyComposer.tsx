@@ -8,8 +8,10 @@ import { DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE } from '@/components/shared/detail
 import { mailApi, type MailMessageRow, type MailThreadDetailDto } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { MAIL_QUEUED_TOAST } from './mail-outbound-copy';
+import { MailComposeAttachmentField } from './MailComposeAttachmentField';
 import { MailComposeIdentityFields, MailOutlinedMessageField } from './MailComposeFormFields';
 import { MailComposeMessageEditor } from './MailComposeMessageEditor';
+import { useMailComposeAttachments } from './use-mail-compose-attachments';
 import {
   defaultReplySubjectFromMessages,
   defaultReplyToFromMessages,
@@ -41,6 +43,7 @@ export function MailThreadReplyComposer({
   const [sending, setSending] = useState(false);
   const defaultsKey = useRef<string>('');
   const draftIdRef = useRef<string | null>(null);
+  const { items, fileAssetIds, uploading, addFiles, remove, hydrate } = useMailComposeAttachments();
 
   useEffect(() => {
     const key = `${threadId}:${messages.map((message) => message.id).join(',')}`;
@@ -56,6 +59,7 @@ export function MailThreadReplyComposer({
       setSubject(draft.subject);
       setBodyHtml(draft.bodyHtmlSanitized);
       setBodyText(draft.bodyText ?? '');
+      hydrate(draft.attachments);
       return;
     }
     draftIdRef.current = null;
@@ -64,7 +68,8 @@ export function MailThreadReplyComposer({
     setSubject(defaultReplySubjectFromMessages(messages));
     setBodyHtml(null);
     setBodyText('');
-  }, [threadId, messages]);
+    hydrate([]);
+  }, [hydrate, messages, threadId]);
 
   const persistDraft = useCallback(async (): Promise<string | null> => {
     const toList = splitEmailList(to);
@@ -75,6 +80,7 @@ export function MailThreadReplyComposer({
       subject: subject.trim(),
       bodyText,
       ...(bodyHtml ? { bodyHtml } : {}),
+      fileAssetIds,
     };
     const draftId = draftIdRef.current;
     const detail = draftId
@@ -86,7 +92,7 @@ export function MailThreadReplyComposer({
     }
     onThreadUpdated(detail);
     return saved?.id ?? draftId;
-  }, [bodyHtml, bodyText, cc, onThreadUpdated, subject, threadId, to]);
+  }, [bodyHtml, bodyText, cc, fileAssetIds, onThreadUpdated, subject, threadId, to]);
 
   const send = useCallback(async () => {
     if (splitEmailList(to).length === 0) {
@@ -95,6 +101,10 @@ export function MailThreadReplyComposer({
     }
     if (subject.trim() === '') {
       toast.error('Add a subject before sending.');
+      return;
+    }
+    if (uploading) {
+      toast.error('Wait until attachments finish uploading.');
       return;
     }
     setSending(true);
@@ -107,6 +117,7 @@ export function MailThreadReplyComposer({
       onThreadUpdated(detail);
       setBodyHtml(null);
       setBodyText('');
+      hydrate([]);
       draftIdRef.current = null;
       toast.success(MAIL_QUEUED_TOAST);
       onSent?.();
@@ -115,7 +126,7 @@ export function MailThreadReplyComposer({
     } finally {
       setSending(false);
     }
-  }, [onSent, onThreadUpdated, persistDraft, subject, threadId, to]);
+  }, [hydrate, onSent, onThreadUpdated, persistDraft, subject, threadId, to, uploading]);
 
   const saveDraft = useCallback(async () => {
     setSending(true);
@@ -158,6 +169,12 @@ export function MailThreadReplyComposer({
             }}
           />
         </MailOutlinedMessageField>
+        <MailComposeAttachmentField
+          items={items}
+          disabled={sending || uploading}
+          onAdd={addFiles}
+          onRemove={remove}
+        />
         <div className="flex flex-wrap justify-end gap-2">
           {onDismiss ? (
             <Button
@@ -182,7 +199,7 @@ export function MailThreadReplyComposer({
           <Button
             type="button"
             size={DETAIL_SHEET_FORM_ACTION_BUTTON_SIZE}
-            disabled={sending}
+            disabled={sending || uploading}
             onClick={() => void send()}
           >
             <Send size={16} aria-hidden />

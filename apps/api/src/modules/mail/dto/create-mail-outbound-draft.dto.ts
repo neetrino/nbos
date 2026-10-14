@@ -52,7 +52,7 @@ export class CreateMailOutboundDraftDto {
   bodyHtml?: string;
 
   @IsOptional()
-  @Transform(({ value }) => trimStringArray(value))
+  @Transform(({ value }) => (value == null ? undefined : trimStringArray(value)))
   @IsArray()
   @ArrayMaxSize(MAIL_OUTBOUND_DRAFT_MAX_ATTACHMENTS)
   @IsString({ each: true })

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { mailApi } from '@/lib/api/mail';
+import { mailApi, type MailAttachmentRow } from '@/lib/api/mail';
 import { getApiErrorMessage } from '@/lib/api-errors';
 import { emailsForRecipientKind, latestOutboundDraftMessage } from './mail-thread-helpers';
 
@@ -11,6 +11,7 @@ export interface MailComposeResumeDraft {
   subject: string;
   bodyHtml: string | null;
   bodyText: string;
+  attachments: MailAttachmentRow[];
 }
 
 interface UseMailComposeResumeArgs {
@@ -56,6 +57,7 @@ export function useMailComposeResume({
             subject: draft.subject,
             bodyHtml: draft.bodyHtmlSanitized,
             bodyText: draft.bodyText ?? '',
+            attachments: draft.attachments,
           });
           hydrate(detail.thread.id, draft.id);
         }
