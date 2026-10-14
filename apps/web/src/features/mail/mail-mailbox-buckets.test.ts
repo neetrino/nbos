@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyMailboxListOrder,
+  mailboxIdsForInboxGroup,
   moveMailboxToBucket,
   partitionMailAccountsByBucket,
   placeMailboxInList,
@@ -15,6 +16,14 @@ const EMPTY: MailMailboxListOverrides = {
   companyOrder: [],
   companyExpanded: false,
 };
+
+describe('mailboxIdsForInboxGroup', () => {
+  it('defaults the list to My and can widen to Company or both', () => {
+    expect(mailboxIdsForInboxGroup('my', ['a'], ['b'])).toEqual(['a']);
+    expect(mailboxIdsForInboxGroup('company', ['a'], ['b'])).toEqual(['b']);
+    expect(mailboxIdsForInboxGroup('all', ['a'], ['b'])).toEqual(['a', 'b']);
+  });
+});
 
 describe('resolveMailboxBucket', () => {
   it('defaults owned/shared to My and tenant to Company', () => {

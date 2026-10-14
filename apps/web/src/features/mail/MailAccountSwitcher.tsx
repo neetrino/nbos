@@ -8,7 +8,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -23,6 +22,7 @@ import {
 import {
   partitionMailAccountsByBucket,
   placeMailboxInList,
+  type MailInboxGroup,
   type MailMailboxBucket,
   type MailMailboxListOverrides,
 } from '@/features/mail/mail-mailbox-buckets';
@@ -60,12 +60,19 @@ function accountStatusBadge(status: string) {
 function accountLabel(
   filterAccountId: string | null,
   accounts: MailAccountHealthSummaryRow[],
+  inboxGroup: MailInboxGroup,
 ): string {
-  if (filterAccountId === null) {
+  if (filterAccountId !== null) {
+    const account = accounts.find((row) => row.id === filterAccountId);
+    return account?.emailAddress ?? 'Mailbox';
+  }
+  if (inboxGroup === 'company') {
+    return 'Company';
+  }
+  if (inboxGroup === 'all') {
     return 'All mailboxes';
   }
-  const account = accounts.find((row) => row.id === filterAccountId);
-  return account?.emailAddress ?? 'Mailbox';
+  return 'My';
 }
 
 type DropHint = {
@@ -225,23 +232,28 @@ function BucketDropZone({
 export interface MailAccountSwitcherProps {
   accounts: MailAccountHealthSummaryRow[];
   filterAccountId: string | null;
+  inboxGroup: MailInboxGroup;
   mailboxOverrides: MailMailboxListOverrides;
   disabled?: boolean;
   onSelectAccount: (accountId: string | null) => void;
+  onSelectInboxGroup: (group: MailInboxGroup) => void;
   onMailboxOverridesChange: (next: MailMailboxListOverrides) => void;
 }
 
 export function MailAccountSwitcher({
   accounts,
   filterAccountId,
+  inboxGroup,
   mailboxOverrides,
   disabled = false,
   onSelectAccount,
+  onSelectInboxGroup,
   onMailboxOverridesChange,
 }: MailAccountSwitcherProps) {
   const listedAccounts = mailAccountsForDailySwitcher(accounts, filterAccountId);
   const { my, company } = partitionMailAccountsByBucket(listedAccounts, mailboxOverrides);
-  const label = accountLabel(filterAccountId, accounts);
+  const label = accountLabel(filterAccountId, accounts, inboxGroup);
+  const groupActive = (group: MailInboxGroup) => filterAccountId === null && inboxGroup === group;
   const companyExpanded = mailboxOverrides.companyExpanded;
   const [dropHint, setDropHint] = useState<DropHint | null>(null);
 
@@ -282,13 +294,11 @@ export function MailAccountSwitcher({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-80 p-1">
         <DropdownMenuItem
-          className={cn('cursor-pointer', filterAccountId === null && MAILBOX_ROW_SELECTED_CLASS)}
-          onClick={() => onSelectAccount(null)}
+          className={cn('cursor-pointer', groupActive('all') && MAILBOX_ROW_SELECTED_CLASS)}
+          onClick={() => onSelectInboxGroup('all')}
         >
           <span className="truncate">All mailboxes</span>
-          {filterAccountId === null ? (
-            <Check className="ml-auto size-4 shrink-0" aria-hidden />
-          ) : null}
+          {groupActive('all') ? <Check className="ml-auto size-4 shrink-0" aria-hidden /> : null}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <BucketDropZone
@@ -299,9 +309,16 @@ export function MailAccountSwitcher({
           onDrop={handlePlace}
         >
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-medium">
-              My
-            </DropdownMenuLabel>
+            <DropdownMenuItem
+              className={cn(
+                'cursor-pointer text-xs font-medium',
+                groupActive('my') && MAILBOX_ROW_SELECTED_CLASS,
+              )}
+              onClick={() => onSelectInboxGroup('my')}
+            >
+              <span className="truncate">My</span>
+              {groupActive('my') ? <Check className="ml-auto size-4 shrink-0" aria-hidden /> : null}
+            </DropdownMenuItem>
             {my.length === 0 ? (
               <p className="text-muted-foreground px-2 py-1.5 text-sm">
                 No mailboxes in My. Drop here to add.
@@ -337,29 +354,48 @@ export function MailAccountSwitcher({
           onDrop={handlePlace}
         >
           <DropdownMenuGroup>
-            <button
-              type="button"
-              className="text-muted-foreground hover:bg-muted hover:text-foreground flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-xs font-medium"
-              onPointerDown={(event) => event.preventDefault()}
-              onClick={() =>
-                onMailboxOverridesChange({
-                  ...mailboxOverrides,
-                  companyExpanded: !companyExpanded,
-                })
-              }
-            >
-              {companyExpanded ? (
-                <ChevronDown className="size-3.5 shrink-0" aria-hidden />
-              ) : (
-                <ChevronRight className="size-3.5 shrink-0" aria-hidden />
-              )}
-              <span className="min-w-0 flex-1">Company</span>
-              {company.length > 0 ? (
-                <Badge variant="secondary" className="shrink-0 tabular-nums">
-                  {company.length}
-                </Badge>
-              ) : null}
-            </button>
+            <div className="flex items-center gap-0.5 pr-1">
+              <button
+                type="button"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex size-7 shrink-0 items-center justify-center rounded-sm"
+                aria-label={companyExpanded ? 'Collapse Company' : 'Expand Company'}
+                onPointerDown={(event) => event.preventDefault()}
+                onClick={() =>
+                  onMailboxOverridesChange({
+                    ...mailboxOverrides,
+                    companyExpanded: !companyExpanded,
+                  })
+                }
+              >
+                {companyExpanded ? (
+                  <ChevronDown className="size-3.5 shrink-0" aria-hidden />
+                ) : (
+                  <ChevronRight className="size-3.5 shrink-0" aria-hidden />
+                )}
+              </button>
+              <DropdownMenuItem
+                className={cn(
+                  'h-8 flex-1 cursor-pointer px-2 text-xs font-medium',
+                  groupActive('company') && MAILBOX_ROW_SELECTED_CLASS,
+                )}
+                onClick={() => {
+                  if (!companyExpanded) {
+                    onMailboxOverridesChange({ ...mailboxOverrides, companyExpanded: true });
+                  }
+                  onSelectInboxGroup('company');
+                }}
+              >
+                <span className="min-w-0 flex-1 truncate">Company</span>
+                {company.length > 0 ? (
+                  <Badge variant="secondary" className="shrink-0 tabular-nums">
+                    {company.length}
+                  </Badge>
+                ) : null}
+                {groupActive('company') ? (
+                  <Check className="ml-auto size-4 shrink-0" aria-hidden />
+                ) : null}
+              </DropdownMenuItem>
+            </div>
             {companyExpanded ? (
               company.length === 0 ? (
                 <p className="text-muted-foreground px-2 py-1.5 text-sm">
