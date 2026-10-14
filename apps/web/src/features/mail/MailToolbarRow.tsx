@@ -19,11 +19,15 @@ import {
   type MailFolderKey,
 } from '@/features/mail/mail-folder-config';
 import { MAIL_FOLDER_ICONS } from '@/features/mail/mail-folder-icons';
-import type { MailMailboxListOverrides } from '@/features/mail/mail-mailbox-buckets';
+import type {
+  MailInboxGroup,
+  MailMailboxListOverrides,
+} from '@/features/mail/mail-mailbox-buckets';
 
 export interface MailToolbarRowProps {
   accounts: MailAccountHealthSummaryRow[];
   filterAccountId: string | null;
+  inboxGroup: MailInboxGroup;
   activeFolder: MailFolderKey;
   searchValue: string;
   filterConfigs: FilterConfig[];
@@ -33,6 +37,7 @@ export interface MailToolbarRowProps {
   busy: boolean;
   gettingMail: boolean;
   onSelectAccount: (accountId: string | null) => void;
+  onSelectInboxGroup: (group: MailInboxGroup) => void;
   onSelectFolder: (folder: MailFolderKey) => void;
   onSearchChange: (value: string) => void;
   onFilterChange: (key: string, value: string) => void;
@@ -46,6 +51,7 @@ export interface MailToolbarRowProps {
 export function MailToolbarRow({
   accounts,
   filterAccountId,
+  inboxGroup,
   activeFolder,
   searchValue,
   filterConfigs,
@@ -55,6 +61,7 @@ export function MailToolbarRow({
   busy,
   gettingMail,
   onSelectAccount,
+  onSelectInboxGroup,
   onSelectFolder,
   onSearchChange,
   onFilterChange,
@@ -76,9 +83,11 @@ export function MailToolbarRow({
       <MailAccountSwitcher
         accounts={accounts}
         filterAccountId={filterAccountId}
+        inboxGroup={inboxGroup}
         mailboxOverrides={mailboxOverrides}
         disabled={busy}
         onSelectAccount={onSelectAccount}
+        onSelectInboxGroup={onSelectInboxGroup}
         onMailboxOverridesChange={onMailboxOverridesChange}
       />
 

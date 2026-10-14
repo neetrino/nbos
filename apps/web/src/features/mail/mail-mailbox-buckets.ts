@@ -2,6 +2,23 @@ import type { MailAccountViewerRelation } from '@/lib/api/mail';
 
 export type MailMailboxBucket = 'my' | 'company';
 
+/** Inbox list scope. `my` is the default; `all` is My and Company together. */
+export type MailInboxGroup = MailMailboxBucket | 'all';
+
+export function mailboxIdsForInboxGroup(
+  group: MailInboxGroup,
+  myIds: readonly string[],
+  companyIds: readonly string[],
+): string[] {
+  if (group === 'company') {
+    return [...companyIds];
+  }
+  if (group === 'all') {
+    return [...myIds, ...companyIds];
+  }
+  return [...myIds];
+}
+
 export type MailMailboxListOverrides = {
   pinToMy: string[];
   pinToCompany: string[];

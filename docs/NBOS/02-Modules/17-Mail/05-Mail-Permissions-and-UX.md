@@ -141,7 +141,8 @@ Mail может содержать:
 6. Ошибки отправки должны быть заметны рядом с письмом.
 7. Account reconnect должен быть понятным и actionable.
 8. Mailbox switcher: **My** (owned + shared, плюс явно закреплённые) vs сворачиваемый **Company**
-   (tenant-wide для Owner/CEO с `ALL`/`DEPARTMENT` scope). «All mailboxes» = только My.
+   (tenant-wide для Owner/CEO с `ALL`/`DEPARTMENT` scope). Список и поиск по умолчанию — **My**.
+   В том же переключателе можно выбрать весь список **Company** или **All mailboxes** (My + Company).
    Перенос My ↔ Company — персональный preference (client), не меняет RBAC.
 
 ## Admin UX
