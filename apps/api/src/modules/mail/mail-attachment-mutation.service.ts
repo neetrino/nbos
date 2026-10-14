@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaClient } from '@nbos/database';
 import { PRISMA_TOKEN } from '../../database.module';
+import { DriveR2Client } from '../drive/drive-r2.client';
 import { dispatchAttachmentDownload } from './mail-attachment-dispatch';
 import { MailAttachmentDownloadService } from './mail-attachment-download.service';
 import {
@@ -8,6 +9,8 @@ import {
   queueFailedAttachmentForRetry,
 } from './mail-attachment-retry.ops';
 import { MailQueueService } from './mail-queue.service';
+import { createMailAttachmentDownloadUrl } from './mail-attachment-download-url.ops';
+import type { MailAttachmentDownloadUrl } from './mail-attachment-download-url.ops';
 import { fetchMailThreadMessageForEdit } from './mail-thread-message-access.ops';
 import { requireMailThreadDetailDto } from './mail-thread-detail-require.ops';
 import type { MailThreadDetailDto } from './mail.types';
@@ -20,7 +23,26 @@ export class MailAttachmentMutationService {
     @Inject(PRISMA_TOKEN) private readonly prisma: InstanceType<typeof PrismaClient>,
     private readonly queue: MailQueueService,
     private readonly downloadService: MailAttachmentDownloadService,
+    private readonly r2: DriveR2Client,
   ) {}
+
+  async getAttachmentDownloadUrl(
+    employeeId: string,
+    accessScope: string,
+    threadId: string,
+    messageId: string,
+    attachmentId: string,
+  ): Promise<MailAttachmentDownloadUrl> {
+    return createMailAttachmentDownloadUrl({
+      prisma: this.prisma,
+      r2: this.r2,
+      employeeId,
+      accessScope,
+      threadId,
+      messageId,
+      attachmentId,
+    });
+  }
 
   async retryAttachmentDownload(
     employeeId: string,

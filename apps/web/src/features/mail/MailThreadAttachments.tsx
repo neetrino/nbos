@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Paperclip } from 'lucide-react';
+import { Download, Paperclip } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatFileSize } from '@/features/drive/drive-format';
-import type { MailAttachmentRow } from '@/lib/api/mail';
+import { mailApi, type MailAttachmentRow } from '@/lib/api/mail';
+import { getApiErrorMessage } from '@/lib/api-errors';
+import { canSaveMailAttachment, openBrowserDownload } from './mail-attachment-download';
 import {
   canRetryAttachmentDownload,
   nextAttachmentRetryRevealAt,
 } from './mail-attachment-retry-visibility';
 
 export interface MailThreadAttachmentsProps {
+  threadId: string;
+  messageId: string;
   attachments: MailAttachmentRow[];
   canEdit: boolean;
   retryingAttachmentId: string | null;
@@ -50,12 +55,15 @@ function useAttachmentRetryClock(attachments: MailAttachmentRow[]): number {
 }
 
 export function MailThreadAttachments({
+  threadId,
+  messageId,
   attachments,
   canEdit,
   retryingAttachmentId,
   onRetryDownload,
 }: MailThreadAttachmentsProps) {
   const nowMs = useAttachmentRetryClock(attachments);
+  const [savingAttachmentId, setSavingAttachmentId] = useState<string | null>(null);
   if (attachments.length === 0) {
     return null;
   }
@@ -68,11 +76,41 @@ export function MailThreadAttachments({
           canEdit={canEdit}
           nowMs={nowMs}
           retryingAttachmentId={retryingAttachmentId}
+          saving={savingAttachmentId === attachment.id}
           onRetryDownload={onRetryDownload}
+          onSave={() =>
+            void saveAttachment({
+              threadId,
+              messageId,
+              attachmentId: attachment.id,
+              setSavingAttachmentId,
+            })
+          }
         />
       ))}
     </div>
   );
+}
+
+async function saveAttachment(params: {
+  threadId: string;
+  messageId: string;
+  attachmentId: string;
+  setSavingAttachmentId: (id: string | null) => void;
+}): Promise<void> {
+  params.setSavingAttachmentId(params.attachmentId);
+  try {
+    const result = await mailApi.getAttachmentDownloadUrl(
+      params.threadId,
+      params.messageId,
+      params.attachmentId,
+    );
+    openBrowserDownload(result.url);
+  } catch (error) {
+    toast.error(getApiErrorMessage(error, 'File could not be downloaded.'));
+  } finally {
+    params.setSavingAttachmentId(null);
+  }
 }
 
 function AttachmentChip({
@@ -80,13 +118,17 @@ function AttachmentChip({
   canEdit,
   nowMs,
   retryingAttachmentId,
+  saving,
   onRetryDownload,
+  onSave,
 }: {
   attachment: MailAttachmentRow;
   canEdit: boolean;
   nowMs: number;
   retryingAttachmentId: string | null;
+  saving: boolean;
   onRetryDownload: (attachmentId: string) => void | Promise<void>;
+  onSave: () => void;
 }) {
   const size = attachmentSizeLabel(attachment.sizeBytes);
   const status = statusLabel(attachment.downloadStatus);
@@ -97,6 +139,7 @@ function AttachmentChip({
     canEdit,
     nowMs,
   });
+  const canSave = canSaveMailAttachment(attachment);
   return (
     <span className="inline-flex items-center gap-1">
       <Badge variant={failed ? 'destructive' : 'secondary'} className="gap-1">
@@ -105,6 +148,19 @@ function AttachmentChip({
         {size ? ` · ${size}` : ''}
         {status ? ` · ${status}` : ''}
       </Badge>
+      {canSave ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={saving}
+          aria-label={`Download ${attachment.fileName}`}
+          onClick={onSave}
+        >
+          <Download size={14} aria-hidden />
+          {saving ? 'Downloading…' : 'Download'}
+        </Button>
+      ) : null}
       {showRetry ? (
         <Button
           type="button"
