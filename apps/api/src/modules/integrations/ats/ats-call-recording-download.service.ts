@@ -6,10 +6,6 @@ import { PRISMA_TOKEN } from '../../../database.module';
 import { DriveR2Client } from '../../drive/drive-r2.client';
 import { DriveService } from '../../drive/drive.service';
 import { AtsCallRecordClient } from './ats-call-record.client';
-import {
-  isAtsRecordingPermanentError,
-  isAtsRecordingTransientError,
-} from './ats-call-recording.errors';
 import type { AtsCallRecordingJobPayload } from './ats-call-recording.constants';
 import { isLastRecordingAttempt } from './ats-call-recording-job-id';
 import { storeAtsCallRecording } from './ats-call-recording-store';
@@ -104,13 +100,10 @@ export class AtsCallRecordingDownloadService {
       errorName: error instanceof Error ? error.name : 'Error',
       errorCode: error instanceof Error ? error.message : 'unknown',
     });
-    if (isAtsRecordingPermanentError(error) || isLastRecordingAttempt(attemptsMade, maxAttempts)) {
+    if (isLastRecordingAttempt(attemptsMade, maxAttempts)) {
       await this.markFailed(callId);
-      if (isAtsRecordingPermanentError(error)) return;
     }
-    if (isAtsRecordingTransientError(error) || error instanceof Error) {
-      throw error;
-    }
+    if (error instanceof Error) throw error;
     throw new Error(String(error));
   }
 }

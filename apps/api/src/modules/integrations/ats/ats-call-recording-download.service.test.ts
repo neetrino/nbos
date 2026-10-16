@@ -143,7 +143,7 @@ describe('AtsCallRecordingDownloadService', () => {
     );
   });
 
-  it('marks FAILED immediately on a permanent ATS error without throwing', async () => {
+  it('rethrows a permanent ATS error so BullMQ retries before FAILED', async () => {
     const prisma = {
       atsCallEvent: {
         findUnique: vi.fn().mockResolvedValue(CALL),
@@ -162,7 +162,41 @@ describe('AtsCallRecordingDownloadService', () => {
       {} as never,
     );
 
-    await expect(service.processJob({ callId: 'call-1', uid: 'uid-1' })).resolves.toBeUndefined();
+    await expect(
+      service.processJob({ callId: 'call-1', uid: 'uid-1' }, 0, ATS_CALL_RECORDING_JOB_ATTEMPTS),
+    ).rejects.toBeInstanceOf(AtsRecordingPermanentError);
+    await expect(
+      service.processJob({ callId: 'call-1', uid: 'uid-1' }, 1, ATS_CALL_RECORDING_JOB_ATTEMPTS),
+    ).rejects.toBeInstanceOf(AtsRecordingPermanentError);
+    expect(prisma.atsCallEvent.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('marks FAILED after the last permanent ATS error', async () => {
+    const prisma = {
+      atsCallEvent: {
+        findUnique: vi.fn().mockResolvedValue(CALL),
+        update: vi.fn().mockResolvedValue({}),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+    };
+    const client = {
+      downloadRecording: vi.fn().mockRejectedValue(new AtsRecordingPermanentError('HTTP 403')),
+    };
+    const service = new AtsCallRecordingDownloadService(
+      prisma as never,
+      client as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    await expect(
+      service.processJob(
+        { callId: 'call-1', uid: 'uid-1' },
+        ATS_CALL_RECORDING_JOB_ATTEMPTS - 1,
+        ATS_CALL_RECORDING_JOB_ATTEMPTS,
+      ),
+    ).rejects.toBeInstanceOf(AtsRecordingPermanentError);
     expect(prisma.atsCallEvent.updateMany).toHaveBeenCalledWith({
       where: { id: 'call-1', recordingStatus: { not: 'READY' } },
       data: { recordingStatus: 'FAILED' },
@@ -195,7 +229,13 @@ describe('AtsCallRecordingDownloadService', () => {
       {} as never,
     );
 
-    await expect(service.processJob({ callId: 'call-1', uid: 'uid-1' })).resolves.toBeUndefined();
+    await expect(
+      service.processJob(
+        { callId: 'call-1', uid: 'uid-1' },
+        ATS_CALL_RECORDING_JOB_ATTEMPTS - 1,
+        ATS_CALL_RECORDING_JOB_ATTEMPTS,
+      ),
+    ).rejects.toBeInstanceOf(AtsRecordingPermanentError);
     expect(storeAtsCallRecording).not.toHaveBeenCalled();
     expect(prisma.atsCallEvent.updateMany).toHaveBeenCalledWith({
       where: { id: 'call-1', recordingStatus: { not: 'READY' } },
