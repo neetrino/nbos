@@ -16,6 +16,7 @@ export interface MailComposeDraftForm {
   subject: string;
   bodyText: string;
   bodyHtml: string | null;
+  fileAssetIds: string[];
 }
 
 export function useMailComposeDraft(opts: {
@@ -26,12 +27,14 @@ export function useMailComposeDraft(opts: {
   subject: string;
   bodyText: string;
   bodyHtml: string | null;
+  fileAssetIds: string[];
   onSent: (threadId: string) => void;
 }) {
-  const { enabled, mailAccountId, to, cc, subject, bodyText, bodyHtml, onSent } = opts;
+  const { enabled, mailAccountId, to, cc, subject, bodyText, bodyHtml, fileAssetIds, onSent } =
+    opts;
   const threadIdRef = useRef<string | null>(null);
   const messageIdRef = useRef<string | null>(null);
-  const saveLockRef = useRef<Promise<{ threadId: string; messageId: string } | null> | null>(null);
+  const tailRef = useRef<Promise<unknown>>(Promise.resolve());
   const [status, setStatus] = useState<MailComposeDraftStatus>('idle');
   const [busy, setBusy] = useState(false);
 
@@ -42,33 +45,31 @@ export function useMailComposeDraft(opts: {
   }, []);
 
   const persist = useCallback(async (): Promise<{ threadId: string; messageId: string } | null> => {
-    if (saveLockRef.current) {
-      return saveLockRef.current;
-    }
-    const run = persistComposeDraft({
-      mailAccountId,
-      form: { to, cc, subject, bodyText, bodyHtml },
-      threadId: threadIdRef.current,
-      messageId: messageIdRef.current,
-      setStatus,
-      assignIds: (threadId, messageId) => {
-        threadIdRef.current = threadId;
-        messageIdRef.current = messageId;
-      },
-    });
-    saveLockRef.current = run;
-    try {
-      return await run;
-    } finally {
-      saveLockRef.current = null;
-    }
-  }, [mailAccountId, to, cc, subject, bodyText, bodyHtml]);
+    const run = tailRef.current.then(() =>
+      persistComposeDraft({
+        mailAccountId,
+        form: { to, cc, subject, bodyText, bodyHtml, fileAssetIds },
+        threadId: threadIdRef.current,
+        messageId: messageIdRef.current,
+        setStatus,
+        assignIds: (threadId, messageId) => {
+          threadIdRef.current = threadId;
+          messageIdRef.current = messageId;
+        },
+      }),
+    );
+    tailRef.current = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }, [mailAccountId, to, cc, subject, bodyText, bodyHtml, fileAssetIds]);
 
   useEffect(() => {
     if (!enabled || !mailAccountId) {
       return;
     }
-    const payload = mailComposeDraftPayload({ to, cc, subject, bodyText, bodyHtml });
+    const payload = mailComposeDraftPayload({ to, cc, subject, bodyText, bodyHtml, fileAssetIds });
     if (!isMailComposeDraftWorthSaving(payload)) {
       return;
     }
@@ -76,10 +77,17 @@ export function useMailComposeDraft(opts: {
       void persist();
     }, MAIL_COMPOSE_DRAFT_AUTOSAVE_MS);
     return () => window.clearTimeout(timer);
-  }, [enabled, mailAccountId, to, cc, subject, bodyText, bodyHtml, persist]);
+  }, [enabled, mailAccountId, to, cc, subject, bodyText, bodyHtml, fileAssetIds, persist]);
 
   const send = useCallback(async () => {
-    const payload = mailComposeDraftPayload({ to, cc, subject, bodyText, bodyHtml });
+    const payload = mailComposeDraftPayload({
+      to,
+      cc,
+      subject,
+      bodyText,
+      bodyHtml,
+      fileAssetIds,
+    });
     if ((payload.to?.length ?? 0) === 0 || !(payload.subject ?? '').trim()) {
       toast.error('Choose a mailbox and fill in recipient and subject.');
       return;
@@ -98,7 +106,7 @@ export function useMailComposeDraft(opts: {
     } finally {
       setBusy(false);
     }
-  }, [bodyHtml, bodyText, cc, onSent, persist, subject, to]);
+  }, [bodyHtml, bodyText, cc, fileAssetIds, onSent, persist, subject, to]);
 
   const discard = useCallback(async (onClose: () => void) => {
     const threadId = threadIdRef.current;

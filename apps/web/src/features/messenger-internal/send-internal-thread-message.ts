@@ -17,9 +17,10 @@ type InternalThreadSend = {
 
 export async function sendInternalThreadMessage(input: InternalThreadSend): Promise<void> {
   if (!input.conversationId || !input.canWrite) return;
-  const content = input.content.trim();
+  const content = (input.extras.caption ?? input.content).trim();
   const forwardIds = input.extras.forwardSourceIds ?? [];
-  if (!content && forwardIds.length === 0) return;
+  const fileAssetIds = input.extras.fileAssetIds ?? [];
+  if (!content && forwardIds.length === 0 && fileAssetIds.length === 0) return;
   if (forwardIds.length > 0) {
     await sendInternalForward(input, content, forwardIds);
     return;
@@ -34,6 +35,12 @@ export async function sendInternalThreadMessage(input: InternalThreadSend): Prom
     senderName: input.senderName,
     replyToMessageId: input.extras.replyToMessageId,
     mentionedEmployeeIds: input.extras.mentionedEmployeeIds,
+    allowBlankContent: fileAssetIds.length > 0,
+    attachments: fileAssetIds.map((fileAssetId) => ({
+      id: fileAssetId,
+      fileAssetId,
+      createdAt: new Date().toISOString(),
+    })),
     onComposerClear: () => input.setNewMessage(''),
     transport: (idempotencyKey) =>
       postInternalMessage(conversationId, content, idempotencyKey, input.extras),
@@ -71,6 +78,7 @@ async function postInternalMessage(
     content,
     replyToMessageId: extras.replyToMessageId,
     mentionedEmployeeIds: extras.mentionedEmployeeIds,
+    fileAssetIds: extras.fileAssetIds,
     idempotencyKey,
   });
   return { message, conversationId };

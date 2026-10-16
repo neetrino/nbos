@@ -24,6 +24,7 @@ import type {
   WatchOrIdleResult,
 } from './mail-provider-adapter';
 import { MAIL_IMAP_SMTP_CONNECT_TIMEOUT_MS } from './imap-smtp-timeouts';
+import { describeMailProviderError } from './mail-provider-error.describe';
 import {
   attachImapClientErrorBoundary,
   type ImapClientErrorBoundary,
@@ -114,7 +115,7 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       await this.withImapClient(async () => undefined);
       return { ok: true, providerAccountId: this.config.login };
     } catch (error) {
-      return { ok: false, error: `IMAP validation failed: ${describeError(error)}` };
+      return { ok: false, error: `IMAP validation failed: ${describeMailProviderError(error)}` };
     }
   }
 
@@ -124,7 +125,7 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
       await transport.verify();
       return { ok: true, providerAccountId: this.config.login };
     } catch (error) {
-      return { ok: false, error: `SMTP validation failed: ${describeError(error)}` };
+      return { ok: false, error: `SMTP validation failed: ${describeMailProviderError(error)}` };
     } finally {
       transport.close();
     }
@@ -302,8 +303,4 @@ export class ImapSmtpProviderAdapter implements MailProviderAdapter {
   async reconnect(): Promise<ValidateConnectionResult> {
     return this.validateConnection();
   }
-}
-
-function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : 'unknown error';
 }

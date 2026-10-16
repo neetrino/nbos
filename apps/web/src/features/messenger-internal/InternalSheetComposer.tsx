@@ -1,6 +1,6 @@
 'use client';
 
-import type { KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent } from 'react';
 import {
   SHEET_COMPOSER_FIELD_BASE_CLASS,
   SHEET_COMPOSER_GUTTER_CLASS,
@@ -18,6 +18,9 @@ const ROUND_BUTTON = 'flex h-10 w-10 shrink-0 items-center justify-center rounde
 
 type SheetComposerProps = {
   value: string;
+  pendingNames?: string[];
+  onPickFiles?: (files: File[]) => void;
+  onRemovePending?: (index: number) => void;
   onChange: (value: string) => void;
   onSend: () => void;
   placeholder: string;
@@ -27,6 +30,9 @@ type SheetComposerProps = {
 
 export function InternalSheetComposer({
   value,
+  pendingNames = [],
+  onPickFiles,
+  onRemovePending,
   onChange,
   onSend,
   placeholder,
@@ -34,8 +40,10 @@ export function InternalSheetComposer({
   sendDisabled,
 }: SheetComposerProps) {
   const palette = useSheetMessengerPalette();
+  const fileRef = useRef<HTMLInputElement>(null);
   return (
     <div>
+      <PendingFileNames names={pendingNames} onRemove={onRemovePending} />
       <ComposerRow
         sendClass={palette.send}
         value={value}
@@ -44,6 +52,18 @@ export function InternalSheetComposer({
         placeholder={placeholder}
         disabled={disabled}
         sendDisabled={sendDisabled}
+        onAttach={() => fileRef.current?.click()}
+      />
+      <input
+        ref={fileRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(event) => {
+          const picked = [...(event.target.files ?? [])];
+          event.target.value = '';
+          if (picked.length > 0) onPickFiles?.(picked);
+        }}
       />
     </div>
   );
@@ -57,13 +77,16 @@ function ComposerRow({
   disabled,
   sendDisabled,
   sendClass,
-}: SheetComposerProps & { sendClass: string }) {
+  onAttach,
+}: SheetComposerProps & { sendClass: string; onAttach: () => void }) {
   return (
     <div className={`flex items-center gap-2 ${SHEET_COMPOSER_GUTTER_CLASS} py-2`}>
       <button
         type="button"
         aria-label="Attach file"
-        className={`${ROUND_BUTTON} border-border bg-card border`}
+        disabled={disabled}
+        onClick={onAttach}
+        className={`${ROUND_BUTTON} border-border bg-card border disabled:cursor-not-allowed`}
       >
         <img src={CLIP_ICON} alt="" className="dark:brightness-0 dark:invert" />
       </button>
@@ -85,6 +108,31 @@ function ComposerRow({
         <img src={SEND_ICON} alt="" />
       </button>
     </div>
+  );
+}
+
+function PendingFileNames({
+  names,
+  onRemove,
+}: {
+  names: string[];
+  onRemove?: (index: number) => void;
+}) {
+  if (names.length === 0) return null;
+  return (
+    <ul className={`flex flex-wrap gap-1 ${SHEET_COMPOSER_GUTTER_CLASS} pt-2`}>
+      {names.map((name, index) => (
+        <li key={`${name}-${index}`}>
+          <button
+            type="button"
+            onClick={() => onRemove?.(index)}
+            className="bg-card text-foreground max-w-40 truncate rounded-full px-2 py-1 text-[11px]"
+          >
+            {name}
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

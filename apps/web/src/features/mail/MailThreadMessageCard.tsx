@@ -86,6 +86,8 @@ export function MailThreadMessageCard({
 
       <MailMessageBody bodyHtmlSanitized={message.bodyHtmlSanitized} bodyText={message.bodyText} />
       <MailThreadAttachments
+        threadId={threadId}
+        messageId={message.id}
         attachments={message.attachments}
         canEdit={canEdit}
         retryingAttachmentId={retryingAttachmentId}

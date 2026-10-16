@@ -73,7 +73,7 @@ Ops-журнал решений (вкл/выкл на проде). Катало�
 17. 🟢 **Client Services (домены, хостинг, лицензии)** — каждый день в **06:00**: для Client Charge (`CLIENT_CHARGE`) с `renewal_date` ≤ 60 дней создаёт `Invoice Card` (EXP-04; поле `renewal_date`, не `expiry_date`). `WE_PAY` и Remember Only — без invoice. Расход We Pay создаёт соседняя джоба за 30 дней. На проде флаг **вкл**.  
     `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_RENEWAL_INVOICE_CRON` (default `0 6 * * *`)
 
-17a. 🟢 **Client Services — domain registry check** — каждый день в **05:45**: WHOIS/RDAP для Domain-карточек в 90-дневном окне (и Pay now). Обновляет `renewal_date`, если реестр уже продлил. На проде флаг **вкл**.  
+17a. 🟢 **Client Services — domain registry check** — каждый день в **05:45**: WHOIS/RDAP для Domain-карточек в 90-дневном окне (и Pay now). Записывает на карточку дату, которую вернул реестр, и если она позже нашей, и если раньше. На проде флаг **вкл**.  
  `SCHEDULER_CLIENT_SERVICES_DOMAIN_REGISTRY_ENABLED` · cron `SCHEDULER_CLIENT_SERVICES_DOMAIN_REGISTRY_CRON` (default `45 5 * * *`)
 
 18. 🟡 **Почта — сверка исходящих** — каждые **2 минуты**: `QUEUED` старше 60 с и зависший `SENDING`. Default **off**.  

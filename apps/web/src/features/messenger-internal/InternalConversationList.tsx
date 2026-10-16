@@ -9,8 +9,9 @@ import {
   INTERNAL_MESSENGER_EMPTY_COPY,
   type InternalMessengerSectionId,
 } from './internal-messenger.constants';
+import { DirectEmployeeHits } from './DirectEmployeeHits';
+import { conversationListTitle } from './internal-messenger-section';
 import { InternalConversationRow } from './InternalConversationRow';
-import { InternalCreateMenu } from './InternalCreateMenu';
 
 export function InternalConversationList({
   section,
@@ -23,7 +24,8 @@ export function InternalConversationList({
   onFilterChange,
   onSelect,
   onToggleFavorite,
-  onCreateGroup,
+  selfId,
+  onStartDirect,
 }: {
   section: InternalMessengerSectionId;
   items: MessengerCoreConversationRow[];
@@ -35,24 +37,29 @@ export function InternalConversationList({
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
   onSelect: (id: string) => void;
   onToggleFavorite: (id: string) => void;
-  onCreateGroup?: (title: string) => Promise<void>;
+  selfId?: string;
+  onStartDirect?: (employee: { id: string; name: string }) => void;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
   const selection = useConversationSelection(listRef, activeId);
+  const visibleItems = filterConversationsBySearch(items, search);
   return (
     <div className="bg-sidebar text-sidebar-foreground flex min-h-0 flex-1 flex-col">
       <ListSearch
         search={search}
         filter={filter}
+        placeholder={section === 'direct' ? 'Search an employee' : 'Search'}
         onSearchChange={onSearchChange}
         onFilterChange={onFilterChange}
-        createGroup={section === 'groups' ? onCreateGroup : undefined}
       />
       <div ref={listRef} className="relative min-h-0 flex-1 overflow-y-auto px-2 pb-6">
         <ConversationSelectionCard rect={selection.rect} ready={selection.ready} />
-        <ListStatus section={section} pending={listPending} empty={items.length === 0} />
+        {section === 'direct' && onStartDirect ? (
+          <DirectEmployeeHits query={search} selfId={selfId} onOpen={onStartDirect} />
+        ) : null}
+        <ListStatus section={section} pending={listPending} empty={visibleItems.length === 0} />
         <ConversationRows
-          items={items}
+          items={visibleItems}
           activeId={activeId}
           onSelect={onSelect}
           onToggleFavorite={onToggleFavorite}
@@ -60,6 +67,19 @@ export function InternalConversationList({
       </div>
     </div>
   );
+}
+
+function filterConversationsBySearch(
+  items: MessengerCoreConversationRow[],
+  search: string,
+): MessengerCoreConversationRow[] {
+  const query = search.trim().toLowerCase();
+  if (!query) return items;
+  return items.filter((row) => {
+    const title = conversationListTitle(row.type, row.title, row.peerName ?? null).toLowerCase();
+    const preview = row.lastMessagePreview?.toLowerCase() ?? '';
+    return title.includes(query) || preview.includes(query);
+  });
 }
 
 function ConversationRows({
@@ -119,15 +139,15 @@ function rowDividerVisible(
 function ListSearch({
   search,
   filter,
+  placeholder,
   onSearchChange,
   onFilterChange,
-  createGroup,
 }: {
   search: string;
   filter: 'all' | 'unread' | 'mentions';
+  placeholder: string;
   onSearchChange: (value: string) => void;
   onFilterChange: (value: 'all' | 'unread' | 'mentions') => void;
-  createGroup?: (title: string) => Promise<void>;
 }) {
   return (
     <div className="flex items-center gap-3 p-3">
@@ -138,12 +158,11 @@ function ListSearch({
           type="text"
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
-          placeholder="Search"
+          placeholder={placeholder}
           role="searchbox"
           className="text-foreground placeholder:text-muted-foreground w-full bg-transparent text-xs focus:outline-none"
         />
       </label>
-      {createGroup ? <InternalCreateMenu onCreateGroup={createGroup} /> : null}
       <FilterToggle
         label="Unread"
         pressed={filter === 'unread'}

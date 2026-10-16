@@ -64,7 +64,11 @@ import {
 } from '@/features/mail/mail-folder-config';
 import { isMailComposeOnlyDraftThread } from '@/features/mail/mail-thread-helpers';
 import { resolveMailModuleAccessPhase } from '@/features/mail/mail-module-access';
-import { partitionMailAccountsByBucket } from '@/features/mail/mail-mailbox-buckets';
+import {
+  mailboxIdsForInboxGroup,
+  partitionMailAccountsByBucket,
+  type MailInboxGroup,
+} from '@/features/mail/mail-mailbox-buckets';
 import {
   buildMailSearchFilterConfigs,
   hasActiveMailSearchFilters,
@@ -100,6 +104,7 @@ export default function MailInboxPage() {
   const [threadPage, setThreadPage] = useState(1);
 
   const [filterAccountId, setFilterAccountId] = useState<string | null>(null);
+  const [inboxGroup, setInboxGroup] = useState<MailInboxGroup>('my');
 
   const [activeFolder, setActiveFolder] = useState<MailFolderKey>('all');
 
@@ -177,17 +182,26 @@ export default function MailInboxPage() {
     [accountHealth],
   );
 
-  const myMailboxAccounts = useMemo(() => {
+  const mailboxBuckets = useMemo(() => {
     const listed = mailAccountsForDailySwitcher(accountHealth, filterAccountId);
-    return partitionMailAccountsByBucket(listed, mailboxOverrides).my;
+    return partitionMailAccountsByBucket(listed, mailboxOverrides);
   }, [accountHealth, filterAccountId, mailboxOverrides]);
 
   const folderCountAccounts = useMemo(() => {
     if (filterAccountId !== null) {
       return accountHealth.filter((account) => account.id === filterAccountId);
     }
-    return myMailboxAccounts;
-  }, [accountHealth, filterAccountId, myMailboxAccounts]);
+    const ids = new Set(
+      mailboxIdsForInboxGroup(
+        inboxGroup,
+        mailboxBuckets.my.map((account) => account.id),
+        mailboxBuckets.company.map((account) => account.id),
+      ),
+    );
+    return [...mailboxBuckets.my, ...mailboxBuckets.company].filter((account) =>
+      ids.has(account.id),
+    );
+  }, [accountHealth, filterAccountId, inboxGroup, mailboxBuckets]);
 
   const visibleThreadIds = useMemo(() => threads.map((thread) => thread.id), [threads]);
 
@@ -217,12 +231,15 @@ export default function MailInboxPage() {
       setAccountHealth(health);
 
       const listed = mailAccountsForDailySwitcher(health, filterAccountId);
-      const myIds = partitionMailAccountsByBucket(listed, mailboxOverrides).my.map(
-        (account) => account.id,
+      const buckets = partitionMailAccountsByBucket(listed, mailboxOverrides);
+      const scopedIds = mailboxIdsForInboxGroup(
+        inboxGroup,
+        buckets.my.map((account) => account.id),
+        buckets.company.map((account) => account.id),
       );
 
       const threadPageResult = await mailApi.listThreads({
-        ...mergeMailInboxListParams(activeFolder, searchFilters, filterAccountId, myIds),
+        ...mergeMailInboxListParams(activeFolder, searchFilters, filterAccountId, scopedIds),
         search: threadSearchQuery || undefined,
         page: threadPage,
       });
@@ -238,6 +255,7 @@ export default function MailInboxPage() {
   }, [
     activeFolder,
     filterAccountId,
+    inboxGroup,
     mailboxOverrides,
     searchFilters,
     threadSearchQuery,
@@ -415,6 +433,11 @@ export default function MailInboxPage() {
       params.delete(MAIL_OPEN_SHARE_MAILBOX_QUERY_KEY);
       clearMailConnectPanelQuery(params);
     });
+  };
+
+  const selectInboxGroup = (group: MailInboxGroup) => {
+    setInboxGroup(group);
+    selectAccount(null);
   };
 
   const selectFolder = (folder: MailFolderKey) => {
@@ -780,6 +803,7 @@ export default function MailInboxPage() {
       <MailToolbarRow
         accounts={accountHealth}
         filterAccountId={filterAccountId}
+        inboxGroup={inboxGroup}
         activeFolder={activeFolder}
         searchValue={threadSearchDraft}
         filterConfigs={mailFilterConfigs}
@@ -789,6 +813,7 @@ export default function MailInboxPage() {
         busy={loading}
         gettingMail={providerSyncBusy}
         onSelectAccount={selectAccount}
+        onSelectInboxGroup={selectInboxGroup}
         onSelectFolder={selectFolder}
         onSearchChange={setThreadSearchDraft}
         onFilterChange={handleMailFilterChange}

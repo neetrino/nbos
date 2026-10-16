@@ -38,6 +38,7 @@ export function buildOptimisticCoreMessage(input: {
   createdAt: string;
   replyToMessageId?: string;
   mentionedEmployeeIds?: string[];
+  attachments?: MessengerCoreMessageRow['attachments'];
   phase?: NonNullable<MessengerCoreMessageRow['localSend']>['phase'];
 }): MessengerCoreMessageRow {
   const phase = input.phase ?? 'sending';
@@ -53,7 +54,7 @@ export function buildOptimisticCoreMessage(input: {
     idempotencyKey: input.idempotencyKey,
     replyToMessageId: input.replyToMessageId,
     mentionedEmployeeIds: input.mentionedEmployeeIds,
-    attachments: [],
+    attachments: input.attachments ?? [],
     localSend: { idempotencyKey: input.idempotencyKey, phase },
   };
 }

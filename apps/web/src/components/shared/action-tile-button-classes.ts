@@ -25,6 +25,8 @@ export const actionTileIconVariants = cva(
         card: 'p-1.5 [&_svg]:size-3.5',
         /** Vertical footer tiles — circular icon above label. */
         stack: 'size-8 rounded-full p-0 [&_svg]:size-3.5',
+        /** Shorter product-card footer tiles. */
+        compact: 'size-6 rounded-full p-0 [&_svg]:size-3',
         md: 'p-1.5 [&_svg]:size-3.5',
         lg: 'p-2 [&_svg]:size-[18px]',
       },
@@ -60,6 +62,8 @@ export const actionTileShellVariants = cva(
         card: 'gap-2 rounded-lg px-2.5 py-1.5 text-xs',
         stack:
           'flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-center text-[11px] font-medium',
+        compact:
+          'flex-col items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 text-center text-[10px] font-medium',
         md: 'gap-2.5 rounded-xl px-3 py-2.5 text-sm',
         lg: 'gap-2.5 rounded-xl px-3 py-3 text-sm shadow-[var(--shadow-panel)]',
       },

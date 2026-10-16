@@ -124,6 +124,19 @@ function searchWhere(q: string | undefined): Prisma.MessengerConversationWhereIn
     OR: [
       { title: { contains: term, mode: 'insensitive' } },
       {
+        participants: {
+          some: {
+            leftAt: null,
+            employee: {
+              OR: [
+                { firstName: { contains: term, mode: 'insensitive' } },
+                { lastName: { contains: term, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      },
+      {
         messages: {
           some: {
             deletedAt: null,

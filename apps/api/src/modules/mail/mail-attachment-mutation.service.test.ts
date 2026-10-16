@@ -34,6 +34,7 @@ describe('MailAttachmentMutationService.retryAttachmentDownload', () => {
       { emailAttachment: { findFirst, updateMany } } as never,
       { enqueueAttachmentDownload } as never,
       { downloadAttachment: vi.fn() } as never,
+      { bucket: 'mail', ensureS3: vi.fn() } as never,
     );
   }
 

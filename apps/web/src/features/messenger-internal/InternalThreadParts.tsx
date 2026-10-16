@@ -1,6 +1,6 @@
 'use client';
 
-import type { RefObject } from 'react';
+import { useEffect, type RefObject } from 'react';
 import type { MessengerViewMessage } from '@/features/messenger/messenger-message-mapper';
 import { ComposerField } from './InternalThreadChrome';
 import { ThreadMessageRow } from './InternalThreadMessageRow';
@@ -17,6 +17,8 @@ import {
 import { InternalTypingIndicator } from './InternalTypingIndicator';
 import type { ConversationTypingPeer } from './messenger-conversation-typing';
 import { useSheetMessengerPalette } from './sheet-messenger-palette';
+import { SheetAttachPreview } from './SheetAttachPreview';
+import { useComposerFiles } from './use-composer-files';
 
 export function ThreadHeader({
   conversation,
@@ -155,6 +157,7 @@ export function ThreadComposer({
   placeholder,
   sheet = false,
   allowEmptySend = false,
+  meId = null,
 }: {
   canSend: boolean;
   sendDisabled: boolean;
@@ -162,40 +165,95 @@ export function ThreadComposer({
   onNewMessageChange: (value: string) => void;
   replyTo: { senderName: string; content: string } | null;
   onClearReply: () => void;
-  onSend: () => void;
+  onSend: (fileAssetIds: string[], caption?: string) => void;
   onTypingIntent?: () => void;
   placeholder?: string;
   sheet?: boolean;
   allowEmptySend?: boolean;
+  meId?: string | null;
 }) {
+  const files = useComposerFiles();
   const resolvedPlaceholder =
     placeholder ?? (canSend ? 'Message' : 'You cannot send in this conversation');
-  const blocked = !canSend || sendDisabled || (newMessage.trim().length === 0 && !allowEmptySend);
+  const hasFiles = files.pending.length > 0;
+  const blocked =
+    !canSend ||
+    sendDisabled ||
+    files.uploading ||
+    (newMessage.trim().length === 0 && !hasFiles && !allowEmptySend);
+  const showPreview = sheet && hasFiles;
+  useLockChatScroll(showPreview);
   return (
     <div
       className={
-        sheet
-          ? 'pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-transparent'
-          : 'border-t border-black/[0.06] p-3'
+        showPreview
+          ? 'absolute inset-0 z-30'
+          : sheet
+            ? 'pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-transparent'
+            : 'border-t border-black/[0.06] p-3'
       }
     >
-      <div className={sheet ? 'pointer-events-auto' : undefined}>
+      <div
+        className={
+          showPreview
+            ? 'pointer-events-none absolute inset-x-0 bottom-0'
+            : sheet
+              ? 'pointer-events-auto'
+              : undefined
+        }
+      >
         {replyTo ? <ReplySlot sheet={sheet} replyTo={replyTo} onClear={onClearReply} /> : null}
+        {files.error ? <p className="px-4 pb-1 text-xs text-red-600">{files.error}</p> : null}
         <ComposerField
           sheet={sheet}
           value={newMessage}
+          onPickFiles={files.pick}
           onChange={(value) => {
             onNewMessageChange(value);
             onTypingIntent?.();
           }}
-          onSend={onSend}
-          disabled={!canSend || sendDisabled}
+          onSend={() => void files.send(meId, undefined, onSend)}
+          disabled={!canSend || sendDisabled || files.uploading}
           sendDisabled={blocked}
           placeholder={resolvedPlaceholder}
         />
       </div>
+      {showPreview ? (
+        <div className="absolute -top-[100vh] right-0 bottom-0 -left-[100vw] bg-black/25" />
+      ) : null}
+      {showPreview ? (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+          <div className="pointer-events-auto w-full max-w-md">
+            <SheetAttachPreview
+              items={files.pending.map((item) => ({
+                name: item.file.name,
+                previewUrl: item.previewUrl,
+              }))}
+              uploading={files.uploading}
+              error={files.error}
+              onClose={files.clear}
+              onAdd={files.pick}
+              onRemove={files.remove}
+              onSend={(caption) => void files.send(meId, caption, onSend)}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
+}
+
+function useLockChatScroll(locked: boolean): void {
+  useEffect(() => {
+    if (!locked) return;
+    const block = (event: Event) => event.preventDefault();
+    window.addEventListener('wheel', block, { passive: false });
+    window.addEventListener('touchmove', block, { passive: false });
+    return () => {
+      window.removeEventListener('wheel', block);
+      window.removeEventListener('touchmove', block);
+    };
+  }, [locked]);
 }
 
 function ReplySlot({

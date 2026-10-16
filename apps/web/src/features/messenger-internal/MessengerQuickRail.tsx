@@ -44,7 +44,7 @@ export function MessengerQuickRail({
       aria-label="Employees"
       className={`border-sidebar-border bg-sidebar hidden h-full min-h-0 w-16 shrink-0 flex-col border-l lg:flex ${className}`}
     >
-      <div className="mt-auto flex min-h-0 w-full flex-col items-center gap-2.5 overflow-y-auto px-0 py-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex min-h-0 w-full flex-1 flex-col items-center gap-2.5 overflow-y-auto px-0 py-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {hasShortcuts
           ? shortcuts!.map((shortcut) => <RailShortcut key={shortcut.id} shortcut={shortcut} />)
           : null}

@@ -18,7 +18,6 @@ import { InternalConversationList } from './InternalConversationList';
 import { InternalConversationThread } from './InternalConversationThread';
 import { InternalGroupsEmptyPane } from './InternalGroupsEmptyPane';
 import { InternalMessengerNav } from './InternalMessengerNav';
-import { InternalStartBar } from './InternalStartBar';
 import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
 import { noteMessengerComposerDraft } from '@/features/messenger/query/messenger-send-claim';
 import { sendInternalThreadMessage } from './send-internal-thread-message';
@@ -27,7 +26,11 @@ import { useInternalMessengerRealtime } from './useInternalMessengerRealtime';
 import { useInternalMessengerSession } from './use-internal-messenger-session';
 import { VisibleThreadRead } from '@/features/messenger/query/use-visible-conversation-read';
 import { createInternalGroupConversation } from './create-internal-group';
-import { openInternalConversation, toggleInternalFavorite } from './internal-messenger-cache-ops';
+import {
+  openDirectWithEmployee,
+  openInternalConversation,
+  toggleInternalFavorite,
+} from './internal-messenger-cache-ops';
 import { useMessengerConversationLaunch } from './use-messenger-conversation-launch';
 import { MessengerPresenceProvider } from './PresenceAvatar';
 
@@ -165,23 +168,6 @@ function InternalMessengerScreen({
           items={data.messages.data?.items}
         />
         <InternalMessengerNav section={section} onSectionChange={onSectionChange} />
-        <InternalStartBar
-          section={section}
-          canEdit={can('EDIT', 'MESSENGER')}
-          onCreateGroup={createGroup}
-          onStartDirect={async (peerEmployeeId) => {
-            const created = await messengerCoreApi.createConversation({
-              type: 'DIRECT',
-              peerEmployeeId,
-            });
-            await openInternalConversation(
-              queryClient,
-              created.id,
-              session.setActiveId,
-              session.setOpenedConversation,
-            );
-          }}
-        />
         {session.bootError || data.listError ? (
           <p className="px-3 py-1 text-xs text-red-600">
             {session.bootError ?? 'Could not refresh Internal Messenger.'}
@@ -208,7 +194,6 @@ function InternalMessengerScreen({
                 search={session.search}
                 filter={session.filter}
                 listPending={data.listPending}
-                onCreateGroup={section === 'groups' ? createGroup : undefined}
                 onSearchChange={session.setSearch}
                 onFilterChange={session.setFilter}
                 onSelect={(id) =>
@@ -220,6 +205,22 @@ function InternalMessengerScreen({
                   ).catch(() => session.setBootError('Could not open that Internal conversation.'))
                 }
                 onToggleFavorite={(id) => void toggleInternalFavorite(queryClient, id)}
+                selfId={me?.id}
+                onStartDirect={
+                  section === 'direct'
+                    ? (employee) => {
+                        session.setSearch('');
+                        void openDirectWithEmployee(
+                          queryClient,
+                          employee,
+                          session.setActiveId,
+                          session.setOpenedConversation,
+                        ).catch(() =>
+                          session.setBootError('Could not open that Internal conversation.'),
+                        );
+                      }
+                    : undefined
+                }
               />
             </div>
           )}

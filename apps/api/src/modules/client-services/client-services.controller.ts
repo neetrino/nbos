@@ -224,7 +224,7 @@ export class ClientServicesController {
     const result = await this.domainRegistryService.checkService(
       id,
       actorContextFromUserId(user.id),
-      { force: true, allowEarlier: true },
+      { force: true },
     );
     if (result.outcome !== 'corrected') return result;
     // Gate the invoice side effect, not the endpoint: registry check is a CS EDIT action.

@@ -85,6 +85,8 @@ export type InternalSendExtras = {
   replyToMessageId?: string;
   mentionedEmployeeIds?: string[];
   forwardSourceIds?: string[];
+  fileAssetIds?: string[];
+  caption?: string;
 };
 
 export function InternalConversationThread({
@@ -305,11 +307,14 @@ function ThreadScaffold(props: {
         }}
         onTypingIntent={props.onTypingIntent}
         sheet
-        onSend={() =>
+        meId={props.meId}
+        onSend={(fileAssetIds, caption) =>
           void Promise.resolve(
             props.onSend({
               replyToMessageId: pending ? undefined : actions.replyTo?.id,
               forwardSourceIds: pending?.sourceMessageIds,
+              fileAssetIds,
+              caption,
             }),
           ).then(() => {
             if (pending) props.onClearPendingForward?.();

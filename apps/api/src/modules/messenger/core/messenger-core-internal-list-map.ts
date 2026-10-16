@@ -1,16 +1,19 @@
 import { mapPinnedMessagePreview } from './messenger-core-pin-message.ops';
 import { conversationCanWrite } from './messenger-core-internal.types';
 import type { MessengerInternalConversationListItem } from './messenger-core-internal.types';
-import { hiddenTaskDiscussionNoteWhere } from './messenger-task-discussion.metadata';
+import { TASK_DISCUSSION_VISIBILITY_HIDDEN } from './messenger-task-discussion.metadata';
 import { absoluteConversationUnreadCount } from './messenger-core-unread';
+
+/** Latest rows to scan so a hidden task note does not hide the real last message. */
+const LIST_PREVIEW_MESSAGE_TAKE = 8;
 
 export function internalListInclude(employeeId: string) {
   return {
     messages: {
-      where: { deletedAt: null, ...hiddenTaskDiscussionNoteWhere() },
+      where: { deletedAt: null },
       orderBy: { createdAt: 'desc' as const },
-      take: 1,
-      select: { content: true, senderId: true, createdAt: true },
+      take: LIST_PREVIEW_MESSAGE_TAKE,
+      select: { content: true, senderId: true, createdAt: true, metadata: true },
     },
     readStates: {
       select: { employeeId: true, lastReadAt: true },
@@ -42,7 +45,12 @@ export type InternalListRow = {
   canonicalKey: string | null;
   createdAt: Date;
   lastMessageAt: Date | null;
-  messages: Array<{ content: string; senderId: string | null; createdAt: Date }>;
+  messages: Array<{
+    content: string;
+    senderId: string | null;
+    createdAt: Date;
+    metadata?: unknown;
+  }>;
   readStates: Array<{ employeeId: string; lastReadAt: Date }>;
   userSettings: Array<{ favorite: boolean }>;
   participants: Array<{
@@ -66,7 +74,7 @@ export function mapInternalListItem(
 ): MessengerInternalConversationListItem {
   const lastReadAt =
     row.readStates.find((state) => state.employeeId === employeeId)?.lastReadAt ?? null;
-  const visible = row.messages[0];
+  const visible = row.messages.find((message) => !isHiddenTaskDiscussionNote(message.metadata));
   const activityAt = visible?.createdAt ?? row.lastMessageAt ?? null;
   const lastMessageMine = Boolean(visible?.senderId && visible.senderId === employeeId);
   const lastMessageSeen =
@@ -107,6 +115,12 @@ export function mapInternalListItem(
 }
 
 const PEER_POSITION_MAX_CHARS = 256;
+
+function isHiddenTaskDiscussionNote(metadata: unknown): boolean {
+  if (!metadata || typeof metadata !== 'object') return false;
+  const taskDiscussion = (metadata as { taskDiscussion?: { visibility?: string } }).taskDiscussion;
+  return taskDiscussion?.visibility === TASK_DISCUSSION_VISIBILITY_HIDDEN;
+}
 
 function peerPositionLabel(position: string | null | undefined): string | null {
   const value = position?.trim() ?? '';

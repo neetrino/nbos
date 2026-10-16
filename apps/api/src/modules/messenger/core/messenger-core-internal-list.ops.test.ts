@@ -172,7 +172,19 @@ describe('Internal conversation list', () => {
     const findMany = vi.fn().mockResolvedValue([
       listRow({
         type: 'TASK',
-        messages: [{ content: 'visible note' }],
+        messages: [
+          {
+            content: 'hidden body',
+            senderId: 'e2',
+            createdAt: new Date('2026-08-30T13:00:00.000Z'),
+            metadata: { taskDiscussion: { visibility: TASK_DISCUSSION_VISIBILITY_HIDDEN } },
+          },
+          {
+            content: 'visible note',
+            senderId: 'e2',
+            createdAt: new Date('2026-08-30T12:00:00.000Z'),
+          },
+        ],
       }),
     ]);
     const prisma = {
@@ -183,8 +195,7 @@ describe('Internal conversation list', () => {
       section: 'tasks',
     });
     const includeWhere = JSON.stringify(findMany.mock.calls[0]?.[0]?.include?.messages?.where);
-    expect(includeWhere).toContain(TASK_DISCUSSION_VISIBILITY_HIDDEN);
-    expect(includeWhere).toContain('taskDiscussion');
+    expect(includeWhere).not.toContain(TASK_DISCUSSION_VISIBILITY_HIDDEN);
     expect(result.items[0]?.lastMessagePreview).toBe('visible note');
     expect(result.items[0]?.lastMessagePreview).not.toBe('hidden body');
   });
@@ -295,6 +306,7 @@ describe('Internal conversation list', () => {
       content: true,
       senderId: true,
       createdAt: true,
+      metadata: true,
     });
     expect(result.items.find((row) => row.id === 'mine')?.unreadCount).toBe(0);
     expect(result.items.find((row) => row.id === 'mine')?.lastMessageMine).toBe(true);

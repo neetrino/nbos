@@ -1,6 +1,9 @@
 /** Max inbound attachment size (canon §19). Larger files stay FAILED and are not stored. */
 export const MAIL_ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024;
 
+/** Lifetime of a browser download URL for one stored mail attachment. */
+export const MAIL_ATTACHMENT_DOWNLOAD_URL_SECONDS = 300;
+
 export const MAIL_ATTACHMENT_STORAGE_CONTEXT = 'mail/attachments';
 
 /**

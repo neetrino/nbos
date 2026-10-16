@@ -5,6 +5,7 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 ## Shipped — outbound drafts (compose)
 
 - New compose autosaves `EmailMessage` `DRAFT` (`POST /mail/drafts`, `PATCH …/messages/:id`). Send is `POST …/queue` (`DRAFT → QUEUED`). Discard cancels the draft.
+- Compose and reply can attach up to 10 Drive files (25 MB each). Omit `fileAssetIds` on patch to keep existing attachments; send the array to replace them.
 - Inbox/Sent hide compose-only drafts (`lastInboundAt` and `lastOutboundAt` both null until queue). **Drafts** folder: `?draftsOnly=true`.
 - Reply composer reuses a thread draft (create/patch + queue). Shared draft collaboration remains out of MVP.
 
@@ -37,6 +38,7 @@ Tracks **shipped runtime** vs `00-Mail-Overview.md`. Provider/sync gaps: `99-Mai
 - Transient errors throw (BullMQ retry). Permanent / oversize / auth → `FAILED` (auth also `NEEDS_RECONNECT`); job completes.
 - `POST …/attachments/:id/retry-download` (`FAILED → PENDING`, or re-enqueue `PENDING`) + enqueue. Production enqueue miss → **503**, row stays `PENDING`.
 - UI: Pending / Ready / Failed; Retry for Failed and for Pending older than **3 min** (stuck / enqueue-miss). Body stays readable.
+- `GET …/attachments/:id/download-url` (`MAIL VIEW`) returns a 5-minute URL so a reader can save a `READY` file. Mailbox access is the gate.
 - Attachment enqueue replaces completed/failed BullMQ jobs (`mail-att-{id}`) so Retry actually runs. Sync unique-skip re-enqueues stuck PENDING (no `fileAsset`).
 - Worker logs include `errorClass` when known. No new Mail cron flags.
 

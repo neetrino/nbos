@@ -67,6 +67,8 @@ export type BeginOptimisticCoreSend = {
   createdAt?: string;
   replyToMessageId?: string;
   mentionedEmployeeIds?: string[];
+  allowBlankContent?: boolean;
+  attachments?: MessengerCoreMessageRow['attachments'];
   onComposerClear: () => void;
   onFailure?: (error: unknown) => void;
   transport: CoreSendTransport;
@@ -79,7 +81,7 @@ export type BeginOptimisticCoreSend = {
  */
 export async function beginOptimisticCoreSend(input: BeginOptimisticCoreSend): Promise<void> {
   const content = input.content.trim();
-  if (!content || !input.conversationId) return;
+  if ((!content && !input.allowBlankContent) || !input.conversationId) return;
   const claim = claimComposerSend(input.conversationId, content);
   if (!claim.accepted) return;
   const createdAt = input.createdAt ?? new Date().toISOString();
@@ -125,6 +127,7 @@ function insertOptimistic(
     createdAt: input.createdAt ?? new Date().toISOString(),
     replyToMessageId: input.replyToMessageId,
     mentionedEmployeeIds: input.mentionedEmployeeIds,
+    attachments: input.attachments,
   });
   patchMessengerMessages(input.queryClient, input.conversationId, optimistic, {
     createIfMissing: true,

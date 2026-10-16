@@ -394,6 +394,17 @@ export const mailApi = {
     return resp.data;
   },
 
+  async getAttachmentDownloadUrl(
+    threadId: string,
+    messageId: string,
+    attachmentId: string,
+  ): Promise<{ url: string; fileName: string; mimeType: string | null }> {
+    const resp = await api.get<{ url: string; fileName: string; mimeType: string | null }>(
+      `/api/mail/threads/${threadId}/messages/${messageId}/attachments/${attachmentId}/download-url`,
+    );
+    return resp.data;
+  },
+
   async retryAttachmentDownload(
     threadId: string,
     messageId: string,

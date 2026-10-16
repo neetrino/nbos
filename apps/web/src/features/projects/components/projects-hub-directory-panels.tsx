@@ -124,7 +124,6 @@ export function ProductsHubDirectoryPanel({
               key={product.id}
               projectId={product.projectId}
               product={product}
-              showProjectContext
             />
           ))}
         </div>

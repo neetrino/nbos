@@ -23,7 +23,7 @@ export function decideRegistryApply(input: DomainRegistryApplyInput): DomainRegi
   if (!storedRenewalDate || isRegistryExpiryLater(lookup.expiryDate, storedRenewalDate)) {
     return observedWrite('updated', lookup.expiryDate, lookup.source);
   }
-  if (input.allowEarlier && isRegistryExpiryEarlier(lookup.expiryDate, storedRenewalDate)) {
+  if (isRegistryExpiryEarlier(lookup.expiryDate, storedRenewalDate)) {
     return observedWrite('corrected', lookup.expiryDate, lookup.source);
   }
   return buildDecision(

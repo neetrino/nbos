@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  ValidateIf,
 } from 'class-validator';
 import {
   MESSENGER_MESSAGE_ATTACHMENT_MAX_COUNT,
@@ -16,6 +17,7 @@ import { MESSENGER_CORE_MENTION_MAX_COUNT } from '../messenger-core.constants';
 export class SendCoreMessageDto {
   @ApiProperty({ maxLength: MESSENGER_MESSAGE_BODY_MAX_LENGTH })
   @IsString()
+  @ValidateIf((dto: SendCoreMessageDto) => (dto.fileAssetIds?.length ?? 0) === 0)
   @IsNotEmpty()
   @MaxLength(MESSENGER_MESSAGE_BODY_MAX_LENGTH)
   content!: string;
