@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { type InputJsonValue, TaskPriorityEnum } from '@nbos/database';
-import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
+import { presentTaskRecords } from './present-task-records.op';
 import {
   actorProvenanceFields,
   type CreateTaskInput,
@@ -70,7 +70,7 @@ export async function createTask(params: CreateTaskOpParams) {
     },
     include: TASK_INCLUDE,
   });
-  await attachTaskLinkDisplayNames(params.db, [task]);
+  await presentTaskRecords(params.db, [task]);
   return task;
 }
 
