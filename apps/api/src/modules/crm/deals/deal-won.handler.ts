@@ -13,6 +13,7 @@ import { resolveDealOrderTotalAmount } from './deal-order-bootstrap.ops';
 import { resolveDealSubscriptionName } from '../../finance/subscriptions/subscription-commercial-name';
 import { ROUTE_A_PERIOD_COVERAGE_MONTH_COUNT } from './deal-subscription-deposit-coverage';
 import { linkDealDepositInvoiceToSubscription } from './link-deal-deposit-invoice';
+import { liveMaintenanceOnlySubscriptionWhere } from './deal-maintenance-subscription';
 import {
   allocateDealCode,
   allocateProjectCode,
@@ -497,10 +498,13 @@ export class DealWonHandler {
     }
 
     const existing = await this.prisma.subscription.findFirst({
-      where: { productId: product.id, type: 'MAINTENANCE_ONLY' },
-      select: { id: true },
+      where: liveMaintenanceOnlySubscriptionWhere(product.id),
+      select: { id: true, code: true, status: true },
     });
     if (existing) {
+      this.logger.warn(
+        `Maintenance deal ${deal.code}: product ${product.id} already has live MAINTENANCE_ONLY subscription ${existing.code} (${existing.status}) — new subscription not created`,
+      );
       return this.toLinkTargets(deal, deal.projectId, product.id);
     }
 
