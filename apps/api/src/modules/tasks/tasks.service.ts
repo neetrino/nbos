@@ -22,8 +22,9 @@ import {
   tasksViewBypassesRowFilter,
   type TasksAccessContext,
 } from './tasks-scoped-access';
-import { attachTaskLinkDisplayNames } from './task-link-display-names.op';
+import { presentTaskRecords } from './present-task-records.op';
 import { reorderTasks, type TaskReorderScope } from './task-reorder.op';
+import { upsertTaskMyPlanPlacement } from './upsert-task-my-plan-placement.op';
 import { TASK_DETAIL_INCLUDE, TASK_INCLUDE } from './task-response-includes';
 import { NotificationService } from '../notifications/notification.service';
 import { notifyTaskReviewRequested } from './task-review-notify.op';
@@ -114,7 +115,7 @@ export class TasksService {
       base: TASK_INCLUDE,
       projectScoped: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, result.items);
+    await presentTaskRecords(this.prisma, result.items, params.access?.employeeId);
     return result;
   }
 
@@ -129,7 +130,7 @@ export class TasksService {
       },
     });
     if (!task) throw new NotFoundException(`Task ${id} not found`);
-    await attachTaskLinkDisplayNames(db, [task]);
+    await presentTaskRecords(db, [task], access?.employeeId);
     return task;
   }
 
@@ -142,7 +143,7 @@ export class TasksService {
       include: TASK_DETAIL_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
-    await attachTaskLinkDisplayNames(this.prisma, items);
+    await presentTaskRecords(this.prisma, items);
     return items;
   }
 
@@ -183,6 +184,12 @@ export class TasksService {
       const found = await db.employee.count({ where: { id: creatorId } });
       if (found !== 1) throw new BadRequestException('Creator employee was not found.');
     }
+    const viewerId = access?.employeeId?.trim() ?? '';
+    const wantsPlacement = data.myPlanStageId !== undefined || data.myPlanSortOrder !== undefined;
+    if (wantsPlacement && !viewerId) {
+      throw new BadRequestException('My Plan placement requires the current employee');
+    }
+
     const sprintAssignment =
       data.sprintId !== undefined || data.planningStatus !== undefined
         ? await resolveTaskSprintAssignment(db, {
@@ -192,48 +199,26 @@ export class TasksService {
           })
         : null;
 
-    const task = await commitTaskUpdate(db, {
-      id,
-      expectedUpdatedAt,
-      include: TASK_DETAIL_INCLUDE,
-      data: {
-        ...(data.title && { title: data.title }),
-        ...(data.description !== undefined && { description: data.description }),
-        ...(data.creatorId !== undefined && { creatorId: data.creatorId.trim() }),
-        ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
-        ...(data.coAssignees && { coAssignees: data.coAssignees }),
-        ...(data.observers && { observers: data.observers }),
-        ...(data.priority && {
-          priority: data.priority as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum],
-        }),
-        ...(data.dueDate !== undefined && {
-          dueDate: data.dueDate ? new Date(data.dueDate) : null,
-        }),
-        ...(data.parentId !== undefined && { parentId: data.parentId }),
-        ...(data.myPlanStageId !== undefined && { myPlanStageId: data.myPlanStageId }),
-        ...(data.myPlanSortOrder !== undefined && { myPlanSortOrder: data.myPlanSortOrder }),
-        ...(data.workspaceId !== undefined && { workspaceId: data.workspaceId }),
-        ...(sprintAssignment && {
-          sprintId: sprintAssignment.sprintId,
-          planningStatus: sprintAssignment.planningStatus,
-        }),
-        ...(data.planningStatus !== undefined &&
-          !sprintAssignment && {
-            planningStatus: data.planningStatus as Prisma.TaskUpdateInput['planningStatus'],
-          }),
-        ...(data.workspaceSortOrder !== undefined && {
-          workspaceSortOrder: data.workspaceSortOrder,
-        }),
-        ...(data.completionRules !== undefined && {
-          completionRules: this.parseCompletionRules(data.completionRules),
-        }),
-        ...(data.status !== undefined && {
-          status: data.status as TaskStatusEnum,
-        }),
-        ...(data.reviewerId !== undefined && { reviewerId: data.reviewerId }),
-      },
-    });
-    await attachTaskLinkDisplayNames(db, [task]);
+    if (wantsPlacement) {
+      await upsertTaskMyPlanPlacement(db, {
+        taskId: id,
+        employeeId: viewerId,
+        stageId: data.myPlanStageId,
+        sortOrder: data.myPlanSortOrder,
+      });
+    }
+
+    const taskPatch = this.buildTaskUpdatePatch(data, sprintAssignment);
+    const task =
+      Object.keys(taskPatch).length > 0
+        ? await commitTaskUpdate(db, {
+            id,
+            expectedUpdatedAt,
+            include: TASK_DETAIL_INCLUDE,
+            data: taskPatch,
+          })
+        : existing;
+    await presentTaskRecords(db, [task], viewerId || undefined);
     return task;
   }
 
@@ -280,7 +265,7 @@ export class TasksService {
       data: { reviewApprovedAt: new Date() },
       include: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    await presentTaskRecords(this.prisma, [updated], access?.employeeId);
     return updated;
   }
 
@@ -300,7 +285,7 @@ export class TasksService {
       },
       include: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    await presentTaskRecords(this.prisma, [updated], access?.employeeId);
     return updated;
   }
 
@@ -336,7 +321,7 @@ export class TasksService {
       },
       include: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [updated]);
+    await presentTaskRecords(this.prisma, [updated], access?.employeeId);
     return updated;
   }
 
@@ -352,7 +337,7 @@ export class TasksService {
       },
       include: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [reopened]);
+    await presentTaskRecords(this.prisma, [reopened], access?.employeeId);
     return reopened;
   }
 
@@ -365,7 +350,7 @@ export class TasksService {
       data: { status: 'ON_HOLD' as TaskStatusEnum },
       include: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [onHold]);
+    await presentTaskRecords(this.prisma, [onHold], access?.employeeId);
     return onHold;
   }
 
@@ -397,7 +382,7 @@ export class TasksService {
       data: { trashedAt: null },
       include: TASK_DETAIL_INCLUDE,
     });
-    await attachTaskLinkDisplayNames(this.prisma, [restored]);
+    await presentTaskRecords(this.prisma, [restored], access?.employeeId);
     return restored;
   }
 
@@ -493,6 +478,49 @@ export class TasksService {
 
   async deleteChecklist(checklistId: string) {
     return this.prisma.taskChecklist.delete({ where: { id: checklistId } });
+  }
+
+  private buildTaskUpdatePatch(
+    data: UpdateTaskDto,
+    sprintAssignment: {
+      sprintId: string | null;
+      planningStatus: Prisma.TaskUpdateInput['planningStatus'];
+    } | null,
+  ): Prisma.TaskUpdateInput {
+    return {
+      ...(data.title && { title: data.title }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.creatorId !== undefined && { creatorId: data.creatorId.trim() }),
+      ...(data.assigneeId !== undefined && { assigneeId: data.assigneeId }),
+      ...(data.coAssignees && { coAssignees: data.coAssignees }),
+      ...(data.observers && { observers: data.observers }),
+      ...(data.priority && {
+        priority: data.priority as (typeof TaskPriorityEnum)[keyof typeof TaskPriorityEnum],
+      }),
+      ...(data.dueDate !== undefined && {
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      }),
+      ...(data.parentId !== undefined && { parentId: data.parentId }),
+      ...(data.workspaceId !== undefined && { workspaceId: data.workspaceId }),
+      ...(sprintAssignment && {
+        sprintId: sprintAssignment.sprintId,
+        planningStatus: sprintAssignment.planningStatus,
+      }),
+      ...(data.planningStatus !== undefined &&
+        !sprintAssignment && {
+          planningStatus: data.planningStatus as Prisma.TaskUpdateInput['planningStatus'],
+        }),
+      ...(data.workspaceSortOrder !== undefined && {
+        workspaceSortOrder: data.workspaceSortOrder,
+      }),
+      ...(data.completionRules !== undefined && {
+        completionRules: this.parseCompletionRules(data.completionRules),
+      }),
+      ...(data.status !== undefined && {
+        status: data.status as TaskStatusEnum,
+      }),
+      ...(data.reviewerId !== undefined && { reviewerId: data.reviewerId }),
+    };
   }
 
   private parseCompletionRules(input: unknown): InputJsonValue | undefined {

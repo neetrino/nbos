@@ -54,17 +54,32 @@ describe('reorderTasks', () => {
     expect(prisma.$transaction).toHaveBeenCalledOnce();
   });
 
-  it('assigns myPlanSortOrder for my-plan scope', async () => {
+  it('writes the viewer placement sort order for my-plan scope', async () => {
     prisma.task.findMany.mockResolvedValue([{ id: 't1', trashedAt: null }]);
 
     await reorderTasks(prisma as never, {
       taskIds: ['t1'],
       scope: 'my-plan',
+      access: { employeeId: 'emp-me', departmentIds: [] },
     });
 
-    expect(prisma.task.update).toHaveBeenCalledWith({
-      where: { id: 't1' },
-      data: { myPlanSortOrder: 0 },
+    expect(prisma.task.update).not.toHaveBeenCalled();
+    expect(prisma.taskMyPlanPlacement.upsert).toHaveBeenCalledWith({
+      where: { taskId_employeeId: { taskId: 't1', employeeId: 'emp-me' } },
+      create: { taskId: 't1', employeeId: 'emp-me', stageId: null, sortOrder: 0 },
+      update: { sortOrder: 0 },
     });
+  });
+
+  it('rejects my-plan reorder without the current employee', async () => {
+    prisma.task.findMany.mockResolvedValue([{ id: 't1', trashedAt: null }]);
+
+    await expect(
+      reorderTasks(prisma as never, {
+        taskIds: ['t1'],
+        scope: 'my-plan',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prisma.taskMyPlanPlacement.upsert).not.toHaveBeenCalled();
   });
 });
