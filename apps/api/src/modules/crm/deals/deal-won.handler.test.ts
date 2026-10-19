@@ -420,6 +420,40 @@ describe('DealWonHandler', () => {
     );
   });
 
+  it('only treats live (PENDING / ACTIVE) maintenance subscriptions as duplicates', async () => {
+    prisma.product.findUnique.mockResolvedValue({ id: 'prod-maint', projectId: 'proj-1' });
+    prisma.subscription.findFirst.mockResolvedValue(null);
+    prisma.subscription.create.mockResolvedValue({ id: 'sub-new' });
+
+    await handler.handle(maintenanceDeal());
+
+    expect(prisma.subscription.findFirst).toHaveBeenCalledWith({
+      where: {
+        productId: 'prod-maint',
+        type: 'MAINTENANCE_ONLY',
+        status: { in: ['PENDING', 'ACTIVE'] },
+      },
+      select: { id: true, code: true, status: true },
+    });
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips and warns when the product already has a live maintenance subscription', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    prisma.product.findUnique.mockResolvedValue({ id: 'prod-maint', projectId: 'proj-1' });
+    prisma.subscription.findFirst.mockResolvedValue({
+      id: 'sub-old',
+      code: 'SUB-2026-0133',
+      status: 'ACTIVE',
+    });
+
+    await handler.handle(maintenanceDeal());
+
+    expect(prisma.subscription.create).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('SUB-2026-0133 (ACTIVE)'));
+    warn.mockRestore();
+  });
+
   it('does not create maintenance subscription without existingProductId', async () => {
     await handler.handle({
       ...productDeal({
@@ -659,4 +693,16 @@ function productDeal(overrides: Record<string, unknown> = {}) {
     ],
     ...overrides,
   };
+}
+
+function maintenanceDeal() {
+  return productDeal({
+    type: 'MAINTENANCE',
+    paymentType: 'SUBSCRIPTION',
+    amount: 35000,
+    projectId: 'proj-1',
+    productCategory: null,
+    productType: null,
+    existingProductId: 'prod-maint',
+  });
 }

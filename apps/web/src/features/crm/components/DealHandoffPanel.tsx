@@ -23,6 +23,7 @@ import {
   HANDOFF_VISIBLE_DEAL_STATUSES,
 } from '../constants/deal-handoff.constants';
 import type { CrmTranslate } from '../i18n/crm-copy';
+import { DealMaintenanceSubscriptionNote } from './DealMaintenanceSubscriptionNote';
 
 interface DealHandoffPanelProps {
   deal: Deal;
@@ -228,6 +229,8 @@ export function DealHandoffPanel({ deal, onOpenDeal }: DealHandoffPanelProps) {
             {t('dealSheet.handoff.emptySubscription')}
           </p>
         )}
+
+        <DealMaintenanceSubscriptionNote deal={deal} />
 
         {maintenanceDeal ? (
           <Button

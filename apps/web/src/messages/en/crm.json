@@ -661,7 +661,10 @@
       "emptyProduct": "Product link is missing or not applicable yet.",
       "emptySubscription": "Subscription link is missing or not applicable for this deal.",
       "openMaintenance": "Open {code}",
-      "maintenancePending": "Maintenance Deal is created after the Product handoff runs."
+      "maintenancePending": "Maintenance Deal is created after the Product handoff runs.",
+      "maintenanceSubscriptionTitle": "{title} · {code} · {status}",
+      "maintenanceSubscriptionHint": "Live maintenance subscription on this product. Deal Won does not create a second one while it is Pending or Active.",
+      "maintenanceSubscriptionMissing": "No live maintenance subscription on this product. Check the product link or create one in Finance."
     },
     "exception": {
       "title": "Exception order",

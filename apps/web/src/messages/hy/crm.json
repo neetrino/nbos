@@ -703,7 +703,10 @@
       "emptyProduct": "Արտադրանքի կապը բացակայում է կամ դեռ կիրառելի չէ։",
       "emptySubscription": "Բաժանորդագրության կապը բացակայում է կամ այս գործարքի համար կիրառելի չէ։",
       "openMaintenance": "Բացել {code}",
-      "maintenancePending": "Maintenance գործարծը ստեղծվում է արտադրանքի փոխանցումից հետ։"
+      "maintenancePending": "Maintenance գործարծը ստեղծվում է արտադրանքի փոխանցումից հետ։",
+      "maintenanceSubscriptionTitle": "{title} · {code} · {status}",
+      "maintenanceSubscriptionHint": "Այս արտադրանքի գործող սպասարկման բաժանորդագրությունը։ Քանի դեռ այն Pending կամ Active է, Deal Won-ը երկրորդը չի ստեղծում։",
+      "maintenanceSubscriptionMissing": "Արտադրանքը չունի գործող սպասարկման բաժանորդագրություն։ Ստուգեք արտադրանքի կապը կամ ստեղծեք այն Finance-ում։"
     },
     "exception": {
       "title": "Բացառիկ պատվեր",

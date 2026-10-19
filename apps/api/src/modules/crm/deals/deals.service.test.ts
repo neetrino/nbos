@@ -549,6 +549,7 @@ describe('DealsService', () => {
         product: null,
         subscriptions: [],
         maintenanceDeal: null,
+        maintenanceSubscription: null,
       });
       expect(prisma.deal.update).not.toHaveBeenCalled();
       expect(wonHandler.handle).not.toHaveBeenCalled();

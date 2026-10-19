@@ -83,6 +83,14 @@ export interface DealHandoffReferences {
     amount: unknown;
     maintenanceStartAt: Date | null;
   } | null;
+  /** MAINTENANCE deal: live `MAINTENANCE_ONLY` subscription on `existingProductId` (Won reuses it). */
+  maintenanceSubscription: {
+    id: string;
+    code: string;
+    name: string;
+    status: string;
+    amount: unknown;
+  } | null;
 }
 
 export interface DealForHandoff {
