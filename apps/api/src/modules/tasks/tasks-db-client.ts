@@ -16,6 +16,8 @@ export type TasksDbClient = Pick<
   InstanceType<typeof PrismaClient>,
   | 'task'
   | 'taskDiscussionEntry'
+  | 'taskMyPlanPlacement'
+  | 'taskBoardStage'
   | 'employee'
   | 'employeeDepartment'
   | 'sprint'

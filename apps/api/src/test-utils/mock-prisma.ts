@@ -62,6 +62,8 @@ export function createMockPrisma() {
     subscription: createModelMock(),
     workSpace: createModelMock(),
     task: createModelMock(),
+    taskMyPlanPlacement: createModelMock(),
+    taskBoardStage: createModelMock(),
     taskChecklist: createModelMock(),
     taskChecklistItem: createModelMock(),
     recurringTaskTemplate: createModelMock(),
