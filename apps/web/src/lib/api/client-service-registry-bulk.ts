@@ -14,12 +14,16 @@ export interface ClientServiceRegistryBulkPage {
   counts: ClientServiceRegistryBulkCounts;
 }
 
+/** One page is capped at 12s on the API; the shared client timeout of 15s aborted the first run. */
+const CHECK_ALL_REQUEST_TIMEOUT_MS = 20_000;
+
 export const clientServiceRegistryBulkApi = {
   /** One time-boxed page of the "check all domains" run; pass `nextCursor` until `done`. */
   async checkPage(cursor: string | null): Promise<ClientServiceRegistryBulkPage> {
     const resp = await api.post<ClientServiceRegistryBulkPage>(
       '/api/client-services/actions/check-registry-all',
       { cursor },
+      { timeout: CHECK_ALL_REQUEST_TIMEOUT_MS },
     );
     return resp.data;
   },

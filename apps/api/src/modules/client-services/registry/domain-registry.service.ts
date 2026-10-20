@@ -18,7 +18,7 @@ import {
 import type { DomainRegistryCheckResult } from './domain-registry.types';
 import { delay } from './registry-lanes';
 
-type DomainRegistryCheckOptions = { force?: boolean };
+type DomainRegistryCheckOptions = { force?: boolean; timeoutMs?: number };
 
 const SYSTEM_ACTOR = actorContextFromMachine({
   id: 'client-services-domain-registry',
@@ -54,7 +54,7 @@ export class DomainRegistryService {
     if (!options.force && isRegistrySnapshotFresh(row.registryCheckedAt)) {
       return this.reuseSnapshot(row, domainName);
     }
-    const lookup = await lookupDomainRegistry(domainName);
+    const lookup = await lookupDomainRegistry(domainName, options.timeoutMs);
     const decision = decideRegistryApply({
       storedRenewalDate: row.renewalDate,
       lookup,
