@@ -73,10 +73,8 @@ async function drainLane<T>(
   const gapMs = options.gapMs ?? WHOIS_QUERY_GAP_MS;
   let started = false;
   while (queue.length > 0) {
-    if (started) {
-      if (now() >= options.deadlineAt) return;
-      await pause(gapMs);
-    }
+    if (started) await pause(gapMs);
+    if (started && now() >= options.deadlineAt) return;
     const item = queue.shift();
     if (item === undefined) return;
     started = true;

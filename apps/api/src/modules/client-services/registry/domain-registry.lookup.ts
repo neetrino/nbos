@@ -1,14 +1,18 @@
+import { REGISTRY_LOOKUP_TIMEOUT_MS } from './domain-registry.constants';
 import { planRegistryLookup } from './tld-router';
 import { queryRdap } from './rdap.client';
 import { queryWhois } from './whois.client';
 import type { RegistryLookupRaw } from './domain-registry.types';
 
-export async function lookupDomainRegistry(domain: string): Promise<RegistryLookupRaw> {
+export async function lookupDomainRegistry(
+  domain: string,
+  timeoutMs: number = REGISTRY_LOOKUP_TIMEOUT_MS,
+): Promise<RegistryLookupRaw> {
   const plan = planRegistryLookup(domain);
-  const primary = await runChannel(plan.primary, domain, plan.whoisHost);
+  const primary = await runChannel(plan.primary, domain, plan.whoisHost, timeoutMs);
   if (isTerminalLookup(primary)) return primary;
   if (!plan.fallback) return primary;
-  const fallback = await runChannel(plan.fallback, domain, plan.whoisHost);
+  const fallback = await runChannel(plan.fallback, domain, plan.whoisHost, timeoutMs);
   if (isTerminalLookup(fallback)) return fallback;
   return preferRicher(primary, fallback);
 }
@@ -21,11 +25,12 @@ async function runChannel(
   channel: 'WHOIS' | 'RDAP',
   domain: string,
   whoisHost: string | null,
+  timeoutMs: number,
 ): Promise<RegistryLookupRaw> {
-  if (channel === 'RDAP') return queryRdap(domain);
+  if (channel === 'RDAP') return queryRdap(domain, timeoutMs);
   if (!whoisHost) return { status: 'FAILED', expiryDate: null, source: 'WHOIS' };
   try {
-    return await queryWhois(domain, whoisHost);
+    return await queryWhois(domain, whoisHost, timeoutMs);
   } catch {
     return { status: 'FAILED', expiryDate: null, source: 'WHOIS' };
   }

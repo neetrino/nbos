@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { actorContextFromUserId } from '@nbos/shared';
 import { DomainRegistryBulkService } from './domain-registry-bulk.service';
-import { BULK_CHECK_PAGE_SIZE } from './domain-registry.constants';
+import { BULK_CHECK_PAGE_SIZE, BULK_LOOKUP_TIMEOUT_MS } from './domain-registry.constants';
 
 vi.mock('./domain-registry.constants', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./domain-registry.constants')>()),
@@ -43,6 +43,7 @@ describe('DomainRegistryBulkService', () => {
     expect(registry.checkRow).toHaveBeenCalledTimes(2);
     expect(registry.checkRow).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }), ACTOR, {
       force: true,
+      timeoutMs: BULK_LOOKUP_TIMEOUT_MS,
     });
     expect(result).toMatchObject({ total: 3, checked: 3, done: true, nextCursor: 'c' });
     expect(result.counts).toMatchObject({ unchanged: 2, skipped: 1 });
@@ -90,5 +91,23 @@ describe('DomainRegistryBulkService', () => {
     expect(result.done).toBe(false);
     expect(result.checked).toBe(BULK_CHECK_PAGE_SIZE);
     expect(result.nextCursor).toBe(rows[BULK_CHECK_PAGE_SIZE - 1]?.id);
+  });
+
+  it('returns the finished prefix when a lookup is still in flight', async () => {
+    const { registry, service } = setup([row('a', 'one.am'), row('b', 'two.com')]);
+    registry.checkRow.mockImplementation((target: { id: string }) => {
+      if (target.id === 'b') return new Promise(() => undefined);
+      return Promise.resolve({ outcome: 'unchanged' });
+    });
+
+    const result = await service.checkPage({
+      cursor: null,
+      actor: ACTOR,
+      responseDeadlineMs: 50,
+    });
+
+    expect(result.checked).toBe(1);
+    expect(result.nextCursor).toBe('a');
+    expect(result.done).toBe(false);
   });
 });
