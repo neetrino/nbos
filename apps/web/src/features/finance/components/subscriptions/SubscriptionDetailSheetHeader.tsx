@@ -6,24 +6,35 @@ import {
   DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS,
   DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS,
 } from '@/components/shared/detail-sheet-classes';
+import { useCommitEntityName } from '@/features/finance/hooks/use-commit-entity-name';
 import { getSubscriptionType } from '@/features/finance/constants/finance';
+import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
 import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
-import type { Subscription } from '@/lib/api/finance';
+import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
 import { SubscriptionGridStatusControl } from './SubscriptionGridStatusControl';
 import { useSubscriptionDetailMutations } from './use-subscription-detail-mutations';
 
+const SUBSCRIPTION_RENAME_HINT = 'Click to edit name';
+const SUBSCRIPTION_NAME_PLACEHOLDER = 'Commercial subscription name';
+const SUBSCRIPTION_RENAME_SUCCESS = 'Subscription updated';
+const SUBSCRIPTION_RENAME_ERROR = 'Could not save subscription.';
+
 interface SubscriptionDetailSheetHeaderProps {
   subscription: Subscription;
+  canRename: boolean;
+  onNameSaved: (updated: Subscription) => void;
   onSubscriptionChange: (updated: Subscription) => void;
   onError: (message: string | null) => void;
 }
 
 export function SubscriptionDetailSheetHeader({
   subscription,
+  canRename,
+  onNameSaved,
   onSubscriptionChange,
   onError,
 }: SubscriptionDetailSheetHeaderProps) {
@@ -31,7 +42,17 @@ export function SubscriptionDetailSheetHeader({
   const subType = getSubscriptionType(subscription.type);
   const termSummary = formatSubscriptionTermSummary(subscription);
   const displayTitle = getSubscriptionDisplayTitle(subscription);
-  const showCodeSubline = displayTitle !== subscription.code;
+  const titleBlock = (
+    <SubscriptionHeaderTitleBlock
+      subscription={subscription}
+      displayTitle={displayTitle}
+      showCodeSubline={displayTitle !== subscription.code}
+      typeLabel={subType?.label}
+      termSummary={termSummary}
+      canRename={canRename}
+      onNameSaved={onNameSaved}
+    />
+  );
   const statusControl = (
     <SubscriptionSheetStatusControl
       subscription={subscription}
@@ -45,13 +66,7 @@ export function SubscriptionDetailSheetHeader({
       <div className={DETAIL_SHEET_MOBILE_HEADER_SHELL_CLASS}>
         <div className={DETAIL_SHEET_MOBILE_HEADER_BACK_ROW_CLASS}>{statusControl}</div>
         <div className={cn(DETAIL_SHEET_MOBILE_HEADER_TITLE_BLOCK_CLASS, 'space-y-1')}>
-          <SubscriptionHeaderIdentity
-            displayTitle={displayTitle}
-            showCodeSubline={showCodeSubline}
-            code={subscription.code}
-            typeLabel={subType?.label}
-          />
-          <SubscriptionHeaderSummary subscription={subscription} termSummary={termSummary} />
+          {titleBlock}
         </div>
       </div>
     );
@@ -59,38 +74,73 @@ export function SubscriptionDetailSheetHeader({
 
   return (
     <div className="bg-background flex shrink-0 flex-wrap items-start justify-between gap-3 px-7 pt-5 pb-3">
-      <div className="min-w-0 flex-1">
-        <SubscriptionHeaderIdentity
-          displayTitle={displayTitle}
-          showCodeSubline={showCodeSubline}
-          code={subscription.code}
-          typeLabel={subType?.label}
-        />
-        <SubscriptionHeaderSummary subscription={subscription} termSummary={termSummary} />
-      </div>
+      <div className="min-w-0 flex-1">{titleBlock}</div>
       {statusControl}
     </div>
   );
 }
 
+function SubscriptionHeaderTitleBlock({
+  subscription,
+  displayTitle,
+  showCodeSubline,
+  typeLabel,
+  termSummary,
+  canRename,
+  onNameSaved,
+}: {
+  subscription: Subscription;
+  displayTitle: string;
+  showCodeSubline: boolean;
+  typeLabel: string | undefined;
+  termSummary: string | null;
+  canRename: boolean;
+  onNameSaved: (updated: Subscription) => void;
+}) {
+  return (
+    <>
+      <SubscriptionHeaderIdentity
+        subscriptionId={subscription.id}
+        displayTitle={displayTitle}
+        showCodeSubline={showCodeSubline}
+        code={subscription.code}
+        typeLabel={typeLabel}
+        canRename={canRename}
+        onNameSaved={onNameSaved}
+      />
+      <SubscriptionHeaderSummary subscription={subscription} termSummary={termSummary} />
+    </>
+  );
+}
+
 function SubscriptionHeaderIdentity({
+  subscriptionId,
   displayTitle,
   showCodeSubline,
   code,
   typeLabel,
+  canRename,
+  onNameSaved,
 }: {
+  subscriptionId: string;
   displayTitle: string;
   showCodeSubline: boolean;
   code: string;
   typeLabel: string | undefined;
+  canRename: boolean;
+  onNameSaved: (updated: Subscription) => void;
 }) {
   return (
     <div className="inline-flex max-w-full min-w-0 flex-wrap items-center gap-2">
       <Repeat className="text-muted-foreground size-5 shrink-0" aria-hidden />
       <div className="min-w-0">
-        <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-          {displayTitle}
-        </h2>
+        <SubscriptionEditableTitle
+          subscriptionId={subscriptionId}
+          name={displayTitle}
+          canRename={canRename}
+          onNameSaved={onNameSaved}
+          titleClassName="text-xl font-bold tracking-tight"
+        />
         {showCodeSubline ? (
           <p className="text-muted-foreground mt-0.5 truncate text-xs">{code}</p>
         ) : null}
@@ -149,6 +199,39 @@ function SubscriptionSheetStatusControl({
       onHold={handleHold}
       forceNestedBackdrop
       size="sm"
+    />
+  );
+}
+
+export function SubscriptionEditableTitle({
+  subscriptionId,
+  name,
+  canRename,
+  onNameSaved,
+  titleClassName,
+}: {
+  subscriptionId: string;
+  name: string;
+  canRename: boolean;
+  onNameSaved: (updated: Subscription) => void;
+  titleClassName: string;
+}) {
+  const commitName = useCommitEntityName({
+    enabled: canRename,
+    save: (nextName) => subscriptionsApi.update(subscriptionId, { name: nextName }),
+    onSaved: onNameSaved,
+    successMessage: SUBSCRIPTION_RENAME_SUCCESS,
+    errorMessage: SUBSCRIPTION_RENAME_ERROR,
+  });
+
+  return (
+    <InlineEditableEntityTitle
+      value={name}
+      disabled={!canRename}
+      editHint={SUBSCRIPTION_RENAME_HINT}
+      placeholder={SUBSCRIPTION_NAME_PLACEHOLDER}
+      onCommit={commitName}
+      titleClassName={titleClassName}
     />
   );
 }
