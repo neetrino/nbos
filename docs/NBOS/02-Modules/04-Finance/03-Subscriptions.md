@@ -191,7 +191,8 @@ Important rules:
 - invoice is not required before maintenance `Deal Won` by default;
 - CRM may pass the expected billing start date;
 - while status is `Pending`, this date is still editable and does not yet generate billing;
-- idempotency: `productId` + `MAINTENANCE_ONLY`.
+- idempotency: `productId` + `MAINTENANCE_ONLY` in a live status (`Pending` / `Active`); `On Hold` / `Cancelled` / `Completed` history does not block a new subscription;
+- when a live one already exists (e.g. created manually in Finance before Won), Won does not create a second one: the skip is logged as a warning, and the Deal handoff panel shows that subscription with a link.
 
 ### Route C: Finance manual create
 

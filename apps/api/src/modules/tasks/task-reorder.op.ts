@@ -14,10 +14,6 @@ export type TaskReorderInput = {
   access?: TasksAccessContext;
 };
 
-function resolveSortField(scope: TaskReorderScope): 'workspaceSortOrder' | 'myPlanSortOrder' {
-  return scope === 'workspace' ? 'workspaceSortOrder' : 'myPlanSortOrder';
-}
-
 /** Assigns sequential sort indices to tasks within a board column reorder. */
 export async function reorderTasks(
   prisma: InstanceType<typeof PrismaClient>,
@@ -44,13 +40,37 @@ export async function reorderTasks(
     await assertTaskAccessible(prisma, row.id, access);
   }
 
-  const sortField = resolveSortField(scope);
+  if (scope === 'my-plan') {
+    await reorderMyPlanPlacements(prisma, taskIds, access?.employeeId);
+    return { success: true };
+  }
+
   const updates = taskIds.map((taskId, index) =>
     prisma.task.update({
       where: { id: taskId },
-      data: { [sortField]: index },
+      data: { workspaceSortOrder: index },
     }),
   );
   await prisma.$transaction(updates);
   return { success: true };
+}
+
+async function reorderMyPlanPlacements(
+  prisma: InstanceType<typeof PrismaClient>,
+  taskIds: string[],
+  employeeId: string | undefined,
+): Promise<void> {
+  const viewerId = employeeId?.trim();
+  if (!viewerId) {
+    throw new BadRequestException('My Plan reorder requires the current employee');
+  }
+
+  const updates = taskIds.map((taskId, index) =>
+    prisma.taskMyPlanPlacement.upsert({
+      where: { taskId_employeeId: { taskId, employeeId: viewerId } },
+      create: { taskId, employeeId: viewerId, stageId: null, sortOrder: index },
+      update: { sortOrder: index },
+    }),
+  );
+  await prisma.$transaction(updates);
 }

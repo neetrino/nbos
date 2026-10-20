@@ -126,6 +126,7 @@ model Task {
   links              TaskLink[]
   checklists         TaskChecklist[]
   discussionEntries  TaskDiscussionEntry[]
+  myPlanPlacements   TaskMyPlanPlacement[]
 
   @@index([workspaceId])
   @@index([sprintId])
@@ -212,9 +213,29 @@ model TaskBoardStage {
   isDefault Boolean  @default(false) @map("is_default")
   createdAt DateTime @default(now()) @map("created_at")
 
+  myPlanPlacements TaskMyPlanPlacement[]
+
   @@unique([ownerId, boardType, title])
   @@index([ownerId, boardType])
   @@map("task_board_stages")
+}
+
+/// One My Plan column + sort slot per employee. Task workflow status stays shared.
+model TaskMyPlanPlacement {
+  id         String   @id @default(uuid())
+  taskId     String   @map("task_id")
+  employeeId String   @map("employee_id")
+  stageId    String?  @map("stage_id")
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  task     Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  employee Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  stage    TaskBoardStage? @relation(fields: [stageId], references: [id], onDelete: SetNull)
+
+  @@unique([taskId, employeeId])
+  @@index([employeeId, stageId])
+  @@map("task_my_plan_placements")
 }
 
 model RecurringTaskTemplate {

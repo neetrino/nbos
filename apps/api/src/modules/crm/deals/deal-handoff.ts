@@ -1,5 +1,9 @@
 import type { PrismaClient } from '@nbos/database';
 import type { DealForHandoff, DealHandoffReferences } from './deal.types';
+import {
+  liveMaintenanceOnlySubscriptionWhere,
+  maintenanceSubscriptionHandoffSelect,
+} from './deal-maintenance-subscription';
 
 type PrismaInstance = InstanceType<typeof PrismaClient>;
 
@@ -11,9 +15,10 @@ export async function attachDealHandoffReferences<T extends DealForHandoff>(
     return { ...deal, handoff: emptyDealHandoff() };
   }
 
-  const [project, maintenanceDeal] = await Promise.all([
+  const [project, maintenanceDeal, maintenanceSubscription] = await Promise.all([
     getProjectHandoff(prisma, deal.projectId),
     getMaintenanceDealHandoff(prisma, deal),
+    getMaintenanceSubscriptionHandoff(prisma, deal),
   ]);
 
   return {
@@ -23,6 +28,7 @@ export async function attachDealHandoffReferences<T extends DealForHandoff>(
       product: deal.existingProduct ?? project?.products[0] ?? null,
       subscriptions: project?.subscriptions ?? [],
       maintenanceDeal,
+      maintenanceSubscription,
     },
   };
 }
@@ -66,11 +72,25 @@ function getMaintenanceDealHandoff(prisma: PrismaInstance, deal: DealForHandoff)
   });
 }
 
+function getMaintenanceSubscriptionHandoff(prisma: PrismaInstance, deal: DealForHandoff) {
+  const productId = deal.existingProduct?.id;
+  if (deal.type !== 'MAINTENANCE' || !productId) {
+    return Promise.resolve(null);
+  }
+
+  return prisma.subscription.findFirst({
+    where: liveMaintenanceOnlySubscriptionWhere(productId),
+    select: maintenanceSubscriptionHandoffSelect,
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
 function emptyDealHandoff(): DealHandoffReferences {
   return {
     project: null,
     product: null,
     subscriptions: [],
     maintenanceDeal: null,
+    maintenanceSubscription: null,
   };
 }

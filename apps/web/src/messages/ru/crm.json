@@ -661,7 +661,10 @@
       "emptyProduct": "Связь с продуктом отсутствует или пока не применима.",
       "emptySubscription": "Связь с подпиской отсутствует или не применима к этой сделке.",
       "openMaintenance": "Открыть {code}",
-      "maintenancePending": "Сделка сопровождения создаётся после handoff продукта."
+      "maintenancePending": "Сделка сопровождения создаётся после handoff продукта.",
+      "maintenanceSubscriptionTitle": "{title} · {code} · {status}",
+      "maintenanceSubscriptionHint": "Живая подписка сопровождения этого продукта. Пока она Pending или Active, Deal Won не создаёт вторую.",
+      "maintenanceSubscriptionMissing": "У продукта нет живой подписки сопровождения. Проверьте привязку продукта или создайте её в Finance."
     },
     "exception": {
       "title": "Exception order",
