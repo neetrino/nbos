@@ -157,7 +157,6 @@ export function SubscriptionDetailSheet({
   }, [handleSubscriptionChange, subscription]);
 
   const { can } = usePermission();
-  const canRenameSubscription = can('EDIT', 'FINANCE_SUBSCRIPTIONS');
   const canCreateInvoice = Boolean(
     subscription &&
     subscriptionCanCreatePeriodInvoice(subscription) &&
@@ -235,7 +234,7 @@ export function SubscriptionDetailSheet({
           ) : subscription ? (
             <SubscriptionDetailSheetHeader
               subscription={subscription}
-              canRename={canRenameSubscription && !saving}
+              canRename={!saving}
               onNameSaved={handleNameSaved}
               onSubscriptionChange={handleSubscriptionChange}
               onError={setActionError}

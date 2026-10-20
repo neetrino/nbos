@@ -24,14 +24,12 @@ import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscrip
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { getSubscriptionType } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
-import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
 export default function SubscriptionDetailPage() {
   const params = useParams<{ id: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
-  const { can } = usePermission();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,7 +169,7 @@ export default function SubscriptionDetailPage() {
   const termSummary = formatSubscriptionTermSummary(subscription);
   const displayTitle = getSubscriptionDisplayTitle(subscription);
   const showCodeSubline = displayTitle !== subscription.code;
-  const canRename = can('EDIT', 'FINANCE_SUBSCRIPTIONS') && !saving;
+  const canRename = !saving;
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
