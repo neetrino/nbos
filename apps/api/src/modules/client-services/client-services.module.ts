@@ -8,6 +8,8 @@ import { ClientServiceFlowsService } from './client-service-flows.service';
 import { ClientServicesRenewalInvoiceService } from './client-services-renewal-invoice.service';
 import { ClientServicesRenewalExpenseService } from './client-services-renewal-expense.service';
 import { DomainRegistryService } from './registry/domain-registry.service';
+import { DomainRegistryBulkService } from './registry/domain-registry-bulk.service';
+import { ClientServicesRegistryController } from './client-services-registry.controller';
 import { PlatformAccessModule } from '../platform-access/platform-access.module';
 import { InvoicesModule } from '../finance/invoices/invoices.module';
 import { ExpensesModule } from '../expenses/expenses.module';
@@ -16,7 +18,11 @@ import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [InvoicesModule, ExpensesModule, TasksModule, AuditModule, PlatformAccessModule],
-  controllers: [DomainOperationController, ClientServicesController],
+  controllers: [
+    DomainOperationController,
+    ClientServicesRegistryController,
+    ClientServicesController,
+  ],
   providers: [
     ClientServicesService,
     DomainOperationService,
@@ -25,6 +31,7 @@ import { AuditModule } from '../audit/audit.module';
     ClientServicesRenewalInvoiceService,
     ClientServicesRenewalExpenseService,
     DomainRegistryService,
+    DomainRegistryBulkService,
   ],
   exports: [
     ClientServicesService,

@@ -208,9 +208,11 @@
   },
   "settings": {
     "title": "Client services — settings",
-    "description": "Reload the service catalog from the server.",
+    "description": "Reload the catalog or check every domain against the registry.",
     "triggerAria": "Client services settings",
-    "refresh": "Refresh list"
+    "refresh": "Refresh list",
+    "checkAllDomains": "Check all domains",
+    "checkAllDomainsHint": "WHOIS/RDAP for every domain card. Dates follow the registry, including earlier ones. An invoice is created only by Check on a single card."
   },
   "cancel": {
     "title": "Cancel client service?",
@@ -233,6 +235,13 @@
       "not_found": "Domain is not in the registry (dead / not found).",
       "no_expiry": "Domain is registered, but the registry hid the expiry.",
       "failed": "Registry lookup failed. Payment flow is unchanged."
+    },
+    "bulk": {
+      "starting": "Starting the domain check…",
+      "progress": "Checking domains: {checked} of {total}…",
+      "done": "Domains checked: {checked}. Updated: {updated}. Unchanged: {unchanged}. Not found: {notFound}. No data: {noData}.",
+      "empty": "There are no domain cards to check.",
+      "error": "Could not finish the domain check."
     }
   },
   "toasts": {
