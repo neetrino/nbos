@@ -110,6 +110,7 @@ export function SubscriptionDetailSheet({
     subscription?.coverageMonthCount,
     subscription?.partner?.id,
     subscription?.notes,
+    subscription?.name,
   ]);
 
   const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {
@@ -139,6 +140,16 @@ export function SubscriptionDetailSheet({
     [onSubscriptionUpdated, setSubscription],
   );
 
+  const handleNameSaved = useCallback(
+    (updated: Subscription) => {
+      setSubscription(updated);
+      setGeneralDraft((prev) => (prev ? { ...prev, name: updated.name } : prev));
+      setGeneralSnap((prev) => (prev ? { ...prev, name: updated.name } : prev));
+      onSubscriptionUpdated?.(updated);
+    },
+    [onSubscriptionUpdated, setSubscription],
+  );
+
   const handlePeriodInvoiceCreated = useCallback(async () => {
     if (!subscription) return;
     const updated = await subscriptionsApi.getById(subscription.id);
@@ -146,6 +157,7 @@ export function SubscriptionDetailSheet({
   }, [handleSubscriptionChange, subscription]);
 
   const { can } = usePermission();
+  const canRenameSubscription = can('EDIT', 'FINANCE_SUBSCRIPTIONS');
   const canCreateInvoice = Boolean(
     subscription &&
     subscriptionCanCreatePeriodInvoice(subscription) &&
@@ -223,6 +235,8 @@ export function SubscriptionDetailSheet({
           ) : subscription ? (
             <SubscriptionDetailSheetHeader
               subscription={subscription}
+              canRename={canRenameSubscription && !saving}
+              onNameSaved={handleNameSaved}
               onSubscriptionChange={handleSubscriptionChange}
               onError={setActionError}
             />

@@ -8,6 +8,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { DetailSheetFormFooter, ErrorState, LoadingState } from '@/components/shared';
 import { subscriptionDetailPageTitle } from '@/features/finance/constants/finance-route-page-titles';
 import { SubscriptionBillingPeriodConfirmDialog } from '@/features/finance/components/subscriptions/SubscriptionBillingPeriodConfirmDialog';
+import { SubscriptionEditableTitle } from '@/features/finance/components/subscriptions/SubscriptionDetailSheetHeader';
 import { SubscriptionGeneralTab } from '@/features/finance/components/subscriptions/SubscriptionGeneralTab';
 import { SubscriptionGridStatusControl } from '@/features/finance/components/subscriptions/SubscriptionGridStatusControl';
 import { useSubscriptionDetailMutations } from '@/features/finance/components/subscriptions/use-subscription-detail-mutations';
@@ -23,12 +24,14 @@ import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscrip
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { getSubscriptionType } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
+import { usePermission } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 
 export default function SubscriptionDetailPage() {
   const params = useParams<{ id: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
+  const { can } = usePermission();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +79,7 @@ export default function SubscriptionDetailPage() {
     subscription?.billingFrequency,
     subscription?.coverageMonthCount,
     subscription?.partner?.id,
+    subscription?.name,
   ]);
 
   const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {
@@ -98,6 +102,12 @@ export default function SubscriptionDetailPage() {
     const next = createSubscriptionGeneralDraft(updated);
     setGeneralDraft(next);
     setGeneralSnap(next);
+  }, []);
+
+  const handleNameSaved = useCallback((updated: Subscription) => {
+    setSubscription(updated);
+    setGeneralDraft((prev) => (prev ? { ...prev, name: updated.name } : prev));
+    setGeneralSnap((prev) => (prev ? { ...prev, name: updated.name } : prev));
   }, []);
 
   const {
@@ -161,6 +171,7 @@ export default function SubscriptionDetailPage() {
   const termSummary = formatSubscriptionTermSummary(subscription);
   const displayTitle = getSubscriptionDisplayTitle(subscription);
   const showCodeSubline = displayTitle !== subscription.code;
+  const canRename = can('EDIT', 'FINANCE_SUBSCRIPTIONS') && !saving;
 
   return (
     <div className="mx-auto flex h-full w-full max-w-6xl flex-col">
@@ -177,9 +188,13 @@ export default function SubscriptionDetailPage() {
             <div className="inline-flex flex-wrap items-center gap-2">
               <Repeat className="text-muted-foreground size-5" aria-hidden />
               <div className="min-w-0">
-                <h1 className="text-foreground text-2xl font-bold tracking-tight">
-                  {displayTitle}
-                </h1>
+                <SubscriptionEditableTitle
+                  subscriptionId={subscription.id}
+                  name={displayTitle}
+                  canRename={canRename}
+                  onNameSaved={handleNameSaved}
+                  titleClassName="text-2xl font-bold tracking-tight"
+                />
                 {showCodeSubline ? (
                   <p className="text-muted-foreground mt-0.5 truncate text-xs">
                     {subscription.code}
