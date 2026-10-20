@@ -10,8 +10,15 @@ import { isRegistrySnapshotFresh } from './domain-registry.freshness';
 import { lookupDomainRegistry } from './domain-registry.lookup';
 import { toRegistryCheckResult } from './domain-registry.mapper';
 import { persistRegistryDecision } from './domain-registry.persist';
-import { resolveLookupDomainName } from './domain-name';
+import {
+  DOMAIN_REGISTRY_ROW_INCLUDE,
+  resolveRowDomainName,
+  type DomainRegistryServiceRow,
+} from './domain-registry.row';
 import type { DomainRegistryCheckResult } from './domain-registry.types';
+import { delay } from './registry-lanes';
+
+type DomainRegistryCheckOptions = { force?: boolean };
 
 const SYSTEM_ACTOR = actorContextFromMachine({
   id: 'client-services-domain-registry',
@@ -28,13 +35,19 @@ export class DomainRegistryService {
   async checkService(
     serviceId: string,
     actor: ActorContext = SYSTEM_ACTOR,
-    options: { force?: boolean } = {},
+    options: DomainRegistryCheckOptions = {},
   ): Promise<DomainRegistryCheckResult> {
     const row = await this.loadDomainService(serviceId);
-    const domainName = resolveLookupDomainName({
-      linkedDomainName: row.domain?.domainName,
-      serviceName: row.name,
-    });
+    return this.checkRow(row, actor, options);
+  }
+
+  /** Same as `checkService` for a row the caller already loaded with the registry include. */
+  async checkRow(
+    row: DomainRegistryServiceRow,
+    actor: ActorContext = SYSTEM_ACTOR,
+    options: DomainRegistryCheckOptions = {},
+  ): Promise<DomainRegistryCheckResult> {
+    const domainName = resolveRowDomainName(row);
     if (!domainName) {
       throw new BadRequestException('Service name is not a valid domain');
     }
@@ -81,7 +94,7 @@ export class DomainRegistryService {
     const checked: DomainRegistryCheckResult[] = [];
     const failures: Array<{ serviceId: string; message: string }> = [];
     for (const [index, row] of rows.entries()) {
-      if (index > 0) await sleep(WHOIS_QUERY_GAP_MS);
+      if (index > 0) await delay(WHOIS_QUERY_GAP_MS);
       try {
         checked.push(await this.checkService(row.id, SYSTEM_ACTOR, { force: true }));
       } catch (caught: unknown) {
@@ -92,10 +105,10 @@ export class DomainRegistryService {
     return { eligibleCount: rows.length, checked, failures };
   }
 
-  private async loadDomainService(serviceId: string) {
+  private async loadDomainService(serviceId: string): Promise<DomainRegistryServiceRow> {
     const row = await this.prisma.clientServiceRecord.findUnique({
       where: { id: serviceId },
-      include: { domain: { select: { domainName: true } } },
+      include: DOMAIN_REGISTRY_ROW_INCLUDE,
     });
     if (!row) throw new NotFoundException('Client service not found');
     if (row.type !== 'DOMAIN') throw new BadRequestException('Registry check is only for domains');
@@ -127,8 +140,4 @@ export class DomainRegistryService {
       renewalDate: row.renewalDate?.toISOString() ?? null,
     };
   }
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
