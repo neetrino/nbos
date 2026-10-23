@@ -14,6 +14,10 @@ describe('task discussion subscription wiring', () => {
     expect(sheet.match(/composerDisabled=\{discussion\.composerDisabled\}/g)).toHaveLength(2);
     expect(panel).toContain('composerDisabled={composerDisabled}');
     expect(panel).toContain('canSend={!composerDisabled}');
+    expect(panel).toContain('taskId={task.id}');
+    expect(readSrc('features/tasks/components/TaskLinkedMessengerThread.tsx')).toContain(
+      'sendTaskDiscussionNote',
+    );
     expect(panel).not.toContain('disabled={false}');
     expect(panel).not.toContain('sendDisabled={false}');
   });

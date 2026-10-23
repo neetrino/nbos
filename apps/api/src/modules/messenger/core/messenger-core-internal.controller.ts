@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   CurrentUser,
   type CurrentUserPayload,
+  RequireAnyPermission,
   RequirePermission,
 } from '../../../common/decorators';
 import { CreateInternalConversationDto } from './dto/create-internal-conversation.dto';
@@ -89,14 +90,20 @@ export class MessengerCoreInternalController {
   }
 
   @Get('conversations/:id')
-  @RequirePermission('MESSENGER', 'VIEW')
+  @RequireAnyPermission(
+    { module: 'MESSENGER', action: 'VIEW' },
+    { module: 'MESSENGER', action: 'EDIT' },
+  )
   @ApiOperation({ summary: 'Open an Internal conversation; Client zone is rejected' })
   getConversation(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
     return this.internal.getConversation(id, user.id);
   }
 
   @Get('conversations/:id/messages')
-  @RequirePermission('MESSENGER', 'VIEW')
+  @RequireAnyPermission(
+    { module: 'MESSENGER', action: 'VIEW' },
+    { module: 'MESSENGER', action: 'EDIT' },
+  )
   @ApiOperation({ summary: 'List Internal conversation messages from Core' })
   listMessages(
     @Param('id') id: string,
@@ -107,7 +114,10 @@ export class MessengerCoreInternalController {
   }
 
   @Post('conversations/:id/messages')
-  @RequirePermission('MESSENGER', 'VIEW')
+  @RequireAnyPermission(
+    { module: 'MESSENGER', action: 'VIEW' },
+    { module: 'MESSENGER', action: 'EDIT' },
+  )
   @ApiOperation({
     summary:
       'Persist an Internal Core message. Task chats follow Task access; other chats still require write.',

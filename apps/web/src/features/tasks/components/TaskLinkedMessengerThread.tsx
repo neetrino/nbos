@@ -10,12 +10,17 @@ import {
   MESSENGER_QUERY_STALE_TIME_MS,
 } from '@/features/messenger/query/messenger-query-policy';
 import { messengerComposerSenderName } from '@/features/messenger/query/messenger-local-send';
-import { InternalConversationThread } from '@/features/messenger-internal/InternalConversationThread';
+import {
+  InternalConversationThread,
+  type InternalSendExtras,
+} from '@/features/messenger-internal/InternalConversationThread';
 import { sendInternalThreadMessage } from '@/features/messenger-internal/send-internal-thread-message';
+import { sendTaskDiscussionNote } from './use-task-discussion';
 import { toggleInternalFavorite } from '@/features/messenger-internal/internal-messenger-cache-ops';
 import { usePermission } from '@/lib/permissions/PermissionContext';
 
 type TaskLinkedThreadProps = {
+  taskId: string;
   conversationId: string;
   composerDisabled: boolean;
   /** Shown when Messenger cannot open this Task chat. Posting still follows Task access. */
@@ -23,6 +28,7 @@ type TaskLinkedThreadProps = {
 };
 
 export function TaskLinkedMessengerThread({
+  taskId,
   conversationId,
   composerDisabled,
   fallback = null,
@@ -53,12 +59,13 @@ export function TaskLinkedMessengerThread({
       newMessage={draft}
       onNewMessageChange={setDraft}
       onSend={(extras) =>
-        void sendInternalThreadMessage({
+        void sendTaskLinkedMessage({
+          taskId,
           conversationId,
-          canWrite: canPost,
-          content: draft,
+          canPost,
+          draft,
           extras,
-          setNewMessage: setDraft,
+          setDraft,
           queryClient,
           senderId: me?.id ?? null,
           senderName: messengerComposerSenderName(me),
@@ -66,11 +73,51 @@ export function TaskLinkedMessengerThread({
       }
       canSend={canPost}
       sendDisabled={composerDisabled}
+      composerDocked
       onToggleFavorite={() => void toggleInternalFavorite(queryClient, conversationId)}
       collections={[]}
       onAddToCollection={() => undefined}
       remoteTypingHint={null}
     />
+  );
+}
+
+function sendTaskLinkedMessage(input: {
+  taskId: string;
+  conversationId: string;
+  canPost: boolean;
+  draft: string;
+  extras: InternalSendExtras;
+  setDraft: (value: string) => void;
+  queryClient: QueryClient;
+  senderId: string | null;
+  senderName: string;
+}): Promise<void> {
+  const files = input.extras.fileAssetIds ?? [];
+  const forwards = input.extras.forwardSourceIds ?? [];
+  if (files.length > 0 || forwards.length > 0) {
+    return sendInternalThreadMessage({
+      conversationId: input.conversationId,
+      canWrite: input.canPost,
+      content: input.draft,
+      extras: input.extras,
+      setNewMessage: input.setDraft,
+      queryClient: input.queryClient,
+      senderId: input.senderId,
+      senderName: input.senderName,
+    });
+  }
+  if (!input.canPost) return Promise.resolve();
+  return sendTaskDiscussionNote(
+    input.queryClient,
+    input.taskId,
+    input.conversationId,
+    input.extras.caption ?? input.draft,
+    { senderId: input.senderId, senderName: input.senderName },
+    {
+      replyToMessageId: input.extras.replyToMessageId,
+      onComposerClear: () => input.setDraft(''),
+    },
   );
 }
 

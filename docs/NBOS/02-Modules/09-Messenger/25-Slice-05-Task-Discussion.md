@@ -59,7 +59,7 @@ List `/messenger/tasks` (and All) and collection-by-ids: when Tasks view is not 
 
 **toSeeds choice:** personal marks (creator, assignee, reviewer, co-assignees, observers) plus the opener **after** Task access succeeded. Failed access → 404, no conversation row, no participant row. The opener is not minted on the 404 path. Agent-first discussion does not forge an Employee; `createdById` is `task.creatorId`; agent `senderId` is null.
 
-HTTP messenger entity routes stay `MESSENGER.VIEW`. Task Card routes stay `TASKS.VIEW` / `TASKS.EDIT` for Task fields. Posting a Discussion note requires Task access only (`TASKS.VIEW` is enough). Core `canWrite` stays the gate for pin, membership, and non-Task sends. Employee posts still go through `persistAndBroadcast` after that Task access check (no tx).
+HTTP messenger entity routes stay `MESSENGER.VIEW`. Task Card routes stay `TASKS.VIEW` / `TASKS.EDIT` for Task fields. Posting a Discussion note requires Task access only (`TASKS.VIEW` is enough). The Task card posts that note through `POST /tasks/:id/discussion`, including replies, so Messenger view or edit is not required to type. Core `canWrite` stays the gate for pin, membership, and non-Task sends. Employee posts still go through `persistAndBroadcast` after that Task access check (no tx).
 
 ## Migration / backfill sequence
 

@@ -13,6 +13,7 @@ export function discussionEntryToCoreMessage(
     content: entry.body,
     createdAt: entry.createdAt,
     editedAt: null,
+    replyToMessageId: entry.replyToMessageId ?? null,
     attachments: [],
   };
 }

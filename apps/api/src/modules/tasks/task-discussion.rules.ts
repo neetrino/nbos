@@ -24,6 +24,18 @@ export function requireDiscussionBody(raw: unknown): string {
   return body;
 }
 
+const DISCUSSION_REPLY_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Reply target must be a message id. Membership in the Task conversation is checked on persist. */
+export function readDiscussionReplyId(raw: unknown): string | undefined {
+  if (raw === undefined || raw === null || raw === '') return undefined;
+  if (typeof raw !== 'string' || !DISCUSSION_REPLY_ID_PATTERN.test(raw.trim())) {
+    throw new BadRequestException('replyToMessageId is invalid');
+  }
+  return raw.trim();
+}
+
 /** Optional client key. Empty means the actor correlation id remains the fallback. */
 export function readDiscussionIdempotencyKey(raw: unknown): string | undefined {
   if (raw === undefined || raw === null || raw === '') return undefined;

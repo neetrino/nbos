@@ -148,7 +148,7 @@ describe('task discussion realtime', () => {
     ]);
   });
 
-  it('clears a revoked open thread and does not keep a writable composer', async () => {
+  it('clears a revoked open thread and still lets the task composer post', async () => {
     const view = mountDiscussion(queryClient, true);
     mounted = view;
     await waitFor(() => view.current?.messages.some((row) => row.id === 'msg-1') ?? false);
@@ -159,13 +159,26 @@ describe('task discussion realtime', () => {
         zone: 'INTERNAL',
       });
     });
-    expect(view.current?.composerDisabled).toBe(true);
+    expect(view.current?.composerDisabled).toBe(false);
     expect(view.current?.messages).toEqual([]);
     expect(eventPayloads(harness.emits, MESSENGER_WS_CLIENT_LEAVE_CONVERSATION)).toEqual([
       { conversationId: CONVERSATION_ID },
     ]);
-    view.current?.send('should not post');
-    expect(tasksApi.addDiscussion).not.toHaveBeenCalled();
+    vi.mocked(tasksApi.addDiscussion).mockResolvedValue({
+      ...PAGE.items[0],
+      id: 'msg-2',
+      body: 'still posted',
+      conversationId: CONVERSATION_ID,
+    });
+    await act(async () => {
+      await view.current?.send('still posted');
+    });
+    expect(tasksApi.addDiscussion).toHaveBeenCalledWith(
+      'task-1',
+      'still posted',
+      expect.any(String),
+      undefined,
+    );
   });
 
   it('does not subscribe or list discussion while the sheet discussion is closed', async () => {
