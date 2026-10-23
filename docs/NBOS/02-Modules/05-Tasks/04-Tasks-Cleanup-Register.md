@@ -104,7 +104,7 @@
 Что уже хорошо (актуально после выравнивания):
 
 - **Board** (глобальный Tasks и Work Space Kanban): колонки только из **`Task.status`** (Open / In Progress / Review / Completed; отложенные/отменённые вне основной доски).
-- **My Plan**: настраиваемые колонки в `task_board_stages` с `boardType = MY_PLAN` и поле задачи **`myPlanStageId`**; API стадий создаёт только MY_PLAN (`POST /task-boards/stages` с `ownerId`).
+- **My Plan**: настраиваемые колонки в `task_board_stages` с `boardType = MY_PLAN` и **личное место карточки** в `task_my_plan_placements` (`task_id` + `employee_id` → `stage_id`, `sort_order`). Ответ API по-прежнему отдаёт `myPlanStageId` / `myPlanSortOrder`, но это слот **текущего** сотрудника. Колонки `tasks.my_plan_stage_id` / `my_plan_sort_order` ещё лежат в схеме и в этом срезе не удаляются. API стадий создаёт только MY_PLAN (`POST /task-boards/stages` с `ownerId`).
 - Поле **`kanbanStageId`** и строки KANBAN в `task_board_stages` удалены: общий KANBAN в БД не используется.
 
 Вывод:

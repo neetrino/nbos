@@ -385,6 +385,130 @@ describe('TasksService', () => {
         }),
       );
     });
+
+    it('writes only the current employee My Plan placement', async () => {
+      prisma.task.findUnique.mockResolvedValue({
+        id: 't1',
+        myPlanStageId: 'legacy',
+        myPlanSortOrder: 9,
+      });
+      prisma.taskBoardStage.findUnique.mockResolvedValue({
+        id: 'karo-week',
+        boardType: 'MY_PLAN',
+        ownerId: 'emp-karo',
+      });
+      prisma.taskMyPlanPlacement.findMany.mockResolvedValue([
+        { taskId: 't1', stageId: 'karo-week', sortOrder: 0 },
+      ]);
+
+      const result = await service.update(
+        't1',
+        { myPlanStageId: 'karo-week' },
+        { employeeId: 'emp-karo', departmentIds: [], viewScope: 'ALL' },
+      );
+
+      expect(prisma.task.update).not.toHaveBeenCalled();
+      expect(prisma.taskMyPlanPlacement.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { taskId_employeeId: { taskId: 't1', employeeId: 'emp-karo' } },
+          create: expect.objectContaining({
+            employeeId: 'emp-karo',
+            stageId: 'karo-week',
+          }),
+        }),
+      );
+      expect(result.myPlanStageId).toBe('karo-week');
+    });
+
+    it('does not write the first employee placement when Karo moves the task', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: 't1' });
+      prisma.taskBoardStage.findUnique.mockResolvedValue({
+        id: 'karo-week',
+        boardType: 'MY_PLAN',
+        ownerId: 'emp-karo',
+      });
+
+      await service.update(
+        't1',
+        { myPlanStageId: 'karo-week' },
+        { employeeId: 'emp-karo', departmentIds: [], viewScope: 'ALL' },
+      );
+
+      expect(prisma.taskMyPlanPlacement.upsert).toHaveBeenCalledTimes(1);
+      expect(prisma.taskMyPlanPlacement.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { taskId_employeeId: { taskId: 't1', employeeId: 'emp-karo' } },
+        }),
+      );
+
+      prisma.task.findMany.mockResolvedValue([{ id: 't1', myPlanStageId: 'legacy' }]);
+      prisma.taskMyPlanPlacement.findMany.mockResolvedValueOnce([
+        { taskId: 't1', stageId: 'me-today', sortOrder: 1 },
+      ]);
+      const mine = await service.findAll({
+        access: { employeeId: 'emp-me', departmentIds: [], viewScope: 'ALL' },
+      });
+      expect(mine.items[0]?.myPlanStageId).toBe('me-today');
+    });
+
+    it('rejects a My Plan stage owned by another employee', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: 't1' });
+      prisma.taskBoardStage.findUnique.mockResolvedValue({
+        id: 'me-today',
+        boardType: 'MY_PLAN',
+        ownerId: 'emp-me',
+      });
+
+      await expect(
+        service.update(
+          't1',
+          { title: 'Should not persist', myPlanStageId: 'me-today' },
+          { employeeId: 'emp-karo', departmentIds: [], viewScope: 'ALL' },
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.taskMyPlanPlacement.upsert).not.toHaveBeenCalled();
+      expect(prisma.task.update).not.toHaveBeenCalled();
+    });
+
+    it('rejects My Plan fields without the current employee', async () => {
+      prisma.task.findUnique.mockResolvedValue({ id: 't1' });
+      await expect(service.update('t1', { myPlanStageId: 'stage-1' })).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe('findAll my-plan overlay', () => {
+    it('shows each viewer only their own placement on the same task', async () => {
+      const sharedTask = {
+        id: 't1',
+        myPlanStageId: 'legacy-shared',
+        myPlanSortOrder: 8,
+      };
+      prisma.task.findMany.mockResolvedValue([sharedTask]);
+      prisma.taskMyPlanPlacement.findMany.mockResolvedValueOnce([
+        { taskId: 't1', stageId: 'me-today', sortOrder: 1 },
+      ]);
+
+      const mine = await service.findAll({
+        access: { employeeId: 'emp-me', departmentIds: [], viewScope: 'ALL' },
+      });
+      expect(mine.items[0]?.myPlanStageId).toBe('me-today');
+      expect(mine.items[0]?.myPlanSortOrder).toBe(1);
+
+      prisma.task.findMany.mockResolvedValue([
+        { id: 't1', myPlanStageId: 'legacy-shared', myPlanSortOrder: 8 },
+      ]);
+      prisma.taskMyPlanPlacement.findMany.mockResolvedValueOnce([
+        { taskId: 't1', stageId: 'karo-week', sortOrder: 4 },
+      ]);
+
+      const karo = await service.findAll({
+        access: { employeeId: 'emp-karo', departmentIds: [], viewScope: 'ALL' },
+      });
+      expect(karo.items[0]?.myPlanStageId).toBe('karo-week');
+      expect(karo.items[0]?.myPlanSortOrder).toBe(4);
+    });
   });
 
   describe('start', () => {
