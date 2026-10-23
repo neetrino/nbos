@@ -3,6 +3,7 @@
 import {
   Archive,
   Copy,
+  Download,
   FolderInput,
   Link2Off,
   MoreHorizontal,
@@ -56,6 +57,7 @@ export type DriveFileCardMenuHandlers = {
   onMoveFile?: (file: FileAsset) => void;
   onRemoveFromFolder?: (file: FileAsset) => void;
   onUnlinkFromRecord?: (file: FileAsset) => void;
+  onDownload?: (file: FileAsset) => void;
   onShareFile?: (file: FileAsset) => void;
   busy?: boolean;
 };
@@ -494,6 +496,12 @@ function FileCardActionsMenuItems({
         <PanelRightOpen className="size-4" />
         Open details
       </DropdownMenuItem>
+      {handlers.onDownload && !inRecoverableTrash ? (
+        <DropdownMenuItem disabled={busy} onClick={() => handlers.onDownload?.(file)}>
+          <Download className="size-4" />
+          Download
+        </DropdownMenuItem>
+      ) : null}
       {handlers.onShareFile ? (
         <DropdownMenuItem disabled={busy} onClick={() => handlers.onShareFile?.(file)}>
           <UserPlus className="size-4" />

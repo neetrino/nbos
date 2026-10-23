@@ -47,6 +47,7 @@ import {
   R2_DRIVE_PREFIX,
 } from './drive-storage';
 import { FILE_ASSET_INCLUDE } from './drive-file-asset-include';
+import { assetViewResponseHeaders, type AssetViewDisposition } from './drive-content-disposition';
 import { normalizeFileGrantPermission, type FileGrantPermission } from './drive-grant-permissions';
 import { jsonSafeForHttp } from './drive-json-safe';
 import { DriveR2Client } from './drive-r2.client';
@@ -244,6 +245,7 @@ export class DriveService {
     assetId: string,
     gate?: { forDocumentId: string; documentsAccess: DocumentsReadAccess },
     access?: DriveEntityAccess,
+    options?: { disposition?: AssetViewDisposition },
   ): Promise<{ url: string; mimeType: string | null }> {
     if (gate?.forDocumentId) {
       await assertFilePreviewableForDocument(
@@ -275,7 +277,11 @@ export class DriveService {
     const command = new GetObjectCommand({
       Bucket: this.r2.bucket,
       Key: key,
-      ResponseContentType: file.mimeType ?? undefined,
+      ...assetViewResponseHeaders({
+        mimeType: file.mimeType,
+        displayName: file.displayName,
+        disposition: options?.disposition ?? 'inline',
+      }),
     });
     const url = await getSignedUrl(this.r2.ensureS3(), command, {
       expiresIn: PRESIGNED_URL_EXPIRY_SECONDS,

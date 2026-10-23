@@ -194,7 +194,8 @@
       "unlinked": "Unlinked — file stays in the task folder on Drive",
       "unlinkFailed": "Could not unlink file",
       "trashed": "File moved to Trash and unlinked from task",
-      "trashFailed": "Could not move file to Trash"
+      "trashFailed": "Could not move file to Trash",
+      "downloadFailed": "Could not download file"
     }
   },
   "recurring": {
