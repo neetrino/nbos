@@ -51,6 +51,32 @@ const CLIENT_READ_ALL_EDIT_OWN = {
   driveViewScope: 'OWN',
 };
 
+function taskConversation() {
+  return {
+    id: 'conv-task',
+    zone: 'INTERNAL' as const,
+    type: 'TASK' as const,
+    title: 'Fix',
+    status: 'ACTIVE',
+    canonicalKey: 'task:task-1',
+    createdAt: new Date(),
+    lastMessageAt: null,
+  };
+}
+
+function openTaskRow() {
+  return {
+    id: 'task-1',
+    title: 'Fix',
+    creatorId: 'owner',
+    assigneeId: null,
+    reviewerId: null,
+    coAssignees: [] as string[],
+    observers: [] as string[],
+    trashedAt: null,
+  };
+}
+
 function clientConversation() {
   return {
     id: 'conv-c',
@@ -130,7 +156,12 @@ function createService() {
     },
     resourceAccessGrant: { findFirst: vi.fn().mockResolvedValue(null), upsert: vi.fn() },
     messengerConversationReadState: { upsert: vi.fn() },
-    messengerConversationLink: { create: vi.fn() },
+    messengerConversationLink: { create: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) },
+    task: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    employeeDepartment: { findMany: vi.fn().mockResolvedValue([]) },
     messengerMessageReference: { create: vi.fn() },
     messengerExternalConversationMapping: { findFirst: vi.fn().mockResolvedValue(null) },
     messengerCommand: {
@@ -253,6 +284,84 @@ describe('MessengerCoreService persist-before-emit', () => {
       }),
     );
     expect(gateway.emitReadListsUpdated).not.toHaveBeenCalled();
+  });
+
+  it('lets a task viewer post without Messenger edit or conversation membership', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue({
+      ...ACCESS,
+      viewScope: 'OWN',
+      editScope: 'NONE',
+      tasksViewScope: 'OWN',
+    });
+    const { service, prisma } = createService();
+    prisma.messengerConversation.findUnique.mockResolvedValue(taskConversation());
+    prisma.messengerConversationLink.findFirst.mockResolvedValue({ entityId: 'task-1' });
+    prisma.task.findUnique.mockResolvedValue(openTaskRow());
+    prisma.task.findFirst.mockResolvedValue({ id: 'task-1' });
+    await expect(
+      service.persistAndBroadcast({
+        conversationId: 'conv-task',
+        senderId: 'e1',
+        content: 'I can reply',
+      }),
+    ).resolves.toMatchObject({ id: 'msg-1' });
+  });
+
+  it('does not post into a Task conversation the caller cannot open', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue({
+      ...ACCESS,
+      viewScope: 'ALL',
+      editScope: 'ALL',
+      tasksViewScope: 'OWN',
+    });
+    const { service, prisma } = createService();
+    prisma.messengerConversation.findUnique.mockResolvedValue(taskConversation());
+    prisma.messengerConversationLink.findFirst.mockResolvedValue({ entityId: 'task-1' });
+    prisma.task.findUnique.mockResolvedValue(openTaskRow());
+    prisma.task.findFirst.mockResolvedValue(null);
+    await expect(
+      service.persistAndBroadcast({
+        conversationId: 'conv-task',
+        senderId: 'e1',
+        content: 'no',
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
+  });
+
+  it('still rejects an Internal group message when Messenger edit is none', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue({
+      ...ACCESS,
+      viewScope: 'OWN',
+      editScope: 'NONE',
+    });
+    const { service, prisma } = createService();
+    prisma.messengerConversationParticipant.findFirst.mockResolvedValue({ role: 'MEMBER' });
+    await expect(
+      service.persistAndBroadcast({
+        conversationId: 'conv-1',
+        senderId: 'e1',
+        content: 'no',
+      }),
+    ).rejects.toThrow(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
+    expect(prisma.messengerMessage.create).not.toHaveBeenCalled();
+  });
+
+  it('does not turn Task discussion into pin or membership write', async () => {
+    loadMessengerLegacyAccess.mockResolvedValue({
+      ...ACCESS,
+      viewScope: 'OWN',
+      editScope: 'NONE',
+      tasksViewScope: 'OWN',
+    });
+    const { service, prisma } = createService();
+    prisma.messengerConversation.findUnique.mockResolvedValue(taskConversation());
+    prisma.messengerConversationLink.findFirst.mockResolvedValue({ entityId: 'task-1' });
+    prisma.task.findUnique.mockResolvedValue(openTaskRow());
+    prisma.task.findFirst.mockResolvedValue({ id: 'task-1' });
+    await expect(service.requireWrite('conv-task', 'e1')).rejects.toThrow(
+      MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN,
+    );
   });
 
   it('rejects employee persist without senderId', async () => {

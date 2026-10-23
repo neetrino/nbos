@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { messengerCoreApi, type MessengerCoreConversationRow } from '@/lib/api/messenger-core';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
@@ -18,11 +18,14 @@ import { usePermission } from '@/lib/permissions/PermissionContext';
 type TaskLinkedThreadProps = {
   conversationId: string;
   composerDisabled: boolean;
+  /** Shown when Messenger cannot open this Task chat. Posting still follows Task access. */
+  fallback?: ReactNode;
 };
 
 export function TaskLinkedMessengerThread({
   conversationId,
   composerDisabled,
+  fallback = null,
 }: TaskLinkedThreadProps) {
   const queryClient = useQueryClient();
   const { me } = usePermission();
@@ -37,8 +40,10 @@ export function TaskLinkedMessengerThread({
   const listed = useListedConversation(conversationId);
   const row = mergeConversation(conversation.data, listed);
   if (!row) {
+    if (conversation.isError) return <>{fallback}</>;
     return <p className="text-muted-foreground p-6 text-sm">Loading conversation…</p>;
   }
+  const canPost = !composerDisabled;
   return (
     <InternalConversationThread
       conversation={row}
@@ -50,7 +55,7 @@ export function TaskLinkedMessengerThread({
       onSend={(extras) =>
         void sendInternalThreadMessage({
           conversationId,
-          canWrite: Boolean(row.canWrite) && !composerDisabled,
+          canWrite: canPost,
           content: draft,
           extras,
           setNewMessage: setDraft,
@@ -59,7 +64,7 @@ export function TaskLinkedMessengerThread({
           senderName: messengerComposerSenderName(me),
         })
       }
-      canSend={Boolean(row.canWrite) && !composerDisabled}
+      canSend={canPost}
       sendDisabled={composerDisabled}
       onToggleFavorite={() => void toggleInternalFavorite(queryClient, conversationId)}
       collections={[]}

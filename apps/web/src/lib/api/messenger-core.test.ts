@@ -31,7 +31,7 @@ describe('Internal Messenger web client', () => {
     expect(sheet).not.toMatch(/\/api\/messenger\/dm/);
     expect(app).not.toMatch(/legacy-map/);
     expect(app).not.toMatch(/mapLegacy/);
-    expect(app).toMatch(/active\.canWrite/);
+    expect(app).toMatch(/canComposeConversationMessage\(active\)/);
     expect(app).not.toMatch(/setItems\(\[\]\)/);
     expect(app).not.toMatch(/refreshLists/);
     expect(app).not.toMatch(/\/api\/messenger\/channels/);

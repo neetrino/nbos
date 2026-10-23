@@ -59,7 +59,7 @@ List `/messenger/tasks` (and All) and collection-by-ids: when Tasks view is not 
 
 **toSeeds choice:** personal marks (creator, assignee, reviewer, co-assignees, observers) plus the opener **after** Task access succeeded. Failed access → 404, no conversation row, no participant row. The opener is not minted on the 404 path. Agent-first discussion does not forge an Employee; `createdById` is `task.creatorId`; agent `senderId` is null.
 
-HTTP messenger entity routes stay `MESSENGER.VIEW`. Task Card routes stay `TASKS.VIEW` / `TASKS.EDIT`. After cutover, POST discussion checks Task access then Core `canWrite` via `persistAndBroadcast` (employee, no tx).
+HTTP messenger entity routes stay `MESSENGER.VIEW`. Task Card routes stay `TASKS.VIEW` / `TASKS.EDIT` for Task fields. Posting a Discussion note requires Task access only (`TASKS.VIEW` is enough). Core `canWrite` stays the gate for pin, membership, and non-Task sends. Employee posts still go through `persistAndBroadcast` after that Task access check (no tx).
 
 ## Migration / backfill sequence
 
@@ -126,7 +126,7 @@ Not live-clicked. Web still requires sign-in; API env (`AUTH_REFRESH_TOKEN_PEPPE
 ```text
 Scope: Task conversation ensure + Task Card discussion + Internal GET of type TASK + agent comment
 Assets: Task human discussion history; Activity must not become messages; Client zone must stay 404
-Trust boundaries: employee session + TASKS VIEW/EDIT + Task participation / TASKS.VIEW ALL + Core canWrite for employee persist; agent policy then Core persist with null senderId
+Trust boundaries: employee session + TASKS VIEW (EDIT still covers Task fields) + Task participation / TASKS.VIEW ALL. Discussion posts follow that Task access. Core canWrite remains pin/membership and non-Task sends. Agent policy then Core persist with null senderId
 Confirmed: access before ensure; MESSENGER.VIEW ALL does not skip Task GET; no Task.chatId pointer; no Channel/DM dual-write; no HTTP canonicalKey; persistAndBroadcast arity 1; agent does not forge Employee
 Unverified: live DB backfill (0 rows); production migrate; browser
 Severity: opening an inaccessible Task conversation via Messenger id would be IDOR

@@ -22,8 +22,20 @@ export type CoreConversationReadResolution =
     };
 
 /**
+ * Posting a message is allowed when Messenger grants write, or when the
+ * conversation is a Task the caller may already open. Pin and membership stay on `canWrite`.
+ */
+export function mayPostInternalMessage(resolved: {
+  facts: { conversationType?: MessengerCoreAccessFacts['conversationType'] };
+  decision: { canWrite: boolean };
+}): boolean {
+  return resolved.decision.canWrite || resolved.facts.conversationType === 'TASK';
+}
+
+/**
  * HTTP Core GET/persist read policy. Socket subscribe must use this, including Task access.
  * `NOT_FOUND` covers missing rows and ACL denials so callers do not leak existence.
+ * A Task the caller can open is readable here even without Messenger membership or edit.
  */
 export async function resolveCoreConversationRead(
   prisma: PrismaLike,
@@ -31,22 +43,21 @@ export async function resolveCoreConversationRead(
   conversationId: string,
 ): Promise<CoreConversationReadResolution> {
   const loaded = await loadMessengerCoreAccessFacts(prisma, employeeId, conversationId);
-  if (!loaded.access || loaded.access.viewScope === 'NONE') {
-    return { status: 'NO_VIEW' };
+  if (!loaded.access) return { status: 'NO_VIEW' };
+  if (!loaded.facts) return missingConversationStatus(loaded.access.viewScope);
+  if (loaded.facts.conversationType === 'TASK') {
+    return authorizeTaskConversationRead(prisma, conversationId, loaded.access, loaded.facts);
   }
-  if (!loaded.facts) return { status: 'NOT_FOUND' };
+  if (loaded.access.viewScope === 'NONE') return { status: 'NO_VIEW' };
   const decision = evaluateMessengerCoreAccess(loaded.facts);
   if (!decision.canRead) return { status: 'NOT_FOUND' };
-  if (loaded.facts.conversationType !== 'TASK') {
-    return { status: 'OK', access: loaded.access, facts: loaded.facts, decision };
-  }
-  return authorizeTaskConversationRead(
-    prisma,
-    conversationId,
-    loaded.access,
-    loaded.facts,
-    decision,
-  );
+  return { status: 'OK', access: loaded.access, facts: loaded.facts, decision };
+}
+
+function missingConversationStatus(
+  viewScope: MessengerLegacyAccessContext['viewScope'],
+): CoreConversationReadResolution {
+  return viewScope === 'NONE' ? { status: 'NO_VIEW' } : { status: 'NOT_FOUND' };
 }
 
 async function authorizeTaskConversationRead(
@@ -54,7 +65,6 @@ async function authorizeTaskConversationRead(
   conversationId: string,
   access: MessengerLegacyAccessContext,
   facts: MessengerCoreAccessFacts,
-  decision: MessengerCoreAccessDecision,
 ): Promise<CoreConversationReadResolution> {
   try {
     await requireTaskConversationAccess(prisma, conversationId, {
@@ -63,10 +73,23 @@ async function authorizeTaskConversationRead(
       viewScope: access.tasksViewScope,
     });
   } catch (error) {
-    if (error instanceof NotFoundException) return { status: 'NOT_FOUND' };
+    if (error instanceof NotFoundException) return deniedTaskConversation(access.viewScope);
     throw error;
   }
-  return { status: 'OK', access, facts, decision };
+  const decision = evaluateMessengerCoreAccess(facts);
+  return {
+    status: 'OK',
+    access,
+    facts,
+    decision: { ...decision, canRead: true },
+  };
+}
+
+/** Hide Task conversation ids from callers who have no Messenger view at all. */
+function deniedTaskConversation(
+  viewScope: MessengerLegacyAccessContext['viewScope'],
+): CoreConversationReadResolution {
+  return viewScope === 'NONE' ? { status: 'NO_VIEW' } : { status: 'NOT_FOUND' };
 }
 
 export async function employeeMayUseCoreConversation(

@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { canComposeConversationMessage } from '@/features/messenger/can-compose-conversation-message';
 import { messengerCoreApi, type MessengerCoreMessageRow } from '@/lib/api/messenger-core';
 import { applyMessengerSendResult } from './messenger-cache';
 import { TASK_PENDING_CONVERSATION_PREFIX } from './messenger-local-send';
@@ -188,7 +189,7 @@ async function authorizeInternalConversation(conversationId: string): Promise<Me
   try {
     const row = await messengerCoreApi.getConversation(conversationId);
     if (row.zone !== 'INTERNAL') return 'deny';
-    return row.canWrite === true ? 'allow' : 'deny';
+    return canComposeConversationMessage(row) ? 'allow' : 'deny';
   } catch (error: unknown) {
     return classifyAuthFailure(error);
   }
