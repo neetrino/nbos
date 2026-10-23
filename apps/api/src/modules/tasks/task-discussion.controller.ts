@@ -8,7 +8,7 @@ import {
   RequirePermission,
 } from '../../common/decorators';
 import { tasksAccessFromUser } from './tasks-scoped-access';
-import { readDiscussionIdempotencyKey } from './task-discussion.rules';
+import { readDiscussionIdempotencyKey, readDiscussionReplyId } from './task-discussion.rules';
 import { TaskDiscussionService } from './task-discussion.service';
 
 @ApiTags('Tasks')
@@ -45,7 +45,7 @@ export class TaskDiscussionController {
   async create(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
-    @Body() body: { body?: unknown; idempotencyKey?: unknown },
+    @Body() body: { body?: unknown; idempotencyKey?: unknown; replyToMessageId?: unknown },
   ) {
     return this.discussion.addEntry(
       id,
@@ -57,6 +57,7 @@ export class TaskDiscussionController {
       tasksAccessFromUser(user),
       undefined,
       readDiscussionIdempotencyKey(body.idempotencyKey),
+      readDiscussionReplyId(body.replyToMessageId),
     );
   }
 }

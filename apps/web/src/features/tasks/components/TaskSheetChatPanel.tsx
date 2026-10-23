@@ -168,8 +168,9 @@ export function TaskSheetChatPanel({
 
       <ThreadComposer
         sheet
+        docked
         canSend={!composerDisabled}
-        sendDisabled={composerDisabled || !draft.trim()}
+        sendDisabled={composerDisabled}
         newMessage={draft}
         onNewMessageChange={(value) => {
           onDraftChange?.(value);
@@ -187,6 +188,7 @@ export function TaskSheetChatPanel({
     return (
       <div className="flex min-h-0 flex-1 flex-col">
         <TaskLinkedMessengerThread
+          taskId={task.id}
           conversationId={linkedConversationId}
           composerDisabled={composerDisabled}
           fallback={transcript}

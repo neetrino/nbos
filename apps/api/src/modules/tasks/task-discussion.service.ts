@@ -38,6 +38,7 @@ export interface TaskDiscussionEntryView {
   channelSource: string | null;
   createdAt: Date;
   conversationId: string;
+  replyToMessageId?: string | null;
   /** Canonical Internal inbox row for the writer. Absent when they cannot see Messenger. */
   conversation?: MessengerInternalConversationListItem;
 }
@@ -67,6 +68,7 @@ export class TaskDiscussionService {
     access?: TasksAccessContext,
     tx?: TasksDbClient,
     clientIdempotencyKey?: string,
+    replyToMessageId?: string,
   ): Promise<TaskDiscussionEntryView> {
     void TASK_DISCUSSION_LEGACY_WRITES_DISABLED;
     const db = tx ?? this.prisma;
@@ -84,6 +86,7 @@ export class TaskDiscussionService {
       Boolean(tx),
       access,
       clientIdempotencyKey,
+      replyToMessageId,
     );
   }
 
@@ -113,6 +116,7 @@ export class TaskDiscussionService {
     inTransaction: boolean,
     access?: TasksAccessContext,
     clientIdempotencyKey?: string,
+    replyToMessageId?: string,
   ): Promise<TaskDiscussionEntryView> {
     const actorType = isActorType(actor.actor.type) ? actor.actor.type : 'SYSTEM';
     const input = {
@@ -122,6 +126,7 @@ export class TaskDiscussionService {
       content: body,
       provenance: provenanceForActorType(actorType),
       idempotencyKey: clientIdempotencyKey ?? actorFields.correlationId ?? undefined,
+      replyToMessageId,
       metadata: taskDiscussionMetadata({
         actorType: actorFields.actorType,
         actorId: actorFields.actorId,
@@ -221,7 +226,13 @@ function emptyDiscussionList(pageSize: number): TaskDiscussionListResult {
 }
 
 function toDiscussionViewFromCore(
-  row: { id: string; content: string; senderName: string; createdAt: Date },
+  row: {
+    id: string;
+    content: string;
+    senderName: string;
+    createdAt: Date;
+    replyToMessageId?: string | null;
+  },
   actor: ReturnType<typeof discussionActorFields>,
   conversationId: string,
 ): TaskDiscussionEntryView {
@@ -234,6 +245,7 @@ function toDiscussionViewFromCore(
     channelSource: actor.channelSource,
     createdAt: row.createdAt,
     conversationId,
+    replyToMessageId: row.replyToMessageId ?? null,
   };
 }
 

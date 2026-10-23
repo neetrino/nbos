@@ -213,6 +213,7 @@ export interface TaskDiscussionEntry {
   channelSource: string | null;
   createdAt: string;
   conversationId?: string;
+  replyToMessageId?: string | null;
   /** Canonical Internal inbox row from POST. List GET notes do not include this. */
   conversation?: MessengerCoreConversationRow;
 }
@@ -305,10 +306,12 @@ export const tasksApi = {
     id: string,
     body: string,
     idempotencyKey?: string,
+    replyToMessageId?: string,
   ): Promise<TaskDiscussionEntry> {
     const resp = await api.post<TaskDiscussionEntry>(`/api/tasks/${id}/discussion`, {
       body,
       ...(idempotencyKey ? { idempotencyKey } : {}),
+      ...(replyToMessageId ? { replyToMessageId } : {}),
     });
     return resp.data;
   },

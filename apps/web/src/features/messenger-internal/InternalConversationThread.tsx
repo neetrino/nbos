@@ -109,6 +109,7 @@ export function InternalConversationThread({
   pendingForward = null,
   onClearPendingForward,
   onBeginForward,
+  composerDocked = false,
 }: {
   conversation: MessengerCoreConversationRow;
   messages: MessengerCoreMessageRow[];
@@ -129,6 +130,8 @@ export function InternalConversationThread({
   pendingForward?: PendingForwardDraft | null;
   onClearPendingForward?: () => void;
   onBeginForward?: (target: MessengerCoreConversationRow, draft: PendingForwardDraft) => void;
+  /** Keeps the composer in the column so the task sheet cannot clip it. */
+  composerDocked?: boolean;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const { can, me } = usePermission();
@@ -171,6 +174,7 @@ export function InternalConversationThread({
       pendingForward={pendingForward}
       onClearPendingForward={onClearPendingForward}
       onBeginForward={onBeginForward}
+      composerDocked={composerDocked}
     />
   );
 }
@@ -203,6 +207,7 @@ function ThreadScaffold(props: {
   pendingForward?: PendingForwardDraft | null;
   onClearPendingForward?: () => void;
   onBeginForward?: (target: MessengerCoreConversationRow, draft: PendingForwardDraft) => void;
+  composerDocked?: boolean;
 }) {
   const { conversation, actions } = props;
   const pending =
@@ -307,6 +312,7 @@ function ThreadScaffold(props: {
         }}
         onTypingIntent={props.onTypingIntent}
         sheet
+        docked={props.composerDocked}
         meId={props.meId}
         onSend={(fileAssetIds, caption) =>
           void Promise.resolve(

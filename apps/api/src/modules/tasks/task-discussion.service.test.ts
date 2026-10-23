@@ -155,6 +155,22 @@ describe('TaskDiscussionService', () => {
     expect(entry.conversation).toBeUndefined();
   });
 
+  it('passes a reply target through to the Core message', async () => {
+    const replyToMessageId = '11111111-1111-4111-8111-111111111111';
+    await service.addEntry(
+      'task-1',
+      actorContextFromEmployee({ id: 'emp-1', firstName: 'Ada', lastName: 'Lovelace' }),
+      'Looks good',
+      undefined,
+      undefined,
+      undefined,
+      replyToMessageId,
+    );
+    expect(core.persistAndBroadcast).toHaveBeenCalledWith(
+      expect.objectContaining({ replyToMessageId }),
+    );
+  });
+
   it('stores a client idempotency key on the Core message', async () => {
     await service.addEntry(
       'task-1',

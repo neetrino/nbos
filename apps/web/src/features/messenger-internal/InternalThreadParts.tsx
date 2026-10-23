@@ -156,6 +156,7 @@ export function ThreadComposer({
   onTypingIntent,
   placeholder,
   sheet = false,
+  docked = false,
   allowEmptySend = false,
   meId = null,
 }: {
@@ -169,6 +170,8 @@ export function ThreadComposer({
   onTypingIntent?: () => void;
   placeholder?: string;
   sheet?: boolean;
+  /** Task card keeps the field in the column. Overlay is the full messenger sheet. */
+  docked?: boolean;
   allowEmptySend?: boolean;
   meId?: string | null;
 }) {
@@ -184,24 +187,8 @@ export function ThreadComposer({
   const showPreview = sheet && hasFiles;
   useLockChatScroll(showPreview);
   return (
-    <div
-      className={
-        showPreview
-          ? 'absolute inset-0 z-30'
-          : sheet
-            ? 'pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-transparent'
-            : 'border-t border-black/[0.06] p-3'
-      }
-    >
-      <div
-        className={
-          showPreview
-            ? 'pointer-events-none absolute inset-x-0 bottom-0'
-            : sheet
-              ? 'pointer-events-auto'
-              : undefined
-        }
-      >
+    <div className={composerFrameClass(sheet, docked, showPreview)}>
+      <div className={composerHitClass(sheet, docked, showPreview)}>
         {replyTo ? <ReplySlot sheet={sheet} replyTo={replyTo} onClear={onClearReply} /> : null}
         {files.error ? <p className="px-4 pb-1 text-xs text-red-600">{files.error}</p> : null}
         <ComposerField
@@ -213,7 +200,7 @@ export function ThreadComposer({
             onTypingIntent?.();
           }}
           onSend={() => void files.send(meId, undefined, onSend)}
-          disabled={!canSend || sendDisabled || files.uploading}
+          disabled={!canSend || files.uploading}
           sendDisabled={blocked}
           placeholder={resolvedPlaceholder}
         />
@@ -274,4 +261,21 @@ function ReplySlot({
       />
     </div>
   );
+}
+
+function composerFrameClass(sheet: boolean, docked: boolean, showPreview: boolean): string {
+  if (showPreview) return 'absolute inset-0 z-30';
+  if (!sheet) return 'border-t border-black/[0.06] p-3';
+  if (docked) return 'relative z-20 shrink-0';
+  return 'pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-transparent';
+}
+
+function composerHitClass(
+  sheet: boolean,
+  docked: boolean,
+  showPreview: boolean,
+): string | undefined {
+  if (showPreview) return 'pointer-events-none absolute inset-x-0 bottom-0';
+  if (sheet && !docked) return 'pointer-events-auto';
+  return undefined;
 }

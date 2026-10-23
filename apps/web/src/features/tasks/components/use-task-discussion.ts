@@ -56,7 +56,8 @@ export function useTaskDiscussion(taskId: string | null, open: boolean) {
     messages: visibleTaskMessages(thread, staged.data?.items),
     send,
     noteDraft,
-    composerDisabled: thread.revoked,
+    // Opening the task is the write gate. Messenger revocation must not lock this field.
+    composerDisabled: false,
     conversationId: thread.conversationId,
   };
 }
@@ -67,6 +68,7 @@ export async function sendTaskDiscussionNote(
   conversationId: string | null,
   body: string,
   sender?: { senderId: string | null; senderName: string },
+  options?: { replyToMessageId?: string; onComposerClear?: () => void },
 ): Promise<void> {
   if (!taskId) return;
   const cacheId = conversationId ?? taskPendingConversationId(taskId);
@@ -78,27 +80,28 @@ export async function sendTaskDiscussionNote(
     content,
     senderId: sender?.senderId ?? null,
     senderName: sender?.senderName ?? 'You',
-    onComposerClear: () => undefined,
+    replyToMessageId: options?.replyToMessageId,
+    onComposerClear: options?.onComposerClear ?? (() => undefined),
     onFailure: (error) => toast.error(getApiErrorMessage(error, 'Could not post the note.')),
-    transport: (idempotencyKey) => postTaskDiscussion(queryClient, taskId, content, idempotencyKey),
+    transport: (idempotencyKey) =>
+      postTaskDiscussion(queryClient, taskId, content, idempotencyKey, options?.replyToMessageId),
   });
 }
 
 function useTaskDiscussionSend(
   queryClient: ReturnType<typeof useQueryClient>,
   activeId: string | null,
-  thread: { revoked: boolean; conversationId: string | null },
+  thread: { conversationId: string | null },
   me: { id: string; firstName?: string | null; lastName?: string | null } | null | undefined,
 ) {
   return useCallback(
     (body: string) => {
-      if (thread.revoked) return;
       return sendTaskDiscussionNote(queryClient, activeId, thread.conversationId, body, {
         senderId: me?.id ?? null,
         senderName: messengerComposerSenderName(me),
       });
     },
-    [activeId, me, queryClient, thread.conversationId, thread.revoked],
+    [activeId, me, queryClient, thread.conversationId],
   );
 }
 
@@ -121,8 +124,9 @@ async function postTaskDiscussion(
   taskId: string,
   content: string,
   idempotencyKey: string,
+  replyToMessageId?: string,
 ) {
-  const entry = await tasksApi.addDiscussion(taskId, content, idempotencyKey);
+  const entry = await tasksApi.addDiscussion(taskId, content, idempotencyKey, replyToMessageId);
   if (!entry.conversationId) {
     throw new Error('Task discussion did not return a conversation');
   }

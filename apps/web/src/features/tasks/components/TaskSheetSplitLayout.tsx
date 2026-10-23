@@ -66,7 +66,7 @@ export function TaskSheetSplitLayout({ detail, chat }: TaskSheetSplitLayoutProps
         className={cn(
           TASK_SHEET_DETAIL_COLUMN_CLASS,
           'min-h-0 min-w-0',
-          isSplitRow ? 'overflow-hidden' : 'w-full',
+          isSplitRow ? 'overflow-hidden' : 'w-full overflow-y-auto',
         )}
         style={detailColumnStyle(isSplitRow, detailRatioPercent)}
       >

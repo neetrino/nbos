@@ -83,7 +83,26 @@ describe('sendTaskDiscussionNote inbox reconciliation', () => {
     );
     expect(thread?.items.map((row) => row.id)).toEqual(['msg-1']);
     expect(invalidate).not.toHaveBeenCalled();
-    expect(addDiscussion).toHaveBeenCalledWith('task-1', 'First note', expect.any(String));
+    expect(addDiscussion).toHaveBeenCalledWith(
+      'task-1',
+      'First note',
+      expect.any(String),
+      undefined,
+    );
+  });
+
+  it('sends a reply id with the task discussion note', async () => {
+    const queryClient = createClient();
+    const replyToMessageId = '11111111-1111-4111-8111-111111111111';
+    await sendTaskDiscussionNote(queryClient, 'task-1', 'conv-task', 'Reply', undefined, {
+      replyToMessageId,
+    });
+    expect(addDiscussion).toHaveBeenCalledWith(
+      'task-1',
+      'Reply',
+      expect.any(String),
+      replyToMessageId,
+    );
   });
 
   it('posts a second note while the first request is still open', async () => {
