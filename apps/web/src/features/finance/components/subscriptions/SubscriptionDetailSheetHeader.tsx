@@ -8,8 +8,6 @@ import {
 } from '@/components/shared/detail-sheet-classes';
 import { getSubscriptionType } from '@/features/finance/constants/finance';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
-import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
-import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import type { Subscription } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
@@ -29,7 +27,6 @@ export function SubscriptionDetailSheetHeader({
 }: SubscriptionDetailSheetHeaderProps) {
   const isMobileViewport = useIsMobileViewport();
   const subType = getSubscriptionType(subscription.type);
-  const termSummary = formatSubscriptionTermSummary(subscription);
   const displayTitle = getSubscriptionDisplayTitle(subscription);
   const showCodeSubline = displayTitle !== subscription.code;
   const statusControl = (
@@ -51,7 +48,6 @@ export function SubscriptionDetailSheetHeader({
             code={subscription.code}
             typeLabel={subType?.label}
           />
-          <SubscriptionHeaderSummary subscription={subscription} termSummary={termSummary} />
         </div>
       </div>
     );
@@ -66,7 +62,6 @@ export function SubscriptionDetailSheetHeader({
           code={subscription.code}
           typeLabel={subType?.label}
         />
-        <SubscriptionHeaderSummary subscription={subscription} termSummary={termSummary} />
       </div>
       {statusControl}
     </div>
@@ -101,28 +96,6 @@ function SubscriptionHeaderIdentity({
         </span>
       ) : null}
     </div>
-  );
-}
-
-function SubscriptionHeaderSummary({
-  subscription,
-  termSummary,
-}: {
-  subscription: Subscription;
-  termSummary: string | null;
-}) {
-  return (
-    <p className="text-muted-foreground mt-0.5 text-sm">
-      {formatSubscriptionPeriodStatement(subscription)}
-      {termSummary ? (
-        <>
-          <span className="mx-1.5">·</span>
-          {termSummary}
-        </>
-      ) : null}
-      <span className="mx-1.5">·</span>
-      {subscription.project.name}
-    </p>
   );
 }
 
