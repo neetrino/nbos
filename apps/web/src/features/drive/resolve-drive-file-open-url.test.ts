@@ -3,6 +3,7 @@ import type { FileAsset } from '@/lib/api/drive';
 import { driveApi } from '@/lib/api/drive';
 import {
   DRIVE_FILE_PREVIEW_UNAVAILABLE,
+  resolveDriveFileDownloadUrl,
   resolveDriveFileOpenUrl,
 } from './resolve-drive-file-open-url';
 
@@ -67,5 +68,29 @@ describe('resolveDriveFileOpenUrl', () => {
     await expect(resolveDriveFileOpenUrl(fileAsset({}))).rejects.toThrow(
       DRIVE_FILE_PREVIEW_UNAVAILABLE,
     );
+  });
+});
+
+describe('resolveDriveFileDownloadUrl', () => {
+  beforeEach(() => {
+    getPreviewUrl.mockReset();
+  });
+
+  it('requests an attachment disposition for stored files', async () => {
+    getPreviewUrl.mockResolvedValue({
+      url: 'https://cdn.test/signed-brief.pdf',
+      mimeType: 'application/pdf',
+    });
+    const url = await resolveDriveFileDownloadUrl(fileAsset({ externalUrl: null }));
+    expect(url).toBe('https://cdn.test/signed-brief.pdf');
+    expect(getPreviewUrl).toHaveBeenCalledWith('file-1', { disposition: 'attachment' });
+  });
+
+  it('uses the external URL without a signed download', async () => {
+    const url = await resolveDriveFileDownloadUrl(
+      fileAsset({ externalUrl: 'https://example.test/brief.pdf' }),
+    );
+    expect(url).toBe('https://example.test/brief.pdf');
+    expect(getPreviewUrl).not.toHaveBeenCalled();
   });
 });

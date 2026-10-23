@@ -22,6 +22,7 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
   getSignedUrl: vi.fn().mockResolvedValue('https://presigned-url.example.com'),
 }));
 
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { DriveService } from './drive.service';
 import { createMockPrisma, type MockPrisma } from '../../test-utils/mock-prisma';
 
@@ -190,6 +191,38 @@ describe('DriveService', () => {
 
       expect(result.url).toBe('https://presigned-url.example.com');
       expect(result.mimeType).toBe('image/png');
+      expect(GetObjectCommand).toHaveBeenCalledWith(
+        expect.not.objectContaining({ ResponseContentDisposition: expect.any(String) }),
+      );
+    });
+
+    it('signs an attachment disposition when the caller requests a download', async () => {
+      prisma.fileAsset.findFirst.mockResolvedValueOnce({
+        id: 'f1',
+        displayName: 'Neetrino Marketing KP.pdf',
+        deletedAt: null,
+        status: 'ACTIVE',
+        storageProvider: 'R2',
+        externalUrl: null,
+        storageKey: 'Drive/k',
+        mimeType: 'application/pdf',
+        versions: [{ storageKey: 'Drive/k-v1', isCurrent: true }],
+      });
+
+      const result = await service.getAssetViewUrl('f1', undefined, undefined, {
+        disposition: 'attachment',
+      });
+
+      expect(result.url).toBe('https://presigned-url.example.com');
+      expect(GetObjectCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: 'Drive/k-v1',
+          ResponseContentType: 'application/pdf',
+          ResponseContentDisposition: expect.stringContaining(
+            'filename="Neetrino Marketing KP.pdf"',
+          ),
+        }),
+      );
     });
 
     it('getAssetViewUrl with document gate rejects when file not linked to document', async () => {

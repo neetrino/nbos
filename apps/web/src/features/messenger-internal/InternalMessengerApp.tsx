@@ -8,6 +8,7 @@ import { usePermission } from '@/lib/permissions/PermissionContext';
 import { syncConversationListReceipt } from '@/features/messenger/query/messenger-cache';
 import { messengerQueryKeys } from '@/features/messenger/query/messenger-query-keys';
 import { resolveActiveConversation } from '@/features/messenger/query/resolve-active-conversation';
+import { canComposeConversationMessage } from '@/features/messenger/can-compose-conversation-message';
 import { messengerCoreApi } from '@/lib/api/messenger-core';
 import { INTERNAL_MESSENGER_SHELL_CLASS } from './internal-messenger.constants';
 import { InternalMessengerSheetFrame } from './InternalMessengerSheetFrame';
@@ -241,7 +242,7 @@ function InternalMessengerScreen({
               onSend={(extras) =>
                 void sendInternalThreadMessage({
                   conversationId: session.activeId,
-                  canWrite: Boolean(active.canWrite),
+                  canWrite: canComposeConversationMessage(active),
                   content: session.newMessage,
                   extras,
                   setNewMessage: (value) => {
@@ -253,7 +254,7 @@ function InternalMessengerScreen({
                   senderName: messengerComposerSenderName(me),
                 })
               }
-              canSend={Boolean(active.canWrite)}
+              canSend={canComposeConversationMessage(active)}
               sendDisabled={false}
               onToggleFavorite={() => void toggleInternalFavorite(queryClient, active.id)}
               collections={data.collections.data ?? []}

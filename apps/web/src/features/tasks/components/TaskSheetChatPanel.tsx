@@ -143,18 +143,7 @@ export function TaskSheetChatPanel({
     </header>
   );
 
-  if (linkedConversationId) {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col">
-        <TaskLinkedMessengerThread
-          conversationId={linkedConversationId}
-          composerDisabled={composerDisabled}
-        />
-      </div>
-    );
-  }
-
-  return (
+  const transcript = (
     <div className="dark:bg-background relative flex min-h-0 flex-1 flex-col bg-[#eef2ff]">
       <div className="border-border border-b">{titleBlock}</div>
 
@@ -193,6 +182,20 @@ export function TaskSheetChatPanel({
       />
     </div>
   );
+
+  if (linkedConversationId) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <TaskLinkedMessengerThread
+          conversationId={linkedConversationId}
+          composerDisabled={composerDisabled}
+          fallback={transcript}
+        />
+      </div>
+    );
+  }
+
+  return transcript;
 }
 
 function HeaderIcon({ label, src }: { label: string; src: string }) {

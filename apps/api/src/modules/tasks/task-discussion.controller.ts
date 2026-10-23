@@ -1,7 +1,12 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { actorContextFromEmployee } from '@nbos/shared';
-import { CurrentUser, type CurrentUserPayload, RequirePermission } from '../../common/decorators';
+import {
+  CurrentUser,
+  type CurrentUserPayload,
+  RequireAnyPermission,
+  RequirePermission,
+} from '../../common/decorators';
 import { tasksAccessFromUser } from './tasks-scoped-access';
 import { readDiscussionIdempotencyKey } from './task-discussion.rules';
 import { TaskDiscussionService } from './task-discussion.service';
@@ -33,8 +38,10 @@ export class TaskDiscussionController {
   }
 
   @Post(':id/discussion')
-  @RequirePermission('TASKS', 'EDIT')
-  @ApiOperation({ summary: 'Add a Task Discussion note on Messaging Core' })
+  @RequireAnyPermission({ module: 'TASKS', action: 'VIEW' }, { module: 'TASKS', action: 'EDIT' })
+  @ApiOperation({
+    summary: 'Add a Task Discussion note. Opening the Task is enough; Task edit is not required.',
+  })
   async create(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,

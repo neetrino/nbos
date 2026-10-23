@@ -107,7 +107,7 @@ describe('Core HTTP authorization metadata', () => {
 });
 
 describe('Slice 3 Internal HTTP', () => {
-  it('requires MESSENGER VIEW/EDIT on Internal Core routes', async () => {
+  it('requires MESSENGER VIEW on Internal list and send', async () => {
     const { MessengerCoreInternalController } =
       await import('./messenger-core-internal.controller');
     expect(
@@ -118,7 +118,7 @@ describe('Slice 3 Internal HTTP', () => {
     ).toEqual({ module: 'MESSENGER', action: 'VIEW' });
     expect(
       Reflect.getMetadata(PERMISSION_KEY, MessengerCoreInternalController.prototype.sendMessage),
-    ).toEqual({ module: 'MESSENGER', action: 'EDIT' });
+    ).toEqual({ module: 'MESSENGER', action: 'VIEW' });
   });
 });
 

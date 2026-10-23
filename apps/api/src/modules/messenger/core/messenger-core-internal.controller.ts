@@ -107,8 +107,11 @@ export class MessengerCoreInternalController {
   }
 
   @Post('conversations/:id/messages')
-  @RequirePermission('MESSENGER', 'EDIT')
-  @ApiOperation({ summary: 'Persist an Internal Core message (not Channel/DM tables)' })
+  @RequirePermission('MESSENGER', 'VIEW')
+  @ApiOperation({
+    summary:
+      'Persist an Internal Core message. Task chats follow Task access; other chats still require write.',
+  })
   sendMessage(
     @Param('id') id: string,
     @CurrentUser() user: CurrentUserPayload,

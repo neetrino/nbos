@@ -16,7 +16,10 @@ import { type MessengerLegacyAccessContext } from '../access/messenger-legacy-ch
 import { MessengerGateway } from '../messenger.gateway';
 import { publishCommittedRead } from './messenger-core-lifecycle-publish';
 import { evictIfCoreReadLost } from './messenger-core-access-revoke.ops';
-import { resolveCoreConversationRead } from './messenger-core-read-authorize';
+import {
+  mayPostInternalMessage,
+  resolveCoreConversationRead,
+} from './messenger-core-read-authorize';
 import {
   assertClientMayPersist,
   requireMessengerEditAccess,
@@ -110,7 +113,7 @@ export class MessengerCoreService {
     }
     const resolved = await this.requireRead(input.conversationId, senderId);
     if (isInternalZone(resolved.facts.zone)) {
-      if (!resolved.decision.canWrite) {
+      if (!mayPostInternalMessage(resolved)) {
         throw new ForbiddenException(MESSENGER_CORE_INTERNAL_WRITE_FORBIDDEN);
       }
     } else {

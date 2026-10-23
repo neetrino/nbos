@@ -26,6 +26,7 @@ import { DriveCleanupCandidatesService } from './drive-cleanup-candidates.servic
 import { DriveCleanupApplyService } from './drive-cleanup-apply.service';
 import { DriveAccessContextService } from './drive-access-context.service';
 import { DriveLibraryEntitiesService } from './drive-library-entities.service';
+import { parseAssetViewDisposition } from './drive-content-disposition';
 import { ApplyDriveCleanupDto } from './apply-drive-cleanup.dto';
 import { CreateDriveZipExportBodyDto } from './create-drive-zip-export.dto';
 import type {
@@ -545,17 +546,24 @@ export class DriveController {
     required: false,
     description: 'Native document id — tightens preview to document-scoped file access.',
   })
+  @ApiQuery({
+    name: 'disposition',
+    required: false,
+    description: 'inline (default, preview) or attachment (browser download).',
+  })
   async getFileAssetPreviewUrl(
     @CurrentUser() user: CurrentUserPayload,
     @Req() request: Request & { permissionScope?: string },
     @Param('id') id: string,
     @Query('forDocumentId') forDocumentId?: string,
+    @Query('disposition') disposition?: string,
   ) {
     const docId = forDocumentId?.trim();
     return this.driveService.getAssetViewUrl(
       id,
       docId ? { forDocumentId: docId, documentsAccess: buildDocumentsReadAccess(user) } : undefined,
       await this.driveAccessContext.fromRequest(user, request.permissionScope),
+      { disposition: parseAssetViewDisposition(disposition) },
     );
   }
 

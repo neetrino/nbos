@@ -48,6 +48,7 @@ Task Discussion follows the shared Messaging Core canon:
 - Task Card and Internal Messenger `Tasks` view open the same underlying conversation/messages;
 - attachments are Drive File Assets;
 - replies/reactions/read state/mentions use common Messenger behavior;
+- anyone who can open the Task can post messages and replies in its Discussion. Messenger edit and Task edit do not block that composer. Pin, membership, and other conversation administration stay on Messenger write;
 - selected Internal or Client messages may create a Task and become stable source references;
 - closing a Task does not delete its Discussion history;
 - closed inactive Task conversations may leave active Messenger lists while remaining reachable from the Task/search.

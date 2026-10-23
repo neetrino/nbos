@@ -10,8 +10,6 @@ import { useCommitEntityName } from '@/features/finance/hooks/use-commit-entity-
 import { getSubscriptionType } from '@/features/finance/constants/finance';
 import { InlineEditableEntityTitle } from '@/features/projects/components/InlineEditableEntityTitle';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
-import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
-import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
 import { useIsMobileViewport } from '@/hooks/use-is-mobile-viewport';
 import { subscriptionsApi, type Subscription } from '@/lib/api/finance';
 import { cn } from '@/lib/utils';
@@ -40,15 +38,14 @@ export function SubscriptionDetailSheetHeader({
 }: SubscriptionDetailSheetHeaderProps) {
   const isMobileViewport = useIsMobileViewport();
   const subType = getSubscriptionType(subscription.type);
-  const termSummary = formatSubscriptionTermSummary(subscription);
   const displayTitle = getSubscriptionDisplayTitle(subscription);
   const titleBlock = (
-    <SubscriptionHeaderTitleBlock
-      subscription={subscription}
+    <SubscriptionHeaderIdentity
+      subscriptionId={subscription.id}
       displayTitle={displayTitle}
       showCodeSubline={displayTitle !== subscription.code}
+      code={subscription.code}
       typeLabel={subType?.label}
-      termSummary={termSummary}
       canRename={canRename}
       onNameSaved={onNameSaved}
     />
@@ -77,39 +74,6 @@ export function SubscriptionDetailSheetHeader({
       <div className="min-w-0 flex-1">{titleBlock}</div>
       {statusControl}
     </div>
-  );
-}
-
-function SubscriptionHeaderTitleBlock({
-  subscription,
-  displayTitle,
-  showCodeSubline,
-  typeLabel,
-  termSummary,
-  canRename,
-  onNameSaved,
-}: {
-  subscription: Subscription;
-  displayTitle: string;
-  showCodeSubline: boolean;
-  typeLabel: string | undefined;
-  termSummary: string | null;
-  canRename: boolean;
-  onNameSaved: (updated: Subscription) => void;
-}) {
-  return (
-    <>
-      <SubscriptionHeaderIdentity
-        subscriptionId={subscription.id}
-        displayTitle={displayTitle}
-        showCodeSubline={showCodeSubline}
-        code={subscription.code}
-        typeLabel={typeLabel}
-        canRename={canRename}
-        onNameSaved={onNameSaved}
-      />
-      <SubscriptionHeaderSummary subscription={subscription} termSummary={termSummary} />
-    </>
   );
 }
 
@@ -151,28 +115,6 @@ function SubscriptionHeaderIdentity({
         </span>
       ) : null}
     </div>
-  );
-}
-
-function SubscriptionHeaderSummary({
-  subscription,
-  termSummary,
-}: {
-  subscription: Subscription;
-  termSummary: string | null;
-}) {
-  return (
-    <p className="text-muted-foreground mt-0.5 text-sm">
-      {formatSubscriptionPeriodStatement(subscription)}
-      {termSummary ? (
-        <>
-          <span className="mx-1.5">·</span>
-          {termSummary}
-        </>
-      ) : null}
-      <span className="mx-1.5">·</span>
-      {subscription.project.name}
-    </p>
   );
 }
 

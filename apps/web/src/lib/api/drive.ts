@@ -179,6 +179,18 @@ export interface DriveFolderTreeResponse {
   folders: DriveFolder[];
 }
 
+type FilePreviewUrlQuery = {
+  forDocumentId?: string;
+  disposition?: 'inline' | 'attachment';
+};
+
+function previewUrlQuery(params?: FilePreviewUrlQuery): FilePreviewUrlQuery | undefined {
+  const query: FilePreviewUrlQuery = {};
+  if (params?.forDocumentId) query.forDocumentId = params.forDocumentId;
+  if (params?.disposition) query.disposition = params.disposition;
+  return Object.keys(query).length > 0 ? query : undefined;
+}
+
 export const driveApi = {
   async getProjectDriveHubSummary(projectId: string): Promise<{
     projectId: string;
@@ -478,16 +490,12 @@ export const driveApi = {
 
   async getFileAssetPreviewUrl(
     id: string,
-    params?: { forDocumentId?: string },
+    params?: { forDocumentId?: string; disposition?: 'inline' | 'attachment' },
   ): Promise<{ url: string; mimeType: string | null }> {
+    const query = previewUrlQuery(params);
     const resp = await api.get<{ url: string; mimeType: string | null }>(
       '/api/drive/files/' + encodeURIComponent(id) + '/preview-url',
-      {
-        params:
-          params?.forDocumentId !== undefined && params.forDocumentId !== ''
-            ? { forDocumentId: params.forDocumentId }
-            : undefined,
-      },
+      { params: query },
     );
     return resp.data;
   },

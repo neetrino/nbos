@@ -5,9 +5,11 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { SheetFileAttachments } from '@/components/shared/SheetFileAttachments';
 import { driveApi, type FileAsset } from '@/lib/api/drive';
+import { getApiErrorMessage } from '@/lib/api-errors';
 import { DRIVE_LIBRARIES } from '@/features/drive/drive-options';
 import type { DriveFileCardMenuHandlers } from '@/features/drive/DriveFileCard';
 import { EntityDriveFilePreviewSheet } from '@/features/drive/EntityDriveFilePreviewSheet';
+import { downloadDriveFileAsset } from '@/features/drive/resolve-drive-file-open-url';
 import {
   moveToTrashAndUnlinkFileFromEntityRecord,
   unlinkFileFromEntityRecord,
@@ -63,6 +65,17 @@ export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
     }
   };
 
+  const runDownload = async (file: FileAsset) => {
+    setBusyFileId(file.id);
+    try {
+      await downloadDriveFileAsset(file);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, t('sheet.files.downloadFailed')));
+    } finally {
+      setBusyFileId(null);
+    }
+  };
+
   const runMoveToTrash = async (file: FileAsset) => {
     setBusyFileId(file.id);
     try {
@@ -79,6 +92,7 @@ export function TaskFilesBlock({ taskId }: TaskFilesBlockProps) {
   const fileMenu = (file: FileAsset): DriveFileCardMenuHandlers => ({
     busy: busyFileId === file.id,
     onOpenDetails: () => setPreviewFile(file),
+    onDownload: () => void runDownload(file),
     onUnlinkFromRecord: () => void runUnlink(file),
     onMoveToTrash: (target) => void runMoveToTrash(target),
     onRestore: () => undefined,

@@ -19,8 +19,6 @@ import {
   isSubscriptionGeneralDirty,
   type SubscriptionGeneralDraft,
 } from '@/features/finance/utils/subscription-general-form-state';
-import { formatSubscriptionPeriodStatement } from '@/features/finance/utils/subscription-period-display';
-import { formatSubscriptionTermSummary } from '@/features/finance/utils/subscription-term-display';
 import { getSubscriptionDisplayTitle } from '@/features/finance/utils/subscription-display';
 import { getSubscriptionType } from '@/features/finance/constants/finance';
 import { getApiErrorMessage } from '@/lib/api-errors';
@@ -166,7 +164,6 @@ export default function SubscriptionDetailPage() {
   }
 
   const subType = getSubscriptionType(subscription.type);
-  const termSummary = formatSubscriptionTermSummary(subscription);
   const displayTitle = getSubscriptionDisplayTitle(subscription);
   const showCodeSubline = displayTitle !== subscription.code;
   const canRename = !saving;
@@ -205,17 +202,6 @@ export default function SubscriptionDetailPage() {
                 </span>
               ) : null}
             </div>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {formatSubscriptionPeriodStatement(subscription)}
-              {termSummary ? (
-                <>
-                  <span className="mx-1.5">·</span>
-                  {termSummary}
-                </>
-              ) : null}
-              <span className="mx-1.5">·</span>
-              {subscription.project.name}
-            </p>
           </div>
           <SubscriptionPageStatusControl
             subscription={subscription}
