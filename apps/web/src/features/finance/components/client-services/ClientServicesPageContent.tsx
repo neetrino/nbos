@@ -215,7 +215,11 @@ function ClientServicesPageInner() {
       ),
       trailing: (
         <>
-          <ClientServicesPageSettingsSheet refreshDisabled={false} onRefresh={refreshAll} />
+          <ClientServicesPageSettingsSheet
+            refreshDisabled={false}
+            onRefresh={refreshAll}
+            canCheckRegistry={canEdit}
+          />
           {canAdd ? (
             <Button type="button" onClick={openCreate}>
               <Plus className="mr-2 h-4 w-4" aria-hidden />
@@ -232,6 +236,7 @@ function ClientServicesPageInner() {
       handleClientServiceFilterChange,
       handleViewChange,
       canAdd,
+      canEdit,
       openCreate,
       refreshAll,
       search,

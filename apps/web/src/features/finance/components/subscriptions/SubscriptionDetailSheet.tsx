@@ -110,6 +110,7 @@ export function SubscriptionDetailSheet({
     subscription?.coverageMonthCount,
     subscription?.partner?.id,
     subscription?.notes,
+    subscription?.name,
   ]);
 
   const patchGeneralDraft = useCallback((partial: Partial<SubscriptionGeneralDraft>) => {
@@ -134,6 +135,16 @@ export function SubscriptionDetailSheet({
       const next = createSubscriptionGeneralDraft(updated);
       setGeneralDraft(next);
       setGeneralSnap(next);
+      onSubscriptionUpdated?.(updated);
+    },
+    [onSubscriptionUpdated, setSubscription],
+  );
+
+  const handleNameSaved = useCallback(
+    (updated: Subscription) => {
+      setSubscription(updated);
+      setGeneralDraft((prev) => (prev ? { ...prev, name: updated.name } : prev));
+      setGeneralSnap((prev) => (prev ? { ...prev, name: updated.name } : prev));
       onSubscriptionUpdated?.(updated);
     },
     [onSubscriptionUpdated, setSubscription],
@@ -223,6 +234,8 @@ export function SubscriptionDetailSheet({
           ) : subscription ? (
             <SubscriptionDetailSheetHeader
               subscription={subscription}
+              canRename={!saving}
+              onNameSaved={handleNameSaved}
               onSubscriptionChange={handleSubscriptionChange}
               onError={setActionError}
             />
