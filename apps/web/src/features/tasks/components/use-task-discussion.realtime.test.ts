@@ -165,9 +165,13 @@ describe('task discussion realtime', () => {
       { conversationId: CONVERSATION_ID },
     ]);
     vi.mocked(tasksApi.addDiscussion).mockResolvedValue({
-      ...PAGE.items[0],
       id: 'msg-2',
       body: 'still posted',
+      authorActorType: 'USER',
+      authorActorId: 'emp-1',
+      authorDisplayName: 'Ada',
+      channelSource: 'web',
+      createdAt: '2026-09-11T12:01:00.000Z',
       conversationId: CONVERSATION_ID,
     });
     await act(async () => {
